@@ -13,7 +13,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
             if (!(node is XamlAstXamlPropertyValueNode propertyValueNode)) return node;
-            
+
+            if (!(propertyValueNode.Property is XamlAstClrProperty clrProperty)) return node;
+
             IEnumerable<IXamlCustomAttribute> attributes = propertyValueNode.Property.GetClrProperty().CustomAttributes;
 
             if (propertyValueNode.Property is XamlAstClrProperty referenceNode &&
