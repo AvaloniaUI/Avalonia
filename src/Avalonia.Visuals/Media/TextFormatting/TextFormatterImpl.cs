@@ -72,6 +72,11 @@ namespace Avalonia.Media.TextFormatting
             {
                 foreach (var shapedCharacters in previousLineBreak.RemainingCharacters)
                 {
+                    if (shapedCharacters == null)
+                    {
+                        continue;
+                    }
+
                     textRuns.Add(shapedCharacters);
 
                     if (TryGetLineBreak(shapedCharacters, out var runLineBreak))
@@ -106,7 +111,7 @@ namespace Avalonia.Media.TextFormatting
                                 var glyphRun = TextShaper.Current.ShapeText(run.Text, run.Properties.Typeface,
                                     run.Properties.FontRenderingEmSize, run.Properties.CultureInfo);
 
-                                var shapedCharacters = new ShapedTextCharacters(glyphRun, textRun.Properties);
+                                var shapedCharacters = new ShapedTextCharacters(glyphRun, run.Properties);
 
                                 textRuns.Add(shapedCharacters);
                             }
@@ -355,9 +360,67 @@ namespace Avalonia.Media.TextFormatting
         {
             var glyphRun = textCharacters.GlyphRun;
 
-            var characterHit = glyphRun.GetCharacterHitFromDistance(availableWidth, out _);
+            if (glyphRun.Bounds.Width < availableWidth)
+            {
+                return glyphRun.Characters.Length;
+            }
 
-            return characterHit.FirstCharacterIndex + characterHit.TrailingLength - textCharacters.Text.Start;
+            var glyphCount = 0;
+
+            var currentWidth = 0.0;
+
+            if (glyphRun.GlyphAdvances.IsEmpty)
+            {
+                var glyphTypeface = glyphRun.GlyphTypeface;
+
+                for (var i = 0; i < glyphRun.GlyphClusters.Length; i++)
+                {
+                    var glyph = glyphRun.GlyphIndices[i];
+
+                    var advance = glyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
+
+                    if (currentWidth + advance > availableWidth)
+                    {
+                        break;
+                    }
+
+                    currentWidth += advance;
+
+                    glyphCount++;
+                }
+            }
+            else
+            {
+                for (var i = 0; i < glyphRun.GlyphAdvances.Length; i++)
+                {
+                    var advance = glyphRun.GlyphAdvances[i];
+
+                    if (currentWidth + advance > availableWidth)
+                    {
+                        break;
+                    }
+
+                    currentWidth += advance;
+
+                    glyphCount++;
+                }
+            }
+
+            if (glyphCount == glyphRun.GlyphIndices.Length)
+            {
+                return glyphRun.Characters.Length;
+            }
+
+            if (glyphRun.GlyphClusters.IsEmpty)
+            {
+                return glyphCount;
+            }
+
+            var firstCluster = glyphRun.GlyphClusters[0];
+
+            var lastCluster = glyphRun.GlyphClusters[glyphCount];
+
+            return lastCluster - firstCluster;
         }
 
         /// <summary>

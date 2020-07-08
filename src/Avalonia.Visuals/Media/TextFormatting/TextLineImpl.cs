@@ -33,8 +33,7 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in _textRuns)
             {
-                var baselineOrigin = new Point(currentX + LineMetrics.BaselineOrigin.X,
-                    origin.Y + LineMetrics.BaselineOrigin.Y);
+                var baselineOrigin = new Point(currentX, origin.Y + LineMetrics.TextBaseline);
 
                 textRun.Draw(drawingContext, baselineOrigin);
 
