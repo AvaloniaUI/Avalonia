@@ -108,7 +108,6 @@
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="True"
                    PlacementMode="Right"
-                   StaysOpen="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen,
                                             Mode=TwoWay}">
               <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
@@ -155,9 +154,7 @@
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
-                   IsOpen="{TemplateBinding IsSubMenuOpen,
-                                            Mode=TwoWay}"
-                   StaysOpen="True">
+                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                       BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
                       BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"

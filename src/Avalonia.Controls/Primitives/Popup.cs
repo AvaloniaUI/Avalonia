@@ -93,6 +93,12 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, double>(nameof(HorizontalOffset));
 
         /// <summary>
+        /// Defines the <see cref="IsLightDismissEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsLightDismissEnabledProperty =
+            AvaloniaProperty.Register<Popup, bool>(nameof(IsLightDismissEnabled));
+
+        /// <summary>
         /// Defines the <see cref="VerticalOffset"/> property.
         /// </summary>
         public static readonly StyledProperty<double> VerticalOffsetProperty =
@@ -101,8 +107,13 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="StaysOpen"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> StaysOpenProperty =
-            AvaloniaProperty.Register<Popup, bool>(nameof(StaysOpen), true);
+        [Obsolete("Use IsLightDismissEnabledProperty")]
+        public static readonly DirectProperty<Popup, bool> StaysOpenProperty =
+            AvaloniaProperty.RegisterDirect<Popup, bool>(
+                nameof(StaysOpen),
+                o => o.StaysOpen,
+                (o, v) => o.StaysOpen = v,
+                true);
 
         /// <summary>
         /// Defines the <see cref="Topmost"/> property.
@@ -163,6 +174,15 @@ namespace Avalonia.Controls.Primitives
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines how the <see cref="Popup"/> can be dismissed.
+        /// </summary>
+        public bool IsLightDismissEnabled
+        {
+            get => GetValue(IsLightDismissEnabledProperty);
+            set => SetValue(IsLightDismissEnabledProperty, value);
         }
 
         /// <summary>
@@ -268,10 +288,11 @@ namespace Avalonia.Controls.Primitives
         /// Gets or sets a value indicating whether the popup should stay open when the popup is
         /// pressed or loses focus.
         /// </summary>
+        [Obsolete("Use IsLightDismissEnabled")]
         public bool StaysOpen
         {
-            get { return GetValue(StaysOpenProperty); }
-            set { SetValue(StaysOpenProperty, value); }
+            get => !IsLightDismissEnabled;
+            set => IsLightDismissEnabled = !value;
         }
 
         /// <summary>
@@ -382,7 +403,7 @@ namespace Avalonia.Controls.Primitives
                 state.popupHost.Dispose();
             });
 
-            if (!StaysOpen)
+            if (IsLightDismissEnabled)
             {
                 var dismissLayer = LightDismissOverlayLayer.GetLightDismissOverlayLayer(placementTarget);
 
@@ -512,7 +533,7 @@ namespace Avalonia.Controls.Primitives
         {
             var mouse = e as RawPointerEventArgs;
 
-            if (!StaysOpen && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
+            if (IsLightDismissEnabled && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
                 CloseCore(e);
             }
@@ -520,7 +541,7 @@ namespace Avalonia.Controls.Primitives
 
         private void PointerPressedDismissOverlay(object sender, PointerPressedEventArgs e)
         {
-            if (!StaysOpen && e.Source is IVisual v && !IsChildOrThis(v))
+            if (IsLightDismissEnabled && e.Source is IVisual v && !IsChildOrThis(v))
             {
                 CloseCore(e);
             }
@@ -616,7 +637,7 @@ namespace Avalonia.Controls.Primitives
 
         private void WindowDeactivated(object sender, EventArgs e)
         {
-            if (!StaysOpen)
+            if (IsLightDismissEnabled)
             {
                 Close();
             }
@@ -624,7 +645,7 @@ namespace Avalonia.Controls.Primitives
 
         private void ParentClosed(object sender, EventArgs e)
         {
-            if (!StaysOpen)
+            if (IsLightDismissEnabled)
             {
                 Close();
             }
@@ -632,7 +653,7 @@ namespace Avalonia.Controls.Primitives
         
         private void WindowLostFocus()
         {
-            if(!StaysOpen)
+            if(IsLightDismissEnabled)
                 Close();
         }
 

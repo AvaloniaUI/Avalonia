@@ -47,7 +47,7 @@
                  WindowManagerAddShadowHint="False"
                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
-                 StaysOpen="False"                 
+                 IsLightDismissEnabled="True"
                  PlacementTarget="{TemplateBinding}">            
             <Border Name="PART_SuggestionsContainer"
                     Padding="{DynamicResource AutoCompleteListMargin}"

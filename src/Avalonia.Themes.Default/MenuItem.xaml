@@ -59,7 +59,6 @@
                   Grid.Column="4"/>
             <Popup Name="PART_Popup"
                    PlacementMode="Right"
-                   StaysOpen="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
@@ -108,8 +107,7 @@
               </ContentPresenter.DataTemplates>
             </ContentPresenter>
             <Popup Name="PART_Popup"
-                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
-                   StaysOpen="True">
+                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">

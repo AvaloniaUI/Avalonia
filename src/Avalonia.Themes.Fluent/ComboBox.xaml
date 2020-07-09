@@ -123,7 +123,7 @@
                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
                  PlacementTarget="{TemplateBinding}"
-                 StaysOpen="False">
+                 IsLightDismissEnabled="True">
             <Border x:Name="PopupBorder"
                     Background="{DynamicResource ComboBoxDropDownBackground}"
                     BorderBrush="{DynamicResource ComboBoxDropDownBorderBrush}"

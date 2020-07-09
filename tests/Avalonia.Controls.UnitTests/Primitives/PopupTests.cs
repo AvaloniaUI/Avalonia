@@ -349,7 +349,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void StaysOpen_False_Should_Not_Handle_Closing_Click()
+        public void LightDismiss_Should_Not_Handle_Closing_Click()
         {
             using (CreateServices())
             {
@@ -357,7 +357,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new Popup() 
                 { 
                     PlacementTarget = window ,
-                    StaysOpen = false,
+                    IsLightDismissEnabled = true,
                 };
 
                 target.Open();
@@ -378,7 +378,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = new Popup()
                 {
                     PlacementTarget = window,
-                    StaysOpen = false,
+                    IsLightDismissEnabled = true,
                 };
 
                 target.Open();
