@@ -16,12 +16,16 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            foreach (var child in Children)
+            var maxSize = new Size();
+
+            foreach (var child in Children.OfType<Layoutable>())
             {
-                child?.Measure(availableSize);
+                child.Measure(availableSize);
+                maxSize = maxSize.WithWidth(Math.Max(maxSize.Width, child.DesiredSize.Width));
+                maxSize = maxSize.WithHeight(Math.Max(maxSize.Height, child.DesiredSize.Height));
             }
 
-            return availableSize;
+            return maxSize;
         }
 
         protected override Size ArrangeOverride(Size arrangeSize)
@@ -183,11 +187,14 @@ namespace Avalonia.Controls
                 _nodeDic.Clear();
             }
 
-            public bool CheckCyclic() => CheckCyclic(_nodeDic.Values, null);
+            public bool CheckCyclic() => CheckCyclic(_nodeDic.Values, null, null);
 
-            private bool CheckCyclic(IEnumerable<GraphNode> nodes, HashSet<Layoutable>? set)
+            private bool CheckCyclic(IEnumerable<GraphNode> nodes, GraphNode? waitNode, HashSet<Layoutable>? set)
             {
-                set ??= new HashSet<Layoutable>();
+                if (set == null)
+                {
+                    set = new HashSet<Layoutable>();
+                }
 
                 foreach (var node in nodes)
                 {
@@ -206,9 +213,13 @@ namespace Avalonia.Controls
                     if (!set.Add(node.Element))
                         return true;
 
-                    return CheckCyclic(node.OutgoingNodes, set);
+                    return CheckCyclic(node.OutgoingNodes, node.Arranged ? null : node, set);
                 }
 
+                if (waitNode != null)
+                {
+                    ArrangeChild(waitNode);
+                }
                 return false;
             }
 
