@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Platform
@@ -83,8 +82,9 @@ namespace Avalonia.Platform
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="format">Pixel format (optional).</param>
+        /// <param name="alphaFormat">Alpha format (optional).</param>
         /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
-        IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null);
+        IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null);
 
         /// <summary>
         /// Loads a bitmap implementation from a file..
@@ -124,12 +124,13 @@ namespace Avalonia.Platform
         /// Loads a bitmap implementation from a pixels in memory.
         /// </summary>
         /// <param name="format">The pixel format.</param>
+        /// <param name="alphaFormat">The alpha format.</param>
         /// <param name="data">The pointer to source bytes.</param>
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="stride">The number of bytes per row.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
-        IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride);
+        IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride);
 
         /// <summary>
         /// Creates a platform implementation of a glyph run.

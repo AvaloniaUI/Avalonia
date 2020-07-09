@@ -115,11 +115,6 @@ namespace Avalonia.Direct2D1
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
-        public IBitmapImpl CreateBitmap(PixelSize size, Vector dpi)
-        {
-            return new WicBitmapImpl(size, dpi);
-        }
-
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
@@ -171,9 +166,9 @@ namespace Avalonia.Direct2D1
             return new WicRenderTargetBitmapImpl(size, dpi);
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
         {
-            return new WriteableWicBitmapImpl(size, dpi, format);
+            return new WriteableWicBitmapImpl(size, dpi, format, alphaFormat);
         }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
@@ -213,9 +208,9 @@ namespace Avalonia.Direct2D1
         }
 
         /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            return new WicBitmapImpl(format, data, size, dpi, stride);
+            return new WicBitmapImpl(format, alphaFormat, data, size, dpi, stride);
         }
 
         public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)

@@ -13,9 +13,10 @@ namespace Avalonia.Media.Imaging
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="format">The pixel format (optional).</param>
+        /// <param name="alphaFormat">The alpha format (optional).</param>
         /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
-        public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null) 
-            : base(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateWriteableBitmap(size, dpi, format))
+        public WriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null) 
+            : base(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateWriteableBitmap(size, dpi, format, alphaFormat))
         {
         }
         

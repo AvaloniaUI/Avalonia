@@ -99,14 +99,15 @@ namespace Avalonia.Media.Imaging
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
         /// <param name="format">The pixel format.</param>
+        /// <param name="alphaFormat">The alpha format.</param>
         /// <param name="data">The pointer to the source bytes.</param>
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="stride">The number of bytes per row.</param>
-        public Bitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public Bitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             PlatformImpl = RefCountable.Create(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
-                .LoadBitmap(format, data, size, dpi, stride));
+                .LoadBitmap(format, alphaFormat, data, size, dpi, stride));
         }
 
         /// <inheritdoc/>

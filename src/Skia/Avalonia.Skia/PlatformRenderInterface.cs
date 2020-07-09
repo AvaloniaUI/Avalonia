@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO; 
-using System.Security.Cryptography;
 using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
@@ -76,9 +74,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            return new ImmutableBitmap(size, dpi, stride, format, data);
+            return new ImmutableBitmap(size, dpi, stride, format, alphaFormat, data);
         }
 
         /// <inheritdoc />
@@ -152,9 +150,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
         {
-            return new WriteableBitmapImpl(size, dpi, format);
+            return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
         private static readonly SKFont s_font = new SKFont

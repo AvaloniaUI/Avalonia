@@ -22,12 +22,15 @@ namespace Avalonia.Skia
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="format">The pixel format.</param>
-        public WriteableBitmapImpl(PixelSize size, Vector dpi, PixelFormat? format = null)
+        /// <param name="alphaFormat">The alpha format.</param>
+        public WriteableBitmapImpl(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
         {
             PixelSize = size;
             Dpi = dpi;
 
             var colorType = PixelFormatHelper.ResolveColorType(format);
+
+            SKAlphaType alphaType = alphaFormat?.ToSkAlphaType() ?? SKAlphaType.Premul;
             
             var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
             
@@ -35,14 +38,14 @@ namespace Avalonia.Skia
             {
                 _bitmap = new SKBitmap();
 
-                var nfo = new SKImageInfo(size.Width, size.Height, colorType, SKAlphaType.Premul);
+                var nfo = new SKImageInfo(size.Width, size.Height, colorType, alphaType);
                 var blob = runtimePlatform.AllocBlob(nfo.BytesSize);
 
                 _bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, s_releaseDelegate, blob);
             }
             else
             {
-                _bitmap = new SKBitmap(size.Width, size.Height, colorType, SKAlphaType.Premul);
+                _bitmap = new SKBitmap(size.Width, size.Height, colorType, alphaType);
             }
 
             _bitmap.Erase(SKColor.Empty);
