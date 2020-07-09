@@ -35,6 +35,7 @@ namespace Avalonia.Skia
                 IsAntialias = true,
                 LcdRenderText = true,
                 SubpixelText = true,
+                IsLinearText = true,
                 Typeface = glyphTypeface.Typeface,
                 TextSize = (float)fontSize,
                 TextAlign = textAlignment.ToSKTextAlign()
