@@ -17,16 +17,18 @@ namespace Avalonia.Win32
 
         public ILockedFramebuffer Lock()
         {
-            UnmanagedMethods.RECT rc;
-            UnmanagedMethods.GetClientRect(_hwnd, out rc);
-            var width = rc.right - rc.left;
-            var height = rc.bottom - rc.top;
-            if ((_fb == null || _fb.Size.Width != width || _fb.Size.Height != height) && width > 0 && height > 0)
+            UnmanagedMethods.GetClientRect(_hwnd, out var rc);
+
+            var width = Math.Max(1, rc.right - rc.left);
+            var height = Math.Max(1, rc.bottom - rc.top);
+
+            if ((_fb == null || _fb.Size.Width != width || _fb.Size.Height != height))
             {
                 _fb?.Deallocate();
                 _fb = null;
                 _fb = new WindowFramebuffer(_hwnd, new PixelSize(width, height));
             }
+
             return _fb;
         }
     }
