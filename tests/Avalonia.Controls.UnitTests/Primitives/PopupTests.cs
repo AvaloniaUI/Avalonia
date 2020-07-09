@@ -392,7 +392,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     ++raised;
                 };
 
-                window.RaiseEvent(press);
+                var lightDismissLayer = window.FindDescendantOfType<VisualLayerManager>().LightDismissOverlayLayer;
+                lightDismissLayer.RaiseEvent(press);
 
                 Assert.Equal(1, raised);
             }

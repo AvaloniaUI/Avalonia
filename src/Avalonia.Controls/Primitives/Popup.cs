@@ -384,8 +384,7 @@ namespace Avalonia.Controls.Primitives
 
             if (!StaysOpen)
             {
-                var layerManager = placementTarget.FindAncestorOfType<VisualLayerManager>();
-                var dismissLayer = layerManager?.LightDismissOverlayLayer;
+                var dismissLayer = LightDismissOverlayLayer.GetLightDismissOverlayLayer(placementTarget);
 
                 if (dismissLayer != null)
                 {
