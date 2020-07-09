@@ -369,8 +369,6 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            DeferCleanup(topLevel.AddDisposableHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel));
-
             DeferCleanup(InputManager.Instance?.Process.Subscribe(ListenForNonClientClick));
 
             var cleanupPopup = Disposable.Create((popupHost, handlerCleanup), state =>
@@ -383,6 +381,23 @@ namespace Avalonia.Controls.Primitives
                 ((ISetLogicalParent)state.popupHost).SetParent(null);
                 state.popupHost.Dispose();
             });
+
+            if (!StaysOpen)
+            {
+                var layerManager = placementTarget.FindAncestorOfType<VisualLayerManager>();
+                var dismissLayer = layerManager?.LightDismissOverlayLayer;
+
+                if (dismissLayer != null)
+                {
+                    dismissLayer.IsVisible = true;
+                    DeferCleanup(Disposable.Create(() => dismissLayer.IsVisible = false));
+                    DeferCleanup(SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
+                        dismissLayer,
+                        PointerPressedDismissOverlay,
+                        (x, handler) => x.PointerPressed += handler,
+                        (x, handler) => x.PointerPressed -= handler));
+                }
+            }
 
             _openState = new PopupOpenState(topLevel, popupHost, cleanupPopup);
 
@@ -504,7 +519,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void PointerPressedOutside(object sender, PointerPressedEventArgs e)
+        private void PointerPressedDismissOverlay(object sender, PointerPressedEventArgs e)
         {
             if (!StaysOpen && e.Source is IVisual v && !IsChildOrThis(v))
             {
