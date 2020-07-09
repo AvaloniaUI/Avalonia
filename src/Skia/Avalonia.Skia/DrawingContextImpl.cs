@@ -629,8 +629,8 @@ namespace Avalonia.Skia
 
             var tileTransform =
                 tileBrush.TileMode != TileMode.None
-                    ? SKMatrix.MakeTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y)
-                    : SKMatrix.MakeIdentity();
+                    ? SKMatrix.CreateTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y)
+                    : SKMatrix.CreateIdentity();
 
             SKShaderTileMode tileX =
                 tileBrush.TileMode == TileMode.None
@@ -655,7 +655,7 @@ namespace Avalonia.Skia
             SKMatrix.Concat(
                 ref paintTransform,
                 tileTransform,
-                SKMatrix.MakeScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
+                SKMatrix.CreateScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
 
             using (var shader = image.ToShader(tileX, tileY, paintTransform))
             {
