@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.ConstrainedExecution;
 using System.Threading;
 
 namespace Avalonia.Threading
@@ -56,6 +57,7 @@ namespace Avalonia.Threading
                 Dispatcher.UIThread.InvokeAsync(() => d(state), DispatcherPriority.Send).Wait();
         }
 
+        [PrePrepareMethod]
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
         {
             if (_waitProvider != null)
