@@ -389,6 +389,8 @@ namespace Avalonia.Win32
                 UnregisterClass(_className, GetModuleHandle(null));
                 _className = null;
             }
+
+            _framebuffer.Dispose();
         }
 
         public void Invalidate(Rect rect)
