@@ -364,6 +364,11 @@ namespace Avalonia.Controls.Platform
                 }
                 else
                 {
+                    if (item.IsTopLevel && item.Parent is IMainMenu mainMenu)
+                    {
+                        mainMenu.Open();
+                    }
+
                     Open(item, false);
                 }
 
