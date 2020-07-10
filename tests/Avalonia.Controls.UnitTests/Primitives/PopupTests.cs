@@ -14,6 +14,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Input;
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
@@ -353,8 +354,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
-                var window = PreparedWindow();
-                var rendererMock = Mock.Get(window.Renderer);
+                var renderer = new Mock<IRenderer>();
+                var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+                var windowImpl = Mock.Get(platform.CreateWindow());
+                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+
+                var window = new Window(windowImpl.Object);
+                window.ApplyTemplate();
+
                 var target = new Popup() 
                 { 
                     PlacementTarget = window ,
@@ -366,7 +373,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var border = new Border();
                 window.Content = border;
 
-                rendererMock.Setup(x =>
+                renderer.Setup(x =>
                     x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<IVisual, bool>>()))
                     .Returns(border);
 
