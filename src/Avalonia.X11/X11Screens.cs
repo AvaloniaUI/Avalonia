@@ -48,9 +48,13 @@ namespace Avalonia.X11
             var pwa = (IntPtr*)prop;
             var wa = new PixelRect(pwa[0].ToInt32(), pwa[1].ToInt32(), pwa[2].ToInt32(), pwa[3].ToInt32());
 
-            
-            foreach (var s in screens) 
+
+            foreach (var s in screens)
+            {
                 s.WorkingArea = s.Bounds.Intersect(wa);
+                if (s.WorkingArea.Width <= 0 || s.WorkingArea.Height <= 0)
+                    s.WorkingArea = s.Bounds;
+            }
 
             XFree(prop);
             return screens;
@@ -134,8 +138,14 @@ namespace Avalonia.X11
                                 settings.GlobalScaleFactor)
                         });
                 }
-
-                Screens = new[] {new X11Screen(new PixelRect(0, 0, 1920, 1280), true, "Default", null, settings.GlobalScaleFactor)};
+                else
+                {
+                    Screens = new[]
+                    {
+                        new X11Screen(new PixelRect(0, 0, 1920, 1280), true, "Default", null,
+                            settings.GlobalScaleFactor)
+                    };
+                }
             }
 
             public X11Screen[] Screens { get; }
