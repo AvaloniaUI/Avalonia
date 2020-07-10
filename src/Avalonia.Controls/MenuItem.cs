@@ -12,6 +12,8 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -22,7 +24,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<MenuItem, ICommand> CommandProperty =
+        public static readonly DirectProperty<MenuItem, ICommand?> CommandProperty =
             Button.CommandProperty.AddOwner<MenuItem>(
                 menuItem => menuItem.Command,
                 (menuItem, command) => menuItem.Command = command,
@@ -94,10 +96,10 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 
-        private ICommand _command;
+        private ICommand? _command;
         private bool _commandCanExecute = true;
-        private Popup _popup;
-        private IDisposable _gridHack;
+        private Popup? _popup;
+        private IDisposable? _gridHack;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -166,7 +168,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the command associated with the menu item.
         /// </summary>
-        public ICommand Command
+        public ICommand? Command
         {
             get { return _command; }
             set { SetAndRaise(CommandProperty, ref _command, value); }
@@ -246,7 +248,7 @@ namespace Avalonia.Controls
         bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
 
         /// <inheritdoc/>
-        IMenuElement IMenuItem.Parent => Parent as IMenuElement;
+        IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
 
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
@@ -254,7 +256,7 @@ namespace Avalonia.Controls
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
         /// <inheritdoc/>
-        IMenuItem IMenuElement.SelectedItem
+        IMenuItem? IMenuElement.SelectedItem
         {
             get
             {
@@ -551,7 +553,7 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if ((bool)e.NewValue!)
             {
                 Focus();
             }
@@ -563,7 +565,7 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void SubMenuOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var value = (bool)e.NewValue;
+            var value = (bool)e.NewValue!;
 
             if (value)
             {
