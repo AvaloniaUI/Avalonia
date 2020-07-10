@@ -1,4 +1,5 @@
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -15,6 +16,8 @@ namespace Avalonia.Controls
     {
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
+
+        private LightDismissOverlayLayer? _overlay;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Menu"/> class.
@@ -45,6 +48,13 @@ namespace Avalonia.Controls
                 return;
             }
 
+            if (_overlay?.InputPassThroughElement == this)
+            {
+                _overlay.InputPassThroughElement = null;
+            }
+
+            _overlay = null;
+
             foreach (var i in ((IMenu)this).SubItems)
             {
                 i.Close();
@@ -66,6 +76,13 @@ namespace Avalonia.Controls
             if (IsOpen)
             {
                 return;
+            }
+
+            _overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(this);
+
+            if (_overlay is object)
+            {
+                _overlay.InputPassThroughElement = this;
             }
 
             IsOpen = true;

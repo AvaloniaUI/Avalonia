@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
+using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -11,8 +13,10 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A layer that is used to dismiss a <see cref="Popup"/> when the user clicks outside.
     /// </summary>
-    public class LightDismissOverlayLayer : Border
+    public class LightDismissOverlayLayer : Border, ICustomHitTest
     {
+        public IInputElement? InputPassThroughElement { get; set; }
+
         /// <summary>
         /// Returns the light dismiss overlay for a specified visual.
         /// </summary>
@@ -36,6 +40,22 @@ namespace Avalonia.Controls.Primitives
             }
 
             return manager?.LightDismissOverlayLayer;
+        }
+
+        public bool HitTest(Point point)
+        {
+            if (InputPassThroughElement is object)
+            {
+                var p = point.Transform(this.TransformToVisual(VisualRoot)!.Value);
+                var hit = VisualRoot.GetVisualAt(p, x => x != this);
+
+                if (hit is object)
+                {
+                    return !InputPassThroughElement.IsVisualAncestorOf(hit);
+                }
+            }
+
+            return true;
         }
     }
 }
