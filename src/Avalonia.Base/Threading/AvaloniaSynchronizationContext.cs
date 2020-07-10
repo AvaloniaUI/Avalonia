@@ -18,6 +18,8 @@ namespace Avalonia.Threading
         public AvaloniaSynchronizationContext(INonPumpingPlatformWaitProvider waitProvider)
         {
             _waitProvider = waitProvider;
+            if (_waitProvider != null)
+                SetWaitNotificationRequired();
         }
 
         /// <summary>
