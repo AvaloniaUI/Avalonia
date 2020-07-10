@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Moq;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.UnitTests
 {
@@ -38,6 +39,9 @@ namespace Avalonia.UnitTests
             {
                 return CreatePopupMock(windowImpl.Object).Object;
             });
+
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(Mock.Of<IRenderer>());
 
             windowImpl.Setup(x => x.Dispose()).Callback(() =>
             {

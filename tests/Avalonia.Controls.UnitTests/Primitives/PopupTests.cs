@@ -349,53 +349,42 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void LightDismiss_Should_Not_Handle_Closing_Click()
+        public void OverlayDismissEventPassThrough_Should_Pass_Event_To_Window_Contents()
         {
             using (CreateServices())
             {
                 var window = PreparedWindow();
+                var rendererMock = Mock.Get(window.Renderer);
                 var target = new Popup() 
                 { 
                     PlacementTarget = window ,
                     IsLightDismissEnabled = true,
+                    OverlayDismissEventPassThrough = true,
                 };
 
-                target.Open();
-
-                var e = CreatePointerPressedEventArgs(window);
-                window.RaiseEvent(e);
-
-                Assert.False(e.Handled);
-            }
-        }
-
-        [Fact]
-        public void Should_Pass_Closing_Click_To_Closed_Event()
-        {
-            using (CreateServices())
-            {
-                var window = PreparedWindow();
-                var target = new Popup()
-                {
-                    PlacementTarget = window,
-                    IsLightDismissEnabled = true,
-                };
-
-                target.Open();
-
-                var press = CreatePointerPressedEventArgs(window);
                 var raised = 0;
+                var border = new Border();
+                window.Content = border;
 
-                target.Closed += (s, e) =>
+                rendererMock.Setup(x =>
+                    x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<IVisual, bool>>()))
+                    .Returns(border);
+
+                border.PointerPressed += (s, e) =>
                 {
-                    Assert.Same(press, e.CloseEvent);
+                    Assert.Same(border, e.Source);
                     ++raised;
                 };
 
-                var lightDismissLayer = window.FindDescendantOfType<VisualLayerManager>().LightDismissOverlayLayer;
-                lightDismissLayer.RaiseEvent(press);
+                target.Open();
+                Assert.True(target.IsOpen);
+
+                var e = CreatePointerPressedEventArgs(window, new Point(10, 15));
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                overlay.RaiseEvent(e);
 
                 Assert.Equal(1, raised);
+                Assert.False(target.IsOpen);
             }
         }
 
@@ -411,14 +400,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     })));
         }
 
-        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source)
+        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             return new PointerPressedEventArgs(
                 source,
                 pointer,
                 source,
-                default,
+                p,
                 0,
                 new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
                 KeyModifiers.None);

@@ -266,6 +266,7 @@ namespace Avalonia.Controls
                     PlacementRect = PlacementRect,
                     PlacementTarget = PlacementTarget ?? control,
                     IsLightDismissEnabled = true,
+                    OverlayDismissEventPassThrough = true,
                 };
 
                 _popup.Opened += PopupOpened;
