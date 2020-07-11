@@ -51,7 +51,7 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(size, dpi);
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
         {
             return new HeadlessBitmapStub(size, dpi);
         }
@@ -66,7 +66,7 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
         }
 
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
         }        

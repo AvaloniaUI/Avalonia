@@ -55,7 +55,8 @@ namespace Avalonia.UnitTests
         public IWriteableBitmapImpl CreateWriteableBitmap(
             PixelSize size,
             Vector dpi,
-            PixelFormat? format = default(PixelFormat?))
+            PixelFormat? format = null,
+            AlphaFormat? alphaFormat = null)
         {
             throw new NotImplementedException();
         }
@@ -87,6 +88,7 @@ namespace Avalonia.UnitTests
 
         public IBitmapImpl LoadBitmap(
             PixelFormat format,
+            AlphaFormat alphaFormat,
             IntPtr data,
             PixelSize size,
             Vector dpi,

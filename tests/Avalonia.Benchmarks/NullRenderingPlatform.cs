@@ -46,7 +46,7 @@ namespace Avalonia.Benchmarks
             throw new NotImplementedException();
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
         {
             throw new NotImplementedException();
         }
@@ -61,7 +61,7 @@ namespace Avalonia.Benchmarks
             throw new NotImplementedException();
         }
 
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             throw new NotImplementedException();
         }
