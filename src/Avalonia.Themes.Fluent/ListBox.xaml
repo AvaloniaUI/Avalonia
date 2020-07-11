@@ -15,8 +15,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ListBoxBorderThemeThickness}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
-    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />    
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />        
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />    
     <Setter Property="Template">
       <ControlTemplate>
@@ -36,8 +35,5 @@
         </Border>
       </ControlTemplate>
     </Setter>
-  </Style>
-  <Style Selector="ListBox:disabled /template/ Border#border">
-    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
   </Style>
 </Styles>

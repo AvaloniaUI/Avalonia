@@ -38,7 +38,13 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }        
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
 
         public WindowStub(IWindowImpl parent = null)
         {
@@ -141,6 +147,18 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
 
         public Action GotInputWhenDisabled { get; set; }
@@ -152,6 +170,12 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public bool IsClientAreaExtendedToDecorations { get; }
+
+        public bool NeedsManagedDecorations => false;
+        
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 
     class ClipboardStub : IClipboard

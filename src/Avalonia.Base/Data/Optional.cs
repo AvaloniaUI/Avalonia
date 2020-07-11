@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -22,13 +23,13 @@ namespace Avalonia.Data
     /// </remarks>
     public readonly struct Optional<T> : IEquatable<Optional<T>>
     {
-        private readonly T _value;
+        [AllowNull] private readonly T _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Optional{T}"/> struct with value.
         /// </summary>
         /// <param name="value">The value.</param>
-        public Optional(T value)
+        public Optional([AllowNull] T value)
         {
             _value = value;
             HasValue = true;
@@ -48,7 +49,7 @@ namespace Avalonia.Data
         public T Value => HasValue ? _value : throw new InvalidOperationException("Optional has no value.");
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is Optional<T> o && this == o;
+        public override bool Equals(object? obj) => obj is Optional<T> o && this == o;
 
         /// <inheritdoc/>
         public bool Equals(Optional<T> other) => this == other;
@@ -69,6 +70,7 @@ namespace Avalonia.Data
         /// Gets the value if present, otherwise the default value.
         /// </summary>
         /// <returns>The value.</returns>
+        [return: MaybeNull]
         public T GetValueOrDefault() => HasValue ? _value : default;
 
         /// <summary>
@@ -85,6 +87,7 @@ namespace Avalonia.Data
         /// The value if present and of the correct type, `default(TResult)` if the value is
         /// not present or of an incorrect type.
         /// </returns>
+        [return: MaybeNull]
         public TResult GetValueOrDefault<TResult>()
         {
             return HasValue ?
@@ -101,7 +104,8 @@ namespace Avalonia.Data
         /// present but not of the correct type or null, or <paramref name="defaultValue"/> if the
         /// value is not present.
         /// </returns>
-        public TResult GetValueOrDefault<TResult>(TResult defaultValue)
+        [return: MaybeNull]
+        public TResult GetValueOrDefault<TResult>([AllowNull] TResult defaultValue)
         {
             return HasValue ?
                 _value is TResult result ? result : default
@@ -112,7 +116,7 @@ namespace Avalonia.Data
         /// Creates an <see cref="Optional{T}"/> from an instance of the underlying value type.
         /// </summary>
         /// <param name="value">The value.</param>
-        public static implicit operator Optional<T>(T value) => new Optional<T>(value);
+        public static implicit operator Optional<T>([AllowNull] T value) => new Optional<T>(value);
 
         /// <summary>
         /// Compares two <see cref="Optional{T}"/>s for inequality.
@@ -128,7 +132,7 @@ namespace Avalonia.Data
         /// <param name="x">The first value.</param>
         /// <param name="y">The second value.</param>
         /// <returns>True if the values are equal; otherwise false.</returns>
-        public static bool operator==(Optional<T> x, Optional<T> y)
+        public static bool operator ==(Optional<T> x, Optional<T> y)
         {
             if (!x.HasValue && !y.HasValue)
             {

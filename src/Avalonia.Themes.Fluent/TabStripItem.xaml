@@ -14,11 +14,11 @@
   </Styles.Resources>
 
   <Style Selector="TabStripItem">
-    <Setter Property="FontSize" Value="{DynamicResource PivotHeaderItemFontSize}" />
-    <Setter Property="FontWeight" Value="{DynamicResource PivotHeaderItemThemeFontWeight}" />
-    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundUnselected}" />
-    <Setter Property="Foreground" Value="{DynamicResource PivotHeaderItemForegroundUnselected}" />
-    <Setter Property="Padding" Value="{DynamicResource PivotHeaderItemMargin}" />
+    <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselected}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselected}" />
+    <Setter Property="Padding" Value="{DynamicResource TabItemHeaderMargin}" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="MinHeight" Value="{DynamicResource TabStripItemMinHeight}" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -39,7 +39,7 @@
                               TextBlock.FontWeight="{TemplateBinding FontWeight}" />
             <Border Name="PART_SelectedPipe"
                     CornerRadius="{DynamicResource ControlCornerRadius}"
-                    Background="{DynamicResource PivotHeaderItemSelectedPipeFill}" />
+                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}" />
           </Panel>
         </Border>
       </ControlTemplate>
@@ -64,8 +64,8 @@
   <!--  Selected state  -->
   <!--  We don't use selector to PART_LayoutRoot, so developer can override selected item background with TabStripItem.Background  -->
   <Style Selector="TabStripItem:selected">
-    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundSelected}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundSelected}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelected}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
   </Style>
   <Style Selector="TabStripItem:selected /template/ Border#PART_SelectedPipe">
     <Setter Property="IsVisible" Value="True" />
@@ -73,31 +73,31 @@
 
   <!--  PointerOver state  -->
   <Style Selector="TabStripItem:pointerover /template/ Border#PART_LayoutRoot">
-    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundUnselectedPointerOver}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundUnselectedPointerOver}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
   </Style>
 
   <!--  Selected PointerOver state  -->
   <Style Selector="TabStripItem:selected:pointerover /template/ Border#PART_LayoutRoot">
-    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundSelectedPointerOver}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundSelectedPointerOver}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPointerOver}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
   </Style>
 
   <!--  Pressed state  -->
   <Style Selector="TabStripItem:pressed /template/ Border#PART_LayoutRoot">
-    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundUnselectedPressed}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundUnselectedPressed}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
   </Style>
 
   <!--  Selected Pressed state  -->
   <Style Selector="TabStripItem:pressed /template/ Border#PART_LayoutRoot">
-    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundSelectedPressed}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundSelectedPressed}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPressed}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
   </Style>
 
   <!--  Disabled state  -->
   <Style Selector="TabStripItem:disabled /template/ Border#PART_LayoutRoot">
-    <Setter Property="Background" Value="{DynamicResource PivotHeaderItemBackgroundDisabled}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource PivotHeaderItemForegroundDisabled}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundDisabled}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TabItemHeaderForegroundDisabled}" />
   </Style>
 </Styles>

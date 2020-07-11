@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Animation;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
 

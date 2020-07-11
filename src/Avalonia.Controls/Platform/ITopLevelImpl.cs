@@ -127,5 +127,10 @@ namespace Avalonia.Platform
         /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
         /// </summary>
         WindowTransparencyLevel TransparencyLevel { get; }
+
+        /// <summary>
+        /// Gets the <see cref="AcrylicPlatformCompensationLevels"/> for the platform.        
+        /// </summary>
+        AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
     }
 }

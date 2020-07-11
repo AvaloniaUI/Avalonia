@@ -1,8 +1,9 @@
-﻿using Avalonia.Media;
+﻿using System.Globalization;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 using HarfBuzzSharp;
 using Buffer = HarfBuzzSharp.Buffer;
 
@@ -10,7 +11,7 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, TextFormat textFormat)
+        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture)
         {
             using (var buffer = new Buffer())
             {
@@ -62,15 +63,17 @@ namespace Avalonia.Direct2D1.Media
 
                 buffer.GuessSegmentProperties();
 
-                var glyphTypeface = textFormat.Typeface.GlyphTypeface;
+                var glyphTypeface = typeface.GlyphTypeface;
 
                 var font = ((GlyphTypefaceImpl)glyphTypeface.PlatformImpl).Font;
+
+                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
                 font.Shape(buffer);
 
                 font.GetScale(out var scaleX, out _);
 
-                var textScale = textFormat.FontRenderingEmSize / scaleX;
+                var textScale = fontRenderingEmSize / scaleX;
 
                 var len = buffer.Length;
 
@@ -104,7 +107,7 @@ namespace Avalonia.Direct2D1.Media
                     glyphOffsets[i] = new Vector(offsetX, offsetY);
                 }
 
-                return new GlyphRun(glyphTypeface, textFormat.FontRenderingEmSize,
+                return new GlyphRun(glyphTypeface, fontRenderingEmSize,
                     new ReadOnlySlice<ushort>(glyphIndices),
                     new ReadOnlySlice<double>(glyphAdvances),
                     new ReadOnlySlice<Vector>(glyphOffsets),

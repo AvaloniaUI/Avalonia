@@ -13,9 +13,11 @@ namespace Avalonia.Collections.Pooled
 
     public interface IReadOnlyPooledList<T> : IReadOnlyList<T>
     {
+#pragma warning disable CS0419
         /// <summary>
         /// Gets a <see cref="System.ReadOnlySpan{T}"/> for the items currently in the collection.
         /// </summary>
+#pragma warning restore CS0419
         ReadOnlySpan<T> Span { get; }
     }
 }
