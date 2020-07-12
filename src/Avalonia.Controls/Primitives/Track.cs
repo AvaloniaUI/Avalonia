@@ -353,6 +353,15 @@ namespace Avalonia.Controls.Primitives
             var trackLength = isVertical ? arrangeSize.Height : arrangeSize.Width;
             double thumbMinLength = 10;
 
+            StyledProperty<double> minLengthProperty = isVertical ? MinHeightProperty : MinWidthProperty;
+
+            var thumb = Thumb;
+
+            if (thumb != null && thumb.IsSet(minLengthProperty))
+            {
+                thumbMinLength = thumb.GetValue(minLengthProperty);
+            }
+
             thumbLength = trackLength * viewportSize / extent;
             CoerceLength(ref thumbLength, trackLength);
             thumbLength = Math.Max(thumbMinLength, thumbLength);
