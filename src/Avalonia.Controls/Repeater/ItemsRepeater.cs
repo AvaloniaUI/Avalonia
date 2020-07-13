@@ -141,7 +141,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsSourceView ItemsSourceView { get; private set; }
 
-        internal ItemTemplateWrapper ItemTemplateShim { get; set; }
+        internal IElementFactory ItemTemplateShim { get; set; }
         internal Point LayoutOrigin { get; set; }
         internal object LayoutState { get; set; }
         internal IControl MadeAnchor => _viewportManager.MadeAnchor;
@@ -664,7 +664,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            ItemTemplateShim = new ItemTemplateWrapper(newValue);
+            ItemTemplateShim = newValue as IElementFactory ?? new ItemTemplateWrapper(newValue);
 
             InvalidateMeasure();
         }

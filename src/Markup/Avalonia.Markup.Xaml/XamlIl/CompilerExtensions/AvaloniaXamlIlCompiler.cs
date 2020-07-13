@@ -40,22 +40,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             
             // Targeted
-
             InsertBefore<PropertyReferenceResolver>(
                 new AvaloniaXamlIlTransformInstanceAttachedProperties(),
                 new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
-            InsertAfter<PropertyReferenceResolver>(new AvaloniaXamlIlAvaloniaPropertyResolver());
-            
+            InsertAfter<PropertyReferenceResolver>(
+                new AvaloniaXamlIlAvaloniaPropertyResolver());
 
-
-            InsertBefore<ContentConvertTransformer>(
+            InsertBefore<ContentConvertTransformer>(                
                 new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
-                new AvaloniaXamlIlTransitionsTypeMetadataTransformer()
+                new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
+                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
             );
 
             // After everything else

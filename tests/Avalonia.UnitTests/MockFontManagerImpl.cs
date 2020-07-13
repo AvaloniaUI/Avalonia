@@ -25,7 +25,7 @@ namespace Avalonia.UnitTests
             return new[] { _defaultFamilyName };
         }
 
-        public bool TryMatchCharacter(int codepoint, FontWeight fontWeight, FontStyle fontStyle, FontFamily fontFamily,
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily,
             CultureInfo culture, out FontKey fontKey)
         {
             fontKey = default;

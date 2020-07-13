@@ -11,10 +11,13 @@ using Avalonia.Controls.Templates;
 
 namespace Avalonia.Controls
 {
-    internal class RecyclePool
+    public class RecyclePool
     {
-        public static readonly AttachedProperty<IDataTemplate> OriginTemplateProperty =
-            AvaloniaProperty.RegisterAttached<Control, IDataTemplate>("OriginTemplate", typeof(RecyclePool));
+        internal static readonly AttachedProperty<IDataTemplate> OriginTemplateProperty =
+            AvaloniaProperty.RegisterAttached<RecyclePool, Control, IDataTemplate>("OriginTemplate");
+
+        internal static readonly AttachedProperty<string> ReuseKeyProperty =
+            AvaloniaProperty.RegisterAttached<RecyclePool, Control, string>("ReuseKey", string.Empty);
 
         private static ConditionalWeakTable<IDataTemplate, RecyclePool> s_pools = new ConditionalWeakTable<IDataTemplate, RecyclePool>();
         private readonly Dictionary<string, List<ElementInfo>> _elements = new Dictionary<string, List<ElementInfo>>();
@@ -76,6 +79,9 @@ namespace Avalonia.Controls
 
             return null;
         }
+
+        internal string GetReuseKey(IControl element) => element.GetValue(ReuseKeyProperty);
+        internal void SetReuseKey(IControl element, string value) => element.SetValue(ReuseKeyProperty, value);
 
         private IPanel EnsureOwnerIsPanelOrNull(IControl owner)
         {
