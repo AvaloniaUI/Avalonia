@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Controls.Generators;
-using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -16,10 +15,6 @@ namespace Avalonia.Controls.Presenters
         public ItemVirtualizerNone(ItemsPresenter owner)
             : base(owner)
         {
-            if (Items != null && owner.Panel != null)
-            {
-                AddContainers(0, Items);
-            }
         }
 
         /// <inheritdoc/>
