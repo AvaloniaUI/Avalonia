@@ -58,10 +58,10 @@ namespace Avalonia.Input
 
     public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
     {
-        IInputElement FocusedElement { get; }
+        IInputElement? FocusedElement { get; }
 
         void SetFocusedElement(
-            IInputElement element, 
+            IInputElement? element, 
             NavigationMethod method,
             KeyModifiers modifiers);
     }

@@ -33,7 +33,7 @@ namespace Avalonia.Input
         /// <param name="element">The element to test.</param>
         /// <param name="p">The point on <paramref name="element"/>.</param>
         /// <returns>The topmost <see cref="IInputElement"/> at the specified position.</returns>
-        public static IInputElement InputHitTest(this IInputElement element, Point p)
+        public static IInputElement? InputHitTest(this IInputElement element, Point p)
         {
             Contract.Requires<ArgumentNullException>(element != null);
 
