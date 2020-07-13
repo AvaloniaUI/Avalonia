@@ -155,6 +155,11 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        protected override void PanelCreated(IPanel panel)
+        {
+            ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
         /// <summary>
         /// Moves to the selected page, animating if a <see cref="PageTransition"/> is set.
         /// </summary>
