@@ -8,36 +8,12 @@ using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
-    public static partial class Extensions
-    {
-        /// <summary>
-        ///     Returns a value that indicates whether the specified value is not a number ().
-        /// </summary>
-        /// <param name="d">A double-precision floating-point number.</param>
-        /// <returns>true if  evaluates to ; otherwise, false.</returns>
-        public static bool IsNaN(this double d)
-        {
-            return double.IsNaN(d);
-        }
-
-        public static IEnumerable<TSource> Do<TSource>(this IEnumerable<TSource> source, Action<TSource> predicate)
-        {
-            var enumerable = source as IList<TSource> ?? source.ToList();
-            foreach (var item in enumerable)
-            {
-                predicate.Invoke(item);
-            }
-
-            return enumerable;
-        }
-    }
-
     public partial class RelativePanel : Panel
     {
         private readonly Graph _childGraph;
 
         public RelativePanel() => _childGraph = new Graph();
-        
+
 
         private Layoutable? GetDependencyElement(AvaloniaProperty property, AvaloniaObject child)
         {
@@ -76,7 +52,7 @@ namespace Avalonia.Controls
                 node.BelowNode = _childGraph.AddLink(node, GetDependencyElement(BelowProperty, child));
 
                 node.AlignHorizontalCenterWith = _childGraph.AddLink(node, GetDependencyElement(AlignHorizontalCenterWithProperty, child));
-                node.AlignVerticalCenterWith = _childGraph.AddLink(node, GetDependencyElement(AlignVerticalCenterWithProperty, child));            
+                node.AlignVerticalCenterWith = _childGraph.AddLink(node, GetDependencyElement(AlignVerticalCenterWithProperty, child));
 
             }
             _childGraph.Measure(availableSize);
@@ -207,7 +183,7 @@ namespace Avalonia.Controls
                             prevSize = prevSize.WithHeight(prevSize.Height + node.BoundingSize.Height);
                             if (GetAlignVerticalCenterWithPanel(node.Element) || node.VerticalOffsetFlag)
                             {
-                                prevSize = prevSize.WithHeight(prevSize.Height + node.OriginDesiredSize.Height);                                
+                                prevSize = prevSize.WithHeight(prevSize.Height + node.OriginDesiredSize.Height);
                                 prevNode.VerticalOffsetFlag = true;
                             }
                             if (node.HorizontalOffsetFlag)
@@ -566,6 +542,30 @@ namespace Avalonia.Controls
                 boundingSize = boundingSize.WithHeight(calcHeight ? boundingSize.Height : AvailableSize.Height);
                 return boundingSize;
             }
+        }
+    }
+
+    internal static partial class Extensions
+    {
+        /// <summary>
+        ///     Returns a value that indicates whether the specified value is not a number ().
+        /// </summary>
+        /// <param name="d">A double-precision floating-point number.</param>
+        /// <returns>true if  evaluates to ; otherwise, false.</returns>
+        public static bool IsNaN(this double d)
+        {
+            return double.IsNaN(d);
+        }
+
+        public static IEnumerable<TSource> Do<TSource>(this IEnumerable<TSource> source, Action<TSource> predicate)
+        {
+            var enumerable = source as IList<TSource> ?? source.ToList();
+            foreach (var item in enumerable)
+            {
+                predicate.Invoke(item);
+            }
+
+            return enumerable;
         }
     }
 }
