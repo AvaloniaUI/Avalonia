@@ -170,6 +170,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected
             };
 
+            var root = new TestRoot(listBox);
+
             listBox.BeginInit();
 
             listBox.SelectedIndex = 1;
@@ -480,6 +482,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             items.Add(new Item { IsSelected = true });
@@ -919,6 +922,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = items,
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
