@@ -31,8 +31,6 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            #region Calc DesiredSize
-
             _childGraph.Clear();
             foreach (Layoutable child in Children)
             {
@@ -56,17 +54,11 @@ namespace Avalonia.Controls
             }
             _childGraph.Measure(availableSize);
 
-            #endregion
-
-            #region Calc AvailableSize
-
             _childGraph.Reset();
             var boundingSize = _childGraph.GetBoundingSize(Width.IsNaN(), Height.IsNaN());
             _childGraph.Reset();
             _childGraph.Measure(boundingSize);
             return boundingSize;
-
-            #endregion
         }
 
         protected override Size ArrangeOverride(Size arrangeSize)
@@ -305,8 +297,6 @@ namespace Avalonia.Controls
                 var alignRightWithPanel = GetAlignRightWithPanel(child);
                 var alignBottomWithPanel = GetAlignBottomWithPanel(child);
 
-                #region Panel alignment
-
                 if (alignLeftWithPanel)
                     node.Left = 0;
                 if (alignTopWithPanel)
@@ -315,10 +305,6 @@ namespace Avalonia.Controls
                     node.Right = 0;
                 if (alignBottomWithPanel)
                     node.Bottom = 0;
-
-                #endregion
-
-                #region Sibling alignment
 
                 if (node.AlignLeftWithNode != null)
                 {
@@ -343,10 +329,6 @@ namespace Avalonia.Controls
                         ? node.AlignBottomWithNode.Bottom
                         : node.AlignBottomWithNode.Bottom * 0.5;
                 }
-
-                #endregion
-
-                #region Measure
 
                 var availableHeight = AvailableSize.Height - node.Top - node.Bottom;
                 if (availableHeight.IsNaN())
@@ -380,10 +362,6 @@ namespace Avalonia.Controls
 
                 child.Measure(new Size(Math.Max(availableWidth, 0), Math.Max(availableHeight, 0)));
                 var childSize = child.DesiredSize;
-
-                #endregion
-
-                #region Sibling positional
 
                 if (node.LeftOfNode != null && node.Left.IsNaN())
                 {
@@ -421,10 +399,6 @@ namespace Avalonia.Controls
                     }
                 }
 
-                #endregion
-
-                #region Sibling-center alignment
-
                 if (node.AlignHorizontalCenterWith != null)
                 {
                     var halfWidthLeft = (AvailableSize.Width + node.AlignHorizontalCenterWith.Left - node.AlignHorizontalCenterWith.Right - childSize.Width) * 0.5;
@@ -457,10 +431,6 @@ namespace Avalonia.Controls
                         node.Bottom = (node.Bottom + halfHeightBottom) * 0.5;
                 }
 
-                #endregion
-
-                #region Panel-center alignment
-
                 if (GetAlignHorizontalCenterWithPanel(child))
                 {
                     var halfSubWidth = (AvailableSize.Width - childSize.Width) * 0.5;
@@ -490,8 +460,6 @@ namespace Avalonia.Controls
                     else
                         node.Bottom = (node.Bottom + halfSubHeight) * 0.5;
                 }
-
-                #endregion
 
                 if (node.Left.IsNaN())
                 {
