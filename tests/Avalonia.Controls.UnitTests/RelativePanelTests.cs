@@ -31,6 +31,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(20, 0, 20, 20), target.Children[1].Bounds);
         }
 
+        [Fact]
         public void Lays_Out_1_Child_Below_the_other()
         {
             var rect1 = new Rectangle { Height = 20, Width = 20 };
