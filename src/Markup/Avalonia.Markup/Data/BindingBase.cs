@@ -137,9 +137,9 @@ namespace Avalonia.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            if (!(target is IStyledElement))
+            if (!(target is IDataContextProvider))
             {
-                target = anchor as IStyledElement;
+                target = anchor as IDataContextProvider;
 
                 if (target == null)
                 {
