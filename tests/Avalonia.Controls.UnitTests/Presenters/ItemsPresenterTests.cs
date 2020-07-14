@@ -61,6 +61,25 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Should_Create_Containers_Only_Once()
+        {
+            var parent = new TestItemsControl();
+            var target = new ItemsPresenter
+            {
+                Items = new[] { "foo", "bar" },
+                [StyledElement.TemplatedParentProperty] = parent,
+            };
+            var raised = 0;
+
+            parent.ItemContainerGenerator.Materialized += (s, e) => ++raised;
+
+            target.ApplyTemplate();
+
+            Assert.Equal(2, target.Panel.Children.Count);
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
         public void ItemContainerGenerator_Should_Be_Picked_Up_From_TemplatedControl()
         {
             var parent = new TestItemsControl();
