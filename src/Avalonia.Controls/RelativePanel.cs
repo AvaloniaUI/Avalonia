@@ -1,4 +1,4 @@
-﻿/// Ported from https://github.com/HandyOrg/HandyControl/blob/master/src/Shared/HandyControl_Shared/Controls/Panel/RelativePanel.cs
+﻿// Ported from https://github.com/HandyOrg/HandyControl/blob/master/src/Shared/HandyControl_Shared/Controls/Panel/RelativePanel.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,6 @@ namespace Avalonia.Controls
         private readonly Graph _childGraph;
 
         public RelativePanel() => _childGraph = new Graph();
-
 
         private Layoutable? GetDependencyElement(AvaloniaProperty property, AvaloniaObject child)
         {
@@ -100,25 +99,25 @@ namespace Avalonia.Controls
 
             public HashSet<GraphNode> OutgoingNodes { get; }
 
-            public GraphNode AlignLeftWithNode { get; set; }
+            public GraphNode? AlignLeftWithNode { get; set; }
 
-            public GraphNode AlignTopWithNode { get; set; }
+            public GraphNode? AlignTopWithNode { get; set; }
 
-            public GraphNode AlignRightWithNode { get; set; }
+            public GraphNode? AlignRightWithNode { get; set; }
 
-            public GraphNode AlignBottomWithNode { get; set; }
+            public GraphNode? AlignBottomWithNode { get; set; }
 
-            public GraphNode LeftOfNode { get; set; }
+            public GraphNode? LeftOfNode { get; set; }
 
-            public GraphNode AboveNode { get; set; }
+            public GraphNode? AboveNode { get; set; }
 
-            public GraphNode RightOfNode { get; set; }
+            public GraphNode? RightOfNode { get; set; }
 
-            public GraphNode BelowNode { get; set; }
+            public GraphNode? BelowNode { get; set; }
 
-            public GraphNode AlignHorizontalCenterWith { get; set; }
+            public GraphNode? AlignHorizontalCenterWith { get; set; }
 
-            public GraphNode AlignVerticalCenterWith { get; set; }
+            public GraphNode? AlignVerticalCenterWith { get; set; }
 
             public GraphNode(Layoutable element)
             {
@@ -220,7 +219,7 @@ namespace Avalonia.Controls
 
             public void Reset() => _nodeDic.Values.Do(node => node.Reset());
 
-            public GraphNode AddLink(GraphNode from, Layoutable to)
+            public GraphNode? AddLink(GraphNode from, Layoutable? to)
             {
                 if (to == null)
                     return null;
@@ -258,7 +257,7 @@ namespace Avalonia.Controls
                 Measure(_nodeDic.Values, null);
             }
 
-            private void Measure(IEnumerable<GraphNode> nodes, HashSet<AvaloniaObject> set)
+            private void Measure(IEnumerable<GraphNode> nodes, HashSet<AvaloniaObject>? set)
             {
                 set ??= new HashSet<AvaloniaObject>();
 
