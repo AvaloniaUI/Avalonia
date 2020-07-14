@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reactive.Subjects;
 using Avalonia.Data;
-using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
