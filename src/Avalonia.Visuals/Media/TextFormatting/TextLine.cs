@@ -40,11 +40,22 @@ namespace Avalonia.Media.TextFormatting
         public abstract TextLineBreak LineBreak { get; }
 
         /// <summary>
+        /// Client to get a boolean value indicates whether a line has been collapsed
+        /// </summary>
+        public abstract bool HasCollapsed { get; }
+
+        /// <summary>
         /// Draws the <see cref="TextLine"/> at the given origin.
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
         /// <param name="origin">The origin.</param>
         public abstract void Draw(DrawingContext drawingContext, Point origin);
+
+        /// <summary>
+        /// Client to collapse the line and get a collapsed line that fits for display
+        /// </summary>
+        /// <param name="collapsingPropertiesList">a list of collapsing properties</param>
+        public abstract TextLine Collapse(params TextCollapsingProperties[] collapsingPropertiesList);
 
         /// <summary>
         /// Client to get the character hit corresponding to the specified 
