@@ -87,6 +87,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
 
+        public static readonly DirectProperty<Popup, IInputElement> OverlayInputPassThroughElementProperty =
+            AvaloniaProperty.RegisterDirect<Popup, IInputElement>(
+                nameof(OverlayInputPassThroughElement),
+                o => o.OverlayInputPassThroughElement,
+                (o, v) => o.OverlayInputPassThroughElement = v);
+
         /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
         /// </summary>
@@ -125,6 +131,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
+        private IInputElement _overlayInputPassThroughElement;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -287,6 +294,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets an element that should receive pointer input events even when underneath
+        /// the popup's overlay.
+        /// </summary>
+        public IInputElement OverlayInputPassThroughElement
+        {
+            get => _overlayInputPassThroughElement;
+            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
+        }
+
+        /// <summary>
         /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
         public double HorizontalOffset
@@ -430,7 +447,14 @@ namespace Avalonia.Controls.Primitives
                 if (dismissLayer != null)
                 {
                     dismissLayer.IsVisible = true;
-                    DeferCleanup(Disposable.Create(() => dismissLayer.IsVisible = false));
+                    dismissLayer.InputPassThroughElement = _overlayInputPassThroughElement;
+                    
+                    DeferCleanup(Disposable.Create(() =>
+                    {
+                        dismissLayer.IsVisible = false;
+                        dismissLayer.InputPassThroughElement = null;
+                    }));
+                    
                     DeferCleanup(SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
                         dismissLayer,
                         PointerPressedDismissOverlay,
@@ -694,7 +718,7 @@ namespace Avalonia.Controls.Primitives
         
         private void WindowLostFocus()
         {
-            if(IsLightDismissEnabled)
+            if (IsLightDismissEnabled)
                 Close();
         }
 
