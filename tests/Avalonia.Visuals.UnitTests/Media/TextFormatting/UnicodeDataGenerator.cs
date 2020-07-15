@@ -9,13 +9,16 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
     internal static class UnicodeDataGenerator
     {
+        public const string Ucd = "https://www.unicode.org/Public/13.0.0/ucd/";
+
         public static void Execute()
         {
             var codepoints = new Dictionary<int, UnicodeDataItem>();
 
-            var generalCategoryValues = UnicodeEnumsGenerator.CreateGeneralCategoryEnum();
+            var generalCategoryEntries =
+                UnicodeEnumsGenerator.CreateGeneralCategoryEnum();
 
-            var generalCategoryMappings = CreateTagToIndexMappings(generalCategoryValues);
+            var generalCategoryMappings = CreateTagToIndexMappings(generalCategoryEntries);
 
             var generalCategoryData = ReadGeneralCategoryData();
 
@@ -26,23 +29,23 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 AddGeneralCategoryRange(codepoints, range, generalCategory);
             }
 
-            var scriptValues = UnicodeEnumsGenerator.CreateScriptEnum();
+            var scriptEntries = UnicodeEnumsGenerator.CreateScriptEnum();
 
-            var scriptMappings = CreateNameToIndexMappings(scriptValues);
+            var scriptMappings = CreateNameToIndexMappings(scriptEntries);
 
             var scriptData = ReadScriptData();
 
             foreach (var (range, name) in scriptData)
             {
-                var script = scriptMappings[name.Replace("_", "")];
+                var script = scriptMappings[name];
 
                 AddScriptRange(codepoints, range, script);
-
             }
 
-            var biDiClassValues = UnicodeEnumsGenerator.CreateBiDiClassEnum();
+            var biDiClassEntries =
+                    UnicodeEnumsGenerator.CreateBiDiClassEnum();
 
-            var biDiClassMappings = CreateTagToIndexMappings(biDiClassValues);
+            var biDiClassMappings = CreateTagToIndexMappings(biDiClassEntries);
 
             var biDiData = ReadBiDiData();
 
@@ -53,9 +56,10 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 AddBiDiClassRange(codepoints, range, biDiClass);
             }
 
-            var lineBreakClassValues = UnicodeEnumsGenerator.CreateLineBreakClassEnum();
+            var lineBreakClassEntries =
+                UnicodeEnumsGenerator.CreateLineBreakClassEnum();
 
-            var lineBreakClassMappings = CreateTagToIndexMappings(lineBreakClassValues);
+            var lineBreakClassMappings = CreateTagToIndexMappings(lineBreakClassEntries);
 
             var lineBreakClassData = ReadLineBreakClassData();
 
@@ -66,11 +70,11 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 AddLineBreakClassRange(codepoints, range, lineBreakClass);
             }
 
-            const int initialValue = ((int)LineBreakClass.Unknown << UnicodeData.LINEBREAK_SHIFT) |
-                                      ((int)BiDiClass.LeftToRight << UnicodeData.BIDI_SHIFT) |
-                                      ((int)Script.Unknown << UnicodeData.SCRIPT_SHIFT) | (int)GeneralCategory.Other;
+            //const int initialValue = (0 << UnicodeData.LINEBREAK_SHIFT) |
+            //                          (0 << UnicodeData.BIDI_SHIFT) |
+            //                          (0 << UnicodeData.SCRIPT_SHIFT) | (int)GeneralCategory.Other;
 
-            var builder = new UnicodeTrieBuilder(initialValue);
+            var builder = new UnicodeTrieBuilder(/*initialValue*/);
 
             foreach (var properties in codepoints.Values)
             {
@@ -88,27 +92,30 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
                 trie.Save(stream);
             }
+
+            UnicodeEnumsGenerator.CreatePropertyValueAliasHelper(scriptEntries, generalCategoryEntries,
+                biDiClassEntries, lineBreakClassEntries);
         }
 
-        private static Dictionary<string, int> CreateTagToIndexMappings(List<(string name, string tag, string comment)> values)
+        private static Dictionary<string, int> CreateTagToIndexMappings(List<DataEntry> entries)
         {
             var mappings = new Dictionary<string, int>();
 
-            for (var i = 0; i < values.Count; i++)
+            for (var i = 0; i < entries.Count; i++)
             {
-                mappings.Add(values[i].tag, i);
+                mappings.Add(entries[i].Tag, i);
             }
 
             return mappings;
         }
 
-        private static Dictionary<string, int> CreateNameToIndexMappings(List<(string name, string tag, string comment)> values)
+        private static Dictionary<string, int> CreateNameToIndexMappings(List<DataEntry> entries)
         {
             var mappings = new Dictionary<string, int>();
 
-            for (var i = 0; i < values.Count; i++)
+            for (var i = 0; i < entries.Count; i++)
             {
-                mappings.Add(values[i].name, i);
+                mappings.Add(entries[i].Name, i);
             }
 
             return mappings;
@@ -180,24 +187,22 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
         public static List<(CodepointRange, string)> ReadGeneralCategoryData()
         {
-            return ReadUnicodeData(
-                "https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt");
+            return ReadUnicodeData("extracted/DerivedGeneralCategory.txt");
         }
 
         public static List<(CodepointRange, string)> ReadScriptData()
         {
-            return ReadUnicodeData("https://www.unicode.org/Public/UCD/latest/ucd/Scripts.txt");
+            return ReadUnicodeData("Scripts.txt");
         }
 
         public static List<(CodepointRange, string)> ReadBiDiData()
         {
-            return ReadUnicodeData("https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedBidiClass.txt");
+            return ReadUnicodeData("extracted/DerivedBidiClass.txt");
         }
 
         public static List<(CodepointRange, string)> ReadLineBreakClassData()
         {
-            return ReadUnicodeData(
-                "https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedLineBreak.txt");
+            return ReadUnicodeData("extracted/DerivedLineBreak.txt");
         }
 
         private static List<(CodepointRange, string)> ReadUnicodeData(string file)
@@ -208,7 +213,9 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             using (var client = new HttpClient())
             {
-                using (var result = client.GetAsync(file).GetAwaiter().GetResult())
+                var url = Path.Combine(Ucd, file);
+
+                using (var result = client.GetAsync(url).GetAwaiter().GetResult())
                 {
                     if (!result.IsSuccessStatusCode)
                     {

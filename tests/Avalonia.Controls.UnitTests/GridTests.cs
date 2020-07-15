@@ -1194,7 +1194,7 @@ namespace Avalonia.Controls.UnitTests
                 Height = 50,
             };
 
-            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             PrintColumnDefinitions(grids[0]);
             Assert.Equal(5, grids[0].ColumnDefinitions[0].ActualWidth);

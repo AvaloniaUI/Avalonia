@@ -11,25 +11,17 @@ namespace ControlCatalog
     {
         public static Styles FluentDark = new Styles
         {
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseDark.xaml?assembly=Avalonia.Themes.Default")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("resm:Avalonia.Themes.Fluent.Accents.FluentDark.xaml?assembly=Avalonia.Themes.Fluent")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentDark.xaml")
             },
         };
 
         public static Styles FluentLight = new Styles
         {
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("resm:Avalonia.Themes.Fluent.Accents.FluentLight.xaml?assembly=Avalonia.Themes.Fluent")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentLight.xaml")
             },
         };
 

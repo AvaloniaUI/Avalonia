@@ -15,19 +15,18 @@ namespace Avalonia.Skia
             using (context.MakeCurrent())
             {
                 using (var iface = context.Version.Type == GlProfileType.OpenGL ?
-                    GRGlInterface.AssembleGlInterface((_, proc) => context.GlInterface.GetProcAddress(proc)) :
-                    GRGlInterface.AssembleGlesInterface((_, proc) => context.GlInterface.GetProcAddress(proc)))
+                    GRGlInterface.CreateOpenGl(proc => context.GlInterface.GetProcAddress(proc)) :
+                    GRGlInterface.CreateGles(proc => context.GlInterface.GetProcAddress(proc)))
                 {
-                    _grContext = GRContext.Create(GRBackend.OpenGL, iface);
+                    _grContext = GRContext.CreateGl(iface);
                     if (maxResourceBytes.HasValue)
                     {
-                        _grContext.GetResourceCacheLimits(out var maxResources, out _);
-                        _grContext.SetResourceCacheLimits(maxResources, maxResourceBytes.Value);
+                        _grContext.SetResourceCacheLimit(maxResourceBytes.Value);
                     }
                 }
             }
         }
-        
+
         public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces)
         {
             foreach (var surface in surfaces)

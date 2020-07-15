@@ -9,7 +9,7 @@
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Spacing="16">
-            <Border Background="{DynamicResource ThemeAccentBrush}"
+            <Border Background="{DynamicResource SystemAccentColor}"
                     Margin="16"
                     Padding="48,48,48,48">
                 <Border.ContextMenu>
@@ -34,7 +34,7 @@
                 </Border.ContextMenu>
                 <TextBlock Text="Defined in XAML"/>
             </Border>
-            <Border Background="{DynamicResource ThemeAccentBrush}"
+            <Border Background="{DynamicResource SystemAccentColor}"
                     Margin="16"
                     Padding="48,48,48,48">
                 <Border.ContextMenu>

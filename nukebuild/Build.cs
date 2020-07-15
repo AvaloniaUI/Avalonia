@@ -101,7 +101,7 @@ partial class Build : NukeBuild
             .SetProjectFile(projectFile)
             // This is required for VS2019 image on Azure Pipelines
             .When(Parameters.IsRunningOnWindows &&
-                  Parameters.IsRunningOnAzure, c => c
+                  Parameters.IsRunningOnAzure, _ => _
                 .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
@@ -176,7 +176,7 @@ partial class Build : NukeBuild
                 .SetFramework(fw)
                 .EnableNoBuild()
                 .EnableNoRestore()
-                .When(Parameters.PublishTestResults, c => c
+                .When(Parameters.PublishTestResults, _ => _
                     .SetLogger("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
@@ -268,6 +268,8 @@ partial class Build : NukeBuild
         .DependsOn(CreateIntermediateNugetPackages)
         .Executes(() =>
         {
+            BuildTasksPatcher.PatchBuildTasksInPackage(Parameters.NugetIntermediateRoot / "Avalonia.Build.Tasks." +
+                                                       Parameters.Version + ".nupkg");
             var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
             EnsureCleanDirectory(Parameters.NugetRoot);
             if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,

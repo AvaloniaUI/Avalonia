@@ -6,11 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.VisualTree;
 
@@ -26,6 +24,8 @@ namespace Avalonia.Controls
         private readonly UniqueIdElementPool _resetPool;
         private IControl _lastFocusedElement;
         private bool _isDataSourceStableResetPending;
+        private ElementFactoryGetArgs _elementFactoryGetArgs;
+        private ElementFactoryRecycleArgs _elementFactoryRecycleArgs;
         private int _firstRealizedElementIndexHeldByLayout = FirstRealizedElementIndexDefault;
         private int _lastRealizedElementIndexHeldByLayout = LastRealizedElementIndexDefault;
         private bool _eventsSubscribed;
@@ -134,7 +134,14 @@ namespace Avalonia.Controls
 
             if (_owner.ItemTemplateShim != null)
             {
-                _owner.ItemTemplateShim.RecycleElement(_owner, element);
+                var context = _elementFactoryRecycleArgs ??= new ElementFactoryRecycleArgs();
+                context.Element = element;
+                context.Parent = _owner;
+
+                _owner.ItemTemplateShim.RecycleElement(context);
+
+                context.Element = null;
+                context.Parent = null;
             }
             else
             {
@@ -579,7 +586,7 @@ namespace Avalonia.Controls
             var data = _owner.ItemsSourceView.GetAt(index);
             var providedElementFactory = _owner.ItemTemplateShim;
 
-            ItemTemplateWrapper GetElementFactory()
+            IElementFactory GetElementFactory()
             {
                 if (providedElementFactory == null)
                 {
@@ -602,7 +609,20 @@ namespace Avalonia.Controls
                 }
 
                 var elementFactory = GetElementFactory();
-                return elementFactory.GetElement(_owner, data);
+                var args = _elementFactoryGetArgs ??= new ElementFactoryGetArgs();
+
+                try
+                {
+                    args.Data = data;
+                    args.Parent = _owner;
+                    args.Index = index;
+                    return elementFactory.GetElement(args);
+                }
+                finally
+                {
+                    args.Data = null;
+                    args.Parent = null;
+                }
             }
 
             var element = GetElement();
@@ -732,6 +752,7 @@ namespace Avalonia.Controls
             {
                 _owner.GotFocus += OnFocusChanged;
                 _owner.LostFocus += OnFocusChanged;
+                _eventsSubscribed = true;
             }
         }
 

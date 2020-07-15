@@ -194,6 +194,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         }
 
         public IPopupImpl CreatePopup() => null;
+        
+        public Action LostFocus { get; set; }
 
         ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
     }

@@ -12,7 +12,7 @@
     <Style Selector="TabControl.sidebar">
         <Setter Property="TabStripPlacement" Value="Left"/>
         <Setter Property="Padding" Value="8 0 0 0"/>
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border 
@@ -74,12 +74,12 @@
         <Setter Property="Opacity" Value="1"/>
     </Style>
     <Style Selector="TabControl.sidebar > TabItem:pointerover">
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight2}"/>
     </Style>
     <Style Selector="TabControl.sidebar > TabItem:selected">
         <Setter Property="Opacity" Value="1"/>
     </Style>
     <Style Selector="TabControl.sidebar > TabItem:selected">
-        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
+        <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight1}"/>
     </Style>
 </Styles>

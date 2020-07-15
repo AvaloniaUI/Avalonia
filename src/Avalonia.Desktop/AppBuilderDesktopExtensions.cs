@@ -46,10 +46,6 @@ namespace Avalonia
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
              => builder.UseX11();
 
-        static void LoadDirect2D1<TAppBuilder>(TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
-             => builder.UseDirect2D1();
-
         static void LoadSkia<TAppBuilder>(TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
              => builder.UseSkia();

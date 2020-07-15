@@ -1,7 +1,10 @@
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 #nullable enable
 
@@ -10,26 +13,36 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
-    public class LayoutManager : ILayoutManager
+    public class LayoutManager : ILayoutManager, IDisposable
     {
+        private const int MaxPasses = 3;
+        private readonly ILayoutRoot _owner;
         private readonly LayoutQueue<ILayoutable> _toMeasure = new LayoutQueue<ILayoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<ILayoutable> _toArrange = new LayoutQueue<ILayoutable>(v => !v.IsArrangeValid);
         private readonly Action _executeLayoutPass;
+        private List<EffectiveViewportChangedListener>? _effectiveViewportChangedListeners;
+        private bool _disposed;
         private bool _queued;
         private bool _running;
 
-        public LayoutManager()
+        public LayoutManager(ILayoutRoot owner)
         {
+            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
             _executeLayoutPass = ExecuteLayoutPass;
         }
 
-        public event EventHandler? LayoutUpdated;
+        public virtual event EventHandler? LayoutUpdated;
 
         /// <inheritdoc/>
-        public void InvalidateMeasure(ILayoutable control)
+        public virtual void InvalidateMeasure(ILayoutable control)
         {
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
+
+            if (_disposed)
+            {
+                return;
+            }
 
             if (!control.IsAttachedToVisualTree)
             {
@@ -41,16 +54,26 @@ namespace Avalonia.Layout
 #endif
             }
 
+            if (control.VisualRoot != _owner)
+            {
+                throw new ArgumentException("Attempt to call InvalidateMeasure on wrong LayoutManager.");
+            }
+
             _toMeasure.Enqueue(control);
             _toArrange.Enqueue(control);
             QueueLayoutPass();
         }
 
         /// <inheritdoc/>
-        public void InvalidateArrange(ILayoutable control)
+        public virtual void InvalidateArrange(ILayoutable control)
         {
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
+
+            if (_disposed)
+            {
+                return;
+            }
 
             if (!control.IsAttachedToVisualTree)
             {
@@ -62,21 +85,27 @@ namespace Avalonia.Layout
 #endif
             }
 
+            if (control.VisualRoot != _owner)
+            {
+                throw new ArgumentException("Attempt to call InvalidateArrange on wrong LayoutManager.");
+            }
+
             _toArrange.Enqueue(control);
             QueueLayoutPass();
         }
 
         /// <inheritdoc/>
-        public void ExecuteLayoutPass()
+        public virtual void ExecuteLayoutPass()
         {
-            const int MaxPasses = 3;
-
             Dispatcher.UIThread.VerifyAccess();
+
+            if (_disposed)
+            {
+                return;
+            }
 
             if (!_running)
             {
-                _running = true;
-
                 Stopwatch? stopwatch = null;
 
                 const LogEventLevel timingLogLevel = LogEventLevel.Information;
@@ -99,12 +128,13 @@ namespace Avalonia.Layout
 
                 try
                 {
+                    _running = true;
+
                     for (var pass = 0; pass < MaxPasses; ++pass)
                     {
-                        ExecuteMeasurePass();
-                        ExecuteArrangePass();
+                        InnerLayoutPass();
 
-                        if (_toMeasure.Count == 0)
+                        if (!RaiseEffectiveViewportChanged())
                         {
                             break;
                         }
@@ -131,13 +161,18 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        public void ExecuteInitialLayoutPass(ILayoutRoot root)
+        public virtual void ExecuteInitialLayoutPass()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             try
             {
                 _running = true;
-                Measure(root);
-                Arrange(root);
+                Measure(_owner);
+                Arrange(_owner);
             }
             finally
             {
@@ -149,6 +184,60 @@ namespace Avalonia.Layout
             // whether they will need to be shown until the layout pass has run and if the
             // first guess was incorrect the layout will need to be updated).
             ExecuteLayoutPass();
+        }
+
+        [Obsolete("Call ExecuteInitialLayoutPass without parameter")]
+        public void ExecuteInitialLayoutPass(ILayoutRoot root)
+        {
+            if (root != _owner)
+            {
+                throw new ArgumentException("ExecuteInitialLayoutPass called with incorrect root.");
+            }
+
+            ExecuteInitialLayoutPass();
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            _toMeasure.Dispose();
+            _toArrange.Dispose();
+        }
+
+        void ILayoutManager.RegisterEffectiveViewportListener(ILayoutable control)
+        {
+            _effectiveViewportChangedListeners ??= new List<EffectiveViewportChangedListener>();
+            _effectiveViewportChangedListeners.Add(new EffectiveViewportChangedListener(
+                control,
+                CalculateEffectiveViewport(control)));
+        }
+
+        void ILayoutManager.UnregisterEffectiveViewportListener(ILayoutable control)
+        {
+            if (_effectiveViewportChangedListeners is object)
+            {
+                for (var i = _effectiveViewportChangedListeners.Count - 1; i >= 0; --i)
+                {
+                    if (_effectiveViewportChangedListeners[i].Listener == control)
+                    {
+                        _effectiveViewportChangedListeners.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
+        private void InnerLayoutPass()
+        {
+            for (var pass = 0; pass < MaxPasses; ++pass)
+            {
+                ExecuteMeasurePass();
+                ExecuteArrangePass();
+
+                if (_toMeasure.Count == 0)
+                {
+                    break;
+                }
+            }
         }
 
         private void ExecuteMeasurePass()
@@ -233,6 +322,98 @@ namespace Avalonia.Layout
                 Dispatcher.UIThread.Post(_executeLayoutPass, DispatcherPriority.Layout);
                 _queued = true;
             }
+        }
+
+        private bool RaiseEffectiveViewportChanged()
+        {
+            var startCount = _toMeasure.Count + _toArrange.Count;
+
+            if (_effectiveViewportChangedListeners is object)
+            {
+                var count = _effectiveViewportChangedListeners.Count;
+                var pool = ArrayPool<EffectiveViewportChangedListener>.Shared;
+                var listeners = pool.Rent(count);
+
+                _effectiveViewportChangedListeners.CopyTo(listeners);
+
+                try
+                {
+                    for (var i = 0; i < count; ++i)
+                    {
+                        var l = _effectiveViewportChangedListeners[i];
+
+                        if (!l.Listener.IsAttachedToVisualTree)
+                        {
+                            continue;
+                        }
+
+                        var viewport = CalculateEffectiveViewport(l.Listener);
+
+                        if (viewport != l.Viewport)
+                        {
+                            l.Listener.EffectiveViewportChanged(new EffectiveViewportChangedEventArgs(viewport));
+                            _effectiveViewportChangedListeners[i] = new EffectiveViewportChangedListener(l.Listener, viewport);
+                        }
+                    }
+                }
+                finally
+                {
+                    pool.Return(listeners, clearArray: true);
+                }
+            }
+
+            return startCount != _toMeasure.Count + _toArrange.Count;
+        }
+
+        private Rect CalculateEffectiveViewport(IVisual control)
+        {
+            var viewport = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
+            CalculateEffectiveViewport(control, control, ref viewport);
+            return viewport;
+        }
+
+        private void CalculateEffectiveViewport(IVisual target, IVisual control, ref Rect viewport)
+        {
+            // Recurse until the top level control.
+            if (control.VisualParent is object)
+            {
+                CalculateEffectiveViewport(target, control.VisualParent, ref viewport);
+            }
+            else
+            {
+                viewport = new Rect(control.Bounds.Size);
+            }
+
+            // Apply the control clip bounds if it's not the target control. We don't apply it to
+            // the target control because it may itself be clipped to bounds and if so the viewport
+            // we calculate would be of no use.
+            if (control != target && control.ClipToBounds)
+            {
+                viewport = control.Bounds.Intersect(viewport);
+            }
+
+            // Translate the viewport into this control's coordinate space.
+            viewport = viewport.Translate(-control.Bounds.Position);
+
+            if (control != target && control.RenderTransform is object)
+            {
+                var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
+                var offset = Matrix.CreateTranslation(origin);
+                var renderTransform = (-offset) * control.RenderTransform.Value.Invert() * (offset);
+                viewport = viewport.TransformToAABB(renderTransform);
+            }
+        }
+
+        private readonly struct EffectiveViewportChangedListener
+        {
+            public EffectiveViewportChangedListener(ILayoutable listener, Rect viewport)
+            {
+                Listener = listener;
+                Viewport = viewport;
+            }
+
+            public ILayoutable Listener { get; }
+            public Rect Viewport { get; }
         }
     }
 }
