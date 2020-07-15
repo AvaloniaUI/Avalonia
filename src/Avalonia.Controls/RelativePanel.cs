@@ -54,7 +54,7 @@ namespace Avalonia.Controls
             }
             _childGraph.Measure(availableSize);
 
-            _childGraph.Reset();
+            _childGraph.Reset(false);
             var boundingSize = _childGraph.GetBoundingSize(Width.IsNaN(), Height.IsNaN());
             _childGraph.Reset();
             _childGraph.Measure(boundingSize);
@@ -119,17 +119,22 @@ namespace Avalonia.Controls
 
             public void Arrange(Size arrangeSize) => Element.Arrange(new Rect(Left, Top, Math.Max(arrangeSize.Width - Left - Right, 0), Math.Max(arrangeSize.Height - Top - Bottom, 0)));
 
-            public void Reset()
+            public void Reset(bool clearPos)
             {
-                Left = double.NaN;
-                Top = double.NaN;
-                Right = double.NaN;
-                Bottom = double.NaN;
+                if (clearPos)
+                {
+                    Left = double.NaN;
+                    Top = double.NaN;
+                    Right = double.NaN;
+                    Bottom = double.NaN;
+                }
+
                 Measured = false;
             }
 
             public Size GetBoundingSize()
             {
+                if (Left < 0 || Top < 0) return default;
                 if (Measured)
                     return BoundingSize;
 
@@ -209,7 +214,7 @@ namespace Avalonia.Controls
                 _nodeDic.Clear();
             }
 
-            public void Reset() => _nodeDic.Values.Do(node => node.Reset());
+            public void Reset(bool clearPos = true) => _nodeDic.Values.Do(node => node.Reset(clearPos));
 
             public GraphNode? AddLink(GraphNode from, Layoutable? to)
             {
