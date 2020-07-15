@@ -51,7 +51,7 @@ namespace Avalonia.Controls
 
         private void PropertyChangedHandler(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.IsEffectiveValueChange && e.Property == BoundsProperty)
+            if (e.Property == BoundsProperty)
                 EnqueueForMoveResize();
         }
 
