@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -1381,6 +1382,22 @@ namespace Avalonia.Win32.Interop
             {
                 throw new Exception("RtlGetVersion failed!");
             }
+        }
+        
+        [DllImport("kernel32", EntryPoint="WaitForMultipleObjectsEx", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern int IntWaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable);
+
+        public const int WAIT_FAILED = unchecked((int)0xFFFFFFFF);
+
+        internal static int WaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable)
+        {
+            int result = IntWaitForMultipleObjectsEx(nCount, pHandles, bWaitAll, dwMilliseconds, bAlertable);
+            if(result ==  WAIT_FAILED)
+            {
+                throw new Win32Exception();
+            }
+
+            return result;
         }
 
         [DllImport("user32.dll")]
