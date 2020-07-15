@@ -77,7 +77,7 @@ namespace Avalonia.Controls
             DatePicker.YearVisibleProperty.AddOwner<DatePickerPresenter>(x => 
             x.YearVisible, (x, v) => x.YearVisible = v);
 
-        //Template Items
+        // Template Items
         private Grid _pickerContainer;
         private Button _acceptButton;
         private Button _dismissButton;
@@ -107,7 +107,7 @@ namespace Avalonia.Controls
         private bool _yearVisible = true;
         private DateTimeOffset _syncDate;
 
-        private GregorianCalendar _calendar;
+        private readonly GregorianCalendar _calendar;
         private bool _suppressUpdateSelection;
 
         public DatePickerPresenter()
@@ -234,7 +234,7 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            //These are requirements, so throw if not found
+            // These are requirements, so throw if not found
             _pickerContainer = e.NameScope.Get<Grid>("PickerContainer");
             _monthHost = e.NameScope.Get<Panel>("MonthHost");
             _dayHost = e.NameScope.Get<Panel>("DayHost");
@@ -326,7 +326,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void InitPicker()
         {
-            //OnApplyTemplate must've been called before we can init here...
+            // OnApplyTemplate must've been called before we can init here...
             if (_pickerContainer == null)
                 return;
 
@@ -344,7 +344,7 @@ namespace Avalonia.Controls
 
             SetGrid();
 
-            //Date should've been set when we reach this point
+            // Date should've been set when we reach this point
             var dt = Date;
             if (DayVisible)
             {
@@ -433,12 +433,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnDismissButtonClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void OnDismissButtonClicked(object sender, RoutedEventArgs e)
         {
             OnDismiss();
         }
 
-        private void OnAcceptButtonClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void OnAcceptButtonClicked(object sender, RoutedEventArgs e)
         {
             Date = _syncDate;
             OnConfirmed();
@@ -471,7 +471,7 @@ namespace Avalonia.Controls
 
             _syncDate = newDate;
 
-            //We don't need to update the days if not displaying day, not february
+            // We don't need to update the days if not displaying day, not february
             if (!DayVisible || _syncDate.Month != 2)
                 return;
 

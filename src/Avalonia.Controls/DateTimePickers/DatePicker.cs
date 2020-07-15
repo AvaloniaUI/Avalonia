@@ -88,7 +88,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<DatePicker, DateTimeOffset?>(nameof(SelectedDate), 
                 x => x.SelectedDate, (x, v) => x.SelectedDate = v);
 
-        //Template Items
+        // Template Items
         private Button _flyoutButton;
         private TextBlock _dayText;
         private TextBlock _monthText;
@@ -359,10 +359,14 @@ namespace Avalonia.Controls
                 }
             }
 
-            Grid.SetColumn(_spacer1, 1);
-            Grid.SetColumn(_spacer2, 3);
-            _spacer1.IsVisible = columnIndex > 1;
-            _spacer2.IsVisible = columnIndex > 2;
+            var isSpacer1Visible = columnIndex > 1;
+            var isSpacer2Visible = columnIndex > 2;
+            // ternary conditional operator is used to make sure grid cells will be validated
+            Grid.SetColumn(_spacer1, isSpacer1Visible ? 1 : 0);
+            Grid.SetColumn(_spacer2, isSpacer2Visible ? 3 : 0);
+
+            _spacer1.IsVisible = isSpacer1Visible;
+            _spacer2.IsVisible = isSpacer2Visible;
         }
 
         private void SetSelectedDateText()
@@ -398,7 +402,7 @@ namespace Avalonia.Controls
 
             var deltaY = _presenter.GetOffsetForPopup();
 
-            //The extra 5 px I think is related to default popup placement behavior
+            // The extra 5 px I think is related to default popup placement behavior
             _popup.Host.ConfigurePosition(_popup.PlacementTarget, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
                 Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
                  Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
