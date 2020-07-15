@@ -260,28 +260,21 @@ namespace Avalonia.Controls
 
                 foreach (var node in nodes)
                 {
-                    /*
-                     * 该节点无任何依赖，所以从这里开始计算元素位置。
-                     * 因为无任何依赖，所以忽略同级元素
-                     */
                     if (!node.Measured && !node.OutgoingNodes.Any())
                     {
                         MeasureChild(node);
                         continue;
                     }
-
-                    //  判断依赖元素是否全部排列完毕
+                    
                     if (node.OutgoingNodes.All(item => item.Measured))
                     {
                         MeasureChild(node);
                         continue;
                     }
-
-                    //  判断是否有循环
+                    
                     if (!set.Add(node.Element))
                         throw new Exception("RelativePanel error: Circular dependency detected. Layout could not complete.");
-
-                    //  没有循环，且有依赖，则继续往下
+                    
                     Measure(node.OutgoingNodes, set);
 
                     if (!node.Measured)
