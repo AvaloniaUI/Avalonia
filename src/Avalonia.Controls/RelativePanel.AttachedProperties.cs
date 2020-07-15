@@ -33,7 +33,7 @@ namespace Avalonia.Controls
             AlignVerticalCenterWithProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
             BelowProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
             LeftOfProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
-            LeftOfProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
+            RightOfProperty.Changed.AddClassHandler<Layoutable>(OnAlignPropertiesChanged);
         }
 
         /// <summary>

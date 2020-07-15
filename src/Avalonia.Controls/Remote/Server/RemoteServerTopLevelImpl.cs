@@ -192,7 +192,7 @@ namespace Avalonia.Controls.Remote.Server
                             GetAvaloniaInputModifiers(pressed.Modifiers)));
                     }, DispatcherPriority.Input);
                 }
-                if (obj is PointerPressedEventMessage released)
+                if (obj is PointerReleasedEventMessage released)
                 {
                     Dispatcher.UIThread.Post(() =>
                     {
