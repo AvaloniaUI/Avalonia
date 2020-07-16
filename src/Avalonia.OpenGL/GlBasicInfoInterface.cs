@@ -16,9 +16,9 @@ namespace Avalonia.OpenGL
         {
         }
         
-        public delegate void GlGetIntegerv(int name, out int rv);
-        public delegate IntPtr GlGetString(int v);
-        public delegate IntPtr GlGetStringi(int v, int v1);
+        public delegate void bGlGetIntegerv(uint name, out uint rv);
+        public delegate IntPtr bGlGetString(uint v);
+        public delegate IntPtr bGlGetStringi(uint v, uint v1);
     }
     
     public class GlBasicInfoInterface<TContextInfo> : GlInterfaceBase<TContextInfo>
@@ -32,26 +32,25 @@ namespace Avalonia.OpenGL
         }
         
         [GlEntryPoint("glGetIntegerv")]
-        public GlBasicInfoInterface.GlGetIntegerv GetIntegerv { get; }
-        
+        public GlBasicInfoInterface.bGlGetIntegerv bGetIntegerv { get; }        
         
         [GlEntryPoint("glGetString")]
-        public GlBasicInfoInterface.GlGetString GetStringNative { get; }
+        public GlBasicInfoInterface.bGlGetString bGetStringNative { get; }
         
         [GlEntryPoint("glGetStringi")]
-        public GlBasicInfoInterface.GlGetStringi GetStringiNative { get; }
+        public GlBasicInfoInterface.bGlGetStringi bGetStringiNative { get; }
 
-        public string GetString(int v)
+        public string bGetString(uint v)
         {
-            var ptr = GetStringNative(v);
+            var ptr = bGetStringNative(v);
             if (ptr != IntPtr.Zero)
                 return Marshal.PtrToStringAnsi(ptr);
             return null;
         }
         
-        public string GetString(int v, int index)
+        public string bGetString(uint v, uint index)
         {
-            var ptr = GetStringiNative(v, index);
+            var ptr = bGetStringiNative(v, index);
             if (ptr != IntPtr.Zero)
                 return Marshal.PtrToStringAnsi(ptr);
             return null;
@@ -59,13 +58,13 @@ namespace Avalonia.OpenGL
 
         public List<string> GetExtensions()
         {
-            var sp = GetString(GlConsts.GL_EXTENSIONS);
+            var sp = bGetString(GlConsts.GL_EXTENSIONS);
             if (sp != null)
                 return sp.Split(' ').ToList();
-            GetIntegerv(GlConsts.GL_NUM_EXTENSIONS, out int count);
-            var rv = new List<string>(count);
-            for (var c = 0; c < count; c++)
-                rv.Add(GetString(GlConsts.GL_EXTENSIONS, c));
+            bGetIntegerv(GlConsts.GL_NUM_EXTENSIONS, out uint count);
+            var rv = new List<string>((int)count);
+            for (uint c = 0; c < count; c++)
+                rv.Add(bGetString(GlConsts.GL_EXTENSIONS, c));
             return rv;
         }
     }

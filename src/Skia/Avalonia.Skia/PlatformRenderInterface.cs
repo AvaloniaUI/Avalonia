@@ -13,6 +13,8 @@ using Avalonia.Platform;
 using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
+using PixelFormat = Avalonia.Platform.PixelFormat;
+
 namespace Avalonia.Skia
 {
     /// <summary>

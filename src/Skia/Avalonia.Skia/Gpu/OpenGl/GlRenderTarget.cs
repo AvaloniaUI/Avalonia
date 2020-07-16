@@ -14,7 +14,7 @@ namespace Avalonia.Skia
         private IGlPlatformSurfaceRenderTarget _surface;
 
         public GlRenderTarget(GRContext grContext, IGlPlatformSurface glSurface)
-        {
+        {            
             _grContext = grContext;
             _surface = glSurface.CreateGlRenderTarget();
         }
@@ -31,7 +31,7 @@ namespace Avalonia.Skia
 
             public GlGpuSession(GRContext grContext,
                 GRBackendRenderTarget backendRenderTarget,
-                SKSurface surface, 
+                SKSurface surface,
                 IGlPlatformSurfaceRenderingSession glSession)
             {
                 GrContext = grContext;
@@ -61,7 +61,10 @@ namespace Avalonia.Skia
             {
                 var disp = glSession.Context;
                 var gl = disp.GlInterface;
-                gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
+                // GL_FRAMEBUFFER_BINDING => GL_DRAW_FRAMEBUFFER_BINDING: https://stackoverflow.com/a/27462296/5521766
+                var oneArr = new int[1];
+                gl.GetIntegerv(Avalonia.OpenGL.GetPName.GL_DRAW_FRAMEBUFFER_BINDING, oneArr);   
+                var fb = oneArr[0];
 
                 var size = glSession.Size;
                 var scaling = glSession.Scaling;
@@ -93,7 +96,7 @@ namespace Avalonia.Skia
             }
             finally
             {
-                if(!success)
+                if (!success)
                     glSession.Dispose();
             }
         }

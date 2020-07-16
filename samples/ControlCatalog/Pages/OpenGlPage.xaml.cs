@@ -12,6 +12,8 @@ using Avalonia.Threading;
 using static Avalonia.OpenGL.GlConsts;
 // ReSharper disable StringLiteralTypo
 
+using Buffer = System.Buffer;
+
 namespace ControlCatalog.Pages
 {
     public class OpenGlPage : UserControl
@@ -83,13 +85,13 @@ namespace ControlCatalog.Pages
             AffectsRender<OpenGlPageControl>(YawProperty, PitchProperty, RollProperty, DiscoProperty);
         }
 
-        private int _vertexShader;
-        private int _fragmentShader;
-        private int _shaderProgram;
-        private int _vertexBufferObject;
-        private int _indexBufferObject;
-        private int _vertexArrayObject;
-        private GlExtrasInterface _glExt;
+        private uint _vertexShader;
+        private uint _fragmentShader;
+        private uint _shaderProgram;
+        private uint _vertexBufferObject;
+        private uint _indexBufferObject;
+        private uint _vertexArrayObject;
+        //private GlExtrasInterface _glExt;
 
         private string GetShader(bool fragment, string shader)
         {
@@ -254,19 +256,19 @@ namespace ControlCatalog.Pages
                 Console.WriteLine(err);
         }
 
-        protected unsafe override void OnOpenGlInit(GlInterface GL, int fb)
+        protected unsafe override void OnOpenGlInit(GlInterface GL, uint fb)
         {
             CheckError(GL);
-            _glExt = new GlExtrasInterface(GL);
+            //_glExt = new GlExtrasInterface(GL);
 
-            Info = $"Renderer: {GL.GetString(GL_RENDERER)} Version: {GL.GetString(GL_VERSION)}";
+            Info = $"Renderer: {GL.GetString(StringName.GL_RENDERER)} Version: {GL.GetString(StringName.GL_VERSION)}";
             
             // Load the source of the vertex shader and compile it.
-            _vertexShader = GL.CreateShader(GL_VERTEX_SHADER);
+            _vertexShader = GL.CreateShader(ShaderType.GL_VERTEX_SHADER);
             Console.WriteLine(GL.CompileShaderAndGetError(_vertexShader, VertexShaderSource));
 
             // Load the source of the fragment shader and compile it.
-            _fragmentShader = GL.CreateShader(GL_FRAGMENT_SHADER);
+            _fragmentShader = GL.CreateShader(ShaderType.GL_FRAGMENT_SHADER);
             Console.WriteLine(GL.CompileShaderAndGetError(_fragmentShader, FragmentShaderSource));
 
             // Create the shader program, attach the vertex and fragment shaders and link the program.
@@ -283,61 +285,63 @@ namespace ControlCatalog.Pages
             // Create the vertex buffer object (VBO) for the vertex data.
             _vertexBufferObject = GL.GenBuffer();
             // Bind the VBO and copy the vertex data into it.
-            GL.BindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
+            GL.BindBuffer(BufferTargetARB.GL_ARRAY_BUFFER, _vertexBufferObject);
             CheckError(GL);
             var vertexSize = Marshal.SizeOf<Vertex>();
             fixed (void* pdata = _points)
-                GL.BufferData(GL_ARRAY_BUFFER, new IntPtr(_points.Length * vertexSize),
-                    new IntPtr(pdata), GL_STATIC_DRAW);
+                GL.BufferData(BufferTargetARB.GL_ARRAY_BUFFER, new IntPtr(_points.Length * vertexSize),
+                    new IntPtr(pdata), BufferUsageARB.GL_STATIC_DRAW);
 
             _indexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
+            GL.BindBuffer(BufferTargetARB.GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
             CheckError(GL);
             fixed (void* pdata = _indices)
-                GL.BufferData(GL_ELEMENT_ARRAY_BUFFER, new IntPtr(_indices.Length * sizeof(ushort)), new IntPtr(pdata),
-                    GL_STATIC_DRAW);
+                GL.BufferData(BufferTargetARB.GL_ELEMENT_ARRAY_BUFFER, new IntPtr(_indices.Length * sizeof(ushort)), new IntPtr(pdata),
+                    BufferUsageARB.GL_STATIC_DRAW);
             CheckError(GL);
-            _vertexArrayObject = _glExt.GenVertexArray();
-            _glExt.BindVertexArray(_vertexArrayObject);
+            var oneArr = new uint[1];
+            GL.GenVertexArraysOES(1, oneArr);// _glExt.GenVertexArray();
+            _vertexArrayObject = oneArr[0];
+            GL.BindVertexArrayOES(_vertexArrayObject);
             CheckError(GL);
-            GL.VertexAttribPointer(positionLocation, 3, GL_FLOAT,
-                0, vertexSize, IntPtr.Zero);
-            GL.VertexAttribPointer(normalLocation, 3, GL_FLOAT,
-                0, vertexSize, new IntPtr(12));
+            GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.GL_FLOAT,
+                false, vertexSize, IntPtr.Zero);
+            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.GL_FLOAT,
+                false, vertexSize, new IntPtr(12));
             GL.EnableVertexAttribArray(positionLocation);
             GL.EnableVertexAttribArray(normalLocation);
             CheckError(GL);
 
         }
 
-        protected override void OnOpenGlDeinit(GlInterface GL, int fb)
+        protected override void OnOpenGlDeinit(GlInterface GL, uint fb)
         {
             // Unbind everything
-            GL.BindBuffer(GL_ARRAY_BUFFER, 0);
-            GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            _glExt.BindVertexArray(0);
+            GL.BindBuffer(BufferTargetARB.GL_ARRAY_BUFFER, 0);
+            GL.BindBuffer(BufferTargetARB.GL_ELEMENT_ARRAY_BUFFER, 0);
+            GL.BindVertexArrayOES(0);
             GL.UseProgram(0);
 
             // Delete all resources.
             GL.DeleteBuffers(2, new[] { _vertexBufferObject, _indexBufferObject });
-            _glExt.DeleteVertexArrays(1, new[] { _vertexArrayObject });
+            GL.DeleteVertexArraysOES(1, new[] { _vertexArrayObject });
             GL.DeleteProgram(_shaderProgram);
             GL.DeleteShader(_fragmentShader);
             GL.DeleteShader(_vertexShader);
         }
 
         static Stopwatch St = Stopwatch.StartNew();
-        protected override unsafe void OnOpenGlRender(GlInterface gl, int fb)
+        protected override unsafe void OnOpenGlRender(GlInterface gl, uint fb)
         {
             gl.ClearColor(0, 0, 0, 0);
             gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            gl.Enable(GL_DEPTH_TEST);
+            gl.Enable(EnableCap.GL_DEPTH_TEST);
             gl.Viewport(0, 0, (int)Bounds.Width, (int)Bounds.Height);
             var GL = gl;
 
-            GL.BindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
-            GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
-            _glExt.BindVertexArray(_vertexArrayObject);
+            GL.BindBuffer(BufferTargetARB.GL_ARRAY_BUFFER, _vertexBufferObject);
+            GL.BindBuffer(BufferTargetARB.GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
+            GL.BindVertexArrayOES(_vertexArrayObject);
             GL.UseProgram(_shaderProgram);
             CheckError(GL);
             var projection =
@@ -354,6 +358,7 @@ namespace ControlCatalog.Pages
             var minYLoc = GL.GetUniformLocationString(_shaderProgram, "uMinY");
             var timeLoc = GL.GetUniformLocationString(_shaderProgram, "uTime");
             var discoLoc = GL.GetUniformLocationString(_shaderProgram, "uDisco");
+
             GL.UniformMatrix4fv(modelLoc, 1, false, &model);
             GL.UniformMatrix4fv(viewLoc, 1, false, &view);
             GL.UniformMatrix4fv(projectionLoc, 1, false, &projection);
@@ -362,40 +367,44 @@ namespace ControlCatalog.Pages
             GL.Uniform1f(timeLoc, (float)St.Elapsed.TotalSeconds);
             GL.Uniform1f(discoLoc, _disco);
             CheckError(GL);
-            GL.DrawElements(GL_TRIANGLES, _indices.Length, GL_UNSIGNED_SHORT, IntPtr.Zero);
+            GL.DrawElements(PrimitiveType.GL_TRIANGLES, _indices.Length, DrawElementsType.GL_UNSIGNED_SHORT, IntPtr.Zero);
 
             CheckError(GL);
             if (_disco > 0.01)
                 Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
         }
 
+/*
         class GlExtrasInterface : GlInterfaceBase<GlInterface.GlContextInfo>
         {
             public GlExtrasInterface(GlInterface gl) : base(gl.GetProcAddress, gl.ContextInfo)
             {
             }
             
-            public delegate void GlDeleteVertexArrays(int count, int[] buffers);
-            [GlMinVersionEntryPoint("glDeleteVertexArrays", 3,0)]
-            [GlExtensionEntryPoint("glDeleteVertexArraysOES", "GL_OES_vertex_array_object")]
+            public delegate void GlDeleteVertexArrays(int count, uint[] buffers);
+            //[GlMinVersionEntryPoint("glDeleteVertexArrays", 3,0)]
+            //[GlExtensionEntryPoint("glDeleteVertexArraysOES", "GL_OES_vertex_array_object")]
+            [GlEntryPoint("glDeleteVertexArrays")]
             public GlDeleteVertexArrays DeleteVertexArrays { get; }
             
-            public delegate void GlBindVertexArray(int array);
-            [GlMinVersionEntryPoint("glBindVertexArray", 3,0)]
-            [GlExtensionEntryPoint("glBindVertexArrayOES", "GL_OES_vertex_array_object")]
+            public delegate void GlBindVertexArray(uint array);
+            //[GlMinVersionEntryPoint("glBindVertexArray", 3,0)]
+            //[GlExtensionEntryPoint("glBindVertexArrayOES", "GL_OES_vertex_array_object")]
+            [GlEntryPoint("glBindVertexArray")]
             public GlBindVertexArray BindVertexArray { get; }
-            public delegate void GlGenVertexArrays(int n, int[] rv);
+            public delegate void GlGenVertexArrays(int n, uint[] rv);
         
-            [GlMinVersionEntryPoint("glGenVertexArrays",3,0)]
-            [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
+            //[GlMinVersionEntryPoint("glGenVertexArrays",3,0)]
+            //[GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
+            [GlEntryPoint("glGlGenVertexArrays")]
             public GlGenVertexArrays GenVertexArrays { get; }
             
-            public int GenVertexArray()
+            public uint GenVertexArray()
             {
-                var rv = new int[1];
+                var rv = new uint[1];
                 GenVertexArrays(1, rv);
                 return rv[0];
             }
-        }
+        }*/
     }
 }

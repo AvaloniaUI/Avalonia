@@ -9,10 +9,10 @@ namespace Avalonia.OpenGL
     public struct GlVersion
     {
         public GlProfileType Type { get; }
-        public int Major { get; }
-        public int Minor { get; }
+        public uint Major { get; }
+        public uint Minor { get; }
 
-        public GlVersion(GlProfileType type, int major, int minor)
+        public GlVersion(GlProfileType type, uint major, uint minor)
         {
             Type = type;
             Major = major;

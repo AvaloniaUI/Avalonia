@@ -17,13 +17,13 @@ namespace Avalonia.Native
             var deferred = display.CreateContext(immediate);
             
 
-            int major, minor;
+            uint major, minor;
             GlInterface glInterface;
             using (immediate.MakeCurrent())
             {
-                var basic = new GlBasicInfoInterface(display.GetProcAddress);
-                basic.GetIntegerv(GlConsts.GL_MAJOR_VERSION, out major);
-                basic.GetIntegerv(GlConsts.GL_MINOR_VERSION, out minor);
+                var basic = new GlBasicInfoInterface(display.GetProcAddress);                
+                basic.bGetIntegerv(GlConsts.GL_MAJOR_VERSION, out major);
+                basic.bGetIntegerv(GlConsts.GL_MINOR_VERSION, out minor);
                 _version = new GlVersion(GlProfileType.OpenGL, major, minor);
                 glInterface = new GlInterface(_version, (name) =>
                 {

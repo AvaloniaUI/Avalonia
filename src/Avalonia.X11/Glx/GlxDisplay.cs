@@ -132,8 +132,8 @@ namespace Avalonia.X11.Glx
 
                 var attrs = new int[]
                 {
-                    GLX_CONTEXT_MAJOR_VERSION_ARB, profile.Major,
-                    GLX_CONTEXT_MINOR_VERSION_ARB, profile.Minor,
+                    GLX_CONTEXT_MAJOR_VERSION_ARB, (int)profile.Major,
+                    GLX_CONTEXT_MINOR_VERSION_ARB, (int)profile.Minor,
                     GLX_CONTEXT_PROFILE_MASK_ARB, profileMask,
                     0
                 };
