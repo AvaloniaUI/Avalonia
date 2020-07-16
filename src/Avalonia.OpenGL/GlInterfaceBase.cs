@@ -23,7 +23,7 @@ namespace Avalonia.OpenGL
         public GlInterfaceBase(Func<string, IntPtr> getProcAddress, TContext context)
         {
             _getProcAddress = getProcAddress;
-            foreach (var prop in this.GetType().GetProperties())
+            foreach (var prop in this.GetType().GetProperties(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
             {
                 var attrs = prop.GetCustomAttributes()
                     .Where(a =>
