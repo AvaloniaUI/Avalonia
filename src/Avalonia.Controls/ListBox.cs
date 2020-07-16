@@ -124,7 +124,8 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.InputModifiers & InputModifiers.Shift) != 0);
+                    (e.InputModifiers & InputModifiers.Shift) != 0,
+                    (e.InputModifiers & InputModifiers.Control) != 0);
             }
         }
 

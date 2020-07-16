@@ -333,7 +333,7 @@ namespace Avalonia.Controls
 
                         if (next != null)
                         {
-                            focus.Focus(next, NavigationMethod.Directional);
+                            focus.Focus(next, NavigationMethod.Directional, e.Modifiers);
                             e.Handled = true;
                         }
 
