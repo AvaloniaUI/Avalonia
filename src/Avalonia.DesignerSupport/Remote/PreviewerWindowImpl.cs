@@ -10,7 +10,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
-    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl, IEmbeddableWindowImpl
+    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
 
@@ -45,11 +45,6 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Size MaxAutoSizeHint { get; } = new Size(4096, 4096);
-        public event Action LostFocus
-        {
-            add {}
-            remove {}
-        }
 
         protected override void OnMessage(IAvaloniaRemoteTransportConnection transport, object obj)
         {
@@ -83,7 +78,17 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public IScreenImpl Screen { get; } = new ScreenStub();
-        public Action GotInputWhenDisabled { get; set; }
+        public Action GotInputWhenDisabled { get; set; }        
+        
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public bool IsClientAreaExtendedToDecorations { get; }
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
+        public bool NeedsManagedDecorations => false;
 
         public void Activate()
         {
@@ -123,6 +128,18 @@ namespace Avalonia.DesignerSupport.Remote
 
         public void SetEnabled(bool enable)
         {
+        }
+
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {            
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {            
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {            
         }
     }
 }

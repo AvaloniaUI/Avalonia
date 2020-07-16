@@ -1,19 +1,19 @@
-﻿using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
+﻿using System;
+using System.Globalization;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.UnitTests
 {
     public class MockTextShaperImpl : ITextShaperImpl
     {
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, TextFormat textFormat)
+        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture)
         {
-            var glyphTypeface = textFormat.Typeface.GlyphTypeface;
+            var glyphTypeface = typeface.GlyphTypeface;
             var glyphIndices = new ushort[text.Length];
-            var height = textFormat.FontMetrics.LineHeight;
-            var width = 0.0;
+            var glyphCount = 0;
 
             for (var i = 0; i < text.Length;)
             {
@@ -27,10 +27,11 @@ namespace Avalonia.UnitTests
 
                 glyphIndices[index] = glyph;
 
-                width += glyphTypeface.GetGlyphAdvance(glyph);
+                glyphCount++;
             }
 
-            return new GlyphRun(glyphTypeface, textFormat.FontRenderingEmSize, glyphIndices, characters: text);
+            return new GlyphRun(glyphTypeface, fontRenderingEmSize,
+                new ReadOnlySlice<ushort>(glyphIndices.AsMemory(0, glyphCount)), characters: text);
         }
     }
 }

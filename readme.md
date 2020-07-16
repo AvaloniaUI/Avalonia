@@ -16,7 +16,7 @@ To see the status of some of our features, please see our [Roadmap](https://gith
 
 ## 🚀 Getting Started
 
-The Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started, or you can use the .NET Core CLI. For a starer guide see our [documentation](http://avaloniaui.net/docs/quickstart/create-new-project).
+The Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started, or you can use the .NET Core CLI. For a starter guide see our [documentation](http://avaloniaui.net/docs/quickstart/create-new-project).
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: https://www.nuget.org/packages/Avalonia/
 
@@ -68,7 +68,7 @@ Avalonia is licenced under the [MIT licence](licence.md).
 
 ## Contributors
 
-This project exists thanks to all the people who contribute. [[Contribute](http://avaloniaui.net/contributing/contributing)].
+This project exists thanks to all the people who contribute. [[Contribute](http://avaloniaui.net/contributing)].
 <a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
 
 ### Backers

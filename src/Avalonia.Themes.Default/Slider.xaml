@@ -87,7 +87,10 @@
         </ControlTemplate>
     </Setter>
   </Style>
-    <Style Selector="Slider:disabled /template/ Grid#grid">
-        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
-    </Style>
+  <Style Selector="Slider /template/ TickBar">
+    <Setter Property="Ticks" Value="{TemplateBinding Ticks}" />
+  </Style>
+  <Style Selector="Slider:disabled /template/ Grid#grid">
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
+  </Style>
 </Styles>

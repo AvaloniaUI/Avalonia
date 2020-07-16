@@ -329,7 +329,7 @@ namespace Avalonia.Controls.UnitTests
                     return tb;
                 }, true);
 
-                lm.ExecuteInitialLayoutPass(wnd);
+                lm.ExecuteInitialLayoutPass();
 
                 target.Items = items;
 

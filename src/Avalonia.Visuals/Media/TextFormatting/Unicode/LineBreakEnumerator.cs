@@ -16,7 +16,7 @@
 // Ported from: https://github.com/foliojs/linebreak
 // Copied from: https://github.com/toptensoftware/RichTextKit
 
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -95,7 +95,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                     if (_nextClass.Value == LineBreakClass.MandatoryBreak)
                     {
-                        Current = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos);
+                        _lastPos = _pos;
+                        Current = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos, true);
                         return true;
                     }
 
@@ -108,6 +109,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 {
                     case PairBreakType.DI: // Direct break
                         shouldBreak = true;
+                        _lastPos = _pos;
                         break;
 
                     case PairBreakType.IN: // possible indirect break

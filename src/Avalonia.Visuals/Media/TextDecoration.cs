@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.Immutable;
+﻿using Avalonia.Collections;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Media
 {
@@ -14,28 +15,52 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<TextDecoration, TextDecorationLocation>(nameof(Location));
 
         /// <summary>
-        /// Defines the <see cref="Pen"/> property.
+        /// Defines the <see cref="Stroke"/> property.
         /// </summary>
-        public static readonly StyledProperty<IPen> PenProperty =
-            AvaloniaProperty.Register<TextDecoration, IPen>(nameof(Pen));
+        public static readonly StyledProperty<IBrush> StrokeProperty =
+            AvaloniaProperty.Register<TextDecoration, IBrush>(nameof(Stroke));
 
         /// <summary>
-        /// Defines the <see cref="PenThicknessUnit"/> property.
+        /// Defines the <see cref="StrokeThicknessUnit"/> property.
         /// </summary>
-        public static readonly StyledProperty<TextDecorationUnit> PenThicknessUnitProperty =
-            AvaloniaProperty.Register<TextDecoration, TextDecorationUnit>(nameof(PenThicknessUnit));
+        public static readonly StyledProperty<TextDecorationUnit> StrokeThicknessUnitProperty =
+            AvaloniaProperty.Register<TextDecoration, TextDecorationUnit>(nameof(StrokeThicknessUnit));
 
         /// <summary>
-        /// Defines the <see cref="PenOffset"/> property.
+        /// Defines the <see cref="StrokeDashArray"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> PenOffsetProperty =
-            AvaloniaProperty.Register<TextDecoration, double>(nameof(PenOffset));
+        public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
+            AvaloniaProperty.Register<TextDecoration, AvaloniaList<double>>(nameof(StrokeDashArray));
 
         /// <summary>
-        /// Defines the <see cref="PenOffsetUnit"/> property.
+        /// Defines the <see cref="StrokeDashOffset"/> property.
         /// </summary>
-        public static readonly StyledProperty<TextDecorationUnit> PenOffsetUnitProperty =
-            AvaloniaProperty.Register<TextDecoration, TextDecorationUnit>(nameof(PenOffsetUnit));
+        public static readonly StyledProperty<double> StrokeDashOffsetProperty =
+            AvaloniaProperty.Register<TextDecoration, double>(nameof(StrokeDashOffset));
+
+        /// <summary>
+        /// Defines the <see cref="StrokeThickness"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> StrokeThicknessProperty =
+            AvaloniaProperty.Register<TextDecoration, double>(nameof(StrokeThickness), 1);
+
+        /// <summary>
+        /// Defines the <see cref="StrokeLineCap"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PenLineCap> StrokeLineCapProperty =
+            AvaloniaProperty.Register<TextDecoration, PenLineCap>(nameof(StrokeLineCap));
+
+        /// <summary>
+        /// Defines the <see cref="StrokeOffset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> StrokeOffsetProperty =
+            AvaloniaProperty.Register<TextDecoration, double>(nameof(StrokeOffset));
+
+        /// <summary>
+        /// Defines the <see cref="StrokeOffsetUnit"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TextDecorationUnit> StrokeOffsetUnitProperty =
+            AvaloniaProperty.Register<TextDecoration, TextDecorationUnit>(nameof(StrokeOffsetUnit));
 
         /// <summary>
         /// Gets or sets the location.
@@ -50,54 +75,139 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the pen.
+        /// Gets or sets the <see cref="IBrush"/> that specifies how the <see cref="TextDecoration"/> is painted.
         /// </summary>
-        /// <value>
-        ///     The pen.
-        /// </value>
-        public IPen Pen
+        public IBrush Stroke
         {
-            get => GetValue(PenProperty);
-            set => SetValue(PenProperty, value);
+            get { return GetValue(StrokeProperty); }
+            set { SetValue(StrokeProperty, value); }
         }
 
         /// <summary>
-        /// Gets the units in which the Thickness of the text decoration's <see cref="Pen"/> is expressed.
+        /// Gets the units in which the thickness of the <see cref="TextDecoration"/> is expressed.
         /// </summary>
-        public TextDecorationUnit PenThicknessUnit
+        public TextDecorationUnit StrokeThicknessUnit
         {
-            get => GetValue(PenThicknessUnitProperty);
-            set => SetValue(PenThicknessUnitProperty, value);
+            get => GetValue(StrokeThicknessUnitProperty);
+            set => SetValue(StrokeThicknessUnitProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the pen offset.
+        /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps
+        /// that is used to draw the <see cref="TextDecoration"/>.
+        /// </summary>
+        public AvaloniaList<double> StrokeDashArray
+        {
+            get { return GetValue(StrokeDashArrayProperty); }
+            set { SetValue(StrokeDashArrayProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that specifies the distance within the dash pattern where a dash begins.
+        /// </summary>
+        public double StrokeDashOffset
+        {
+            get { return GetValue(StrokeDashOffsetProperty); }
+            set { SetValue(StrokeDashOffsetProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the thickness of the <see cref="TextDecoration"/>.
+        /// </summary>
+        public double StrokeThickness
+        {
+            get { return GetValue(StrokeThicknessProperty); }
+            set { SetValue(StrokeThicknessProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a <see cref="PenLineCap"/> enumeration value that describes the shape at the ends of a line.
+        /// </summary>
+        public PenLineCap StrokeLineCap
+        {
+            get { return GetValue(StrokeLineCapProperty); }
+            set { SetValue(StrokeLineCapProperty, value); }
+        }
+
+        /// <summary>
+        /// The stroke's offset.
         /// </summary>
         /// <value>
         /// The pen offset.
         /// </value>
-        public double PenOffset
+        public double StrokeOffset
         {
-            get => GetValue(PenOffsetProperty);
-            set => SetValue(PenOffsetProperty, value);
+            get => GetValue(StrokeOffsetProperty);
+            set => SetValue(StrokeOffsetProperty, value);
         }
 
         /// <summary>
-        /// Gets the units in which the <see cref="PenOffset"/> value is expressed.
+        /// Gets the units in which the <see cref="StrokeOffset"/> value is expressed.
         /// </summary>
-        public TextDecorationUnit PenOffsetUnit
+        public TextDecorationUnit StrokeOffsetUnit
         {
-            get => GetValue(PenOffsetUnitProperty);
-            set => SetValue(PenOffsetUnitProperty, value);
+            get => GetValue(StrokeOffsetUnitProperty);
+            set => SetValue(StrokeOffsetUnitProperty, value);
         }
 
         /// <summary>
-        /// Creates an immutable clone of the <see cref="TextDecoration"/>.
+        /// Draws the <see cref="TextDecoration"/> at given origin.
         /// </summary>
-        /// <returns>The immutable clone.</returns>
-        public ImmutableTextDecoration ToImmutable()
+        /// <param name="drawingContext">The drawing context.</param>
+        /// <param name="shapedTextCharacters">The shaped characters that are decorated.</param>
+        /// <param name="origin">The origin.</param>
+        internal void Draw(DrawingContext drawingContext, ShapedTextCharacters shapedTextCharacters, Point origin)
         {
-            return new ImmutableTextDecoration(Location, Pen?.ToImmutable(), PenThicknessUnit, PenOffset, PenOffsetUnit);
+            var fontRenderingEmSize = shapedTextCharacters.Properties.FontRenderingEmSize;
+            var fontMetrics = shapedTextCharacters.FontMetrics;
+            var thickness = StrokeThickness;
+
+            switch (StrokeThicknessUnit)
+            {
+                case TextDecorationUnit.FontRecommended:
+                    switch (Location)
+                    {
+                        case TextDecorationLocation.Underline:
+                            thickness = fontMetrics.UnderlineThickness;
+                            break;
+                        case TextDecorationLocation.Strikethrough:
+                            thickness = fontMetrics.StrikethroughThickness;
+                            break;
+                    }
+
+                    break;
+                case TextDecorationUnit.FontRenderingEmSize:
+                    thickness = fontRenderingEmSize * thickness;
+                    break;
+            }
+
+            switch (Location)
+            {
+                case TextDecorationLocation.Overline:
+                    origin += new Point(0, fontMetrics.Ascent);
+                    break;
+                case TextDecorationLocation.Strikethrough:
+                    origin += new Point(0, -fontMetrics.StrikethroughPosition);
+                    break;
+                case TextDecorationLocation.Underline:
+                    origin += new Point(0, -fontMetrics.UnderlinePosition);
+                    break;
+            }
+
+            switch (StrokeOffsetUnit)
+            {
+                case TextDecorationUnit.FontRenderingEmSize:
+                    origin += new Point(0, StrokeOffset * fontRenderingEmSize);
+                    break;
+                case TextDecorationUnit.Pixel:
+                    origin += new Point(0, StrokeOffset);
+                    break;
+            }
+
+            var pen = new Pen(Stroke ?? shapedTextCharacters.Properties.ForegroundBrush, thickness,
+                new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
+
+            drawingContext.DrawLine(pen, origin, origin + new Point(shapedTextCharacters.Bounds.Width, 0));
         }
     }
 }

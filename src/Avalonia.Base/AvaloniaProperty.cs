@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -9,7 +10,7 @@ namespace Avalonia
     /// <summary>
     /// Base class for avalonia properties.
     /// </summary>
-    public abstract class AvaloniaProperty : IEquatable<AvaloniaProperty>
+    public abstract class AvaloniaProperty : IEquatable<AvaloniaProperty>, IPropertyInfo
     {
         /// <summary>
         /// Represents an unset property value.
@@ -158,8 +159,6 @@ namespace Avalonia
         /// Gets the integer ID that represents this property.
         /// </summary>
         internal int Id { get; }
-
-        internal bool HasChangedSubscriptions => _changed?.HasObservers ?? false;
 
         /// <summary>
         /// Provides access to a property's binding via the <see cref="AvaloniaObject"/>
@@ -512,7 +511,7 @@ namespace Avalonia
         /// <returns>
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
-        internal abstract IDisposable? RouteSetValue(
+        internal abstract IDisposable RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority);
@@ -584,6 +583,11 @@ namespace Avalonia
 
             return _defaultMetadata;
         }
+
+        bool IPropertyInfo.CanGet => true;
+        bool IPropertyInfo.CanSet => true;
+        object IPropertyInfo.Get(object target) => ((AvaloniaObject)target).GetValue(this);
+        void IPropertyInfo.Set(object target, object value) => ((AvaloniaObject)target).SetValue(this, value);
     }
 
     /// <summary>

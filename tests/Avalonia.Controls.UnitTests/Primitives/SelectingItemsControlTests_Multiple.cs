@@ -1014,6 +1014,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectionMode = SelectionMode.Multiple,
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -1043,6 +1044,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectionMode = SelectionMode.Multiple,
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -1076,6 +1078,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectionMode = SelectionMode.Multiple,
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -1199,6 +1202,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             items.Add(new ItemContainer { IsSelected = true });

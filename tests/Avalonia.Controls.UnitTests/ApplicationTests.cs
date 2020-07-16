@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using Avalonia.Threading;
+using Avalonia.Data;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -30,6 +29,21 @@ namespace Avalonia.Controls.UnitTests
                 resources["foo"] = "bar";
 
                 Assert.True(raised);
+            }
+        }
+
+        [Fact]
+        public void Can_Bind_To_DataContext()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var application = Application.Current;
+
+                application.DataContext = "Test";
+
+                application.Bind(Application.NameProperty, new Binding("."));
+
+                Assert.Equal("Test", Application.Current.Name);
             }
         }
     }

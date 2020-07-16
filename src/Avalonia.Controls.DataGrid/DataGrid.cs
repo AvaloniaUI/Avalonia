@@ -3920,6 +3920,8 @@ namespace Avalonia.Controls
                     dataGridColumn: CurrentColumn,
                     dataGridRow: EditingRow,
                     dataGridCell: editingCell);
+
+                EditingRow.InvalidateDesiredHeight();
             }
 
             // We're done, so raise the CellEditEnded event

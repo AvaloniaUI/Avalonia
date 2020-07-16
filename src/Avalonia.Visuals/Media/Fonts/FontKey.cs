@@ -4,7 +4,7 @@ namespace Avalonia.Media.Fonts
 {
     public readonly struct FontKey : IEquatable<FontKey>
     {
-        public FontKey(string familyName, FontWeight weight, FontStyle style)
+        public FontKey(string familyName, FontStyle style, FontWeight weight)
         {
             FamilyName = familyName;
             Style = style;

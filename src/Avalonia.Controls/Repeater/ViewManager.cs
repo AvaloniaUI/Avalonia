@@ -6,11 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
+using Avalonia.Logging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -25,6 +24,8 @@ namespace Avalonia.Controls
         private readonly UniqueIdElementPool _resetPool;
         private IControl _lastFocusedElement;
         private bool _isDataSourceStableResetPending;
+        private ElementFactoryGetArgs _elementFactoryGetArgs;
+        private ElementFactoryRecycleArgs _elementFactoryRecycleArgs;
         private int _firstRealizedElementIndexHeldByLayout = FirstRealizedElementIndexDefault;
         private int _lastRealizedElementIndexHeldByLayout = LastRealizedElementIndexDefault;
         private bool _eventsSubscribed;
@@ -60,11 +61,13 @@ namespace Avalonia.Controls
             if (suppressAutoRecycle)
             {
                 virtInfo.AutoRecycleCandidate = false;
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "GetElement: {Index} Not AutoRecycleCandidate:", virtInfo.Index);
             }
             else
             {
                 virtInfo.AutoRecycleCandidate = true;
                 virtInfo.KeepAlive = true;
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "GetElement: {Index} AutoRecycleCandidate:", virtInfo.Index);
             }
 
             return element;
@@ -107,13 +110,38 @@ namespace Avalonia.Controls
             }
         }
 
+        // We need to clear the datacontext to prevent crashes from happening,
+        //  however we only do that if we were the ones setting it.
+        // That is when one of the following is the case (numbering taken from line ~642):
+        // 1.2    No ItemTemplate, data is not a UIElement
+        // 2.1    ItemTemplate, data is not FrameworkElement
+        // 2.2.2  Itemtemplate, data is FrameworkElement, ElementFactory returned Element different to data
+        //
+        // In all of those three cases, we the ItemTemplateShim is NOT null.
+        // Luckily when we create the items, we store whether we were the once setting the DataContext.
         public void ClearElementToElementFactory(IControl element)
         {
             _owner.OnElementClearing(element);
 
+            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
+            virtInfo.MoveOwnershipToElementFactory();
+
+            // During creation of this object, we were the one setting the DataContext, so clear it now.
+            if (virtInfo.MustClearDataContext)
+            {
+                element.DataContext = null;
+            }
+
             if (_owner.ItemTemplateShim != null)
             {
-                _owner.ItemTemplateShim.RecycleElement(_owner, element);
+                var context = _elementFactoryRecycleArgs ??= new ElementFactoryRecycleArgs();
+                context.Element = element;
+                context.Parent = _owner;
+
+                _owner.ItemTemplateShim.RecycleElement(context);
+
+                context.Element = null;
+                context.Parent = null;
             }
             else
             {
@@ -123,9 +151,6 @@ namespace Avalonia.Controls
                     throw new InvalidOperationException("ItemsRepeater's child not found in its Children collection.");
                 }
             }
-
-            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
-            virtInfo.MoveOwnershipToElementFactory();
 
             if (_lastFocusedElement == element)
             {
@@ -561,7 +586,7 @@ namespace Avalonia.Controls
             var data = _owner.ItemsSourceView.GetAt(index);
             var providedElementFactory = _owner.ItemTemplateShim;
 
-            ItemTemplateWrapper GetElementFactory()
+            IElementFactory GetElementFactory()
             {
                 if (providedElementFactory == null)
                 {
@@ -584,7 +609,20 @@ namespace Avalonia.Controls
                 }
 
                 var elementFactory = GetElementFactory();
-                return elementFactory.GetElement(_owner, data);
+                var args = _elementFactoryGetArgs ??= new ElementFactoryGetArgs();
+
+                try
+                {
+                    args.Data = data;
+                    args.Parent = _owner;
+                    args.Index = index;
+                    return elementFactory.GetElement(args);
+                }
+                finally
+                {
+                    args.Data = null;
+                    args.Parent = null;
+                }
             }
 
             var element = GetElement();
@@ -594,11 +632,14 @@ namespace Avalonia.Controls
             {
                 virtInfo = ItemsRepeater.CreateAndInitializeVirtualizationInfo(element);
             }
+            // Clear flag
+            virtInfo.MustClearDataContext = false;
 
             if (data != element)
             {
                 // Prepare the element
                 element.DataContext = data;
+                virtInfo.MustClearDataContext = true;
             }
 
             virtInfo.MoveOwnershipToLayoutFromElementFactory(
@@ -711,6 +752,7 @@ namespace Avalonia.Controls
             {
                 _owner.GotFocus += OnFocusChanged;
                 _owner.LostFocus += OnFocusChanged;
+                _eventsSubscribed = true;
             }
         }
 

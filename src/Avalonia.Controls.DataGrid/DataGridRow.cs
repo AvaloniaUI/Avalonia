@@ -767,6 +767,11 @@ namespace Avalonia.Controls
             }
         }
 
+        internal void InvalidateDesiredHeight()
+        {
+            _cellsElement?.InvalidateDesiredHeight();
+        }
+
         internal void ResetGridLine()
         {
             _bottomGridLine = null;

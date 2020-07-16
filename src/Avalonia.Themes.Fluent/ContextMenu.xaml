@@ -1,7 +1,7 @@
 <Style xmlns="https://github.com/avaloniaui"
        Selector="ContextMenu">
   <Design.PreviewWith>
-    <Border Background="{DynamicResource ThemeAccentBrush}"
+    <Border Background="{DynamicResource SystemAccentColor}"
             Margin="16"
             Padding="48"
             Width="400"
@@ -35,7 +35,7 @@
   <Setter Property="MinHeight" Value="{DynamicResource MenuFlyoutThemeMinHeight}" />
   <Setter Property="Padding" Value="{DynamicResource MenuFlyoutPresenterThemePadding}" />
   <Setter Property="HorizontalAlignment" Value="Stretch" />
-  <Setter Property="TextBlock.FontSize" Value="{DynamicResource FontSizeNormal}" />
+  <Setter Property="TextBlock.FontSize" Value="{DynamicResource ContentControlFontSize}" />
   <Setter Property="TextBlock.FontWeight" Value="Normal" />
   <Setter Property="Template">
     <ControlTemplate>

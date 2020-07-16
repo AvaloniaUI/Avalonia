@@ -157,12 +157,12 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format);
         }
 
-        private static readonly SKPaint s_paint = new SKPaint
+        private static readonly SKFont s_font = new SKFont
         {
-            TextEncoding = SKTextEncoding.GlyphId,
-            IsAntialias = true,
-            IsStroke = false,
-            SubpixelText = true
+            Subpixel = true,
+            Edging = SKFontEdging.Antialias,
+            Hinting = SKFontHinting.Full,
+            LinearMetrics = true
         };
 
         private static readonly SKTextBlobBuilder s_textBlobBuilder = new SKTextBlobBuilder();
@@ -176,8 +176,8 @@ namespace Avalonia.Skia
 
             var typeface = glyphTypeface.Typeface;
 
-            s_paint.TextSize = (float)glyphRun.FontRenderingEmSize;
-            s_paint.Typeface = typeface;
+            s_font.Size = (float)glyphRun.FontRenderingEmSize;
+            s_font.Typeface = typeface;
 
 
             SKTextBlob textBlob;
@@ -190,7 +190,7 @@ namespace Avalonia.Skia
             {
                 if (glyphTypeface.IsFixedPitch)
                 {
-                    s_textBlobBuilder.AddRun(s_paint, 0, 0, glyphRun.GlyphIndices.Buffer.Span);
+                    s_textBlobBuilder.AddRun(glyphRun.GlyphIndices.Buffer.Span, s_font);
 
                     textBlob = s_textBlobBuilder.Build();
 
@@ -198,7 +198,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    var buffer = s_textBlobBuilder.AllocateHorizontalRun(s_paint, count, 0);
+                    var buffer = s_textBlobBuilder.AllocateHorizontalRun(s_font, count, 0);
 
                     var positions = buffer.GetPositionSpan();
 
@@ -223,7 +223,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                var buffer = s_textBlobBuilder.AllocatePositionedRun(s_paint, count);
+                var buffer = s_textBlobBuilder.AllocatePositionedRun(s_font, count);
 
                 var glyphPositions = buffer.GetPositionSpan();
 

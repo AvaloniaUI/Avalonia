@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Globalization;
 using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 using HarfBuzzSharp;
 using Buffer = HarfBuzzSharp.Buffer;
 
@@ -11,59 +11,17 @@ namespace Avalonia.Skia
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, TextFormat textFormat)
+        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture)
         {
             using (var buffer = new Buffer())
             {
-                buffer.ContentType = ContentType.Unicode;
+                FillBuffer(buffer, text);
 
-                var breakCharPosition = text.Length - 1;
-
-                var codepoint = Codepoint.ReadAt(text, breakCharPosition, out var count);
-
-                if (codepoint.IsBreakChar)
-                {
-                    var breakCharCount = 1;
-
-                    if (text.Length > 1)
-                    {
-                        var previousCodepoint = Codepoint.ReadAt(text, breakCharPosition - count, out _);
-
-                        if (codepoint == '\r' && previousCodepoint == '\n'
-                            || codepoint == '\n' && previousCodepoint == '\r')
-                        {
-                            breakCharCount = 2;
-                        }
-                    }
-
-                    if (breakCharPosition != text.Start)
-                    {
-                        buffer.AddUtf16(text.Buffer.Span.Slice(0, text.Length - breakCharCount));
-                    }
-
-                    var cluster = buffer.GlyphInfos.Length > 0 ?
-                        buffer.GlyphInfos[buffer.Length - 1].Cluster + 1 :
-                        (uint)text.Start;
-
-                    switch (breakCharCount)
-                    {
-                        case 1:
-                            buffer.Add('\u200C', cluster);
-                            break;
-                        case 2:
-                            buffer.Add('\u200C', cluster);
-                            buffer.Add('\u200D', cluster);
-                            break;
-                    }
-                }
-                else
-                {
-                    buffer.AddUtf16(text.Buffer.Span);
-                }
+                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
                 buffer.GuessSegmentProperties();
 
-                var glyphTypeface = textFormat.Typeface.GlyphTypeface;
+                var glyphTypeface = typeface.GlyphTypeface;
 
                 var font = ((GlyphTypefaceImpl)glyphTypeface.PlatformImpl).Font;
 
@@ -71,7 +29,7 @@ namespace Avalonia.Skia
 
                 font.GetScale(out var scaleX, out _);
 
-                var textScale = textFormat.FontRenderingEmSize / scaleX;
+                var textScale = fontRenderingEmSize / scaleX;
 
                 var bufferLength = buffer.Length;
 
@@ -91,7 +49,7 @@ namespace Avalonia.Skia
                 {
                     glyphIndices[i] = (ushort)glyphInfos[i].Codepoint;
 
-                    clusters[i] = (ushort)(text.Start + glyphInfos[i].Cluster);
+                    clusters[i] = (ushort)glyphInfos[i].Cluster;
 
                     if (!glyphTypeface.IsFixedPitch)
                     {
@@ -101,12 +59,57 @@ namespace Avalonia.Skia
                     SetOffset(glyphPositions, i, textScale, ref glyphOffsets);
                 }
 
-                return new GlyphRun(glyphTypeface, textFormat.FontRenderingEmSize,
+                return new GlyphRun(glyphTypeface, fontRenderingEmSize,
                     new ReadOnlySlice<ushort>(glyphIndices),
                     new ReadOnlySlice<double>(glyphAdvances),
                     new ReadOnlySlice<Vector>(glyphOffsets),
                     text,
                     new ReadOnlySlice<ushort>(clusters));
+            }
+        }
+
+        private static void FillBuffer(Buffer buffer, ReadOnlySlice<char> text)
+        {
+            buffer.ContentType = ContentType.Unicode;
+
+            var i = 0;
+
+            while (i < text.Length)
+            {
+                var codepoint = Codepoint.ReadAt(text, i, out var count);
+
+                var cluster = (uint)(text.Start + i);
+
+                if (codepoint.IsBreakChar)
+                {
+                    if (i < text.End)
+                    {
+                        var nextCodepoint = Codepoint.ReadAt(text, i + 1, out _);
+
+                        if (nextCodepoint == '\r' && codepoint == '\n' || nextCodepoint == '\n' && codepoint == '\r')
+                        {
+                            count++;
+
+                            buffer.Add('\u200C', cluster);
+
+                            buffer.Add('\u200D', cluster);
+                        }
+                        else
+                        {
+                            buffer.Add('\u200C', cluster);
+                        }
+                    }
+                    else
+                    {
+                        buffer.Add('\u200C', cluster);
+                    }
+                }
+                else
+                {
+                    buffer.Add(codepoint, cluster);
+                }
+
+                i += count;
             }
         }
 

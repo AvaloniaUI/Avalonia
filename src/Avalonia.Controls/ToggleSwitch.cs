@@ -10,10 +10,32 @@ namespace Avalonia.Controls
     /// </summary>
     public class ToggleSwitch : ToggleButton
     {
+        private Panel _knobsPanel;
+        private Panel _switchKnob;
+        private bool _knobsPanelPressed = false;
+        private Point _switchStartPoint = new Point();
+        private double _initLeft = -1;
+        private bool _isDragging = false;
+
         static ToggleSwitch()
         {
             OffContentProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) => x.OffContentChanged(e));
             OnContentProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) => x.OnContentChanged(e));
+            IsCheckedProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) =>
+            {
+                if ((e.NewValue != null) && (e.NewValue is bool val))
+                {
+                    x.UpdateKnobPos(val);
+                }
+            });
+
+            BoundsProperty.Changed.AddClassHandler<ToggleSwitch>((x, e) =>
+            {
+                if (x.IsChecked != null)
+                {
+                    x.UpdateKnobPos(x.IsChecked.Value);
+                }
+            });
         }
 
         /// <summary>
@@ -130,6 +152,102 @@ namespace Avalonia.Controls
             }
 
             return result;
+        }
+
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            _switchKnob = e.NameScope.Find<Panel>("SwitchKnob");
+            _knobsPanel = e.NameScope.Find<Panel>("MovingKnobs");
+            
+            _knobsPanel.PointerPressed += KnobsPanel_PointerPressed;
+            _knobsPanel.PointerReleased += KnobsPanel_PointerReleased;
+            _knobsPanel.PointerMoved += KnobsPanel_PointerMoved;
+
+            if (IsChecked.HasValue)
+            {
+                UpdateKnobPos(IsChecked.Value);
+            }
+        }
+        
+        private void KnobsPanel_PointerPressed(object sender, Input.PointerPressedEventArgs e)
+        {
+            _switchStartPoint = e.GetPosition(_switchKnob);
+            _initLeft = Canvas.GetLeft(_knobsPanel);
+            _isDragging = false;
+            _knobsPanelPressed = true;
+        }
+
+        private void KnobsPanel_PointerReleased(object sender, Input.PointerReleasedEventArgs e)
+        {
+            if (_isDragging)
+            {
+                bool shouldBecomeChecked = Canvas.GetLeft(_knobsPanel) >= (_switchKnob.Bounds.Width / 2);
+                _knobsPanel.ClearValue(Canvas.LeftProperty);
+
+                PseudoClasses.Set(":dragging", false);
+
+                if (shouldBecomeChecked == IsChecked)
+                {
+                    UpdateKnobPos(shouldBecomeChecked);
+                }
+                else
+                {
+                    IsChecked = shouldBecomeChecked;
+                }
+            }
+            else
+            {
+                base.Toggle();
+            }
+
+            _isDragging = false;
+
+            _knobsPanelPressed = false;
+        }
+
+        private void KnobsPanel_PointerMoved(object sender, Input.PointerEventArgs e)
+        {
+            if (_knobsPanelPressed)
+            {
+                var difference = e.GetPosition(_switchKnob) - _switchStartPoint;
+
+                if ((!_isDragging) && (System.Math.Abs(difference.X) > 3))
+                {
+                    _isDragging = true;
+                    PseudoClasses.Set(":dragging", true);
+                }
+
+                if (_isDragging)
+                {
+                    Canvas.SetLeft(_knobsPanel, System.Math.Min(_switchKnob.Bounds.Width, System.Math.Max(0, (_initLeft + difference.X))));
+                }
+            }
+        }
+
+        protected override void Toggle()
+        {
+            if ((_switchKnob != null) && (!_switchKnob.IsPointerOver))
+            {
+                base.Toggle();
+            }
+        }
+
+        protected void UpdateKnobPos(bool value)
+        {
+            if ((_switchKnob != null) && (_knobsPanel != null))
+            {
+                if (value)
+                {
+                    Canvas.SetLeft(_knobsPanel, _switchKnob.Bounds.Width);
+                }
+                else
+                {
+                    Canvas.SetLeft(_knobsPanel, 0);
+                }
+            }
         }
     }
 }
