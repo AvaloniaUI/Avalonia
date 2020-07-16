@@ -7,6 +7,7 @@ namespace Avalonia.Win32
 {
     class PopupImpl : WindowImpl, IPopupImpl
     {
+        private readonly IWindowBaseImpl _parent;
         private bool _dropShadowHint = true;
         private Size? _maxAutoSize;
 
@@ -19,18 +20,25 @@ namespace Avalonia.Win32
         public override void Show()
         {
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
-            var parent = UnmanagedMethods.GetParent(Handle.Handle);
-            if (parent != IntPtr.Zero)
-            {
-                IntPtr nextParent = parent;
-                while (nextParent != IntPtr.Zero)
-                {
-                    parent = nextParent;
-                    nextParent = UnmanagedMethods.GetParent(parent);
-                }
 
-                UnmanagedMethods.SetFocus(parent);
+            // We need to steal focus if it's held by a child window of our toplevel window
+            var parent = _parent;
+            while(parent != null)
+            {
+                if(parent is PopupImpl pi)
+                   parent = pi._parent;
+                else
+                    break;
             }
+
+            if(parent == null)
+                return;
+
+            var focusOwner = UnmanagedMethods.GetFocus();
+            if (focusOwner != IntPtr.Zero &&
+                UnmanagedMethods.GetAncestor(focusOwner, UnmanagedMethods.GetAncestorFlags.GA_ROOT)
+                == parent.Handle.Handle)
+                UnmanagedMethods.SetFocus(parent.Handle.Handle);
         }
 
         protected override bool ShouldTakeFocusOnClick => false;
@@ -118,6 +126,7 @@ namespace Avalonia.Win32
 
         private PopupImpl(IWindowBaseImpl parent, bool dummy) : base()
         {
+            _parent = parent;
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
 
