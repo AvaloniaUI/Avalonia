@@ -170,8 +170,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectionMode = SelectionMode.Single | SelectionMode.AlwaysSelected
             };
 
-            var root = new TestRoot(listBox);
-
             listBox.BeginInit();
 
             listBox.SelectedIndex = 1;
@@ -482,7 +480,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
             items.Add(new Item { IsSelected = true });
@@ -534,7 +531,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
             target.SelectedIndex = 1;
 
             Assert.Equal(items[1], target.SelectedItem);
@@ -553,45 +549,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.NotNull(receivedArgs);
             Assert.Empty(receivedArgs.AddedItems);
             Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
-            Assert.False(items.Single().IsSelected);
-        }
-
-        [Fact]
-        public void Removing_Selected_Item_Should_Clear_Selection_With_BeginInit()
-        {
-            var items = new AvaloniaList<Item>
-            {
-                new Item(),
-                new Item(),
-            };
-
-            var target = new SelectingItemsControl();
-            target.BeginInit();
-            target.Items = items;
-            target.Template = Template();
-            target.EndInit();
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-            target.SelectedIndex = 0;
-
-            Assert.Equal(items[0], target.SelectedItem);
-            Assert.Equal(0, target.SelectedIndex);
-
-            SelectionChangedEventArgs receivedArgs = null;
-
-            target.SelectionChanged += (_, args) => receivedArgs = args;
-
-            var removed = items[0];
-
-            items.RemoveAt(0);
-
-            Assert.Null(target.SelectedItem);
-            Assert.Equal(-1, target.SelectedIndex);
-            Assert.NotNull(receivedArgs);
-            Assert.Empty(receivedArgs.AddedItems);
-            Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
-            Assert.False(items.Single().IsSelected);
         }
 
         [Fact]
@@ -922,7 +879,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = items,
             };
 
-            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 

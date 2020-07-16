@@ -131,7 +131,6 @@ namespace Avalonia.Controls.UnitTests
             var child = new Control();
             var items = new AvaloniaList<Control>(child);
 
-            var root = new TestRoot(target);
             target.Template = GetTemplate();
             target.Items = items;
             items.RemoveAt(0);
@@ -284,7 +283,6 @@ namespace Avalonia.Controls.UnitTests
             var items = new AvaloniaList<string> { "Foo" };
             var called = false;
 
-            var root = new TestRoot(target);
             target.Template = GetTemplate();
             target.Items = items;
             target.ApplyTemplate();
@@ -305,7 +303,6 @@ namespace Avalonia.Controls.UnitTests
             var items = new AvaloniaList<string> { "Foo", "Bar" };
             var called = false;
 
-            var root = new TestRoot(target);
             target.Template = GetTemplate();
             target.Items = items;
             target.ApplyTemplate();
@@ -379,7 +376,6 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { 1, 2, 3 },
             };
 
-            var root = new TestRoot(target);
             Assert.DoesNotContain(":empty", target.Classes);
         }
 
