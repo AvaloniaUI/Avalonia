@@ -4,6 +4,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -155,6 +156,7 @@ namespace Avalonia.Controls.UnitTests
                 IsVirtualized = false
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
@@ -247,6 +249,7 @@ namespace Avalonia.Controls.UnitTests
                 IsVirtualized = false
             };
 
+            var root = new TestRoot(target);
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
