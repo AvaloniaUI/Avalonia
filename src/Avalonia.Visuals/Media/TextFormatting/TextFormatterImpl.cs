@@ -42,6 +42,156 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Measures the number of characters that fits into available width.
+        /// </summary>
+        /// <param name="textCharacters">The text run.</param>
+        /// <param name="availableWidth">The available width.</param>
+        /// <returns></returns>
+        internal static int MeasureCharacters(ShapedTextCharacters textCharacters, double availableWidth)
+        {
+            var glyphRun = textCharacters.GlyphRun;
+
+            if (glyphRun.Bounds.Width < availableWidth)
+            {
+                return glyphRun.Characters.Length;
+            }
+
+            var glyphCount = 0;
+
+            var currentWidth = 0.0;
+
+            if (glyphRun.GlyphAdvances.IsEmpty)
+            {
+                var glyphTypeface = glyphRun.GlyphTypeface;
+
+                for (var i = 0; i < glyphRun.GlyphClusters.Length; i++)
+                {
+                    var glyph = glyphRun.GlyphIndices[i];
+
+                    var advance = glyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
+
+                    if (currentWidth + advance > availableWidth)
+                    {
+                        break;
+                    }
+
+                    currentWidth += advance;
+
+                    glyphCount++;
+                }
+            }
+            else
+            {
+                foreach (var advance in glyphRun.GlyphAdvances)
+                {
+                    if (currentWidth + advance > availableWidth)
+                    {
+                        break;
+                    }
+
+                    currentWidth += advance;
+
+                    glyphCount++;
+                }
+            }
+
+            if (glyphCount == glyphRun.GlyphIndices.Length)
+            {
+                return glyphRun.Characters.Length;
+            }
+
+            if (glyphRun.GlyphClusters.IsEmpty)
+            {
+                return glyphCount;
+            }
+
+            var firstCluster = glyphRun.GlyphClusters[0];
+
+            var lastCluster = glyphRun.GlyphClusters[glyphCount];
+
+            return lastCluster - firstCluster;
+        }
+
+        /// <summary>
+        /// Split a sequence of runs into two segments at specified length.
+        /// </summary>
+        /// <param name="textRuns">The text run's.</param>
+        /// <param name="length">The length to split at.</param>
+        /// <returns>The split text runs.</returns>
+        internal static SplitTextRunsResult SplitTextRuns(IReadOnlyList<ShapedTextCharacters> textRuns, int length)
+        {
+            var currentLength = 0;
+
+            for (var i = 0; i < textRuns.Count; i++)
+            {
+                var currentRun = textRuns[i];
+
+                if (currentLength + currentRun.GlyphRun.Characters.Length < length)
+                {
+                    currentLength += currentRun.GlyphRun.Characters.Length;
+                    continue;
+                }
+
+                var firstCount = currentRun.GlyphRun.Characters.Length >= 1 ? i + 1 : i;
+
+                var first = new ShapedTextCharacters[firstCount];
+
+                if (firstCount > 1)
+                {
+                    for (var j = 0; j < i; j++)
+                    {
+                        first[j] = textRuns[j];
+                    }
+                }
+
+                var secondCount = textRuns.Count - firstCount;
+
+                if (currentLength + currentRun.GlyphRun.Characters.Length == length)
+                {
+                    var second = new ShapedTextCharacters[secondCount];
+
+                    var offset = currentRun.GlyphRun.Characters.Length > 1 ? 1 : 0;
+
+                    if (secondCount > 0)
+                    {
+                        for (var j = 0; j < secondCount; j++)
+                        {
+                            second[j] = textRuns[i + j + offset];
+                        }
+                    }
+
+                    first[i] = currentRun;
+
+                    return new SplitTextRunsResult(first, second);
+                }
+                else
+                {
+                    secondCount++;
+
+                    var second = new ShapedTextCharacters[secondCount];
+
+                    if (secondCount > 0)
+                    {
+                        for (var j = 1; j < secondCount; j++)
+                        {
+                            second[j] = textRuns[i + j];
+                        }
+                    }
+
+                    var split = currentRun.Split(length - currentLength);
+
+                    first[i] = split.First;
+
+                    second[0] = split.Second;
+
+                    return new SplitTextRunsResult(first, second);
+                }
+            }
+
+            return new SplitTextRunsResult(textRuns, null);
+        }
+
+        /// <summary>
         /// Fetches text runs.
         /// </summary>
         /// <param name="textSource">The text source.</param>
@@ -188,7 +338,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentWidth + currentRun.GlyphRun.Bounds.Width > availableWidth)
                 {
-                    var measuredLength = MeasureText(currentRun, paragraphWidth - currentWidth);
+                    var measuredLength = MeasureCharacters(currentRun, paragraphWidth - currentWidth);
 
                     var breakFound = false;
 
@@ -257,77 +407,6 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Measures the number of characters that fits into available width.
-        /// </summary>
-        /// <param name="textCharacters">The text run.</param>
-        /// <param name="availableWidth">The available width.</param>
-        /// <returns></returns>
-        internal static int MeasureText(ShapedTextCharacters textCharacters, double availableWidth)
-        {
-            var glyphRun = textCharacters.GlyphRun;
-
-            if (glyphRun.Bounds.Width < availableWidth)
-            {
-                return glyphRun.Characters.Length;
-            }
-
-            var glyphCount = 0;
-
-            var currentWidth = 0.0;
-
-            if (glyphRun.GlyphAdvances.IsEmpty)
-            {
-                var glyphTypeface = glyphRun.GlyphTypeface;
-
-                for (var i = 0; i < glyphRun.GlyphClusters.Length; i++)
-                {
-                    var glyph = glyphRun.GlyphIndices[i];
-
-                    var advance = glyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
-
-                    if (currentWidth + advance > availableWidth)
-                    {
-                        break;
-                    }
-
-                    currentWidth += advance;
-
-                    glyphCount++;
-                }
-            }
-            else
-            {
-                foreach (var advance in glyphRun.GlyphAdvances)
-                {
-                    if (currentWidth + advance > availableWidth)
-                    {
-                        break;
-                    }
-
-                    currentWidth += advance;
-
-                    glyphCount++;
-                }
-            }
-
-            if (glyphCount == glyphRun.GlyphIndices.Length)
-            {
-                return glyphRun.Characters.Length;
-            }
-
-            if (glyphRun.GlyphClusters.IsEmpty)
-            {
-                return glyphCount;
-            }
-
-            var firstCluster = glyphRun.GlyphClusters[0];
-
-            var lastCluster = glyphRun.GlyphClusters[glyphCount];
-
-            return lastCluster - firstCluster;
-        }
-
-        /// <summary>
         /// Gets the text range that is covered by the text runs.
         /// </summary>
         /// <param name="textRuns">The text runs.</param>
@@ -351,85 +430,6 @@ namespace Avalonia.Media.TextFormatting
             var end = textRuns[textRuns.Count - 1].Text.End + 1;
 
             return new TextRange(start, end - start);
-        }
-
-        /// <summary>
-        /// Split a sequence of runs into two segments at specified length.
-        /// </summary>
-        /// <param name="textRuns">The text run's.</param>
-        /// <param name="length">The length to split at.</param>
-        /// <returns>The split text runs.</returns>
-        internal static SplitTextRunsResult SplitTextRuns(IReadOnlyList<ShapedTextCharacters> textRuns, int length)
-        {
-            var currentLength = 0;
-
-            for (var i = 0; i < textRuns.Count; i++)
-            {
-                var currentRun = textRuns[i];
-
-                if (currentLength + currentRun.GlyphRun.Characters.Length < length)
-                {
-                    currentLength += currentRun.GlyphRun.Characters.Length;
-                    continue;
-                }
-
-                var firstCount = currentRun.GlyphRun.Characters.Length >= 1 ? i + 1 : i;
-
-                var first = new ShapedTextCharacters[firstCount];
-
-                if (firstCount > 1)
-                {
-                    for (var j = 0; j < i; j++)
-                    {
-                        first[j] = textRuns[j];
-                    }
-                }
-
-                var secondCount = textRuns.Count - firstCount;
-
-                if (currentLength + currentRun.GlyphRun.Characters.Length == length)
-                {
-                    var second = new ShapedTextCharacters[secondCount];
-
-                    var offset = currentRun.GlyphRun.Characters.Length > 1 ? 1 : 0;
-
-                    if (secondCount > 0)
-                    {
-                        for (var j = 0; j < secondCount; j++)
-                        {
-                            second[j] = textRuns[i + j + offset];
-                        }
-                    }
-
-                    first[i] = currentRun;
-
-                    return new SplitTextRunsResult(first, second);
-                }
-                else
-                {
-                    secondCount++;
-
-                    var second = new ShapedTextCharacters[secondCount];
-
-                    if (secondCount > 0)
-                    {
-                        for (var j = 1; j < secondCount; j++)
-                        {
-                            second[j] = textRuns[i + j];
-                        }
-                    }
-
-                    var split = currentRun.Split(length - currentLength);
-
-                    first[i] = split.First;
-
-                    second[0] = split.Second;
-
-                    return new SplitTextRunsResult(first, second);
-                }
-            }
-
-            return new SplitTextRunsResult(textRuns, null);
         }
 
         internal readonly struct SplitTextRunsResult

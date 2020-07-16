@@ -47,6 +47,7 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
+        /// <inheritdoc/>
         public override TextLine Collapse(params TextCollapsingProperties[] collapsingPropertiesList)
         {
             if (collapsingPropertiesList == null || collapsingPropertiesList.Length == 0)
@@ -73,7 +74,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentWidth > availableWidth)
                 {
-                    var measuredLength = TextFormatterImpl.MeasureText(currentRun, availableWidth);
+                    var measuredLength = TextFormatterImpl.MeasureCharacters(currentRun, availableWidth);
 
                     var currentBreakPosition = 0;
 

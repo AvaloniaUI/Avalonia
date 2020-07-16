@@ -4,12 +4,11 @@ using System.Globalization;
 namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
-    /// Properties that can change from one run to the next, such as typeface or foreground brush.
+    /// Provides a set of properties, such as typeface or foreground brush, that can be applied to a TextRun object. This is an abstract class.
     /// </summary>
     /// <remarks>
-    /// The client provides a concrete implementation of this abstract run properties class. This
-    /// allows client to implement their run properties the way that fits with their run formatting
-    /// store.
+    /// The text layout client provides a concrete implementation of this abstract class.
+    /// This enables the client to implement text run properties in a way that corresponds with the associated formatting store.
     /// </remarks>
     public abstract class TextRunProperties : IEquatable<TextRunProperties>
     {

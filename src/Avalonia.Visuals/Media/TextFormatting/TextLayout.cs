@@ -268,6 +268,11 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="TextCollapsingProperties"/> for current text trimming mode.
+        /// </summary>
+        /// <param name="width">The collapsing width.</param>
+        /// <returns>The <see cref="TextCollapsingProperties"/>.</returns>
         private TextCollapsingProperties GetCollapsingProperties(double width)
         {
             return _textTrimming switch
