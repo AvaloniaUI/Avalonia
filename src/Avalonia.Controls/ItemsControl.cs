@@ -70,6 +70,7 @@ namespace Avalonia.Controls
         public ItemsControl()
         {
             PseudoClasses.Add(":empty");
+            SubscribeToItems(_items);
         }
 
         /// <summary>
@@ -264,11 +265,6 @@ namespace Avalonia.Controls
         {
         }
 
-        protected override void OnInitialized()
-        {
-            SubscribeToItems(_items);
-        }
-
         /// <summary>
         /// Handles directional navigation within the <see cref="ItemsControl"/>.
         /// </summary>
@@ -334,10 +330,7 @@ namespace Avalonia.Controls
                 Presenter.Items = newValue;
             }
 
-            if (IsInitialized)
-            {
-                SubscribeToItems(newValue);
-            }
+            SubscribeToItems(newValue);
         }
 
         /// <summary>
