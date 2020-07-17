@@ -235,7 +235,6 @@ namespace Avalonia.DesignerSupport.Remote
                 }
                 catch (Exception e)
                 {
-                    Console.Error.WriteLine(e.ToString());
                     s_transport.Send(new UpdateXamlResultMessage
                     {
                         Error = e.ToString(),
