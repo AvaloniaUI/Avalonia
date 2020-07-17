@@ -37,7 +37,7 @@ namespace Avalonia.iOS.Specific
     ///             view.ResignFirstResponder();
     /// </summary>
     /// <typeparam name="TView">View that needs keyboard events and show/hide keyboard</typeparam>
-    internal class KeyboardEventsHelper<TView> where TView : UIView, ITopLevelImpl
+    internal class KeyboardEventsHelper<TView> where TView : UIView, ITopLevelImpl, IGetInputRoot
     {
         private TView _view;
         private IInputElement _lastFocusedElement;
@@ -70,13 +70,13 @@ namespace Avalonia.iOS.Specific
 
         public void InsertText(string text)
         {
-            var rawTextEvent = new RawTextInputEventArgs(KeyboardDevice.Instance, (uint)DateTime.Now.Ticks, text);
+            var rawTextEvent = new RawTextInputEventArgs(KeyboardDevice.Instance, (uint)DateTime.Now.Ticks, _view.GetInputRoot(), text);
             _view.Input(rawTextEvent);
         }
 
         private void HandleKey(Key key, RawKeyEventType type)
         {
-            var rawKeyEvent = new RawKeyEventArgs(KeyboardDevice.Instance, (uint)DateTime.Now.Ticks, type, key, RawInputModifiers.None);
+            var rawKeyEvent = new RawKeyEventArgs(KeyboardDevice.Instance, (uint)DateTime.Now.Ticks, _view.GetInputRoot(), type, key, RawInputModifiers.None);
             _view.Input(rawKeyEvent);
         }
 
@@ -143,5 +143,10 @@ namespace Avalonia.iOS.Specific
         {
             HandleEvents = false;
         }
+    }
+
+    internal interface IGetInputRoot
+    {
+        IInputRoot GetInputRoot();
     }
 }

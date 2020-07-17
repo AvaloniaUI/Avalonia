@@ -19,9 +19,5 @@ namespace Avalonia.iOS
         {
             return Disposable.Empty;
         }
-
-        public void SetSystemDecorations(SystemDecorations enabled)
-        {
-        }
     }
 }
