@@ -12,13 +12,18 @@ namespace Avalonia.DesignerSupport
 {
     public class DesignWindowLoader
     {
+        public interface IDesignXamlLoader
+        {
+            object Load(MemoryStream stream, Assembly localAsm, object o, Uri baseUri);
+        }
+        
         public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath)
         {
             Window window;
             Control control;
             using (PlatformManager.DesignerMode())
             {
-                var loader = new AvaloniaXamlLoader() {IsDesignMode = true};
+                var loader = AvaloniaLocator.Current.GetService<IDesignXamlLoader>();
                 var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
 
 

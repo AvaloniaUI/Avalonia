@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using Avalonia.DesignerSupport;
 
 namespace Avalonia.Designer.HostApp
 {
@@ -40,8 +41,9 @@ namespace Avalonia.Designer.HostApp
         public static void Main(string[] args)
 #endif
         {
+            AvaloniaLocator.CurrentMutable.Bind<DesignWindowLoader.IDesignXamlLoader>()
+                .ToConstant(new DesignXamlLoader());
             Avalonia.DesignerSupport.Remote.RemoteDesignerEntryPoint.Main(args);
         }
-
     }
 }

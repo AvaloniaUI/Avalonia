@@ -10,10 +10,8 @@ namespace Avalonia.Markup.Xaml
     /// <summary>
     /// Loads XAML for a avalonia application.
     /// </summary>
-    public class AvaloniaXamlLoader
+    public static class AvaloniaXamlLoader
     {
-        public bool IsDesignMode { get; set; }
-
         /// <summary>
         /// Loads the XAML into a Avalonia component.
         /// </summary>
@@ -32,7 +30,7 @@ namespace Avalonia.Markup.Xaml
         /// A base URI to use if <paramref name="uri"/> is relative.
         /// </param>
         /// <returns>The loaded object.</returns>
-        public object Load(Uri uri, Uri baseUri = null)
+        public static object Load(Uri uri, Uri baseUri = null)
         {
             Contract.Requires<ArgumentNullException>(uri != null);
 
@@ -56,51 +54,9 @@ namespace Avalonia.Markup.Xaml
                     return compiledResult;
             }
             
-            
-            var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
-            using (var stream = asset.stream)
-            {
-                var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
-                return Load(stream, asset.assembly, null, absoluteUri);
-            }
+            throw new XamlLoadException(
+                $"No precompiled XAML found for {uri} (baseUri: {baseUri}), make sure to specify x:Class and include your XAML file as AvaloniaResource");
         }
         
-        /// <summary>
-        /// Loads XAML from a string.
-        /// </summary>
-        /// <param name="xaml">The string containing the XAML.</param>
-        /// <param name="localAssembly">Default assembly for clr-namespace:</param>
-        /// <param name="rootInstance">
-        /// The optional instance into which the XAML should be loaded.
-        /// </param>
-        /// <returns>The loaded object.</returns>
-        public object Load(string xaml, Assembly localAssembly = null, object rootInstance = null)
-        {
-            Contract.Requires<ArgumentNullException>(xaml != null);
-
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
-            {
-                return Load(stream, localAssembly, rootInstance);
-            }
-        }
-
-        /// <summary>
-        /// Loads XAML from a stream.
-        /// </summary>
-        /// <param name="stream">The stream containing the XAML.</param>
-        /// <param name="localAssembly">Default assembly for clr-namespace</param>
-        /// <param name="rootInstance">
-        /// The optional instance into which the XAML should be loaded.
-        /// </param>
-        /// <param name="uri">The URI of the XAML</param>
-        /// <returns>The loaded object.</returns>
-        public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null) 
-            => AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri, IsDesignMode);
-
-        public static object Parse(string xaml, Assembly localAssembly = null)
-            => new AvaloniaXamlLoader().Load(xaml, localAssembly);
-
-        public static T Parse<T>(string xaml, Assembly localAssembly = null)
-            => (T)Parse(xaml, localAssembly);
     }
 }

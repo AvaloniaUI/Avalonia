@@ -29,8 +29,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         </TextBlock.Text>
     </TextBlock>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();

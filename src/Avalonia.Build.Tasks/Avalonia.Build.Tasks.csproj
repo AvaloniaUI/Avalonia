@@ -17,14 +17,14 @@
       <Compile Include="../Markup/Avalonia.Markup.Xaml/PortableXaml/AvaloniaResourceXamlInfo.cs">
         <Link>Shared/AvaloniaResourceXamlInfo.cs</Link>
       </Compile>
-      <Compile Include="../Markup/Avalonia.Markup.Xaml/XamlIl/CompilerExtensions/**/*.cs">
+      <Compile Include="../Markup/Avalonia.Markup.Xaml.Loader/CompilerExtensions/**/*.cs">
         <Link>XamlIlExtensions/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Remove="external/cecil/**/*.*" />
-      <Compile Include="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlX\**\*.cs">
+      <Compile Include="../Markup/Avalonia.Markup.Xaml.Loader/xamlil.github\src\XamlX\**\*.cs">
         <Link>XamlIl/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Include="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlX.IL.Cecil\**\*.cs">
+      <Compile Include="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX.IL.Cecil\**\*.cs">
         <Link>XamlIl.Cecil/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs">
@@ -57,8 +57,8 @@
       <Compile Include="../Avalonia.Base/Utilities/StyleClassParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\**\obj\**\*.cs" />
-      <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
+      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\**\obj\**\*.cs" />
+      <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
       <PackageReference Include="Avalonia.Unofficial.Cecil" Version="20190417.2.0" PrivateAssets="All" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
     </ItemGroup>
