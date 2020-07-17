@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using Avalonia.DesignerSupport;
+using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Designer.HostApp
 {
@@ -41,7 +42,7 @@ namespace Avalonia.Designer.HostApp
         public static void Main(string[] args)
 #endif
         {
-            AvaloniaLocator.CurrentMutable.Bind<DesignWindowLoader.IDesignXamlLoader>()
+            AvaloniaLocator.CurrentMutable.Bind<AvaloniaXamlLoader.IRuntimeXamlLoader>()
                 .ToConstant(new DesignXamlLoader());
             Avalonia.DesignerSupport.Remote.RemoteDesignerEntryPoint.Main(args);
         }

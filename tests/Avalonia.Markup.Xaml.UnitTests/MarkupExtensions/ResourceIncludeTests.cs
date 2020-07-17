@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
 {
-    public class ResourceIncludeTests
+    public class ResourceIncludeTests : XamlTestBase
     {
         public class StaticResourceExtensionTests : XamlTestBase
         {

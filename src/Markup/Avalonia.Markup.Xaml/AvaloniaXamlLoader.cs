@@ -12,6 +12,11 @@ namespace Avalonia.Markup.Xaml
     /// </summary>
     public static class AvaloniaXamlLoader
     {
+        public interface IRuntimeXamlLoader
+        {
+            object Load(Stream stream, Assembly localAsm, object o, Uri baseUri, bool designMode);
+        }
+        
         /// <summary>
         /// Loads the XAML into a Avalonia component.
         /// </summary>
@@ -53,7 +58,19 @@ namespace Avalonia.Markup.Xaml
                 if (compiledResult != null)
                     return compiledResult;
             }
-            
+
+            // This is intended for unit-tests only
+            var runtimeLoader = AvaloniaLocator.Current.GetService<IRuntimeXamlLoader>();
+            if (runtimeLoader != null)
+            {
+                var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
+                using (var stream = asset.stream)
+                {
+                    var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
+                    return runtimeLoader.Load(stream, asset.assembly, null, absoluteUri, false);
+                }
+            }
+
             throw new XamlLoadException(
                 $"No precompiled XAML found for {uri} (baseUri: {baseUri}), make sure to specify x:Class and include your XAML file as AvaloniaResource");
         }
