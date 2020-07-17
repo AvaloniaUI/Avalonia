@@ -221,18 +221,19 @@ namespace Avalonia.Native
                 IDataObject dataObject = null;
                 if (dataObjectHandle != IntPtr.Zero)
                     dataObject = GCHandle.FromIntPtr(dataObjectHandle).Target as IDataObject;
-                
-                using(var clipboardDataObject = new ClipboardDataObject(clipboard))
+
+                using (var clipboardDataObject = new ClipboardDataObject(clipboard))
                 {
                     if (dataObject == null)
                         dataObject = clipboardDataObject;
-                    
+
                     var args = new RawDragEvent(device, (RawDragEventType)type,
                         _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
                         (RawInputModifiers)modifiers);
                     _parent.Input(args);
                     return (AvnDragDropEffects)args.Effects;
                 }
+            }
             
             void IAvnWindowBaseEvents.LostFocus()
             {
