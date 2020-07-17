@@ -82,7 +82,7 @@ namespace Avalonia.Skia
 
                 if (codepoint.IsBreakChar)
                 {
-                    if (i < text.Length)
+                    if (i + 1 < text.Length)
                     {
                         var nextCodepoint = Codepoint.ReadAt(text, i + 1, out _);
 
