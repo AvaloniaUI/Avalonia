@@ -112,8 +112,9 @@ namespace Avalonia.DesignerSupport.Remote
             return rv;
         }
 
-        static IAvaloniaRemoteTransportConnection CreateTransport(Uri transport)
+        static IAvaloniaRemoteTransportConnection CreateTransport(CommandLineArgs args)
         {
+            var transport = args.Transport;
             if (transport.Scheme == "tcp-bson")
             {
                 return new BsonTcpTransport().Connect(IPAddress.Parse(transport.Host), transport.Port).Result;
@@ -121,7 +122,7 @@ namespace Avalonia.DesignerSupport.Remote
 
             if (transport.Scheme == "file")
             {
-                return new FileWatcherTransport(transport);
+                return new FileWatcherTransport(transport, args.AppPath);
             }
             PrintUsage();
             return null;
@@ -160,7 +161,7 @@ namespace Avalonia.DesignerSupport.Remote
         public static void Main(string[] cmdline)
         {
             var args = ParseCommandLineArgs(cmdline);
-            var transport = CreateTransport(args.Transport);
+            var transport = CreateTransport(args);
             if (transport is ITransportWithEnforcedMethod enforcedMethod)
                 args.Method = enforcedMethod.PreviewerMethod;
             var asm = Assembly.LoadFile(System.IO.Path.GetFullPath(args.AppPath));

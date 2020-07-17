@@ -18,8 +18,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <Button Name='button' Content='{Binding Foo}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
@@ -44,8 +43,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </Button.Content>
     </Button>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
@@ -70,8 +68,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </Button.Tag>
     </Button>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
 
                 Assert.Same(button, ((NonControl)button.Tag).Control);
@@ -93,8 +90,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </Button.Tag>
     </Button>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
@@ -113,8 +109,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         Title='{Binding Foo}'>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
 
                 window.DataContext = new { Foo = "foo" };
                 window.ApplyTemplate();
@@ -133,8 +128,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Border DataContext='{Binding Foo}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = (Border)window.Content;
 
                 window.DataContext = new { Foo = "foo" };
@@ -157,7 +151,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <TextBlock Name='textblock' Text='{Binding Tag, RelativeSource={RelativeSource Self}}'/>
 </Window>";
 
-                var window = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
                 var textBlock = (TextBlock)window.Content;
 
                 textBlock.Tag = "foo";
@@ -180,8 +174,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </TextBlock.Text>
     </TextBlock>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = (TextBlock)window.Content;
 
                 window.ApplyTemplate();
@@ -200,8 +193,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <TextBlock Name='textblock' Text='{Binding Observable^}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = (TextBlock)window.Content;
                 var observable = new BehaviorSubject<string>("foo");
 
@@ -225,8 +217,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <TextBlock local:AttachedPropertyOwner.Double='{Binding}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = (TextBlock)window.Content;
 
                 window.DataContext = 5.6;
@@ -247,8 +238,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <local:TestControl Double='{Binding}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var testControl = (TestControl)window.Content;
 
                 window.DataContext = 5.6;
@@ -269,8 +259,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <TextBlock local:TestControl.Double='{Binding}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = (TextBlock)window.Content;
 
                 window.DataContext = 5.6;
@@ -296,8 +285,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Window.Styles>
     <TextBlock/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = (TextBlock)window.Content;
 
                 window.DataContext = 5.6;
@@ -322,8 +310,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <TextBlock Name='textBlock' Text=""{Binding Foo, StringFormat=" + fmt + @"}""/> 
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml); 
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml); 
                 var textBlock = window.FindControl<TextBlock>("textBlock"); 
 
                 textBlock.DataContext = new { Foo = "world" };
@@ -353,8 +340,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </TextBlock.Text>
     </TextBlock> 
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 textBlock.DataContext = new WindowViewModel();
@@ -374,8 +360,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         ShowInTaskbar='{Binding ShowInTaskbar, Mode=OneWayToSource}'>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var viewModel = new WindowViewModel();
 
                 window.DataContext = viewModel;
