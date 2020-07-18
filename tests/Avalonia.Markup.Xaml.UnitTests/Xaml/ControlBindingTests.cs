@@ -18,8 +18,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'>
     <ProgressBar Maximum='10' Value='{Binding Value, FallbackValue=3}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var progressBar = (ProgressBar)window.Content;
 
                 window.DataContext = new { Value = "foo" };
@@ -55,8 +54,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'>
     <ProgressBar Maximum='10' Value='{Binding Value, FallbackValue=bar}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var progressBar = (ProgressBar)window.Content;
 
                 window.DataContext = new { Value = "foo" };
@@ -91,8 +89,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </Carousel>
     </DockPanel>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var strip = window.FindControl<TabStrip>("strip");
                 var carousel = window.FindControl<Carousel>("carousel");
 
