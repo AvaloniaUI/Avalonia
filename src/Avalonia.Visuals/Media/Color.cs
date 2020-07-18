@@ -127,7 +127,7 @@ namespace Avalonia.Media
         {
             color = default;
 
-            if (s == null)
+            if (s is null)
             {
                 return false;
             }
