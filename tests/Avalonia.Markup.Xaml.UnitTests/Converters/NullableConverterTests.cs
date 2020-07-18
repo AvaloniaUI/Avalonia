@@ -22,8 +22,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
 xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Converters'
     Thickness = '5' Orientation='Vertical'
 ></ClassWithNullableProperties>";
-                var loader = new AvaloniaXamlLoader();
-                var data = (ClassWithNullableProperties)loader.Load(xaml, typeof(ClassWithNullableProperties).Assembly);
+                var data = (ClassWithNullableProperties)AvaloniaRuntimeXamlLoader.Load(xaml, typeof(ClassWithNullableProperties).Assembly);
                 Assert.Equal(new Thickness(5), data.Thickness);
                 Assert.Equal(Orientation.Vertical, data.Orientation);
             }                

@@ -25,8 +25,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    var loader = new AvaloniaXamlLoader();
-                    _loaded = (IResourceDictionary)loader.Load(Source, _baseUri);
+                    _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(Source, _baseUri);
                     _isLoading = false;
                 }
 

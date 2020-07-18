@@ -29,11 +29,19 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
             },
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
             },
         };
 
@@ -41,11 +49,19 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseDark.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
             },
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseDark.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseDark.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
             },
         };
 
