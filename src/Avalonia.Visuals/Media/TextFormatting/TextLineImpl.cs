@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Platform;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -7,11 +9,12 @@ namespace Avalonia.Media.TextFormatting
         private readonly IReadOnlyList<ShapedTextCharacters> _textRuns;
 
         public TextLineImpl(IReadOnlyList<ShapedTextCharacters> textRuns, TextLineMetrics lineMetrics,
-            TextLineBreak lineBreak = null)
+            TextLineBreak lineBreak = null, bool hasCollapsed = false)
         {
             _textRuns = textRuns;
             LineMetrics = lineMetrics;
             LineBreak = lineBreak;
+            HasCollapsed = hasCollapsed;
         }
 
         /// <inheritdoc/>
@@ -27,6 +30,9 @@ namespace Avalonia.Media.TextFormatting
         public override TextLineBreak LineBreak { get; }
 
         /// <inheritdoc/>
+        public override bool HasCollapsed { get; }
+
+        /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
             var currentX = origin.X;
@@ -39,6 +45,99 @@ namespace Avalonia.Media.TextFormatting
 
                 currentX += textRun.Bounds.Width;
             }
+        }
+
+        /// <inheritdoc/>
+        public override TextLine Collapse(params TextCollapsingProperties[] collapsingPropertiesList)
+        {
+            if (collapsingPropertiesList == null || collapsingPropertiesList.Length == 0)
+            {
+                return this;
+            }
+
+            var collapsingProperties = collapsingPropertiesList[0];
+            var runIndex = 0;
+            var currentWidth = 0.0;
+            var textRange = TextRange;
+            var collapsedLength = 0;
+            TextLineMetrics textLineMetrics;
+
+            var shapedSymbol = CreateShapedSymbol(collapsingProperties.Symbol);
+
+            var availableWidth = collapsingProperties.Width - shapedSymbol.Bounds.Width;
+
+            while (runIndex < _textRuns.Count)
+            {
+                var currentRun = _textRuns[runIndex];
+
+                currentWidth += currentRun.GlyphRun.Bounds.Width;
+
+                if (currentWidth > availableWidth)
+                {
+                    var measuredLength = TextFormatterImpl.MeasureCharacters(currentRun, availableWidth);
+
+                    var currentBreakPosition = 0;
+
+                    if (measuredLength < textRange.End)
+                    {
+                        var lineBreaker = new LineBreakEnumerator(currentRun.Text);
+
+                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
+                        {
+                            var nextBreakPosition = lineBreaker.Current.PositionWrap;
+
+                            if (nextBreakPosition == 0)
+                            {
+                                break;
+                            }
+
+                            if (nextBreakPosition > measuredLength)
+                            {
+                                break;
+                            }
+
+                            currentBreakPosition = nextBreakPosition;
+                        }
+                    }
+
+                    if (collapsingProperties.Style == TextCollapsingStyle.TrailingWord)
+                    {
+                        measuredLength = currentBreakPosition;
+                    }
+
+                    collapsedLength += measuredLength;
+
+                    var splitResult = TextFormatterImpl.SplitTextRuns(_textRuns, collapsedLength);
+
+                    var shapedTextCharacters = new List<ShapedTextCharacters>(splitResult.First.Count + 1);
+
+                    shapedTextCharacters.AddRange(splitResult.First);
+
+                    shapedTextCharacters.Add(shapedSymbol);
+
+                    textRange = new TextRange(textRange.Start, collapsedLength);
+
+                    var shapedWidth = GetShapedWidth(shapedTextCharacters);
+
+                    textLineMetrics = new TextLineMetrics(new Size(shapedWidth, LineMetrics.Size.Height),
+                        LineMetrics.TextBaseline, textRange, false);
+
+                    return new TextLineImpl(shapedTextCharacters, textLineMetrics, LineBreak, true);
+                }
+
+                availableWidth -= currentRun.GlyphRun.Bounds.Width;
+
+                collapsedLength += currentRun.GlyphRun.Characters.Length;
+
+                runIndex++;
+            }
+
+            textLineMetrics =
+                new TextLineMetrics(LineMetrics.Size.WithWidth(LineMetrics.Size.Width + shapedSymbol.Bounds.Width),
+                    LineMetrics.TextBaseline, TextRange, LineMetrics.HasOverflowed);
+
+            return new TextLineImpl(new List<ShapedTextCharacters>(_textRuns) { shapedSymbol }, textLineMetrics, null,
+                true);
         }
 
         /// <inheritdoc/>
@@ -229,6 +328,42 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return runIndex;
+        }
+
+        /// <summary>
+        /// Creates a shaped symbol.
+        /// </summary>
+        /// <param name="textRun">The symbol run to shape.</param>
+        /// <returns>
+        /// The shaped symbol.
+        /// </returns>
+        internal static ShapedTextCharacters CreateShapedSymbol(TextRun textRun)
+        {
+            var formatterImpl = AvaloniaLocator.Current.GetService<ITextShaperImpl>();
+
+            var glyphRun = formatterImpl.ShapeText(textRun.Text, textRun.Properties.Typeface, textRun.Properties.FontRenderingEmSize,
+                textRun.Properties.CultureInfo);
+
+            return new ShapedTextCharacters(glyphRun, textRun.Properties);
+        }
+        
+        /// <summary>
+        /// Gets the shaped width of specified shaped text characters.
+        /// </summary>
+        /// <param name="shapedTextCharacters">The shaped text characters.</param>
+        /// <returns>
+        /// The shaped width.
+        /// </returns>
+        private static double GetShapedWidth(IReadOnlyList<ShapedTextCharacters> shapedTextCharacters)
+        {
+            var shapedWidth = 0.0;
+
+            for (var i = 0; i < shapedTextCharacters.Count; i++)
+            {
+                shapedWidth += shapedTextCharacters[i].Bounds.Width;
+            }
+
+            return shapedWidth;
         }
     }
 }
