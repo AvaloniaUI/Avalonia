@@ -89,6 +89,11 @@ namespace Avalonia.Media
         /// <returns>The <see cref="Color"/>.</returns>
         public static Color Parse(string s)
         {
+            if (s is null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
             if (TryParse(s, out Color color))
             {
                 return color;
@@ -120,14 +125,16 @@ namespace Avalonia.Media
         /// <returns>The status of the operation.</returns>
         public static bool TryParse(string s, out Color color)
         {
-            if (s == null)
+            color = default;
+
+            if (s is null)
             {
-                throw new ArgumentNullException(nameof(s));
+                return false;
             }
 
             if (s.Length == 0)
             {
-                throw new FormatException();
+                return false;
             }
 
             if (s[0] == '#' && TryParseInternal(s.AsSpan(), out color))
@@ -143,8 +150,6 @@ namespace Avalonia.Media
 
                 return true;
             }
-
-            color = default;
 
             return false;
         }
