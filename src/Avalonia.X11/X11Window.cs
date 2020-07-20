@@ -760,11 +760,7 @@ namespace Avalonia.X11
 
         public void Dispose()
         {
-            if (_handle != IntPtr.Zero)
-            {
-                XDestroyWindow(_x11.Display, _handle);
-                Cleanup();
-            }
+            Cleanup();            
         }
 
         void Cleanup()
@@ -787,8 +783,7 @@ namespace Avalonia.X11
             }
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
-            {
-                XDestroyWindow(_x11.Display, _renderHandle);
+            {                
                 _renderHandle = IntPtr.Zero;
             }
         }
