@@ -490,10 +490,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [InlineData("0123456789\r0123456789", 2)]
-        [InlineData("0123456789", 1)]
+        [InlineData("0123456789\r0123456789")]
+        [InlineData("0123456789")]
         [Theory]
-        public void Should_Include_Last_Line_When_Constraint_Is_Surpassed(string text, int numberOfLines)
+        public void Should_Include_First_Line_When_Constraint_Is_Surpassed(string text)
         {
             using (Start())
             {
@@ -508,11 +508,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Typeface.Default,
                     12,
                     Brushes.Black.ToImmutable(),
-                    maxHeight: lineHeight * numberOfLines - lineHeight * 0.5);
+                    maxHeight: lineHeight - lineHeight * 0.5);
 
-                Assert.Equal(numberOfLines, layout.TextLines.Count);
+                Assert.Equal(1, layout.TextLines.Count);
 
-                Assert.Equal(numberOfLines * lineHeight, layout.Size.Height);
+                Assert.Equal(lineHeight, layout.Size.Height);
             }
         }
 

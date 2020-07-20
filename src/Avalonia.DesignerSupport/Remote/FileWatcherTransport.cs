@@ -9,12 +9,14 @@ namespace Avalonia.DesignerSupport.Remote
 {
     class FileWatcherTransport : IAvaloniaRemoteTransportConnection, ITransportWithEnforcedMethod
     {
+        private readonly string _appPath;
         private string _path;
         private string _lastContents;
         private bool _disposed;
 
-        public FileWatcherTransport(Uri file)
+        public FileWatcherTransport(Uri file, string appPath)
         {
+            _appPath = appPath;
             _path = file.LocalPath;
         }
 
@@ -73,7 +75,11 @@ namespace Avalonia.DesignerSupport.Remote
                 {
                     Console.WriteLine("Triggering XAML update");
                     _lastContents = data;
-                    _onMessage?.Invoke(this, new UpdateXamlMessage { Xaml = data });
+                    _onMessage?.Invoke(this, new UpdateXamlMessage
+                    {
+                        Xaml = data,
+                        AssemblyPath = _appPath
+                    });
                 }
 
                 await Task.Delay(100);

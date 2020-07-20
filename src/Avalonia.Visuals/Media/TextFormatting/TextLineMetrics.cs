@@ -9,11 +9,12 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public readonly struct TextLineMetrics
     {
-        public TextLineMetrics(Size size, double textBaseline, TextRange textRange)
+        public TextLineMetrics(Size size, double textBaseline, TextRange textRange, bool hasOverflowed)
         {
             Size = size;
             TextBaseline = textBaseline;
             TextRange = textRange;
+            HasOverflowed = hasOverflowed;
         }
 
         /// <summary>
@@ -36,6 +37,12 @@ namespace Avalonia.Media.TextFormatting
         /// Gets the distance from the top to the baseline of the line of text.
         /// </summary>
         public double TextBaseline { get; }
+
+        /// <summary>
+        /// Gets a boolean value that indicates whether content of the line overflows 
+        /// the specified paragraph width.
+        /// </summary>
+        public bool HasOverflowed { get; }
 
         /// <summary>
         /// Creates the text line metrics.
@@ -83,7 +90,7 @@ namespace Avalonia.Media.TextFormatting
                     descent - ascent + lineGap :
                     paragraphProperties.LineHeight);
 
-            return new TextLineMetrics(size, -ascent, textRange);
+            return new TextLineMetrics(size, -ascent, textRange, size.Width > paragraphWidth);
         }
     }
 }

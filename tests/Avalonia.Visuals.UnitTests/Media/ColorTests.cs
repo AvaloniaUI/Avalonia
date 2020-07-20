@@ -179,5 +179,25 @@ namespace Avalonia.Visuals.UnitTests.Media
         {
             Assert.False(Color.TryParse("#ff808g80", out _));
         }
+
+        [Fact]
+        public void Parse_Throws_ArgumentNullException_For_Null_Input()
+        {
+            Assert.Throws<ArgumentNullException>(() => Color.Parse((string)null));
+        }
+
+        [Fact]
+        public void Parse_Throws_FormatException_For_Invalid_Input()
+        {
+            Assert.Throws<FormatException>(() => Color.Parse(string.Empty));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void TryParse_Returns_False_For_Invalid_Input(string input)
+        {
+            Assert.False(Color.TryParse(input, out _));
+        }
     }
 }

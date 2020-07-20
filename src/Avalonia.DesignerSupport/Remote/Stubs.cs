@@ -21,7 +21,8 @@ namespace Avalonia.DesignerSupport.Remote
         public IPlatformHandle Handle { get; }
         public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
-        public double Scaling { get; } = 1.0;
+        public double RenderScaling { get; } = 1.0;
+        public double DesktopScaling => 1.0;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
