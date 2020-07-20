@@ -432,7 +432,7 @@ namespace Avalonia.Native
 
                 TransparencyLevel = transparencyLevel;
 
-                _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                _native?.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }
