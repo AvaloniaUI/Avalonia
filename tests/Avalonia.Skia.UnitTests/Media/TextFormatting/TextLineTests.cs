@@ -31,12 +31,37 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var nextCharacterHit = new CharacterHit(0);
 
-                for (var i = 1; i < clusters.Length; i++)
+                for (var i = 0; i < clusters.Length; i++)
                 {
-                    nextCharacterHit = textLine.GetNextCaretCharacterHit(nextCharacterHit);
+                    Assert.Equal(clusters[i], nextCharacterHit.FirstCharacterIndex);
 
-                    Assert.Equal(clusters[i], nextCharacterHit.FirstCharacterIndex + nextCharacterHit.TrailingLength);
+                    nextCharacterHit = textLine.GetNextCaretCharacterHit(nextCharacterHit);
                 }
+
+                var lastCharacterHit = nextCharacterHit;
+
+                nextCharacterHit = textLine.GetNextCaretCharacterHit(lastCharacterHit);
+
+                Assert.Equal(lastCharacterHit.FirstCharacterIndex, nextCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(lastCharacterHit.TrailingLength, nextCharacterHit.TrailingLength);
+
+                nextCharacterHit = new CharacterHit(0, clusters[1] - clusters[0]);
+
+                for (var i = 0; i < clusters.Length; i++)
+                {
+                    Assert.Equal(clusters[i], nextCharacterHit.FirstCharacterIndex);
+
+                    nextCharacterHit = textLine.GetNextCaretCharacterHit(nextCharacterHit);
+                }
+
+                lastCharacterHit = nextCharacterHit;
+
+                nextCharacterHit = textLine.GetNextCaretCharacterHit(lastCharacterHit);
+
+                Assert.Equal(lastCharacterHit.FirstCharacterIndex, nextCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(lastCharacterHit.TrailingLength, nextCharacterHit.TrailingLength);
             }
         }
 
@@ -60,14 +85,41 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var clusters = textLine.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.GlyphRun.GlyphClusters)
                     .ToArray();
 
-                var previousCharacterHit = new CharacterHit(clusters[^1]);
+                var previousCharacterHit = new CharacterHit(text.Length);
 
-                for (var i = clusters.Length - 2; i > 0; i--)
+                for (var i = clusters.Length - 1; i >= 0; i--)
                 {
                     previousCharacterHit = textLine.GetPreviousCaretCharacterHit(previousCharacterHit);
 
-                    Assert.Equal(clusters[i], previousCharacterHit.FirstCharacterIndex);
+                    Assert.Equal(clusters[i],
+                        previousCharacterHit.FirstCharacterIndex + previousCharacterHit.TrailingLength);
                 }
+
+                var firstCharacterHit = previousCharacterHit;
+
+                previousCharacterHit = textLine.GetPreviousCaretCharacterHit(firstCharacterHit);
+
+                Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(firstCharacterHit.TrailingLength, previousCharacterHit.TrailingLength);
+
+                previousCharacterHit = new CharacterHit(clusters[^1], text.Length - clusters[^1]);
+
+                for (var i = clusters.Length - 1; i > 0; i--)
+                {
+                    previousCharacterHit = textLine.GetPreviousCaretCharacterHit(previousCharacterHit);
+
+                    Assert.Equal(clusters[i],
+                        previousCharacterHit.FirstCharacterIndex + previousCharacterHit.TrailingLength);
+                }
+
+                firstCharacterHit = previousCharacterHit;
+
+                previousCharacterHit = textLine.GetPreviousCaretCharacterHit(firstCharacterHit);
+
+                Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(firstCharacterHit.TrailingLength, previousCharacterHit.TrailingLength);
             }
         }
 
