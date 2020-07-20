@@ -402,6 +402,8 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETMINMAXINFO:
                     {
                         MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+                        
+                        _maxTrackSize = mmi.ptMaxTrackSize;
 
                         if (_minSize.Width > 0)
                         {
