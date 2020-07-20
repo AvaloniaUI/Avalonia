@@ -126,7 +126,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view.Visibility = ViewStates.Visible;
         }
 
-        public double Scaling => 1;
+        public double RenderScaling => 1;
 
         void Draw()
         {
