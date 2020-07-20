@@ -111,6 +111,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var windowImpl = new Mock<IPopupImpl>();
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.SetupProperty(x => x.Closed);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -129,6 +130,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var windowImpl = new Mock<IPopupImpl>();
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -144,6 +146,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var windowImpl = new Mock<IPopupImpl>();
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -209,6 +212,7 @@ namespace Avalonia.Controls.UnitTests
                 var renderer = new Mock<IRenderer>();
                 var windowImpl = new Mock<IPopupImpl>();
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+                windowImpl.Setup(x => x.RenderScaling).Returns(1);
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
