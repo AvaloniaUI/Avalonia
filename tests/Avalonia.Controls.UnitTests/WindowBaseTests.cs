@@ -110,7 +110,7 @@ namespace Avalonia.Controls.UnitTests
         public void IsVisible_Should_Be_False_Atfer_Impl_Signals_Close()
         {
             var windowImpl = new Mock<IPopupImpl>();
-            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.SetupProperty(x => x.Closed);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -128,7 +128,7 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_IsVisible_True_Shows_Window()
         {
             var windowImpl = new Mock<IPopupImpl>();
-            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -143,7 +143,7 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_IsVisible_False_Hides_Window()
         {
             var windowImpl = new Mock<IPopupImpl>();
-            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -208,7 +208,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var renderer = new Mock<IRenderer>();
                 var windowImpl = new Mock<IPopupImpl>();
-                windowImpl.Setup(x => x.RenderScaling).Returns(1);
+                windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 

@@ -100,7 +100,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.SetupProperty(x => x.Closed);
-            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
 
             var services = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
@@ -206,7 +206,7 @@ namespace Avalonia.Controls.UnitTests
                 var parent = new Mock<Window>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
-                windowImpl.Setup(x => x.RenderScaling).Returns(1);
+                windowImpl.Setup(x => x.DesktopScaling).Returns(1);
 
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent.Object);
@@ -245,7 +245,7 @@ namespace Avalonia.Controls.UnitTests
                 var parent = new Mock<Window>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
-                windowImpl.Setup(x => x.RenderScaling).Returns(1);
+                windowImpl.Setup(x => x.DesktopScaling).Returns(1);
 
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent.Object);
@@ -273,7 +273,7 @@ namespace Avalonia.Controls.UnitTests
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
-            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -298,12 +298,12 @@ namespace Avalonia.Controls.UnitTests
             var parentWindowImpl = MockWindowingPlatform.CreateWindowMock();
             parentWindowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
             parentWindowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1920, 1080));
-            parentWindowImpl.Setup(x => x.RenderScaling).Returns(1);
+            parentWindowImpl.Setup(x => x.DesktopScaling).Returns(1);
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(320, 200));
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1920, 1080));
-            windowImpl.Setup(x => x.RenderScaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
 
             var parentWindowServices = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => parentWindowImpl.Object));
