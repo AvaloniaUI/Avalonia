@@ -57,7 +57,7 @@ namespace Avalonia.Win32
                     {
                         var info = UnmanagedMethods.MONITORINFO.Create();
                         UnmanagedMethods.GetMonitorInfo(monitor, ref info);
-                        _maxAutoSize = info.rcWork.ToPixelRect().ToRect(Scaling).Size;
+                        _maxAutoSize = info.rcWork.ToPixelRect().ToRect(RenderScaling).Size;
                     }
                 }
 

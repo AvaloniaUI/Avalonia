@@ -81,7 +81,7 @@ namespace Avalonia.Native
                 _glSurface = new GlPlatformSurface(window, _glContext);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
-            _savedScaling = Scaling;
+            _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
@@ -369,7 +369,9 @@ namespace Avalonia.Native
             _native.SetTopMost(value);
         }
 
-        public double Scaling => _native?.GetScaling() ?? 1;
+        public double RenderScaling => _native?.GetScaling() ?? 1;
+
+        public double DesktopScaling => 1;
 
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
