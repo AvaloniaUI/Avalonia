@@ -162,6 +162,64 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingCharacter, "01234 0\u2026")]
+        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingWord, "01234 \u2026")]
+        [Theory]
+        public void Should_Collapse_Line(string text, int numberOfCharacters, TextCollapsingStyle style, string expected)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.False(textLine.HasCollapsed);
+
+                var glyphTypeface = Typeface.Default.GlyphTypeface;
+
+                var scale = defaultProperties.FontRenderingEmSize / glyphTypeface.DesignEmHeight;
+
+                var width = 1.0;
+
+                for (var i = 0; i < numberOfCharacters; i++)
+                {
+                    var glyph = glyphTypeface.GetGlyph(text[i]);
+
+                    width += glyphTypeface.GetGlyphAdvance(glyph) * scale;
+                }
+
+                TextCollapsingProperties collapsingProperties;
+
+                if (style == TextCollapsingStyle.TrailingCharacter)
+                {
+                    collapsingProperties = new TextTrailingCharacterEllipsis(width, defaultProperties);
+                }
+                else
+                {
+                    collapsingProperties = new TextTrailingWordEllipsis(width, defaultProperties);
+                }
+
+                var collapsedLine = textLine.Collapse(collapsingProperties);
+
+                Assert.True(collapsedLine.HasCollapsed);
+
+                var trimmedText = collapsedLine.TextRuns.SelectMany(x => x.Text).ToArray();
+
+                Assert.Equal(expected.Length, trimmedText.Length);
+
+                for (var i = 0; i < expected.Length; i++)
+                {
+                    Assert.Equal(expected[i], trimmedText[i]);
+                }
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

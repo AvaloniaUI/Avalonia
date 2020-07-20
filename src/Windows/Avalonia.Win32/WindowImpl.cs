@@ -164,7 +164,9 @@ namespace Avalonia.Win32
             }
         }
 
-        public double Scaling => _scaling;
+        public double RenderScaling => _scaling;
+
+        public double DesktopScaling => RenderScaling;
 
         public Size ClientSize
         {
@@ -172,7 +174,7 @@ namespace Avalonia.Win32
             {
                 GetClientRect(_hwnd, out var rect);
 
-                return new Size(rect.right, rect.bottom) / Scaling;
+                return new Size(rect.right, rect.bottom) / RenderScaling;
             }
         }
 
@@ -180,7 +182,7 @@ namespace Avalonia.Win32
 
         public IPlatformHandle Handle { get; private set; }
 
-        public virtual Size MaxAutoSizeHint => new Size(_maxTrackSize.X / Scaling, _maxTrackSize.Y / Scaling);
+        public virtual Size MaxAutoSizeHint => new Size(_maxTrackSize.X / RenderScaling, _maxTrackSize.Y / RenderScaling);
 
         public IMouseDevice MouseDevice => _mouseDevice;
 
@@ -342,8 +344,8 @@ namespace Avalonia.Win32
 
         public void Resize(Size value)
         {
-            int requestedClientWidth = (int)(value.Width * Scaling);
-            int requestedClientHeight = (int)(value.Height * Scaling);
+            int requestedClientWidth = (int)(value.Width * RenderScaling);
+            int requestedClientHeight = (int)(value.Height * RenderScaling);
 
             GetClientRect(_hwnd, out var clientRect);
 
@@ -395,7 +397,7 @@ namespace Avalonia.Win32
 
         public void Invalidate(Rect rect)
         {
-            var scaling = Scaling;
+            var scaling = RenderScaling;
             var r = new RECT
             {
                 left = (int)Math.Floor(rect.X * scaling),
@@ -411,12 +413,12 @@ namespace Avalonia.Win32
         {
             var p = new POINT { X = point.X, Y = point.Y };
             UnmanagedMethods.ScreenToClient(_hwnd, ref p);
-            return new Point(p.X, p.Y) / Scaling;
+            return new Point(p.X, p.Y) / RenderScaling;
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            point *= Scaling;
+            point *= RenderScaling;
             var p = new POINT { X = (int)point.X, Y = (int)point.Y };
             ClientToScreen(_hwnd, ref p);
             return new PixelPoint(p.X, p.Y);
@@ -710,19 +712,19 @@ namespace Avalonia.Win32
 
             if (_extendTitleBarHint != -1)
             {
-                borderCaptionThickness.top = (int)(_extendTitleBarHint * Scaling);                
+                borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
             }
 
             margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
 
             if (WindowState == WindowState.Maximized)
             {
-                _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / Scaling, 0, 0);
-                _offScreenMargin = new Thickness(borderThickness.left / Scaling, borderThickness.top / Scaling, borderThickness.right / Scaling, borderThickness.bottom / Scaling);
+                _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / RenderScaling, 0, 0);
+                _offScreenMargin = new Thickness(borderThickness.left / RenderScaling, borderThickness.top / RenderScaling, borderThickness.right / RenderScaling, borderThickness.bottom / RenderScaling);
             }
             else
             {
-                _extendedMargins = new Thickness(0, (borderCaptionThickness.top) / Scaling, 0, 0);
+                _extendedMargins = new Thickness(0, (borderCaptionThickness.top) / RenderScaling, 0, 0);
                 _offScreenMargin = new Thickness();
             }
 
@@ -1033,6 +1035,8 @@ namespace Avalonia.Win32
                     Math.Max(1, rect.bottom - rect.top));
             }
         }
+
+        double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => RenderScaling;
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
 
