@@ -181,7 +181,7 @@ namespace Avalonia.Media.TextFormatting
                 return nextCharacterHit;
             }
 
-            return new CharacterHit(TextRange.End); // Can't move, we're after the last character
+            return characterHit; // Can't move, we're after the last character
         }
 
         /// <inheritdoc/>
@@ -192,7 +192,7 @@ namespace Avalonia.Media.TextFormatting
                 return previousCharacterHit;
             }
 
-            return new CharacterHit(TextRange.Start); // Can't move, we're before the first character
+            return characterHit; // Can't move, we're before the first character
         }
 
         /// <inheritdoc/>
@@ -247,9 +247,13 @@ namespace Avalonia.Media.TextFormatting
             {
                 var run = _textRuns[runIndex];
 
-                nextCharacterHit = run.GlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
+                var foundCharacterHit = run.GlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
 
-                if (codepointIndex <= nextCharacterHit.FirstCharacterIndex + nextCharacterHit.TrailingLength)
+                nextCharacterHit = characterHit.TrailingLength != 0 ?
+                    foundCharacterHit :
+                    new CharacterHit(foundCharacterHit.FirstCharacterIndex + foundCharacterHit.TrailingLength);
+
+                if (nextCharacterHit.FirstCharacterIndex > characterHit.FirstCharacterIndex)
                 {
                     return true;
                 }
@@ -283,9 +287,13 @@ namespace Avalonia.Media.TextFormatting
             {
                 var run = _textRuns[runIndex];
 
-                previousCharacterHit = run.GlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
+                var foundCharacterHit = run.GlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
 
-                if (previousCharacterHit.FirstCharacterIndex < codepointIndex)
+                previousCharacterHit = characterHit.TrailingLength != 0 ?
+                    foundCharacterHit :
+                    new CharacterHit(foundCharacterHit.FirstCharacterIndex);
+
+                if (previousCharacterHit.FirstCharacterIndex < characterHit.FirstCharacterIndex)
                 {
                     return true;
                 }
