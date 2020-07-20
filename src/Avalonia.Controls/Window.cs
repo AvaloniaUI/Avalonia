@@ -818,7 +818,7 @@ namespace Avalonia.Controls
 
         private void SetWindowStartupLocation(IWindowBaseImpl owner = null)
         {
-            var scaling = owner?.Scaling ?? PlatformImpl?.Scaling ?? 1;
+            var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
 
             // TODO: We really need non-client size here.
             var rect = new PixelRect(
