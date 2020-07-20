@@ -21,8 +21,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         xmlns:c='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Converters;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <TextBlock Name='textBlock' Text='{Binding Converter={x:Static c:TestConverter.Instance}, FallbackValue=bar}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();

@@ -93,7 +93,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupProperty(x => x.Resized);
-                impl.SetupGet(x => x.Scaling).Returns(1);
+                impl.SetupGet(x => x.RenderScaling).Returns(1);
 
                 var target = new TestTopLevel(impl.Object)
                 {
@@ -290,7 +290,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var impl = new Mock<ITopLevelImpl>();
-                impl.SetupGet(x => x.Scaling).Returns(1);
+                impl.SetupGet(x => x.RenderScaling).Returns(1);
 
                 var child = new Border { Classes = { "foo" } };
                 var target = new TestTopLevel(impl.Object)

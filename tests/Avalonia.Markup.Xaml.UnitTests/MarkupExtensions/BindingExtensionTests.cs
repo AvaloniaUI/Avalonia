@@ -29,8 +29,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Name='textBlock' Text='{Binding Source={StaticResource text}}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 window.Show();
@@ -54,8 +53,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Name='textBlock' Text='{Binding Foo, TargetNullValue={StaticResource text}}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 window.DataContext = new FooBar();
@@ -76,8 +74,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <TextBlock Name='textBlock' IsVisible='{Binding Foo, Converter={x:Static ObjectConverters.IsNotNull}}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 window.DataContext = new FooBar();

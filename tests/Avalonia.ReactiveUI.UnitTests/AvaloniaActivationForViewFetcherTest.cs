@@ -81,8 +81,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             private void InitializeComponent()
             {
-                var loader = new AvaloniaXamlLoader();
-                loader.Load(@"
+                AvaloniaRuntimeXamlLoader.Load(@"
 <Window xmlns='https://github.com/avaloniaui'>
     <Border/>
 </Window>", null, this);
@@ -100,8 +99,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             private void InitializeComponent()
             {
-                var loader = new AvaloniaXamlLoader();
-                loader.Load(@"
+                AvaloniaRuntimeXamlLoader.Load(@"
 <UserControl xmlns='https://github.com/avaloniaui'>
     <Border/>
 </UserControl>", null, this);

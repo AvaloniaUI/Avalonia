@@ -40,6 +40,14 @@ namespace Avalonia.Media.TextFormatting
         public abstract TextLineBreak LineBreak { get; }
 
         /// <summary>
+        /// Gets a value that indicates whether the line is collapsed.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c>, if the line is collapsed; otherwise, <c>false</c>.
+        /// </returns>
+        public abstract bool HasCollapsed { get; }
+
+        /// <summary>
         /// Draws the <see cref="TextLine"/> at the given origin.
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
@@ -47,40 +55,49 @@ namespace Avalonia.Media.TextFormatting
         public abstract void Draw(DrawingContext drawingContext, Point origin);
 
         /// <summary>
-        /// Client to get the character hit corresponding to the specified 
-        /// distance from the beginning of the line.
+        /// Create a collapsed line based on collapsed text properties.
         /// </summary>
-        /// <param name="distance">distance in text flow direction from the beginning of the line</param>
-        /// <returns>The <see cref="CharacterHit"/></returns>
+        /// <param name="collapsingPropertiesList">A list of <see cref="TextCollapsingProperties"/>
+        /// objects that represent the collapsed text properties.</param>
+        /// <returns>
+        /// A <see cref="TextLine"/> value that represents a collapsed line that can be displayed.
+        /// </returns>
+        public abstract TextLine Collapse(params TextCollapsingProperties[] collapsingPropertiesList);
+
+        /// <summary>
+        /// Gets the character hit corresponding to the specified distance from the beginning of the line.
+        /// </summary>
+        /// <param name="distance">A <see cref="double"/> value that represents the distance from the beginning of the line.</param>
+        /// <returns>The <see cref="CharacterHit"/> object at the specified distance from the beginning of the line.</returns>
         public abstract CharacterHit GetCharacterHitFromDistance(double distance);
 
         /// <summary>
-        /// Client to get the distance from the beginning of the line from the specified 
+        /// Gets the distance from the beginning of the line to the specified character hit.
         /// <see cref="CharacterHit"/>.
         /// </summary>
-        /// <param name="characterHit"><see cref="CharacterHit"/> of the character to query the distance.</param>
-        /// <returns>Distance in text flow direction from the beginning of the line.</returns>
+        /// <param name="characterHit">The <see cref="CharacterHit"/> object whose distance you want to query.</param>
+        /// <returns>A <see cref="double"/> that represents the distance from the beginning of the line.</returns>
         public abstract double GetDistanceFromCharacterHit(CharacterHit characterHit);
 
         /// <summary>
-        /// Client to get the next <see cref="CharacterHit"/> for caret navigation.
+        /// Gets the next character hit for caret navigation.
         /// </summary>
         /// <param name="characterHit">The current <see cref="CharacterHit"/>.</param>
         /// <returns>The next <see cref="CharacterHit"/>.</returns>
         public abstract CharacterHit GetNextCaretCharacterHit(CharacterHit characterHit);
 
         /// <summary>
-        /// Client to get the previous character hit for caret navigation
+        /// Gets the previous character hit for caret navigation.
         /// </summary>
-        /// <param name="characterHit">the current character hit</param>
-        /// <returns>The previous <see cref="CharacterHit"/></returns>
+        /// <param name="characterHit">The current <see cref="CharacterHit"/>.</param>
+        /// <returns>The previous <see cref="CharacterHit"/>.</returns>
         public abstract CharacterHit GetPreviousCaretCharacterHit(CharacterHit characterHit);
 
         /// <summary>
-        /// Client to get the previous character hit after backspacing
+        /// Gets the previous character hit after backspacing.
         /// </summary>
-        /// <param name="characterHit">the current character hit</param>
-        /// <returns>The <see cref="CharacterHit"/> after backspacing</returns>
+        /// <param name="characterHit">The current <see cref="CharacterHit"/>.</param>
+        /// <returns>The <see cref="CharacterHit"/> after backspacing.</returns>
         public abstract CharacterHit GetBackspaceCaretCharacterHit(CharacterHit characterHit);
 
         /// <summary>

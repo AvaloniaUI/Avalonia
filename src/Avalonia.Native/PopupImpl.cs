@@ -26,7 +26,7 @@ namespace Avalonia.Native
                 var context = _opts.UseGpu ? glFeature?.DeferredContext : null;
                 Init(factory.CreatePopup(e, context?.Context), factory.CreateScreens(), context);
             }
-            PopupPositioner = new ManagedPopupPositioner(new OsxManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+            PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
 
         private void MoveResize(PixelPoint position, Size size, double scaling)

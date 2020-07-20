@@ -40,9 +40,9 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
         public void MoveAndResize(Point devicePoint, Size virtualSize)
         {
-            _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _parent.Scaling);
+            _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _parent.RenderScaling);
         }
 
-        public virtual double Scaling => _parent.Scaling;
+        public virtual double Scaling => _parent.DesktopScaling;
     }
 }
