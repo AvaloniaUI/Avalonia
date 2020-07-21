@@ -296,7 +296,7 @@ namespace Avalonia.Controls.UnitTests
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
-            popupImpl.SetupGet(x => x.Scaling).Returns(1);
+            popupImpl.SetupGet(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
 
             windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);

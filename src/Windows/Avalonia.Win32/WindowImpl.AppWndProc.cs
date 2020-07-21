@@ -343,7 +343,7 @@ namespace Avalonia.Win32
                         {
                             if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                             {
-                                var f = Scaling;
+                                var f = RenderScaling;
                                 var r = ps.rcPaint;
                                 Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
                                     (r.bottom - r.top) / f));
@@ -368,7 +368,7 @@ namespace Avalonia.Win32
                              size == SizeCommand.Maximized))
                         {
                             var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
-                            Resized(clientSize / Scaling);
+                            Resized(clientSize / RenderScaling);
                         }
 
                         var windowState = size == SizeCommand.Maximized ?
@@ -402,29 +402,31 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETMINMAXINFO:
                     {
                         MINMAXINFO mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+                        
+                        _maxTrackSize = mmi.ptMaxTrackSize;
 
                         if (_minSize.Width > 0)
                         {
                             mmi.ptMinTrackSize.X =
-                                (int)((_minSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
+                                (int)((_minSize.Width * RenderScaling) + BorderThickness.Left + BorderThickness.Right);
                         }
 
                         if (_minSize.Height > 0)
                         {
                             mmi.ptMinTrackSize.Y =
-                                (int)((_minSize.Height * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+                                (int)((_minSize.Height * RenderScaling) + BorderThickness.Top + BorderThickness.Bottom);
                         }
 
                         if (!double.IsInfinity(_maxSize.Width) && _maxSize.Width > 0)
                         {
                             mmi.ptMaxTrackSize.X =
-                                (int)((_maxSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
+                                (int)((_maxSize.Width * RenderScaling) + BorderThickness.Left + BorderThickness.Right);
                         }
 
                         if (!double.IsInfinity(_maxSize.Height) && _maxSize.Height > 0)
                         {
                             mmi.ptMaxTrackSize.Y =
-                                (int)((_maxSize.Height * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+                                (int)((_maxSize.Height * RenderScaling) + BorderThickness.Top + BorderThickness.Bottom);
                         }
 
                         Marshal.StructureToPtr(mmi, lParam, true);
@@ -480,7 +482,7 @@ namespace Avalonia.Win32
 
         private Point DipFromLParam(IntPtr lParam)
         {
-            return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)) / Scaling;
+            return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)) / RenderScaling;
         }
 
         private PixelPoint PointFromLParam(IntPtr lParam)
