@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -70,8 +71,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
-        private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();        
-        private TitleBar _managedTitleBar;
+        private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
         private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
@@ -552,20 +552,6 @@ namespace Avalonia.Controls
             IsExtendedIntoWindowDecorations = isExtended;
             WindowDecorationMargin = PlatformImpl.ExtendedMargins;
             OffScreenMargin = PlatformImpl.OffScreenMargin;
-
-            if (PlatformImpl.NeedsManagedDecorations)
-            {
-                if (_managedTitleBar == null)
-                {
-                    _managedTitleBar = new TitleBar(this);
-                    _managedTitleBar.Attach();
-                }                
-            }
-            else
-            {
-                _managedTitleBar?.Detach();
-                _managedTitleBar = null;
-            }
         }
 
         /// <summary>
