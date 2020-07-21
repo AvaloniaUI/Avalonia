@@ -14,11 +14,6 @@ namespace Avalonia.Controls.Chrome
         private CompositeDisposable? _disposables;
         private CaptionButtons? _captionButtons;
 
-        public TitleBar()
-        {
-
-        }
-
         private void UpdateSize(Window window)
         {
             if (window != null)
@@ -51,20 +46,28 @@ namespace Avalonia.Controls.Chrome
 
             if (VisualRoot is Window window)
             {
+                _captionButtons?.Attach(window);   
+                
+                UpdateSize(window);
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if (VisualRoot is Window window)
+            {
                 _disposables = new CompositeDisposable
                 {
                     window.GetObservable(Window.WindowDecorationMarginProperty)
                         .Subscribe(x => UpdateSize(window)),
-
                     window.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
                         .Subscribe(x => UpdateSize(window)),
-
                     window.GetObservable(Window.OffScreenMarginProperty)
                         .Subscribe(x => UpdateSize(window)),
-                    
                     window.GetObservable(Window.ExtendClientAreaChromeHintsProperty)
                         .Subscribe(x => UpdateSize(window)),
-
                     window.GetObservable(Window.WindowStateProperty)
                         .Subscribe(x =>
                         {
@@ -73,15 +76,17 @@ namespace Avalonia.Controls.Chrome
                             PseudoClasses.Set(":maximized", x == WindowState.Maximized);
                             PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
                         }),
-                    
                     window.GetObservable(Window.IsExtendedIntoWindowDecorationsProperty)
                         .Subscribe(x => UpdateSize(window))
                 };
-
-                _captionButtons.Attach(window);   
-                
-                UpdateSize(window);
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _disposables?.Dispose();
         }
     }
 }
