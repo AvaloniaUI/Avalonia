@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -101,7 +102,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
 
-                Assert.Equal(firstCharacterHit.TrailingLength, previousCharacterHit.TrailingLength);
+                Assert.Equal(0, previousCharacterHit.TrailingLength);
 
                 previousCharacterHit = new CharacterHit(clusters[^1], text.Length - clusters[^1]);
 
@@ -119,7 +120,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
 
-                Assert.Equal(firstCharacterHit.TrailingLength, previousCharacterHit.TrailingLength);
+                Assert.Equal(0, previousCharacterHit.TrailingLength);
             }
         }
 
@@ -268,6 +269,76 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 for (var i = 0; i < expected.Length; i++)
                 {
                     Assert.Equal(expected[i], trimmedText[i]);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestNext()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource("Text from memory", defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHits = new List<CharacterHit>();
+
+                var currentCharacterHit = new CharacterHit(0);
+
+                characterHits.Add(currentCharacterHit);
+
+                var nextCharacterHit = textLine.GetNextCaretCharacterHit(currentCharacterHit);
+
+                while (nextCharacterHit != currentCharacterHit)
+                {
+                    currentCharacterHit = nextCharacterHit;
+
+                    characterHits.Add(currentCharacterHit);
+
+                    nextCharacterHit = textLine.GetNextCaretCharacterHit(currentCharacterHit);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestPrevious()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var text = "Text from memory";
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var characterHits = new List<CharacterHit>();
+
+                var currentCharacterHit = new CharacterHit(text.Length);
+
+                characterHits.Add(currentCharacterHit);
+
+                var nextCharacterHit = textLine.GetPreviousCaretCharacterHit(currentCharacterHit);
+
+                while (nextCharacterHit != currentCharacterHit)
+                {
+                    currentCharacterHit = nextCharacterHit;
+
+                    characterHits.Add(currentCharacterHit);
+
+                    nextCharacterHit = textLine.GetPreviousCaretCharacterHit(currentCharacterHit);
                 }
             }
         }
