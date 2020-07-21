@@ -48,7 +48,7 @@ namespace Avalonia.iOS
 
         public new IPlatformHandle Handle => null;
 
-        public double Scaling => UIScreen.MainScreen.Scale;
+        public double RenderScaling => UIScreen.MainScreen.Scale;
 
        
         public override void LayoutSubviews() => Resized?.Invoke(ClientSize);
