@@ -15,9 +15,9 @@ namespace Avalonia.Controls.Primitives
 
         public static readonly StyledProperty<ChromeOverlayLayer> ChromeOverlayLayerProperty =
             AvaloniaProperty.Register<VisualLayerManager, ChromeOverlayLayer>(nameof(ChromeOverlayLayer));
-        
+
         public bool IsPopup { get; set; }
-        
+
         public AdornerLayer AdornerLayer
         {
             get
@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Primitives
                 return rv;
             }
         }
-        
+
         public ChromeOverlayLayer ChromeOverlayLayer
         {
             get
@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Primitives
                 if (IsPopup)
                     return null;
                 var rv = FindLayer<OverlayLayer>();
-                if(rv == null)
+                if (rv == null)
                     AddLayer(rv = new OverlayLayer(), OverlayZIndex);
                 return rv;
             }
@@ -77,7 +77,8 @@ namespace Avalonia.Controls.Primitives
             layer.ZIndex = zindex;
             VisualChildren.Add(layer);
             if (((ILogical)this).IsAttachedToLogicalTree)
-                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
+                ((ILogical)layer).NotifyAttachedToLogicalTree(
+                    new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
             InvalidateArrange();
         }
 
