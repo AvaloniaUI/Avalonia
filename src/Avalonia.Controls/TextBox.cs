@@ -134,7 +134,7 @@ namespace Avalonia.Controls
                 {
                     if (acceptsReturn)
                     {
-                        return wrapping == TextWrapping.NoWrap ?
+                        return wrapping != TextWrapping.Wrap ?
                             ScrollBarVisibility.Auto :
                             ScrollBarVisibility.Disabled;
                     }

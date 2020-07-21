@@ -15,8 +15,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
             {
                 var xaml = "<DataTemplates xmlns='https://github.com/avaloniaui'><TreeDataTemplate ItemsSource='{Binding}'/></DataTemplates>";
-                var loader = new AvaloniaXamlLoader();
-                var templates = (DataTemplates)loader.Load(xaml);
+                var templates = (DataTemplates)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var template = (TreeDataTemplate)(templates.First());
 
                 Assert.IsType<Binding>(template.ItemsSource);

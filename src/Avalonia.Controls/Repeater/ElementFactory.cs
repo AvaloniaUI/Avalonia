@@ -4,8 +4,6 @@ namespace Avalonia.Controls
 {
     public abstract class ElementFactory : IElementFactory
     {
-        bool IDataTemplate.SupportsRecycling => false;
-
         public IControl Build(object data)
         {
             return GetElementCore(new ElementFactoryGetArgs { Data = data });

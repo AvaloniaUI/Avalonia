@@ -41,7 +41,8 @@ namespace Avalonia.Headless
         }
 
         public Size ClientSize { get; set; }
-        public double Scaling { get; } = 1;
+        public double RenderScaling { get; } = 1;
+        public double DesktopScaling => RenderScaling;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -62,9 +63,9 @@ namespace Avalonia.Headless
 
         public IInputRoot InputRoot { get; set; }
 
-        public Point PointToClient(PixelPoint point) => point.ToPoint(Scaling);
+        public Point PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);
 
-        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, Scaling);
+        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
 
         public void SetCursor(IPlatformHandle cursor)
         {
@@ -201,7 +202,7 @@ namespace Avalonia.Headless
 
         public ILockedFramebuffer Lock()
         {
-            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, Scaling), new Vector(96, 96) * Scaling);
+            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling);
             var fb = bmp.Lock();
             return new FramebufferProxy(fb, () =>
             {
