@@ -13,7 +13,6 @@ namespace Avalonia.Controls
 
         public ItemTemplateWrapper(IDataTemplate dataTemplate) => _dataTemplate = dataTemplate;
 
-        public bool SupportsRecycling => false;
         public IControl Build(object param) => GetElement(null, param);
         public bool Match(object data) => _dataTemplate.Match(data);
 
