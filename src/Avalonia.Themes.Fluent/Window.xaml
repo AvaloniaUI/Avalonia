@@ -8,16 +8,15 @@
     <ControlTemplate>
       <Panel>
         <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
-        <Border Background="{TemplateBinding Background}">
-          <VisualLayerManager>
-            <ContentPresenter Name="PART_ContentPresenter"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Content="{TemplateBinding Content}"
-                              Margin="{TemplateBinding Padding}"
-                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-          </VisualLayerManager>
-        </Border>
+        <Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
+        <VisualLayerManager>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </VisualLayerManager>
       </Panel>
     </ControlTemplate>
   </Setter>
