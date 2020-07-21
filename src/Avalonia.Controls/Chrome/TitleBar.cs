@@ -29,12 +29,12 @@ namespace Avalonia.Controls.Chrome
         {
             if (_disposables == null)
             {
-                var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
-
-                layer?.Children.Add(this);
-
                 if (_hostWindow != null)
                 {
+                    var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
+
+                    layer?.Children.Add(this);
+                    
                     _disposables = new CompositeDisposable
                     {
                         _hostWindow.GetObservable(Window.WindowDecorationMarginProperty)

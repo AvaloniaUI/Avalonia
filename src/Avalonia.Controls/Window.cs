@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -75,6 +76,7 @@ namespace Avalonia.Controls
         private bool _isExtendedIntoWindowDecorations;
         private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
+        private bool _templateApplied;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -553,7 +555,7 @@ namespace Avalonia.Controls
             WindowDecorationMargin = PlatformImpl.ExtendedMargins;
             OffScreenMargin = PlatformImpl.OffScreenMargin;
 
-            if (PlatformImpl.NeedsManagedDecorations)
+            if (PlatformImpl.NeedsManagedDecorations && _templateApplied)
             {
                 if (_managedTitleBar == null)
                 {
@@ -566,6 +568,15 @@ namespace Avalonia.Controls
                 _managedTitleBar?.Detach();
                 _managedTitleBar = null;
             }
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            _templateApplied = true;
+            
+            ExtendClientAreaToDecorationsChanged(PlatformImpl.IsClientAreaExtendedToDecorations);
         }
 
         /// <summary>
