@@ -11,8 +11,17 @@ namespace Avalonia.Controls.Primitives
 
         private ILogicalRoot _logicalRoot;
         private readonly List<Control> _layers = new List<Control>();
-        
 
+        public static readonly StyledProperty<Panel> ChromeOverlayLayerProperty =
+            AvaloniaProperty.Register<VisualLayerManager, Panel>(nameof(ChromeOverlayLayer));
+
+        public VisualLayerManager()
+        {
+            var chromeOverlayLayer = new ChromeOverlayLayer();
+            AddLayer(chromeOverlayLayer, ChromeZIndex);
+            ChromeOverlayLayer = chromeOverlayLayer;
+        }
+        
         public bool IsPopup { get; set; }
         
         public AdornerLayer AdornerLayer
@@ -26,15 +35,10 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public ChromeOverlayLayer ChromeOverlayLayer
+        public Panel ChromeOverlayLayer
         {
-            get
-            {
-                var rv = FindLayer<ChromeOverlayLayer>();
-                if (rv == null)
-                    AddLayer(rv = new ChromeOverlayLayer(), ChromeZIndex);
-                return rv;
-            }
+            get => GetValue(ChromeOverlayLayerProperty);
+            private set => SetValue(ChromeOverlayLayerProperty, value);
         }
 
         public OverlayLayer OverlayLayer
