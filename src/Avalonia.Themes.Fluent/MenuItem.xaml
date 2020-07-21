@@ -183,10 +183,10 @@
   </Style>
 
   <Style Selector="MenuItem">
-    <!-- Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future. -->
+    <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
     <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePaddingNarrow}" />
   </Style>
-  
+
   <Style Selector="MenuItem /template/ ContentPresenter#PART_IconPresenter">
     <Setter Property="IsVisible" Value="False" />
   </Style>
@@ -212,14 +212,15 @@
     <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronPointerOver}" />
   </Style>
 
-  <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot">
+  <!--  Listen for PART_LayoutRoot:pressed instead of MenuItem:pressed, so it will not be triggered when menu subitem is pressed  -->
+  <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
     <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutItemBorderBrushPressed}" />
   </Style>
-  <Style Selector="MenuItem:pressed /template/ TextBlock#PART_InputGestureText">
+  <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover TextBlock#PART_InputGestureText">
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
   </Style>
-  <Style Selector="MenuItem:pressed /template/ Path#PART_ChevronPath">
+  <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover Path#PART_ChevronPath">
     <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronPressed}" />
   </Style>
 
