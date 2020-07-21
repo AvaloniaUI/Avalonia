@@ -24,6 +24,11 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
+        public void Add(Control c)
+        {
+            base.Children.Add(c);
+        }
+
         public bool HitTest(Point point) => Children.HitTestCustom(point);
     }
 }

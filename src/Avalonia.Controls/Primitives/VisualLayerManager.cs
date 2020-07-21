@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -12,15 +13,8 @@ namespace Avalonia.Controls.Primitives
         private ILogicalRoot _logicalRoot;
         private readonly List<Control> _layers = new List<Control>();
 
-        public static readonly StyledProperty<Panel> ChromeOverlayLayerProperty =
-            AvaloniaProperty.Register<VisualLayerManager, Panel>(nameof(ChromeOverlayLayer));
-
-        public VisualLayerManager()
-        {
-            var chromeOverlayLayer = new ChromeOverlayLayer();
-            AddLayer(chromeOverlayLayer, ChromeZIndex);
-            ChromeOverlayLayer = chromeOverlayLayer;
-        }
+        public static readonly StyledProperty<ChromeOverlayLayer> ChromeOverlayLayerProperty =
+            AvaloniaProperty.Register<VisualLayerManager, ChromeOverlayLayer>(nameof(ChromeOverlayLayer));
         
         public bool IsPopup { get; set; }
         
@@ -34,11 +28,25 @@ namespace Avalonia.Controls.Primitives
                 return rv;
             }
         }
-
-        public Panel ChromeOverlayLayer
+        
+        public ChromeOverlayLayer ChromeOverlayLayer
         {
-            get => GetValue(ChromeOverlayLayerProperty);
-            private set => SetValue(ChromeOverlayLayerProperty, value);
+            get
+            {
+                var current = GetValue(ChromeOverlayLayerProperty);
+
+                if (current is null)
+                {
+                    var chromeOverlayLayer = new ChromeOverlayLayer();
+                    AddLayer(chromeOverlayLayer, ChromeZIndex);
+
+                    SetValue(ChromeOverlayLayerProperty, chromeOverlayLayer);
+
+                    current = chromeOverlayLayer;
+                }
+
+                return current;
+            }
         }
 
         public OverlayLayer OverlayLayer

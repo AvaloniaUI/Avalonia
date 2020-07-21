@@ -71,12 +71,10 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
-        private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();        
-        private TitleBar _managedTitleBar;
+        private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
         private bool _isExtendedIntoWindowDecorations;
         private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
-        private bool _templateApplied;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -554,29 +552,6 @@ namespace Avalonia.Controls
             IsExtendedIntoWindowDecorations = isExtended;
             WindowDecorationMargin = PlatformImpl.ExtendedMargins;
             OffScreenMargin = PlatformImpl.OffScreenMargin;
-
-            if (PlatformImpl.NeedsManagedDecorations && _templateApplied)
-            {
-                if (_managedTitleBar == null)
-                {
-                    _managedTitleBar = new TitleBar(this);
-                    _managedTitleBar.Attach();
-                }                
-            }
-            else
-            {
-                _managedTitleBar?.Detach();
-                _managedTitleBar = null;
-            }
-        }
-
-        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-        {
-            base.OnApplyTemplate(e);
-
-            _templateApplied = true;
-            
-            ExtendClientAreaToDecorationsChanged(PlatformImpl.IsClientAreaExtendedToDecorations);
         }
 
         /// <summary>
