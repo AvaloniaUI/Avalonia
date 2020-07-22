@@ -1,0 +1,3 @@
+Compat issues with assembly Avalonia.Controls.DataGrid:
+MembersMustExist : Member 'public Avalonia.AvaloniaProperty<System.Boolean> Avalonia.AvaloniaProperty<System.Boolean> Avalonia.Controls.Primitives.DataGridFrozenGrid.IsFrozenProperty' does not exist in the implementation but it does exist in the contract.
+Total Issues: 1

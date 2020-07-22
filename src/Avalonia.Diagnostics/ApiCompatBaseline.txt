@@ -1,0 +1,16 @@
+Compat issues with assembly Avalonia.Diagnostics:
+MembersMustExist : Member 'public void Avalonia.DevToolsExtensions.OpenDevTools(Avalonia.Controls.TopLevel)' does not exist in the implementation but it does exist in the contract.
+CannotMakeTypeAbstract : Type 'Avalonia.Diagnostics.DevTools' is abstract in the implementation but is not abstract in the contract.
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Diagnostics.DevTools' does not inherit from base type 'Avalonia.Controls.UserControl' in the implementation but it does in the contract.
+CannotSealType : Type 'Avalonia.Diagnostics.DevTools' is actually (has the sealed modifier) sealed in the implementation but not sealed in the contract.
+MembersMustExist : Member 'public void Avalonia.Diagnostics.DevTools..ctor()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Diagnostics.DevTools..ctor(Avalonia.Controls.IControl)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Boolean Avalonia.Diagnostics.DevTools.BelongsToDevTool(Avalonia.VisualTree.IVisual)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Diagnostics.DevTools.MarkAsDevTool(Avalonia.VisualTree.IVisual)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Diagnostics.DevTools.RemoveDevTool(Avalonia.VisualTree.IVisual)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Controls.IControl Avalonia.Diagnostics.DevTools.Root.get()' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Diagnostics.ViewModels.IDevToolViewModel' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Diagnostics.Views.EventsView' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Diagnostics.Views.SimpleGrid' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Diagnostics.Views.TreePageView' does not exist in the implementation but it does exist in the contract.
+Total Issues: 14

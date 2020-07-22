@@ -1,0 +1,7 @@
+Compat issues with assembly Avalonia.ReactiveUI:
+MembersMustExist : Member 'public Avalonia.AvaloniaProperty<TViewModel> Avalonia.AvaloniaProperty<TViewModel> Avalonia.ReactiveUI.ReactiveUserControl<TViewModel>.ViewModelProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.AvaloniaProperty<TViewModel> Avalonia.AvaloniaProperty<TViewModel> Avalonia.ReactiveUI.ReactiveWindow<TViewModel>.ViewModelProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.AvaloniaProperty<ReactiveUI.RoutingState> Avalonia.AvaloniaProperty<ReactiveUI.RoutingState> Avalonia.ReactiveUI.RoutedViewHost.RouterProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.AvaloniaProperty<Avalonia.Animation.IPageTransition> Avalonia.AvaloniaProperty<Avalonia.Animation.IPageTransition> Avalonia.ReactiveUI.TransitioningContentControl.PageTransitionProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.AvaloniaProperty<System.Object> Avalonia.AvaloniaProperty<System.Object> Avalonia.ReactiveUI.TransitioningContentControl.DefaultContentProperty' does not exist in the implementation but it does exist in the contract.
+Total Issues: 5

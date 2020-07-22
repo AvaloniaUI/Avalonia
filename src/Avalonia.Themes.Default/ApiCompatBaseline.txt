@@ -1,0 +1,3 @@
+Compat issues with assembly Avalonia.Themes.Default:
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Themes.Default.DefaultTheme' does not implement interface 'Avalonia.Controls.ISetResourceParent' in the implementation but it does in the contract.
+Total Issues: 1

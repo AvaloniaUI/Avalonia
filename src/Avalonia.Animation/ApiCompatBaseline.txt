@@ -1,0 +1,4 @@
+Compat issues with assembly Avalonia.Animation:
+MembersMustExist : Member 'public Avalonia.DirectProperty<Avalonia.Animation.Animatable, Avalonia.Animation.Transitions> Avalonia.DirectProperty<Avalonia.Animation.Animatable, Avalonia.Animation.Transitions> Avalonia.Animation.Animatable.TransitionsProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Animation.Animatable.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)' does not exist in the implementation but it does exist in the contract.
+Total Issues: 2

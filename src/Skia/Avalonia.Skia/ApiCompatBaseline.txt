@@ -1,0 +1,7 @@
+Compat issues with assembly Avalonia.Skia:
+MembersMustExist : Member 'public System.Func<Avalonia.Skia.ICustomSkiaGpu> Avalonia.SkiaOptions.CustomGpuFactory.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.SkiaOptions.CustomGpuFactory.set(System.Func<Avalonia.Skia.ICustomSkiaGpu>)' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Skia.ICustomSkiaGpu' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Skia.ICustomSkiaRenderSession' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Skia.ICustomSkiaRenderTarget' does not exist in the implementation but it does exist in the contract.
+Total Issues: 5

@@ -1,0 +1,22 @@
+Compat issues with assembly Avalonia.Layout:
+CannotMakeMemberNonVirtual : Member 'public Avalonia.Size Avalonia.Layout.AttachedLayout.Arrange(Avalonia.Layout.LayoutContext, Avalonia.Size)' is non-virtual in the implementation but is virtual in the contract.
+CannotMakeMemberNonVirtual : Member 'public void Avalonia.Layout.AttachedLayout.InitializeForContext(Avalonia.Layout.LayoutContext)' is non-virtual in the implementation but is virtual in the contract.
+CannotMakeMemberNonVirtual : Member 'public Avalonia.Size Avalonia.Layout.AttachedLayout.Measure(Avalonia.Layout.LayoutContext, Avalonia.Size)' is non-virtual in the implementation but is virtual in the contract.
+CannotMakeMemberNonVirtual : Member 'public void Avalonia.Layout.AttachedLayout.UninitializeForContext(Avalonia.Layout.LayoutContext)' is non-virtual in the implementation but is virtual in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Layout.ILayoutable.EffectiveViewportChanged(Avalonia.Layout.EffectiveViewportChangedEventArgs)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.EventHandler Avalonia.Layout.ILayoutManager.LayoutUpdated' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Layout.ILayoutManager.add_LayoutUpdated(System.EventHandler)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Layout.ILayoutManager.ExecuteInitialLayoutPass()' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Layout.ILayoutManager.RegisterEffectiveViewportListener(Avalonia.Layout.ILayoutable)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Layout.ILayoutManager.remove_LayoutUpdated(System.EventHandler)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Layout.ILayoutManager.UnregisterEffectiveViewportListener(Avalonia.Layout.ILayoutable)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avalonia.Layout.ILayoutRoot.MaxClientSize' is present in the contract but not in the implementation.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Size Avalonia.Layout.ILayoutRoot.MaxClientSize.get()' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public Avalonia.Size Avalonia.Layout.ILayoutRoot.MaxClientSize.get()' does not exist in the implementation but it does exist in the contract.
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Layout.Layoutable' does not implement interface 'Avalonia.Controls.IResourceProvider' in the implementation but it does in the contract.
+MembersMustExist : Member 'public void Avalonia.Layout.LayoutManager..ctor()' does not exist in the implementation but it does exist in the contract.
+CannotAddAbstractMembers : Member 'protected System.Collections.Generic.IReadOnlyList<Avalonia.Layout.ILayoutable> Avalonia.Layout.NonVirtualizingLayoutContext.ChildrenCore' is abstract in the implementation but is missing in the contract.
+CannotAddAbstractMembers : Member 'protected System.Collections.Generic.IReadOnlyList<Avalonia.Layout.ILayoutable> Avalonia.Layout.NonVirtualizingLayoutContext.ChildrenCore.get()' is abstract in the implementation but is missing in the contract.
+MembersMustExist : Member 'protected void Avalonia.Layout.StackLayout.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Layout.UniformGridLayout.OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs)' does not exist in the implementation but it does exist in the contract.
+Total Issues: 20
