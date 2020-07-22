@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>Avalonia</RootNamespace>
-    <PackageId>Avalonia.Diagnostics</PackageId>
+    <RootNamespace>Avalonia</RootNamespace>    
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">

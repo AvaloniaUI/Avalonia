@@ -1,3 +1,0 @@
-Compat issues with assembly Avalonia.Win32:
-MembersMustExist : Member 'public System.Double Avalonia.Win32.WindowImpl.Scaling.get()' does not exist in the implementation but it does exist in the contract.
-Total Issues: 1

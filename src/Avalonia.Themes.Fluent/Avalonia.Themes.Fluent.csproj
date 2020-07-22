@@ -16,6 +16,5 @@
     <AvaloniaResource Include="Assets\*" />  
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\Rx.props" />  
 </Project>
