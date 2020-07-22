@@ -46,7 +46,7 @@ namespace Avalonia.Native
     public abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
-        IInputRoot _inputRoot;
+        protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
@@ -81,7 +81,7 @@ namespace Avalonia.Native
                 _glSurface = new GlPlatformSurface(window, _glContext);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
-            _savedScaling = Scaling;
+            _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
@@ -266,6 +266,11 @@ namespace Avalonia.Native
             return args.Handled;
         }
 
+        protected virtual bool ChromeHitTest(RawPointerEventArgs e)
+        {
+            return false;
+        }
+
         public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
@@ -277,7 +282,12 @@ namespace Avalonia.Native
                     break;
 
                 default:
-                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers));
+                    var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
+                    
+                    if(!ChromeHitTest(e))
+                    {
+                        Input?.Invoke(e);
+                    }
                     break;
             }
         }
@@ -319,7 +329,7 @@ namespace Avalonia.Native
         }
 
 
-        public void Show()
+        public virtual void Show()
         {
             _native.Show();
         }
@@ -359,7 +369,9 @@ namespace Avalonia.Native
             _native.SetTopMost(value);
         }
 
-        public double Scaling => _native?.GetScaling() ?? 1;
+        public double RenderScaling => _native?.GetScaling() ?? 1;
+
+        public double DesktopScaling => 1;
 
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
@@ -422,12 +434,14 @@ namespace Avalonia.Native
 
                 TransparencyLevel = transparencyLevel;
 
-                _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                _native?.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
 
         public IPlatformHandle Handle { get; private set; }
     }

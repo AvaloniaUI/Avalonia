@@ -188,7 +188,7 @@
   </Style>
 
   <Style Selector="DataGrid">
-    <Setter Property="RowBackground" Value="{DynamicResource ThemeAccentBrush4}" />
+    <Setter Property="RowBackground" Value="{DynamicResource SystemAccentColorDark2}" />
     <Setter Property="AlternatingRowBackground" Value="#00FFFFFF" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="HeadersVisibility" Value="Column" />

@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Presenters
 
         private IControl _child;
         private bool _createdChild;
-        private IDataTemplate _dataTemplate;
+        private IRecyclingDataTemplate _recyclingDataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
 
         /// <summary>
@@ -95,6 +95,7 @@ namespace Avalonia.Controls.Presenters
         static ContentPresenter()
         {
             AffectsRender<ContentPresenter>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
+            AffectsArrange<ContentPresenter>(HorizontalContentAlignmentProperty, VerticalContentAlignmentProperty);
             AffectsMeasure<ContentPresenter>(BorderThicknessProperty, PaddingProperty);
             ContentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
             ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
@@ -280,7 +281,7 @@ namespace Avalonia.Controls.Presenters
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            _dataTemplate = null;
+            _recyclingDataTemplate = null;
             _createdChild = false;
             InvalidateMeasure();
         }
@@ -306,22 +307,21 @@ namespace Avalonia.Controls.Presenters
             {
                 var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
 
-                // We have content and it isn't a control, so if the new data template is the same
-                // as the old data template, try to recycle the existing child control to display
-                // the new data.
-                if (dataTemplate == _dataTemplate && dataTemplate.SupportsRecycling)
+                if (dataTemplate is IRecyclingDataTemplate rdt)
                 {
-                    newChild = oldChild;
+                    var toRecycle = rdt == _recyclingDataTemplate ? oldChild : null;
+                    newChild = rdt.Build(content, toRecycle);
+                    _recyclingDataTemplate = rdt;
                 }
                 else
                 {
-                    _dataTemplate = dataTemplate;
-                    newChild = _dataTemplate.Build(content);
+                    newChild = dataTemplate.Build(content);
+                    _recyclingDataTemplate = null;
                 }
             }
             else
             {
-                _dataTemplate = null;
+                _recyclingDataTemplate = null;
             }
 
             return newChild;
@@ -421,7 +421,7 @@ namespace Avalonia.Controls.Presenters
                 LogicalChildren.Remove(Child);
                 ((ISetInheritanceParent)Child).SetParent(Child.Parent);
                 Child = null;
-                _dataTemplate = null;
+                _recyclingDataTemplate = null;
             }
 
             InvalidateMeasure();

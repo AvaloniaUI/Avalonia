@@ -1,18 +1,23 @@
 using System.Collections.Generic;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Primitives
 {
     public class VisualLayerManager : Decorator
     {
         private const int AdornerZIndex = int.MaxValue - 100;
-        private const int OverlayZIndex = int.MaxValue - 99;
+        private const int ChromeZIndex = int.MaxValue - 99;
+        private const int OverlayZIndex = int.MaxValue - 98;
+
         private ILogicalRoot _logicalRoot;
         private readonly List<Control> _layers = new List<Control>();
-        
+
+        public static readonly StyledProperty<ChromeOverlayLayer> ChromeOverlayLayerProperty =
+            AvaloniaProperty.Register<VisualLayerManager, ChromeOverlayLayer>(nameof(ChromeOverlayLayer));
 
         public bool IsPopup { get; set; }
-        
+
         public AdornerLayer AdornerLayer
         {
             get
@@ -24,6 +29,26 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        public ChromeOverlayLayer ChromeOverlayLayer
+        {
+            get
+            {
+                var current = GetValue(ChromeOverlayLayerProperty);
+
+                if (current is null)
+                {
+                    var chromeOverlayLayer = new ChromeOverlayLayer();
+                    AddLayer(chromeOverlayLayer, ChromeZIndex);
+
+                    SetValue(ChromeOverlayLayerProperty, chromeOverlayLayer);
+
+                    current = chromeOverlayLayer;
+                }
+
+                return current;
+            }
+        }
+
         public OverlayLayer OverlayLayer
         {
             get
@@ -31,7 +56,7 @@ namespace Avalonia.Controls.Primitives
                 if (IsPopup)
                     return null;
                 var rv = FindLayer<OverlayLayer>();
-                if(rv == null)
+                if (rv == null)
                     AddLayer(rv = new OverlayLayer(), OverlayZIndex);
                 return rv;
             }
@@ -52,7 +77,8 @@ namespace Avalonia.Controls.Primitives
             layer.ZIndex = zindex;
             VisualChildren.Add(layer);
             if (((ILogical)this).IsAttachedToLogicalTree)
-                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
+                ((ILogical)layer).NotifyAttachedToLogicalTree(
+                    new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
             InvalidateArrange();
         }
 

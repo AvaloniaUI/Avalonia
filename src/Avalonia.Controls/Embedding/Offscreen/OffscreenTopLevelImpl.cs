@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
             }
         }
 
-        public double Scaling
+        public double RenderScaling
         {
             get { return _scaling; }
             set
@@ -51,6 +51,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public Action<double> ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
+        /// <inheritdoc/>
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 

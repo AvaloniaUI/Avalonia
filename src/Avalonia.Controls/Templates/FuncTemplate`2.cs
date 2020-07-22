@@ -1,5 +1,7 @@
 using System;
 
+#nullable enable
+
 namespace Avalonia.Controls.Templates
 {
     /// <summary>
@@ -18,9 +20,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="func">The function used to create the control.</param>
         public FuncTemplate(Func<TParam, INameScope, TControl> func)
         {
-            Contract.Requires<ArgumentNullException>(func != null);
-
-            _func = func;
+            _func = func ?? throw new ArgumentNullException(nameof(func));
         }
 
         /// <summary>

@@ -3,10 +3,18 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Headless;
+using Avalonia.LogicalTree;
+using Avalonia.Skia;
 using Avalonia.Dialogs;
 using Avalonia.OpenGL;
 using Avalonia.ReactiveUI;
+using Avalonia.Threading;
+using Avalonia.Dialogs;
 
 namespace ControlCatalog.NetCore
 {
@@ -40,6 +48,52 @@ namespace ControlCatalog.NetCore
             {
                 SilenceConsole();
                 return builder.StartLinuxFbDev(args, scaling: GetScaling());
+            }
+            else if (args.Contains("--vnc"))
+            {
+                return builder.StartWithHeadlessVncPlatform(null, 5901, args, ShutdownMode.OnMainWindowClose);
+            }
+            else if (args.Contains("--full-headless"))
+            {
+                return builder
+                    .UseHeadless(true)
+                    .AfterSetup(_ =>
+                    {
+                        DispatcherTimer.RunOnce(async () =>
+                        {
+                            var window = ((IClassicDesktopStyleApplicationLifetime)Application.Current.ApplicationLifetime)
+                                .MainWindow;
+                            var tc = window.GetLogicalDescendants().OfType<TabControl>().First();
+                            foreach (var page in tc.Items.Cast<TabItem>().ToList())
+                            {
+                                // Skip DatePicker because of some layout bug in grid
+                                if (page.Header.ToString() == "DatePicker")
+                                    continue;
+                                Console.WriteLine("Selecting " + page.Header);
+                                tc.SelectedItem = page;
+                                await Task.Delay(500);
+                            }
+                            Console.WriteLine("Selecting the first page");
+                            tc.SelectedItem = tc.Items.OfType<object>().First();
+                            await Task.Delay(500);
+                            Console.WriteLine("Clicked through all pages, triggering GC");
+                            for (var c = 0; c < 3; c++)
+                            {
+                                GC.Collect(2, GCCollectionMode.Forced);
+                                await Task.Delay(500);
+                            }
+
+                            void FormatMem(string metric, long bytes)
+                            {
+                                Console.WriteLine(metric + ": " + bytes / 1024 / 1024 + "MB");
+                            }
+
+                            FormatMem("GC allocated bytes", GC.GetTotalMemory(true));
+                            FormatMem("WorkingSet64", Process.GetCurrentProcess().WorkingSet64);
+
+                        }, TimeSpan.FromSeconds(1));
+                    })
+                    .StartWithClassicDesktopLifetime(args);
             }
             else if (args.Contains("--drm"))
             {

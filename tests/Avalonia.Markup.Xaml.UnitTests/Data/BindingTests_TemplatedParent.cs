@@ -26,8 +26,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
        </Button.Template>
     </Button>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
 
                 window.ApplyTemplate();

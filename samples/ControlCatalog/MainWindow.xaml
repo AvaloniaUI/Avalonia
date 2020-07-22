@@ -57,20 +57,30 @@
     </NativeMenu>
   </NativeMenu.Menu>
 
- <Window.DataTemplates>
+  <Window.DataTemplates>
     <DataTemplate DataType="vm:NotificationViewModel">
       <v:CustomNotificationView />
     </DataTemplate>
   </Window.DataTemplates>
-  <DockPanel LastChildFill="True">
-    <Menu Name="MainMenu" DockPanel.Dock="Top">
-      <MenuItem Header="File">
-        <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
-      </MenuItem>
-      <MenuItem Header="Help">
-        <MenuItem Header="About" Command="{Binding AboutCommand}" />
-      </MenuItem>
-    </Menu>
-    <local:MainView />
-  </DockPanel>
+  <Panel>
+    <Panel Margin="{Binding #MainWindow.OffScreenMargin}">
+      <DockPanel LastChildFill="True" Margin="{Binding #MainWindow.WindowDecorationMargin}">
+        <Menu Name="MainMenu" DockPanel.Dock="Top">
+          <MenuItem Header="File">
+            <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
+          </MenuItem>
+          <MenuItem Header="Help">
+            <MenuItem Header="About" Command="{Binding AboutCommand}" />
+          </MenuItem>
+        </Menu>
+        <local:MainView />
+      </DockPanel>
+    </Panel>
+    <Border IsVisible="{Binding ExtendClientAreaEnabled}" BorderThickness="1 1 1 0" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 8 0 0">
+      <Border.Background>
+        <SolidColorBrush Color="White" Opacity="0.7" />
+      </Border.Background>
+      <TextBlock Margin="5 5 5 0" Text="Content In Title Bar" />
+    </Border>
+  </Panel>
 </Window>

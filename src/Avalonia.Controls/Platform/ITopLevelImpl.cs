@@ -23,10 +23,10 @@ namespace Avalonia.Platform
         Size ClientSize { get; }
 
         /// <summary>
-        /// Gets the scaling factor for the toplevel.
+        /// Gets the scaling factor for the toplevel. This is used for rendering.
         /// </summary>
-        double Scaling { get; }
-
+        double RenderScaling { get; }
+        
         /// <summary>
         /// The list of native platform's surfaces that can be consumed by rendering subsystems.
         /// </summary>
@@ -127,5 +127,10 @@ namespace Avalonia.Platform
         /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
         /// </summary>
         WindowTransparencyLevel TransparencyLevel { get; }
+
+        /// <summary>
+        /// Gets the <see cref="AcrylicPlatformCompensationLevels"/> for the platform.        
+        /// </summary>
+        AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
     }
 }

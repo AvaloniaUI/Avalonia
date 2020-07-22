@@ -3920,6 +3920,14 @@ namespace Avalonia.Controls
                     dataGridColumn: CurrentColumn,
                     dataGridRow: EditingRow,
                     dataGridCell: editingCell);
+
+                EditingRow.InvalidateDesiredHeight();
+                var column = editingCell.OwningColumn;
+                if (column.Width.IsSizeToCells || column.Width.IsAuto)
+                {// Invalidate desired width and force recalculation
+                    column.SetWidthDesiredValue(0);
+                    EditingRow.OwningGrid.AutoSizeColumn(column, editingCell.DesiredSize.Width);
+                }
             }
 
             // We're done, so raise the CellEditEnded event

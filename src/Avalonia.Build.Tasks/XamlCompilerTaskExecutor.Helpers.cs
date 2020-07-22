@@ -5,7 +5,7 @@ using Avalonia.Utilities;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
-using XamlIl.TypeSystem;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Build.Tasks
 {

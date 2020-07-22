@@ -82,10 +82,10 @@ namespace Avalonia.Skia
 
                     var renderTarget =
                         new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
-                            new GRGlFramebufferInfo((uint)fb, GRPixelConfig.Rgba8888.ToGlSizedFormat()));
+                            new GRGlFramebufferInfo((uint)fb, SKColorType.Rgba8888.ToGlSizedFormat()));
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
-                        GRPixelConfig.Rgba8888.ToColorType());
+                        SKColorType.Rgba8888);
 
                     success = true;
                     return new GlGpuSession(_grContext, renderTarget, surface, glSession);

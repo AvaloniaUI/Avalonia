@@ -75,7 +75,7 @@ namespace Avalonia.Win32.Interop.Wpf
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
         {
             if (msg == (int)UnmanagedMethods.WindowsMessage.WM_DPICHANGED)
-                _ttl.ScalingChanged?.Invoke(_ttl.Scaling);
+                _ttl.ScalingChanged?.Invoke(_ttl.RenderScaling);
             return IntPtr.Zero;
         }
 
@@ -84,7 +84,7 @@ namespace Avalonia.Win32.Interop.Wpf
             _currentHwndSource?.RemoveHook(_hook);
             _currentHwndSource = e.NewSource as HwndSource;
             _currentHwndSource?.AddHook(_hook);
-            _ttl.ScalingChanged?.Invoke(_ttl.Scaling);
+            _ttl.ScalingChanged?.Invoke(_ttl.RenderScaling);
         }
 
         public IRenderer CreateRenderer(IRenderRoot root)
@@ -102,7 +102,7 @@ namespace Avalonia.Win32.Interop.Wpf
         Size ITopLevelImpl.ClientSize => _finalSize;
         IMouseDevice ITopLevelImpl.MouseDevice => _mouse;
 
-        double ITopLevelImpl.Scaling => PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1;
+        double ITopLevelImpl.RenderScaling => PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1;
 
         IEnumerable<object> ITopLevelImpl.Surfaces => _surfaces;
 
@@ -256,5 +256,7 @@ namespace Avalonia.Win32.Interop.Wpf
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 }

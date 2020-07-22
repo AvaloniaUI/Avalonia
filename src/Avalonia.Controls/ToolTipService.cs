@@ -28,13 +28,21 @@ namespace Avalonia.Controls
             {
                 control.PointerEnter -= ControlPointerEnter;
                 control.PointerLeave -= ControlPointerLeave;
+                control.DetachedFromVisualTree -= ControlDetaching;
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEnter += ControlPointerEnter;
                 control.PointerLeave += ControlPointerLeave;
+                control.DetachedFromVisualTree += ControlDetaching;
             }
+        }
+        
+        private void ControlDetaching(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            var control = (Control)sender;
+            Close(control);
         }
 
         /// <summary>

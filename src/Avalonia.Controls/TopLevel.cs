@@ -280,10 +280,10 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        double ILayoutRoot.LayoutScaling => PlatformImpl?.Scaling ?? 1;
+        double ILayoutRoot.LayoutScaling => PlatformImpl?.RenderScaling ?? 1;
 
         /// <inheritdoc/>
-        double IRenderRoot.RenderScaling => PlatformImpl?.Scaling ?? 1;
+        double IRenderRoot.RenderScaling => PlatformImpl?.RenderScaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles;
 
@@ -340,6 +340,9 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
             }
 
+            Renderer?.Dispose();
+            Renderer = null;
+            
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
@@ -349,8 +352,7 @@ namespace Avalonia.Controls
             (this as IInputRoot).MouseDevice?.TopLevelClosed(this);
             PlatformImpl = null;
             OnClosed(EventArgs.Empty);
-            Renderer?.Dispose();
-            Renderer = null;
+
             LayoutManager?.Dispose();
         }
 
@@ -403,7 +405,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    _transparencyFallbackBorder.Background = Brushes.Transparent;
+                    _transparencyFallbackBorder.Background = null;
                 }
             }
 

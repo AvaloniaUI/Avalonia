@@ -38,6 +38,12 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
+        public void OnSelectTemplateKey(object sender, SelectTemplateEventArgs e)
+        {
+            var item = (ItemsRepeaterPageViewModel.Item)e.DataContext;
+            e.TemplateKey = (item.Index % 2 == 0) ? "even" : "odd";
+        }
+
         private void LayoutChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_repeater == null)
@@ -77,6 +83,26 @@ namespace ControlCatalog.Pages
                         Orientation = Orientation.Horizontal,
                         MinItemWidth = 200,
                         MinItemHeight = 200,
+                    };
+                    break;
+                case 4:
+                    _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                    _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                    _repeater.Layout = new WrapLayout
+                    {
+                        Orientation = Orientation.Vertical,
+                        HorizontalSpacing = 20,
+                        VerticalSpacing = 20
+                    };
+                    break;
+                case 5:
+                    _scroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                    _scroller.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+                    _repeater.Layout = new WrapLayout
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalSpacing = 20,
+                        VerticalSpacing = 20
                     };
                     break;
             }
