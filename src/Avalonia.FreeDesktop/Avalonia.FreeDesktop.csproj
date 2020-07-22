@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>    
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,7 +10,5 @@
 
   <ItemGroup>
     <PackageReference Include="Tmds.DBus" Version="0.7.0" />
-  </ItemGroup>
-
-  <Import Project="..\..\build\ApiDiff.props" />
+  </ItemGroup>  
 </Project>
