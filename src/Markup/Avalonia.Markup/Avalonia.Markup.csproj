@@ -16,5 +16,5 @@
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\System.Memory.props" />
-  <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\..\build\ApiDiff.props" />
 </Project>

@@ -11,8 +11,6 @@
       <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
       <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Import Project="..\..\build\ApiDiff.props" />
-  </ItemGroup>
+  
+  <Import Project="..\..\build\ApiDiff.props" />  
 </Project>

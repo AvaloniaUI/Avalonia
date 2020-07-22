@@ -64,5 +64,5 @@
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\..\build\ApiDiff.props" />
 </Project>

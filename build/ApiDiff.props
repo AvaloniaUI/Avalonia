@@ -1,11 +1,12 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApiContractPackageVersion>0.10.0-preview1</ApiContractPackageVersion>
-    <PackageId Condition="'$(PackageId)' == ''">Avalonia</PackageId>
+    <NugetPackageName Condition="'$(PackageId)' != ''">$(PackageId)</NugetPackageName>
+    <NugetPackageName Condition="'$(PackageId)' == ''">Avalonia</NugetPackageName>
   </PropertyGroup>
     <ItemGroup>
       <PackageDownload Include="Avalonia" Version="[$(ApiContractPackageVersion)]" />
       <PackageReference Include="Microsoft.DotNet.ApiCompat" Version="5.0.0-beta.20364.3" PrivateAssets="All" />
-      <ResolvedMatchingContract Include="$(NuGetPackageRoot)\$(PackageId)\$(ApiContractPackageVersion)\lib\netstandard2.0\$(AssemblyName).dll" />
+      <ResolvedMatchingContract Include="$(NuGetPackageRoot)\$(NugetPackageName)\$(ApiContractPackageVersion)\lib\netstandard2.0\$(AssemblyName).dll" />
     </ItemGroup>
 </Project>

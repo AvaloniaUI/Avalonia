@@ -8,5 +8,5 @@
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
-  <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\..\build\ApiDiff.props" />
 </Project>
