@@ -8,4 +8,5 @@
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>

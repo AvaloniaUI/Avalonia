@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NugetPackageName>Avalonia</NugetPackageName>
+    <TargetFramework>netstandard2.0</TargetFramework>    
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />

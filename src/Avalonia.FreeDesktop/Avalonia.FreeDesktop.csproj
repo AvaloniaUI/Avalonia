@@ -12,4 +12,5 @@
     <PackageReference Include="Tmds.DBus" Version="0.7.0" />
   </ItemGroup>
 
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>
