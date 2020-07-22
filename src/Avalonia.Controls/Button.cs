@@ -90,7 +90,7 @@ namespace Avalonia.Controls
             IsCancelProperty.Changed.Subscribe(IsCancelChanged);
         }
 
-        public Button()
+        public Button(bool test = false)
         {
             UpdatePseudoClasses(IsPressed);
         }
