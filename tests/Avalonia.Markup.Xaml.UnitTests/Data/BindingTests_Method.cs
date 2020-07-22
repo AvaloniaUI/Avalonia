@@ -20,8 +20,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <Button Name='button' Command='{Binding Method}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
                 var vm = new ViewModel();
 
@@ -45,8 +44,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <Button Name='button' Command='{Binding Method1}' CommandParameter='5'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
                 var vm = new ViewModel();
 
@@ -70,8 +68,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <TextBlock Name='textBlock' Text='{Binding Method}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
                 var vm = new ViewModel();
 

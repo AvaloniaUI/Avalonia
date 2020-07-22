@@ -29,7 +29,8 @@ namespace Avalonia.Skia
 
         [ThreadStatic] private static string[] t_languageTagBuffer;
 
-        public bool TryMatchCharacter(int codepoint, FontWeight fontWeight, FontStyle fontStyle,
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
+            FontWeight fontWeight,
             FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
         {
             SKFontStyle skFontStyle;
@@ -80,7 +81,7 @@ namespace Avalonia.Skia
                         continue;
                     }
 
-                    fontKey = new FontKey(skTypeface.FamilyName, fontWeight, fontStyle);
+                    fontKey = new FontKey(skTypeface.FamilyName, fontStyle, fontWeight);
 
                     return true;
                 }
@@ -91,7 +92,7 @@ namespace Avalonia.Skia
 
                 if (skTypeface != null)
                 {
-                    fontKey = new FontKey(skTypeface.FamilyName, fontWeight, fontStyle);
+                    fontKey = new FontKey(skTypeface.FamilyName, fontStyle, fontWeight);
 
                     return true;
                 }

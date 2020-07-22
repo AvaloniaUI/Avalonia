@@ -39,11 +39,15 @@ namespace Avalonia.Controls
     {
         static TickBar()
         {
-            AffectsRender<TickBar>(ReservedSpaceProperty,
+            AffectsRender<TickBar>(FillProperty,
+                                   IsDirectionReversedProperty,
+                                   ReservedSpaceProperty,
                                    MaximumProperty,
                                    MinimumProperty,
                                    OrientationProperty,
-                                   TickFrequencyProperty);
+                                   PlacementProperty,
+                                   TickFrequencyProperty,
+                                   TicksProperty);
         }
 
         public TickBar() : base()
@@ -137,7 +141,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// The Ticks property contains collection of value of type Double which
         /// are the logical positions use to draw the ticks.
-        /// The property value is a <see cref="DoubleCollection" />.
+        /// The property value is a <see cref="AvaloniaList{T}" />.
         /// </summary>
         public AvaloniaList<double> Ticks
         {
@@ -169,7 +173,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TickBarPlacement> PlacementProperty =
             AvaloniaProperty.Register<TickBar, TickBarPlacement>(nameof(Placement), 0d);
 
-
         /// <summary>
         /// Placement property specified how the Tick will be placed.
         /// This property affects the way ticks are drawn.
@@ -189,7 +192,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// TickBar will use ReservedSpaceProperty for left and right spacing (for horizontal orientation) or
-        /// tob and bottom spacing (for vertical orienation).
+        /// top and bottom spacing (for vertical orienation).
         /// The space on both sides of TickBar is half of specified ReservedSpace.
         /// This property has type of <see cref="Rect" />.
         /// </summary>
@@ -201,7 +204,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Draw ticks.
-        /// Ticks can be draw in 8 diffrent ways depends on Placment property and IsDirectionReversed property.
+        /// Ticks can be draw in 8 different ways depends on Placement property and IsDirectionReversed property.
         ///
         /// This function also draw selection-tick(s) if IsSelectionRangeEnabled is 'true' and
         /// SelectionStart and SelectionEnd are valid.
@@ -211,9 +214,7 @@ namespace Avalonia.Controls
         ///
         /// The secondary ticks (all other ticks, including selection-tics) height will be 75% of TickBar's render size.
         ///
-        /// Brush that use to fill ticks is specified by Shape.Fill property.
-        ///
-        /// Pen that use to draw ticks is specified by Shape.Pen property.
+        /// Brush that use to fill ticks is specified by Fill property.
         /// </summary>
         public override void Render(DrawingContext dc)
         {
@@ -222,7 +223,6 @@ namespace Avalonia.Controls
             var tickLen = 0.0d;   // Height for Primary Tick (for Mininum and Maximum value)
             var tickLen2 = 0.0d;  // Height for Secondary Tick
             var logicalToPhysical = 1.0;
-            var progression = 1.0d;
             var startPoint = new Point();
             var endPoint = new Point();
             var rSpace = Orientation == Orientation.Horizontal ? ReservedSpace.Width : ReservedSpace.Height;
@@ -242,7 +242,6 @@ namespace Avalonia.Controls
                     startPoint = new Point(halfReservedSpace, size.Height);
                     endPoint = new Point(halfReservedSpace + size.Width, size.Height);
                     logicalToPhysical = size.Width / range;
-                    progression = 1;
                     break;
 
                 case TickBarPlacement.Bottom:
@@ -255,7 +254,6 @@ namespace Avalonia.Controls
                     startPoint = new Point(halfReservedSpace, 0d);
                     endPoint = new Point(halfReservedSpace + size.Width, 0d);
                     logicalToPhysical = size.Width / range;
-                    progression = 1;
                     break;
 
                 case TickBarPlacement.Left:
@@ -269,7 +267,6 @@ namespace Avalonia.Controls
                     startPoint = new Point(size.Width, size.Height + halfReservedSpace);
                     endPoint = new Point(size.Width, halfReservedSpace);
                     logicalToPhysical = size.Height / range * -1;
-                    progression = -1;
                     break;
 
                 case TickBarPlacement.Right:
@@ -282,7 +279,6 @@ namespace Avalonia.Controls
                     startPoint = new Point(0d, size.Height + halfReservedSpace);
                     endPoint = new Point(0d, halfReservedSpace);
                     logicalToPhysical = size.Height / range * -1;
-                    progression = -1;
                     break;
             };
 
@@ -291,7 +287,6 @@ namespace Avalonia.Controls
             // Invert direciton of the ticks
             if (IsDirectionReversed)
             {
-                progression *= -progression;
                 logicalToPhysical *= -1;
 
                 // swap startPoint & endPoint

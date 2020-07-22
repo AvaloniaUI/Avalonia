@@ -65,7 +65,7 @@ namespace Avalonia.LinuxFramebuffer
         public IMouseDevice MouseDevice => new MouseDevice();
         public IPopupImpl CreatePopup() => null;
 
-        public double Scaling => _outputBackend.Scaling;
+        public double RenderScaling => _outputBackend.Scaling;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -77,10 +77,12 @@ namespace Avalonia.LinuxFramebuffer
         public Action Closed { get; set; }
         public Action LostFocus { get; set; }
 
-        public Size ScaledSize => _outputBackend.PixelSize.ToSize(Scaling);
+        public Size ScaledSize => _outputBackend.PixelSize.ToSize(RenderScaling);
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 }

@@ -280,10 +280,10 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        double ILayoutRoot.LayoutScaling => PlatformImpl?.Scaling ?? 1;
+        double ILayoutRoot.LayoutScaling => PlatformImpl?.RenderScaling ?? 1;
 
         /// <inheritdoc/>
-        double IRenderRoot.RenderScaling => PlatformImpl?.Scaling ?? 1;
+        double IRenderRoot.RenderScaling => PlatformImpl?.RenderScaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles;
 
@@ -405,7 +405,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    _transparencyFallbackBorder.Background = Brushes.Transparent;
+                    _transparencyFallbackBorder.Background = null;
                 }
             }
 

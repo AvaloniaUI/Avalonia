@@ -1,6 +1,30 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ItemsRepeaterPage">
+  <UserControl.Resources>
+    <RecyclePool x:Key="RecyclePool" />
+    <DataTemplate x:Key="odd">
+      <TextBlock Background="Yellow"
+                 Foreground="Black"
+                 Height="{Binding Height}"
+                 Text="{Binding Text}"/>
+    </DataTemplate>
+    <DataTemplate x:Key="even">
+      <TextBlock Background="Wheat"
+                 Foreground="Black"
+                 Height="{Binding Height}"
+                 Text="{Binding Text}"/>
+    </DataTemplate>
+    <RecyclingElementFactory x:Key="elementFactory"
+                             RecyclePool="{StaticResource RecyclePool}"
+                             SelectTemplateKey="OnSelectTemplateKey">
+      <RecyclingElementFactory.Templates>
+        <StaticResource x:Key="odd" ResourceKey="odd" />
+        <StaticResource x:Key="even" ResourceKey="even" />
+      </RecyclingElementFactory.Templates>
+    </RecyclingElementFactory>
+  </UserControl.Resources>
+  
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0 0 0 16">
       <TextBlock Classes="h1">ItemsRepeater</TextBlock>
@@ -23,16 +47,8 @@
       <ScrollViewer Name="scroller"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Auto">
-        <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}">
-          <ItemsRepeater.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Focusable="True"
-                         Background="{Binding Background}"
-                         Height="{Binding Height}"
-                         Text="{Binding Text}"/>
-            </DataTemplate>
-          </ItemsRepeater.ItemTemplate>
-        </ItemsRepeater>
+        <ItemsRepeater Name="repeater" Background="Transparent" Items="{Binding Items}"
+                       ItemTemplate="{StaticResource elementFactory}"/>
       </ScrollViewer>
     </Border>
   </DockPanel>

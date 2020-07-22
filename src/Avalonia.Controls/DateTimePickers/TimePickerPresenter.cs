@@ -39,7 +39,7 @@ namespace Avalonia.Controls
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
         }
 
-        //TemplateItems
+        // TemplateItems
         private Grid _pickerContainer;
         private Button _acceptButton;
         private Button _dismissButton;
@@ -55,8 +55,8 @@ namespace Avalonia.Controls
         private Button _minuteDownButton;
         private Button _periodDownButton;
 
-        //Backing Fields
-        private TimeSpan _Time;
+        // Backing Fields
+        private TimeSpan _time;
         private int _minuteIncrement = 1;
         private string _clockIdentifier = "12HourClock";
 
@@ -83,7 +83,7 @@ namespace Avalonia.Controls
             get => _clockIdentifier;
             set
             {
-                if (string.IsNullOrEmpty(value) || value == "" || !(value == "12HourClock" || value == "24HourClock"))
+                if (string.IsNullOrEmpty(value) || !(value == "12HourClock" || value == "24HourClock"))
                     throw new ArgumentException("Invalid ClockIdentifier");
                 SetAndRaise(ClockIdentifierProperty, ref _clockIdentifier, value);
                 InitPicker();
@@ -95,10 +95,10 @@ namespace Avalonia.Controls
         /// </summary>
         public TimeSpan Time
         {
-            get => _Time;
+            get => _time;
             set
             {
-                SetAndRaise(TimeProperty, ref _Time, value);
+                SetAndRaise(TimeProperty, ref _time, value);
                 InitPicker();
             }
         }
@@ -213,26 +213,24 @@ namespace Avalonia.Controls
 
         private void SetGrid()
         {
-            if (ClockIdentifier == "12HourClock")
-            {
-                _pickerContainer.ColumnDefinitions = new ColumnDefinitions("*,Auto,*,Auto,*");
-                _spacer2.IsVisible = true;
-                _periodHost.IsVisible = true;
-            }
-            else
-            {
-                _pickerContainer.ColumnDefinitions = new ColumnDefinitions("*,Auto,*");
-                _spacer2.IsVisible = false;
-                _periodHost.IsVisible = false;
-            }
+            bool use24HourClock = ClockIdentifier == "24HourClock";
+
+            var columnsD = use24HourClock ? "*, Auto, *" : "*, Auto, *, Auto, *";
+            _pickerContainer.ColumnDefinitions = new ColumnDefinitions(columnsD);
+
+            _spacer2.IsVisible = !use24HourClock;
+            _periodHost.IsVisible = !use24HourClock;
+
+            Grid.SetColumn(_spacer2, use24HourClock ? 0 : 3);
+            Grid.SetColumn(_periodHost, use24HourClock ? 0 : 4);
         }
 
-        private void OnDismissButtonClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void OnDismissButtonClicked(object sender, RoutedEventArgs e)
         {
             OnDismiss();
         }
 
-        private void OnAcceptButtonClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void OnAcceptButtonClicked(object sender, RoutedEventArgs e)
         {
             OnConfirmed();
         }

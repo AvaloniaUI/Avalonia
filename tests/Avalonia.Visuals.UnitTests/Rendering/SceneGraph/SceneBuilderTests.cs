@@ -34,6 +34,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Background = Brushes.Red,
                         Child = textBlock = new TextBlock
                         {
+                            TextWrapping = TextWrapping.NoWrap,
                             Text = "Hello World",
                         }
                     }

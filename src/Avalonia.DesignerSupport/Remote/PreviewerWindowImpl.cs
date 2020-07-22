@@ -36,6 +36,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public double DesktopScaling => 1.0;
         public PixelPoint Position { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
@@ -78,7 +79,17 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public IScreenImpl Screen { get; } = new ScreenStub();
-        public Action GotInputWhenDisabled { get; set; }
+        public Action GotInputWhenDisabled { get; set; }        
+        
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public bool IsClientAreaExtendedToDecorations { get; }
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
+        public bool NeedsManagedDecorations => false;
 
         public void Activate()
         {
@@ -118,6 +129,18 @@ namespace Avalonia.DesignerSupport.Remote
 
         public void SetEnabled(bool enable)
         {
+        }
+
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {            
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {            
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {            
         }
     }
 }

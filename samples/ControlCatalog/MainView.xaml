@@ -2,7 +2,6 @@
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ControlCatalog.MainView"
-        Background="Transparent"
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
   <Grid>
@@ -14,6 +13,7 @@
         </Style>
     </Grid.Styles>  
     <TabControl Classes="sidebar" Name="Sidebar">
+      <TabItem Header="Acrylic"><pages:AcrylicPage/></TabItem>
       <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
       <TabItem Header="Border"><pages:BorderPage/></TabItem>
       <TabItem Header="Button"><pages:ButtonPage/></TabItem>
@@ -55,6 +55,7 @@
       <TabItem Header="Pointers (Touch)"><pages:PointersPage/></TabItem>
       <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
       <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
+      <TabItem Header="RelativePanel"><pages:RelativePanelPage/></TabItem>
       <TabItem Header="ScrollViewer"><pages:ScrollViewerPage/></TabItem>
       <TabItem Header="Slider"><pages:SliderPage/></TabItem>
       <TabItem Header="SplitView"><pages:SplitViewPage/></TabItem>
@@ -66,6 +67,7 @@
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
+      <TabItem Header="Window Customizations"><pages:WindowCustomizationsPage/></TabItem>
       <TabControl.Tag>
         <StackPanel Width="115" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="8">
           <ComboBox x:Name="Decorations" SelectedIndex="0">
@@ -79,7 +81,7 @@
             <ComboBoxItem>Simple - Light</ComboBoxItem>
             <ComboBoxItem>Simple - Dark</ComboBoxItem>
           </ComboBox>
-          <ComboBox x:Name="TransparencyLevels" SelectedIndex="0">
+          <ComboBox x:Name="TransparencyLevels" SelectedIndex="{Binding TransparencyLevel}">
             <ComboBoxItem>None</ComboBoxItem>
             <ComboBoxItem>Transparent</ComboBoxItem>
             <ComboBoxItem>Blur</ComboBoxItem>

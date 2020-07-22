@@ -10,15 +10,15 @@
                 HorizontalAlignment="Center"
                 Spacing="16">
             <StackPanel>
-                <Border BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="2" Padding="16" Name="DragMeText">
+                <Border BorderBrush="{DynamicResource SystemAccentColor}" BorderThickness="2" Padding="16" Name="DragMeText">
                   <TextBlock Name="DragStateText">Drag Me</TextBlock>
                 </Border>
-                <Border BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="2" Padding="16" Name="DragMeCustom">
+                <Border BorderBrush="{DynamicResource SystemAccentColor}" BorderThickness="2" Padding="16" Name="DragMeCustom">
                   <TextBlock Name="DragStateCustom">Drag Me (custom)</TextBlock>
                 </Border>
             </StackPanel>
 
-            <Border Background="{DynamicResource ThemeAccentBrush2}" Padding="16" 
+            <Border Background="{DynamicResource SystemAccentColorDark1}" Padding="16" 
                     DragDrop.AllowDrop="True">
                 <TextBlock Name="DropState">Drop some text or files here</TextBlock>
             </Border>

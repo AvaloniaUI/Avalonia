@@ -16,7 +16,7 @@
 // Ported from: https://github.com/foliojs/linebreak
 // Copied from: https://github.com/toptensoftware/RichTextKit
 
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -109,7 +109,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 {
                     case PairBreakType.DI: // Direct break
                         shouldBreak = true;
-                        _lastPos = _pos;
                         break;
 
                     case PairBreakType.IN: // possible indirect break

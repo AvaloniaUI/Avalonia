@@ -5,7 +5,7 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    public class DataTemplate : IDataTemplate
+    public class DataTemplate : IRecyclingDataTemplate
     {
         public Type DataType { get; set; }
 
@@ -13,8 +13,6 @@ namespace Avalonia.Markup.Xaml.Templates
         [Content]
         [TemplateContent]
         public object Content { get; set; }
-
-        public bool SupportsRecycling { get; set; } = true;
 
         public bool Match(object data)
         {
@@ -28,6 +26,11 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public IControl Build(object data) => TemplateContent.Load(Content).Control;
+        public IControl Build(object data) => Build(data, null);
+
+        public IControl Build(object data, IControl existing)
+        {
+            return existing ?? TemplateContent.Load(Content).Control;
+        }
     }
 }
