@@ -12,6 +12,7 @@
       <PackageDownload Include="Avalonia.LinuxFramebuffer" Version="[$(ApiContractPackageVersion)]" /> 
       <PackageDownload Include="Avalonia.Controls.DataGrid" Version="[$(ApiContractPackageVersion)]" />
       <PackageDownload Include="Avalonia.Diagnostics" Version="[$(ApiContractPackageVersion)]" /> 
+      <PackageDownload Include="Avalonia.ReactiveUI" Version="[$(ApiContractPackageVersion)]" /> 
       <PackageReference Include="Microsoft.DotNet.ApiCompat" Version="5.0.0-beta.20364.3" PrivateAssets="All" />
     <ResolvedMatchingContract Include="$(NuGetPackageRoot)\$(NugetPackageName.ToLower())\$(ApiContractPackageVersion)\lib\$(TargetFramework)\$(AssemblyName).dll" />
     </ItemGroup>
