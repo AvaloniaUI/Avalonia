@@ -25,11 +25,12 @@
         </MenuItem>
         <MenuItem Header="Edit">
           <MenuItem Header="Go To">
-            <MenuItem Header="Go To Line"/>
+            <MenuItem Header="Go To Line" />
           </MenuItem>
         </MenuItem>
         <MenuItem Header="View">
-          <MenuItem Header="Designer" InputGesture="Shift+F7" />
+          <MenuItem Header="Designer"
+                    InputGesture="Shift+F7" />
         </MenuItem>
         <MenuItem Header="Project">
           <MenuItem Header="Add class" />
@@ -43,7 +44,7 @@
     <x:Double x:Key="MenuFlyoutSubItemPopupHorizontalOffset">-4</x:Double>
     <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
     <Thickness x:Key="MenuIconPresenterMargin">0,0,12,0</Thickness>
-    <Thickness x:Key="MenuInputGestureTextMargin">24,0,0,0</Thickness>    
+    <Thickness x:Key="MenuInputGestureTextMargin">24,0,0,0</Thickness>
     <StreamGeometry x:Key="MenuItemChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
   </Styles.Resources>
 
@@ -113,8 +114,7 @@
                  PlacementMode="Right"
                  HorizontalOffset="{StaticResource MenuFlyoutSubItemPopupHorizontalOffset}"
                  StaysOpen="True"
-                 IsOpen="{TemplateBinding IsSubMenuOpen,
-                                          Mode=TwoWay}">
+                 IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
             <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                     BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
                     BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
@@ -160,8 +160,7 @@
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
-                   IsOpen="{TemplateBinding IsSubMenuOpen,
-                                            Mode=TwoWay}"
+                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
                    StaysOpen="True">
               <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                       BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
@@ -191,7 +190,7 @@
     <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
     <Setter Property="Padding" Value="{StaticResource MenuFlyoutItemThemePaddingNarrow}" />
   </Style>
-  
+
   <Style Selector="Menu > MenuItem">
     <!--  Custom padding for Menu > MenuItem  -->
     <Setter Property="Padding" Value="{StaticResource MenuBarItemPadding}" />
@@ -222,7 +221,7 @@
     <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronPointerOver}" />
   </Style>
 
-  <!--  Listen for PART_LayoutRoot:pressed instead of MenuItem:pressed, so it will not be triggered when menu subitem is pressed  -->
+  <!--  Listen for PART_LayoutRoot:pointerover, so it will not be triggered when subitem is pressed  -->
   <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
     <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutItemBorderBrushPressed}" />
