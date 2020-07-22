@@ -10,11 +10,13 @@
     </Border>
   </Design.PreviewWith>
 
-  <Style.Resources>
-    <x:Double x:Key="MenuHeight">32</x:Double>
+  <Style.Resources>    
+    <x:Double x:Key="MenuBarHeight">32</x:Double>
+    <Thickness x:Key="MenuBarItemPadding">12,0,12,0</Thickness>
   </Style.Resources>
+
   <Setter Property="Background" Value="Transparent" />
-  <Setter Property="Height" Value="{StaticResource MenuHeight}" />
+  <Setter Property="Height" Value="{StaticResource MenuBarHeight}" />
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}"
