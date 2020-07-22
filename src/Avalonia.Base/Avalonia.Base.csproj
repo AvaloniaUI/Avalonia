@@ -13,4 +13,12 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\build\System.Memory.props" />
+
+  <ItemGroup>
+    <ResolvedMatchingContract Include="..\..\LastMajorVersionBinaries\$(AssemblyName).dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.ApiCompat" Version="5.0.0-beta.20364.3" PrivateAssets="All" />
+  </ItemGroup>
 </Project>
