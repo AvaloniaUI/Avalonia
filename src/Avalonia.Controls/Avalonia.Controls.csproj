@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <NugetPackageName>Avalonia</NugetPackageName>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
@@ -14,4 +15,5 @@
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\JetBrains.Annotations.props" />
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>

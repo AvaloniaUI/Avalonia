@@ -4,6 +4,7 @@
     <AssemblyName>Avalonia.Base</AssemblyName>
     <RootNamespace>Avalonia</RootNamespace>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <NugetPackageName>Avalonia</NugetPackageName>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"/>
