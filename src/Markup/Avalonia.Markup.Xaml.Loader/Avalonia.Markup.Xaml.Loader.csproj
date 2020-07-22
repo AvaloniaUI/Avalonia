@@ -10,6 +10,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-  </ItemGroup>
-  <Import Project="..\..\..\build\ApiDiff.props" />
+  </ItemGroup>  
 </Project>

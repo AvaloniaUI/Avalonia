@@ -1,0 +1,15 @@
+Compat issues with assembly Avalonia.Markup.Xaml:
+CannotMakeTypeAbstract : Type 'Avalonia.Markup.Xaml.AvaloniaXamlLoader' is abstract in the implementation but is not abstract in the contract.
+CannotSealType : Type 'Avalonia.Markup.Xaml.AvaloniaXamlLoader' is actually (has the sealed modifier) sealed in the implementation but not sealed in the contract.
+MembersMustExist : Member 'public void Avalonia.Markup.Xaml.AvaloniaXamlLoader..ctor()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Boolean Avalonia.Markup.Xaml.AvaloniaXamlLoader.IsDesignMode.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Markup.Xaml.AvaloniaXamlLoader.IsDesignMode.set(System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Object Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(System.IO.Stream, System.Reflection.Assembly, System.Object, System.Uri)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Object Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(System.String, System.Reflection.Assembly, System.Object)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Object Avalonia.Markup.Xaml.AvaloniaXamlLoader.Parse(System.String, System.Reflection.Assembly)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public T Avalonia.Markup.Xaml.AvaloniaXamlLoader.Parse<T>(System.String, System.Reflection.Assembly)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Boolean Avalonia.Markup.Xaml.Templates.DataTemplate.SupportsRecycling.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Markup.Xaml.Templates.DataTemplate.SupportsRecycling.set(System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Boolean Avalonia.Markup.Xaml.Templates.TreeDataTemplate.SupportsRecycling.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Markup.Xaml.Templates.TreeDataTemplate.SupportsRecycling.set(System.Boolean)' does not exist in the implementation but it does exist in the contract.
+Total Issues: 13
