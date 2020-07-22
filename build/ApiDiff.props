@@ -10,6 +10,6 @@
       <PackageDownload Include="Avalonia.Skia" Version="[$(ApiContractPackageVersion)]" />
       <PackageDownload Include="Avalonia.Remote.Protocol" Version="[$(ApiContractPackageVersion)]" />      
       <PackageReference Include="Microsoft.DotNet.ApiCompat" Version="5.0.0-beta.20364.3" PrivateAssets="All" />
-    <ResolvedMatchingContract Include="$(NuGetPackageRoot)\$(NugetPackageName.ToLower())\$(ApiContractPackageVersion)\lib\netstandard2.0\$(AssemblyName).dll" />
+    <ResolvedMatchingContract Include="$(NuGetPackageRoot)\$(NugetPackageName.ToLower())\$(ApiContractPackageVersion)\lib\$(TargetFramework)\$(AssemblyName).dll" />
     </ItemGroup>
 </Project>
