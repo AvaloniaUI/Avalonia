@@ -2,7 +2,5 @@
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
-    <PackageReference Include="Microsoft.DotNet.ApiCompat" Version="5.0.0-beta.20364.3" PrivateAssets="All" />
-    <ResolvedMatchingContract Include="$(NuGetPackageRoot)\avalonia\0.10.0-preview1\lib\netstandard2.0\$(AssemblyName).dll" />
   </ItemGroup>
 </Project>
