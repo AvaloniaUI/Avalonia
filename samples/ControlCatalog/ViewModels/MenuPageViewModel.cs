@@ -17,6 +17,23 @@ namespace ControlCatalog.ViewModels
             SaveCommand = ReactiveCommand.Create(Save, Observable.Return(false));
             OpenRecentCommand = ReactiveCommand.Create<string>(OpenRecent);
 
+            var recentItems = new[]
+            {
+                new MenuItemViewModel
+                {
+                    Header = "File1.txt",
+                    Command = OpenRecentCommand,
+                    CommandParameter = @"c:\foo\File1.txt"
+                },
+                new MenuItemViewModel
+                {
+                    Header = "File2.txt",
+                    Command = OpenRecentCommand,
+                    CommandParameter = @"c:\foo\File2.txt"
+                },
+            };
+
+            RecentItems = recentItems;
             MenuItems = new[]
             {
                 new MenuItemViewModel
@@ -24,27 +41,13 @@ namespace ControlCatalog.ViewModels
                     Header = "_File",
                     Items = new[]
                     {
-                        new MenuItemViewModel { Header = "_Open...", Command = OpenCommand },
+                        new MenuItemViewModel { Header = "O_pen...", Command = OpenCommand },
                         new MenuItemViewModel { Header = "Save", Command = SaveCommand },
                         new MenuItemViewModel { Header = "-" },
                         new MenuItemViewModel
                         {
                             Header = "Recent",
-                            Items = new[]
-                            {
-                                new MenuItemViewModel
-                                {
-                                    Header = "File1.txt",
-                                    Command = OpenRecentCommand,
-                                    CommandParameter = @"c:\foo\File1.txt"
-                                },
-                                new MenuItemViewModel
-                                {
-                                    Header = "File2.txt",
-                                    Command = OpenRecentCommand,
-                                    CommandParameter = @"c:\foo\File2.txt"
-                                },
-                            }
+                            Items = recentItems
                         },
                     }
                 },
@@ -61,6 +64,7 @@ namespace ControlCatalog.ViewModels
         }
 
         public IReadOnlyList<MenuItemViewModel> MenuItems { get; set; }
+        public IReadOnlyList<MenuItemViewModel> RecentItems { get; set; }
         public ReactiveCommand<Unit, Unit> OpenCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<string, Unit> OpenRecentCommand { get; }
