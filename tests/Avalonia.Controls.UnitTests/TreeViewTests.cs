@@ -1273,8 +1273,6 @@ namespace Avalonia.Controls.UnitTests
                 return new TextBlock { Text = node.Value };
             }
 
-            public bool SupportsRecycling => false;
-
             public InstancedBinding ItemsSelector(object item)
             {
                 var obs = ExpressionObserver.Create(item, o => (o as Node).Children);

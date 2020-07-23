@@ -1291,10 +1291,15 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _parent->UpdateCursor();
     
     auto fsize = [self convertSizeToBacking: [self frame].size];
-    _lastPixelSize.Width = (int)fsize.width;
-    _lastPixelSize.Height = (int)fsize.height;
-    [self updateRenderTarget];
-    _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
+    
+    if(_lastPixelSize.Width != (int)fsize.width || _lastPixelSize.Height != (int)fsize.height)
+    {
+        _lastPixelSize.Width = (int)fsize.width;
+        _lastPixelSize.Height = (int)fsize.height;
+        [self updateRenderTarget];
+    
+        _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
+    }
 }
 
 - (void)updateLayer
