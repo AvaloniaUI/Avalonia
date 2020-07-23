@@ -204,6 +204,9 @@ namespace Avalonia.X11.NativeDialogs
         
         [DllImport(GtkName)]
         public static extern IntPtr gtk_file_chooser_add_filter(IntPtr chooser, IntPtr filter);
+
+        [DllImport(GtkName)]
+        public static extern IntPtr gtk_file_chooser_get_filter(IntPtr chooser);
         
         [DllImport(GtkName)]
         public static extern void gtk_widget_realize(IntPtr gtkWidget);

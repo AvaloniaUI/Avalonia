@@ -16,7 +16,7 @@ namespace Avalonia.X11.NativeDialogs
     {
         private Task<bool> _initialized;
         private unsafe  Task<string[]> ShowDialog(string title, IWindowImpl parent, GtkFileChooserAction action,
-            bool multiSelect, string initialFileName, IEnumerable<FileDialogFilter> filters)
+            bool multiSelect, string initialFileName, IEnumerable<FileDialogFilter> filters, string defaultExtension)
         {
             IntPtr dlg;
             using (var name = new Utf8Buffer(title))
@@ -35,11 +35,13 @@ namespace Avalonia.X11.NativeDialogs
                 foreach (var d in disposables) d.Dispose();
                 disposables.Clear();
             }
-            
+
+            var filtersDic = new Dictionary<IntPtr, FileDialogFilter>();
             if(filters != null)
                 foreach (var f in filters)
                 {
                     var filter = gtk_file_filter_new();
+                    filtersDic[filter] = f;
                     using (var b = new Utf8Buffer(f.Name))
                         gtk_file_filter_set_name(filter, b);
                     
@@ -74,6 +76,15 @@ namespace Avalonia.X11.NativeDialogs
                         }
                         g_slist_free(gs);
                         result = resultList.ToArray();
+                        
+                        // GTK doesn't auto-append the extension, so we need to do that manually
+                        if (action == GtkFileChooserAction.Save)
+                        {
+                            var currentFilter = gtk_file_chooser_get_filter(dlg);
+                            filtersDic.TryGetValue(currentFilter, out var selectedFilter);
+                            for (var c = 0; c < result.Length; c++)
+                                result[c] = NameWithExtension(result[c], defaultExtension, selectedFilter);
+                        }
                     }
 
                     gtk_widget_hide(dlg);
@@ -101,7 +112,30 @@ namespace Avalonia.X11.NativeDialogs
             gtk_window_present(dlg);
             return tcs.Task;
         }
-        
+
+        string NameWithExtension(string path, string defaultExtension, FileDialogFilter filter)
+        {
+            var name = Path.GetFileName(path);
+            if (name != null && !name.Contains("."))
+            {
+                if (filter?.Extensions?.Count > 0)
+                {
+                    if (defaultExtension != null
+                        && filter.Extensions.Contains(defaultExtension))
+                        return path + "." + defaultExtension.TrimStart('.');
+
+                    var ext = filter.Extensions.FirstOrDefault(x => x != "*");
+                    if (ext != null)
+                        return path + "." + ext.TrimStart('.');
+                }
+
+                if (defaultExtension != null)
+                    path += "." + defaultExtension.TrimStart('.');
+            }
+
+            return path;
+        }
+
         public async Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
         {
             await EnsureInitialized();
@@ -113,7 +147,8 @@ namespace Avalonia.X11.NativeDialogs
                     dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
                     (dialog as OpenFileDialog)?.AllowMultiple ?? false,
                     Path.Combine(string.IsNullOrEmpty(dialog.Directory) ? "" : dialog.Directory,
-                        string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName), dialog.Filters));
+                        string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName), dialog.Filters,
+                    (dialog as SaveFileDialog)?.DefaultExtension));
         }
 
         public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
@@ -125,7 +160,7 @@ namespace Avalonia.X11.NativeDialogs
             return await await RunOnGlibThread(async () =>
             {
                 var res = await ShowDialog(dialog.Title, platformImpl,
-                    GtkFileChooserAction.SelectFolder, false, dialog.Directory, null);
+                    GtkFileChooserAction.SelectFolder, false, dialog.Directory, null, null);
                 return res?.FirstOrDefault();
             });
         }
