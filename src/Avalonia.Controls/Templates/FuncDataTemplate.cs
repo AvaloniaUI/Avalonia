@@ -6,7 +6,7 @@ namespace Avalonia.Controls.Templates
     /// <summary>
     /// Builds a control for a piece of data.
     /// </summary>
-    public class FuncDataTemplate : FuncTemplate<object, IControl>, IDataTemplate
+    public class FuncDataTemplate : FuncTemplate<object, IControl>, IRecyclingDataTemplate
     {
         /// <summary>
         /// The default data template used in the case where no matching data template is found.
@@ -30,10 +30,8 @@ namespace Avalonia.Controls.Templates
                 },
                 true);
 
-        /// <summary>
-        /// The implementation of the <see cref="Match"/> method.
-        /// </summary>
         private readonly Func<object, bool> _match;
+        private readonly bool _supportsRecycling;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncDataTemplate"/> class.
@@ -70,11 +68,8 @@ namespace Avalonia.Controls.Templates
             Contract.Requires<ArgumentNullException>(match != null);
 
             _match = match;
-            SupportsRecycling = supportsRecycling;
+            _supportsRecycling = supportsRecycling;
         }
-
-        /// <inheritdoc/>
-        public bool SupportsRecycling { get; }
 
         /// <summary>
         /// Checks to see if this data template matches the specified data.
@@ -86,6 +81,24 @@ namespace Avalonia.Controls.Templates
         public bool Match(object data)
         {
             return _match(data);
+        }
+
+        /// <summary>
+        /// Creates or recycles a control to display the specified data.
+        /// </summary>
+        /// <param name="data">The data to display.</param>
+        /// <param name="existing">An optional control to recycle.</param>
+        /// <returns>
+        /// The <paramref name="existing"/> control if supplied and applicable to
+        /// <paramref name="data"/>, otherwise a new control.
+        /// </returns>
+        /// <remarks>
+        /// The caller should ensure that any control passed to <paramref name="existing"/>
+        /// originated from the same data template.
+        /// </remarks>
+        public IControl Build(object data, IControl existing)
+        {
+            return _supportsRecycling && existing is object ? existing : Build(data);
         }
 
         /// <summary>
