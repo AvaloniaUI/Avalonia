@@ -38,12 +38,10 @@ namespace Avalonia.Controls.Chrome
         {
             if (_disposables != null)
             {
-                var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
-
-                layer?.Children.Remove(this);
-
                 _disposables.Dispose();
                 _disposables = null;
+
+                _hostWindow = null;
             }
         }
 
