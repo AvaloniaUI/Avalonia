@@ -6,7 +6,7 @@
   </PropertyGroup>
     <ItemGroup>
       <PackageDownload Include="$(NugetPackageName)" Version="[$(ApiContractPackageVersion)]" />
-      <PackageReference Include="Microsoft.DotNet.ApiCompat" Version="5.0.0-beta.20364.3" PrivateAssets="All" />
+      <PackageReference Include="Microsoft.DotNet.ApiCompat" Version="5.0.0-beta.20372.2" PrivateAssets="All" />
     <ResolvedMatchingContract Include="$(NuGetPackageRoot)\$(NugetPackageName.ToLower())\$(ApiContractPackageVersion)\lib\$(TargetFramework)\$(AssemblyName).dll" />
     </ItemGroup>
 </Project>
