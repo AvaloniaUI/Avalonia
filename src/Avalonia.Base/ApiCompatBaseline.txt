@@ -1,0 +1,3 @@
+Compat issues with assembly Avalonia.Base:
+MembersMustExist : Member 'public void Avalonia.Threading.AvaloniaSynchronizationContext..ctor()' does not exist in the implementation but it does exist in the contract.
+Total Issues: 1
