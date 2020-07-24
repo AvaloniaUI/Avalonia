@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
             }
         }
 
-        public double Scaling
+        public double RenderScaling
         {
             get { return _scaling; }
             set

@@ -43,7 +43,7 @@
           <TextBox Name="PART_TextBox"
                    Background="Transparent"
                    BorderBrush="Transparent"
-                   Margin="-2"
+                   Margin="-1"
                    Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
