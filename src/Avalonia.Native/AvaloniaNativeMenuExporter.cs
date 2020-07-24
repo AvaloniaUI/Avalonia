@@ -74,31 +74,34 @@ namespace Avalonia.Native
             return result;
         }
 
-        void DoLayoutReset()
+        private void DoLayoutReset()
         {
-            _resetQueued = false;
-
-            if (_nativeWindow is null)
+            if (_resetQueued)
             {
-                var appMenu = NativeMenu.GetMenu(Application.Current);
+                _resetQueued = false;
 
-                if (appMenu == null)
+                if (_nativeWindow is null)
                 {
-                    appMenu = CreateDefaultAppMenu();           
-                    NativeMenu.SetMenu(Application.Current, appMenu);         
+                    var appMenu = NativeMenu.GetMenu(Application.Current);
+
+                    if (appMenu == null)
+                    {
+                        appMenu = CreateDefaultAppMenu();
+                        NativeMenu.SetMenu(Application.Current, appMenu);
+                    }
+
+                    SetMenu(appMenu);
+                }
+                else
+                {
+                    if (_menu != null)
+                    {
+                        SetMenu(_nativeWindow, _menu);
+                    }
                 }
 
-                SetMenu(appMenu);
+                _exported = true;
             }
-            else
-            {
-                if (_menu != null)
-                {
-                    SetMenu(_nativeWindow, _menu);
-                }
-            }
-
-            _exported = true;
         }
 
         internal void QueueReset()
