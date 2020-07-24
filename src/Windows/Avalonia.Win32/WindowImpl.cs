@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -230,28 +231,103 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            bool canUseTransparency = false;
-            bool canUseAcrylic = false;
-
-            if (Win32Platform.WindowsVersion.Major >= 10)
+            if (Win32Platform.WindowsVersion.Major >= 6) //On Windows Vista or newer
             {
-                canUseTransparency = true;
-
-                if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
+                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled) //DWM is Disabled
                 {
-                    canUseAcrylic = true;
+                    return WindowTransparencyLevel.None;
+                }
+                else if (Win32Platform.WindowsVersion.Major >= 10) //On Windows 10 or Server 2016
+                {
+                    return Win10EnableBlur(transparencyLevel);
+                }
+                else if (Win32Platform.WindowsVersion.Minor >= 2) //On Windows 8.x
+                {
+                    return Win8xEnableBlur(transparencyLevel);
+                }
+                else
+                {
+                    return Win7EnableBlur(transparencyLevel); //On Windows Vista or 7
                 }
             }
-
-            if (!canUseTransparency || DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+            else //Impossible case or maybe Shorthorn/OneCore idk
             {
                 return WindowTransparencyLevel.None;
+            }
+        }
+
+        private WindowTransparencyLevel Win7EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            
+            DWM_BLURBEHIND blurInfo = new DWM_BLURBEHIND(false);
+            
+            if (transparencyLevel == WindowTransparencyLevel.Blur)
+            {
+                blurInfo = new DWM_BLURBEHIND(true);
+            }
+            
+            DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+                return WindowTransparencyLevel.None;
+            else
+                return transparencyLevel;
+        }
+
+        private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND; //Some of the AccentState Enum's values have different meanings on Windows 8.x than on Windows 10
+            }
+            else
+            {
+                accent.AccentState = AccentState.ACCENT_DISABLED;
+            }
+
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);
+
+            if ((transparencyLevel >= WindowTransparencyLevel.Blur) && (Process.GetProcessesByName("aerohost").Length > 0)) //Use Windows 7 blur if the Aero glass mod is installed, since that's exactly what the mod does
+                Win7EnableBlur(transparencyLevel);
+
+            return transparencyLevel;
+        }
+
+        private WindowTransparencyLevel Win10EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            bool canUseAcrylic = false;
+
+            if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
+            {
+                canUseAcrylic = true;
             }
 
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
 
-            if(transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
             {
                 transparencyLevel = WindowTransparencyLevel.Blur;
             }
@@ -291,7 +367,7 @@ namespace Avalonia.Win32
 
             SetWindowCompositionAttribute(_hwnd, ref data);
 
-            Marshal.FreeHGlobal(accentPtr);            
+            Marshal.FreeHGlobal(accentPtr);
 
             return transparencyLevel;
         }
