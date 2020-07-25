@@ -692,14 +692,24 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            foreach (var i in e.SelectedIndices)
+            if (e.SelectedIndices.Count > 0 || e.DeselectedIndices.Count > 0)
             {
-                Mark(i.GetAt(0), true);
-            }
+                foreach (var i in e.SelectedIndices)
+                {
+                    Mark(i.GetAt(0), true);
+                }
 
-            foreach (var i in e.DeselectedIndices)
+                foreach (var i in e.DeselectedIndices)
+                {
+                    Mark(i.GetAt(0), false);
+                }
+            }
+            else if (e.DeselectedItems.Count > 0)
             {
-                Mark(i.GetAt(0), false);
+                // (De)selected indices being empty means that a selected item was removed from
+                // the Items (it can't tell us the index of the item because the index is no longer
+                // valid). In this case, we just update the selection state of all containers.
+                UpdateContainerSelection();
             }
 
             var newSelectedIndex = SelectedIndex;

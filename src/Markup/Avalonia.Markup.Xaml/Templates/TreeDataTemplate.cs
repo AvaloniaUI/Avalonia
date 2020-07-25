@@ -18,8 +18,6 @@ namespace Avalonia.Markup.Xaml.Templates
         [AssignBinding]
         public Binding ItemsSource { get; set; }
 
-        public bool SupportsRecycling { get; set; } = true;
-
         public bool Match(object data)
         {
             if (DataType == null)

@@ -27,11 +27,6 @@
         public abstract TextWrapping TextWrapping { get; }
 
         /// <summary>
-        /// Gets the text trimming.
-        /// </summary>
-        public abstract TextTrimming TextTrimming { get; }
-
-        /// <summary>
         /// Paragraph's line height
         /// </summary>
         public abstract double LineHeight { get; }

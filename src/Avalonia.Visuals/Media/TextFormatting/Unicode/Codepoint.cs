@@ -112,7 +112,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             count = 1;
 
-            if (index > text.End)
+            if (index > text.Length)
             {
                 return ReplacementCodepoint;
             }

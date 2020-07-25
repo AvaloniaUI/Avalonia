@@ -123,10 +123,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.NetCore", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1-27F5-4255-9AFC-04ABFD11683A}"
 	ProjectSection(SolutionItems) = preProject
+		build\AndroidWorkarounds.props = build\AndroidWorkarounds.props
 		build\Base.props = build\Base.props
 		build\Binding.props = build\Binding.props
-		build\BuildTargets.targets = build\BuildTargets.targets
+		build\CoreLibraries.props = build\CoreLibraries.props
+		build\EmbedXaml.props = build\EmbedXaml.props
 		build\HarfBuzzSharp.props = build\HarfBuzzSharp.props
+		build\iOSWorkarounds.props = build\iOSWorkarounds.props
 		build\JetBrains.Annotations.props = build\JetBrains.Annotations.props
 		build\JetBrains.dotMemoryUnit.props = build\JetBrains.dotMemoryUnit.props
 		build\Magick.NET-Q16-AnyCPU.props = build\Magick.NET-Q16-AnyCPU.props
@@ -136,17 +139,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\NetCore.props = build\NetCore.props
 		build\NetFX.props = build\NetFX.props
 		build\ReactiveUI.props = build\ReactiveUI.props
+		build\ReferenceCoreLibraries.props = build\ReferenceCoreLibraries.props
 		build\Rx.props = build\Rx.props
 		build\SampleApp.props = build\SampleApp.props
+		build\SharedVersion.props = build\SharedVersion.props
 		build\SharpDX.props = build\SharpDX.props
 		build\SkiaSharp.props = build\SkiaSharp.props
+		build\SourceLink.props = build\SourceLink.props
+		build\System.Drawing.Common.props = build\System.Drawing.Common.props
 		build\System.Memory.props = build\System.Memory.props
+		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props
 		build\XUnit.props = build\XUnit.props
+		build\ApiDiff.props = build\ApiDiff.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{4D6FAF79-58B4-482F-9122-0668C346364C}"
 	ProjectSection(SolutionItems) = preProject
 		build\UnitTests.NetCore.targets = build\UnitTests.NetCore.targets
+		build\BuildTargets.targets = build\BuildTargets.targets
+		build\LegacyProject.targets = build\LegacyProject.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}"
@@ -210,6 +221,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless", "src\Avalonia.Headless\Avalonia.Headless.csproj", "{8C89950F-F5D9-47FC-8066-CBC1EC3DF8FC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.Vnc", "src\Avalonia.Headless.Vnc\Avalonia.Headless.Vnc.csproj", "{B859AE7C-F34F-4A9E-88AE-E0E7229FDE1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Markup.Xaml.Loader", "src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj", "{909A8CBD-7D0E-42FD-B841-022AD8925820}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1998,6 +2011,30 @@ Global
 		{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}.Release|iPhone.Build.0 = Release|Any CPU
 		{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Ad-Hoc|Any CPU.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Ad-Hoc|Any CPU.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Ad-Hoc|iPhone.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Ad-Hoc|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.AppStore|iPhone.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.AppStore|iPhone.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.AppStore|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.AppStore|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Release|Any CPU.Build.0 = Release|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Release|iPhone.Build.0 = Release|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{909A8CBD-7D0E-42FD-B841-022AD8925820}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2056,6 +2093,7 @@ Global
 		{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{351337F5-D66F-461B-A957-4EF60BDB4BA6} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{3C84E04B-36CF-4D0D-B965-C26DD649D1F3} = {A0CC0258-D18C-4AB3-854F-7101680FC3F9}
+		{909A8CBD-7D0E-42FD-B841-022AD8925820} = {8B6A8209-894F-4BA1-B880-965FD453982C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
