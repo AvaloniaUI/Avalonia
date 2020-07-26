@@ -97,7 +97,6 @@ namespace Avalonia.Controls
         private ICommand _command;
         private bool _commandCanExecute = true;
         private Popup _popup;
-        private IDisposable _gridHack;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -323,9 +322,6 @@ namespace Avalonia.Controls
             {
                 Command.CanExecuteChanged -= CanExecuteChanged;
             }
-
-            _gridHack?.Dispose();
-            _gridHack = null;
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -345,9 +341,7 @@ namespace Avalonia.Controls
                 // the WPF codebase:
                 //
                 // https://github.com/dotnet/wpf/blob/89537909bdf36bc918e88b37751add46a8980bb0/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/MenuItem.cs#L2126-L2141
-                _gridHack = Bind(
-                    DefinitionBase.PrivateSharedSizeScopeProperty,
-                    parent.GetBindingObservable(DefinitionBase.PrivateSharedSizeScopeProperty));
+                SetValue(DefinitionBase.PrivateSharedSizeScopeProperty, parent.GetValue(DefinitionBase.PrivateSharedSizeScopeProperty));
             }
         }
 
