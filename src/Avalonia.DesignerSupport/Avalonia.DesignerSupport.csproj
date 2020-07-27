@@ -9,6 +9,7 @@
     <Version>0.7.0</Version>
     <NoWarn>CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NugetPackageName>Avalonia</NugetPackageName>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Remote\HtmlTransport\webapp\build\**\*.gz" />
@@ -26,4 +27,5 @@
     <ProjectReference Include="..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>

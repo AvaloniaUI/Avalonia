@@ -37,23 +37,23 @@
     </Setter>
   </Style>
 
-  <Style Selector="RepeatButton /template/ ContentPresenter">
+  <Style Selector="RepeatButton /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </Style>
 
-  <Style Selector="RepeatButton:pointerover /template/ ContentPresenter">
+  <Style Selector="RepeatButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundPointerOver}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RepeatButtonBorderBrushPointerOver}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource RepeatButtonForegroundPointerOver}" />
   </Style>
 
-  <Style Selector="RepeatButton:pressed  /template/ ContentPresenter">
+  <Style Selector="RepeatButton:pressed  /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundPressed}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RepeatButtonBorderBrushPressed}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource RepeatButtonForegroundPressed}" />
   </Style>
 
-  <Style Selector="RepeatButton:disabled /template/ ContentPresenter">
+  <Style Selector="RepeatButton:disabled /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RepeatButtonBorderBrushDisabled}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource RepeatButtonForegroundDisabled}" />

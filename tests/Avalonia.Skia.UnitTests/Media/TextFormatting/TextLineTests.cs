@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -101,7 +102,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
 
-                Assert.Equal(firstCharacterHit.TrailingLength, previousCharacterHit.TrailingLength);
+                Assert.Equal(0, previousCharacterHit.TrailingLength);
 
                 previousCharacterHit = new CharacterHit(clusters[^1], text.Length - clusters[^1]);
 
@@ -119,7 +120,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
 
-                Assert.Equal(firstCharacterHit.TrailingLength, previousCharacterHit.TrailingLength);
+                Assert.Equal(0, previousCharacterHit.TrailingLength);
             }
         }
 
