@@ -128,7 +128,9 @@ partial class Build : NukeBuild
         {
             var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
 
-            NpmTasks.NpmInstall(c => c.SetWorkingDirectory(webappDir));
+            NpmTasks.NpmInstall(c => c
+                .SetWorkingDirectory(webappDir)
+                .SetArgumentConfigurator(a => a.Add("--silent")));
             NpmTasks.NpmRun(c => c
                 .SetWorkingDirectory(webappDir)
                 .SetCommand("dist"));
