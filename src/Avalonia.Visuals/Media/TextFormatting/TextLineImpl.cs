@@ -236,7 +236,7 @@ namespace Avalonia.Media.TextFormatting
 
             var codepointIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
-            if (codepointIndex >= TextRange.Start + TextRange.Length)
+            if (codepointIndex > TextRange.End)
             {
                 return false; // Cannot go forward anymore
             }
@@ -249,11 +249,14 @@ namespace Avalonia.Media.TextFormatting
 
                 var foundCharacterHit = run.GlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
 
-                nextCharacterHit = characterHit.TrailingLength != 0 ?
+                var isAtEnd = foundCharacterHit.FirstCharacterIndex + foundCharacterHit.TrailingLength ==
+                              TextRange.Length;
+
+                nextCharacterHit = isAtEnd || characterHit.TrailingLength != 0 ?
                     foundCharacterHit :
                     new CharacterHit(foundCharacterHit.FirstCharacterIndex + foundCharacterHit.TrailingLength);
 
-                if (nextCharacterHit.FirstCharacterIndex > characterHit.FirstCharacterIndex)
+                if (isAtEnd || nextCharacterHit.FirstCharacterIndex > characterHit.FirstCharacterIndex)
                 {
                     return true;
                 }
@@ -272,6 +275,13 @@ namespace Avalonia.Media.TextFormatting
         /// <returns></returns>
         private bool TryFindPreviousCharacterHit(CharacterHit characterHit, out CharacterHit previousCharacterHit)
         {
+            if (characterHit.FirstCharacterIndex == TextRange.Start)
+            {
+                previousCharacterHit = new CharacterHit(TextRange.Start);
+
+                return true;
+            }
+
             previousCharacterHit = characterHit;
 
             var codepointIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
@@ -354,7 +364,7 @@ namespace Avalonia.Media.TextFormatting
 
             return new ShapedTextCharacters(glyphRun, textRun.Properties);
         }
-        
+
         /// <summary>
         /// Gets the shaped width of specified shaped text characters.
         /// </summary>
