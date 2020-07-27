@@ -5,7 +5,7 @@
     </Border>
   </Design.PreviewWith>
   <Style Selector="TitleBar">
-    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>    
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>    
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
@@ -23,7 +23,7 @@
   </Style>
 
   <Style Selector="TitleBar:fullscreen">
-    <Setter Property="Background" Value="{DynamicResource SystemAccentColor}" />
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentColor}" />
   </Style>
 
   <Style Selector="TitleBar /template/ Border#PART_Background">
