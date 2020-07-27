@@ -23,7 +23,6 @@ namespace Avalonia.Win32.Interop.Wpf
         private HwndSource _currentHwndSource;
         private readonly HwndSourceHook _hook;
         private readonly ITopLevelImpl _ttl;
-        private IInputRoot _inputRoot;
         private readonly IEnumerable<object> _surfaces;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
@@ -31,6 +30,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public EmbeddableControlRoot ControlRoot { get; }
         internal ImageSource ImageSource { get; set; }
+        public IInputRoot InputRoot { get; private set; }
 
         public class CustomControlRoot : EmbeddableControlRoot, IEmbeddedLayoutRoot
         {
@@ -134,7 +134,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         void ITopLevelImpl.Invalidate(Rect rect) => InvalidateVisual();
 
-        void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
+        void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
         Point ITopLevelImpl.PointToClient(PixelPoint point) => PointFromScreen(point.ToWpfPoint()).ToAvaloniaPoint();
 
@@ -168,7 +168,7 @@ namespace Avalonia.Win32.Interop.Wpf
         }
 
         void MouseEvent(RawPointerEventType type, MouseEventArgs e)
-            => _ttl.Input?.Invoke(new RawPointerEventArgs(_mouse, (uint)e.Timestamp, _inputRoot, type,
+            => _ttl.Input?.Invoke(new RawPointerEventArgs(_mouse, (uint)e.Timestamp, InputRoot, type,
             e.GetPosition(this).ToAvaloniaPoint(), GetModifiers(e)));
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -207,23 +207,23 @@ namespace Avalonia.Win32.Interop.Wpf
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e) =>
-            _ttl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, (uint) e.Timestamp, _inputRoot,
+            _ttl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, (uint) e.Timestamp, InputRoot,
                 e.GetPosition(this).ToAvaloniaPoint(), new Vector(0, e.Delta), GetModifiers(e)));
 
         protected override void OnMouseLeave(MouseEventArgs e) => MouseEvent(RawPointerEventType.LeaveWindow, e);
 
         protected override void OnKeyDown(KeyEventArgs e)
-            => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot, RawKeyEventType.KeyDown,
+            => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint) e.Timestamp, InputRoot, RawKeyEventType.KeyDown,
                 (Key) e.Key,
                 GetModifiers(null)));
 
         protected override void OnKeyUp(KeyEventArgs e)
-            => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint)e.Timestamp, _inputRoot, RawKeyEventType.KeyUp,
+            => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint)e.Timestamp, InputRoot, RawKeyEventType.KeyUp,
                 (Key)e.Key,
                 GetModifiers(null)));
 
         protected override void OnTextInput(TextCompositionEventArgs e) 
-            => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot, e.Text));
+            => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, InputRoot, e.Text));
 
         void ITopLevelImpl.SetCursor(IPlatformHandle cursor)
         {

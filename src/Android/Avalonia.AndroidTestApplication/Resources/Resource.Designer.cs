@@ -15,7 +15,7 @@ namespace Avalonia.AndroidTestApplication
 {
 	
 	
-	[System.CodeDom.Compiler.GeneratedCodeAttribute("Xamarin.Android.Build.Tasks", "1.0.0.0")]
+	[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Xamarin.Android.Build.Tasks", "1.0.0.0")]
 	public partial class Resource
 	{
 		
@@ -26,8 +26,6 @@ namespace Avalonia.AndroidTestApplication
 		
 		public static void UpdateIdValues()
 		{
-			global::Avalonia.Android.Resource.String.ApplicationName = global::Avalonia.AndroidTestApplication.Resource.String.ApplicationName;
-			global::Avalonia.Android.Resource.String.Hello = global::Avalonia.AndroidTestApplication.Resource.String.Hello;
 		}
 		
 		public partial class Attribute
@@ -46,8 +44,8 @@ namespace Avalonia.AndroidTestApplication
 		public partial class Drawable
 		{
 			
-			// aapt resource value: 0x7f020000
-			public const int Icon = 2130837504;
+			// aapt resource value: 0x7F010000
+			public const int Icon = 2130771968;
 			
 			static Drawable()
 			{
@@ -62,11 +60,11 @@ namespace Avalonia.AndroidTestApplication
 		public partial class String
 		{
 			
-			// aapt resource value: 0x7f030001
-			public const int ApplicationName = 2130903041;
+			// aapt resource value: 0x7F020000
+			public const int ApplicationName = 2130837504;
 			
-			// aapt resource value: 0x7f030000
-			public const int Hello = 2130903040;
+			// aapt resource value: 0x7F020001
+			public const int Hello = 2130837505;
 			
 			static String()
 			{

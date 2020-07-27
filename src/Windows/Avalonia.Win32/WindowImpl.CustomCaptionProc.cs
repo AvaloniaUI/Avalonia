@@ -106,9 +106,9 @@ namespace Avalonia.Win32
                         {
                             var position = PointToClient(PointFromLParam(lParam));
 
-                            if (_owner is Window window)
+                            if (InputRoot is Window window)
                             {
-                                var visual = window.Renderer.HitTestFirst(position, _owner as Window, x =>
+                                var visual = window.Renderer.HitTestFirst(position, window, x =>
                                 {
                                     if (x is IInputElement ie && !ie.IsHitTestVisible)
                                     {

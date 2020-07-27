@@ -81,6 +81,11 @@ namespace Avalonia.Platform
         void SetInputRoot(IInputRoot inputRoot);
 
         /// <summary>
+        /// Gets the <see cref="IInputRoot"/> for the toplevel.
+        /// </summary>
+        IInputRoot InputRoot { get; }
+
+        /// <summary>
         /// Converts a point from screen to client coordinates.
         /// </summary>
         /// <param name="point">The point in screen coordinates.</param>

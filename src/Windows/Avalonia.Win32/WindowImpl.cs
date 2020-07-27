@@ -63,7 +63,6 @@ namespace Avalonia.Win32
         private string _className;
         private IntPtr _hwnd;
         private bool _multitouch;
-        private IInputRoot _owner;
         private WindowProperties _windowProperties;
         private bool _trackingMouse;
         private bool _topmost;
@@ -136,6 +135,8 @@ namespace Avalonia.Win32
         public Action LostFocus { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
+        public IInputRoot InputRoot { get; private set; }
 
         public Thickness BorderThickness
         {
@@ -426,7 +427,7 @@ namespace Avalonia.Win32
 
         public void SetInputRoot(IInputRoot inputRoot)
         {
-            _owner = inputRoot;
+            InputRoot = inputRoot;
             CreateDropTarget();
         }
 
@@ -480,7 +481,7 @@ namespace Avalonia.Win32
             var hCursor = cursor?.Handle ?? DefaultCursor;
             SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
 
-            if (_owner.IsPointerOver)
+            if (InputRoot.IsPointerOver)
             {
                 UnmanagedMethods.SetCursor(hCursor);
             }
@@ -617,7 +618,7 @@ namespace Avalonia.Win32
 
         private void CreateDropTarget()
         {
-            var odt = new OleDropTarget(this, _owner);
+            var odt = new OleDropTarget(this, InputRoot);
 
             if (OleContext.Current?.RegisterDragDrop(Handle, odt) ?? false)
             {

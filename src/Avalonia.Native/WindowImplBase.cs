@@ -46,7 +46,6 @@ namespace Avalonia.Native
     public abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
-        protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
@@ -130,6 +129,7 @@ namespace Avalonia.Native
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
+        public IInputRoot InputRoot { get; private set; }
         public abstract IPopupImpl CreatePopup();
 
         protected class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
@@ -231,7 +231,7 @@ namespace Avalonia.Native
                         dataObject = clipboardDataObject;
                     
                     var args = new RawDragEvent(device, (RawDragEventType)type,
-                        _parent._inputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
+                        _parent.InputRoot, position.ToAvaloniaPoint(), dataObject, (DragDropEffects)effects,
                         (RawInputModifiers)modifiers);
                     _parent.Input(args);
                     return (AvnDragDropEffects)args.Effects;
@@ -248,7 +248,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawTextInputEventArgs(_keyboard, timeStamp, _inputRoot, text);
+            var args = new RawTextInputEventArgs(_keyboard, timeStamp, InputRoot, text);
 
             Input?.Invoke(args);
 
@@ -259,7 +259,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
+            var args = new RawKeyEventArgs(_keyboard, timeStamp, InputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
 
             Input?.Invoke(args);
 
@@ -278,11 +278,11 @@ namespace Avalonia.Native
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, InputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (RawInputModifiers)modifiers));
                     break;
 
                 default:
-                    var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
+                    var e = new RawPointerEventArgs(_mouse, timeStamp, InputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
                     
                     if(!ChromeHitTest(e))
                     {
@@ -325,7 +325,7 @@ namespace Avalonia.Native
 
         public void SetInputRoot(IInputRoot inputRoot)
         {
-            _inputRoot = inputRoot;
+            InputRoot = inputRoot;
         }
 
 

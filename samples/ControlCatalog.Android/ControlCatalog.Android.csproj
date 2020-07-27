@@ -123,6 +123,10 @@
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Avalonia.Layout</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj">
+      <Project>{c42d2fc1-a531-4ed4-84b9-89aec7c962fc}</Project>
+      <Name>Avalonia.Themes.Fluent</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
       <Name>Avalonia.Visuals</Name>
@@ -151,6 +155,14 @@
       <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
       <Name>ControlCatalog</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="HarfBuzzSharp">
+      <Version>2.6.1.5</Version>
+    </PackageReference>
+    <PackageReference Include="SkiaSharp">
+      <Version>2.80.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

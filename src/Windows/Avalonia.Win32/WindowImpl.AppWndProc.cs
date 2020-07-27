@@ -106,7 +106,7 @@ namespace Avalonia.Win32
                         e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             RawKeyEventType.KeyDown,
                             KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
                             WindowsKeyboardDevice.Instance.Modifiers);
@@ -125,7 +125,7 @@ namespace Avalonia.Win32
                         e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             RawKeyEventType.KeyUp,
                             KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
                             WindowsKeyboardDevice.Instance.Modifiers);
@@ -136,7 +136,7 @@ namespace Avalonia.Win32
                         // Ignore control chars
                         if (ToInt32(wParam) >= 32)
                         {
-                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _owner,
+                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, InputRoot,
                                 new string((char)ToInt32(wParam), 1));
                         }
 
@@ -157,7 +157,7 @@ namespace Avalonia.Win32
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             (WindowsMessage)msg switch
                             {
                                 WindowsMessage.WM_LBUTTONDOWN => RawPointerEventType.LeftButtonDown,
@@ -186,7 +186,7 @@ namespace Avalonia.Win32
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             (WindowsMessage)msg switch
                             {
                                 WindowsMessage.WM_LBUTTONUP => RawPointerEventType.LeftButtonUp,
@@ -224,7 +224,7 @@ namespace Avalonia.Win32
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             RawPointerEventType.Move,
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
 
@@ -236,7 +236,7 @@ namespace Avalonia.Win32
                         e = new RawMouseWheelEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             PointToClient(PointFromLParam(lParam)),
                             new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta), GetMouseModifiers(wParam));
                         break;
@@ -247,7 +247,7 @@ namespace Avalonia.Win32
                         e = new RawMouseWheelEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             PointToClient(PointFromLParam(lParam)),
                             new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0), GetMouseModifiers(wParam));
                         break;
@@ -259,7 +259,7 @@ namespace Avalonia.Win32
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             RawPointerEventType.LeaveWindow,
                             new Point(-1, -1), WindowsKeyboardDevice.Instance.Modifiers);
                         break;
@@ -273,7 +273,7 @@ namespace Avalonia.Win32
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            InputRoot,
                             (WindowsMessage)msg switch
                             {
                                 WindowsMessage.WM_NCLBUTTONDOWN => RawPointerEventType
@@ -300,7 +300,7 @@ namespace Avalonia.Win32
                             foreach (var touchInput in touchInputs)
                             {
                                 Input?.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
-                                    _owner,
+                                    InputRoot,
                                     touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_UP) ?
                                         RawPointerEventType.TouchEnd :
                                         touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_DOWN) ?

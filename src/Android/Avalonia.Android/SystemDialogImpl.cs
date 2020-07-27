@@ -13,7 +13,17 @@ namespace Avalonia.Android
             throw new NotImplementedException();
         }
 
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
         {
             throw new NotImplementedException();
         }
