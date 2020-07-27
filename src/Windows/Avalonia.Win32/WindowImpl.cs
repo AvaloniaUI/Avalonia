@@ -309,7 +309,7 @@ namespace Avalonia.Win32
 
             Marshal.FreeHGlobal(accentPtr);
 
-            if ((transparencyLevel >= WindowTransparencyLevel.Blur) && (Process.GetProcessesByName("aerohost").Length > 0)) //Use Windows 7 blur if the Aero glass mod is installed, since that's exactly what the mod does
+            if (transparencyLevel >= WindowTransparencyLevel.Blur) //Use Windows 7 blur logic, which will produce blur if the Aero glass mod is installed and will merely look kinda stupid if not
                 Win7EnableBlur(transparencyLevel);
 
             return transparencyLevel;
