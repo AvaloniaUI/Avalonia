@@ -49,7 +49,7 @@ namespace Avalonia.Skia
             }
 
             public GRContext GrContext { get; }
-            public SKCanvas Canvas => _surface.Canvas;
+            public SKSurface SkSurface => _surface;
             public double ScaleFactor => _glSession.Scaling;
         }
 
