@@ -131,6 +131,10 @@
       <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>
       <Name>Avalonia.ReactiveUI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj">
+      <Project>{c42d2fc1-a531-4ed4-84b9-89aec7c962fc}</Project>
+      <Name>Avalonia.Themes.Fluent</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
       <Name>Avalonia.Visuals</Name>
@@ -147,6 +151,14 @@
       <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
       <Name>Avalonia.Skia</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="HarfBuzzSharp">
+      <Version>2.6.1.5</Version>
+    </PackageReference>
+    <PackageReference Include="SkiaSharp">
+      <Version>2.80.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\..\build\Base.props" />
