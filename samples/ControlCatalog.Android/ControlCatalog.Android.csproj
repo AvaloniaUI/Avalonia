@@ -156,15 +156,10 @@
       <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="HarfBuzzSharp">
-      <Version>2.6.1.5</Version>
-    </PackageReference>
-    <PackageReference Include="SkiaSharp">
-      <Version>2.80.0</Version>
-    </PackageReference>
-  </ItemGroup>
+
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\SkiaSharp.props" />
+  <Import Project="..\..\build\HarfBuzzSharp.props" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\build\AndroidWorkarounds.props" />
   <Import Project="..\..\build\LegacyProject.targets" />
