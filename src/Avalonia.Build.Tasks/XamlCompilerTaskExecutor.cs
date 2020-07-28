@@ -118,7 +118,7 @@ namespace Avalonia.Build.Tasks
                 asm.MainModule.Types.Add(typeDef);
                 var builder = typeSystem.CreateTypeBuilder(typeDef);
                 
-                foreach (var res in group.Resources.Where(CheckXamlName))
+                foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x=>x.FilePath.ToLowerInvariant()))
                 {
                     try
                     {
