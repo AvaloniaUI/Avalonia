@@ -79,7 +79,9 @@
                                    PasswordChar="{TemplateBinding PasswordChar}"
                                    SelectionBrush="{TemplateBinding SelectionBrush}"
                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                   CaretBrush="{TemplateBinding CaretBrush}"/>
+                                   CaretBrush="{TemplateBinding CaretBrush}"
+                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/> 
                     </Panel>
                   </ScrollViewer>
                 </DataValidationErrors>
