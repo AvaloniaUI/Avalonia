@@ -11,7 +11,7 @@ namespace Avalonia.Native
     class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
     {
         private IAvaloniaNativeFactory _factory;
-        private bool _resetQueued;
+        private bool _resetQueued = true; // so initial layout resets trigger a menu reset properly
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
@@ -39,7 +39,7 @@ namespace Avalonia.Native
         public void SetNativeMenu(NativeMenu menu)
         {
             _menu = menu == null ? new NativeMenu() : menu;
-
+            _resetQueued = true; // we've reset the menu to something new, so make sure that a reset is queued
             DoLayoutReset();
         }
 
