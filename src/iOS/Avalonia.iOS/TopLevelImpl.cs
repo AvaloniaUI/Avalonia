@@ -18,7 +18,7 @@ namespace Avalonia.iOS
     {
         private readonly KeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
 
-        private IInputRoot _inputRoot;
+        public IInputRoot InputRoot { get; set; }
 
         public TopLevelImpl()
         {
@@ -69,8 +69,6 @@ namespace Avalonia.iOS
 
         public void Invalidate(Rect rect) => SetNeedsDisplay();
 
-        public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
-
         public Point PointToClient(PixelPoint point) => point.ToPoint(1);
 
         public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, 1);
@@ -92,7 +90,7 @@ namespace Avalonia.iOS
                 Input?.Invoke(new RawPointerEventArgs(
                     iOSPlatform.MouseDevice,
                     (uint)touch.Timestamp,
-                    _inputRoot,
+                    InputRoot,
                     RawPointerEventType.LeftButtonUp,
                     location,
                     RawInputModifiers.None));
@@ -107,10 +105,10 @@ namespace Avalonia.iOS
             {
                 var location = touch.LocationInView(this).ToAvalonia();
                 _touchLastPoint = location;
-                Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
+                Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, InputRoot,
                     RawPointerEventType.Move, location, RawInputModifiers.None));
 
-                Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
+                Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, InputRoot,
                     RawPointerEventType.LeftButtonDown, location, RawInputModifiers.None));
             }
         }
@@ -122,7 +120,7 @@ namespace Avalonia.iOS
             {
                 var location = touch.LocationInView(this).ToAvalonia();
                 if (iOSPlatform.MouseDevice.Captured != null)
-                    Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
+                    Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, InputRoot,
                         RawPointerEventType.Move, location, RawInputModifiers.LeftMouseButton));
                 else
                 {
@@ -130,7 +128,7 @@ namespace Avalonia.iOS
                     double correction = 0.02;
 
                     Input?.Invoke(new RawMouseWheelEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp,
-                        _inputRoot, location, (location - _touchLastPoint) * correction, RawInputModifiers.LeftMouseButton));
+                        InputRoot, location, (location - _touchLastPoint) * correction, RawInputModifiers.LeftMouseButton));
                 }
                 _touchLastPoint = location;
             }

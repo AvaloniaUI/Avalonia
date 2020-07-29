@@ -16,7 +16,17 @@ namespace Avalonia.LinuxFramebuffer
         private readonly IInputBackend _inputBackend;
 
         private bool _renderQueued;
-        public IInputRoot InputRoot { get; private set; }
+        private IInputRoot _inputRoot;
+
+        public IInputRoot InputRoot
+        {
+            get => _inputRoot;
+            set
+            {
+                _inputRoot = value;
+                _inputBackend.SetInputRoot(_inputRoot);
+            }
+        }
 
         public FramebufferToplevelImpl(IOutputBackend outputBackend, IInputBackend inputBackend)
         {
@@ -33,7 +43,7 @@ namespace Avalonia.LinuxFramebuffer
         {
             return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
             {
-                
+
             };
         }
 
@@ -42,15 +52,9 @@ namespace Avalonia.LinuxFramebuffer
             throw new NotSupportedException();
         }
 
-        
+
         public void Invalidate(Rect rect)
         {
-        }
-
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-            InputRoot = inputRoot;
-            _inputBackend.SetInputRoot(inputRoot);
         }
 
         public Point PointToClient(PixelPoint p) => p.ToPoint(1);

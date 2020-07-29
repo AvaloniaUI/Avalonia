@@ -56,11 +56,6 @@ namespace Avalonia.Headless
         {
         }
 
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-            InputRoot = inputRoot;
-        }
-
         public IInputRoot InputRoot { get; set; }
 
         public Point PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);

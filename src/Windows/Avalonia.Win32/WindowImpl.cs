@@ -73,8 +73,9 @@ namespace Avalonia.Win32
         private Size _minSize;
         private Size _maxSize;
         private POINT _maxTrackSize;
-        private WindowImpl _parent;        
+        private WindowImpl _parent;
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
+        private IInputRoot _inputRoot;
 
         public WindowImpl()
         {
@@ -131,12 +132,20 @@ namespace Avalonia.Win32
         public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<WindowState> WindowStateChanged { get; set; }
-        
+
         public Action LostFocus { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        public IInputRoot InputRoot { get; private set; }
+        public IInputRoot InputRoot
+        {
+            get => _inputRoot;
+            set
+            {
+                _inputRoot = value;
+                CreateDropTarget();
+            }
+        }
 
         public Thickness BorderThickness
         {
@@ -191,7 +200,7 @@ namespace Avalonia.Win32
         {
             get
             {
-                if(_isFullScreenActive)
+                if (_isFullScreenActive)
                 {
                     return WindowState.FullScreen;
                 }
@@ -224,7 +233,7 @@ namespace Avalonia.Win32
 
         protected IntPtr Hwnd => _hwnd;
 
-        public void SetTransparencyLevelHint (WindowTransparencyLevel transparencyLevel)
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
             TransparencyLevel = EnableBlur(transparencyLevel);
         }
@@ -252,7 +261,7 @@ namespace Avalonia.Win32
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
 
-            if(transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
             {
                 transparencyLevel = WindowTransparencyLevel.Blur;
             }
@@ -292,7 +301,7 @@ namespace Avalonia.Win32
 
             SetWindowCompositionAttribute(_hwnd, ref data);
 
-            Marshal.FreeHGlobal(accentPtr);            
+            Marshal.FreeHGlobal(accentPtr);
 
             return transparencyLevel;
         }
@@ -425,11 +434,6 @@ namespace Avalonia.Win32
             return new PixelPoint(p.X, p.Y);
         }
 
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-            InputRoot = inputRoot;
-            CreateDropTarget();
-        }
 
         public void Hide()
         {
@@ -544,7 +548,7 @@ namespace Avalonia.Win32
                 0,
                 atom,
                 null,
-                (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int) WindowStyles.WS_CLIPCHILDREN,
+                (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int)WindowStyles.WS_CLIPCHILDREN,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
                 CW_USEDEFAULT,
@@ -683,14 +687,14 @@ namespace Avalonia.Win32
             }
 
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
-            
+
             ExtendClientArea();
         }
 
         private MARGINS UpdateExtendMargins()
         {
             RECT borderThickness = new RECT();
-            RECT borderCaptionThickness = new RECT();            
+            RECT borderCaptionThickness = new RECT();
 
             AdjustWindowRectEx(ref borderCaptionThickness, (uint)(GetStyle()), false, 0);
             AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle() & ~WindowStyles.WS_CAPTION), false, 0);
@@ -713,7 +717,7 @@ namespace Avalonia.Win32
 
             if (_extendTitleBarHint != -1)
             {
-                borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
+                borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);
             }
 
             margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
@@ -764,7 +768,7 @@ namespace Avalonia.Win32
                 _extendedMargins = new Thickness();
             }
 
-            if(!_isClientAreaExtended || (_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) &&
+            if (!_isClientAreaExtended || (_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) &&
                 !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome)))
             {
                 EnableCloseButton(_hwnd);
@@ -841,7 +845,7 @@ namespace Avalonia.Win32
                     SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
-        }        
+        }
 
         private WindowStyles GetWindowStateStyles()
         {
@@ -994,7 +998,7 @@ namespace Avalonia.Win32
                         SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
                         SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
-            }            
+            }
         }
 
         private const int MF_BYCOMMAND = 0x0;
@@ -1044,9 +1048,9 @@ namespace Avalonia.Win32
         public void SetExtendClientAreaToDecorationsHint(bool hint)
         {
             _isClientAreaExtended = hint;
-            
-            ExtendClientArea();            
-        }        
+
+            ExtendClientArea();
+        }
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
@@ -1054,7 +1058,7 @@ namespace Avalonia.Win32
 
             ExtendClientArea();
         }
-        
+
         /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
@@ -1068,7 +1072,7 @@ namespace Avalonia.Win32
 
         /// <inheritdoc/>
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
-        
+
         /// <inheritdoc/>
         public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome);
 

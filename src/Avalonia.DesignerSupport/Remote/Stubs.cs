@@ -47,7 +47,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
-        public IInputRoot InputRoot { get; private set; }
+        public IInputRoot InputRoot { get; set; }
 
         public WindowStub(IWindowImpl parent = null)
         {
@@ -66,8 +66,6 @@ namespace Avalonia.DesignerSupport.Remote
         public void Invalidate(Rect rect)
         {
         }
-
-        public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
         public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 

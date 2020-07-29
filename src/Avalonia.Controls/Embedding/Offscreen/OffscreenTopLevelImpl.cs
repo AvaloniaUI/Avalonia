@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         private double _scaling = 1;
         private Size _clientSize;
 
-        public IInputRoot InputRoot { get; private set; }
+        public IInputRoot InputRoot { get; set; }
         public bool IsDisposed { get; private set; }
 
         public virtual void Dispose()
@@ -54,8 +54,6 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
-
-        public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
         public virtual Point PointToClient(PixelPoint point) => point.ToPoint(1);
 

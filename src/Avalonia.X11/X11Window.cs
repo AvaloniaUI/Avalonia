@@ -32,7 +32,6 @@ namespace Avalonia.X11
         private XConfigureEvent? _configure;
         private PixelPoint? _configurePoint;
         private bool _triggeredExpose;
-        private IInputRoot _inputRoot;
         private readonly MouseDevice _mouse;
         private readonly TouchDevice _touch;
         private readonly IKeyboardDevice _keyboard;
@@ -408,7 +407,7 @@ namespace Avalonia.X11
                                 ? new Vector(1, 0)
                                 : new Vector(-1, 0);
                     ScheduleInput(new RawMouseWheelEventArgs(_mouse, (ulong)ev.ButtonEvent.time.ToInt64(),
-                        _inputRoot, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), delta,
+                        InputRoot, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), delta,
                         TranslateModifiers(ev.ButtonEvent.state)), ref ev);
                 }
                 
@@ -507,7 +506,7 @@ namespace Avalonia.X11
                     key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
                 
                 
-                ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot,
+                ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), InputRoot,
                     ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                     X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev);
 
@@ -522,7 +521,7 @@ namespace Avalonia.X11
                             if (text[0] < ' ' || text[0] == 0x7f) //Control codes or DEL
                                 return;
                         }
-                        ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot, text),
+                        ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), InputRoot, text),
                             ref ev);
                     }
                 }
@@ -732,7 +731,7 @@ namespace Avalonia.X11
         void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
             var mev = new RawPointerEventArgs(
-                _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
+                _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), InputRoot,
                 type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods)); 
             if(type == RawPointerEventType.Move && _inputQueue.Count>0 && _lastEvent.Event is RawPointerEventArgs ma)
                 if (ma.Type == RawPointerEventType.Move)
@@ -753,12 +752,7 @@ namespace Avalonia.X11
 
         }
 
-        public IInputRoot InputRoot => _inputRoot;
-        
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-            _inputRoot = inputRoot;
-        }
+        public IInputRoot InputRoot { get; set; }
 
         public void Dispose()
         {

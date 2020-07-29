@@ -137,7 +137,7 @@ namespace Avalonia.Controls
                 Renderer.SceneInvalidated += SceneInvalidated;
             }
 
-            impl.SetInputRoot(this);
+            impl.InputRoot = this;
 
             impl.Closed = HandleClosed;
             impl.Input = HandleInput;

@@ -76,14 +76,9 @@ namespace Avalonia.Platform
         void Invalidate(Rect rect);
 
         /// <summary>
-        /// Sets the <see cref="IInputRoot"/> for the toplevel.
+        /// Gets or sets the <see cref="IInputRoot"/> for the toplevel.
         /// </summary>
-        void SetInputRoot(IInputRoot inputRoot);
-
-        /// <summary>
-        /// Gets the <see cref="IInputRoot"/> for the toplevel.
-        /// </summary>
-        IInputRoot InputRoot { get; }
+        IInputRoot InputRoot { get; set; }
 
         /// <summary>
         /// Converts a point from screen to client coordinates.

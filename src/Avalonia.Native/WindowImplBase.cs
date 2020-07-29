@@ -129,7 +129,7 @@ namespace Avalonia.Native
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
-        public IInputRoot InputRoot { get; private set; }
+        public IInputRoot InputRoot { get; set; }
         public abstract IPopupImpl CreatePopup();
 
         protected class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
@@ -322,12 +322,6 @@ namespace Avalonia.Native
             if (!_deferredRendering && _native != null)
                 _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
         }
-
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-            InputRoot = inputRoot;
-        }
-
 
         public virtual void Show()
         {

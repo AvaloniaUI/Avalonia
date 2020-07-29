@@ -30,7 +30,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public EmbeddableControlRoot ControlRoot { get; }
         internal ImageSource ImageSource { get; set; }
-        public IInputRoot InputRoot { get; private set; }
+        public IInputRoot InputRoot { get; set; }
 
         public class CustomControlRoot : EmbeddableControlRoot, IEmbeddedLayoutRoot
         {
@@ -133,8 +133,6 @@ namespace Avalonia.Win32.Interop.Wpf
         }
 
         void ITopLevelImpl.Invalidate(Rect rect) => InvalidateVisual();
-
-        void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
         Point ITopLevelImpl.PointToClient(PixelPoint point) => PointFromScreen(point.ToWpfPoint()).ToAvaloniaPoint();
 

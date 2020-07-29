@@ -51,7 +51,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e) => new Point(e.GetX(), e.GetY());
 
-        public IInputRoot InputRoot { get; private set; }
+        public IInputRoot InputRoot { get; set; }
 
         public virtual Size ClientSize
         {
@@ -117,11 +117,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             //still not implemented
         }
 
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-            InputRoot = inputRoot;
-        }
-        
+
         public virtual void Show()
         {
             _view.Visibility = ViewStates.Visible;
