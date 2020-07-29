@@ -11,7 +11,7 @@ namespace Avalonia.Native
     class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
     {
         private IAvaloniaNativeFactory _factory;
-        private bool _resetQueued;
+        private bool _resetQueued = true;
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
@@ -39,8 +39,7 @@ namespace Avalonia.Native
         public void SetNativeMenu(NativeMenu menu)
         {
             _menu = menu == null ? new NativeMenu() : menu;
-
-            DoLayoutReset();
+            DoLayoutReset(true);
         }
 
         internal void UpdateIfNeeded()
@@ -74,9 +73,9 @@ namespace Avalonia.Native
             return result;
         }
 
-        private void DoLayoutReset()
+        private void DoLayoutReset(bool forceUpdate = false)
         {
-            if (_resetQueued)
+            if (_resetQueued || forceUpdate)
             {
                 _resetQueued = false;
 
@@ -109,7 +108,7 @@ namespace Avalonia.Native
             if (_resetQueued)
                 return;
             _resetQueued = true;
-            Dispatcher.UIThread.Post(DoLayoutReset, DispatcherPriority.Background);
+            Dispatcher.UIThread.Post(() => DoLayoutReset(), DispatcherPriority.Background);
         }
 
         private void SetMenu(NativeMenu menu)
