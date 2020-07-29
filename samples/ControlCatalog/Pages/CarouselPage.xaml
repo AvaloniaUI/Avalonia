@@ -5,39 +5,46 @@
     <TextBlock Classes="h1">Carousel</TextBlock>
     <TextBlock Classes="h2">An items control that displays its items as pages that fill the control.</TextBlock>
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="8">
-      <Button Name="left" VerticalAlignment="Center" Padding="20">
-        <Path Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="Black"/>
-      </Button>
-      <Carousel Name="carousel">
-        <Carousel.PageTransition>
-          <PageSlide Duration="0.25" Orientation="Vertical" />
-        </Carousel.PageTransition>
-        <Image Source="/Assets/delicate-arch-896885_640.jpg"/>
-        <Image Source="/Assets/hirsch-899118_640.jpg"/>
-        <Image Source="/Assets/maple-leaf-888807_640.jpg"/>
-      </Carousel>
-      <Button Name="right" VerticalAlignment="Center" Padding="20">
-        <Path Data="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" Fill="Black"/>
-      </Button>
+    <Panel>
+      
+      <DockPanel>
+        <TabStrip Name="PART_TabStrip" Background="Transparent" Items="{Binding Items}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" Focusable="false" ClipToBounds="False" ZIndex="1" DockPanel.Dock="Top">
+                <TabStrip.DataTemplates>
+                    <DataTemplate>
+                        <StackPanel Name="DragDocument" Background="Transparent" Orientation="Horizontal" Spacing="2">
+                            <StackPanel Orientation="Horizontal" Margin="2" TextBlock.FontSize="12">
+                                <TextBlock Text="{Binding Title}" />
+                                <TextBlock Text="*" IsVisible="{Binding IsDirty, FallbackValue=False}" x:CompileBindings="False"/>
+                            </StackPanel>
+                            <Button Background="Red" Height="14" Width="14" Command="{Binding CloseCommand}" Classes="documentTabButton" x:CompileBindings="False">
+                                <Button.Styles>
+                                    <Style Selector="Button">
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Margin" Value="0"/>
+                                        
+                                    </Style>
+                                </Button.Styles>
+                                <Path Margin="2" Stretch="Uniform" UseLayoutRounding="False" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </TabStrip.DataTemplates>
+            </TabStrip>
+            <Grid Background="{DynamicResource ApplicationAccentBrushLow}" Height="2" DockPanel.Dock="Top" IsVisible="{Binding #PART_TabStrip.IsVisible}" x:CompileBindings="False" />
+            <Border BorderThickness="1" BorderBrush="{DynamicResource ThemeBorderLowBrush}">
+                <Carousel 
+                  Items="{Binding Items}" SelectedItem="{Binding SelectedItem}" 
+                  IsVirtualized="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                  <Carousel.DataTemplates>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Title}" />
+                    </DataTemplate>
+                  </Carousel.DataTemplates>
+                </Carousel>
+            </Border>
+        </DockPanel>
+    </Panel>
+    <Button Name="left" VerticalAlignment="Center" Padding="20" Content="Add Item" Command="{Binding AddItemCommand}"/>
     </StackPanel>
-
-    <StackPanel Orientation="Horizontal" Spacing="4">
-      <TextBlock VerticalAlignment="Center">Transition</TextBlock>
-      <ComboBox Name="transition" SelectedIndex="1" VerticalAlignment="Center">
-        <ComboBoxItem>None</ComboBoxItem>
-        <ComboBoxItem>Slide</ComboBoxItem>
-        <ComboBoxItem>Crossfade</ComboBoxItem>
-      </ComboBox>
-    </StackPanel>
-
-    <StackPanel Orientation="Horizontal" Spacing="4">
-      <TextBlock VerticalAlignment="Center">Orientation</TextBlock>
-      <ComboBox Name="orientation" SelectedIndex="1" VerticalAlignment="Center">
-        <ComboBoxItem>Horizontal</ComboBoxItem>
-        <ComboBoxItem>Vertical</ComboBoxItem>
-      </ComboBox>
-    </StackPanel>
-    
-  </StackPanel>
 </UserControl>
