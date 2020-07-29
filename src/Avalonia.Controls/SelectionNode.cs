@@ -525,7 +525,7 @@ namespace Avalonia.Controls
 
                 if (_selectedItems != null && ItemsSourceView != null)
                 {
-                    for (var i = addRange.Begin; i < addRange.End; ++i)
+                    for (var i = addRange.Begin; i <= addRange.End; ++i)
                     {
                         _selectedItems.Add(ItemsSourceView!.GetAt(i));
                     }
