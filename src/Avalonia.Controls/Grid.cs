@@ -36,6 +36,7 @@ namespace Avalonia.Controls
 
             RowDefinitionsProperty.Changed.AddClassHandler<Grid>(RowDefinitionsPropertyChanged);
             ColumnDefinitionsProperty.Changed.AddClassHandler<Grid>(ColumnDefinitionsPropertyChanged);
+
         }
 
         /// <summary>
@@ -554,22 +555,24 @@ namespace Avalonia.Controls
                     for (int currentCell = 0; currentCell < PrivateCells.Length; ++currentCell)
                     {
                         var cell = children[currentCell];
-                        if (cell == null)
+                        var privCell = PrivateCells[currentCell];
+
+                        if (cell is null || privCell.Skip)
                         {
+                            cell.Arrange(new Rect(arrangeSize));
                             continue;
                         }
 
-                        int columnIndex = PrivateCells[currentCell].ColumnIndex;
-                        int rowIndex = PrivateCells[currentCell].RowIndex;
-                        int columnSpan = PrivateCells[currentCell].ColumnSpan;
-                        int rowSpan = PrivateCells[currentCell].RowSpan;
+                        int columnIndex = privCell.ColumnIndex;
+                        int rowIndex = privCell.RowIndex;
+                        int columnSpan = privCell.ColumnSpan;
+                        int rowSpan = privCell.RowSpan;
 
-                        Rect cellRect = new Rect(
+                        var cellRect = new Rect(
                             columnIndex == 0 ? 0.0 : DefinitionsU[columnIndex].FinalOffset,
                             rowIndex == 0 ? 0.0 : DefinitionsV[rowIndex].FinalOffset,
                             GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan),
                             GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan));
-
 
                         cell.Arrange(cellRect);
 
@@ -724,28 +727,35 @@ namespace Avalonia.Controls
                     continue;
                 }
 
-                CellCache cell = new CellCache();
-
+                var cell = new CellCache();
+                var control = (Control)child;
 
                 //  Read indices from the corresponding properties:
                 //      clamp to value < number_of_columns
                 //      column >= 0 is guaranteed by property value validation callback
-                cell.ColumnIndex = Math.Min(GetColumn((Control)child), DefinitionsU.Count - 1);
+                cell.ColumnIndex = GetColumn(control);
                 //      clamp to value < number_of_rows
                 //      row >= 0 is guaranteed by property value validation callback
-                cell.RowIndex = Math.Min(GetRow((Control)child), DefinitionsV.Count - 1);
+                cell.RowIndex = GetRow(control);
 
                 //  Read span properties:
                 //      clamp to not exceed beyond right side of the grid
                 //      column_span > 0 is guaranteed by property value validation callback
-                cell.ColumnSpan = Math.Min(GetColumnSpan((Control)child), DefinitionsU.Count - cell.ColumnIndex);
+                cell.ColumnSpan = Math.Min(GetColumnSpan(control), DefinitionsU.Count - cell.ColumnIndex);
 
                 //      clamp to not exceed beyond bottom side of the grid
                 //      row_span > 0 is guaranteed by property value validation callback
-                cell.RowSpan = Math.Min(GetRowSpan((Control)child), DefinitionsV.Count - cell.RowIndex);
+                cell.RowSpan = Math.Min(GetRowSpan(control), DefinitionsV.Count - cell.RowIndex);
 
-                Debug.Assert(0 <= cell.ColumnIndex && cell.ColumnIndex < DefinitionsU.Count);
-                Debug.Assert(0 <= cell.RowIndex && cell.RowIndex < DefinitionsV.Count);
+                var isOverCol = cell.ColumnIndex < 0 || cell.ColumnIndex > (DefinitionsU.Count - 1);
+                var isOverRow = cell.RowIndex < 0 || cell.RowIndex > (DefinitionsV.Count - 1);
+
+                if (isOverCol || isOverRow)
+                {
+                    cell.Skip = true;
+                    PrivateCells[i] = cell;
+                    continue;
+                }
 
                 //  Calculate and cache length types for the child.
 
@@ -1017,6 +1027,7 @@ namespace Avalonia.Controls
             int i = cellsHead;
             do
             {
+
                 double oldWidth = children[i].DesiredSize.Width;
 
                 MeasureCell(i, forceInfinityV);
@@ -2872,6 +2883,7 @@ namespace Avalonia.Controls
         /// </summary>
         private struct CellCache
         {
+            internal bool Skip;
             internal int ColumnIndex;
             internal int RowIndex;
             internal int ColumnSpan;
