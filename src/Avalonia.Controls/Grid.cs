@@ -32,6 +32,7 @@ namespace Avalonia.Controls
             RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
 
             AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
+
         }
 
         /// <summary>
@@ -160,44 +161,54 @@ namespace Avalonia.Controls
             set { SetValue(ShowGridLinesProperty, value); }
         }
 
-        /// <summary>
-        /// Returns a ColumnDefinitions of column definitions.
-        /// </summary>
+        public static readonly StyledProperty<ColumnDefinitions> ColumnDefinitionsProperty =
+            AvaloniaProperty.Register<Grid, ColumnDefinitions>(nameof(ColumnDefinitions));
+
         public ColumnDefinitions ColumnDefinitions
         {
             get
             {
                 if (_data == null) { _data = new ExtendedData(); }
-                if (_data.ColumnDefinitions == null) { _data.ColumnDefinitions = new ColumnDefinitions() { Parent = this }; }
+                if (_data.ColumnDefinitions == null)
+                {
+                    _data.ColumnDefinitions = new ColumnDefinitions() { Parent = this };
+                    SetValue(ColumnDefinitionsProperty, _data.ColumnDefinitions);
+                }
 
-                return (_data.ColumnDefinitions);
+                return GetValue(ColumnDefinitionsProperty);
             }
             set
             {
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.ColumnDefinitions = value;
                 _data.ColumnDefinitions.Parent = this;
+                SetValue(ColumnDefinitionsProperty, _data.ColumnDefinitions);
                 InvalidateMeasure();
             }
         }
 
-        /// <summary>
-        /// Returns a RowDefinitions of row definitions.
-        /// </summary>
+        public static readonly StyledProperty<RowDefinitions> RowDefinitionsProperty =
+            AvaloniaProperty.Register<Grid, RowDefinitions>(nameof(RowDefinitions));
+
         public RowDefinitions RowDefinitions
         {
             get
             {
                 if (_data == null) { _data = new ExtendedData(); }
-                if (_data.RowDefinitions == null) { _data.RowDefinitions = new RowDefinitions() { Parent = this }; }
+                if (_data.RowDefinitions == null)
+                {
+                    _data.RowDefinitions = new RowDefinitions() { Parent = this };
+                    SetValue(RowDefinitionsProperty, _data.RowDefinitions);
+                }
 
-                return (_data.RowDefinitions);
+                return GetValue(RowDefinitionsProperty);
             }
             set
             {
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.RowDefinitions = value;
                 _data.RowDefinitions.Parent = this;
+                SetValue(RowDefinitionsProperty, _data.RowDefinitions);
                 InvalidateMeasure();
             }
         }
@@ -2314,7 +2325,7 @@ namespace Avalonia.Controls
                 }
             }
         }
- 
+
         /// <summary>
         /// Synchronized ShowGridLines property with the state of the grid's visual collection
         /// by adding / removing GridLinesRenderer visual.
