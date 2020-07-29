@@ -276,7 +276,13 @@ namespace Avalonia.Controls
                         ValidateDefinitionsVStructure();
                         ValidateDefinitionsLayout(DefinitionsV, sizeToContentV);
 
-                        CellsStructureDirty |= (SizeToContentU != sizeToContentU) || (SizeToContentV != sizeToContentV);
+                        CellsStructureDirty = (SizeToContentU != sizeToContentU) ||
+                                              (SizeToContentV != sizeToContentV) ||
+                                              _data.OldColumnCount != DefinitionsU.Count ||
+                                              _data.OldRowCount != DefinitionsV.Count;
+
+                        _data.OldColumnCount = DefinitionsU.Count;
+                        _data.OldRowCount = DefinitionsV.Count;
 
                         SizeToContentU = sizeToContentU;
                         SizeToContentV = sizeToContentV;
@@ -2705,17 +2711,19 @@ namespace Avalonia.Controls
         /// </summary>
         private class ExtendedData
         {
-            internal ColumnDefinitions ColumnDefinitions;  //  collection of column definitions (logical tree support)
-            internal RowDefinitions RowDefinitions;        //  collection of row definitions (logical tree support)
-            internal IReadOnlyList<DefinitionBase> DefinitionsU;    //  collection of column definitions used during calc
-            internal IReadOnlyList<DefinitionBase> DefinitionsV;    //  collection of row definitions used during calc
-            internal CellCache[] CellCachesCollection;              //  backing store for logical children
-            internal int CellGroup1;                                //  index of the first cell in first cell group
-            internal int CellGroup2;                                //  index of the first cell in second cell group
-            internal int CellGroup3;                                //  index of the first cell in third cell group
-            internal int CellGroup4;                                //  index of the first cell in forth cell group
-            internal DefinitionBase[] TempDefinitions;              //  temporary array used during layout for various purposes
-                                                                    //  TempDefinitions.Length == Max(definitionsU.Length, definitionsV.Length)
+            internal ColumnDefinitions ColumnDefinitions;           //  collection of column definitions (logical tree support)
+            internal RowDefinitions RowDefinitions;                 // Collection of row definitions (logical tree support)
+            internal IReadOnlyList<DefinitionBase> DefinitionsU;    // Collection of column definitions used during calc
+            internal IReadOnlyList<DefinitionBase> DefinitionsV;    // Collection of row definitions used during calc
+            internal CellCache[] CellCachesCollection;              // Backing store for logical children
+            internal int CellGroup1;                                // Index of the first cell in first cell group
+            internal int CellGroup2;                                // Index of the first cell in second cell group
+            internal int CellGroup3;                                // Index of the first cell in third cell group
+            internal int CellGroup4;                                // Index of the first cell in forth cell group
+            internal DefinitionBase[] TempDefinitions;              // Temporary array used during layout for various purposes
+                                                                    // TempDefinitions.Length == Max(definitionsU.Length, definitionsV.Length)
+            internal int OldColumnCount;                            // Count of the previous column definition list. Invalidates the cells when it doesn't match up.
+            internal int OldRowCount;                               //  Count of the previous row definition list. Invalidates the cells when it doesn't match up.
         }
 
         /// <summary>
