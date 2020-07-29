@@ -46,6 +46,8 @@ namespace Avalonia.Controls
 
         private static void ColumnDefinitionsPropertyChangedCore(Grid arg1, ColumnDefinitions arg2)
         {
+            if (arg2 is null) return;
+
             if (arg1._data is null)
                 arg1._data = new ExtendedData();
 
@@ -62,6 +64,8 @@ namespace Avalonia.Controls
 
         private static void RowDefinitionsPropertyChangedCore(Grid arg1, RowDefinitions arg2)
         {
+            if (arg2 is null) return;
+
             if (arg1._data is null)
                 arg1._data = new ExtendedData();
 
@@ -69,7 +73,6 @@ namespace Avalonia.Controls
             arg1._data!.RowDefinitions.IsDirty = true;
             arg1._data!.RowDefinitions.Parent = arg1;
         }
-/// 
 
         /// <summary>
         /// Default constructor.
