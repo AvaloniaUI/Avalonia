@@ -38,42 +38,6 @@ namespace Avalonia.Controls
             ColumnDefinitionsProperty.Changed.AddClassHandler<Grid>(ColumnDefinitionsPropertyChanged);
         }
 
-        private static void ColumnDefinitionsPropertyChanged(Grid arg1, AvaloniaPropertyChangedEventArgs arg2)
-        {
-            var val = arg2.NewValue as ColumnDefinitions;
-            ColumnDefinitionsPropertyChangedCore(arg1, val);
-        }
-
-        private static void ColumnDefinitionsPropertyChangedCore(Grid arg1, ColumnDefinitions arg2)
-        {
-            if (arg2 is null) return;
-
-            if (arg1._data is null)
-                arg1._data = new ExtendedData();
-
-            arg1._data!.ColumnDefinitions = arg2;
-            arg1._data!.ColumnDefinitions.IsDirty = true;
-            arg1._data!.ColumnDefinitions.Parent = arg1;
-        }
-
-        private static void RowDefinitionsPropertyChanged(Grid arg1, AvaloniaPropertyChangedEventArgs arg2)
-        {
-            var val = arg2.NewValue as RowDefinitions;
-            RowDefinitionsPropertyChangedCore(arg1, val);
-        }
-
-        private static void RowDefinitionsPropertyChangedCore(Grid arg1, RowDefinitions arg2)
-        {
-            if (arg2 is null) return;
-
-            if (arg1._data is null)
-                arg1._data = new ExtendedData();
-
-            arg1._data!.RowDefinitions = arg2;
-            arg1._data!.RowDefinitions.IsDirty = true;
-            arg1._data!.RowDefinitions.Parent = arg1;
-        }
-
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -192,7 +156,9 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// ShowGridLines property.
+        /// This property is used mostly for simplification of visual debugging.
+        /// When it is set to <c>true</c>, grid lines are drawn 
+        /// to visualize location of grid lines.
         /// </summary>
         public bool ShowGridLines
         {
@@ -200,15 +166,17 @@ namespace Avalonia.Controls
             set { SetValue(ShowGridLinesProperty, value); }
         }
 
-        public static readonly StyledProperty<ColumnDefinitions> ColumnDefinitionsProperty =
-            AvaloniaProperty.Register<Grid, ColumnDefinitions>(nameof(ColumnDefinitions));
-
+        /// <summary>
+        /// A list of <see cref="ColumnDefinition"/> objects defined on this instance of <see cref="Grid"/>.
+        /// </summary>
         public ColumnDefinitions ColumnDefinitions
         {
             get
             {
-                if (_data == null) { _data = new ExtendedData(); }
-                if (_data.ColumnDefinitions == null)
+                if (_data is null)
+                    _data = new ExtendedData();
+
+                if (_data.ColumnDefinitions is null)
                 {
                     _data.ColumnDefinitions = new ColumnDefinitions() { Parent = this };
                     SetValue(ColumnDefinitionsProperty, _data.ColumnDefinitions);
@@ -223,9 +191,9 @@ namespace Avalonia.Controls
             }
         }
 
-        public static readonly StyledProperty<RowDefinitions> RowDefinitionsProperty =
-            AvaloniaProperty.Register<Grid, RowDefinitions>(nameof(RowDefinitions));
-
+        /// <summary>
+        /// A list of <see cref="RowDefinition"/> objects defined on this instance of <see cref="Grid"/>.
+        /// </summary>
         public RowDefinitions RowDefinitions
         {
             get
@@ -2444,6 +2412,52 @@ namespace Avalonia.Controls
             }
         }
 
+        private static void ColumnDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs e)
+        {
+            var val = e.NewValue as ColumnDefinitions;
+            ColumnDefinitionsPropertyChangedCore(target, val);
+        }
+
+        /// <summary>
+        /// Reflects the changes on the ColumnDefinition StyledProperty
+        /// to the backing ExtendedData class.
+        /// </summary> 
+        private static void ColumnDefinitionsPropertyChangedCore(Grid target, ColumnDefinitions colDef)
+        {
+            if (colDef is null)
+                return;
+
+            if (target._data is null)
+                target._data = new ExtendedData();
+
+            target._data.ColumnDefinitions = colDef;
+            target._data.ColumnDefinitions.IsDirty = true;
+            target._data.ColumnDefinitions.Parent = target;
+        }
+
+        private static void RowDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs rowDef)
+        {
+            var val = rowDef.NewValue as RowDefinitions;
+            RowDefinitionsPropertyChangedCore(target, val);
+        }
+        
+        /// <summary>
+        /// Reflects the changes on the RowDefinition StyledProperty
+        /// to the backing ExtendedData class.
+        /// </summary> 
+        private static void RowDefinitionsPropertyChangedCore(Grid arg1, RowDefinitions arg2)
+        {
+            if (arg2 is null)
+                return;
+
+            if (arg1._data is null)
+                arg1._data = new ExtendedData();
+
+            arg1._data.RowDefinitions = arg2;
+            arg1._data.RowDefinitions.IsDirty = true;
+            arg1._data.RowDefinitions.Parent = arg1;
+        }
+
         /// <summary>
         /// Helper for Comparer methods.
         /// </summary>
@@ -2739,10 +2753,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// ShowGridLines property. This property is used mostly
-        /// for simplification of visual debuggig. When it is set
-        /// to <c>true</c> grid lines are drawn to visualize location
-        /// of grid lines.
+        /// Defines the <see cref="ColumnDefinitions"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ColumnDefinitions> ColumnDefinitionsProperty =
+            AvaloniaProperty.Register<Grid, ColumnDefinitions>(nameof(ColumnDefinitions));
+
+        /// <summary>
+        /// Defines the <see cref="RowDefinitions"/> property.
+        /// </summary>
+        public static readonly StyledProperty<RowDefinitions> RowDefinitionsProperty =
+            AvaloniaProperty.Register<Grid, RowDefinitions>(nameof(RowDefinitions));
+
+
+        /// <summary>
+        /// Defines the <see cref="ShowGridLines"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ShowGridLinesProperty =
             AvaloniaProperty.Register<Grid, bool>(nameof(ShowGridLines));
