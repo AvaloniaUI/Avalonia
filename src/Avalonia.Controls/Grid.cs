@@ -2445,17 +2445,17 @@ namespace Avalonia.Controls
         /// Reflects the changes on the RowDefinition StyledProperty
         /// to the backing ExtendedData class.
         /// </summary> 
-        private static void SynchronizeRowDefinitions(Grid arg1, RowDefinitions arg2)
+        private static void SynchronizeRowDefinitions(Grid target, RowDefinitions rowDef)
         {
-            if (arg2 is null)
+            if (rowDef is null)
                 return;
 
-            if (arg1._data is null)
-                arg1._data = new ExtendedData();
+            if (target._data is null)
+                target._data = new ExtendedData();
 
-            arg1._data.RowDefinitions = arg2;
-            arg1._data.RowDefinitions.IsDirty = true;
-            arg1._data.RowDefinitions.Parent = arg1;
+            target._data.RowDefinitions = rowDef;
+            target._data.RowDefinitions.IsDirty = true;
+            target._data.RowDefinitions.Parent = target;
         }
 
         /// <summary>
