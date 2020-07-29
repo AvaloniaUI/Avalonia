@@ -277,7 +277,10 @@ namespace Avalonia.Controls
                         ValidateDefinitionsVStructure();
                         ValidateDefinitionsLayout(DefinitionsV, sizeToContentV);
 
-                        CellsStructureDirty = (SizeToContentU != sizeToContentU) ||
+                        // Include the prior value just in case it was explicitly
+                        // is done set before Measure
+                        CellsStructureDirty = CellsStructureDirty ||
+                                              (SizeToContentU != sizeToContentU) ||
                                               (SizeToContentV != sizeToContentV) ||
                                               _data.OldColumnCount != DefinitionsU.Count ||
                                               _data.OldRowCount != DefinitionsV.Count;
@@ -2613,7 +2616,7 @@ namespace Avalonia.Controls
             get { return (!CheckFlagsAnd(Flags.ValidCellsStructure)); }
             set { SetFlags(!value, Flags.ValidCellsStructure); }
         }
-
+ 
         /// <summary>
         /// Convenience accessor to ListenToNotifications bit flag.
         /// </summary>
