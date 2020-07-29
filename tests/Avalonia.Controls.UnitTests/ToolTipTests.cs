@@ -64,6 +64,40 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(ToolTip.GetIsOpen(target));
             }
         }
+        
+        [Fact]
+        public void Should_Close_When_Tip_Is_Changed()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                var panel = new Panel();
+                
+                var target = new Decorator()
+                {
+                    [ToolTip.TipProperty] = "Tip",
+                    [ToolTip.ShowDelayProperty] = 0
+                };
+                
+                panel.Children.Add(target);
+
+                window.Content = panel;
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                Assert.True((target as IVisual).IsAttachedToVisualTree);                               
+
+                _mouseHelper.Enter(target);
+
+                Assert.True(ToolTip.GetIsOpen(target));
+                
+                ToolTip.SetTip(target, "");
+                
+                Assert.False(ToolTip.GetIsOpen(target));
+            }
+        }
 
         [Fact]
         public void Should_Open_On_Pointer_Enter()
