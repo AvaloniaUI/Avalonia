@@ -278,10 +278,11 @@ namespace Avalonia.Controls
                         ValidateDefinitionsLayout(DefinitionsV, sizeToContentV);
 
                         // Include the prior value just in case it was explicitly
-                        // is done set before Measure
+                        // set before Measure was called.
+
                         CellsStructureDirty = CellsStructureDirty ||
-                                              (SizeToContentU != sizeToContentU) ||
-                                              (SizeToContentV != sizeToContentV) ||
+                                              SizeToContentU != sizeToContentU ||
+                                              SizeToContentV != sizeToContentV ||
                                               _data.OldColumnCount != DefinitionsU.Count ||
                                               _data.OldRowCount != DefinitionsV.Count;
 
