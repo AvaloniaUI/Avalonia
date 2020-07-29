@@ -186,7 +186,7 @@ namespace Avalonia.Controls
             }
             set
             {
-                ColumnDefinitionsPropertyChangedCore(this, value);
+                SynchronizeColumnDefinitions(this, value);
                 SetValue(ColumnDefinitionsProperty, _data.ColumnDefinitions);
             }
         }
@@ -209,7 +209,7 @@ namespace Avalonia.Controls
             }
             set
             {
-                RowDefinitionsPropertyChangedCore(this, value);
+                SynchronizeRowDefinitions(this, value);
                 SetValue(RowDefinitionsProperty, _data.RowDefinitions);
             }
         }
@@ -2415,14 +2415,14 @@ namespace Avalonia.Controls
         private static void ColumnDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs e)
         {
             var val = e.NewValue as ColumnDefinitions;
-            ColumnDefinitionsPropertyChangedCore(target, val);
+            SynchronizeColumnDefinitions(target, val);
         }
 
         /// <summary>
         /// Reflects the changes on the ColumnDefinition StyledProperty
         /// to the backing ExtendedData class.
         /// </summary> 
-        private static void ColumnDefinitionsPropertyChangedCore(Grid target, ColumnDefinitions colDef)
+        private static void SynchronizeColumnDefinitions(Grid target, ColumnDefinitions colDef)
         {
             if (colDef is null)
                 return;
@@ -2438,14 +2438,14 @@ namespace Avalonia.Controls
         private static void RowDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs rowDef)
         {
             var val = rowDef.NewValue as RowDefinitions;
-            RowDefinitionsPropertyChangedCore(target, val);
+            SynchronizeRowDefinitions(target, val);
         }
 
         /// <summary>
         /// Reflects the changes on the RowDefinition StyledProperty
         /// to the backing ExtendedData class.
         /// </summary> 
-        private static void RowDefinitionsPropertyChangedCore(Grid arg1, RowDefinitions arg2)
+        private static void SynchronizeRowDefinitions(Grid arg1, RowDefinitions arg2)
         {
             if (arg2 is null)
                 return;
