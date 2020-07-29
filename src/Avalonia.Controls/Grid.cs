@@ -23,15 +23,15 @@ namespace Avalonia.Controls
     {
         static Grid()
         {
-            ShowGridLinesProperty.Changed.AddClassHandler((Action<Grid, AvaloniaPropertyChangedEventArgs>)OnShowGridLinesPropertyChanged);
+            ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
 
-            IsSharedSizeScopeProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)DefinitionBase.OnIsSharedSizeScopePropertyChanged);
-            ColumnProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)OnCellAttachedPropertyChanged);
-            ColumnSpanProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)OnCellAttachedPropertyChanged);
-            RowProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)OnCellAttachedPropertyChanged);
-            RowSpanProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)OnCellAttachedPropertyChanged);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
+            ColumnProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            ColumnSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
 
-            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty, ColumnDefinitionsProperty, RowDefinitionsProperty);
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
             AffectsMeasure<Grid>(ColumnDefinitionsProperty, RowDefinitionsProperty);
 
             RowDefinitionsProperty.Changed.AddClassHandler<Grid>(RowDefinitionsPropertyChanged);
@@ -2440,7 +2440,7 @@ namespace Avalonia.Controls
             var val = rowDef.NewValue as RowDefinitions;
             RowDefinitionsPropertyChangedCore(target, val);
         }
-        
+
         /// <summary>
         /// Reflects the changes on the RowDefinition StyledProperty
         /// to the backing ExtendedData class.
