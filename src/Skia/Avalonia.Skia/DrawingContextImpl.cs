@@ -42,7 +42,7 @@ namespace Avalonia.Skia
         public struct CreateInfo
         {
             /// <summary>
-            /// Canvas to draw to.
+            /// Surface to draw to.
             /// </summary>
             public SKSurface Surface;
 
