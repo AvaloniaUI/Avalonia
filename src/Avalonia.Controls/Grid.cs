@@ -23,17 +23,53 @@ namespace Avalonia.Controls
     {
         static Grid()
         {
-            ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
+            ShowGridLinesProperty.Changed.AddClassHandler((Action<Grid, AvaloniaPropertyChangedEventArgs>)OnShowGridLinesPropertyChanged);
 
-            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
-            ColumnProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
-            ColumnSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
-            RowProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
-            RowSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)DefinitionBase.OnIsSharedSizeScopePropertyChanged);
+            ColumnProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)OnCellAttachedPropertyChanged);
+            ColumnSpanProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)OnCellAttachedPropertyChanged);
+            RowProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)OnCellAttachedPropertyChanged);
+            RowSpanProperty.Changed.AddClassHandler((Action<Control, AvaloniaPropertyChangedEventArgs>)OnCellAttachedPropertyChanged);
 
-            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty, ColumnDefinitionsProperty, RowDefinitionsProperty);
+            AffectsMeasure<Grid>(ColumnDefinitionsProperty, RowDefinitionsProperty);
 
+            RowDefinitionsProperty.Changed.AddClassHandler<Grid>(RowDefinitionsPropertyChanged);
+            ColumnDefinitionsProperty.Changed.AddClassHandler<Grid>(ColumnDefinitionsPropertyChanged);
         }
+
+        private static void ColumnDefinitionsPropertyChanged(Grid arg1, AvaloniaPropertyChangedEventArgs arg2)
+        {
+            var val = arg2.NewValue as ColumnDefinitions;
+            ColumnDefinitionsPropertyChangedCore(arg1, val);
+        }
+
+        private static void ColumnDefinitionsPropertyChangedCore(Grid arg1, ColumnDefinitions arg2)
+        {
+            if (arg1._data is null)
+                arg1._data = new ExtendedData();
+
+            arg1._data!.ColumnDefinitions = arg2;
+            arg1._data!.ColumnDefinitions.IsDirty = true;
+            arg1._data!.ColumnDefinitions.Parent = arg1;
+        }
+
+        private static void RowDefinitionsPropertyChanged(Grid arg1, AvaloniaPropertyChangedEventArgs arg2)
+        {
+            var val = arg2.NewValue as RowDefinitions;
+            RowDefinitionsPropertyChangedCore(arg1, val);
+        }
+
+        private static void RowDefinitionsPropertyChangedCore(Grid arg1, RowDefinitions arg2)
+        {
+            if (arg1._data is null)
+                arg1._data = new ExtendedData();
+
+            arg1._data!.RowDefinitions = arg2;
+            arg1._data!.RowDefinitions.IsDirty = true;
+            arg1._data!.RowDefinitions.Parent = arg1;
+        }
+/// 
 
         /// <summary>
         /// Default constructor.
@@ -179,11 +215,8 @@ namespace Avalonia.Controls
             }
             set
             {
-                if (_data == null) { _data = new ExtendedData(); }
-                _data.ColumnDefinitions = value;
-                _data.ColumnDefinitions.Parent = this;
+                ColumnDefinitionsPropertyChangedCore(this, value);
                 SetValue(ColumnDefinitionsProperty, _data.ColumnDefinitions);
-                InvalidateMeasure();
             }
         }
 
@@ -205,11 +238,8 @@ namespace Avalonia.Controls
             }
             set
             {
-                if (_data == null) { _data = new ExtendedData(); }
-                _data.RowDefinitions = value;
-                _data.RowDefinitions.Parent = this;
+                RowDefinitionsPropertyChangedCore(this, value);
                 SetValue(RowDefinitionsProperty, _data.RowDefinitions);
-                InvalidateMeasure();
             }
         }
 
