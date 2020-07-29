@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -33,7 +34,8 @@ namespace ControlCatalog.Pages
         
         public CarouselPageViewModel()
         {
-            _items = new ObservableCollection<CarouselItemViewModel>();
+            _items = new ObservableCollection<CarouselItemViewModel>(Enumerable.Range(0, 3).Select(x=>new CarouselItemViewModel(this, x.ToString())));
+            
 
             AddItemCommand = ReactiveCommand.Create(() =>
             {
@@ -68,7 +70,6 @@ namespace ControlCatalog.Pages
         {
             this.InitializeComponent();
            
-            
             DataContext = new CarouselPageViewModel();
         }
 
