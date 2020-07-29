@@ -11,13 +11,13 @@ namespace Avalonia.Media
         Normal,
 
         /// <summary>
-        /// An oblique font.
-        /// </summary>
-        Oblique,
-
-        /// <summary>
         /// An italic font.
         /// </summary>
         Italic,
+
+        /// <summary>
+        /// An oblique font.
+        /// </summary>
+        Oblique
     }
 }
