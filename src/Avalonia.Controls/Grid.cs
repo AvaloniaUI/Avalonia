@@ -2430,9 +2430,9 @@ namespace Avalonia.Controls
             if (target._data is null)
                 target._data = new ExtendedData();
 
+            colDef.IsDirty = true;
+            colDef.Parent = target;
             target._data.ColumnDefinitions = colDef;
-            target._data.ColumnDefinitions.IsDirty = true;
-            target._data.ColumnDefinitions.Parent = target;
         }
 
         private static void RowDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs rowDef)
@@ -2453,9 +2453,9 @@ namespace Avalonia.Controls
             if (target._data is null)
                 target._data = new ExtendedData();
 
+            rowDef.IsDirty = true;
+            rowDef.Parent = target;
             target._data.RowDefinitions = rowDef;
-            target._data.RowDefinitions.IsDirty = true;
-            target._data.RowDefinitions.Parent = target;
         }
 
         /// <summary>
