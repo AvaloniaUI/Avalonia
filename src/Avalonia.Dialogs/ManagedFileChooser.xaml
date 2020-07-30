@@ -76,7 +76,7 @@
 
         <ListBox Margin="0 0 5 5" BorderBrush="Transparent" x:Name="QuickLinks" Items="{Binding QuickLinks}"
                  SelectedIndex="{Binding QuickLinksSelectedIndex}"
-                 DockPanel.Dock="Left" Background="{DynamicResource ThemeControlMidBrush}" Focusable="False">
+                 DockPanel.Dock="Left" Focusable="False">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Spacing="4" Orientation="Horizontal" Background="Transparent">
