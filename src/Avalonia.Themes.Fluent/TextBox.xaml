@@ -66,7 +66,9 @@
                                Text="{TemplateBinding Watermark}"
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}"
-                               IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+                               IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                       <!-- TODO eliminate this margin... text layout issue? -->
                       <TextPresenter Name="PART_TextPresenter"
                                    Margin="0 1 0 0"
