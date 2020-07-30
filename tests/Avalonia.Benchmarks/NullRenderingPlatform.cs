@@ -46,7 +46,7 @@ namespace Avalonia.Benchmarks
             throw new NotImplementedException();
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat)
         {
             throw new NotImplementedException();
         }
@@ -94,5 +94,9 @@ namespace Avalonia.Benchmarks
         }
 
         public bool SupportsIndividualRoundRects => true;
+
+        public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
+
+        public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
     }
 }

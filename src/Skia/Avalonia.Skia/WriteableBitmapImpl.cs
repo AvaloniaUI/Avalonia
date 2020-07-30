@@ -23,14 +23,13 @@ namespace Avalonia.Skia
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="format">The pixel format.</param>
         /// <param name="alphaFormat">The alpha format.</param>
-        public WriteableBitmapImpl(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
+        public WriteableBitmapImpl(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat)
         {
             PixelSize = size;
             Dpi = dpi;
 
-            var colorType = PixelFormatHelper.ResolveColorType(format);
-
-            SKAlphaType alphaType = alphaFormat?.ToSkAlphaType() ?? SKAlphaType.Premul;
+            SKColorType colorType = format.ToSkColorType();
+            SKAlphaType alphaType = alphaFormat.ToSkAlphaType();
             
             var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
             

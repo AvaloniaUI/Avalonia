@@ -166,7 +166,7 @@ namespace Avalonia.Direct2D1
             return new WicRenderTargetBitmapImpl(size, dpi);
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat)
         {
             return new WriteableWicBitmapImpl(size, dpi, format, alphaFormat);
         }
@@ -261,5 +261,9 @@ namespace Avalonia.Direct2D1
         }
 
         public bool SupportsIndividualRoundRects => false;
+
+        public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
+
+        public PixelFormat DefaultPixelFormat => PixelFormat.Bgra8888;
     }
 }

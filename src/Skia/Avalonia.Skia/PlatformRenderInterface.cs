@@ -22,6 +22,8 @@ namespace Avalonia.Skia
 
         public PlatformRenderInterface(ISkiaGpu skiaGpu, long? maxResourceBytes = null)
         {
+            DefaultPixelFormat = SKImageInfo.PlatformColorType.ToPixelFormat();
+
             if (skiaGpu != null)
             {
                 _skiaGpu = skiaGpu;
@@ -150,7 +152,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat)
         {
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
@@ -265,5 +267,9 @@ namespace Avalonia.Skia
         }
 
         public bool SupportsIndividualRoundRects => true;
+
+        public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
+
+        public PixelFormat DefaultPixelFormat { get; }
     }
 }

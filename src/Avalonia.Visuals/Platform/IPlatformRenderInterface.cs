@@ -81,10 +81,10 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
-        /// <param name="format">Pixel format (optional).</param>
-        /// <param name="alphaFormat">Alpha format (optional).</param>
+        /// <param name="format">Pixel format.</param>
+        /// <param name="alphaFormat">Alpha format .</param>
         /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
-        IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null, AlphaFormat? alphaFormat = null);
+        IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat);
 
         /// <summary>
         /// Loads a bitmap implementation from a file..
@@ -141,5 +141,15 @@ namespace Avalonia.Platform
         IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width);
 
         bool SupportsIndividualRoundRects { get; }
+
+        /// <summary>
+        /// Default <see cref="AlphaFormat"/> used on this platform.
+        /// </summary>
+        public AlphaFormat DefaultAlphaFormat { get; }
+
+        /// <summary>
+        /// Default <see cref="PixelFormat"/> used on this platform.
+        /// </summary>
+        public PixelFormat DefaultPixelFormat { get; }
     }
 }
