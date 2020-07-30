@@ -1,4 +1,13 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <TextBox Text="Sample"
+               FontSize="20"
+               Width="100"
+               TextAlignment="Center"/>
+    </Border>
+  </Design.PreviewWith>
+  
   <Styles.Resources>
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
   </Styles.Resources>
@@ -42,7 +51,7 @@
               <DockPanel>
                 <TextBlock Name="floatingWatermark"
                            Foreground="{DynamicResource SystemAccentColor}"
-                           FontSize="{DynamicResource FontSizeSmall}"
+                           FontSize="{TemplateBinding FontSize}"
                            Text="{TemplateBinding Watermark}"
                            DockPanel.Dock="Top">
                   <TextBlock.IsVisible>
@@ -136,7 +145,7 @@
 
 
   <Style Selector="TextBox:error /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
   </Style>
 
   <Style Selector="TextBox /template/ DockPanel">
