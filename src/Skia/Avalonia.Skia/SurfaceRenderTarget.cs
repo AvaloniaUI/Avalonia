@@ -70,7 +70,7 @@ namespace Avalonia.Skia
             
             var createInfo = new DrawingContextImpl.CreateInfo
             {
-                Canvas = _canvas,
+                Surface = _surface,
                 Dpi = Dpi,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = _disableLcdRendering,

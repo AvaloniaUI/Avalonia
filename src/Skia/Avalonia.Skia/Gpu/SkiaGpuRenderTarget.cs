@@ -27,7 +27,7 @@ namespace Avalonia.Skia
             var nfo = new DrawingContextImpl.CreateInfo
             {
                 GrContext = session.GrContext,
-                Canvas = session.Canvas,
+                Surface = session.SkSurface,
                 Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true
