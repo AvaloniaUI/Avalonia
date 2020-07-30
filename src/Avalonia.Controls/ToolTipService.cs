@@ -29,7 +29,6 @@ namespace Avalonia.Controls
                 control.PointerEnter -= ControlPointerEnter;
                 control.PointerLeave -= ControlPointerLeave;
                 control.DetachedFromVisualTree -= ControlDetaching;
-                Close(control);
             }
 
             if (e.NewValue != null)
