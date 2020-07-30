@@ -148,12 +148,10 @@
 
   <Style Selector="ToggleSwitch /template/ Ellipse#SwitchKnobOn">
     <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOn}"/>
-    <Setter Property="Stroke" Value="{DynamicResource ToggleSwitchKnobStrokeOn}"/>
   </Style>
 
   <Style Selector="ToggleSwitch /template/ Ellipse#SwitchKnobOff">
     <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOff}"/>
-    <Setter Property="Stroke" Value="{DynamicResource ToggleSwitchKnobStrokeOff}"/>
   </Style>
 
   <Style Selector="ToggleSwitch:not(:dragging) /template/ Grid#MovingKnobs">
