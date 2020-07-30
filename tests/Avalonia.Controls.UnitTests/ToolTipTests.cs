@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Disposables;
+using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -66,34 +67,33 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
-        public void Should_Close_When_Tip_Is_Changed()
+        public void Should_Close_When_Tip_Is_Opened_And_Detached_From_Visual_Tree()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var window = new Window();
-
-                var panel = new Panel();
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Panel x:Name='PART_panel'>
+        <Decorator x:Name='PART_target' ToolTip.Tip='{Binding Tip}' ToolTip.ShowDelay='0' />
+    </Panel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 
-                var target = new Decorator()
-                {
-                    [ToolTip.TipProperty] = "Tip",
-                    [ToolTip.ShowDelayProperty] = 0
-                };
-                
-                panel.Children.Add(target);
-
-                window.Content = panel;
-
+                window.DataContext = new ToolTipViewModel();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
+                var target = window.Find<Decorator>("PART_target");
+                var panel = window.Find<Panel>("PART_panel");
+                
                 Assert.True((target as IVisual).IsAttachedToVisualTree);                               
 
                 _mouseHelper.Enter(target);
 
                 Assert.True(ToolTip.GetIsOpen(target));
-                
-                ToolTip.SetTip(target, "");
+
+                panel.Children.Remove(target);
                 
                 Assert.False(ToolTip.GetIsOpen(target));
             }
@@ -241,5 +241,10 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Empty(toolTip.Classes);
             }
         }
+    }
+
+    internal class ToolTipViewModel
+    {
+        public string Tip => "Tip";
     }
 }
