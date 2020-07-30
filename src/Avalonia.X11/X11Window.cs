@@ -331,6 +331,11 @@ namespace Avalonia.X11
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+
+            if (customRendererFactory != null)
+                return customRendererFactory.Create(root, loop);
+            
             return _platform.Options.UseDeferredRendering ?
                 new DeferredRenderer(root, loop) :
                 (IRenderer)new X11ImmediateRendererProxy(root, loop);
