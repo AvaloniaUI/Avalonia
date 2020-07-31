@@ -8,38 +8,38 @@
     <x:Double x:Key="ToggleSwitchThemeMinWidth">154</x:Double>
     <Thickness x:Key="ToggleSwitchOnStrokeThickness">0</Thickness>
     <Thickness x:Key="ToggleSwitchOuterBorderStrokeThickness">1</Thickness>
-    <StaticResource x:Key="ToggleSwitchContentForeground" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="ToggleSwitchContentForegroundDisabled" ResourceKey="ThemeForegroundLowBrush" />
-    <StaticResource x:Key="ToggleSwitchHeaderForeground" ResourceKey="ThemeForegroundBrush" />
-    <StaticResource x:Key="ToggleSwitchHeaderForegroundDisabled" ResourceKey="ThemeForegroundLowBrush" />
-    <StaticResource x:Key="ToggleSwitchContainerBackground" ResourceKey="ThemeControlTransparentBrush" />
-    <StaticResource x:Key="ToggleSwitchContainerBackgroundPointerOver" ResourceKey="ThemeControlTransparentBrush" />
-    <StaticResource x:Key="ToggleSwitchContainerBackgroundPressed" ResourceKey="ThemeControlTransparentBrush" />
-    <StaticResource x:Key="ToggleSwitchContainerBackgroundDisabled" ResourceKey="ThemeControlTransparentBrush" />
-    <StaticResource x:Key="ToggleSwitchFillOff" ResourceKey="ThemeControlTransparentBrush" />
-    <StaticResource x:Key="ToggleSwitchFillOffPointerOver" ResourceKey="ThemeControlTransparentBrush" />
-    <StaticResource x:Key="ToggleSwitchFillOffPressed" ResourceKey="ThemeControlMidHighBrush" />
-    <StaticResource x:Key="ToggleSwitchFillOffDisabled" ResourceKey="ThemeControlTransparentBrush" />
-    <StaticResource x:Key="ToggleSwitchStrokeOff" ResourceKey="ThemeBorderMidBrush" />
-    <StaticResource x:Key="ToggleSwitchStrokeOffPointerOver" ResourceKey="ThemeBorderHighBrush" />
-    <StaticResource x:Key="ToggleSwitchStrokeOffPressed" ResourceKey="ThemeBorderHighBrush" />
-    <StaticResource x:Key="ToggleSwitchStrokeOffDisabled" ResourceKey="ThemeForegroundLowBrush" />
-    <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="ThemeAccentBrush" />
-    <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="ThemeAccentBrush2" />
-    <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="ThemeAccentBrush3" />
-    <StaticResource x:Key="ToggleSwitchFillOnDisabled" ResourceKey="ThemeForegroundLowBrush" />
-    <StaticResource x:Key="ToggleSwitchStrokeOn" ResourceKey="ThemeAccentBrush" />
-    <StaticResource x:Key="ToggleSwitchStrokeOnPointerOver" ResourceKey="ThemeAccentBrush2" />
-    <StaticResource x:Key="ToggleSwitchStrokeOnPressed" ResourceKey="ThemeAccentBrush3" />
-    <StaticResource x:Key="ToggleSwitchStrokeOnDisabled" ResourceKey="ThemeForegroundLowBrush" />
-    <StaticResource x:Key="ToggleSwitchKnobFillOff" ResourceKey="ThemeBorderMidBrush" />
-    <StaticResource x:Key="ToggleSwitchKnobFillOffPointerOver" ResourceKey="ThemeBorderHighBrush" />
-    <StaticResource x:Key="ToggleSwitchKnobFillOffPressed" ResourceKey="ThemeBorderHighBrush" />
-    <StaticResource x:Key="ToggleSwitchKnobFillOffDisabled" ResourceKey="ThemeForegroundLowBrush" />
-    <StaticResource x:Key="ToggleSwitchKnobFillOn" ResourceKey="HighlightForegroundBrush" />
-    <StaticResource x:Key="ToggleSwitchKnobFillOnPointerOver" ResourceKey="HighlightForegroundBrush" />
-    <StaticResource x:Key="ToggleSwitchKnobFillOnPressed" ResourceKey="HighlightForegroundBrush" />
-    <StaticResource x:Key="ToggleSwitchKnobFillOnDisabled" ResourceKey="HighlightForegroundBrush" />
+    <SolidColorBrush x:Key="ToggleSwitchContentForeground" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchContentForegroundDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchHeaderForeground" Color="{DynamicResource ThemeForegroundColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchHeaderForegroundDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchContainerBackground" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundPointerOver" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundPressed" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundDisabled" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="{DynamicResource ThemeControlMidHighColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOffDisabled" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="{DynamicResource ThemeBorderMidColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="{DynamicResource ThemeBorderHighColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="{DynamicResource ThemeBorderHighColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchStrokeOffDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="{DynamicResource ThemeAccentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="{DynamicResource ThemeAccentColor2}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="{DynamicResource ThemeAccentColor3}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOnDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="{DynamicResource ThemeAccentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="{DynamicResource ThemeAccentColor2}" />
+    <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="{DynamicResource ThemeAccentColor3}" />
+    <SolidColorBrush x:Key="ToggleSwitchStrokeOnDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="{DynamicResource ThemeBorderMidColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="{DynamicResource ThemeBorderHighColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPressed" Color="{DynamicResource ThemeBorderHighColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchKnobFillOffDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="{DynamicResource HighlightForegroundColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="{DynamicResource HighlightForegroundColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="{DynamicResource HighlightForegroundColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchKnobFillOnDisabled" Color="{DynamicResource HighlightForegroundColor}" />
   </Styles.Resources>
   <Design.PreviewWith>
     <StackPanel Margin="20" Width="250" Spacing="24" >
