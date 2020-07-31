@@ -28,20 +28,33 @@ namespace Avalonia.Controls
             {
                 control.PointerEnter -= ControlPointerEnter;
                 control.PointerLeave -= ControlPointerLeave;
-                control.DetachedFromVisualTree -= ControlDetaching;
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEnter += ControlPointerEnter;
                 control.PointerLeave += ControlPointerLeave;
+            }
+        }
+
+        internal void TipOpenChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var control = (Control)e.Sender;
+
+            if (e.OldValue is false && e.NewValue is true)
+            {
                 control.DetachedFromVisualTree += ControlDetaching;
+            }
+            else if(e.OldValue is true && e.NewValue is false)
+            {
+                control.DetachedFromVisualTree -= ControlDetaching;
             }
         }
         
         private void ControlDetaching(object sender, VisualTreeAttachmentEventArgs e)
         {
             var control = (Control)sender;
+            control.DetachedFromVisualTree -= ControlDetaching;
             Close(control);
         }
 

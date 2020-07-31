@@ -56,7 +56,8 @@ namespace Avalonia.Skia
                     continue;
                 }
 
-                var key = new FontKey(fontFamily.Name, (FontStyle)typeface.FontSlant, (FontWeight)typeface.FontWeight);
+                var key = new FontKey(fontFamily.Name, typeface.FontSlant.ToAvalonia(),
+                    (FontWeight)typeface.FontWeight);
 
                 typeFaceCollection.AddTypeface(key, typeface);
             }

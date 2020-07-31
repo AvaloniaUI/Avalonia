@@ -79,6 +79,7 @@
                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                      Margin="{TemplateBinding Padding}"
                      Text="{TemplateBinding PlaceholderText}"
+                     Foreground="{TemplateBinding PlaceholderForeground}"
                      IsVisible="{TemplateBinding SelectionBoxItem, Converter={x:Static ObjectConverters.IsNull}}" />
           <ContentControl x:Name="ContentPresenter"
                           Content="{TemplateBinding SelectionBoxItem}"
