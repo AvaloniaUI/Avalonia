@@ -66,7 +66,7 @@
             </StackPanel>
         </DockPanel>
 
-        <DropDown DockPanel.Dock="Bottom" 
+        <ComboBox DockPanel.Dock="Bottom" 
                   IsVisible="{Binding ShowFilters}" 
                   Items="{Binding Filters}"
                   SelectedItem="{Binding SelectedFilter}"
