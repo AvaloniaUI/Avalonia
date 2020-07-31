@@ -138,6 +138,17 @@ namespace Avalonia.Skia
             }
         }
 
+        public static FontStyle ToAvalonia(this SKFontStyleSlant slant)
+        {
+            return slant switch
+            {
+                SKFontStyleSlant.Upright => FontStyle.Normal,
+                SKFontStyleSlant.Italic => FontStyle.Italic,
+                SKFontStyleSlant.Oblique => FontStyle.Oblique,
+                _ => throw new ArgumentOutOfRangeException(nameof (slant), slant, null)
+            };
+        }
+
         public static SKPath Clone(this SKPath src)
         {
             return src != null ? new SKPath(src) : null;
