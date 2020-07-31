@@ -1,5 +1,8 @@
-import {PreviewerFrame, PreviewerServerConnection} from "src/PreviewerServerConnection";
 import * as React from "react";
+import {PreviewerFrame, PreviewerServerConnection} from "src/PreviewerServerConnection";
+import {PointerPressedEventMessage} from "src/Models/Input/PointerPressedEventMessage";
+import {PointerReleasedEventMessage} from "src/Models/Input/PointerReleasedEventMessage";
+import {PointerMovedEventMessage} from "src/Models/Input/PointerMovedEventMessage";
 
 interface PreviewerPresenterProps {
     conn: PreviewerServerConnection;
@@ -51,7 +54,25 @@ export class PreviewerPresenter extends React.Component<PreviewerPresenterProps>
         }
     }
 
+    handleMouseDown(e: React.MouseEvent) {
+        const pointerPressedEventMessage = new PointerPressedEventMessage(e);
+        // TODO: Send message to server
+    }
+
+    handleMouseUp(e: React.MouseEvent) {
+        const pointerReleasedEventMessage = new PointerReleasedEventMessage(e);
+        // TODO: Send message to server
+    }
+
+    handleMouseMove(e: React.MouseEvent) {
+        const pointerMovedEventMessage = new PointerMovedEventMessage(e);
+        // TODO: Send message to server
+    }
+
     render() {
-        return <canvas ref={this.canvasRef}/>
+        return <canvas ref={this.canvasRef}
+                       onMouseDown={this.handleMouseDown}
+                       onMouseUp={this.handleMouseUp}
+                       onMouseMove={this.handleMouseMove} />
     }
 }
