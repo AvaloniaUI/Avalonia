@@ -6,28 +6,67 @@ namespace Avalonia.Rendering
 {
     public class SleepLoopRenderTimer : IRenderTimer
     {
-        public event Action<TimeSpan> Tick;
+        private Action<TimeSpan> _tick;
+        private int _count;
+        private readonly object _lock = new object();
+        private bool _running;
+        private readonly Stopwatch _st = Stopwatch.StartNew();
+        private readonly TimeSpan _timeBetweenTicks;
 
         public SleepLoopRenderTimer(int fps)
         {
-            var timeBetweenTicks = TimeSpan.FromSeconds(1d / fps);
-            new Thread(() =>
-            {
-                var st = Stopwatch.StartNew();
-                var now = st.Elapsed;
-                var lastTick = now;
-
-                while (true)
-                {
-                    var timeTillNextTick = lastTick + timeBetweenTicks - now;
-                    if (timeTillNextTick.TotalMilliseconds > 1)
-                        Thread.Sleep(timeTillNextTick);
-
-
-                    Tick?.Invoke(now);
-                    now = st.Elapsed;
-                }
-            }) { IsBackground = true }.Start();
+            _timeBetweenTicks = TimeSpan.FromSeconds(1d / fps);
         }
+        
+        public event Action<TimeSpan> Tick
+        {
+            add
+            {
+                lock (_lock)
+                {
+                    _tick += value;
+                    _count++;
+                    if (_running)
+                        return;
+                    _running = true;
+                    new Thread(LoopProc) { IsBackground = true }.Start();
+                }
+
+            }
+            remove
+            {
+                lock (_lock)
+                {
+                    _tick -= value;
+                    _count--;
+                }
+            }
+        }
+
+        void LoopProc()
+        {
+            var now = _st.Elapsed;
+            var lastTick = now;
+
+            while (true)
+            {
+                var timeTillNextTick = lastTick + _timeBetweenTicks - now;
+                if (timeTillNextTick.TotalMilliseconds > 1) Thread.Sleep(timeTillNextTick);
+
+                lock (_lock)
+                {
+                    if (_count == 0)
+                    {
+                        _running = false;
+                        return;
+                    }
+                }
+
+                _tick?.Invoke(now);
+                now = _st.Elapsed;
+            }
+        }
+
+
     }
 }
