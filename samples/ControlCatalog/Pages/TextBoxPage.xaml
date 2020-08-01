@@ -4,21 +4,26 @@
 
     <StackPanel.Styles>
       <Style Selector="TextBox.InnerRight">
-        <Setter Property="Text" Value="Inner Right Content"/>
         <Setter Property="InnerRightContent">
           <Template>
-            <Button Content="Clear" />
+            <Button Content="Clear" Command="{Binding $parent[TextBox].Clear}" />
           </Template>
         </Setter>
       </Style>
       <Style Selector="TextBox.InnerLeft">
-        <Setter Property="Text" Value="Inner Left Content"/>
         <Setter Property="InnerLeftContent">
           <Template>
             <Button Content="Clear" />
           </Template>
         </Setter>
-      </Style>
+      </Style> 
+      <Style Selector="TextBox.Password">
+        <Setter Property="InnerRightContent">
+          <Template>
+            <ToggleButton Content="ToggleButton" IsChecked="{Binding $parent[TextBox].ShowPassword, Mode=OneWay}"/>
+          </Template>
+        </Setter>
+      </Style> 
     </StackPanel.Styles>
 
     <TextBlock Classes="h1">TextBox</TextBlock>
@@ -31,7 +36,8 @@
         <TextBox Width="200" Watermark="Watermark" />
         <TextBox Width="200" Watermark="Floating Watermark" UseFloatingWatermark="True" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
 
-        <TextBox Width="200" Watermark="Password Box" UseFloatingWatermark="True" PasswordChar="*" Text="Password" />
+        <TextBox Width="200" Classes="Password" Watermark="Password Box" UseFloatingWatermark="True" PasswordChar="*" Text="Password" />
+        
         <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
         <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
         <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
@@ -42,8 +48,8 @@
       <StackPanel Orientation="Vertical" Spacing="8">
         <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="125" Text="Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
         <TextBox AcceptsReturn="True" Width="200" Height="125" Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
-        <TextBox Classes="InnerLeft" Width="200" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
-        <TextBox Classes="InnerRight" Width="200" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+        <TextBox Classes="InnerLeft" Text="Inner Left Content" Width="200" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+        <TextBox Classes="InnerRight" Text="Inner Right Content" Width="200" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
       </StackPanel>
       <StackPanel Orientation="Vertical" Spacing="8">
         <TextBlock Classes="h2">resm fonts</TextBlock>

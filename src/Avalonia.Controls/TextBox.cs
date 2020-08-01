@@ -101,6 +101,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object> InnerRightContentProperty =
             AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
 
+        public static readonly StyledProperty<bool> ShowPasswordProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(ShowPassword));
+
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -129,6 +132,10 @@ namespace Avalonia.Controls
         static TextBox()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+            ShowPasswordProperty.Changed.Subscribe((x)=>
+            {
+
+            });
         }
 
         public TextBox()
@@ -291,7 +298,7 @@ namespace Avalonia.Controls
                 else
                 {
                     HandleTextInput(value);
-                } 
+                }
                 _undoRedoHelper.Snapshot();
             }
         }
@@ -342,6 +349,16 @@ namespace Avalonia.Controls
         {
             get { return GetValue(InnerRightContentProperty); }
             set { SetValue(InnerRightContentProperty, value); }
+        }
+
+        public bool ShowPassword
+        {
+            get { return GetValue(ShowPasswordProperty); }
+            set
+            {
+
+                SetValue(ShowPasswordProperty, value);
+            }
         }
 
         public TextWrapping TextWrapping
@@ -774,7 +791,7 @@ namespace Avalonia.Controls
                     // if it did not, we change the selection to where the user clicked
                     var firstSelection = Math.Min(SelectionStart, SelectionEnd);
                     var lastSelection = Math.Max(SelectionStart, SelectionEnd);
-                    var didClickInSelection = SelectionStart != SelectionEnd && 
+                    var didClickInSelection = SelectionStart != SelectionEnd &&
                         caretIndex >= firstSelection && caretIndex <= lastSelection;
                     if (!didClickInSelection)
                     {
@@ -819,6 +836,11 @@ namespace Avalonia.Controls
             {
                 return value;
             }
+        }
+
+        public void Clear()
+        {
+            Text = string.Empty;
         }
 
         private int DeleteCharacter(int index)
@@ -1086,7 +1108,7 @@ namespace Avalonia.Controls
             SelectionEnd = CaretIndex;
         }
 
-        private bool IsPasswordBox => PasswordChar != default(char);
+        private bool IsPasswordBox => ShowPassword && PasswordChar != default(char);
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {
