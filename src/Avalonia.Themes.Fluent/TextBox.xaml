@@ -38,14 +38,14 @@
 
                 <DataValidationErrors>
                   <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}" VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
-                    <Grid ColumnDefinition="Auto,*,Auto">
-                      <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{Binding InnerLeftContent}"/>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <TemplatedControl Grid.Column="0" Grid.ColumnSpan="1" Template="{TemplateBinding InnerLeftContent}"/>
                       <Panel Grid.Column="1" Grid.ColumnSpan="1">
                         <TextBlock Name="watermark" Opacity="0.5" Text="{TemplateBinding Watermark}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         <!-- TODO eliminate this margin... text layout issue? -->
                         <TextPresenter Name="PART_TextPresenter" Margin="0 1 0 0" Text="{TemplateBinding Text, Mode=TwoWay}" CaretIndex="{TemplateBinding CaretIndex}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" PasswordChar="{TemplateBinding PasswordChar}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" CaretBrush="{TemplateBinding CaretBrush}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                       </Panel>
-                      <ContentPresenter Grid.Column="2" Grid.ColumnSpan="1" Content="{Binding InnerRightContent}"/>
+                      <TemplatedControl Grid.Column="2" Grid.ColumnSpan="1" Template="{TemplateBinding InnerRightContent}"/>
                     </Grid>
                   </ScrollViewer>
                 </DataValidationErrors>
