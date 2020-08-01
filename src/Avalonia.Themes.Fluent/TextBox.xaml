@@ -37,31 +37,30 @@
             </Border>
 
             <Border
-              Padding="{TemplateBinding Padding}"
               Margin="{TemplateBinding BorderThickness}">
-              <DockPanel>
-                <TextBlock Name="floatingWatermark"
-                           Foreground="{DynamicResource SystemAccentColor}"
-                           FontSize="{DynamicResource FontSizeSmall}"
-                           Text="{TemplateBinding Watermark}"
-                           DockPanel.Dock="Top">
-                  <TextBlock.IsVisible>
-                      <MultiBinding Converter="{x:Static BoolConverters.And}">
-                        <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                               Path="UseFloatingWatermark"/>
-                        <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                               Path="Text"
-                               Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
-                      </MultiBinding>
-                  </TextBlock.IsVisible>
-                </TextBlock>
+              <Grid ColumnDefinitions="Auto,*,Auto" >
+                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
+                <DockPanel Grid.Column="1" Grid.ColumnSpan="1" Margin="{TemplateBinding Padding}">
+                  <TextBlock Name="floatingWatermark"
+                            Foreground="{DynamicResource SystemAccentColor}"
+                            FontSize="{DynamicResource FontSizeSmall}"
+                            Text="{TemplateBinding Watermark}"
+                            DockPanel.Dock="Top">
+                    <TextBlock.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                          <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                                Path="UseFloatingWatermark"/>
+                          <Binding RelativeSource="{RelativeSource TemplatedParent}"
+                                Path="Text"
+                                Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+                        </MultiBinding>
+                    </TextBlock.IsVisible>
+                  </TextBlock>
 
-                <DataValidationErrors>
-                  <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                                VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                      <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
-                      <Panel Grid.Column="1" Grid.ColumnSpan="1">
+                  <DataValidationErrors>
+                    <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                  VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                      <Panel>
                         <TextBlock Name="watermark"
                                 Opacity="0.5"
                                 Text="{TemplateBinding Watermark}"
@@ -72,26 +71,28 @@
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         <!-- TODO eliminate this margin... text layout issue? -->
                         <TextPresenter Name="PART_TextPresenter"
-                                    Margin="0 1 0 0"
-                                    Text="{TemplateBinding Text, Mode=TwoWay}"
-                                    CaretIndex="{TemplateBinding CaretIndex}"
-                                    SelectionStart="{TemplateBinding SelectionStart}"
-                                    SelectionEnd="{TemplateBinding SelectionEnd}"
-                                    TextAlignment="{TemplateBinding TextAlignment}"
-                                    TextWrapping="{TemplateBinding TextWrapping}"
-                                    PasswordChar="{TemplateBinding PasswordChar}"
-                                    SelectionBrush="{TemplateBinding SelectionBrush}"
-                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                    CaretBrush="{TemplateBinding CaretBrush}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/> 
+                                      Margin="0 1 0 0"
+                                      Text="{TemplateBinding Text, Mode=TwoWay}"
+                                      CaretIndex="{TemplateBinding CaretIndex}"
+                                      SelectionStart="{TemplateBinding SelectionStart}"
+                                      SelectionEnd="{TemplateBinding SelectionEnd}"
+                                      TextAlignment="{TemplateBinding TextAlignment}"
+                                      TextWrapping="{TemplateBinding TextWrapping}"
+                                      PasswordChar="{TemplateBinding PasswordChar}"
+                                      SelectionBrush="{TemplateBinding SelectionBrush}"
+                                      SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                      CaretBrush="{TemplateBinding CaretBrush}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/> 
                       </Panel>
-                      <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>
-                    </Grid>
-                  </ScrollViewer>
-                </DataValidationErrors>
-              </DockPanel>
+                    </ScrollViewer>
+                  </DataValidationErrors>
+                </DockPanel>
+                <ContentPresenter Grid.Column="2" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>
+              </Grid>
             </Border>
+
+
           </Panel>
         </DockPanel>
       </ControlTemplate>
