@@ -2,21 +2,24 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ControlCatalog.Pages.TextBoxPage">
   <StackPanel Orientation="Vertical" Spacing="4">
 
-    <StackPanel Orientation="Vertical" Spacing="8">
-      <StackPanel.Styles>
-        <Style Selector="TextBox">
-          <Setter Property="InnerRightContent">
-            <ControlTemplate>
-              <Button Content="Clear" />
-            </ControlTemplate>
-          </Setter>
-
-        </Style>
-      </StackPanel.Styles>
-
-      <TextBlock Classes="h2">Test</TextBlock>
-      <TextBox Width="200" Text="Right Content" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
-    </StackPanel>
+    <StackPanel.Styles>
+      <Style Selector="TextBox.InnerRight">
+        <Setter Property="Text" Value="Inner Right Content"/>
+        <Setter Property="InnerRightContent">
+          <Template>
+            <Button Content="Clear" />
+          </Template>
+        </Setter>
+      </Style>
+      <Style Selector="TextBox.InnerLeft">
+        <Setter Property="Text" Value="Inner Left Content"/>
+        <Setter Property="InnerLeftContent">
+          <Template>
+            <Button Content="Clear" />
+          </Template>
+        </Setter>
+      </Style>
+    </StackPanel.Styles>
 
     <TextBlock Classes="h1">TextBox</TextBlock>
     <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
@@ -39,6 +42,8 @@
       <StackPanel Orientation="Vertical" Spacing="8">
         <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="125" Text="Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
         <TextBox AcceptsReturn="True" Width="200" Height="125" Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
+        <TextBox Classes="InnerLeft" Width="200" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+        <TextBox Classes="InnerRight" Width="200" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
       </StackPanel>
       <StackPanel Orientation="Vertical" Spacing="8">
         <TextBlock Classes="h2">resm fonts</TextBlock>
