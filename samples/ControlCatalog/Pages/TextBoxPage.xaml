@@ -1,6 +1,23 @@
 <UserControl xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ControlCatalog.Pages.TextBoxPage">
   <StackPanel Orientation="Vertical" Spacing="4">
+
+    <StackPanel Orientation="Vertical" Spacing="8">
+      <StackPanel.Styles>
+        <Style Selector="TextBox">
+          <Setter Property="InnerRightContent">
+            <DataTemplate>
+              <Button Content="Clear" />
+            </DataTemplate>
+          </Setter>
+
+        </Style>
+      </StackPanel.Styles>
+
+      <TextBlock Classes="h2">Test</TextBlock>
+      <TextBox Width="200" Text="Right Content" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+    </StackPanel>
+
     <TextBlock Classes="h1">TextBox</TextBlock>
     <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
 
@@ -40,21 +57,6 @@
       </StackPanel>
 
 
-      <StackPanel Orientation="Vertical" Spacing="8">
-        <StackPanel.Styles>
-          <Style Selector="TextBox">
-            <Setter Property="InnerRightContent">
-              <Template>
-                <Button Content="Clear" />
-              </Template>
-            </Setter>
-
-          </Style>
-        </StackPanel.Styles>
-
-        <TextBlock Classes="h2">Test</TextBlock>
-        <TextBox Width="200" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
-      </StackPanel>
 
     </StackPanel>
   </StackPanel>
