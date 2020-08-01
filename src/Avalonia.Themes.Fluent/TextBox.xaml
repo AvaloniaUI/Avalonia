@@ -86,7 +86,7 @@
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/> 
                       </Panel>
-                      <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
+                      <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>
                     </Grid>
                   </ScrollViewer>
                 </DataValidationErrors>

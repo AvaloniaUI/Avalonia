@@ -6,9 +6,9 @@
       <StackPanel.Styles>
         <Style Selector="TextBox">
           <Setter Property="InnerRightContent">
-            <DataTemplate>
+            <ControlTemplate>
               <Button Content="Clear" />
-            </DataTemplate>
+            </ControlTemplate>
           </Setter>
 
         </Style>
