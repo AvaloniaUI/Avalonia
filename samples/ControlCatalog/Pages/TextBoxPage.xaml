@@ -20,7 +20,7 @@
       <Style Selector="TextBox.Password">
         <Setter Property="InnerRightContent">
           <Template>
-            <ToggleButton Content="ToggleButton" IsChecked="{Binding $parent[TextBox].ShowPassword, Mode=OneWay}"/>
+            <ToggleButton Content="ToggleButton" IsChecked="{Binding $parent[TextBox].ShowPassword, Mode=TwoWay}"/>
           </Template>
         </Setter>
       </Style> 
