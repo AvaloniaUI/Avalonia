@@ -95,6 +95,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
                 textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
 
+        public static readonly StyledProperty<object> InnerLeftContentProperty =
+            AvaloniaProperty.Register<TextBox, object>(nameof(InnerLeftContent));
+
+        public static readonly StyledProperty<object> InnerRightContentProperty =
+            AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
+
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -324,6 +330,18 @@ namespace Avalonia.Controls
         {
             get { return GetValue(UseFloatingWatermarkProperty); }
             set { SetValue(UseFloatingWatermarkProperty, value); }
+        }
+
+        public object InnerLeftContent
+        {
+            get { return GetValue(InnerLeftContentProperty); }
+            set { SetValue(InnerLeftContentProperty, value); }
+        }
+
+        public object InnerRightContent
+        {
+            get { return GetValue(InnerRightContentProperty); }
+            set { SetValue(InnerRightContentProperty, value); }
         }
 
         public TextWrapping TextWrapping
