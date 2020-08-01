@@ -44,9 +44,9 @@
         <StackPanel.Styles>
           <Style Selector="TextBox">
             <Setter Property="InnerRightContent">
-              <ControlTemplate>
+              <Template>
                 <Button Content="Clear" />
-              </ControlTemplate>
+              </Template>
             </Setter>
 
           </Style>

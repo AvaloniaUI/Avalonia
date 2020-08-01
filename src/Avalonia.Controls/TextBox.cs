@@ -13,7 +13,6 @@ using Avalonia.Metadata;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Utilities;
-using Avalonia.Controls.Templates;
 
 namespace Avalonia.Controls
 {
@@ -96,11 +95,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
                 textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
 
-        public static readonly StyledProperty<IControlTemplate> InnerLeftContentProperty =
-            AvaloniaProperty.Register<TextBox, IControlTemplate>(nameof(InnerLeftContent));
+        public static readonly StyledProperty<object> InnerLeftContentProperty =
+            AvaloniaProperty.Register<TextBox, object>(nameof(InnerLeftContent));
 
-        public static readonly StyledProperty<IControlTemplate> InnerRightContentProperty =
-            AvaloniaProperty.Register<TextBox, IControlTemplate>(nameof(InnerRightContent));
+        public static readonly StyledProperty<object> InnerRightContentProperty =
+            AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
 
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -333,13 +332,13 @@ namespace Avalonia.Controls
             set { SetValue(UseFloatingWatermarkProperty, value); }
         }
 
-        public IControlTemplate InnerLeftContent
+        public object InnerLeftContent
         {
             get { return GetValue(InnerLeftContentProperty); }
             set { SetValue(InnerLeftContentProperty, value); }
         }
 
-        public IControlTemplate InnerRightContent
+        public object InnerRightContent
         {
             get { return GetValue(InnerRightContentProperty); }
             set { SetValue(InnerRightContentProperty, value); }
