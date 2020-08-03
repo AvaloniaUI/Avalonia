@@ -606,6 +606,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (hit != null)
                 {
+                    e.Pointer.Capture(hit);
                     hit.RaiseEvent(e);
                     e.Handled = true;
                 }
