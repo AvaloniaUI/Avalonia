@@ -22,8 +22,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   <Color x:Key='Red'>Red</Color>
   <SolidColorBrush x:Key='RedBrush' Color='{StaticResource Red}'/>
 </ResourceDictionary>";
-                var loader = new AvaloniaXamlLoader();
-                var resources = (ResourceDictionary)loader.Load(xaml);
+                var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var brush = (SolidColorBrush)resources["RedBrush"];
 
                 Assert.Equal(Colors.Red, brush.Color);
@@ -55,8 +54,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button' Background='{DynamicResource RedBrush}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
 
                 var brush = Assert.IsType<SolidColorBrush>(button.Background);

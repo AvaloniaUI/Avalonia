@@ -24,8 +24,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <TextBlock Name='textBlock' Text='{Binding}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 window.DataContext = "foo";
@@ -45,8 +44,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <TextBlock Name='textBlock' Text='{Binding}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
                 window.ApplyTemplate();
@@ -86,8 +84,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         </TextBox.Template>
     </TextBox>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var textBox = window.FindControl<TextBox>("textBox");
 
                 window.ApplyTemplate();

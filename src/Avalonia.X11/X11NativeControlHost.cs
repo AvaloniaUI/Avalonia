@@ -167,7 +167,7 @@ namespace Avalonia.X11
                     XUnmapWindow(_display, _holder.Handle);
                 }
 
-                size *= _attachedTo.Window.Scaling;
+                size *= _attachedTo.Window.RenderScaling;
                 XResizeWindow(_display, _child.Handle,
                     Math.Max(1, (int)size.Width), Math.Max(1, (int)size.Height));
             }
@@ -179,7 +179,7 @@ namespace Avalonia.X11
                 CheckDisposed();
                 if (_attachedTo == null)
                     throw new InvalidOperationException("The control isn't currently attached to a toplevel");
-                bounds *= _attachedTo.Window.Scaling;
+                bounds *= _attachedTo.Window.RenderScaling;
                 
                 var pixelRect = new PixelRect((int)bounds.X, (int)bounds.Y, Math.Max(1, (int)bounds.Width),
                     Math.Max(1, (int)bounds.Height));

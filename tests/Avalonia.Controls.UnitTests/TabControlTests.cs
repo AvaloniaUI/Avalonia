@@ -8,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -338,8 +339,7 @@ namespace Avalonia.Controls.UnitTests
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
     <TabControl Name='tabs' Items='{Binding Tabs}'/>
 </Window>";
-                var loader = new Markup.Xaml.AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var tabControl = window.FindControl<TabControl>("tabs");
 
                 tabControl.DataContext = new { Tabs = new List<string>() };

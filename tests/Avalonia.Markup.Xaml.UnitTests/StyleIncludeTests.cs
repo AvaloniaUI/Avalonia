@@ -28,12 +28,11 @@ namespace Avalonia.Markup.Xaml.UnitTests
     </Application.Styles>
 </Application>";
 
-                var loader = new AvaloniaXamlLoader();
                 var app = Application.Current;
 
                 try
                 {
-                    loader.Load(xaml, null, app);
+                    AvaloniaRuntimeXamlLoader.Load(xaml, null, app);
                 }
                 catch (KeyNotFoundException)
                 {
