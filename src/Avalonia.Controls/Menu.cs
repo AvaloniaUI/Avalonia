@@ -48,13 +48,6 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (_overlay?.InputPassThroughElement == this)
-            {
-                _overlay.InputPassThroughElement = null;
-            }
-
-            _overlay = null;
-
             foreach (var i in ((IMenu)this).SubItems)
             {
                 i.Close();
@@ -76,13 +69,6 @@ namespace Avalonia.Controls
             if (IsOpen)
             {
                 return;
-            }
-
-            _overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(this);
-
-            if (_overlay is object)
-            {
-                _overlay.InputPassThroughElement = this;
             }
 
             IsOpen = true;
