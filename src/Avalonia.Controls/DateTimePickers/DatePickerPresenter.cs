@@ -356,10 +356,17 @@ namespace Avalonia.Controls
             }
 
             if (MonthVisible)
+            {
                 _monthSelector.SelectedValue = dt.Month;
-
+                _monthSelector.FormatDate = dt.Date;
+            }
+               
             if (YearVisible)
+            {
                 _yearSelector.SelectedValue = dt.Year;
+                _yearSelector.FormatDate = dt.Date;
+            }
+                
             _suppressUpdateSelection = false;
 
             SetInitialFocus();
