@@ -52,13 +52,12 @@
             <Border Name="PART_SuggestionsContainer"
                     Padding="{DynamicResource AutoCompleteListMargin}"
                     BorderThickness="{DynamicResource AutoCompleteListBorderThemeThickness}"
-                    BorderBrush="{DynamicResource AutoSuggestBoxSuggestionsListBorderBrush}"
+                    BorderBrush="{DynamicResource AutoCompleteBoxSuggestionsListBorderBrush}"
                     Background="{DynamicResource AutoCompleteBoxSuggestionsListBackground}"
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
               <ListBox Name="PART_SelectingItemsControl"
                        BorderThickness="0"
                        Background="Transparent"
-                       Foreground="{DynamicResource AutoCompleteBoxSuggestionsListForeground}"
                        ItemTemplate="{TemplateBinding ItemTemplate}"
                        Margin="{DynamicResource AutoCompleteListPadding}" />
             </Border>
