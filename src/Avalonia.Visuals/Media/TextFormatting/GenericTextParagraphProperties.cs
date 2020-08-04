@@ -4,14 +4,12 @@
     {
         private TextAlignment _textAlignment;
         private TextWrapping _textWrapping;
-        private TextTrimming _textTrimming;
         private double _lineHeight;
 
         public GenericTextParagraphProperties(
             TextRunProperties defaultTextRunProperties,
             TextAlignment textAlignment = TextAlignment.Left,
-            TextWrapping textWrapping = TextWrapping.WrapWithOverflow,
-            TextTrimming textTrimming = TextTrimming.None,
+            TextWrapping textWrapping = TextWrapping.NoWrap,
             double lineHeight = 0)
         {
             DefaultTextRunProperties = defaultTextRunProperties;
@@ -19,8 +17,6 @@
             _textAlignment = textAlignment;
 
             _textWrapping = textWrapping;
-
-            _textTrimming = textTrimming;
 
             _lineHeight = lineHeight;
         }
@@ -30,8 +26,6 @@
         public override TextAlignment TextAlignment => _textAlignment;
 
         public override TextWrapping TextWrapping => _textWrapping;
-
-        public override TextTrimming TextTrimming => _textTrimming;
 
         public override double LineHeight => _lineHeight;
 
@@ -49,13 +43,6 @@
         internal void SetTextWrapping(TextWrapping textWrapping)
         {
             _textWrapping = textWrapping;
-        }
-        /// <summary>
-        /// Set text trimming
-        /// </summary>
-        internal void SetTextTrimming(TextTrimming textTrimming)
-        {
-            _textTrimming = textTrimming;
         }
 
         /// <summary>

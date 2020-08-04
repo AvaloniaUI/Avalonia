@@ -51,8 +51,7 @@ namespace Avalonia.Markup.Xaml.Styling
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    var loader = new AvaloniaXamlLoader();
-                    var loaded = (IStyle)loader.Load(Source, _baseUri);
+                    var loaded = (IStyle)AvaloniaXamlLoader.Load(Source, _baseUri);
                     _loaded = new[] { loaded };
                     _isLoading = false;
                 }

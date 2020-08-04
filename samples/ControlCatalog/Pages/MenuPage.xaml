@@ -20,7 +20,9 @@
                         <Separator/>
                         <MenuItem Header="Menu with _Submenu">
                             <MenuItem Header="Submenu _1"/>
-                            <MenuItem Header="Submenu _2"/>
+                            <MenuItem Header="Submenu _2 with Submenu">
+                                <MenuItem Header="Submenu Level 2" />
+                            </MenuItem>
                         </MenuItem>
                         <MenuItem Header="Menu Item with _Icon" InputGesture="Ctrl+Shift+B">
                             <MenuItem.Icon>
@@ -50,6 +52,33 @@
                             <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
                         </Style>
                     </Menu.Styles>
+                </Menu>
+            </StackPanel>
+        
+
+            <StackPanel>
+                <TextBlock Classes="h3" Margin="4 8">Mixed</TextBlock>
+                <Menu>
+                    <MenuItem Header="_File">
+                        <MenuItem Header="_New" CommandParameter="{Binding}" InputGesture="Ctrl+N"/>
+                        <Separator/>
+                        <MenuItem Header="_Open..." InputGesture="Ctrl+O"/>
+                        <Separator/>
+                        <MenuItem Header="Execu_te Script..." />
+                        <Separator/>
+                        <MenuItem Header="_Recent" Items="{Binding RecentItems}">
+                            <MenuItem.Styles>
+                                <Style Selector="MenuItem">
+                                    <Setter Property="Header" Value="{Binding Header}"/>
+                                </Style>
+                            </MenuItem.Styles>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="E_xit" InputGesture="Alt+F4"/>
+                    </MenuItem>
+                    <MenuItem Header="_Help">
+                        <MenuItem Header="_About"/>
+                    </MenuItem>
                 </Menu>
             </StackPanel>
         </StackPanel>

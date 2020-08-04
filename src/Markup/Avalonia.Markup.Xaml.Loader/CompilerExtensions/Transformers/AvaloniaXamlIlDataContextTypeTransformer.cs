@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using Avalonia.Markup.Parsers;
-using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
-using Avalonia.Utilities;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
@@ -129,12 +124,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             if (itemsCollectionType != null)
             {
-                var elementType = itemsCollectionType
-                    .GetAllInterfaces()
-                    .FirstOrDefault(i =>
-                        i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableT) == true)
-                    .GenericArguments[0];
-                return new AvaloniaXamlIlDataContextTypeMetadataNode(on, elementType);
+                foreach (var i in GetAllInterfacesIncludingSelf(itemsCollectionType))
+                {
+                    if (i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableT) == true)
+                    {
+                        return new AvaloniaXamlIlDataContextTypeMetadataNode(on, i.GenericArguments[0]);
+                    }
+                }
             }
             // We can't infer the collection type and the currently calculated type is definitely wrong.
             // Notify the user that we were unable to infer the data context type if they use a compiled binding.
@@ -164,6 +160,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             return new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
+        }
+
+        private static IEnumerable<IXamlType> GetAllInterfacesIncludingSelf(IXamlType type)
+        {
+            if (type.IsInterface)
+                yield return type;
+
+            foreach (var i in type.GetAllInterfaces())
+                yield return i;
         }
     }
 

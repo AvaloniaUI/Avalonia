@@ -355,7 +355,7 @@ namespace Avalonia.LeakTests
                 var renderer = new Mock<IRenderer>();
                 renderer.Setup(x => x.Dispose());
                 var impl = new Mock<IWindowImpl>();
-                impl.SetupGet(x => x.Scaling).Returns(1);
+                impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
                 impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());

@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\Moq.props" />

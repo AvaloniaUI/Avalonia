@@ -6,8 +6,6 @@
     <GridLength x:Key="ToggleSwitchPreContentMargin">6</GridLength>
     <GridLength x:Key="ToggleSwitchPostContentMargin">6</GridLength>
     <x:Double x:Key="ToggleSwitchThemeMinWidth">154</x:Double>
-    <x:Double x:Key="KnobOnPosition">20</x:Double>
-    <x:Double x:Key="KnobOffPosition">0</x:Double>
   </Styles.Resources>
   <Design.PreviewWith>
     <StackPanel Margin="20" Width="250" Spacing="24" >
@@ -43,7 +41,8 @@
     <Setter Property="Foreground" Value="{DynamicResource ToggleSwitchContentForeground}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="HorizontalContentAlignment" Value="Left" />    
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -147,12 +146,10 @@
 
   <Style Selector="ToggleSwitch /template/ Ellipse#SwitchKnobOn">
     <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOn}"/>
-    <Setter Property="Stroke" Value="{DynamicResource ToggleSwitchKnobStrokeOn}"/>
   </Style>
 
   <Style Selector="ToggleSwitch /template/ Ellipse#SwitchKnobOff">
     <Setter Property="Fill" Value="{DynamicResource ToggleSwitchKnobFillOff}"/>
-    <Setter Property="Stroke" Value="{DynamicResource ToggleSwitchKnobStrokeOff}"/>
   </Style>
 
   <Style Selector="ToggleSwitch:not(:dragging) /template/ Grid#MovingKnobs">

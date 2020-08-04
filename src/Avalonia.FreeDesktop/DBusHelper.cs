@@ -43,7 +43,7 @@ namespace Avalonia.FreeDesktop
             public void Initialized()
             {
                 lock (_lock)
-                    _ctx = new AvaloniaSynchronizationContext();
+                    _ctx = new AvaloniaSynchronizationContext(null);
             }
         }
         public static Connection Connection { get; private set; }

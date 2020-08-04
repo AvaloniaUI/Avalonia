@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -31,12 +32,37 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var nextCharacterHit = new CharacterHit(0);
 
-                for (var i = 1; i < clusters.Length; i++)
+                for (var i = 0; i < clusters.Length; i++)
                 {
-                    nextCharacterHit = textLine.GetNextCaretCharacterHit(nextCharacterHit);
+                    Assert.Equal(clusters[i], nextCharacterHit.FirstCharacterIndex);
 
-                    Assert.Equal(clusters[i], nextCharacterHit.FirstCharacterIndex + nextCharacterHit.TrailingLength);
+                    nextCharacterHit = textLine.GetNextCaretCharacterHit(nextCharacterHit);
                 }
+
+                var lastCharacterHit = nextCharacterHit;
+
+                nextCharacterHit = textLine.GetNextCaretCharacterHit(lastCharacterHit);
+
+                Assert.Equal(lastCharacterHit.FirstCharacterIndex, nextCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(lastCharacterHit.TrailingLength, nextCharacterHit.TrailingLength);
+
+                nextCharacterHit = new CharacterHit(0, clusters[1] - clusters[0]);
+
+                for (var i = 0; i < clusters.Length; i++)
+                {
+                    Assert.Equal(clusters[i], nextCharacterHit.FirstCharacterIndex);
+
+                    nextCharacterHit = textLine.GetNextCaretCharacterHit(nextCharacterHit);
+                }
+
+                lastCharacterHit = nextCharacterHit;
+
+                nextCharacterHit = textLine.GetNextCaretCharacterHit(lastCharacterHit);
+
+                Assert.Equal(lastCharacterHit.FirstCharacterIndex, nextCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(lastCharacterHit.TrailingLength, nextCharacterHit.TrailingLength);
             }
         }
 
@@ -60,14 +86,41 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var clusters = textLine.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.GlyphRun.GlyphClusters)
                     .ToArray();
 
-                var previousCharacterHit = new CharacterHit(clusters[^1]);
+                var previousCharacterHit = new CharacterHit(text.Length);
 
-                for (var i = clusters.Length - 2; i > 0; i--)
+                for (var i = clusters.Length - 1; i >= 0; i--)
                 {
                     previousCharacterHit = textLine.GetPreviousCaretCharacterHit(previousCharacterHit);
 
-                    Assert.Equal(clusters[i], previousCharacterHit.FirstCharacterIndex);
+                    Assert.Equal(clusters[i],
+                        previousCharacterHit.FirstCharacterIndex + previousCharacterHit.TrailingLength);
                 }
+
+                var firstCharacterHit = previousCharacterHit;
+
+                previousCharacterHit = textLine.GetPreviousCaretCharacterHit(firstCharacterHit);
+
+                Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(0, previousCharacterHit.TrailingLength);
+
+                previousCharacterHit = new CharacterHit(clusters[^1], text.Length - clusters[^1]);
+
+                for (var i = clusters.Length - 1; i > 0; i--)
+                {
+                    previousCharacterHit = textLine.GetPreviousCaretCharacterHit(previousCharacterHit);
+
+                    Assert.Equal(clusters[i],
+                        previousCharacterHit.FirstCharacterIndex + previousCharacterHit.TrailingLength);
+                }
+
+                firstCharacterHit = previousCharacterHit;
+
+                previousCharacterHit = textLine.GetPreviousCaretCharacterHit(firstCharacterHit);
+
+                Assert.Equal(firstCharacterHit.FirstCharacterIndex, previousCharacterHit.FirstCharacterIndex);
+
+                Assert.Equal(0, previousCharacterHit.TrailingLength);
             }
         }
 
@@ -159,6 +212,64 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 characterHit = textLine.GetCharacterHitFromDistance(textLine.LineMetrics.Size.Width);
 
                 Assert.Equal(MultiBufferTextSource.TextRange.End, characterHit.FirstCharacterIndex);
+            }
+        }
+
+        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingCharacter, "01234 0\u2026")]
+        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingWord, "01234 \u2026")]
+        [Theory]
+        public void Should_Collapse_Line(string text, int numberOfCharacters, TextCollapsingStyle style, string expected)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.False(textLine.HasCollapsed);
+
+                var glyphTypeface = Typeface.Default.GlyphTypeface;
+
+                var scale = defaultProperties.FontRenderingEmSize / glyphTypeface.DesignEmHeight;
+
+                var width = 1.0;
+
+                for (var i = 0; i < numberOfCharacters; i++)
+                {
+                    var glyph = glyphTypeface.GetGlyph(text[i]);
+
+                    width += glyphTypeface.GetGlyphAdvance(glyph) * scale;
+                }
+
+                TextCollapsingProperties collapsingProperties;
+
+                if (style == TextCollapsingStyle.TrailingCharacter)
+                {
+                    collapsingProperties = new TextTrailingCharacterEllipsis(width, defaultProperties);
+                }
+                else
+                {
+                    collapsingProperties = new TextTrailingWordEllipsis(width, defaultProperties);
+                }
+
+                var collapsedLine = textLine.Collapse(collapsingProperties);
+
+                Assert.True(collapsedLine.HasCollapsed);
+
+                var trimmedText = collapsedLine.TextRuns.SelectMany(x => x.Text).ToArray();
+
+                Assert.Equal(expected.Length, trimmedText.Length);
+
+                for (var i = 0; i < expected.Length; i++)
+                {
+                    Assert.Equal(expected[i], trimmedText[i]);
+                }
             }
         }
 

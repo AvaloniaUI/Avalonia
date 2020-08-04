@@ -81,7 +81,7 @@ namespace Avalonia.Native
                 _glSurface = new GlPlatformSurface(window, _glContext);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
-            _savedScaling = Scaling;
+            _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
@@ -300,7 +300,15 @@ namespace Avalonia.Native
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             if (_deferredRendering)
-                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+            {
+                var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+                var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+
+                if (customRendererFactory != null)
+                    return customRendererFactory.Create(root, loop);
+                return new DeferredRenderer(root, loop);
+            }
+
             return new ImmediateRenderer(root);
         }
 
@@ -369,7 +377,9 @@ namespace Avalonia.Native
             _native.SetTopMost(value);
         }
 
-        public double Scaling => _native?.GetScaling() ?? 1;
+        public double RenderScaling => _native?.GetScaling() ?? 1;
+
+        public double DesktopScaling => 1;
 
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
@@ -432,7 +442,7 @@ namespace Avalonia.Native
 
                 TransparencyLevel = transparencyLevel;
 
-                _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                _native?.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }

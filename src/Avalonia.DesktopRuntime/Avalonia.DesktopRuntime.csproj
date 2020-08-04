@@ -17,4 +17,5 @@
   <Import Project="..\..\build\NetCore.props" />
   <Import Project="..\..\build\NetFX.props" />
   <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" />
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>
