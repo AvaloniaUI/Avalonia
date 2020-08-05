@@ -323,9 +323,6 @@ namespace Avalonia.Controls
             {
                 Command.CanExecuteChanged -= CanExecuteChanged;
             }
-
-            _gridHack?.Dispose();
-            _gridHack = null;
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -349,6 +346,14 @@ namespace Avalonia.Controls
                     DefinitionBase.PrivateSharedSizeScopeProperty,
                     parent.GetBindingObservable(DefinitionBase.PrivateSharedSizeScopeProperty));
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _gridHack?.Dispose();
+            _gridHack = null;
         }
 
         /// <summary>
