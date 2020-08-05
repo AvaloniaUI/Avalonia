@@ -1,5 +1,16 @@
 <Style xmlns="https://github.com/avaloniaui" 
-       Selector="DataValidationErrors">
+       Selector="DataValidationErrors"
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Design.PreviewWith>
+    <Border Padding="20"> 
+      <TextBox Text="Sample">
+        <DataValidationErrors.Error>
+          <sys:Exception/> 
+        </DataValidationErrors.Error>
+      </TextBox>
+    </Border>
+  </Design.PreviewWith>
+    
   <Setter Property="Template">
     <ControlTemplate>
       <DockPanel LastChildFill="True">
@@ -24,14 +35,13 @@
               Background="Transparent">
         <Canvas.Styles>
           <Style Selector="ToolTip">
-            <Setter Property="Background" Value="{DynamicResource ErrorLowBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
           </Style>
         </Canvas.Styles>
         <ToolTip.Tip>
           <ItemsControl Items="{Binding}"/>
         </ToolTip.Tip>
-        <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2" Stroke="{DynamicResource ErrorBrush}" StrokeThickness="2"/>
+        <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2" Stroke="{DynamicResource SystemControlErrorTextForegroundBrush}" StrokeThickness="2"/>
       </Canvas>
     </DataTemplate>
   </Setter>

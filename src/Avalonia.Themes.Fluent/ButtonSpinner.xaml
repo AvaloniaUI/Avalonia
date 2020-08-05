@@ -8,7 +8,11 @@
       <StackPanel Spacing="20">
         <ButtonSpinner ButtonSpinnerLocation="Right"
                        Content="Right disabled inline spinner"
-                       AllowSpin="False" />
+                       AllowSpin="False">
+          <DataValidationErrors.Error>
+            <sys:Exception />
+          </DataValidationErrors.Error>
+        </ButtonSpinner>
         <ButtonSpinner ButtonSpinnerLocation="Left"
                        Content="Left spinner" />
         <ButtonSpinner ShowButtonSpinner="False"
@@ -133,7 +137,7 @@
 
   <!--  Error state  -->
   <Style Selector="ButtonSpinner:error">
-    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemErrorTextColor}" />
   </Style>
 
 </Styles>
