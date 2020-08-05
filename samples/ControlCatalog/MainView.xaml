@@ -1,9 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="ControlCatalog.MainView"
-        Foreground="{DynamicResource ThemeForegroundBrush}"
-        FontSize="{DynamicResource FontSizeNormal}">
+        x:Class="ControlCatalog.MainView">
   <Grid>
     <Grid.Styles>
         <Style Selector="TextBlock.h2">
