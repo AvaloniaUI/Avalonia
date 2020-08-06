@@ -67,7 +67,7 @@
 
   <!-- Adjusted :selected to look like :today from DayItem -->
   <Style Selector="CalendarButton:selected /template/ Border#Root">
-    <Setter Property="Background" Value="{DynamicResource SystemAccentBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SystemAccentColor}"/>
   </Style>
   <Style Selector="CalendarButton:selected /template/ Border#Border">
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewSelectedBorderBrush}"/>

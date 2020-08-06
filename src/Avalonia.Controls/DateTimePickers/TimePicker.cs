@@ -15,7 +15,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="MinuteIncrement"/> property
         /// </summary>
         public static readonly DirectProperty<TimePicker, int> MinuteIncrementProperty =
-            AvaloniaProperty.RegisterDirect<TimePicker, int>(nameof(MinuteIncrement), 
+            AvaloniaProperty.RegisterDirect<TimePicker, int>(nameof(MinuteIncrement),
                 x => x.MinuteIncrement, (x, v) => x.MinuteIncrement = v);
 
         /// <summary>
@@ -34,17 +34,17 @@ namespace Avalonia.Controls
         /// Defines the <see cref="ClockIdentifier"/> property
         /// </summary>
         public static readonly DirectProperty<TimePicker, string> ClockIdentifierProperty =
-           AvaloniaProperty.RegisterDirect<TimePicker, string>(nameof(ClockIdentifier), 
+           AvaloniaProperty.RegisterDirect<TimePicker, string>(nameof(ClockIdentifier),
                x => x.ClockIdentifier, (x, v) => x.ClockIdentifier = v);
 
         /// <summary>
         /// Defines the <see cref="SelectedTime"/> property
         /// </summary>
         public static readonly DirectProperty<TimePicker, TimeSpan?> SelectedTimeProperty =
-            AvaloniaProperty.RegisterDirect<TimePicker, TimeSpan?>(nameof(SelectedTime), 
+            AvaloniaProperty.RegisterDirect<TimePicker, TimeSpan?>(nameof(SelectedTime),
                 x => x.SelectedTime, (x, v) => x.SelectedTime = v);
 
-        //Template Items
+        // Template Items
         private TimePickerPresenter _presenter;
         private Button _flyoutButton;
         private Border _firstPickerHost;
@@ -52,7 +52,7 @@ namespace Avalonia.Controls
         private Border _thirdPickerHost;
         private TextBlock _hourText;
         private TextBlock _minuteText;
-        public TextBlock _periodText;
+        private TextBlock _periodText;
         private Rectangle _firstSplitter;
         private Rectangle _secondSplitter;
         private Grid _contentGrid;
@@ -145,7 +145,7 @@ namespace Avalonia.Controls
             if (_flyoutButton != null)
                 _flyoutButton.Click -= OnFlyoutButtonClicked;
 
-            if(_presenter != null)
+            if (_presenter != null)
             {
                 _presenter.Confirmed -= OnConfirmed;
                 _presenter.Dismissed -= OnDismissPicker;
@@ -170,7 +170,6 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Find<Popup>("Popup");
             _presenter = e.NameScope.Find<TimePickerPresenter>("PickerPresenter");
 
-
             if (_flyoutButton != null)
                 _flyoutButton.Click += OnFlyoutButtonClicked;
 
@@ -185,7 +184,6 @@ namespace Avalonia.Controls
                 _presenter[!TimePickerPresenter.MinuteIncrementProperty] = this[!MinuteIncrementProperty];
                 _presenter[!TimePickerPresenter.ClockIdentifierProperty] = this[!ClockIdentifierProperty];
             }
-
         }
 
         private void SetGrid()
@@ -195,30 +193,19 @@ namespace Avalonia.Controls
 
             bool use24HourClock = ClockIdentifier == "24HourClock";
 
-            if (!use24HourClock)
-            {
-                _contentGrid.ColumnDefinitions = new ColumnDefinitions("*,Auto,*,Auto,*");
-                _thirdPickerHost.IsVisible = true;
-                _secondSplitter.IsVisible = true;
+            var columnsD = use24HourClock ? "*, Auto, *" : "*, Auto, *, Auto, *";
+            _contentGrid.ColumnDefinitions = new ColumnDefinitions(columnsD);
 
-                Grid.SetColumn(_firstPickerHost, 0);
-                Grid.SetColumn(_secondPickerHost, 2);
-                Grid.SetColumn(_thirdPickerHost, 4);
+            _thirdPickerHost.IsVisible = !use24HourClock;
+            _secondSplitter.IsVisible = !use24HourClock;
 
-                Grid.SetColumn(_firstSplitter, 1);
-                Grid.SetColumn(_secondSplitter, 3);
-            }
-            else
-            {
-                _contentGrid.ColumnDefinitions = new ColumnDefinitions("*,Auto,*");
-                _thirdPickerHost.IsVisible = false;
-                _secondSplitter.IsVisible = false;
+            Grid.SetColumn(_firstPickerHost, 0);
+            Grid.SetColumn(_secondPickerHost, 2);
 
-                Grid.SetColumn(_firstPickerHost, 0);
-                Grid.SetColumn(_secondPickerHost, 2);
+            Grid.SetColumn(_thirdPickerHost, use24HourClock ? 0 : 4);
 
-                Grid.SetColumn(_firstSplitter, 1);
-            }
+            Grid.SetColumn(_firstSplitter, 1);
+            Grid.SetColumn(_secondSplitter, use24HourClock ? 0 : 3);
         }
 
         private void SetSelectedTimeText()
@@ -237,14 +224,13 @@ namespace Avalonia.Controls
                     hr = hr > 12 ? hr - 12 : hr == 0 ? 12 : hr;
                     newTime = new TimeSpan(hr, newTime.Minutes, 0);
                 }
-                _hourText.Text = newTime.ToString("%h");
 
+                _hourText.Text = newTime.ToString("%h");
                 _minuteText.Text = newTime.ToString("mm");
                 PseudoClasses.Set(":hasnotime", false);
 
                 _periodText.Text = time.Value.Hours >= 12 ? CultureInfo.CurrentCulture.DateTimeFormat.PMDesignator :
                     CultureInfo.CurrentCulture.DateTimeFormat.AMDesignator;
-
             }
             else
             {
@@ -262,7 +248,7 @@ namespace Avalonia.Controls
             SelectedTimeChanged?.Invoke(this, new TimePickerSelectedValueChangedEventArgs(oldTime, newTime));
         }
 
-        private void OnFlyoutButtonClicked(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void OnFlyoutButtonClicked(object sender, Interactivity.RoutedEventArgs e)
         {
             _presenter.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
 
@@ -270,7 +256,7 @@ namespace Avalonia.Controls
 
             var deltaY = _presenter.GetOffsetForPopup();
 
-            //The extra 5 px I think is related to default popup placement behavior
+            // The extra 5 px I think is related to default popup placement behavior
             _popup.Host.ConfigurePosition(_popup.PlacementTarget, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
                 Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
                  Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
@@ -287,6 +273,5 @@ namespace Avalonia.Controls
             _popup.Close();
             SelectedTime = _presenter.Time;
         }
-
     }
 }

@@ -66,6 +66,7 @@ namespace Avalonia.Controls
         static ToolTip()
         {
             TipProperty.Changed.Subscribe(ToolTipService.Instance.TipChanged);
+            IsOpenProperty.Changed.Subscribe(ToolTipService.Instance.TipOpenChanged);
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
         }
 

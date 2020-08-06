@@ -63,8 +63,18 @@ namespace ControlCatalog
             // TODO: iOS does not support dynamically loading assemblies
             // so we must refer to this resource DLL statically. For
             // now I am doing that here. But we need a better solution!!
-            var theme = new Avalonia.Themes.Default.DefaultTheme();
-            theme.TryGetResource("Button", out _);
+            // Note, theme swiching probably will not work in runtime for iOS.
+            if (Application.Current.Styles.Contains(App.FluentDark)
+                || Application.Current.Styles.Contains(App.FluentLight))
+            {
+                var theme = new Avalonia.Themes.Fluent.FluentTheme();
+                theme.TryGetResource("Button", out _);
+            }
+            else
+            {
+                var theme = new Avalonia.Themes.Default.DefaultTheme();
+                theme.TryGetResource("Button", out _);
+            }
             AvaloniaXamlLoader.Load(this);
         }
     }

@@ -13,6 +13,10 @@
       <CalendarDatePicker/>
     </Border>
   </Design.PreviewWith>
+
+  <Styles.Resources>
+    <sys:Double x:Key="CalendarDatePickerCurrentDayFontSize">12</sys:Double>
+  </Styles.Resources>
   
   <Style Selector="CalendarDatePicker">
 
@@ -70,7 +74,7 @@
                                Grid.Row="1"
                                Grid.ColumnSpan="4"
                                Grid.RowSpan="3"
-                               FontSize="{DynamicResource FontSizeSmall}"
+                               FontSize="{StaticResource CalendarDatePickerCurrentDayFontSize}"
                                Text="{Binding Source={x:Static sys:DateTime.Today}, Path=Day}"/>
 
                     <Ellipse HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" StrokeThickness="0" Grid.ColumnSpan="4" Width="3" Height="3"/>
