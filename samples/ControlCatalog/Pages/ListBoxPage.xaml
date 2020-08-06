@@ -11,8 +11,7 @@
               Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8">
         <ListBox Items="{Binding Items}"
-                 SelectedItem="{Binding SelectedItem}"
-                 SelectedItems="{Binding SelectedItems}"
+                 Selection="{Binding Selection}"
                  AutoScrollToSelectedItem="True"
                  SelectionMode="{Binding SelectionMode}"
                  Width="250"
