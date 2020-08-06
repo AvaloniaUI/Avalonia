@@ -6,9 +6,9 @@ namespace Avalonia.Media.TextFormatting
 {
     internal class TextLineImpl : TextLine
     {
-        private readonly IReadOnlyList<ShapedTextCharacters> _textRuns;
+        private readonly List<ShapedTextCharacters> _textRuns;
 
-        public TextLineImpl(IReadOnlyList<ShapedTextCharacters> textRuns, TextLineMetrics lineMetrics,
+        public TextLineImpl(List<ShapedTextCharacters> textRuns, TextLineMetrics lineMetrics,
             TextLineBreak lineBreak = null, bool hasCollapsed = false)
         {
             _textRuns = textRuns;
