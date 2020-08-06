@@ -212,6 +212,86 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Row_Definition_Cardinality_Change_Triggers_Measure_In_Child()
+        {
+            var target = new Grid
+            {
+                Height = 100,
+                RowDefinitions = new RowDefinitions("*,*"),
+                Children =
+                {
+                    new Panel
+                    {
+                        [Grid.RowProperty] = 0,
+                        [Grid.RowSpanProperty] = 1,
+                    },
+                    new Panel
+                    {
+                        [Grid.RowProperty] = 1,
+                        [Grid.RowSpanProperty] = 1,
+                    },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.True(target.IsMeasureValid);
+
+            Assert.Equal(50, target.Children[0].Bounds.Height);
+            Assert.Equal(50, target.Children[1].Bounds.Height);
+
+            target.RowDefinitions = new RowDefinitions("*");
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.True(target.IsMeasureValid);
+
+            Assert.Equal(100, target.Children[0].Bounds.Height);
+            Assert.Equal(100, target.Children[1].Bounds.Height);
+        }
+
+
+        [Fact]
+        public void Column_Definition_Cardinality_Change_Triggers_Measure_In_Child()
+        {
+            var target = new Grid
+            {
+                Width = 100,
+                ColumnDefinitions = new ColumnDefinitions("*,*"),
+                Children =
+                {
+                    new Panel
+                    {
+                        [Grid.ColumnProperty] = 0,
+                        [Grid.ColumnSpanProperty] = 1,
+                    },
+                    new Panel
+                    {
+                        [Grid.ColumnProperty] = 1,
+                        [Grid.ColumnSpanProperty] = 1,
+                    },
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.True(target.IsMeasureValid);
+
+            Assert.Equal(50, target.Children[0].Bounds.Width);
+            Assert.Equal(50, target.Children[1].Bounds.Width);
+
+            target.ColumnDefinitions = new ColumnDefinitions("*");
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.True(target.IsMeasureValid);
+
+            Assert.Equal(100, target.Children[0].Bounds.Width);
+            Assert.Equal(100, target.Children[1].Bounds.Width);
+        }
+
+        [Fact]
         public void Changing_Child_Column_Invalidates_Measure()
         {
             Border child;
