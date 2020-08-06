@@ -136,7 +136,8 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.KeyModifiers & KeyModifiers.Shift) != 0);
+                    (e.KeyModifiers & KeyModifiers.Shift) != 0,
+                    (e.KeyModifiers & KeyModifiers.Control) != 0);
             }
         }
 
