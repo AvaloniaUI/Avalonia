@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Moq;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.UnitTests
 {

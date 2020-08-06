@@ -1,0 +1,7 @@
+Compat issues with assembly Avalonia.Controls:
+MembersMustExist : Member 'protected void Avalonia.Controls.ComboBox.PopupClosedOverride(Avalonia.Controls.Primitives.PopupClosedEventArgs)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<System.Boolean> Avalonia.StyledProperty<System.Boolean> Avalonia.Controls.Primitives.Popup.StaysOpenProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.Primitives.Popup.add_Closed(System.EventHandler<Avalonia.Controls.Primitives.PopupClosedEventArgs>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.Primitives.Popup.remove_Closed(System.EventHandler<Avalonia.Controls.Primitives.PopupClosedEventArgs>)' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Controls.Primitives.PopupClosedEventArgs' does not exist in the implementation but it does exist in the contract.
+Total Issues: 5
