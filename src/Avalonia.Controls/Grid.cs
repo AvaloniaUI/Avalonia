@@ -44,6 +44,23 @@ namespace Avalonia.Controls
         /// </summary>
         public Grid()
         {
+            RowDefinitions.CollectionChanged += RowDefColChanged;
+            ColumnDefinitions.CollectionChanged += ColDefColChanged;
+        }
+
+        private void ColDefColChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            CheckAndSetIfDefListMakesGridTrivial(ColumnDefinitions);
+        }
+
+        private void RowDefColChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            CheckAndSetIfDefListMakesGridTrivial(RowDefinitions);
+        }
+
+        void CheckAndSetIfDefListMakesGridTrivial(IReadOnlyList<DefinitionBase> defList)
+        {
+            GridIsTrivial = !(defList.Count > 1);
         }
 
         /// <summary>
@@ -215,6 +232,8 @@ namespace Avalonia.Controls
             }
         }
 
+        bool GridIsTrivial = true;
+
         /// <summary>
         /// Content measurement.
         /// </summary>
@@ -230,7 +249,7 @@ namespace Avalonia.Controls
                 ListenToNotifications = true;
                 MeasureOverrideInProgress = true;
 
-                if (extData == null)
+                if (GridIsTrivial)
                 {
                     gridDesiredSize = new Size();
                     var children = this.Children;
@@ -534,7 +553,7 @@ namespace Avalonia.Controls
             {
                 ArrangeOverrideInProgress = true;
 
-                if (_data == null)
+                if (GridIsTrivial)
                 {
                     var children = this.Children;
 
@@ -2454,6 +2473,10 @@ namespace Avalonia.Controls
             colDef.IsDirty = true;
             colDef.Parent = target;
             target._data.ColumnDefinitions = colDef;
+
+
+
+            target.GridIsTrivial = colDef.Count == 0;
         }
 
         private static void RowDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs rowDef)
@@ -2477,7 +2500,12 @@ namespace Avalonia.Controls
             rowDef.IsDirty = true;
             rowDef.Parent = target;
             target._data.RowDefinitions = rowDef;
+
+            target.GridIsTrivial = rowDef.Count == 0;
+
         }
+
+
 
         /// <summary>
         /// Helper for Comparer methods.
@@ -2617,7 +2645,7 @@ namespace Avalonia.Controls
             get { return (!CheckFlagsAnd(Flags.ValidCellsStructure)); }
             set { SetFlags(!value, Flags.ValidCellsStructure); }
         }
- 
+
         /// <summary>
         /// Convenience accessor to ListenToNotifications bit flag.
         /// </summary>
