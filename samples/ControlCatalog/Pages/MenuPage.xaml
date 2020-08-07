@@ -16,8 +16,8 @@
                 <TextBlock Classes="h3" Margin="4 8">Defined in XAML</TextBlock>
                 <Menu>
                     <MenuItem Header="_First">
-                        <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A"/>
-                        <MenuItem Header="_Disabled Menu Item" IsEnabled="False" />
+                        <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
+                        <MenuItem Header="_Disabled Menu Item" IsEnabled="False" InputGesture="Ctrl+D" />
                         <Separator/>
                         <MenuItem Header="Menu with _Submenu">
                             <MenuItem Header="Submenu _1"/>
