@@ -469,13 +469,7 @@ namespace Avalonia.Controls
                     parent = parent.VisualParent;
                 }
 
-                if (_scroller == null)
-                {
-                    // We usually update the viewport in the post arrange handler. But, since we don't have
-                    // a scroller, let's do it now.
-                    UpdateViewport(Rect.Empty);
-                }
-                else if (!_managingViewportDisabled)
+                if (!_managingViewportDisabled)
                 {
                     _owner.EffectiveViewportChanged += OnEffectiveViewportChanged;
                     _effectiveViewportChangedSubscribed = true;
