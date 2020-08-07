@@ -1647,17 +1647,12 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The source object.</param>
         /// <param name="e">The event data.</param>
-        private void DropDownPopup_Closed(object sender, PopupClosedEventArgs e)
+        private void DropDownPopup_Closed(object sender, EventArgs e)
         {
             // Force the drop down dependency property to be false.
             if (IsDropDownOpen)
             {
                 IsDropDownOpen = false;
-            }
-
-            if (e.CloseEvent is PointerEventArgs pointerEvent)
-            {
-                pointerEvent.Handled = true;
             }
 
             // Fire the DropDownClosed event
