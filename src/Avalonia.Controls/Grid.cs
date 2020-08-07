@@ -44,6 +44,13 @@ namespace Avalonia.Controls
         /// </summary>
         public Grid()
         {
+            _data = new ExtendedData();
+
+            _data.RowDefinitions = new RowDefinitions() { Parent = this };
+            RowDefinitions = _data.RowDefinitions;
+
+            _data.ColumnDefinitions = new ColumnDefinitions() { Parent = this };
+            ColumnDefinitions = _data.ColumnDefinitions;
         }
 
         /// <summary>
@@ -174,15 +181,6 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_data is null)
-                    _data = new ExtendedData();
-
-                if (_data.ColumnDefinitions is null)
-                {
-                    _data.ColumnDefinitions = new ColumnDefinitions() { Parent = this };
-                    SetValue(ColumnDefinitionsProperty, _data.ColumnDefinitions);
-                }
-
                 return GetValue(ColumnDefinitionsProperty);
             }
             set
@@ -199,13 +197,6 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_data == null) { _data = new ExtendedData(); }
-                if (_data.RowDefinitions == null)
-                {
-                    _data.RowDefinitions = new RowDefinitions() { Parent = this };
-                    SetValue(RowDefinitionsProperty, _data.RowDefinitions);
-                }
-
                 return GetValue(RowDefinitionsProperty);
             }
             set
@@ -2617,7 +2608,7 @@ namespace Avalonia.Controls
             get { return (!CheckFlagsAnd(Flags.ValidCellsStructure)); }
             set { SetFlags(!value, Flags.ValidCellsStructure); }
         }
- 
+
         /// <summary>
         /// Convenience accessor to ListenToNotifications bit flag.
         /// </summary>
