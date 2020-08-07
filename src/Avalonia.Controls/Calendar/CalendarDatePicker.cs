@@ -889,17 +889,12 @@ namespace Avalonia.Controls
                 _ignoreButtonClick = false;
             }
         }
-        private void PopUp_Closed(object sender, PopupClosedEventArgs e)
+        private void PopUp_Closed(object sender, EventArgs e)
         {
             IsDropDownOpen = false;
 
             if(!_isPopupClosing)
             {
-                if (e.CloseEvent is PointerEventArgs pointerEvent)
-                {
-                    pointerEvent.Handled = true;
-                }
-
                 _isPopupClosing = true;
                 Threading.Dispatcher.UIThread.InvokeAsync(() => _isPopupClosing = false);
             }
