@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 using Xunit.Abstractions;
@@ -1689,6 +1690,94 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(grid.IsArrangeValid);
 
             Assert.Equal(100, grid.Children[0].Bounds.Width);
+        }
+
+        [Fact]
+        public void Setting_ColumnDefinition_via_Styles_Should_Apply()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var grid = new Grid();
+
+                var root = new TestRoot
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<Grid>())
+                        {
+                            Setters =
+                            {
+                                new Setter(Grid.ColumnDefinitionsProperty, ColumnDefinitions.Parse("*,*"))
+                            }
+                        }
+                    },
+                    Child = grid,
+                };
+
+                grid.Children.Add(new Panel()
+                {
+                    [Grid.ColumnProperty] = 0,
+                    [Grid.ColumnSpanProperty] = 1
+                });
+
+                grid.Children.Add(new Panel()
+                {
+                    [Grid.ColumnProperty] = 1,
+                    [Grid.ColumnSpanProperty] = 1
+                });
+
+                var size = new Size(100, 100);
+
+                grid.Measure(size);
+
+                grid.Arrange(new Rect(size));
+
+                Assert.Equal(50, grid.Children[0].Bounds.Width);
+                Assert.Equal(50, grid.Children[1].Bounds.Width);
+            }
+        }
+
+        [Fact]
+        public void Setting_RowDefinition_via_Styles_Should_Apply()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var grid = new Grid();
+
+                var root = new TestRoot
+                {
+                    Styles =
+                    {
+                        new Style(x => x.OfType<Grid>())
+                        {
+                            Setters =
+                            {
+                                new Setter(Grid.RowDefinitionsProperty, RowDefinitions.Parse("*,*"))
+                            }
+                        }
+                    },
+                    Child = grid,
+                };
+
+                grid.Children.Add(new Panel()
+                {
+                    [Grid.RowProperty] = 0,
+                    [Grid.RowSpanProperty] = 1
+                });
+
+                grid.Children.Add(new Panel()
+                {
+                    [Grid.RowProperty] = 1,
+                    [Grid.RowSpanProperty] = 1
+                });
+
+                var size = new Size(100, 100);
+                grid.Measure(size);
+                grid.Arrange(new Rect(size));
+
+                Assert.Equal(50, grid.Children[0].Bounds.Height);
+                Assert.Equal(50, grid.Children[1].Bounds.Height);
+            }
         }
 
         [Fact]
