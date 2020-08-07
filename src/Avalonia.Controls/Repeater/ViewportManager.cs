@@ -350,11 +350,14 @@ namespace Avalonia.Controls
                 }
 
                 // Make sure that only the target child can be the anchor during the bring into view operation.
-                foreach (var child in _owner.Children)
+                if (_scroller is object)
                 {
-                    if (child != targetChild)
+                    foreach (var child in _owner.Children)
                     {
-                        _scroller.UnregisterAnchorCandidate(child);
+                        if (child != targetChild)
+                        {
+                            _scroller.UnregisterAnchorCandidate(child);
+                        }
                     }
                 }
 
