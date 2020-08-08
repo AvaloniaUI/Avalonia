@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Threading;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
@@ -44,6 +45,9 @@ namespace Avalonia.Controls
         /// </summary>
         public Grid()
         {
+            SetValue(ColumnDefinitionsProperty, new ColumnDefinitions() { Parent = this }, BindingPriority.TemplatedParent);
+            SetValue(RowDefinitionsProperty, new RowDefinitions() { Parent = this }, BindingPriority.TemplatedParent);
+ 
             RowDefinitions.CollectionChanged += RowDefColChanged;
             ColumnDefinitions.CollectionChanged += ColDefColChanged;
         }
@@ -60,7 +64,7 @@ namespace Avalonia.Controls
 
         void CheckAndSetIfDefListMakesGridTrivial(IReadOnlyList<DefinitionBase> defList)
         {
-            GridIsTrivial = !(defList.Count > 1);
+            GridIsTrivial = !(defList.Count > 0);
         }
 
         /// <summary>
@@ -189,24 +193,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ColumnDefinitions ColumnDefinitions
         {
-            get
-            {
-                if (_data is null)
-                    _data = new ExtendedData();
-
-                if (_data.ColumnDefinitions is null)
-                {
-                    _data.ColumnDefinitions = new ColumnDefinitions() { Parent = this };
-                    SetValue(ColumnDefinitionsProperty, _data.ColumnDefinitions);
-                }
-
-                return GetValue(ColumnDefinitionsProperty);
-            }
-            set
-            {
-                SynchronizeColumnDefinitions(this, value);
-                SetValue(ColumnDefinitionsProperty, _data.ColumnDefinitions);
-            }
+            get { return GetValue(ColumnDefinitionsProperty); }
+            set { SetValue(ColumnDefinitionsProperty, value); }
         }
 
         /// <summary>
@@ -214,22 +202,8 @@ namespace Avalonia.Controls
         /// </summary>
         public RowDefinitions RowDefinitions
         {
-            get
-            {
-                if (_data == null) { _data = new ExtendedData(); }
-                if (_data.RowDefinitions == null)
-                {
-                    _data.RowDefinitions = new RowDefinitions() { Parent = this };
-                    SetValue(RowDefinitionsProperty, _data.RowDefinitions);
-                }
-
-                return GetValue(RowDefinitionsProperty);
-            }
-            set
-            {
-                SynchronizeRowDefinitions(this, value);
-                SetValue(RowDefinitionsProperty, _data.RowDefinitions);
-            }
+            get { return GetValue(RowDefinitionsProperty); }
+            set { SetValue(RowDefinitionsProperty, value); }
         }
 
         bool GridIsTrivial = true;
