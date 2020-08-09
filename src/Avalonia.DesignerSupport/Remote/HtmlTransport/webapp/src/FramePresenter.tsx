@@ -18,6 +18,10 @@ export class PreviewerPresenter extends React.Component<PreviewerPresenterProps>
         this.componentDidUpdate({
             conn: null!
         }, this.state);
+
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
     }
 
     componentDidMount(): void {
@@ -56,17 +60,17 @@ export class PreviewerPresenter extends React.Component<PreviewerPresenterProps>
 
     handleMouseDown(e: React.MouseEvent) {
         const pointerPressedEventMessage = new PointerPressedEventMessage(e);
-        // TODO: Send message to server
+        this.props.conn.sendMouseEvent(pointerPressedEventMessage);
     }
 
     handleMouseUp(e: React.MouseEvent) {
         const pointerReleasedEventMessage = new PointerReleasedEventMessage(e);
-        // TODO: Send message to server
+        this.props.conn.sendMouseEvent(pointerReleasedEventMessage);
     }
 
     handleMouseMove(e: React.MouseEvent) {
         const pointerMovedEventMessage = new PointerMovedEventMessage(e);
-        // TODO: Send message to server
+        this.props.conn.sendMouseEvent(pointerMovedEventMessage);
     }
 
     render() {

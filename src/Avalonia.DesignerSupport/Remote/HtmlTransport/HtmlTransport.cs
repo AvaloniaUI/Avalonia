@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
+using InputProtocol = Avalonia.Remote.Protocol.Input;
 
 namespace Avalonia.DesignerSupport.Remote.HtmlTransport
 {
@@ -117,10 +118,55 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                         return;
                     if (msg.IsText)
                     {
-                        var s = Encoding.UTF8.GetString(msg.Data);
-                        var parts = s.Split(':');
-                        if (parts[0] == "frame-received")
-                            _onMessage?.Invoke(this, new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) });
+                        var parts = msg.AsString().Split(':');
+                        switch (parts[0])
+                        {
+                            case "frame-received":
+                                {
+                                    _onMessage?.Invoke(
+                                        this,
+                                        new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) });
+                                    break;
+                                }
+                            case "pointer-released":
+                                {
+                                    _onMessage?.Invoke(
+                                        this,
+                                        new InputProtocol.PointerReleasedEventMessage
+                                        {
+                                            Modifiers = ParseInputModifiers(parts[1]),
+                                            Button = ParseMouseButton(parts[2]),
+                                            X = double.Parse(parts[3]),
+                                            Y = double.Parse(parts[4]),
+                                        });
+                                    break;
+                                }
+                            case "pointer-pressed":
+                                {
+                                    _onMessage?.Invoke(
+                                        this,
+                                        new InputProtocol.PointerPressedEventMessage
+                                        {
+                                            Modifiers = ParseInputModifiers(parts[1]),
+                                            Button = ParseMouseButton(parts[2]),
+                                            X = double.Parse(parts[3]),
+                                            Y = double.Parse(parts[4]),
+                                        });
+                                    break;
+                                }
+                            case "pointer-moved":
+                                {
+                                    _onMessage?.Invoke(
+                                        this,
+                                        new InputProtocol.PointerMovedEventMessage
+                                        {
+                                            Modifiers = ParseInputModifiers(parts[1]),
+                                            X = double.Parse(parts[2]),
+                                            Y = double.Parse(parts[3]),
+                                        });
+                                    break;
+                                }
+                        }
                     }
                 }
             }
@@ -262,5 +308,22 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             _onException?.Invoke(this, ex);
         }
         #endregion
+
+        private static InputProtocol.InputModifiers[] ParseInputModifiers(string modifiersText)
+        {
+            var enumTexts = modifiersText.Split(',');
+            if (string.IsNullOrEmpty(enumTexts[0]))
+                return new InputProtocol.InputModifiers[0];
+            return enumTexts
+                .Select(x => (InputProtocol.InputModifiers)Enum.Parse(
+                    typeof(InputProtocol.InputModifiers), x))
+                .ToArray();
+        }
+
+        private static InputProtocol.MouseButton ParseMouseButton(string buttonText) =>
+            string.IsNullOrEmpty(buttonText)
+            ? InputProtocol.MouseButton.None
+            : (InputProtocol.MouseButton)Enum.Parse(
+                typeof(InputProtocol.MouseButton), buttonText);
     }
 }
