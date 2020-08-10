@@ -330,7 +330,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
 
         private static InputProtocol.InputModifiers[] ParseInputModifiers(string modifiersText) =>
             string.IsNullOrEmpty(modifiersText)
-            ? new InputProtocol.InputModifiers[0]
+            ? null
             : modifiersText
                 .Split(',')
                 .Select(x => (InputProtocol.InputModifiers)Enum.Parse(
