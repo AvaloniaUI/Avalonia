@@ -33,31 +33,13 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Template = GetTemplate()
             };
 
-            public ExampleView()
+            public ExampleView(Action<ItemsControl> adjustItemsControl = null)
             {
+                adjustItemsControl?.Invoke(List);
                 List.ApplyTemplate();
                 List.Presenter.ApplyTemplate();
+                
                 Content = List;
-
-                ViewModel = new ExampleViewModel();
-                this.OneWayBind(ViewModel, x => x.Items, x => x.List.Items);
-            }
-        }
-
-        public class ExampleViewWithItemTemplate : ReactiveUserControl<ExampleViewModel>
-        {
-            public ItemsControl List { get; } = new ItemsControl
-            {
-                Template = GetTemplate()
-            };
-
-            public ExampleViewWithItemTemplate()
-            {
-                List.ApplyTemplate();
-                List.Presenter.ApplyTemplate();
-                List.ItemTemplate = GetItemTemplate();
-                Content = List;
-
                 ViewModel = new ExampleViewModel();
                 this.OneWayBind(ViewModel, x => x.Items, x => x.List.Items);
             }
@@ -81,7 +63,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         [Fact]
         public void Should_Not_Override_Data_Template_Binding_When_Item_Template_Is_Set()
         {
-            var view = new ExampleViewWithItemTemplate();
+            var view = new ExampleView(control => control.ItemTemplate = GetItemTemplate());
             Assert.NotNull(view.List.ItemTemplate);
             Assert.IsType<FuncDataTemplate<TextBlock>>(view.List.ItemTemplate);
         }
@@ -102,7 +84,20 @@ namespace Avalonia.ReactiveUI.UnitTests
         [Fact]
         public void Should_Not_Use_View_Model_View_Host_When_Item_Template_Is_Set()
         {
-            var view = new ExampleViewWithItemTemplate();
+            var view = new ExampleView(control => control.ItemTemplate = GetItemTemplate());
+            view.ViewModel.Items.Add(new NestedViewModel());
+
+            var child = view.List.Presenter.Panel.Children[0];
+            var container = (ContentPresenter) child;
+            container.UpdateChild();
+
+            Assert.IsType<TextBlock>(container.Child);
+        }
+        
+        [Fact]
+        public void Should_Not_Use_View_Model_View_Host_When_Data_Templates_Are_Not_Empty()
+        {
+            var view = new ExampleView(control => control.DataTemplates.Add(GetItemTemplate()));
             view.ViewModel.Items.Add(new NestedViewModel());
 
             var child = view.List.Presenter.Panel.Children[0];
@@ -116,7 +111,6 @@ namespace Avalonia.ReactiveUI.UnitTests
         public void Should_Resolve_And_Embedd_Appropriate_View_Model()
         {
             var view = new ExampleView();
-            var root = new TestRoot { Child = view };
             view.ViewModel.Items.Add(new NestedViewModel());
 
             var child = view.List.Presenter.Panel.Children[0];
@@ -139,17 +133,14 @@ namespace Avalonia.ReactiveUI.UnitTests
 
         private static FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ItemsControl>((parent, scope) =>
+            return new FuncControlTemplate<ItemsControl>((parent, scope) => new Border
             {
-                return new Border
+                Background = new Media.SolidColorBrush(0xffffffff),
+                Child = new ItemsPresenter
                 {
-                    Background = new Media.SolidColorBrush(0xffffffff),
-                    Child = new ItemsPresenter
-                    {
-                        Name = "PART_ItemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-                    }.RegisterInNameScope(scope)
-                };
+                    Name = "PART_ItemsPresenter",
+                    [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
+                }.RegisterInNameScope(scope)
             });
         }
     }
