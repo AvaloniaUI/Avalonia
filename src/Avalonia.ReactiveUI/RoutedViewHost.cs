@@ -66,6 +66,7 @@ namespace Avalonia.ReactiveUI
             this.WhenActivated(disposables =>
             {
                 this.WhenAnyObservable(x => x.Router.CurrentViewModel)
+                    .StartWith(default(object))
                     .DistinctUntilChanged()
                     .Subscribe(NavigateToViewModel)
                     .DisposeWith(disposables);
@@ -92,6 +93,13 @@ namespace Avalonia.ReactiveUI
         /// <param name="viewModel">ViewModel to which the user navigates.</param>
         private void NavigateToViewModel(object viewModel)
         {
+            if (Router == null)
+            {
+                this.Log().Warn("Router property is null. Falling back to default content.");
+                Content = DefaultContent;
+                return;
+            }
+
             if (viewModel == null)
             {
                 this.Log().Info("ViewModel is null. Falling back to default content.");

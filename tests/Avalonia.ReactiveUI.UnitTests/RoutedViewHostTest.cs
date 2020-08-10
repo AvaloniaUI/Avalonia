@@ -108,5 +108,39 @@ namespace Avalonia.ReactiveUI.UnitTests
             Assert.Equal(typeof(TextBlock), host.Content.GetType());
             Assert.Equal(defaultContent, host.Content);
         }
+
+        [Fact]
+        public void RoutedViewHost_Should_Show_Default_Content_When_Router_Is_Null()
+        {
+            var screen = new ScreenViewModel();
+            var defaultContent = new TextBlock();
+            var host = new RoutedViewHost 
+            { 
+                DefaultContent = defaultContent,
+                PageTransition = null,
+                Router = null
+            };
+
+            var root = new TestRoot 
+            { 
+                Child = host 
+            };
+
+            Assert.NotNull(host.Content);
+            Assert.Equal(defaultContent, host.Content);
+
+            host.Router = screen.Router;
+
+            Assert.NotNull(host.Content);
+            Assert.Equal(defaultContent, host.Content);
+            
+            var first = new FirstRoutableViewModel();
+            screen.Router.Navigate.Execute(first).Subscribe();
+
+            Assert.NotNull(host.Content);
+            Assert.Equal(typeof(FirstRoutableView), host.Content.GetType());
+            Assert.Equal(first, ((FirstRoutableView)host.Content).DataContext);
+            Assert.Equal(first, ((FirstRoutableView)host.Content).ViewModel);
+        }
     }
 }
