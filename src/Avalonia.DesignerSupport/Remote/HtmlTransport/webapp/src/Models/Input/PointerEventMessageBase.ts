@@ -6,7 +6,7 @@ export abstract class PointerEventMessageBase extends InputEventMessageBase {
     public readonly y: number;
 
     protected constructor(e: React.MouseEvent) {
-        super(e)
+        super(e);
         this.x = e.clientX;
         this.y = e.clientY;
     }

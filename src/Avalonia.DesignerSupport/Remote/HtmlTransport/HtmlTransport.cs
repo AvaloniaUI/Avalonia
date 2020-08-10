@@ -135,9 +135,9 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                                         new InputProtocol.PointerReleasedEventMessage
                                         {
                                             Modifiers = ParseInputModifiers(parts[1]),
-                                            Button = ParseMouseButton(parts[2]),
-                                            X = double.Parse(parts[3]),
-                                            Y = double.Parse(parts[4]),
+                                            X = double.Parse(parts[2]),
+                                            Y = double.Parse(parts[3]),
+                                            Button = ParseMouseButton(parts[4]),
                                         });
                                     break;
                                 }
@@ -148,9 +148,9 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                                         new InputProtocol.PointerPressedEventMessage
                                         {
                                             Modifiers = ParseInputModifiers(parts[1]),
-                                            Button = ParseMouseButton(parts[2]),
-                                            X = double.Parse(parts[3]),
-                                            Y = double.Parse(parts[4]),
+                                            X = double.Parse(parts[2]),
+                                            Y = double.Parse(parts[3]),
+                                            Button = ParseMouseButton(parts[4]),
                                         });
                                     break;
                                 }
@@ -163,6 +163,20 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                                             Modifiers = ParseInputModifiers(parts[1]),
                                             X = double.Parse(parts[2]),
                                             Y = double.Parse(parts[3]),
+                                        });
+                                    break;
+                                }
+                            case "scroll":
+                                {
+                                    _onMessage?.Invoke(
+                                        this,
+                                        new InputProtocol.ScrollEventMessage
+                                        {
+                                            Modifiers = ParseInputModifiers(parts[1]),
+                                            X = double.Parse(parts[2]),
+                                            Y = double.Parse(parts[3]),
+                                            DeltaX = double.Parse(parts[4]),
+                                            DeltaY = double.Parse(parts[5]),
                                         });
                                     break;
                                 }

@@ -3,7 +3,7 @@ import {PointerEventMessageBase} from "src/Models/Input/PointerEventMessageBase"
 
 export class PointerMovedEventMessage extends PointerEventMessageBase {
     constructor(e: React.MouseEvent) {
-        super(e)
+        super(e);
     }
 
     public toString = () : string => {

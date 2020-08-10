@@ -7,11 +7,11 @@ export class PointerReleasedEventMessage extends PointerEventMessageBase {
     public readonly button: MouseButton
 
     constructor(e: React.MouseEvent) {
-        super(e)
+        super(e);
         this.button = getMouseButton(e);
     }
 
     public toString = () : string => {
-        return `pointer-released:${this.modifiers}:${this.button}:${this.x}:${this.y}`;
+        return `pointer-released:${this.modifiers}:${this.x}:${this.y}:${this.button}`;
     }
 }
