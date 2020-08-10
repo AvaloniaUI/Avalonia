@@ -102,6 +102,26 @@ namespace Avalonia
             return (DirectPropertyMetadata<TValue>)base.GetMetadata(type);
         }
 
+        /// <summary>
+        /// Overrides the metadata for the property on the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="metadata">The metadata.</param>
+        public void OverrideMetadata<T>(DirectPropertyMetadata<TValue> metadata) where T : IAvaloniaObject
+        {
+            base.OverrideMetadata(typeof(T), metadata);
+        }
+
+        /// <summary>
+        /// Overrides the metadata for the property on the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="metadata">The metadata.</param>
+        public void OverrideMetadata(Type type, DirectPropertyMetadata<TValue> metadata)
+        {
+            base.OverrideMetadata(type, metadata);
+        }
+
         /// <inheritdoc/>
         public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
         {
