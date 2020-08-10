@@ -28,11 +28,36 @@ namespace Avalonia.ReactiveUI.UnitTests
 
         public class ExampleView : ReactiveUserControl<ExampleViewModel>
         {
-            public ItemsControl List { get; } = new ItemsControl();
+            public ItemsControl List { get; } = new ItemsControl
+            {
+                Template = GetTemplate()
+            };
 
             public ExampleView()
             {
+                List.ApplyTemplate();
+                List.Presenter.ApplyTemplate();
                 Content = List;
+
+                ViewModel = new ExampleViewModel();
+                this.OneWayBind(ViewModel, x => x.Items, x => x.List.Items);
+            }
+        }
+
+        public class ExampleViewWithItemTemplate : ReactiveUserControl<ExampleViewModel>
+        {
+            public ItemsControl List { get; } = new ItemsControl
+            {
+                Template = GetTemplate()
+            };
+
+            public ExampleViewWithItemTemplate()
+            {
+                List.ApplyTemplate();
+                List.Presenter.ApplyTemplate();
+                List.ItemTemplate = GetItemTemplate();
+                Content = List;
+
                 ViewModel = new ExampleViewModel();
                 this.OneWayBind(ViewModel, x => x.Items, x => x.List.Items);
             }
@@ -50,6 +75,15 @@ namespace Avalonia.ReactiveUI.UnitTests
         {
             var view = new ExampleView();
             Assert.NotNull(view.List.ItemTemplate);
+            Assert.IsType<FuncDataTemplate<object>>(view.List.ItemTemplate);
+        }
+
+        [Fact]
+        public void Should_Not_Override_Data_Template_Binding_When_Item_Template_Is_Set()
+        {
+            var view = new ExampleViewWithItemTemplate();
+            Assert.NotNull(view.List.ItemTemplate);
+            Assert.IsType<FuncDataTemplate<TextBlock>>(view.List.ItemTemplate);
         }
 
         [Fact]
@@ -57,10 +91,6 @@ namespace Avalonia.ReactiveUI.UnitTests
         {
             var view = new ExampleView();
             view.ViewModel.Items.Add(new NestedViewModel());
-
-            view.List.Template = GetTemplate();
-            view.List.ApplyTemplate();
-            view.List.Presenter.ApplyTemplate();
 
             var child = view.List.Presenter.Panel.Children[0];
             var container = (ContentPresenter) child;
@@ -70,15 +100,24 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
+        public void Should_Not_Use_View_Model_View_Host_When_Item_Template_Is_Set()
+        {
+            var view = new ExampleViewWithItemTemplate();
+            view.ViewModel.Items.Add(new NestedViewModel());
+
+            var child = view.List.Presenter.Panel.Children[0];
+            var container = (ContentPresenter) child;
+            container.UpdateChild();
+
+            Assert.IsType<TextBlock>(container.Child);
+        }
+
+        [Fact]
         public void Should_Resolve_And_Embedd_Appropriate_View_Model()
         {
             var view = new ExampleView();
             var root = new TestRoot { Child = view };
             view.ViewModel.Items.Add(new NestedViewModel());
-
-            view.List.Template = GetTemplate();
-            view.List.ApplyTemplate();
-            view.List.Presenter.ApplyTemplate();
 
             var child = view.List.Presenter.Panel.Children[0];
             var container = (ContentPresenter) child;
@@ -93,7 +132,12 @@ namespace Avalonia.ReactiveUI.UnitTests
             Assert.IsType<string>(host.DataContext);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncDataTemplate GetItemTemplate()
+        {
+            return new FuncDataTemplate<TextBlock>((parent, scope) => new TextBlock());
+        }
+
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ItemsControl>((parent, scope) =>
             {
