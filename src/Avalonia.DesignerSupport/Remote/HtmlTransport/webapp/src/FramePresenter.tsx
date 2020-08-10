@@ -19,11 +19,6 @@ export class PreviewerPresenter extends React.Component<PreviewerPresenterProps>
         this.componentDidUpdate({
             conn: null!
         }, this.state);
-
-        this.handleMouseDown = this.handleMouseDown.bind(this);
-        this.handleMouseUp = this.handleMouseUp.bind(this);
-        this.handleMouseMove = this.handleMouseMove.bind(this);
-        this.handleWheel = this.handleWheel.bind(this);
     }
 
     componentDidMount(): void {
@@ -83,9 +78,9 @@ export class PreviewerPresenter extends React.Component<PreviewerPresenterProps>
 
     render() {
         return <canvas ref={this.canvasRef}
-                       onMouseDown={this.handleMouseDown}
-                       onMouseUp={this.handleMouseUp}
-                       onMouseMove={this.handleMouseMove}
-                       onWheel={this.handleWheel} />
+                       onMouseDown={this.handleMouseDown.bind(this)}
+                       onMouseUp={this.handleMouseUp.bind(this)}
+                       onMouseMove={this.handleMouseMove.bind(this)}
+                       onWheel={this.handleWheel.bind(this)} />
     }
 }
