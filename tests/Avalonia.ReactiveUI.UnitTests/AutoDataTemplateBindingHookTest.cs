@@ -66,7 +66,11 @@ namespace Avalonia.ReactiveUI.UnitTests
             var view = new ExampleView();
             view.ViewModel.Items.Add(new NestedViewModel());
 
-            var child = view.List.Presenter.Panel.Children[0];
+            view.List.Template = GetTemplate();
+            view.List.ApplyTemplate();
+            view.List.Presenter.ApplyTemplate();
+
+            var child = view.List.Presenter.RealizedElements.First();
             var container = (ContentPresenter) child;
             container.UpdateChild();
 
@@ -79,7 +83,11 @@ namespace Avalonia.ReactiveUI.UnitTests
             var view = new ExampleView();
             view.ViewModel.Items.Add(new NestedViewModel());
 
-            var child = view.List.Presenter.Panel.Children[0];
+            view.List.Template = GetTemplate();
+            view.List.ApplyTemplate();
+            view.List.Presenter.ApplyTemplate();
+
+            var child = view.List.Presenter.RealizedElements.First();
             var container = (ContentPresenter) child;
             container.UpdateChild();
 
@@ -106,7 +114,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             var view = new ExampleView(control => control.ItemTemplate = GetItemTemplate());
             view.ViewModel.Items.Add(new NestedViewModel());
 
-            var child = view.List.Presenter.Panel.Children[0];
+            var child = view.List.Presenter.RealizedElements.ElementAt(0);
             var container = (ContentPresenter) child;
             container.UpdateChild();
 
@@ -119,7 +127,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             var view = new ExampleView(control => control.DataTemplates.Add(GetItemTemplate()));
             view.ViewModel.Items.Add(new NestedViewModel());
 
-            var child = view.List.Presenter.Panel.Children[0];
+            var child = view.List.Presenter.RealizedElements.ElementAt(0);
             var container = (ContentPresenter) child;
             container.UpdateChild();
 

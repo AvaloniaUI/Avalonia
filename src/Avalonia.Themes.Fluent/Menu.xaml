@@ -25,9 +25,9 @@
               HorizontalAlignment="Stretch"
               Padding="{TemplateBinding Padding}">
         <ItemsPresenter Name="PART_ItemsPresenter"
-                        Items="{TemplateBinding Items}"
-                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                        Items="{TemplateBinding ItemsView}"
                         ItemTemplate="{TemplateBinding ItemTemplate}"
+                        Layout="{TemplateBinding Layout}"
                         VerticalAlignment="Stretch"
                         KeyboardNavigation.TabNavigation="Continue" />
       </Border>

@@ -1,3 +1,4 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.UnitTests;
@@ -60,7 +61,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 itemsControl.ApplyTemplate();
                 itemsControl.Presenter.ApplyTemplate();
 
-                Assert.Equal(2, itemsControl.Presenter.Panel.Children.Count);
+                Assert.Equal(2, itemsControl.Presenter.RealizedElements.Count());
             }
         }
 

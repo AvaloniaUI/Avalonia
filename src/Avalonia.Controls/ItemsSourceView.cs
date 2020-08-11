@@ -25,7 +25,7 @@ namespace Avalonia.Controls
     /// view of the Items. That way, each component does not need to know if the source is an
     /// IEnumerable, an IList, or something else.
     /// </remarks>
-    public class ItemsSourceView : INotifyCollectionChanged, IDisposable
+    public class ItemsSourceView : INotifyCollectionChanged, IDisposable, IReadOnlyList<object>
     {
         /// <summary>
         ///  Gets an empty <see cref="ItemsSourceView"/>
@@ -160,6 +160,10 @@ namespace Avalonia.Controls
             }
         }
 
+        public Enumerator GetEnumerator() => new Enumerator(_inner);
+        IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+        IEnumerator<object> IEnumerable<object>.GetEnumerator() => GetEnumerator();
+
         protected void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
         {
             CollectionChanged?.Invoke(this, args);
@@ -177,6 +181,17 @@ namespace Avalonia.Controls
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             OnItemsSourceChanged(e);
+        }
+
+        public struct Enumerator : IEnumerator<object>
+        {
+            private IEnumerator _innerEnumerator;
+            public Enumerator(IList inner) => _innerEnumerator = inner.GetEnumerator();
+            public object Current => _innerEnumerator.Current;
+            object IEnumerator.Current => Current;
+            public void Dispose() => (_innerEnumerator as IDisposable)?.Dispose();
+            public bool MoveNext() => _innerEnumerator.MoveNext();
+            void IEnumerator.Reset() => _innerEnumerator.Reset();
         }
     }
 

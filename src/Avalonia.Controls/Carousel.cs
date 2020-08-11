@@ -24,19 +24,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Carousel, IPageTransition>(nameof(PageTransition));
 
         /// <summary>
-        /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for 
-        /// <see cref="Carousel"/>.
-        /// </summary>
-        private static readonly ITemplate<IPanel> PanelTemplate =
-            new FuncTemplate<IPanel>(() => new Panel());
-
-        /// <summary>
         /// Initializes static members of the <see cref="Carousel"/> class.
         /// </summary>
         static Carousel()
         {
             SelectionModeProperty.OverrideDefaultValue<Carousel>(SelectionMode.AlwaysSelected);
-            ItemsPanelProperty.OverrideDefaultValue<Carousel>(PanelTemplate);
+            ////ItemsPanelProperty.OverrideDefaultValue<Carousel>(PanelTemplate);
         }
         
         /// <summary>

@@ -71,10 +71,9 @@
                       BorderThickness="1">
                 <ScrollViewer>
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                  Items="{TemplateBinding Items}"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}"
+                                  Items="{TemplateBinding ItemsView}"
                                   ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+                                  Layout="{TemplateBinding Layout}"/>
                 </ScrollViewer>
               </Border>
             </Popup>

@@ -1,34 +1,28 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
-using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ListBoxTests_Single
+    public partial class ListBoxTests
     {
-        MouseTestHelper _mouse = new MouseTestHelper();
-        
         [Fact]
         public void Focusing_Item_With_Tab_Should_Not_Select_It()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            ApplyTemplate(target);
+            Prepare(target);
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
+            target.Presenter.RealizedElements.First().RaiseEvent(new GotFocusEventArgs
             {
                 RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Tab,
@@ -40,15 +34,16 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Focusing_Item_With_Arrow_Key_Should_Select_It()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            ApplyTemplate(target);
+            Prepare(target);
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
+            target.Presenter.RealizedElements.First().RaiseEvent(new GotFocusEventArgs
             {
                 RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
@@ -60,14 +55,15 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Item_Should_Select_It()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            ApplyTemplate(target);
-            _mouse.Click(target.Presenter.Panel.Children[0]);
+            Prepare(target);
+            _mouse.Click(target.Presenter.RealizedElements.First());
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -75,16 +71,17 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Selected_Item_Should_Not_Deselect_It()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            ApplyTemplate(target);
+            Prepare(target);
             target.SelectedIndex = 0;
 
-            _mouse.Click(target.Presenter.Panel.Children[0]);
+            _mouse.Click(target.Presenter.RealizedElements.First());
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -92,16 +89,17 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Item_Should_Select_It_When_SelectionMode_Toggle()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
             };
 
-            ApplyTemplate(target);
+            Prepare(target);
 
-            _mouse.Click(target.Presenter.Panel.Children[0]);
+            _mouse.Click(target.Presenter.RealizedElements.First());
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -109,17 +107,18 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Selected_Item_Should_Deselect_It_When_SelectionMode_Toggle()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Toggle,
             };
 
-            ApplyTemplate(target);
+            Prepare(target);
             target.SelectedIndex = 0;
 
-            _mouse.Click(target.Presenter.Panel.Children[0]);
+            _mouse.Click(target.Presenter.RealizedElements.First());
 
             Assert.Equal(-1, target.SelectedIndex);
         }
@@ -127,17 +126,18 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Selected_Item_Should_Not_Deselect_It_When_SelectionMode_ToggleAlwaysSelected()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Toggle | SelectionMode.AlwaysSelected,
             };
 
-            ApplyTemplate(target);
+            Prepare(target);
             target.SelectedIndex = 0;
 
-            _mouse.Click(target.Presenter.Panel.Children[0]);
+            _mouse.Click(target.Presenter.RealizedElements.First());
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -145,17 +145,18 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Another_Item_Should_Select_It_When_SelectionMode_Toggle()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
                 SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
             };
 
-            ApplyTemplate(target);
+            Prepare(target);
             target.SelectedIndex = 1;
 
-            _mouse.Click(target.Presenter.Panel.Children[0]);
+            _mouse.Click(target.Presenter.RealizedElements.First());
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -163,13 +164,14 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Setting_Item_IsSelected_Sets_ListBox_Selection()
         {
+            using var app = Start();
+
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            ApplyTemplate(target);
+            Prepare(target);
 
             ((ListBoxItem)target.GetLogicalChildren().ElementAt(1)).IsSelected = true;
 
@@ -180,6 +182,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectedItem_Should_Not_Cause_StackOverflow()
         {
+            using var app = Start();
+
             var viewModel = new TestStackOverflowViewModel()
             {
                 Items = new List<string> { "foo", "bar", "baz" }
@@ -187,7 +191,6 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new ListBox
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
                 DataContext = viewModel,
                 Items = viewModel.Items
             };
@@ -240,45 +243,6 @@ namespace Avalonia.Controls.UnitTests
                     }
                 }
             }
-        }
-
-        private Control CreateListBoxTemplate(ITemplatedControl parent, INameScope scope)
-        {
-            return new ScrollViewer
-            {
-                Template = new FuncControlTemplate(CreateScrollViewerTemplate),
-                Content = new ItemsPresenter
-                {
-                    Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
-                }.RegisterInNameScope(scope)
-            };
-        }
-
-        private Control CreateScrollViewerTemplate(ITemplatedControl parent, INameScope scope)
-        {
-            return new ScrollContentPresenter
-            {
-                Name = "PART_ContentPresenter",
-                [~ContentPresenter.ContentProperty] =
-                    parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
-            }.RegisterInNameScope(scope);
-        }
-
-        private void ApplyTemplate(ListBox target)
-        {
-            // Apply the template to the ListBox itself.
-            target.ApplyTemplate();
-
-            // Then to its inner ScrollViewer.
-            var scrollViewer = (ScrollViewer)target.GetVisualChildren().Single();
-            scrollViewer.ApplyTemplate();
-
-            // Then make the ScrollViewer create its child.
-            ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
-
-            // Now the ItemsPresenter should be reigstered, so apply its template.
-            target.Presenter.ApplyTemplate();
         }
     }
 }

@@ -66,9 +66,9 @@
                       BorderThickness="{TemplateBinding BorderThickness}">
                 <ScrollViewer>                  
                     <ItemsPresenter Name="PART_ItemsPresenter"
-                                    Items="{TemplateBinding Items}"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
+                                    Items="{TemplateBinding ItemsView}"
                                     ItemTemplate="{TemplateBinding ItemTemplate}"
+                                    Layout="{TemplateBinding Layout}"
                                     Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
               </Border>
@@ -116,9 +116,9 @@
                       BorderThickness="{TemplateBinding BorderThickness}">
                 <ScrollViewer Classes="menuscroller">
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                  Items="{TemplateBinding Items}"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}"
+                                  Items="{TemplateBinding ItemsView}"
                                   ItemTemplate="{TemplateBinding ItemTemplate}"
+                                  Layout="{TemplateBinding Layout}"
                                   Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
               </Border>

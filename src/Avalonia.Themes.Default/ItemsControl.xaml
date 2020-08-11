@@ -6,8 +6,8 @@
               BorderThickness="{TemplateBinding BorderThickness}"
               Padding="{TemplateBinding Padding}">
         <ItemsPresenter Name="PART_ItemsPresenter"
-                        Items="{TemplateBinding Items}"
-                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                        Items="{TemplateBinding ItemsView}"
+                        Layout="{TemplateBinding Layout}"
                         ItemTemplate="{TemplateBinding ItemTemplate}"/>
       </Border>
     </ControlTemplate>

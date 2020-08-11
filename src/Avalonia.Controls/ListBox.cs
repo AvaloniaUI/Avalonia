@@ -1,11 +1,12 @@
 using System.Collections;
 using Avalonia.Controls.Generators;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
-using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -15,16 +16,10 @@ namespace Avalonia.Controls
     public class ListBox : SelectingItemsControl
     {
         /// <summary>
-        /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
-        /// </summary>
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
-
-        /// <summary>
         /// Defines the <see cref="Scroll"/> property.
         /// </summary>
-        public static readonly DirectProperty<ListBox, IScrollable> ScrollProperty =
-            AvaloniaProperty.RegisterDirect<ListBox, IScrollable>(nameof(Scroll), o => o.Scroll);
+        public static readonly DirectProperty<ListBox, IScrollable?> ScrollProperty =
+            AvaloniaProperty.RegisterDirect<ListBox, IScrollable?>(nameof(Scroll), o => o.Scroll);
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
@@ -44,27 +39,17 @@ namespace Avalonia.Controls
         public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
-        /// <summary>
-        /// Defines the <see cref="VirtualizationMode"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
+        private IScrollable? _scroll;
 
-        private IScrollable _scroll;
-
-        /// <summary>
-        /// Initializes static members of the <see cref="ItemsControl"/> class.
-        /// </summary>
         static ListBox()
         {
-            ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
-            VirtualizationModeProperty.OverrideDefaultValue<ListBox>(ItemVirtualizationMode.Simple);
+            LayoutProperty.OverrideDefaultValue<ListBox>(new StackLayout());
         }
 
         /// <summary>
         /// Gets the scroll information for the <see cref="ListBox"/>.
         /// </summary>
-        public IScrollable Scroll
+        public IScrollable? Scroll
         {
             get { return _scroll; }
             private set { SetAndRaise(ScrollProperty, ref _scroll, value); }
@@ -98,15 +83,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the virtualization mode for the items.
-        /// </summary>
-        public ItemVirtualizationMode VirtualizationMode
-        {
-            get { return GetValue(VirtualizationModeProperty); }
-            set { SetValue(VirtualizationModeProperty, value); }
-        }
-
-        /// <summary>
         /// Selects all items in the <see cref="ListBox"/>.
         /// </summary>
         public void SelectAll() => Selection.SelectAll();
@@ -120,7 +96,7 @@ namespace Avalonia.Controls
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator<ListBoxItem>(
-                this, 
+                this,
                 ListBoxItem.ContentProperty,
                 ListBoxItem.ContentTemplateProperty);
         }

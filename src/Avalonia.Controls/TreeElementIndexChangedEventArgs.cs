@@ -4,15 +4,16 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using Avalonia.Controls.Selection;
 
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Provides notification that the index for a recyclable element has changed.
+    /// Provides notification that the index for an element in a tree has changed.
     /// </summary>
-    public class ElementIndexChangedEventArgs : EventArgs
+    public class TreeElementIndexChangedEventArgs : EventArgs
     {
-        public ElementIndexChangedEventArgs(IControl element, int oldIndex, int newIndex)
+        public TreeElementIndexChangedEventArgs(IControl element, IndexPath oldIndex, IndexPath newIndex)
         {
             Element = element;
             OldIndex = oldIndex;
@@ -27,18 +28,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the index of the element after the change.
         /// </summary>
-        public int NewIndex { get; private set; }
+        public IndexPath NewIndex { get; private set; }
 
         /// <summary>
         /// Gets the index of the element before the change.
         /// </summary>
-        public int OldIndex { get; private set; }
-
-        internal void Update(IControl element, int oldIndex, int newIndex)
-        {
-            Element = element;
-            NewIndex = newIndex;
-            OldIndex = oldIndex;
-        }
+        public IndexPath OldIndex { get; private set; }
     }
 }

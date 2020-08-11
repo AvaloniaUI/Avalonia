@@ -2,8 +2,9 @@ using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
+using Avalonia.Controls.Selection;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
@@ -35,10 +36,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
                 nameof(Level), o => o.Level);
 
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel());
-
-        private TreeView _treeView;
         private IControl _header;
         private bool _isExpanded;
         private int _level;
@@ -51,7 +48,10 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
             PressedMixin.Attach<TreeViewItem>();
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
-            ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
+            LayoutProperty.OverrideDefaultValue<TreeViewItem>(new NonVirtualizingStackLayout
+            {
+                Orientation = Orientation.Vertical,
+            });
             ParentProperty.Changed.AddClassHandler<TreeViewItem>((o, e) => o.OnParentChanged(e));
             RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((x, e) => x.OnRequestBringIntoView(e));
         }
@@ -89,37 +89,87 @@ namespace Avalonia.Controls
         public new ITreeItemContainerGenerator ItemContainerGenerator =>
             (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the tree view that the item is a part of.
+        /// </summary>
+        internal TreeView TreeView { get; private set; }
+
+        internal IndexPath IndexPath { get; set; }
+
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new TreeItemContainerGenerator<TreeViewItem>(
                 this,
                 TreeViewItem.HeaderProperty,
-                TreeViewItem.ItemTemplateProperty,
+                TreeViewItem.HeaderTemplateProperty,
                 TreeViewItem.ItemsProperty,
                 TreeViewItem.IsExpandedProperty);
+        }
+
+        protected override void OnContainerPrepared(ElementPreparedEventArgs e)
+        {
+            base.OnContainerPrepared(e);
+
+            if (e.Element is TreeViewItem item)
+            {
+                item.IndexPath = IndexPath.CloneWithChildIndex(e.Index);
+            }
+
+            ItemContainerGenerator.Index.Add(ItemsView[e.Index], e.Element);
+            TreeView?.RaiseTreeContainerPrepared(IndexPath, e);
+        }
+
+        protected override void OnContainerClearing(ElementClearingEventArgs e)
+        {
+            base.OnContainerClearing(e);
+
+            ItemContainerGenerator.Index.Remove(e.Element);
+            TreeView?.RaiseTreeContainerClearing(e);
+
+            if (e.Element is TreeViewItem item)
+            {
+                item.IndexPath = default;
+            }
+        }
+
+        protected override void OnContainerIndexChanged(ElementIndexChangedEventArgs e)
+        {
+            base.OnContainerIndexChanged(e);
+
+            if (e.Element is TreeViewItem item)
+            {
+                item.IndexPath = IndexPath.CloneWithChildIndex(e.NewIndex);
+            }
+
+            TreeView?.RaiseTreeContainerIndexChanged(IndexPath, e);
         }
 
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            
-            _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
-            
-            Level = CalculateDistanceFromLogicalParent<TreeView>(this) - 1;
+
+            (Level, TreeView) = FindOwner();
             ItemContainerGenerator.UpdateIndex();
 
-            if (ItemTemplate == null && _treeView?.ItemTemplate != null)
+            if (ItemTemplate == null && TreeView?.ItemTemplate != null)
             {
-                ItemTemplate = _treeView.ItemTemplate;
+                ItemTemplate = TreeView.ItemTemplate;
             }
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromLogicalTree(e);
+
             ItemContainerGenerator.UpdateIndex();
+
+            var (_, owner) = FindOwner();
+
+            if (TreeView is object && owner is null)
+            {
+                TreeView = null;
+            }
         }
 
         protected virtual void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
@@ -168,27 +218,36 @@ namespace Avalonia.Controls
             _header = e.NameScope.Find<IControl>("PART_Header");
         }
 
-        private static int CalculateDistanceFromLogicalParent<T>(ILogical logical, int @default = -1) where T : class
+        private (int distance, TreeView owner) FindOwner()
         {
-            var result = 0;
+            var c = Parent;
+            var i = 0;
 
-            while (logical != null && !(logical is T))
+            while (c != null)
             {
-                ++result;
-                logical = logical.LogicalParent;
+                if (c is TreeView treeView)
+                {
+                    return (i, treeView);
+                }
+
+                c = c.Parent;
+                ++i;
             }
 
-            return logical != null ? result : @default;
+            return (-1, null);
         }
 
         private void OnParentChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!((ILogical)this).IsAttachedToLogicalTree && e.NewValue is null)
             {
+                var oldIndex = ItemContainerGenerator.Index;
+
                 // If we're not attached to the logical tree, then OnDetachedFromLogicalTree isn't going to be
                 // called when the item is removed. This results in the item not being removed from the index,
                 // causing #3551. In this case, update the index when Parent is changed to null.
                 ItemContainerGenerator.UpdateIndex();
+                TreeView = null;
             }
         }
     }

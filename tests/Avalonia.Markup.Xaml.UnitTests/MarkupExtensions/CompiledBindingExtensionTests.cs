@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
@@ -425,7 +426,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 target.ApplyTemplate();
                 target.Presenter.ApplyTemplate();
 
-                Assert.Equal(dataContext.ListProperty[0], (string)((ContentPresenter)target.Presenter.Panel.Children[0]).Content);
+                var presenter = (ContentPresenter)target.Presenter.RealizedElements.First();
+                Assert.Equal(dataContext.ListProperty[0], presenter.Content);
             }
         }
 

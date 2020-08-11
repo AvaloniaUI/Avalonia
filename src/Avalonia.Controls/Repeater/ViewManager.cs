@@ -635,7 +635,7 @@ namespace Avalonia.Controls
             // Clear flag
             virtInfo.MustClearDataContext = false;
 
-            if (data != element)
+            if (!(data is IControl))
             {
                 // Prepare the element
                 element.DataContext = data;

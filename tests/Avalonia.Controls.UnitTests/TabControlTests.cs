@@ -48,6 +48,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Pre_Selecting_TabItem_Should_Set_SelectedContent_After_It_Was_Added()
         {
+            using var app = Start();
+
             var target = new TabControl
             {
                 Template = TabControlTemplate(),
@@ -63,7 +65,10 @@ namespace Avalonia.Controls.UnitTests
 
             target.Items = items;
 
+            var root = new TestRoot(target);
+
             ApplyTemplate(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             Assert.Equal(secondContent, target.SelectedContent);
         }
@@ -183,6 +188,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void DataContexts_Should_Be_Correctly_Set()
         {
+            using var app = Start();
+
             var items = new object[]
             {
                 "Foo",
@@ -203,13 +210,17 @@ namespace Avalonia.Controls.UnitTests
                 Items = items,
             };
 
+            var root = new TestRoot(target);
+
             ApplyTemplate(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             ((ContentPresenter)target.ContentPart).UpdateChild();
             var dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
+
             ((ContentPresenter)target.ContentPart).UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
@@ -242,6 +253,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Non_IHeadered_Control_Items_Should_Be_Ignored()
         {
+            using var app = Start();
+
             var items = new[]
             {
                 new TextBlock { Text = "foo" },
@@ -254,9 +267,16 @@ namespace Avalonia.Controls.UnitTests
                 Items = items,
             };
 
-            ApplyTemplate(target);
+            var root = new TestRoot(target)
+            {
+                Width = 100,
+                Height = 100
+            };
 
-            var logicalChildren = target.ItemsPresenterPart.Panel.GetLogicalChildren();
+            ApplyTemplate(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var logicalChildren = target.Presenter.RealizedElements;
 
             var result = logicalChildren
                 .OfType<TabItem>()
@@ -292,6 +312,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void DataTemplate_Created_Content_Should_Be_Logical_Child_After_ApplyTemplate()
         {
+            using var app = Start();
+
             TabControl target = new TabControl
             {
                 Template = TabControlTemplate(),
@@ -300,7 +322,11 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { "Foo" },
             };
 
+            var root = new TestRoot(target);
+
             ApplyTemplate(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
             ((ContentPresenter)target.ContentPart).UpdateChild();
 
             var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
@@ -347,6 +373,14 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(0, tabControl.Items.Count());
             }
+        }
+
+        private static IDisposable Start()
+        {
+            var services = TestServices.MockPlatformRenderInterface.With(
+                styler: new Styler(),
+                windowingPlatform: new MockWindowingPlatform());
+            return UnitTestApplication.Start(services);
         }
 
         private IControlTemplate TabControlTemplate()
@@ -399,6 +433,14 @@ namespace Avalonia.Controls.UnitTests
             }
 
             target.ContentPart.ApplyTemplate();
+        }
+
+        private void ItemsRepeaterWorkaround(SelectingItemsControl target)
+        {
+            // HACK: Selecting an item in ItemsRepeater causes it to be scrolled to the top of the viewport,
+            // even if all items can fit in the viewport. This causes items before the selected item to be
+            // unrealized. Work around this by scrolling to the top.
+            target.ScrollIntoView(0);
         }
 
         private class Item

@@ -135,11 +135,10 @@
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
               <ScrollViewer>
                 <ItemsPresenter Name="PART_ItemsPresenter"
-                                Items="{TemplateBinding Items}"
+                                Items="{TemplateBinding ItemsView}"
+                                Layout="{TemplateBinding Layout}"
                                 Margin="{DynamicResource ComboBoxDropdownContentMargin}"
-                                ItemsPanel="{TemplateBinding ItemsPanel}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
-                                VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+                                ItemTemplate="{TemplateBinding ItemTemplate}"/>
               </ScrollViewer>
             </Border>
           </Popup>
