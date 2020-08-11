@@ -23,17 +23,12 @@ namespace Avalonia
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         protected DirectPropertyBase(
             string name,
             Type ownerType,
-            PropertyMetadata metadata,
-            bool enableDataValidation)
+            PropertyMetadata metadata)
             : base(name, ownerType, metadata)
         {
-            IsDataValidationEnabled = enableDataValidation;
         }
 
         /// <summary>
@@ -42,28 +37,18 @@ namespace Avalonia
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         protected DirectPropertyBase(
             AvaloniaProperty source,
             Type ownerType,
-            PropertyMetadata metadata,
-            bool enableDataValidation)
+            PropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
-            IsDataValidationEnabled = enableDataValidation;
         }
 
         /// <summary>
         /// Gets the type that registered the property.
         /// </summary>
         public abstract Type Owner { get; }
-
-        /// <summary>
-        /// Gets a value that indicates whether data validation is enabled for the property.
-        /// </summary>
-        public bool IsDataValidationEnabled { get; }
 
         /// <summary>
         /// Gets the value of the property on the instance.

@@ -369,14 +369,14 @@ namespace Avalonia
 
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
 
             var result = new DirectProperty<TOwner, TValue>(
                 name,
                 getter,
                 setter,
-                metadata,
-                enableDataValidation);
+                metadata);
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }
