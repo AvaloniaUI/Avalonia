@@ -61,15 +61,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void Should_Not_Override_Data_Template_Binding_When_Item_Template_Is_Set()
-        {
-            var view = new ExampleView(control => control.ItemTemplate = GetItemTemplate());
-            Assert.NotNull(view.List.ItemTemplate);
-            Assert.IsType<FuncDataTemplate<TextBlock>>(view.List.ItemTemplate);
-        }
-
-        [Fact]
-        public void Should_Use_View_Model_View_Host_As_Data_Template()
+        public void Should_Use_ViewModelViewHost_As_Data_Template_By_Default()
         {
             var view = new ExampleView();
             view.ViewModel.Items.Add(new NestedViewModel());
@@ -79,6 +71,33 @@ namespace Avalonia.ReactiveUI.UnitTests
             container.UpdateChild();
 
             Assert.IsType<ViewModelViewHost>(container.Child);
+        }
+
+        [Fact]
+        public void ViewModelViewHost_Should_Resolve_And_Embedd_Appropriate_View_Model()
+        {
+            var view = new ExampleView();
+            view.ViewModel.Items.Add(new NestedViewModel());
+
+            var child = view.List.Presenter.Panel.Children[0];
+            var container = (ContentPresenter) child;
+            container.UpdateChild();
+
+            var host = (ViewModelViewHost) container.Child;
+            Assert.IsType<NestedViewModel>(host.ViewModel);
+            Assert.IsType<NestedViewModel>(host.DataContext);
+
+            host.DataContext = "changed context";
+            Assert.IsType<string>(host.ViewModel);
+            Assert.IsType<string>(host.DataContext);
+        }
+
+        [Fact]
+        public void Should_Not_Override_Data_Template_Binding_When_Item_Template_Is_Set()
+        {
+            var view = new ExampleView(control => control.ItemTemplate = GetItemTemplate());
+            Assert.NotNull(view.List.ItemTemplate);
+            Assert.IsType<FuncDataTemplate<TextBlock>>(view.List.ItemTemplate);
         }
 
         [Fact]
@@ -105,25 +124,6 @@ namespace Avalonia.ReactiveUI.UnitTests
             container.UpdateChild();
 
             Assert.IsType<TextBlock>(container.Child);
-        }
-
-        [Fact]
-        public void Should_Resolve_And_Embedd_Appropriate_View_Model()
-        {
-            var view = new ExampleView();
-            view.ViewModel.Items.Add(new NestedViewModel());
-
-            var child = view.List.Presenter.Panel.Children[0];
-            var container = (ContentPresenter) child;
-            container.UpdateChild();
-
-            var host = (ViewModelViewHost) container.Child;
-            Assert.IsType<NestedViewModel>(host.ViewModel);
-            Assert.IsType<NestedViewModel>(host.DataContext);
-
-            host.DataContext = "changed context";
-            Assert.IsType<string>(host.ViewModel);
-            Assert.IsType<string>(host.DataContext);
         }
 
         private static FuncDataTemplate GetItemTemplate()

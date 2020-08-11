@@ -65,9 +65,15 @@ namespace Avalonia.ReactiveUI
         {
             this.WhenActivated(disposables =>
             {
-                this.WhenAnyObservable(x => x.Router.CurrentViewModel)
-                    .StartWith(default(object))
-                    .DistinctUntilChanged()
+                var routerRemoved = this
+                    .WhenAnyValue(x => x.Router)
+                    .Where(router => router == null)
+                    .Cast<object>();
+
+                this.WhenAnyValue(x => x.Router)
+                    .Where(router => router != null)
+                    .SelectMany(router => router.CurrentViewModel)
+                    .Merge(routerRemoved)
                     .Subscribe(NavigateToViewModel)
                     .DisposeWith(disposables);
             });

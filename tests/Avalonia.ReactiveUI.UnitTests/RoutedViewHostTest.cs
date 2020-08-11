@@ -62,50 +62,42 @@ namespace Avalonia.ReactiveUI.UnitTests
                 PageTransition = null
             };
 
-            var root = new TestRoot 
-            { 
-                Child = host 
+            var root = new TestRoot
+            {
+                Child = host
             };
             
             Assert.NotNull(host.Content);
-            Assert.Equal(typeof(TextBlock), host.Content.GetType());
+            Assert.IsType<TextBlock>(host.Content);
             Assert.Equal(defaultContent, host.Content);
 
             var first = new FirstRoutableViewModel();
-            screen.Router.Navigate
-                .Execute(first)
-                .Subscribe();
+            screen.Router.Navigate.Execute(first).Subscribe();
 
             Assert.NotNull(host.Content);
-            Assert.Equal(typeof(FirstRoutableView), host.Content.GetType());
+            Assert.IsType<FirstRoutableView>(host.Content);
             Assert.Equal(first, ((FirstRoutableView)host.Content).DataContext);
             Assert.Equal(first, ((FirstRoutableView)host.Content).ViewModel);
 
             var second = new SecondRoutableViewModel();
-            screen.Router.Navigate
-                .Execute(second)
-                .Subscribe();
+            screen.Router.Navigate.Execute(second).Subscribe();
 
             Assert.NotNull(host.Content);
-            Assert.Equal(typeof(SecondRoutableView), host.Content.GetType());
+            Assert.IsType<SecondRoutableView>(host.Content);
             Assert.Equal(second, ((SecondRoutableView)host.Content).DataContext);
             Assert.Equal(second, ((SecondRoutableView)host.Content).ViewModel);
 
-            screen.Router.NavigateBack
-                .Execute(Unit.Default)
-                .Subscribe();
+            screen.Router.NavigateBack.Execute(Unit.Default).Subscribe();
 
             Assert.NotNull(host.Content);
-            Assert.Equal(typeof(FirstRoutableView), host.Content.GetType());
+            Assert.IsType<FirstRoutableView>(host.Content);
             Assert.Equal(first, ((FirstRoutableView)host.Content).DataContext);
             Assert.Equal(first, ((FirstRoutableView)host.Content).ViewModel);
 
-            screen.Router.NavigateBack
-                .Execute(Unit.Default)
-                .Subscribe();
+            screen.Router.NavigateBack.Execute(Unit.Default).Subscribe();
 
             Assert.NotNull(host.Content);
-            Assert.Equal(typeof(TextBlock), host.Content.GetType());
+            Assert.IsType<TextBlock>(host.Content);
             Assert.Equal(defaultContent, host.Content);
         }
 
@@ -121,9 +113,9 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Router = null
             };
 
-            var root = new TestRoot 
-            { 
-                Child = host 
+            var root = new TestRoot
+            {
+                Child = host
             };
 
             Assert.NotNull(host.Content);
@@ -138,9 +130,17 @@ namespace Avalonia.ReactiveUI.UnitTests
             screen.Router.Navigate.Execute(first).Subscribe();
 
             Assert.NotNull(host.Content);
-            Assert.Equal(typeof(FirstRoutableView), host.Content.GetType());
-            Assert.Equal(first, ((FirstRoutableView)host.Content).DataContext);
-            Assert.Equal(first, ((FirstRoutableView)host.Content).ViewModel);
+            Assert.IsType<FirstRoutableView>(host.Content);
+
+            host.Router = null;
+            
+            Assert.NotNull(host.Content);
+            Assert.Equal(defaultContent, host.Content);
+
+            host.Router = screen.Router;
+            
+            Assert.NotNull(host.Content);
+            Assert.IsType<FirstRoutableView>(host.Content);
         }
     }
 }
