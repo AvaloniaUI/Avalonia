@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -17,6 +18,9 @@ namespace Avalonia.Data.Converters
             .GetProperty(nameof(CultureInfo.CurrentCulture), BindingFlags.Public | BindingFlags.Static);
         readonly Func<object, bool> canExecute;
         readonly Action<object> execute;
+        readonly WeakPropertyChangedProxy weakPropertyChanged;
+        readonly PropertyChangedEventHandler propertyChangedEventHandler;
+        readonly string[] dependencyProperties;
 
         public MethodToCommandConverter(Delegate action)
         {
@@ -45,28 +49,28 @@ namespace Avalonia.Data.Converters
             else
             {
                 canExecute = CreateCanExecute(target, canExecuteMethod);
-                var dependencyProperties = canExecuteMethod
+                dependencyProperties = canExecuteMethod
                     .GetCustomAttributes(typeof(Metadata.DependsOnAttribute), true)
                     .OfType<Metadata.DependsOnAttribute>()
                     .Select(x => x.Name)
                     .ToArray();
                 if (dependencyProperties.Any()
-                    && target is System.ComponentModel.INotifyPropertyChanged inpc)
+                    && target is INotifyPropertyChanged inpc)
                 {
-                    System.ComponentModel.PropertyChangedEventHandler invalidateCanExecuteHandler = (s, e) =>
-                   {
-                       if (string.IsNullOrWhiteSpace(e.PropertyName)
-                           || dependencyProperties.Contains(e.PropertyName))
-                       {
-                           Threading.Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
-                               , Threading.DispatcherPriority.Input);
-                       }
-                   };
-                    inpc.PropertyChanged += invalidateCanExecuteHandler;
+                    propertyChangedEventHandler = OnPropertyChanged;
+                    weakPropertyChanged = new WeakPropertyChangedProxy(inpc, propertyChangedEventHandler);
                 }
             }
+        }
 
-
+        void OnPropertyChanged(object sender,PropertyChangedEventArgs args)
+        {
+            if (string.IsNullOrWhiteSpace(args.PropertyName)
+                               || dependencyProperties?.Contains(args.PropertyName) == true)
+            {
+                Threading.Dispatcher.UIThread.Post(() => CanExecuteChanged?.Invoke(this, EventArgs.Empty)
+                    , Threading.DispatcherPriority.Input);
+            }
         }
 
 #pragma warning disable 0067
@@ -177,6 +181,50 @@ namespace Avalonia.Data.Converters
             return Expression
                 .Lambda<Func<object, bool>>(call, parameter)
                 .Compile();
+        }
+
+
+        internal class WeakPropertyChangedProxy
+        {
+            readonly WeakReference<PropertyChangedEventHandler> _listener = new WeakReference<PropertyChangedEventHandler>(null);
+            readonly PropertyChangedEventHandler _handler;
+            internal WeakReference<INotifyPropertyChanged> Source { get; } = new WeakReference<INotifyPropertyChanged>(null);
+
+            public WeakPropertyChangedProxy()
+            {
+                _handler = new PropertyChangedEventHandler(OnPropertyChanged);
+            }
+
+            public WeakPropertyChangedProxy(INotifyPropertyChanged source, PropertyChangedEventHandler listener) : this()
+            {
+                SubscribeTo(source, listener);
+            }
+
+            public void SubscribeTo(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
+            {
+                source.PropertyChanged += _handler;
+
+                Source.SetTarget(source);
+                _listener.SetTarget(listener);
+            }
+
+            public void Unsubscribe()
+            {
+                if (Source.TryGetTarget(out INotifyPropertyChanged source) && source != null)
+                    source.PropertyChanged -= _handler;
+
+                Source.SetTarget(null);
+                _listener.SetTarget(null);
+            }
+
+            void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+            {
+                if (_listener.TryGetTarget(out var handler) && handler != null)
+                    handler(sender, e);
+                else
+                    Unsubscribe();
+            }
+           
         }
     }
 }
