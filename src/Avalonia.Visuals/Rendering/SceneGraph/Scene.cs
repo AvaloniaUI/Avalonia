@@ -304,6 +304,12 @@ namespace Avalonia.Rendering.SceneGraph
                         clipped = !node.GeometryClip.FillContains(controlPoint.Value);
                     }
 
+                    if (!clipped && node.Visual is ICustomHitTest custom)
+                    {
+                        var controlPoint = _sceneRoot.Visual.TranslatePoint(_point, node.Visual);
+                        clipped = !custom.HitTest(controlPoint.Value);
+                    }
+
                     return !clipped;
                 }
 

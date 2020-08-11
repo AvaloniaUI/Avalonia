@@ -25,7 +25,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Padding" Value="4" />
     <Setter Property="MinHeight" Value="20" />
-    <Setter Property="PlaceholderForeground" Value="{DynamicResource ComboBoxPlaceHolderForeground}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"
@@ -39,6 +39,7 @@
                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                        Margin="{TemplateBinding Padding}"
                        Text="{TemplateBinding PlaceholderText}"
+                       Foreground="{TemplateBinding PlaceholderForeground}"
                        IsVisible="{TemplateBinding SelectionBoxItem, Converter={x:Static ObjectConverters.IsNull}}" />
             <ContentControl Content="{TemplateBinding SelectionBoxItem}"
                             ContentTemplate="{TemplateBinding ItemTemplate}"
@@ -65,7 +66,7 @@
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
                    PlacementTarget="{TemplateBinding}"
-                   StaysOpen="False">
+                   IsLightDismissEnabled="True">
               <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
                 <ScrollViewer>

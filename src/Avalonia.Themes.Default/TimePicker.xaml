@@ -32,10 +32,10 @@
   </Style>
 
   <Style Selector="TimePicker">    
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-    <Setter Property="Foreground" Value="{DynamicResource TimePickerButtonForeground}" />
-    <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackground}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrush}"/>
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource TimePickerBorderThemeThickness}"/>
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -59,8 +59,8 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   IsEnabled="{TemplateBinding IsEnabled}"
-                  MinWidth="{StaticResource TimePickerThemeMinWidth}"
-                  MaxWidth="{StaticResource TimePickerThemeMaxWidth}"
+                  MinWidth="{DynamicResource TimePickerThemeMinWidth}"
+                  MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
                   HorizontalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch"
                   VerticalAlignment="Top"
@@ -74,8 +74,7 @@
                                 Content="{TemplateBinding Content}"
                                 TextBlock.Foreground="{TemplateBinding Foreground}"
                                 HorizontalContentAlignment="Stretch"
-                                VerticalContentAlignment="Stretch"
-                                CornerRadius="{DynamicResource ControlCornerRadius}" />
+                                VerticalContentAlignment="Stretch" />
               </ControlTemplate>
             </Button.Template>
 
@@ -91,7 +90,7 @@
               </Border>
 
               <Rectangle Name="FirstColumnDivider"
-                  Fill="{DynamicResource TimePickerSpacerFill}"
+                  Fill="{DynamicResource ThemeControlMidHighBrush}"
                   HorizontalAlignment="Center"
                   Width="{DynamicResource TimePickerSpacerThemeWidth}"
                   Grid.Column="1" />
@@ -106,7 +105,7 @@
               </Border>
 
               <Rectangle Name="SecondColumnDivider"
-                  Fill="{DynamicResource TimePickerSpacerFill}"
+                  Fill="{DynamicResource ThemeControlMidHighBrush}"
                   HorizontalAlignment="Center"
                   Width="{DynamicResource TimePickerSpacerThemeWidth}"
                   Grid.Column="3" />
@@ -123,7 +122,7 @@
           </Button>
 
           <Popup Name="Popup" WindowManagerAddShadowHint="False"
-                 IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}"
+                 StaysOpen="False" PlacementTarget="{TemplateBinding}"
                  PlacementMode="Bottom">
             <TimePickerPresenter Name="PickerPresenter" />
           </Popup>
@@ -134,32 +133,35 @@
   </Style>
 
   <Style Selector="TimePicker:disabled /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerHeaderForegroundDisabled}"/>
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
   </Style>
   <Style Selector="TimePicker:disabled /template/ Rectangle">
-    <Setter Property="Fill" Value="{DynamicResource TimePickerSpacerFillDisabled}"/>
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
   </Style>
 
   <Style Selector="TimePicker /template/ Button#FlyoutButton:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPointerOver}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushPointerOver}"/>
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundPointerOver}"/>
+    <!--<Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPointerOver}"/>-->
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlHighBrush}"/>
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
   </Style>
 
   <Style Selector="TimePicker /template/ Button:pressed /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundPressed}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushPressed}"/>
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundPressed}"/>
+    <Setter Property="Background">
+      <SolidColorBrush Color="{DynamicResource ThemeControlMidHighColor}" Opacity="0.6" />
+    </Setter>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlLowBrush}"/>
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
   </Style>
 
   <Style Selector="TimePicker /template/ Button:disabled /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundDisabled}"/>
+    <!--<Setter Property="Background" Value="{DynamicResource TimePickerButtonBackgroundDisabled}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrushDisabled}"/>
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundDisabled}"/>
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource TimePickerButtonForegroundDisabled}"/>-->
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
   </Style>
 
   <Style Selector="TimePicker:hasnotime /template/ Button#FlyoutButton TextBlock">
-    <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}"/>
   </Style>
 
   <Style Selector="TimePickerPresenter">
@@ -167,8 +169,8 @@
     <Setter Property="MinWidth" Value="242" />
     <Setter Property="MaxHeight" Value="398" />    
     <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="Background" Value="{DynamicResource TimePickerFlyoutPresenterBackground}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource TimePickerFlyoutPresenterBorderBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource DateTimeFlyoutBorderThickness}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -176,7 +178,6 @@
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{DynamicResource OverlayCornerRadius}"
                 Padding="{DynamicResource DateTimeFlyoutBorderPadding}"
                 MaxHeight="398">
           <Grid Name="ContentPanel" RowDefinitions="*,Auto">
@@ -235,13 +236,13 @@
                       Height="{DynamicResource TimePickerFlyoutPresenterHighlightHeight}" />
 
               <Rectangle Name="FirstSpacer"
-                  Fill="{DynamicResource TimePickerFlyoutPresenterSpacerFill}"
+                  Fill="{DynamicResource ThemeControlMidHighBrush}"
                   HorizontalAlignment="Center"
                   Width="{DynamicResource TimePickerSpacerThemeWidth}"
                   Grid.Column="1" />
 
               <Rectangle Name="SecondSpacer"
-                  Fill="{DynamicResource TimePickerFlyoutPresenterSpacerFill}"
+                  Fill="{DynamicResource ThemeControlMidHighBrush}"
                   HorizontalAlignment="Center"
                   Width="{DynamicResource TimePickerSpacerThemeWidth}"
                   Grid.Column="3" />
@@ -251,7 +252,7 @@
                   Name="AcceptDismissHostGrid" ColumnDefinitions="*,*">
               <Rectangle Height="{DynamicResource TimePickerSpacerThemeWidth}"
                       VerticalAlignment="Top"
-                      Fill="{DynamicResource TimePickerFlyoutPresenterSpacerFill}"
+                      Fill="{DynamicResource ThemeControlMidHighBrush}"
                       Grid.ColumnSpan="2" />
               <Button Name="AcceptButton" Grid.Column="0" Classes="DateTimeFlyoutButtonStyle"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

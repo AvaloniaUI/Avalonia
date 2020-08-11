@@ -52,7 +52,7 @@ namespace Avalonia.Skia
 
             var createInfo = new DrawingContextImpl.CreateInfo
             {
-                Canvas = canvas,
+                Surface = _framebufferSurface,
                 Dpi = framebuffer.Dpi,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true

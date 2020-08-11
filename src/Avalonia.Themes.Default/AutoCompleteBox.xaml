@@ -19,7 +19,7 @@
                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
                  PlacementTarget="{TemplateBinding}"
-                 StaysOpen="False">
+                 IsLightDismissEnabled="True">
             <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                     BorderThickness="1">
               <ListBox Name="PART_SelectingItemsControl"

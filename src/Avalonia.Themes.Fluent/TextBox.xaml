@@ -1,4 +1,13 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <TextBox Text="Sample"
+               FontSize="20"
+               Width="100"
+               TextAlignment="Center"/>
+    </Border>
+  </Design.PreviewWith>
+  
   <Styles.Resources>
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
   </Styles.Resources>
@@ -42,7 +51,7 @@
               <DockPanel>
                 <TextBlock Name="floatingWatermark"
                            Foreground="{DynamicResource SystemAccentColor}"
-                           FontSize="{DynamicResource FontSizeSmall}"
+                           FontSize="{TemplateBinding FontSize}"
                            Text="{TemplateBinding Watermark}"
                            DockPanel.Dock="Top">
                   <TextBlock.IsVisible>
@@ -66,7 +75,9 @@
                                Text="{TemplateBinding Watermark}"
                                TextAlignment="{TemplateBinding TextAlignment}"
                                TextWrapping="{TemplateBinding TextWrapping}"
-                               IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+                               IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                       <!-- TODO eliminate this margin... text layout issue? -->
                       <TextPresenter Name="PART_TextPresenter"
                                    Margin="0 1 0 0"
@@ -79,7 +90,9 @@
                                    PasswordChar="{TemplateBinding PasswordChar}"
                                    SelectionBrush="{TemplateBinding SelectionBrush}"
                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                   CaretBrush="{TemplateBinding CaretBrush}"/>
+                                   CaretBrush="{TemplateBinding CaretBrush}"
+                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/> 
                     </Panel>
                   </ScrollViewer>
                 </DataValidationErrors>
@@ -136,7 +149,7 @@
 
 
   <Style Selector="TextBox:error /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
   </Style>
 
   <Style Selector="TextBox /template/ DockPanel">

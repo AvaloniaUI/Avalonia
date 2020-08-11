@@ -215,7 +215,7 @@ namespace Avalonia.Controls
                     TemplateProperties.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
 
                     // Remove these properties when we switch to fluent as default and removed the old one.
-                    IndeterminateStartingOffset = -(dim / 5d);
+                    IndeterminateStartingOffset = -dim;
                     IndeterminateEndingOffset = dim;
 
                     var padding = Padding;
