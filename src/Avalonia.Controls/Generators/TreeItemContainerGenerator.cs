@@ -100,6 +100,8 @@ namespace Avalonia.Controls.Generators
             return result;
         }
 
+        protected override bool DataIsContainer(object data) => data is T;
+
         private ITreeDataTemplate GetTreeDataTemplate(object item, IDataTemplate? primary)
         {
             var template = Owner.FindDataTemplate(item, primary) ?? FuncDataTemplate.Default;

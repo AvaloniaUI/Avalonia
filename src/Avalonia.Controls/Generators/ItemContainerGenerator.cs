@@ -11,6 +11,9 @@ namespace Avalonia.Controls.Generators
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
+        private static readonly AttachedProperty<bool> PreventRecycleProperty =
+            AvaloniaProperty.RegisterAttached<ItemContainerGenerator, Control, bool>("PreventRecycle");
+
         private RecyclePool _recyclePool = new RecyclePool();
 
         public ItemContainerGenerator(ItemsControl owner)
@@ -30,33 +33,40 @@ namespace Avalonia.Controls.Generators
 
         public IControl GetElement(ElementFactoryGetArgs args)
         {
-            var result = _recyclePool.TryGetElement(string.Empty, args.Parent);
-
-            if (result is null)
+            if (DataIsContainer(args.Data))
             {
-                result = CreateContainer(args);
-
-                if (result.Parent == null)
-                {
-                    ((ISetLogicalParent)result).SetParent(Owner);
-                }
+                var result = (Control)args.Data;
+                result.SetValue(PreventRecycleProperty, true);
+                return result;
             }
+            else
+            {
+                var result = _recyclePool.TryGetElement(string.Empty, args.Parent);
 
-            return result;
+                if (result is null)
+                {
+                    result = CreateContainer(args);
+
+                    if (result.Parent == null)
+                    {
+                        ((ISetLogicalParent)result).SetParent(Owner);
+                    }
+                }
+
+                return result;
+            }
         }
 
         public void RecycleElement(ElementFactoryRecycleArgs args)
         {
-            _recyclePool.PutElement(args.Element, string.Empty, args.Parent);
+            if (!args.Element.GetValue(PreventRecycleProperty))
+            {
+                _recyclePool.PutElement(args.Element, string.Empty, args.Parent);
+            }
         }
 
         protected virtual IControl CreateContainer(ElementFactoryGetArgs args)
         {
-            if (args.Data is IControl c)
-            {
-                return c;
-            }
-
             var result = new ContentPresenter();
             result.Bind(
                 ContentPresenter.ContentProperty,
@@ -73,5 +83,7 @@ namespace Avalonia.Controls.Generators
 
             return result;
         }
+
+        protected virtual bool DataIsContainer(object data) => data is Control;
     }
 }

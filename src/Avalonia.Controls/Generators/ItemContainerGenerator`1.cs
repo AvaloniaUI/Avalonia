@@ -59,5 +59,7 @@ namespace Avalonia.Controls.Generators
 
             return result;
         }
+
+        protected override bool DataIsContainer(object data) => data is T;
     }
 }

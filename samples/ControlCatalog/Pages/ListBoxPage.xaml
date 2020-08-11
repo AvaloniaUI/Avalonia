@@ -9,7 +9,45 @@
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Spacing="16">
+
       <StackPanel Orientation="Vertical" Spacing="8">
+        <TextBlock Classes="h1">Inline items</TextBlock>
+        <ListBox Width="250" Height="350">
+          <ListBoxItem>Item 0</ListBoxItem>
+          <ListBoxItem>Item 1</ListBoxItem>
+          <ListBoxItem>Item 2</ListBoxItem>
+          <ListBoxItem>Item 3</ListBoxItem>
+          <ListBoxItem>Item 4</ListBoxItem>
+          <ListBoxItem>Item 5</ListBoxItem>
+          <ListBoxItem>Item 6</ListBoxItem>
+          <ListBoxItem>Item 7</ListBoxItem>
+          <ListBoxItem>Item 8</ListBoxItem>
+          <ListBoxItem>Item 9</ListBoxItem>
+          <ListBoxItem>Item 10</ListBoxItem>
+          <ListBoxItem>Item 11</ListBoxItem>
+          <ListBoxItem>Item 12</ListBoxItem>
+          <ListBoxItem>Item 13</ListBoxItem>
+          <ListBoxItem>Item 14</ListBoxItem>
+          <ListBoxItem>Item 15</ListBoxItem>
+          <ListBoxItem>Item 16</ListBoxItem>
+          <ListBoxItem>Item 17</ListBoxItem>
+          <ListBoxItem>Item 18</ListBoxItem>
+          <ListBoxItem>Item 19</ListBoxItem>
+          <ListBoxItem>Item 20</ListBoxItem>
+          <ListBoxItem>Item 21</ListBoxItem>
+          <ListBoxItem>Item 22</ListBoxItem>
+          <ListBoxItem>Item 23</ListBoxItem>
+          <ListBoxItem>Item 24</ListBoxItem>
+          <ListBoxItem>Item 25</ListBoxItem>
+          <ListBoxItem>Item 26</ListBoxItem>
+          <ListBoxItem>Item 27</ListBoxItem>
+          <ListBoxItem>Item 28</ListBoxItem>
+          <ListBoxItem>Item 29</ListBoxItem>
+        </ListBox>
+      </StackPanel>
+      
+      <StackPanel Orientation="Vertical" Spacing="8">
+        <TextBlock Classes="h1">Bound items with virtualization</TextBlock>
         <ListBox Items="{Binding Items}"
                  Selection="{Binding Selection}"
                  AutoScrollToSelectedItem="True"
