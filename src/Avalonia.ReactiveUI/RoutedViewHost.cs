@@ -124,8 +124,8 @@ namespace Avalonia.ReactiveUI
     
             this.Log().Info($"Ready to show {viewInstance} with autowired {viewModel}.");
             viewInstance.ViewModel = viewModel;
-            if (viewInstance is IStyledElement styled)
-                styled.DataContext = viewModel;
+            if (viewInstance is IDataContextProvider provider)
+                provider.DataContext = viewModel;
             Content = viewInstance;
         }
     }
