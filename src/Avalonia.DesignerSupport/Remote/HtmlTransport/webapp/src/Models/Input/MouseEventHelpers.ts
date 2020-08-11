@@ -25,12 +25,12 @@ export function getModifiers(e: React.MouseEvent): Array<InputModifiers> {
 }
 
 export function getMouseButton(e: React.MouseEvent) : MouseButton {
-    if (e.button == 1) {
+    if (e.button == 0) {
         return MouseButton.Left;
+    } else if (e.button == 1) {
+        return MouseButton.Middle;
     } else if (e.button == 2) {
         return MouseButton.Right;
-    } else if (e.button == 4) {
-        return MouseButton.Middle
     } else {
         return MouseButton.None;
     }
