@@ -63,6 +63,20 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Binding_Overridden_Validated_Direct_Property_Calls_UpdateDataValidation()
+        {
+            var target = new Class2();
+            var source = new Subject<BindingValue<int>>();
+
+            // Class2 overrides `NonValidatedDirectProperty`'s metadata to enable data validation.
+            target.Bind(Class1.NonValidatedDirectProperty, source);
+            source.OnNext(1);
+
+            var result = target.Notifications.Cast<BindingValue<int>>().ToList();
+            Assert.Equal(1, result.Count);
+        }
+
+        [Fact]
         public void Bound_Validated_Direct_String_Property_Can_Be_Set_To_Null()
         {
             var source = new ViewModel
@@ -147,6 +161,15 @@ namespace Avalonia.Base.UnitTests
                 BindingValue<T> value)
             {
                 Notifications.Add(value);
+            }
+        }
+
+        private class Class2 : Class1
+        {
+            static Class2()
+            {
+                NonValidatedDirectProperty.OverrideMetadata<Class2>(
+                    new DirectPropertyMetadata<int>(enableDataValidation: true));
             }
         }
 
