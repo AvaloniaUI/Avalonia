@@ -81,7 +81,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 ctx.PopOpacity();
             }
 
-            var bmp = new Bitmap(fmt, fb.Address, fb.Size, new Vector(96, 96), fb.RowBytes);
+            var bmp = new Bitmap(fmt, AlphaFormat.Premul, fb.Address, fb.Size, new Vector(96, 96), fb.RowBytes);
             fb.Deallocate();
             using (var rtb = new RenderTargetBitmap(new PixelSize(100, 100), new Vector(96, 96)))
             {
