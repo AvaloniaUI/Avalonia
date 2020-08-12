@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.UnitTests;
@@ -138,6 +139,49 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 
                 Assert.Equal(button.IsEffectivelyEnabled, true);
             }
+        }
+
+        [Fact]
+        public void Binding_Method_To_Command_Collected()
+        {
+            WeakReference<ViewModel> MakeRef()
+            {
+                var weakVm = new WeakReference<ViewModel>(null);
+                {
+                    var vm = new ViewModel()
+                    {
+                        Parameter = null,
+                    };
+                    weakVm.SetTarget(vm);
+                    var canExecuteCount = 0;
+                    var action = new Action<object>(vm.Do);
+                    var command = new Avalonia.Data.Converters.MethodToCommandConverter(action);
+                    command.CanExecuteChanged += (s, e) => canExecuteCount++;
+                    vm.Parameter = 0;
+                    Threading.Dispatcher.UIThread.RunJobs();
+                    vm.Parameter = null;
+                    Threading.Dispatcher.UIThread.RunJobs();
+                    Assert.Equal(2, canExecuteCount);
+                }
+                return weakVm;
+            }
+            bool IsAlive(WeakReference<ViewModel> @ref)
+            {
+                return @ref.TryGetTarget(out var instance)
+                    && instance is null == false;
+            }
+
+            var vmref = MakeRef();
+
+            var beforeCollect = IsAlive(vmref);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            var afterCollect = IsAlive(vmref);
+
+            Assert.True(beforeCollect, "Invalid ViewModel instance, it is already collected.");
+            Assert.False(afterCollect, "ViewModel instance was not collected");
         }
 
         static void PerformClick(Button button)
