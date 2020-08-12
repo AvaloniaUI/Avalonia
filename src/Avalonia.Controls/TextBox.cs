@@ -101,8 +101,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object> InnerRightContentProperty =
             AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
 
-        public static readonly StyledProperty<bool> ShowPasswordCharProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(ShowPasswordChar));
+        public static readonly StyledProperty<bool> ShowPasswordTextProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(ShowPasswordText));
 
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -347,10 +347,10 @@ namespace Avalonia.Controls
             set { SetValue(InnerRightContentProperty, value); }
         }
 
-        public bool ShowPasswordChar
+        public bool ShowPasswordText
         {
-            get { return GetValue(ShowPasswordCharProperty); }
-            set { SetValue(ShowPasswordCharProperty, value); }
+            get { return GetValue(ShowPasswordTextProperty); }
+            set { SetValue(ShowPasswordTextProperty, value); }
         }
 
         public TextWrapping TextWrapping
