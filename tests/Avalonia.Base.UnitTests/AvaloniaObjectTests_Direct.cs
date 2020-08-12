@@ -547,8 +547,7 @@ namespace Avalonia.Base.UnitTests
                 "foo",
                 o => "foo",
                 null,
-                new DirectPropertyMetadata<string>(defaultBindingMode: BindingMode.TwoWay),
-                false);
+                new DirectPropertyMetadata<string>(defaultBindingMode: BindingMode.TwoWay));
             var bar = foo.AddOwner<Class2>(o => "bar");
 
             Assert.Equal(BindingMode.TwoWay, bar.GetMetadata<Class1>().DefaultBindingMode);
@@ -562,8 +561,7 @@ namespace Avalonia.Base.UnitTests
                 "foo",
                 o => "foo",
                 null,
-                new DirectPropertyMetadata<string>(defaultBindingMode: BindingMode.TwoWay),
-                false);
+                new DirectPropertyMetadata<string>(defaultBindingMode: BindingMode.TwoWay));
             var bar = foo.AddOwner<Class2>(o => "bar", defaultBindingMode: BindingMode.OneWayToSource);
 
             Assert.Equal(BindingMode.TwoWay, bar.GetMetadata<Class1>().DefaultBindingMode);
