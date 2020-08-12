@@ -1,0 +1,6 @@
+Compat issues with assembly Avalonia.Base:
+MembersMustExist : Member 'public void Avalonia.DirectProperty<TOwner, TValue>..ctor(System.String, System.Func<TOwner, TValue>, System.Action<TOwner, TValue>, Avalonia.DirectPropertyMetadata<TValue>, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.DirectPropertyBase<TValue>..ctor(Avalonia.AvaloniaProperty, System.Type, Avalonia.PropertyMetadata, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.DirectPropertyBase<TValue>..ctor(System.String, System.Type, Avalonia.PropertyMetadata, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Boolean Avalonia.DirectPropertyBase<TValue>.IsDataValidationEnabled.get()' does not exist in the implementation but it does exist in the contract.
+Total Issues: 4
