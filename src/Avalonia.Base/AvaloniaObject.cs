@@ -806,7 +806,9 @@ namespace Avalonia
                     break;
             }
 
-            if (p.IsDataValidationEnabled)
+            var metadata = p.GetMetadata(GetType());
+
+            if (metadata.EnableDataValidation == true)
             {
                 UpdateDataValidation(property, value);
             }

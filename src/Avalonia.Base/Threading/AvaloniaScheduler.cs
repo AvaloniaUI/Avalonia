@@ -10,6 +10,16 @@ namespace Avalonia.Threading
     public class AvaloniaScheduler : LocalScheduler
     {
         /// <summary>
+        /// Users can schedule actions on the dispatcher thread while being on the correct thread already.
+        /// We are optimizing this case by invoking user callback immediately which can lead to stack overflows in certain cases.
+        /// To prevent this we are limiting amount of reentrant calls to <see cref="Schedule{TState}"/> before we will
+        /// schedule on a dispatcher anyway.
+        /// </summary>
+        private const int MaxReentrantSchedules = 32;
+
+        private int _reentrancyGuard;
+
+        /// <summary>
         /// The instance of the <see cref="AvaloniaScheduler"/>.
         /// </summary>
         public static readonly AvaloniaScheduler Instance = new AvaloniaScheduler();
@@ -24,31 +34,58 @@ namespace Avalonia.Threading
         /// <inheritdoc/>
         public override IDisposable Schedule<TState>(TState state, TimeSpan dueTime, Func<IScheduler, TState, IDisposable> action)
         {
-            var composite = new CompositeDisposable(2);
+            IDisposable PostOnDispatcher()
+            {
+                var composite = new CompositeDisposable(2);
+
+                var cancellation = new CancellationDisposable();
+
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (!cancellation.Token.IsCancellationRequested)
+                    {
+                        composite.Add(action(this, state));
+                    }
+                }, DispatcherPriority.DataBind);
+
+                composite.Add(cancellation);
+
+                return composite;
+            }
+
             if (dueTime == TimeSpan.Zero)
             {
                 if (!Dispatcher.UIThread.CheckAccess())
                 {
-                    var cancellation = new CancellationDisposable();
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        if (!cancellation.Token.IsCancellationRequested)
-                        {
-                            composite.Add(action(this, state));
-                        }
-                    }, DispatcherPriority.DataBind);
-                    composite.Add(cancellation); 
+                    return PostOnDispatcher();
                 }
                 else
                 {
-                    return action(this, state);
+                    if (_reentrancyGuard >= MaxReentrantSchedules)
+                    {
+                        return PostOnDispatcher();
+                    }
+
+                    try
+                    {
+                        _reentrancyGuard++;
+
+                        return action(this, state);
+                    }
+                    finally
+                    {
+                        _reentrancyGuard--;
+                    }
                 }
             }
             else
             {
+                var composite = new CompositeDisposable(2);
+
                 composite.Add(DispatcherTimer.RunOnce(() => composite.Add(action(this, state)), dueTime));
+
+                return composite;
             }
-            return composite;
         }
     }
 }

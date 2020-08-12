@@ -350,11 +350,14 @@ namespace Avalonia.Controls
                 }
 
                 // Make sure that only the target child can be the anchor during the bring into view operation.
-                foreach (var child in _owner.Children)
+                if (_scroller is object)
                 {
-                    if (child != targetChild)
+                    foreach (var child in _owner.Children)
                     {
-                        _scroller.UnregisterAnchorCandidate(child);
+                        if (child != targetChild)
+                        {
+                            _scroller.UnregisterAnchorCandidate(child);
+                        }
                     }
                 }
 
@@ -469,13 +472,7 @@ namespace Avalonia.Controls
                     parent = parent.VisualParent;
                 }
 
-                if (_scroller == null)
-                {
-                    // We usually update the viewport in the post arrange handler. But, since we don't have
-                    // a scroller, let's do it now.
-                    UpdateViewport(Rect.Empty);
-                }
-                else if (!_managingViewportDisabled)
+                if (!_managingViewportDisabled)
                 {
                     _owner.EffectiveViewportChanged += OnEffectiveViewportChanged;
                     _effectiveViewportChangedSubscribed = true;

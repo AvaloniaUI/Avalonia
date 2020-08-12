@@ -36,6 +36,21 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void Setter_Should_Handle_Binding_Producing_UnsetValue()
+        {
+            var control = new TextBlock();
+            var subject = new BehaviorSubject<object>(AvaloniaProperty.UnsetValue);
+            var descriptor = InstancedBinding.OneWay(subject);
+            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TagProperty, null, false) == descriptor);
+            var style = Mock.Of<IStyle>();
+            var setter = new Setter(TextBlock.TagProperty, binding);
+
+            setter.Instance(control).Start(false);
+
+            Assert.Equal("", control.Text);
+        }
+
+        [Fact]
         public void Setter_Should_Materialize_Template_To_Property()
         {
             var control = new Decorator();

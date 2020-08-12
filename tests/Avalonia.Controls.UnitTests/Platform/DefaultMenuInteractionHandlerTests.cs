@@ -125,6 +125,24 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
+            public void Click_On_TopLevel_Calls_MainMenu_Open()
+            {
+                var target = new DefaultMenuInteractionHandler(false);
+                var menu = new Mock<IMainMenu>();
+                menu.As<IMenuElement>();
+
+                var item = Mock.Of<IMenuItem>(x =>
+                    x.IsTopLevel == true &&
+                    x.HasSubMenu == true &&
+                    x.Parent == menu.Object);
+
+                var e = CreatePressed(item);
+
+                target.PointerPressed(item, e);
+                menu.Verify(x => x.Open());
+            }
+
+            [Fact]
             public void Click_On_Open_TopLevel_Menu_Closes_Menu()
             {
                 var target = new DefaultMenuInteractionHandler(false);

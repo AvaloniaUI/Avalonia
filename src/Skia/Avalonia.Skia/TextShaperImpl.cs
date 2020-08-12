@@ -123,10 +123,7 @@ namespace Avalonia.Skia
                 return;
             }
 
-            if (offsetBuffer == null)
-            {
-                offsetBuffer = new Vector[glyphPositions.Length];
-            }
+            offsetBuffer ??= new Vector[glyphPositions.Length];
 
             var offsetX = position.XOffset * textScale;
 
@@ -138,10 +135,7 @@ namespace Avalonia.Skia
         private static void SetAdvance(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale,
             ref double[] advanceBuffer)
         {
-            if (advanceBuffer == null)
-            {
-                advanceBuffer = new double[glyphPositions.Length];
-            }
+            advanceBuffer ??= new double[glyphPositions.Length];
 
             // Depends on direction of layout
             // advanceBuffer[index] = buffer.GlyphPositions[index].YAdvance * textScale;
