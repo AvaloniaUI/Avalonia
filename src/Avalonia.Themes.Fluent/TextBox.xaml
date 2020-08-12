@@ -96,7 +96,7 @@
                                       TextAlignment="{TemplateBinding TextAlignment}"
                                       TextWrapping="{TemplateBinding TextWrapping}"
                                       PasswordChar="{TemplateBinding PasswordChar}"
-                                      RevealPasswordText="{TemplateBinding RevealPasswordText}"
+                                      RevealPassword="{TemplateBinding RevealPassword}"
                                       SelectionBrush="{TemplateBinding SelectionBrush}"
                                       SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
                                       CaretBrush="{TemplateBinding CaretBrush}"
@@ -169,10 +169,10 @@
   <Style Selector="TextBox.revealPasswordButton">
     <Setter Property="InnerRightContent">
       <Template>
-        <ToggleButton IsChecked="{Binding $parent[TextBox].RevealPasswordText, Mode=TwoWay}">
+        <ToggleButton IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}">
           <Panel Width="16" Height="16">
-            <DrawingPresenter Drawing="{DynamicResource EyeShowRegular}" IsVisible="{Binding $parent[TextBox].RevealPasswordText}"/>
-            <DrawingPresenter Drawing="{DynamicResource EyeHideRegular}" IsVisible="{Binding !$parent[TextBox].RevealPasswordText}"/>
+            <DrawingPresenter Drawing="{DynamicResource EyeShowRegular}" IsVisible="{Binding $parent[TextBox].RevealPassword}"/>
+            <DrawingPresenter Drawing="{DynamicResource EyeHideRegular}" IsVisible="{Binding !$parent[TextBox].RevealPassword}"/>
           </Panel>
         </ToggleButton>
       </Template>
