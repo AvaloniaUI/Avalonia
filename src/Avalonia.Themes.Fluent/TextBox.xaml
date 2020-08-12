@@ -10,11 +10,11 @@
   
   <Styles.Resources>
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
-    <DrawingGroup x:Key="eye_show_regular">
+    <DrawingGroup x:Key="EyeShowRegular">
       <GeometryDrawing Brush="Transparent" Geometry="M0,0 24,0 24,24 0,24" />
       <GeometryDrawing Brush="White" Geometry="M12,9.0046246 C14.209139,9.0046246 16,10.7954856 16,13.0046246 C16,15.2137636 14.209139,17.0046246 12,17.0046246 C9.790861,17.0046246 8,15.2137636 8,13.0046246 C8,10.7954856 9.790861,9.0046246 12,9.0046246 Z M12,10.5046246 C10.6192881,10.5046246 9.5,11.6239127 9.5,13.0046246 C9.5,14.3853365 10.6192881,15.5046246 12,15.5046246 C13.3807119,15.5046246 14.5,14.3853365 14.5,13.0046246 C14.5,11.6239127 13.3807119,10.5046246 12,10.5046246 Z M12,5.5 C16.613512,5.5 20.5960869,8.65000641 21.7011157,13.0643865 C21.8017,13.4662019 21.557504,13.8734775 21.1556885,13.9740618 C20.7538731,14.0746462 20.3465976,13.8304502 20.2460132,13.4286347 C19.3071259,9.67795854 15.9213644,7 12,7 C8.07693257,7 4.69009765,9.68026417 3.75285786,13.4331499 C3.65249525,13.8350208 3.24535455,14.0794416 2.84348365,13.979079 C2.44161275,13.8787164 2.19719198,13.4715757 2.29755459,13.0697048 C3.4006459,8.65271806 7.38448293,5.5 12,5.5 Z" />
     </DrawingGroup>
-    <DrawingGroup x:Key="eye_hide_regular">
+    <DrawingGroup x:Key="EyeHideRegular">
       <GeometryDrawing Brush="Transparent" Geometry="M0,0 24,0 24,24 0,24" />
       <GeometryDrawing Brush="White" Geometry="M2.21967 2.21967C1.9534 2.48594 1.9292 2.9026 2.14705 3.19621L2.21967 3.28033L6.25424 7.3149C4.33225 8.66437 2.89577 10.6799 2.29888 13.0644C2.1983 13.4662 2.4425 13.8735 2.84431 13.9741C3.24613 14.0746 3.6534 13.8305 3.75399 13.4286C4.28346 11.3135 5.59112 9.53947 7.33416 8.39452L9.14379 10.2043C8.43628 10.9258 8 11.9143 8 13.0046C8 15.2138 9.79086 17.0046 12 17.0046C13.0904 17.0046 14.0788 16.5683 14.8004 15.8608L20.7197 21.7803C21.0126 22.0732 21.4874 22.0732 21.7803 21.7803C22.0466 21.5141 22.0708 21.0974 21.8529 20.8038L21.7803 20.7197L15.6668 14.6055L15.668 14.604L14.4679 13.4061L11.598 10.5368L11.6 10.536L8.71877 7.65782L8.72 7.656L7.58672 6.52549L3.28033 2.21967C2.98744 1.92678 2.51256 1.92678 2.21967 2.21967ZM10.2041 11.2655L13.7392 14.8006C13.2892 15.2364 12.6759 15.5046 12 15.5046C10.6193 15.5046 9.5 14.3853 9.5 13.0046C9.5 12.3287 9.76824 11.7154 10.2041 11.2655ZM12 5.5C10.9997 5.5 10.0291 5.64807 9.11109 5.925L10.3481 7.16119C10.8839 7.05532 11.4364 7 12 7C15.9231 7 19.3099 9.68026 20.2471 13.4332C20.3475 13.835 20.7546 14.0794 21.1565 13.9791C21.5584 13.8787 21.8028 13.4716 21.7024 13.0697C20.5994 8.65272 16.6155 5.5 12 5.5ZM12.1947 9.00928L15.996 12.81C15.8942 10.7531 14.2472 9.10764 12.1947 9.00928Z" />
     </DrawingGroup>
@@ -96,7 +96,7 @@
                                       TextAlignment="{TemplateBinding TextAlignment}"
                                       TextWrapping="{TemplateBinding TextWrapping}"
                                       PasswordChar="{TemplateBinding PasswordChar}"
-                                      ShowPasswordText="{TemplateBinding ShowPasswordText}"
+                                      RevealPasswordText="{TemplateBinding RevealPasswordText}"
                                       SelectionBrush="{TemplateBinding SelectionBrush}"
                                       SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
                                       CaretBrush="{TemplateBinding CaretBrush}"
@@ -166,28 +166,20 @@
     <Setter Property="Cursor" Value="IBeam" />
   </Style>
 
-  <Style Selector="TextBox.showPasswordButton">
+  <Style Selector="TextBox.revealPasswordButton">
     <Setter Property="InnerRightContent">
       <Template>
-        <ToggleButton IsChecked="{Binding $parent[TextBox].ShowPasswordText, Mode=TwoWay}">
+        <ToggleButton IsChecked="{Binding $parent[TextBox].RevealPasswordText, Mode=TwoWay}">
           <Panel Width="16" Height="16">
-            <DrawingPresenter Drawing="{DynamicResource eye_show_regular}" IsVisible="{Binding $parent[TextBox].ShowPasswordText}"/>
-            <DrawingPresenter Drawing="{DynamicResource eye_hide_regular}" IsVisible="{Binding !$parent[TextBox].ShowPasswordText}"/>
+            <DrawingPresenter Drawing="{DynamicResource EyeShowRegular}" IsVisible="{Binding $parent[TextBox].RevealPasswordText}"/>
+            <DrawingPresenter Drawing="{DynamicResource EyeHideRegular}" IsVisible="{Binding !$parent[TextBox].RevealPasswordText}"/>
           </Panel>
         </ToggleButton>
       </Template>
     </Setter>
   </Style>
 
-  <Style Selector="TextBox.leftClearButton">
-    <Setter Property="InnerLeftContent">
-      <Template>
-        <Button Content="Clear" Command="{Binding $parent[TextBox].Clear}" />
-      </Template>
-    </Setter>
-  </Style>
-
-  <Style Selector="TextBox.rightClearButton">
+  <Style Selector="TextBox.clearButton">
     <Setter Property="InnerRightContent">
       <Template>
         <Button Content="Clear" Command="{Binding $parent[TextBox].Clear}" />
