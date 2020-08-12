@@ -231,26 +231,26 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            if (Win32Platform.WindowsVersion.Major >= 6) //On Windows Vista or newer
+            if (Win32Platform.WindowsVersion.Major >= 6)
             {
-                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled) //DWM is Disabled
+                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
                 {
                     return WindowTransparencyLevel.None;
                 }
-                else if (Win32Platform.WindowsVersion.Major >= 10) //On Windows 10 or Server 2016
+                else if (Win32Platform.WindowsVersion.Major >= 10)
                 {
                     return Win10EnableBlur(transparencyLevel);
                 }
-                else if (Win32Platform.WindowsVersion.Minor >= 2) //On Windows 8.x
+                else if (Win32Platform.WindowsVersion.Minor >= 2)
                 {
                     return Win8xEnableBlur(transparencyLevel);
                 }
                 else
                 {
-                    return Win7EnableBlur(transparencyLevel); //On Windows Vista or 7
+                    return Win7EnableBlur(transparencyLevel);
                 }
             }
-            else //Impossible case or maybe Shorthorn/OneCore idk
+            else
             {
                 return WindowTransparencyLevel.None;
             }
@@ -259,9 +259,11 @@ namespace Avalonia.Win32
         private WindowTransparencyLevel Win7EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
             if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            {
                 transparencyLevel = WindowTransparencyLevel.Blur;
-            
-            DWM_BLURBEHIND blurInfo = new DWM_BLURBEHIND(false);
+            }
+
+            var blurInfo = new DWM_BLURBEHIND(false);
             
             if (transparencyLevel == WindowTransparencyLevel.Blur)
             {
@@ -271,9 +273,13 @@ namespace Avalonia.Win32
             DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
 
             if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
                 return WindowTransparencyLevel.None;
+            }
             else
+            {
                 return transparencyLevel;
+            }
         }
 
         private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
@@ -286,16 +292,14 @@ namespace Avalonia.Win32
                 transparencyLevel = WindowTransparencyLevel.Blur;
             }
 
-
             if (transparencyLevel == WindowTransparencyLevel.Transparent)
             {
-                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND; //Some of the AccentState Enum's values have different meanings on Windows 8.x than on Windows 10
+                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
             }
             else
             {
                 accent.AccentState = AccentState.ACCENT_DISABLED;
             }
-
 
             var accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr(accent, accentPtr, false);
@@ -309,20 +313,17 @@ namespace Avalonia.Win32
 
             Marshal.FreeHGlobal(accentPtr);
 
-            if (transparencyLevel >= WindowTransparencyLevel.Blur) //Use Windows 7 blur logic, which will produce blur if the Aero glass mod is installed and will merely look kinda stupid if not
+            if (transparencyLevel >= WindowTransparencyLevel.Blur)
+            {
                 Win7EnableBlur(transparencyLevel);
+            }
 
             return transparencyLevel;
         }
 
         private WindowTransparencyLevel Win10EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            bool canUseAcrylic = false;
-
-            if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
-            {
-                canUseAcrylic = true;
-            }
+            bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
