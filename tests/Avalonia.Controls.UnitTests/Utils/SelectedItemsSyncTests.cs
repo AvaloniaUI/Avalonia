@@ -208,6 +208,20 @@ namespace Avalonia.Controls.UnitTests.Utils
                 target.SetItems(new[] { "foo", "bar", "baz" }));
         }
 
+        [Fact]
+        public void Selected_Items_Can_Be_Set_Before_SelectionModel_Source()
+        {
+            var model = new SelectionModel();
+            var target = new SelectedItemsSync(model);
+            var items = new AvaloniaList<string> { "foo", "bar", "baz" };
+            var selectedItems = new AvaloniaList<string> { "bar" };
+
+            target.SetItems(selectedItems);
+            model.Source = items;
+
+            Assert.Equal(new IndexPath(1), model.SelectedIndex);
+        }
+
         private static SelectedItemsSync CreateTarget(
             IEnumerable<string> items = null)
         {

@@ -183,7 +183,10 @@ namespace Avalonia.Media.TextFormatting
             var glyphRun = TextShaper.Current.ShapeText(new ReadOnlySlice<char>(s_empty, startingIndex, 1),
                 properties.Typeface, properties.FontRenderingEmSize, properties.CultureInfo);
 
-            var textRuns = new[] { new ShapedTextCharacters(glyphRun, _paragraphProperties.DefaultTextRunProperties) };
+            var textRuns = new List<ShapedTextCharacters>
+            {
+                new ShapedTextCharacters(glyphRun, _paragraphProperties.DefaultTextRunProperties)
+            };
 
             return new TextLineImpl(textRuns,
                 TextLineMetrics.Create(textRuns, new TextRange(startingIndex, 1), MaxWidth, _paragraphProperties));

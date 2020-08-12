@@ -69,6 +69,8 @@ namespace Avalonia.DesignerSupport
                     window = new Window() {Content = (Control)control};
                 }
 
+                Design.ApplyDesignModeProperties(window, control);
+
                 if (!window.IsSet(Window.SizeToContentProperty))
                 {
                     if (double.IsNaN(window.Width))
@@ -83,7 +85,6 @@ namespace Avalonia.DesignerSupport
                 }
             }
             window.Show();
-            Design.ApplyDesignModeProperties(window, control);
             return window;
         }
     }
