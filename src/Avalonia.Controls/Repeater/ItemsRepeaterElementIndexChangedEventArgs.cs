@@ -34,7 +34,7 @@ namespace Avalonia.Controls
         /// </summary>
         public int OldIndex { get; private set; }
 
-        internal void Update(IControl element, int newIndex, int oldIndex)
+        internal void Update(IControl element, int oldIndex, int newIndex)
         {
             Element = element;
             NewIndex = newIndex;

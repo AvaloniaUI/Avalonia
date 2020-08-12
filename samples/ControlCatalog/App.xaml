@@ -11,7 +11,7 @@
       <Setter Property="FontSize" Value="14" />
     </Style>
     <Style Selector="TextBlock.h3">
-      <Setter Property="FontSize" Value="10" />
+      <Setter Property="FontSize" Value="12" />
     </Style>
     <StyleInclude Source="/SideBar.xaml"/>
   </Application.Styles>

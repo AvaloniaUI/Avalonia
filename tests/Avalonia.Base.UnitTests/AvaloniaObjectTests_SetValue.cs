@@ -40,6 +40,35 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void IsSet_Returns_False_For_Unset_Property()
+        {
+            var target = new Class1();
+
+            Assert.False(target.IsSet(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void IsSet_Returns_False_For_Set_Property()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo");
+
+            Assert.True(target.IsSet(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void IsSet_Returns_False_For_Cleared_Property()
+        {
+            var target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "foo");
+            target.SetValue(Class1.FooProperty, AvaloniaProperty.UnsetValue);
+
+            Assert.False(target.IsSet(Class1.FooProperty));
+        }
+
+        [Fact]
         public void SetValue_Sets_Value()
         {
             Class1 target = new Class1();
