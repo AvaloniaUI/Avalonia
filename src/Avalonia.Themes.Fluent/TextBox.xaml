@@ -79,6 +79,7 @@
                                       TextAlignment="{TemplateBinding TextAlignment}"
                                       TextWrapping="{TemplateBinding TextWrapping}"
                                       PasswordChar="{TemplateBinding PasswordChar}"
+                                      ShowPasswordChar="{TemplateBinding ShowPasswordChar}"
                                       SelectionBrush="{TemplateBinding SelectionBrush}"
                                       SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
                                       CaretBrush="{TemplateBinding CaretBrush}"
@@ -142,7 +143,6 @@
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
   </Style>
 
-
   <Style Selector="TextBox:error /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
   </Style>
@@ -150,5 +150,13 @@
   <Style Selector="TextBox /template/ DockPanel">
     <Setter Property="Cursor" Value="IBeam" />
   </Style>
+
+  <Style Selector="TextBox.revealPasswordButton">
+    <Setter Property="InnerRightContent">
+      <Template>
+        <ToggleButton Content="ToggleButton" IsChecked="{Binding $parent[TextBox].ShowPasswordChar, Mode=TwoWay}"/>
+      </Template>
+    </Setter>
+  </Style> 
 
 </Styles>
