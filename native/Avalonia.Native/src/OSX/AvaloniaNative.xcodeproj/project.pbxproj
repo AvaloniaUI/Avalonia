@@ -8,13 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		1A002B9E232135EE00021753 /* app.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A002B9D232135EE00021753 /* app.mm */; };
+		1A1852DC23E05814008F0DED /* deadlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A1852DB23E05814008F0DED /* deadlock.mm */; };
 		1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */; };
 		1A3E5EAA23E9F26C00EDE661 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */; };
-		1A1852DC23E05814008F0DED /* deadlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A1852DB23E05814008F0DED /* deadlock.mm */; };
-		1AFD334123E03C4F0042899B /* controlhost.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1AFD334023E03C4F0042899B /* controlhost.mm */; };
 		1A3E5EAE23E9FB1300EDE661 /* cgl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EAD23E9FB1300EDE661 /* cgl.mm */; };
 		1A3E5EB023E9FE8300EDE661 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */; };
 		1A465D10246AB61600C5858B /* dnd.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A465D0F246AB61600C5858B /* dnd.mm */; };
+		1AFD334123E03C4F0042899B /* controlhost.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1AFD334023E03C4F0042899B /* controlhost.mm */; };
 		37155CE4233C00EB0034DCE9 /* menu.h in Headers */ = {isa = PBXBuildFile; fileRef = 37155CE3233C00EB0034DCE9 /* menu.h */; };
 		37A517B32159597E00FBA241 /* Screens.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37A517B22159597E00FBA241 /* Screens.mm */; };
 		37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37C09D8721580FE4006A6758 /* SystemDialogs.mm */; };
@@ -32,13 +32,13 @@
 
 /* Begin PBXFileReference section */
 		1A002B9D232135EE00021753 /* app.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = app.mm; sourceTree = "<group>"; };
+		1A1852DB23E05814008F0DED /* deadlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = deadlock.mm; sourceTree = "<group>"; };
 		1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = rendertarget.mm; sourceTree = "<group>"; };
 		1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOSurface.framework; path = System/Library/Frameworks/IOSurface.framework; sourceTree = SDKROOT; };
-		1A1852DB23E05814008F0DED /* deadlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = deadlock.mm; sourceTree = "<group>"; };
-		1AFD334023E03C4F0042899B /* controlhost.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = controlhost.mm; sourceTree = "<group>"; };
 		1A3E5EAD23E9FB1300EDE661 /* cgl.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cgl.mm; sourceTree = "<group>"; };
 		1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		1A465D0F246AB61600C5858B /* dnd.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = dnd.mm; sourceTree = "<group>"; };
+		1AFD334023E03C4F0042899B /* controlhost.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = controlhost.mm; sourceTree = "<group>"; };
 		37155CE3233C00EB0034DCE9 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menu.h; sourceTree = "<group>"; };
 		379860FE214DA0C000CD0246 /* KeyTransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyTransform.h; sourceTree = "<group>"; };
 		37A4E71A2178846A00EACBCD /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../../inc; sourceTree = "<group>"; };
@@ -57,7 +57,7 @@
 		AB661C1D2148230F00291242 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		AB661C1F2148286E00291242 /* window.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = window.mm; sourceTree = "<group>"; };
 		AB661C212148288600291242 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
-		AB7A61EF2147C815003C5833 /* libAvalonia.Native.OSX.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libAvalonia.Native.OSX.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB7A61EF2147C815003C5833 /* libAvaloniaNative.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libAvaloniaNative.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platformthreading.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -121,7 +121,7 @@
 		AB7A61F02147C815003C5833 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AB7A61EF2147C815003C5833 /* libAvalonia.Native.OSX.dylib */,
+				AB7A61EF2147C815003C5833 /* libAvaloniaNative.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,9 +140,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		AB7A61EE2147C814003C5833 /* Avalonia.Native.OSX */ = {
+		AB7A61EE2147C814003C5833 /* AvaloniaNative */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AB7A61F82147C815003C5833 /* Build configuration list for PBXNativeTarget "Avalonia.Native.OSX" */;
+			buildConfigurationList = AB7A61F82147C815003C5833 /* Build configuration list for PBXNativeTarget "AvaloniaNative" */;
 			buildPhases = (
 				AB7A61EB2147C814003C5833 /* Sources */,
 				AB7A61EC2147C814003C5833 /* Frameworks */,
@@ -152,9 +152,9 @@
 			);
 			dependencies = (
 			);
-			name = Avalonia.Native.OSX;
+			name = AvaloniaNative;
 			productName = Avalonia.Native.OSX;
-			productReference = AB7A61EF2147C815003C5833 /* libAvalonia.Native.OSX.dylib */;
+			productReference = AB7A61EF2147C815003C5833 /* libAvaloniaNative.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -172,7 +172,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AB7A61EA2147C814003C5833 /* Build configuration list for PBXProject "Avalonia.Native.OSX" */;
+			buildConfigurationList = AB7A61EA2147C814003C5833 /* Build configuration list for PBXProject "AvaloniaNative" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -185,7 +185,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AB7A61EE2147C814003C5833 /* Avalonia.Native.OSX */,
+				AB7A61EE2147C814003C5833 /* AvaloniaNative */,
 			);
 		};
 /* End PBXProject section */
@@ -347,7 +347,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AB7A61EA2147C814003C5833 /* Build configuration list for PBXProject "Avalonia.Native.OSX" */ = {
+		AB7A61EA2147C814003C5833 /* Build configuration list for PBXProject "AvaloniaNative" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AB7A61F62147C815003C5833 /* Debug */,
@@ -356,7 +356,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AB7A61F82147C815003C5833 /* Build configuration list for PBXNativeTarget "Avalonia.Native.OSX" */ = {
+		AB7A61F82147C815003C5833 /* Build configuration list for PBXNativeTarget "AvaloniaNative" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AB7A61F92147C815003C5833 /* Debug */,

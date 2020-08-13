@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AB7A61EE2147C814003C5833"
-               BuildableName = "libAvalonia.Native.OSX.dylib"
-               BlueprintName = "Avalonia.Native.OSX"
-               ReferencedContainer = "container:Avalonia.Native.OSX.xcodeproj">
+               BuildableName = "libAvaloniaNative.dylib"
+               BlueprintName = "AvaloniaNative"
+               ReferencedContainer = "container:AvaloniaNative.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -34,12 +34,14 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      debugAsWhichUser = "root"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
       customWorkingDirectory = "$PROJECT_DIR/../../../../samples/ControlCatalog.NetCore"
-      ignoresPersistentStateOnLaunch = "NO"
+      ignoresPersistentStateOnLaunch = "YES"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
+      enableGPUValidationMode = "1"
       allowLocationSimulation = "YES">
       <PathRunnable
          runnableDebuggingMode = "0"
@@ -49,9 +51,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AB7A61EE2147C814003C5833"
-            BuildableName = "libAvalonia.Native.OSX.dylib"
-            BlueprintName = "Avalonia.Native.OSX"
-            ReferencedContainer = "container:Avalonia.Native.OSX.xcodeproj">
+            BuildableName = "libAvaloniaNative.dylib"
+            BlueprintName = "AvaloniaNative"
+            ReferencedContainer = "container:AvaloniaNative.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <CommandLineArguments>
@@ -71,9 +73,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AB7A61EE2147C814003C5833"
-            BuildableName = "libAvalonia.Native.OSX.dylib"
-            BlueprintName = "Avalonia.Native.OSX"
-            ReferencedContainer = "container:Avalonia.Native.OSX.xcodeproj">
+            BuildableName = "libAvaloniaNative.dylib"
+            BlueprintName = "AvaloniaNative"
+            ReferencedContainer = "container:AvaloniaNative.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
