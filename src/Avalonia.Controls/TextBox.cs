@@ -157,6 +157,8 @@ namespace Avalonia.Controls
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
             _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
+
+            UpdatePseudoclasses();
         }
 
         public bool AcceptsReturn
@@ -375,6 +377,16 @@ namespace Avalonia.Controls
             if (IsFocused)
             {
                 _presenter?.ShowCaret();
+            }
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TextProperty)
+            {
+                UpdatePseudoclasses();
             }
         }
 
@@ -1098,6 +1110,11 @@ namespace Avalonia.Controls
             SelectionStart = CaretIndex;
             MoveHorizontal(1, true, false);
             SelectionEnd = CaretIndex;
+        }
+
+        private void UpdatePseudoclasses()
+        {
+            PseudoClasses.Set(":empty", string.IsNullOrWhiteSpace(Text));
         }
 
         private bool IsPasswordBox => PasswordChar != default(char);
