@@ -4,12 +4,14 @@
       <TextBox Text="Sample"
                FontSize="20"
                Width="100"
+               Classes="clearButton"
                TextAlignment="Center"/>
     </Border>
   </Design.PreviewWith>
   
   <Styles.Resources>
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
+    <StreamGeometry x:Key="TextBoxClearButton">M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z</StreamGeometry>
     <DrawingGroup x:Key="EyeShowRegular">
       <GeometryDrawing Brush="Transparent" Geometry="M0,0 24,0 24,24 0,24" />
       <GeometryDrawing Brush="White" Geometry="M12,9.0046246 C14.209139,9.0046246 16,10.7954856 16,13.0046246 C16,15.2137636 14.209139,17.0046246 12,17.0046246 C9.790861,17.0046246 8,15.2137636 8,13.0046246 C8,10.7954856 9.790861,9.0046246 12,9.0046246 Z M12,10.5046246 C10.6192881,10.5046246 9.5,11.6239127 9.5,13.0046246 C9.5,14.3853365 10.6192881,15.5046246 12,15.5046246 C13.3807119,15.5046246 14.5,14.3853365 14.5,13.0046246 C14.5,11.6239127 13.3807119,10.5046246 12,10.5046246 Z M12,5.5 C16.613512,5.5 20.5960869,8.65000641 21.7011157,13.0643865 C21.8017,13.4662019 21.557504,13.8734775 21.1556885,13.9740618 C20.7538731,14.0746462 20.3465976,13.8304502 20.2460132,13.4286347 C19.3071259,9.67795854 15.9213644,7 12,7 C8.07693257,7 4.69009765,9.68026417 3.75285786,13.4331499 C3.65249525,13.8350208 3.24535455,14.0794416 2.84348365,13.979079 C2.44161275,13.8787164 2.19719198,13.4715757 2.29755459,13.0697048 C3.4006459,8.65271806 7.38448293,5.5 12,5.5 Z" />
@@ -179,12 +181,63 @@
     </Setter>
   </Style>
 
-  <Style Selector="TextBox.clearButton">
+  <Style Selector="TextBox.clearButton[AcceptsReturn=False][IsReadOnly=False]:focus:not(TextBox:empty)">
     <Setter Property="InnerRightContent">
       <Template>
-        <Button Content="Clear" Command="{Binding $parent[TextBox].Clear}" />
+        <Button Classes="TextBoxClearButton"
+                Command="{Binding $parent[TextBox].Clear}" />
       </Template>
     </Setter>
+  </Style>
+
+  <Style Selector="Button.TextBoxClearButton">
+    <Setter Property="MinWidth" Value="34" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="PART_ButtonLayoutBorder"
+                  BorderThickness="{TemplateBinding BorderThickness}">      
+            <Path x:Name="PART_GlyphElement"
+                  Data="{StaticResource TextBoxClearButton}"
+                  Height="10"
+                  Width="10"
+                  Stretch="UniformToFill"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center"/>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style Selector="Button.TextBoxClearButton /template/ Border#PART_ButtonLayoutBorder">
+    <Setter Property="Background" Value="{DynamicResource TextControlButtonBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrush}" />
+  </Style>
+  <Style Selector="Button.TextBoxClearButton /template/ Path#PART_GlyphElement">
+    <Setter Property="Fill" Value="{DynamicResource TextControlButtonForeground}" />
+  </Style>
+
+  <Style Selector="Button.TextBoxClearButton:pointerover /template/ Border#PART_ButtonLayoutBorder">
+    <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPointerOver}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrushPointerOver}" />
+  </Style>
+  <Style Selector="Button.TextBoxClearButton:pointerover /template/ Path#PART_GlyphElement">
+    <Setter Property="Fill" Value="{DynamicResource TextControlButtonForegroundPointerOver}" />
+  </Style>
+
+  <Style Selector="Button.TextBoxClearButton:pressed /template/ Border#PART_ButtonLayoutBorder">
+    <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPressed}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrushPressed}" />
+  </Style>
+  <Style Selector="Button.TextBoxClearButton:pressed /template/ Path#PART_GlyphElement">
+    <Setter Property="Fill" Value="{DynamicResource TextControlButtonForegroundPressed}" />
+  </Style>
+
+  <Style Selector="Button.TextBoxClearButton:disabled /template/ Border#PART_ButtonLayoutBorder">
+    <Setter Property="Opacity" Value="0" />
   </Style>
 
 </Styles>
