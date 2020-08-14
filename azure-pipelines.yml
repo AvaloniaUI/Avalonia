@@ -108,6 +108,12 @@ jobs:
       artifactName: 'NuGetOSX'
     condition: succeeded()
 
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.SourcesDirectory)/**.binlog'
+      artifactName: 'binlog'
+    condition: succeeded()
+
 - job: Windows
   pool:
     vmImage: 'windows-2019'
@@ -129,7 +135,7 @@ jobs:
     inputs:
       testResultsFormat: 'VSTest'
       testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
-    condition: not(canceled())
+    condition: not(canceled())  
 
   - task: PublishBuildArtifacts@1
     inputs:

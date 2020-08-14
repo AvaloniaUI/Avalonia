@@ -143,7 +143,7 @@ partial class Build : NukeBuild
         {
             if (Parameters.IsRunningOnWindows)
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .SetArgumentConfigurator(a => a.Add("/r"))
+                    .SetArgumentConfigurator(a => a.Add("/r").Add("/bl"))
                     .AddTargets("Build")
                 );
 
