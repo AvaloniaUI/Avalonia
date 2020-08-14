@@ -186,9 +186,6 @@ namespace Avalonia.Controls
             set { SetValue(RowDefinitionsProperty, value); }
         }
 
-        bool IsTrivial = true;
-        bool RowOrColumnDefChanged = true;
-
         /// <summary>
         /// Content measurement.
         /// </summary>
@@ -205,24 +202,17 @@ namespace Avalonia.Controls
 
                 if (RowOrColumnDefChanged)
                 {
-                    if (RowIsEmpty & ColIsEmpty)
-                    {
-                        IsTrivial = true;
-                    }
+                    if (ColIsEmpty)
+                        DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
                     else
-                    {
-                        if (ColIsEmpty)
-                            DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
-                        else
-                            DefinitionsU = ColumnDefinitions;
+                        DefinitionsU = ColumnDefinitions;
 
-                        if (RowIsEmpty)
-                            DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
-                        else
-                            DefinitionsV = RowDefinitions;
+                    if (RowIsEmpty)
+                        DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
+                    else
+                        DefinitionsV = RowDefinitions;
 
-                        IsTrivial = false;
-                    }
+                    IsTrivial = RowIsEmpty & ColIsEmpty;
 
                     RowOrColumnDefChanged = false;
                 }
@@ -2427,14 +2417,14 @@ namespace Avalonia.Controls
         {
             var col = e.NewValue as ColumnDefinitions;
 
-            var isEmpty = (col is null);
+            var isEmpty = (col is null) && col.Count == 0;
 
             target.ColIsEmpty = isEmpty;
 
             if (!isEmpty)
-            {
                 col.Parent = target;
-            }
+
+            target.RowOrColumnDefChanged = true;
         }
 
         /// <summary>
@@ -2444,25 +2434,14 @@ namespace Avalonia.Controls
         {
             var row = e.NewValue as RowDefinitions;
 
-            var isEmpty = (row is null);
+            var isEmpty = (row is null) && row.Count == 0;
 
             target.RowIsEmpty = isEmpty;
 
             if (!isEmpty)
-            {
-                row.IsDirty = true;
                 row.Parent = target;
-            }
 
             target.RowOrColumnDefChanged = true;
-        }
-
-
-        internal void DefinitionListIsMakingGridTrivial()
-        {
-            RowIsEmpty = (RowDefinitions?.Count ?? 0) == 0;
-            ColIsEmpty = (ColumnDefinitions?.Count ?? 0) == 0;
-            RowOrColumnDefChanged = true;
         }
 
         /// <summary>
@@ -2673,8 +2652,11 @@ namespace Avalonia.Controls
 
         // Stores unrounded values and rounding errors during layout rounding.
         double[] _roundingErrors;
-        private bool RowIsEmpty = true;
-        private bool ColIsEmpty = true;
+
+        internal bool RowIsEmpty = true;
+        internal bool ColIsEmpty = true;
+        internal bool IsTrivial = true;
+        internal bool RowOrColumnDefChanged = true;
 
         // 5 is an arbitrary constant chosen to end the measure loop
         private const int c_layoutLoopMaxCount = 5;
