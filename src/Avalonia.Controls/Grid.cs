@@ -53,10 +53,9 @@ namespace Avalonia.Controls
         private static readonly IComparer s_minRatioComparer = new MinRatioComparer();
         private static readonly IComparer s_maxRatioComparer = new MaxRatioComparer();
         private static readonly IComparer s_starWeightComparer = new StarWeightComparer();
-        
-        private Flags _flags;                           // Grid validity / property caches dirtiness flags
+
         private GridLinesRenderer _gridLinesRenderer;   // Keeps track of definition indices.
-       
+
         private int[] _definitionIndices;
 
         private double[] _roundingErrors;               // Stores unrounded values and rounding errors during layout rounding.
@@ -228,9 +227,6 @@ namespace Avalonia.Controls
 
             try
             {
-                ListenToNotifications = true;
-                MeasureOverrideInProgress = true;
-
                 if (RowOrColumnDefChanged)
                 {
                     if (ColIsEmpty)
@@ -536,7 +532,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                MeasureOverrideInProgress = false;
+
             }
 
             return (gridDesiredSize);
@@ -550,8 +546,6 @@ namespace Avalonia.Controls
         {
             try
             {
-                ArrangeOverrideInProgress = true;
-
                 if (IsTrivial)
                 {
                     var children = this.Children;
@@ -608,7 +602,6 @@ namespace Avalonia.Controls
             finally
             {
                 SetValid();
-                ArrangeOverrideInProgress = false;
             }
             return (arrangeSize);
         }
@@ -675,35 +668,6 @@ namespace Avalonia.Controls
             return (value);
         }
 
-        /// <summary>
-        /// Convenience accessor to MeasureOverrideInProgress bit flag.
-        /// </summary>
-        internal bool MeasureOverrideInProgress
-        {
-            get { return (CheckFlagsAnd(Flags.MeasureOverrideInProgress)); }
-            set { SetFlags(value, Flags.MeasureOverrideInProgress); }
-        }
-
-        /// <summary>
-        /// Convenience accessor to ArrangeOverrideInProgress bit flag.
-        /// </summary>
-        internal bool ArrangeOverrideInProgress
-        {
-            get { return (CheckFlagsAnd(Flags.ArrangeOverrideInProgress)); }
-            set { SetFlags(value, Flags.ArrangeOverrideInProgress); }
-        }
-
-        // internal bool RowOrColumnDefinitionsDirty
-        // {
-        //     get
-        //     {
-        //         if (ColumnDefinitions is null || RowDefinitions is null)
-        //             return true;
-        //         if (ColumnDefinitions.IsDirty || RowDefinitions.IsDirty)
-        //             return true;
-        //         return false;
-        //     }
-        // }
 
         /// <summary>
         /// Lays out cells according to rows and columns, and creates lookup grids.
@@ -2301,53 +2265,20 @@ namespace Avalonia.Controls
             return (_gridLinesRenderer);
         }
 
-        /// <summary>
-        /// SetFlags is used to set or unset one or multiple
-        /// flags on the object.
-        /// </summary>
-        private void SetFlags(bool value, Flags flags)
-        {
-            _flags = value ? (_flags | flags) : (_flags & (~flags));
-        }
-
-        /// <summary>
-        /// CheckFlagsAnd returns <c>true</c> if all the flags in the
-        /// given bitmask are set on the object.
-        /// </summary>
-        private bool CheckFlagsAnd(Flags flags)
-        {
-            return ((_flags & flags) == flags);
-        }
-
-        /// <summary>
-        /// CheckFlagsOr returns <c>true</c> if at least one flag in the
-        /// given bitmask is set.
-        /// </summary>
-        /// <remarks>
-        /// If no bits are set in the given bitmask, the method returns
-        /// <c>true</c>.
-        /// </remarks>
-        private bool CheckFlagsOr(Flags flags)
-        {
-            return (flags == 0 || (_flags & flags) != 0);
-        }
-
         private static void OnCellAttachedPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
-            Visual child = d as Visual;
+            var child = d as Visual;
 
             if (child != null)
             {
-                Grid grid = child.GetVisualParent<Grid>();
-                if (grid != null)
-                {
-                    grid.Invalidate();
-                }
+                var grid = child.GetVisualParent<Grid>();
+                if (grid != null & !grid.IsTrivial)
+                    grid.InvalidateMeasure();
             }
         }
 
         /// <summary>
-        /// Reflects the changes on the ColumnDefinition StyledProperty to the target grid.
+        /// Update internal flags when ColumnDefinition changes
         /// </summary> 
         private static void ColumnDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs e)
         {
@@ -2364,7 +2295,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Reflects the changes on the RowDefinition StyledProperty to the target grid.
+        /// Update internal flags when RowDefinitions changes.
         /// </summary> 
         private static void RowDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs e)
         {
@@ -2497,67 +2428,34 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Convenience accessor to ValidCellsStructure bit flag.
+        /// This field is true if the cells needs to be recalculated
         /// </summary>
-        private bool CellsStructureDirty
-        {
-            get { return (!CheckFlagsAnd(Flags.ValidCellsStructure)); }
-            set { SetFlags(!value, Flags.ValidCellsStructure); }
-        }
+        private bool CellsStructureDirty;
 
         /// <summary>
-        /// Convenience accessor to ListenToNotifications bit flag.
+        ///  This field is true if calculating to content in U direction.
         /// </summary>
-        private bool ListenToNotifications
-        {
-            get { return (CheckFlagsAnd(Flags.ListenToNotifications)); }
-            set { SetFlags(value, Flags.ListenToNotifications); }
-        }
+        private bool SizeToContentU;
 
         /// <summary>
-        /// Convenience accessor to SizeToContentU bit flag.
+        ///  This field is true if calculating to content in V direction.
         /// </summary>
-        private bool SizeToContentU
-        {
-            get { return (CheckFlagsAnd(Flags.SizeToContentU)); }
-            set { SetFlags(value, Flags.SizeToContentU); }
-        }
+        private bool SizeToContentV;
 
         /// <summary>
-        /// Convenience accessor to SizeToContentV bit flag.
+        ///  This field is true if at least one cell belongs to a Star column.
         /// </summary>
-        private bool SizeToContentV
-        {
-            get { return (CheckFlagsAnd(Flags.SizeToContentV)); }
-            set { SetFlags(value, Flags.SizeToContentV); }
-        }
+        private bool HasStarCellsU;
 
         /// <summary>
-        /// Convenience accessor to HasStarCellsU bit flag.
+        //  This field is true if at least one cell belongs to a Star row.
         /// </summary>
-        private bool HasStarCellsU
-        {
-            get { return (CheckFlagsAnd(Flags.HasStarCellsU)); }
-            set { SetFlags(value, Flags.HasStarCellsU); }
-        }
+        private bool HasStarCellsV;
 
         /// <summary>
-        /// Convenience accessor to HasStarCellsV bit flag.
+        //  This field is true if at least one cell of group 3 belongs to an Auto row.
         /// </summary>
-        private bool HasStarCellsV
-        {
-            get { return (CheckFlagsAnd(Flags.HasStarCellsV)); }
-            set { SetFlags(value, Flags.HasStarCellsV); }
-        }
-
-        /// <summary>
-        /// Convenience accessor to HasGroup3CellsInAutoRows bit flag.
-        /// </summary>
-        private bool HasGroup3CellsInAutoRows
-        {
-            get { return (CheckFlagsAnd(Flags.HasGroup3CellsInAutoRows)); }
-            set { SetFlags(value, Flags.HasGroup3CellsInAutoRows); }
-        }
+        private bool HasGroup3CellsInAutoRows;
 
         /// <summary>
         /// Returns *-weight, adjusted for scale computed during Phase 1
@@ -2575,44 +2473,6 @@ namespace Avalonia.Controls
             {
                 return def.UserSize.Value * scale;
             }
-        }
-
-
-
-
-
-        /// <summary>
-        /// Grid validity / property caches dirtiness flags
-        /// </summary>
-        [System.Flags]
-        private enum Flags
-        {
-            //
-            //  the foolowing flags let grid tracking dirtiness in more granular manner:
-            //  * Valid???Structure flags indicate that elements were added or removed.
-            //  * Valid???Layout flags indicate that layout time portion of the information
-            //    stored on the objects should be updated.
-            //
-            ValidDefinitionsUStructure = 0x00000001,
-            ValidDefinitionsVStructure = 0x00000002,
-            ValidCellsStructure = 0x00000004,
-
-            //
-            //  boolean properties state
-            //
-            ShowGridLinesPropertyValue = 0x00000100,   //  show grid lines ?
-
-            //
-            //  boolean flags
-            //
-            ListenToNotifications = 0x00001000,   //  "0" when all notifications are ignored
-            SizeToContentU = 0x00002000,   //  "1" if calculating to content in U direction
-            SizeToContentV = 0x00004000,   //  "1" if calculating to content in V direction
-            HasStarCellsU = 0x00008000,   //  "1" if at least one cell belongs to a Star column
-            HasStarCellsV = 0x00010000,   //  "1" if at least one cell belongs to a Star row
-            HasGroup3CellsInAutoRows = 0x00020000,   //  "1" if at least one cell of group 3 belongs to an Auto row
-            MeasureOverrideInProgress = 0x00040000,   //  "1" while in the context of Grid.MeasureOverride
-            ArrangeOverrideInProgress = 0x00080000,   //  "1" while in the context of Grid.ArrangeOverride
         }
 
         /// <summary>
