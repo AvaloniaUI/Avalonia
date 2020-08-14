@@ -422,78 +422,78 @@ namespace Avalonia.LeakTests
             }
         }
 
-        [Fact]
-        public void Attached_ContextMenu_Is_Freed()
-        {
-            using (Start())
-            {
-                void AttachShowAndDetachContextMenu(Control control)
-                {
-                    var contextMenu = new ContextMenu
-                    {
-                        Items = new[]
-                        {
-                            new MenuItem { Header = "Foo" },
-                            new MenuItem { Header = "Foo" },
-                        }
-                    };
+        // [Fact]
+        // public void Attached_ContextMenu_Is_Freed()
+        // {
+        //     using (Start())
+        //     {
+        //         void AttachShowAndDetachContextMenu(Control control)
+        //         {
+        //             var contextMenu = new ContextMenu
+        //             {
+        //                 Items = new[]
+        //                 {
+        //                     new MenuItem { Header = "Foo" },
+        //                     new MenuItem { Header = "Foo" },
+        //                 }
+        //             };
 
-                    control.ContextMenu = contextMenu;
-                    contextMenu.Open(control);
-                    contextMenu.Close();
-                    control.ContextMenu = null;
-                }
+        //             control.ContextMenu = contextMenu;
+        //             contextMenu.Open(control);
+        //             contextMenu.Close();
+        //             control.ContextMenu = null;
+        //         }
 
-                var window = new Window();
-                window.Show();
+        //         var window = new Window();
+        //         window.Show();
 
-                Assert.Same(window, FocusManager.Instance.Current);
+        //         Assert.Same(window, FocusManager.Instance.Current);
 
-                AttachShowAndDetachContextMenu(window);
+        //         AttachShowAndDetachContextMenu(window);
 
-                Mock.Get(window.PlatformImpl).ResetCalls();
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
-            }
-        }
+        //         Mock.Get(window.PlatformImpl).ResetCalls();
+        //         dotMemory.Check(memory =>
+        //             Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+        //         dotMemory.Check(memory =>
+        //             Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+        //     }
+        // }
 
-        [Fact]
-        public void Standalone_ContextMenu_Is_Freed()
-        {
-            using (Start())
-            {
-                void BuildAndShowContextMenu(Control control)
-                {
-                    var contextMenu = new ContextMenu
-                    {
-                        Items = new[]
-                        {
-                            new MenuItem { Header = "Foo" },
-                            new MenuItem { Header = "Foo" },
-                        }
-                    };
+        // [Fact]
+        // public void Standalone_ContextMenu_Is_Freed()
+        // {
+        //     using (Start())
+        //     {
+        //         void BuildAndShowContextMenu(Control control)
+        //         {
+        //             var contextMenu = new ContextMenu
+        //             {
+        //                 Items = new[]
+        //                 {
+        //                     new MenuItem { Header = "Foo" },
+        //                     new MenuItem { Header = "Foo" },
+        //                 }
+        //             };
 
-                    contextMenu.Open(control);
-                    contextMenu.Close();
-                }
+        //             contextMenu.Open(control);
+        //             contextMenu.Close();
+        //         }
 
-                var window = new Window();
-                window.Show();
+        //         var window = new Window();
+        //         window.Show();
 
-                Assert.Same(window, FocusManager.Instance.Current);
+        //         Assert.Same(window, FocusManager.Instance.Current);
 
-                BuildAndShowContextMenu(window);
-                BuildAndShowContextMenu(window);
+        //         BuildAndShowContextMenu(window);
+        //         BuildAndShowContextMenu(window);
 
-                Mock.Get(window.PlatformImpl).ResetCalls();
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
-            }
-        }
+        //         Mock.Get(window.PlatformImpl).ResetCalls();
+        //         dotMemory.Check(memory =>
+        //             Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+        //         dotMemory.Check(memory =>
+        //             Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+        //     }
+        // }
 
         [Fact]
         public void Path_Is_Freed()
