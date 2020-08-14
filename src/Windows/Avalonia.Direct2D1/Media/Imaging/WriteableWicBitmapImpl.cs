@@ -7,8 +7,8 @@ namespace Avalonia.Direct2D1.Media.Imaging
 {
     class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
     {
-        public WriteableWicBitmapImpl(PixelSize size, Vector dpi, PixelFormat? pixelFormat) 
-            : base(size, dpi, pixelFormat)
+        public WriteableWicBitmapImpl(PixelSize size, Vector dpi, PixelFormat? pixelFormat, AlphaFormat? alphaFormat) 
+            : base(size, dpi, pixelFormat, alphaFormat)
         {
         }
 

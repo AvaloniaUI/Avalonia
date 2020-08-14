@@ -9,6 +9,8 @@
       <Border.ContextMenu>
         <ContextMenu>
           <MenuItem Header="Standard _Menu Item" />
+          <MenuItem Header="Disabled"
+                    IsEnabled="False" />
           <Separator />
           <MenuItem Header="Menu with _Submenu">
             <MenuItem Header="Submenu _1" />

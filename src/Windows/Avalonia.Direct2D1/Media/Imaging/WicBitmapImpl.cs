@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
 using Avalonia.Win32.Interop;
 using SharpDX.WIC;
 using APixelFormat = Avalonia.Platform.PixelFormat;
+using AlphaFormat = Avalonia.Platform.AlphaFormat;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media
@@ -73,11 +73,17 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="pixelFormat">Pixel format</param>
-        public WicBitmapImpl(PixelSize size, Vector dpi, APixelFormat? pixelFormat = null)
+        /// <param name="alphaFormat">Alpha format.</param>
+        public WicBitmapImpl(PixelSize size, Vector dpi, APixelFormat? pixelFormat = null, AlphaFormat? alphaFormat = null)
         {
             if (!pixelFormat.HasValue)
             {
                 pixelFormat = APixelFormat.Bgra8888;
+            }
+
+            if (!alphaFormat.HasValue)
+            {
+                alphaFormat = AlphaFormat.Premul;
             }
 
             PixelFormat = pixelFormat;
@@ -85,17 +91,16 @@ namespace Avalonia.Direct2D1.Media
                 Direct2D1Platform.ImagingFactory,
                 size.Width,
                 size.Height,
-                pixelFormat.Value.ToWic(),
+                pixelFormat.Value.ToWic(alphaFormat.Value),
                 BitmapCreateCacheOption.CacheOnLoad);
 
             Dpi = dpi;
         }
 
-        public WicBitmapImpl(APixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public WicBitmapImpl(APixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, size.Width, size.Height, format.ToWic(), BitmapCreateCacheOption.CacheOnDemand);
+            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, size.Width, size.Height, format.ToWic(alphaFormat), BitmapCreateCacheOption.CacheOnDemand);
             WicImpl.SetResolution(dpi.X, dpi.Y);
-
             PixelFormat = format;
             Dpi = dpi;
 

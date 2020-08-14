@@ -85,10 +85,6 @@ namespace Avalonia.Skia
 
                 if (bmp.Width != desired.Width || bmp.Height != desired.Height)
                 {
-                    if (bmp.Height != bmp.Width)
-                    {
-
-                    }
                     var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKFilterQuality());
                     bmp.Dispose();
                     bmp = scaledBmp;
@@ -116,10 +112,11 @@ namespace Avalonia.Skia
         /// <param name="dpi">DPI of the bitmap.</param>
         /// <param name="stride">Stride of data pixels.</param>
         /// <param name="format">Format of data pixels.</param>
+        /// <param name="alphaFormat">Alpha format of data pixels.</param>
         /// <param name="data">Data pixels.</param>
-        public ImmutableBitmap(PixelSize size, Vector dpi, int stride, PixelFormat format, IntPtr data)
+        public ImmutableBitmap(PixelSize size, Vector dpi, int stride, PixelFormat format, AlphaFormat alphaFormat, IntPtr data)
         {
-            var imageInfo = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), SKAlphaType.Premul);
+            var imageInfo = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), alphaFormat.ToSkAlphaType());
 
             _image = SKImage.FromPixelCopy(imageInfo, data, stride);
 
