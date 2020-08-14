@@ -54,27 +54,17 @@
               <Grid ColumnDefinitions="Auto,*,Auto" >
                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
                 <DockPanel Grid.Column="1" Grid.ColumnSpan="1" Margin="{TemplateBinding Padding}">
-                  <TextBlock Name="floatingWatermark"
-                            Foreground="{DynamicResource SystemAccentColor}"
-                            FontSize="{DynamicResource FontSizeSmall}"
-                            Text="{TemplateBinding Watermark}"
-                            DockPanel.Dock="Top">
-                    <TextBlock.IsVisible>
-                        <MultiBinding Converter="{x:Static BoolConverters.And}">
-                          <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                Path="UseFloatingWatermark"/>
-                          <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                Path="Text"
-                                Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
-                        </MultiBinding>
-                    </TextBlock.IsVisible>
-                  </TextBlock>
+                  <TextBlock Name="PART_FloatingWatermark"
+                             Foreground="{DynamicResource SystemAccentColor}"
+                             FontSize="{DynamicResource FontSizeSmall}"
+                             Text="{TemplateBinding Watermark}"
+                             DockPanel.Dock="Top" />
 
                   <DataValidationErrors>
                     <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                                   VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                       <Panel>
-                        <TextBlock Name="watermark"
+                        <TextBlock Name="PART_Watermark"
                                 Opacity="0.5"
                                 Text="{TemplateBinding Watermark}"
                                 TextAlignment="{TemplateBinding TextAlignment}"
@@ -121,7 +111,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
   </Style>
 
-  <Style Selector="TextBox:disabled /template/ TextBlock#watermark, TextBox:disabled /template/ TextBlock#floatingWatermark">
+  <Style Selector="TextBox:disabled /template/ TextBlock#PART_Watermark, TextBox:disabled /template/ TextBlock#PART_FloatingWatermark">
     <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundDisabled}" />
   </Style>
 
@@ -135,7 +125,7 @@
     <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
   </Style>
 
-  <Style Selector="TextBox:pointerover /template/ TextBlock#watermark, TextBox:pointerover /template/ TextBlock#floatingWatermark">
+  <Style Selector="TextBox:pointerover /template/ TextBlock#PART_Watermark, TextBox:pointerover /template/ TextBlock#PART_FloatingWatermark">
     <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundPointerOver}" />
   </Style>
 
@@ -144,7 +134,7 @@
     <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundFocused}" />
   </Style>
 
-  <Style Selector="TextBox:focus /template/ TextBlock#watermark, TextBox:focus /template/ TextBlock#floatingWatermark">
+  <Style Selector="TextBox:focus /template/ TextBlock#PART_Watermark, TextBox:focus /template/ TextBlock#PART_FloatingWatermark">
     <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundFocused}" />
   </Style>
 
@@ -160,6 +150,13 @@
 
   <Style Selector="TextBox /template/ DockPanel">
     <Setter Property="Cursor" Value="IBeam" />
+  </Style>
+  
+  <Style Selector="TextBox /template/ TextBlock#PART_FloatingWatermark">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="TextBox[UseFloatingWatermark=true]:not(TextBox:empty) /template/ TextBlock#PART_FloatingWatermark">
+    <Setter Property="IsVisible" Value="True" />
   </Style>
 
   <Style Selector="TextBox.revealPasswordButton[AcceptsReturn=False][IsReadOnly=False]:focus:not(TextBox:empty)">
