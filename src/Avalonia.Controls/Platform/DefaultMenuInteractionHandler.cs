@@ -3,7 +3,6 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -235,7 +234,9 @@ namespace Avalonia.Controls.Platform
                             // If the the parent is an IMenu which successfully moved its selection,
                             // and the current menu is open then close the current menu and open the
                             // new menu.
-                            if (item.IsSubMenuOpen && item.Parent is IMenu)
+                            if (item.IsSubMenuOpen &&
+                                item.Parent is IMenu &&
+                                item.Parent.SelectedItem is object)
                             {
                                 item.Close();
                                 Open(item.Parent.SelectedItem, true);
@@ -363,6 +364,11 @@ namespace Avalonia.Controls.Platform
                 }
                 else
                 {
+                    if (item.IsTopLevel && item.Parent is IMainMenu mainMenu)
+                    {
+                        mainMenu.Open();
+                    }
+
                     Open(item, false);
                 }
 
@@ -385,7 +391,7 @@ namespace Avalonia.Controls.Platform
         {
             if (e.Source == Menu)
             {
-                Menu.MoveSelection(NavigationDirection.First, true);
+                Menu?.MoveSelection(NavigationDirection.First, true);
             }
         }
 

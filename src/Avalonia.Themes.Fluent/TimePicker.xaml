@@ -123,7 +123,7 @@
           </Button>
 
           <Popup Name="Popup" WindowManagerAddShadowHint="False"
-                 StaysOpen="False" PlacementTarget="{TemplateBinding}"
+                 IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}"
                  PlacementMode="Bottom">
             <TimePickerPresenter Name="PickerPresenter" />
           </Popup>

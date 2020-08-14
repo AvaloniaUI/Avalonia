@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 
@@ -16,6 +17,7 @@ namespace Avalonia.Controls.Utils
         private IList? _items;
         private bool _updatingItems;
         private bool _updatingModel;
+        private bool _initializeOnSourceAssignment;
 
         public SelectedItemsSync(ISelectionModel model)
         {
@@ -63,10 +65,18 @@ namespace Avalonia.Controls.Utils
                 _updatingModel = true;
                 _items = items;
 
-                using (Model.Update())
+                if (Model.Source is object)
                 {
-                    Model.ClearSelection();
-                    Add(items);
+                    using (Model.Update())
+                    {
+                        Model.ClearSelection();
+                        Add(items);
+                    }
+                }
+                else if (!_initializeOnSourceAssignment)
+                {
+                    Model.PropertyChanged += SelectionModelPropertyChanged;
+                    _initializeOnSourceAssignment = true;
                 }
 
                 if (_items is INotifyCollectionChanged incc2)
@@ -86,9 +96,11 @@ namespace Avalonia.Controls.Utils
 
             if (_items != null)
             {
+                Model.PropertyChanged -= SelectionModelPropertyChanged;
                 Model.SelectionChanged -= SelectionModelSelectionChanged;
                 Model = model;
                 Model.SelectionChanged += SelectionModelSelectionChanged;
+                _initializeOnSourceAssignment = false;
 
                 try
                 {
@@ -171,6 +183,25 @@ namespace Avalonia.Controls.Utils
                 if (index != -1)
                 {
                     Model.Select(index);
+                }
+            }
+        }
+
+        private void SelectionModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (_initializeOnSourceAssignment &&
+                _items != null &&
+                e.PropertyName == nameof(SelectionModel.Source))
+            {
+                try
+                {
+                    _updatingModel = true;
+                    Add(_items);
+                    _initializeOnSourceAssignment = false;
+                }
+                finally
+                {
+                    _updatingModel = false;
                 }
             }
         }

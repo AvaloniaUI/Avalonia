@@ -164,7 +164,7 @@ namespace Avalonia.Styling
 
         private void ConvertAndPublishNext(object? value)
         {
-            _value = value is T v ? v : BindingValue<T>.FromUntyped(value);
+            _value = BindingValue<T>.FromUntyped(value);
 
             if (_isActive)
             {
