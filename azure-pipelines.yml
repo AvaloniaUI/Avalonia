@@ -90,7 +90,8 @@ jobs:
         printenv
         nuke --target CiAzureOSX --configuration Release
 
-  - powershell: Get-ChildItem -Path "$(Build.SourcesDirectory)\*" -Include *.binlog -Recurse | Copy-Item -Destination $(Build.SourcesDirectory)/artifacts/logs      
+  - powershell: Get-ChildItem -Path "$(Build.SourcesDirectory)\*" -Include *.binlog -Recurse | Copy-Item -Destination $(Build.SourcesDirectory)/artifacts/logs  
+    condition: not(canceled())
 
   - task: PublishTestResults@2
     inputs:
