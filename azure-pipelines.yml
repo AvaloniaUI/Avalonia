@@ -112,7 +112,7 @@ jobs:
     inputs:
       pathtoPublish: '$(Build.SourcesDirectory)/**.binlog'
       artifactName: 'binlog'
-    condition: succeeded()
+    condition: not(canceled())
 
 - job: Windows
   pool:
