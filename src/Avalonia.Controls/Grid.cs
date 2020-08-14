@@ -790,90 +790,8 @@ namespace Avalonia.Controls
             HasStarCellsV = hasStarCellsV;
             HasGroup3CellsInAutoRows = hasGroup3CellsInAutoRows;
         }
-
-        /// <summary>
-        /// Initializes DefinitionsU memeber either to user supplied ColumnDefinitions collection
-        /// or to a default single element collection. DefinitionsU gets trimmed to size.
-        /// </summary>
-        /// <remarks>
-        /// This is one of two methods, where ColumnDefinitions and DefinitionsU are directly accessed.
-        /// All the rest measure / arrange / render code must use DefinitionsU.
-        /// </remarks>
-        // private void ValidateDefinitionsUStructure()
-        // {
-        //     if (ColumnDefinitionsDirty)
-        //     {
-        //         
-
-        //         if (_ColumnDefinitions == null)
-        //         {
-        //             if (_DefinitionsU == null)
-        //             {
-        //                 _DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
-        //             }
-        //         }
-        //         else
-        //         {
-        //             if (_ColumnDefinitions.Count == 0)
-        //             {
-        //                 //  if column definitions collection is empty
-        //                 //  mockup array with one column
-        //                 _DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
-        //             }
-        //             else
-        //             {
-        //                 _DefinitionsU = _ColumnDefinitions;
-        //             }
-        //         }
-
-        //         ColumnDefinitionsDirty = false;
-        //     }
-
-        //     Debug.Assert(_DefinitionsU != null && _DefinitionsU.Count > 0);
-        // }
-
-        /// <summary>
-        /// Initializes DefinitionsV memeber either to user supplied RowDefinitions collection
-        /// or to a default single element collection. DefinitionsV gets trimmed to size.
-        /// </summary>
-        /// <remarks>
-        /// This is one of two methods, where RowDefinitions and DefinitionsV are directly accessed.
-        /// All the rest measure / arrange / render code must use DefinitionsV.
-        /// </remarks>
-        // private void ValidateDefinitionsVStructure()
-        // {
-        //     if (RowDefinitionsDirty)
-        //     {
-        //         
-
-        //         if (_RowDefinitions == null)
-        //         {
-        //             if (_DefinitionsV == null)
-        //             {
-        //                 _DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
-        //             }
-        //         }
-        //         else
-        //         {
-        //             if (_RowDefinitions.Count == 0)
-        //             {
-        //                 //  if row definitions collection is empty
-        //                 //  mockup array with one row
-        //                 _DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
-        //             }
-        //             else
-        //             {
-        //                 _DefinitionsV = _RowDefinitions;
-        //             }
-        //         }
-
-        //         RowDefinitionsDirty = false;
-        //     }
-
-        //     Debug.Assert(_DefinitionsV != null && _DefinitionsV.Count > 0);
-        // }
-
-        /// <summary>
+ 
+         /// <summary>
         /// Validates layout time size type information on given array of definitions.
         /// Sets MinSize and MeasureSizes.
         /// </summary>
@@ -2383,19 +2301,6 @@ namespace Avalonia.Controls
             return (flags == 0 || (_flags & flags) != 0);
         }
 
-        // private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
-        // {
-        //     Grid grid = (Grid)d;
-
-        //     if (!grid  // trivial grid is 1 by 1. there is no grid lines anyway
-        //         && grid.ListenToNotifications)
-        //     {
-        //         grid.InvalidateVisual();
-        //     }
-
-        //     grid.SetFlags((bool)e.NewValue, Flags.ShowGridLinesPropertyValue);
-        // }
-
         private static void OnCellAttachedPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             Visual child = d as Visual;
@@ -3331,21 +3236,23 @@ namespace Avalonia.Controls
                 if (grid == null || !grid.ShowGridLines)
                     return;
 
-                for (int i = 1; i < grid.ColumnDefinitions.Count; ++i)
-                {
-                    DrawGridLine(
-                        drawingContext,
-                        grid.ColumnDefinitions[i].FinalOffset, 0.0,
-                        grid.ColumnDefinitions[i].FinalOffset, _lastArrangeSize.Height);
-                }
+                if (grid.ColumnDefinitions != null)
+                    for (int i = 1; i < grid.ColumnDefinitions.Count; ++i)
+                    {
+                        DrawGridLine(
+                            drawingContext,
+                            grid.ColumnDefinitions[i].FinalOffset, 0.0,
+                            grid.ColumnDefinitions[i].FinalOffset, _lastArrangeSize.Height);
+                    }
 
-                for (int i = 1; i < grid.RowDefinitions.Count; ++i)
-                {
-                    DrawGridLine(
-                        drawingContext,
-                        0.0, grid.RowDefinitions[i].FinalOffset,
-                        _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset);
-                }
+                if (grid.RowDefinitions != null)
+                    for (int i = 1; i < grid.RowDefinitions.Count; ++i)
+                    {
+                        DrawGridLine(
+                            drawingContext,
+                            0.0, grid.RowDefinitions[i].FinalOffset,
+                            _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset);
+                    }
             }
 
             /// <summary>
