@@ -413,6 +413,7 @@ namespace Avalonia.Controls
             SelectionStart = 0;
             SelectionEnd = 0;
             _presenter?.HideCaret();
+            RevealPassword = false;
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
