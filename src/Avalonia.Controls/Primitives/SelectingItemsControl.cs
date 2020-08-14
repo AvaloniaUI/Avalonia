@@ -285,6 +285,33 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
+        /// <summary>
+        /// Tries to get the index of the container that was the source of an event.
+        /// </summary>
+        /// <param name="eventSource">The control that raised the event.</param>
+        /// <returns>The container index or -1 if the event did not originate in a container.</returns>
+        protected int GetContainerIndexFromEventSource(IInteractive eventSource)
+        {
+            var parent = (IVisual)eventSource;
+
+            while (parent != null)
+            {
+                if (parent is IControl control && control.LogicalParent == this)
+                {
+                    var index = GetContainerIndex(control);
+
+                    if (index != -1)
+                    {
+                        return index;
+                    }
+                }
+
+                parent = parent.VisualParent;
+            }
+
+            return -1;
+        }
+
         protected override void ItemsViewChanged(ItemsSourceView? oldView, ItemsSourceView newView)
         {
             base.ItemsViewChanged(oldView, newView);
@@ -327,6 +354,11 @@ namespace Avalonia.Controls.Primitives
 
             if (Presenter is InputElement inputElement)
             {
+                if (e.Element.IsFocused)
+                {
+                    this.Focus();
+                }
+
                 if (KeyboardNavigation.GetTabOnceActiveElement(inputElement) == e.Element)
                 {
                     KeyboardNavigation.SetTabOnceActiveElement(inputElement, null);
@@ -427,31 +459,35 @@ namespace Avalonia.Controls.Primitives
         /// Moves the selection in the specified direction relative to the current selection.
         /// </summary>
         /// <param name="direction">The direction to move.</param>
-        /// <param name="wrap">Whether to wrap when the selection reaches the first or last item.</param>
+        /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <returns>True if the selection was moved; otherwise false.</returns>
-        protected bool MoveSelection(NavigationDirection direction, bool wrap)
+        protected bool MoveSelection(
+            NavigationDirection direction,
+            bool rangeModifier)
         {
-            var from = SelectedIndex != -1 ? TryGetContainer(SelectedIndex) : null;
-            return MoveSelection(from, direction, wrap);
-        }
-
-        /// <summary>
-        /// Moves the selection in the specified direction relative to the specified container.
-        /// </summary>
-        /// <param name="from">The container which serves as a starting point for the movement.</param>
-        /// <param name="direction">The direction to move.</param>
-        /// <param name="wrap">Whether to wrap when the selection reaches the first or last item.</param>
-        /// <returns>True if the selection was moved; otherwise false.</returns>
-        protected bool MoveSelection(IControl? from, NavigationDirection direction, bool wrap)
-        {
-            if (Presenter is INavigableContainer container &&
-                GetNextControl(container, direction, from, wrap) is IControl next)
+            if (direction == NavigationDirection.First || direction == NavigationDirection.Last)
             {
-                var index = GetContainerIndex(next);
+                var index = direction == NavigationDirection.First ? 0 : ItemCount - 1;
+                UpdateSelection(index, true, rangeModifier);
+                ScrollIntoView(index);
 
-                if (index != -1)
+                var c = TryGetContainer(index);
+
+                if (c is object)
                 {
-                    SelectedIndex = index;
+                    System.Diagnostics.Debug.WriteLine(c.DataContext);
+                    FocusManager.Instance?.Focus(c, direction.ToNavigationMethod());
+                }
+            }
+            else
+            {
+                var focus = FocusManager.Instance;
+                var next = focus?.FindNextElement(direction);
+
+                if (next is IControl c && GetContainerIndex(c) != -1)
+                {
+                    UpdateSelection(c, true, rangeModifier);
+                    focus?.Focus(c, direction.ToNavigationMethod());
                     return true;
                 }
             }

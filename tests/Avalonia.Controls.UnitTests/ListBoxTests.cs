@@ -360,13 +360,14 @@ namespace Avalonia.Controls.UnitTests
             // Click item 9.
             _mouse.Click(item);
 
-            Assert.Equal(1, raised);
+            Assert.Equal(2, raised);
         }
 
         private static IDisposable Start()
         {
             var services = TestServices.MockPlatformRenderInterface.With(
                 focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice(),
                 styler: new Styler(),
                 windowingPlatform: new MockWindowingPlatform());
             return UnitTestApplication.Start(services);
@@ -405,6 +406,16 @@ namespace Avalonia.Controls.UnitTests
         {
             var root = (TestRoot)target.GetVisualRoot();
             root.LayoutManager.ExecuteLayoutPass();
+        }
+
+        private void KeyDown(IControl target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+        {
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = key,
+                KeyModifiers = modifiers,
+            });
         }
 
         private static FuncControlTemplate ListBoxTemplate()

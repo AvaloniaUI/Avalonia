@@ -110,5 +110,17 @@ namespace Avalonia.Input
                     return null;
             }
         }
+
+        /// <summary>
+        /// Converts a <see cref="NavigationDirection"/> into a <see cref="NavigationMethod"/>.
+        /// </summary>
+        /// <param name="direction">The navigation direction.</param>
+        public static NavigationMethod ToNavigationMethod(
+            this NavigationDirection direction)
+        {
+            return direction <= NavigationDirection.Previous ?
+                NavigationMethod.Tab :
+                NavigationMethod.Directional;
+        }
     }
 }

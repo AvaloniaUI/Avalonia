@@ -11,28 +11,7 @@ namespace Avalonia.Controls.UnitTests
     public partial class ListBoxTests
     {
         [Fact]
-        public void Focusing_Item_With_Tab_Should_Not_Select_It()
-        {
-            using var app = Start();
-
-            var target = new ListBox
-            {
-                Items = new[] { "Foo", "Bar", "Baz " },
-            };
-
-            Prepare(target);
-
-            target.Presenter.RealizedElements.First().RaiseEvent(new GotFocusEventArgs
-            {
-                RoutedEvent = InputElement.GotFocusEvent,
-                NavigationMethod = NavigationMethod.Tab,
-            });
-
-            Assert.Equal(-1, target.SelectedIndex);
-        }
-
-        [Fact]
-        public void Focusing_Item_With_Arrow_Key_Should_Select_It()
+        public void Focusing_Item_Should_Not_Select_It()
         {
             using var app = Start();
 
@@ -49,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
                 NavigationMethod = NavigationMethod.Directional,
             });
 
-            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact]
@@ -159,6 +138,27 @@ namespace Avalonia.Controls.UnitTests
             _mouse.Click(target.Presenter.RealizedElements.First());
 
             Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Down_Key_Should_Select_Next_Item()
+        {
+            using var app = Start();
+
+            var target = new ListBox
+            {
+                Items = new[] { "Foo", "Bar", "Baz " },
+            };
+
+            Prepare(target);
+            _mouse.Click(target.Presenter.RealizedElements.First());
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            KeyDown(target, Key.Down);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal(1, target.Selection.AnchorIndex);
         }
 
         [Fact]

@@ -7,7 +7,7 @@ namespace Avalonia.Controls.UnitTests
     public partial class ListBoxTests
     {
         [Fact]
-        public void Focusing_Item_With_Shift_And_Arrow_Key_Should_Add_To_Selection()
+        public void Shift_And_Arrow_Key_Should_Add_To_Selection()
         {
             using var app = Start();
             
@@ -20,19 +20,18 @@ namespace Avalonia.Controls.UnitTests
             Prepare(target);
 
             target.SelectedItem = "Foo";
+            target.TryGetContainer(0).Focus();
 
-            target.Presenter.RealizedElements.ElementAt(1).RaiseEvent(new GotFocusEventArgs
-            {
-                RoutedEvent = InputElement.GotFocusEvent,
-                NavigationMethod = NavigationMethod.Directional,
-                KeyModifiers = KeyModifiers.Shift
-            });
+            KeyDown(target, Key.Down, KeyModifiers.Shift);
 
             Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
+            Assert.NotNull(target.TryGetContainer(1));
+            Assert.Same(target.TryGetContainer(1), FocusManager.Instance.Current);
+            Assert.Equal(0, target.Selection.AnchorIndex);
         }
 
         [Fact]
-        public void Focusing_Item_With_Ctrl_And_Arrow_Key_Should_Add_To_Selection()
+        public void Ctrl_And_Arrow_Key_Should_Move_Focus_But_Not_Change_Selection()
         {
             using var app = Start();
             
@@ -45,22 +44,20 @@ namespace Avalonia.Controls.UnitTests
             Prepare(target);
 
             target.SelectedItem = "Foo";
+            target.TryGetContainer(0).Focus();
 
-            target.Presenter.RealizedElements.ElementAt(1).RaiseEvent(new GotFocusEventArgs
-            {
-                RoutedEvent = InputElement.GotFocusEvent,
-                NavigationMethod = NavigationMethod.Directional,
-                KeyModifiers = KeyModifiers.Control
-            });
+            KeyDown(target, Key.Down, KeyModifiers.Control);
 
-            Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "Foo" }, target.SelectedItems);
+            Assert.NotNull(target.TryGetContainer(1));
+            Assert.Same(target.TryGetContainer(1), FocusManager.Instance.Current);
         }
 
         [Fact]
-        public void Focusing_Selected_Item_With_Ctrl_And_Arrow_Key_Should_Remove_From_Selection()
+        public void Ctrl_Shift_And_Arrow_Key_Should_Add_To_Selection()
         {
             using var app = Start();
-            
+
             var target = new ListBox
             {
                 Items = new[] { "Foo", "Bar", "Baz " },
@@ -69,17 +66,37 @@ namespace Avalonia.Controls.UnitTests
 
             Prepare(target);
 
-            target.SelectedItems.Add("Foo");
-            target.SelectedItems.Add("Bar");
+            target.SelectedItem = "Foo";
+            target.TryGetContainer(0).Focus();
 
-            target.Presenter.RealizedElements.ElementAt(0).RaiseEvent(new GotFocusEventArgs
+            KeyDown(target, Key.Down, KeyModifiers.Control | KeyModifiers.Shift);
+
+            Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
+            Assert.NotNull(target.TryGetContainer(1));
+            Assert.Same(target.TryGetContainer(1), FocusManager.Instance.Current);
+            Assert.Equal(0, target.Selection.AnchorIndex);
+        }
+
+
+        [Fact]
+        public void SelectAll_Gesture_Should_Select_All_Items()
+        {
+            using var app = Start();
+
+            var target = new ListBox
             {
-                RoutedEvent = InputElement.GotFocusEvent,
-                NavigationMethod = NavigationMethod.Directional,
-                KeyModifiers = KeyModifiers.Control
-            });
+                Items = new[] { "Foo", "Bar", "Baz " },
+                SelectionMode = SelectionMode.Multiple
+            };
 
-            Assert.Equal(new[] { "Bar" }, target.SelectedItems);
+            Prepare(target);
+
+            target.SelectedItem = "Foo";
+            target.TryGetContainer(0).Focus();
+
+            KeyDown(target, Key.A, KeyModifiers.Control);
+
+            Assert.Equal(3, target.Selection.SelectedIndexes.Count);
         }
     }
 }
