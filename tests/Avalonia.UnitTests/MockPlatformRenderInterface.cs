@@ -55,7 +55,8 @@ namespace Avalonia.UnitTests
         public IWriteableBitmapImpl CreateWriteableBitmap(
             PixelSize size,
             Vector dpi,
-            PixelFormat? format = default(PixelFormat?))
+            PixelFormat format,
+            AlphaFormat alphaFormat)
         {
             throw new NotImplementedException();
         }
@@ -87,6 +88,7 @@ namespace Avalonia.UnitTests
 
         public IBitmapImpl LoadBitmap(
             PixelFormat format,
+            AlphaFormat alphaFormat,
             IntPtr data,
             PixelSize size,
             Vector dpi,
@@ -102,5 +104,9 @@ namespace Avalonia.UnitTests
         }
 
         public bool SupportsIndividualRoundRects { get; set; }
+
+        public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
+
+        public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
     }
 }

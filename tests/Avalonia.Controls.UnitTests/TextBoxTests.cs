@@ -521,6 +521,40 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, lfcount);
             }
         }
+        
+        [Fact]
+        public void TextBox_Reveal_Password_Reset_When_Lost_Focus()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    PasswordChar = '*'
+                };
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "5678"
+                };
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+                
+                var root = new TestRoot { Child = sp };
+
+                target1.Focus();
+                target1.RevealPassword = true;
+                
+                target2.Focus();
+                
+                Assert.False(target1.RevealPassword);
+            }
+        }
 
         [Fact]
         public void Setting_Bound_Text_To_Null_Works()

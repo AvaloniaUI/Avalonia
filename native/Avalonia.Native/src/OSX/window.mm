@@ -27,6 +27,7 @@ public:
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
     IAvnMenu* _mainMenu;
+    
     bool _shown;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
@@ -230,6 +231,29 @@ public:
     {
         @autoreleasepool
         {
+            auto maxSize = [Window maxSize];
+            auto minSize = [Window minSize];
+            
+            if (x < minSize.width)
+            {
+                x = minSize.width;
+            }
+            
+            if (y < minSize.height)
+            {
+                y = minSize.height;
+            }
+            
+            if (x > maxSize.width)
+            {
+                x = maxSize.width;
+            }
+            
+            if (y > maxSize.height)
+            {
+                y = maxSize.height;
+            }
+            
             [Window setContentSize:NSSize{x, y}];
             
             return S_OK;

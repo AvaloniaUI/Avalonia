@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Controls
+﻿#nullable enable
+
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a <see cref="MenuItem"/>.
@@ -29,7 +31,7 @@
         /// <summary>
         /// Gets the parent <see cref="IMenuElement"/>.
         /// </summary>
-        new IMenuElement Parent { get; }
+        new IMenuElement? Parent { get; }
 
         /// <summary>
         /// Raises a click event on the menu item.

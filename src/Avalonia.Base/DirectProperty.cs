@@ -23,16 +23,12 @@ namespace Avalonia
         /// <param name="getter">Gets the current value of the property.</param>
         /// <param name="setter">Sets the value of the property. May be null.</param>
         /// <param name="metadata">The property metadata.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         public DirectProperty(
             string name,
             Func<TOwner, TValue> getter,
             Action<TOwner, TValue> setter,
-            DirectPropertyMetadata<TValue> metadata,
-            bool enableDataValidation)
-            : base(name, typeof(TOwner), metadata, enableDataValidation)
+            DirectPropertyMetadata<TValue> metadata)
+            : base(name, typeof(TOwner), metadata)
         {
             Contract.Requires<ArgumentNullException>(getter != null);
 
@@ -47,16 +43,12 @@ namespace Avalonia
         /// <param name="getter">Gets the current value of the property.</param>
         /// <param name="setter">Sets the value of the property. May be null.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         private DirectProperty(
             DirectPropertyBase<TValue> source,
             Func<TOwner, TValue> getter,
             Action<TOwner, TValue> setter,
-            DirectPropertyMetadata<TValue> metadata,
-            bool enableDataValidation)
-            : base(source, typeof(TOwner), metadata, enableDataValidation)
+            DirectPropertyMetadata<TValue> metadata)
+            : base(source, typeof(TOwner), metadata)
         {
             Contract.Requires<ArgumentNullException>(getter != null);
 
@@ -107,7 +99,8 @@ namespace Avalonia
         {
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
 
             metadata.Merge(GetMetadata<TOwner>(), this);
 
@@ -115,8 +108,7 @@ namespace Avalonia
                 (DirectPropertyBase<TValue>)this,
                 getter,
                 setter,
-                metadata,
-                enableDataValidation);
+                metadata);
 
             AvaloniaPropertyRegistry.Instance.Register(typeof(TNewOwner), result);
             return result;
@@ -155,8 +147,7 @@ namespace Avalonia
                 this,
                 getter,
                 setter,
-                metadata,
-                enableDataValidation);
+                metadata);
 
             AvaloniaPropertyRegistry.Instance.Register(typeof(TNewOwner), result);
             return result;
