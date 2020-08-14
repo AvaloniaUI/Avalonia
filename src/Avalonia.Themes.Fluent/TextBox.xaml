@@ -26,12 +26,13 @@
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
 
           <!-- TODO bind Content -> Header and ContentTemplate -> HeaderTemplate -->
-          <ContentPresenter x:Name="HeaderContentPresenter"
+          <ContentPresenter x:Name="PART_HeaderContentPresenter"
                             DockPanel.Dock="Top"
                             TextBlock.FontWeight="Normal"
                             TextBlock.Foreground="{DynamicResource TextControlHeaderForeground}"
@@ -40,7 +41,7 @@
 
           <Panel>
             <Border
-              Name="border"
+              Name="PART_BorderElement"
               Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
@@ -53,10 +54,10 @@
               Margin="{TemplateBinding BorderThickness}">
               <Grid ColumnDefinitions="Auto,*,Auto" >
                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
-                <DockPanel Grid.Column="1" Grid.ColumnSpan="1" Margin="{TemplateBinding Padding}">
+                <DockPanel x:Name="PART_InnerDockPanel" Grid.Column="1" Grid.ColumnSpan="1" Margin="{TemplateBinding Padding}">
                   <TextBlock Name="PART_FloatingWatermark"
                              Foreground="{DynamicResource SystemAccentColor}"
-                             FontSize="{DynamicResource FontSizeSmall}"
+                             FontSize="{TemplateBinding FontSize}"
                              Text="{TemplateBinding Watermark}"
                              DockPanel.Dock="Top" />
 
@@ -106,7 +107,7 @@
     <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundDisabled}" />
   </Style>
 
-  <Style Selector="TextBox:disabled /template/ Border#border">
+  <Style Selector="TextBox:disabled /template/ Border#PART_BorderElement">
     <Setter Property="Background" Value="{DynamicResource TextControlBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushDisabled}" />
   </Style>
@@ -120,7 +121,7 @@
     <Setter Property="Foreground" Value="{DynamicResource TextControlForegroundPointerOver}" />
   </Style>
 
-  <Style Selector="TextBox:pointerover /template/ Border#border">
+  <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushPointerOver}"/>
     <Setter Property="Background" Value="{DynamicResource TextControlBackgroundPointerOver}" />
   </Style>
@@ -138,17 +139,17 @@
     <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForegroundFocused}" />
   </Style>
 
-  <Style Selector="TextBox:focus /template/ Border#border">
+  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
     <Setter Property="Background" Value="{DynamicResource TextControlBackgroundFocused}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushFocused}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThicknessFocused}" />
   </Style>
 
-  <Style Selector="TextBox:error /template/ Border#border">
+  <Style Selector="TextBox:error /template/ Border#PART_BorderElement">
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
   </Style>
 
-  <Style Selector="TextBox /template/ DockPanel">
+  <Style Selector="TextBox /template/ DockPanel#PART_InnerDockPanel">
     <Setter Property="Cursor" Value="IBeam" />
   </Style>
   
