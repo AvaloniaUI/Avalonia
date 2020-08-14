@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Threading;
+using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -24,8 +25,6 @@ namespace Avalonia.Controls
     {
         static Grid()
         {
-            ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
-
             IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
             ColumnProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
             ColumnSpanProperty.Changed.AddClassHandler<Control>(OnCellAttachedPropertyChanged);
@@ -34,6 +33,7 @@ namespace Avalonia.Controls
 
             AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
             AffectsMeasure<Grid>(ColumnDefinitionsProperty, RowDefinitionsProperty);
+            AffectsRender<Grid>(ShowGridLinesProperty);
 
             RowDefinitionsProperty.Changed.AddClassHandler<Grid>(RowDefinitionsPropertyChanged);
             ColumnDefinitionsProperty.Changed.AddClassHandler<Grid>(ColumnDefinitionsPropertyChanged);
@@ -45,26 +45,6 @@ namespace Avalonia.Controls
         /// </summary>
         public Grid()
         {
-            SetValue(ColumnDefinitionsProperty, new ColumnDefinitions() { Parent = this }, BindingPriority.TemplatedParent);
-            SetValue(RowDefinitionsProperty, new RowDefinitions() { Parent = this }, BindingPriority.TemplatedParent);
- 
-            RowDefinitions.CollectionChanged += RowDefColChanged;
-            ColumnDefinitions.CollectionChanged += ColDefColChanged;
-        }
-
-        private void ColDefColChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            CheckAndSetIfDefListMakesGridTrivial(ColumnDefinitions);
-        }
-
-        private void RowDefColChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            CheckAndSetIfDefListMakesGridTrivial(RowDefinitions);
-        }
-
-        void CheckAndSetIfDefListMakesGridTrivial(IReadOnlyList<DefinitionBase> defList)
-        {
-            GridIsTrivial = !(defList.Count > 0);
         }
 
         /// <summary>
@@ -206,7 +186,8 @@ namespace Avalonia.Controls
             set { SetValue(RowDefinitionsProperty, value); }
         }
 
-        bool GridIsTrivial = true;
+        bool IsTrivial = true;
+        bool RowOrColumnDefChanged = true;
 
         /// <summary>
         /// Content measurement.
@@ -216,14 +197,37 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size constraint)
         {
             Size gridDesiredSize;
-            ExtendedData extData = ExtData;
 
             try
             {
                 ListenToNotifications = true;
                 MeasureOverrideInProgress = true;
 
-                if (GridIsTrivial)
+                if (RowOrColumnDefChanged)
+                {
+                    if (RowIsEmpty & ColIsEmpty)
+                    {
+                        IsTrivial = true;
+                    }
+                    else
+                    {
+                        if (ColIsEmpty)
+                            DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
+                        else
+                            DefinitionsU = ColumnDefinitions;
+
+                        if (RowIsEmpty)
+                            DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
+                        else
+                            DefinitionsV = RowDefinitions;
+
+                        IsTrivial = false;
+                    }
+
+                    RowOrColumnDefChanged = false;
+                }
+
+                if (IsTrivial)
                 {
                     gridDesiredSize = new Size();
                     var children = this.Children;
@@ -246,7 +250,7 @@ namespace Avalonia.Controls
                         bool sizeToContentV = double.IsPositiveInfinity(constraint.Height);
 
                         // Clear index information and rounding errors
-                        if (RowDefinitionsDirty || ColumnDefinitionsDirty)
+                        // if (RowOrColumnDefinitionsDirty)
                         {
                             if (_definitionIndices != null)
                             {
@@ -264,10 +268,10 @@ namespace Avalonia.Controls
                             }
                         }
 
-                        ValidateDefinitionsUStructure();
+                        // ValidateDefinitionsUStructure();
                         ValidateDefinitionsLayout(DefinitionsU, sizeToContentU);
 
-                        ValidateDefinitionsVStructure();
+                        // ValidateDefinitionsVStructure();
                         ValidateDefinitionsLayout(DefinitionsV, sizeToContentV);
 
                         // Include the prior value just in case it was explicitly
@@ -276,11 +280,11 @@ namespace Avalonia.Controls
                         CellsStructureDirty = CellsStructureDirty ||
                                               SizeToContentU != sizeToContentU ||
                                               SizeToContentV != sizeToContentV ||
-                                              _data.OldColumnCount != DefinitionsU.Count ||
-                                              _data.OldRowCount != DefinitionsV.Count;
+                                              _OldColumnCount != DefinitionsU.Count ||
+                                              _OldRowCount != DefinitionsV.Count;
 
-                        _data.OldColumnCount = DefinitionsU.Count;
-                        _data.OldRowCount = DefinitionsV.Count;
+                        _OldColumnCount = DefinitionsU.Count;
+                        _OldRowCount = DefinitionsV.Count;
 
                         SizeToContentU = sizeToContentU;
                         SizeToContentV = sizeToContentV;
@@ -440,7 +444,7 @@ namespace Avalonia.Controls
                     //      appears in Auto column.
                     //
 
-                    MeasureCellsGroup(extData.CellGroup1, constraint, false, false);
+                    MeasureCellsGroup(_CellGroup1, constraint, false, false);
 
                     {
                         //  after Group1 is measured,  only Group3 may have cells belonging to Auto rows.
@@ -449,19 +453,19 @@ namespace Avalonia.Controls
                         if (canResolveStarsV)
                         {
                             if (HasStarCellsV) { ResolveStar(DefinitionsV, constraint.Height); }
-                            MeasureCellsGroup(extData.CellGroup2, constraint, false, false);
+                            MeasureCellsGroup(_CellGroup2, constraint, false, false);
                             if (HasStarCellsU) { ResolveStar(DefinitionsU, constraint.Width); }
-                            MeasureCellsGroup(extData.CellGroup3, constraint, false, false);
+                            MeasureCellsGroup(_CellGroup3, constraint, false, false);
                         }
                         else
                         {
                             //  if at least one cell exists in Group2, it must be measured before
                             //  StarsU can be resolved.
-                            bool canResolveStarsU = extData.CellGroup2 > PrivateCells.Length;
+                            bool canResolveStarsU = _CellGroup2 > _PrivateCells.Length;
                             if (canResolveStarsU)
                             {
                                 if (HasStarCellsU) { ResolveStar(DefinitionsU, constraint.Width); }
-                                MeasureCellsGroup(extData.CellGroup3, constraint, false, false);
+                                MeasureCellsGroup(_CellGroup3, constraint, false, false);
                                 if (HasStarCellsV) { ResolveStar(DefinitionsV, constraint.Height); }
                             }
                             else
@@ -475,10 +479,10 @@ namespace Avalonia.Controls
                                 int cnt = 0;
 
                                 // Cache Group2MinWidths & Group3MinHeights
-                                double[] group2MinSizes = CacheMinSizes(extData.CellGroup2, false);
-                                double[] group3MinSizes = CacheMinSizes(extData.CellGroup3, true);
+                                double[] group2MinSizes = CacheMinSizes(_CellGroup2, false);
+                                double[] group3MinSizes = CacheMinSizes(_CellGroup3, true);
 
-                                MeasureCellsGroup(extData.CellGroup2, constraint, false, true);
+                                MeasureCellsGroup(_CellGroup2, constraint, false, true);
 
                                 do
                                 {
@@ -489,20 +493,20 @@ namespace Avalonia.Controls
                                     }
 
                                     if (HasStarCellsU) { ResolveStar(DefinitionsU, constraint.Width); }
-                                    MeasureCellsGroup(extData.CellGroup3, constraint, false, false);
+                                    MeasureCellsGroup(_CellGroup3, constraint, false, false);
 
                                     // Reset cached Group2Widths
                                     ApplyCachedMinSizes(group2MinSizes, false);
 
                                     if (HasStarCellsV) { ResolveStar(DefinitionsV, constraint.Height); }
-                                    MeasureCellsGroup(extData.CellGroup2, constraint, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
+                                    MeasureCellsGroup(_CellGroup2, constraint, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
                                 }
                                 while (hasDesiredSizeUChanged && ++cnt <= c_layoutLoopMaxCount);
                             }
                         }
                     }
 
-                    MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
+                    MeasureCellsGroup(_CellGroup4, constraint, false, false);
 
                     gridDesiredSize = new Size(
                             CalculateDesiredSize(DefinitionsU),
@@ -527,7 +531,7 @@ namespace Avalonia.Controls
             {
                 ArrangeOverrideInProgress = true;
 
-                if (GridIsTrivial)
+                if (IsTrivial)
                 {
                     var children = this.Children;
 
@@ -549,10 +553,10 @@ namespace Avalonia.Controls
 
                     var children = this.Children;
 
-                    for (int currentCell = 0; currentCell < PrivateCells.Length; ++currentCell)
+                    for (int currentCell = 0; currentCell < _PrivateCells.Length; ++currentCell)
                     {
                         var cell = children[currentCell];
-                        var privCell = PrivateCells[currentCell];
+                        var privCell = _PrivateCells[currentCell];
 
                         if (cell is null || privCell.Skip)
                         {
@@ -616,10 +620,10 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Contract.Requires<NullReferenceException>(_data != null);
+            Debug.Assert(!IsTrivial);
 
             //  actual value calculations require structure to be up-to-date
-            if (!ColumnDefinitionsDirty)
+            if (!RowOrColumnDefChanged)
             {
                 IReadOnlyList<DefinitionBase> definitions = DefinitionsU;
                 value = definitions[(columnIndex + 1) % definitions.Count].FinalOffset;
@@ -638,10 +642,10 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Contract.Requires<NullReferenceException>(_data != null);
+            Debug.Assert(!IsTrivial);
 
             //  actual value calculations require structure to be up-to-date
-            if (!RowDefinitionsDirty)
+            if (!RowOrColumnDefChanged)
             {
                 IReadOnlyList<DefinitionBase> definitions = DefinitionsV;
                 value = definitions[(rowIndex + 1) % definitions.Count].FinalOffset;
@@ -668,23 +672,17 @@ namespace Avalonia.Controls
             set { SetFlags(value, Flags.ArrangeOverrideInProgress); }
         }
 
-        /// <summary>
-        /// Convenience accessor to ValidDefinitionsUStructure bit flag.
-        /// </summary> 
-        internal bool ColumnDefinitionsDirty
-        {
-            get => ColumnDefinitions?.IsDirty ?? false;
-            set => ColumnDefinitions.IsDirty = value;
-        }
-
-        /// <summary>
-        /// Convenience accessor to ValidDefinitionsVStructure bit flag.
-        /// </summary>
-        internal bool RowDefinitionsDirty
-        {
-            get => RowDefinitions?.IsDirty ?? false;
-            set => RowDefinitions.IsDirty = value;
-        }
+        // internal bool RowOrColumnDefinitionsDirty
+        // {
+        //     get
+        //     {
+        //         if (ColumnDefinitions is null || RowDefinitions is null)
+        //             return true;
+        //         if (ColumnDefinitions.IsDirty || RowDefinitions.IsDirty)
+        //             return true;
+        //         return false;
+        //     }
+        // }
 
         /// <summary>
         /// Lays out cells according to rows and columns, and creates lookup grids.
@@ -704,19 +702,18 @@ namespace Avalonia.Controls
         private void ValidateCellsCore()
         {
             var children = this.Children;
-            ExtendedData extData = ExtData;
 
-            extData.CellCachesCollection = new CellCache[children.Count];
-            extData.CellGroup1 = int.MaxValue;
-            extData.CellGroup2 = int.MaxValue;
-            extData.CellGroup3 = int.MaxValue;
-            extData.CellGroup4 = int.MaxValue;
+            _PrivateCells = new CellCache[children.Count];
+            _CellGroup1 = int.MaxValue;
+            _CellGroup2 = int.MaxValue;
+            _CellGroup3 = int.MaxValue;
+            _CellGroup4 = int.MaxValue;
 
             bool hasStarCellsU = false;
             bool hasStarCellsV = false;
             bool hasGroup3CellsInAutoRows = false;
 
-            for (int i = PrivateCells.Length - 1; i >= 0; --i)
+            for (int i = _PrivateCells.Length - 1; i >= 0; --i)
             {
                 var child = children[i];
                 if (child == null)
@@ -750,7 +747,7 @@ namespace Avalonia.Controls
                 if (isOverCol || isOverRow)
                 {
                     cell.Skip = true;
-                    PrivateCells[i] = cell;
+                    _PrivateCells[i] = cell;
                     continue;
                 }
 
@@ -768,13 +765,13 @@ namespace Avalonia.Controls
                 {
                     if (!cell.IsStarU)
                     {
-                        cell.Next = extData.CellGroup1;
-                        extData.CellGroup1 = i;
+                        cell.Next = _CellGroup1;
+                        _CellGroup1 = i;
                     }
                     else
                     {
-                        cell.Next = extData.CellGroup3;
-                        extData.CellGroup3 = i;
+                        cell.Next = _CellGroup3;
+                        _CellGroup3 = i;
 
                         //  Remember if this cell belongs to auto row
                         hasGroup3CellsInAutoRows |= cell.IsAutoV;
@@ -786,17 +783,17 @@ namespace Avalonia.Controls
                         //  Note below: if spans through Star column it is NOT Auto
                         && !cell.IsStarU)
                     {
-                        cell.Next = extData.CellGroup2;
-                        extData.CellGroup2 = i;
+                        cell.Next = _CellGroup2;
+                        _CellGroup2 = i;
                     }
                     else
                     {
-                        cell.Next = extData.CellGroup4;
-                        extData.CellGroup4 = i;
+                        cell.Next = _CellGroup4;
+                        _CellGroup4 = i;
                     }
                 }
 
-                PrivateCells[i] = cell;
+                _PrivateCells[i] = cell;
             }
 
             HasStarCellsU = hasStarCellsU;
@@ -812,38 +809,38 @@ namespace Avalonia.Controls
         /// This is one of two methods, where ColumnDefinitions and DefinitionsU are directly accessed.
         /// All the rest measure / arrange / render code must use DefinitionsU.
         /// </remarks>
-        private void ValidateDefinitionsUStructure()
-        {
-            if (ColumnDefinitionsDirty)
-            {
-                ExtendedData extData = ExtData;
+        // private void ValidateDefinitionsUStructure()
+        // {
+        //     if (ColumnDefinitionsDirty)
+        //     {
+        //         
 
-                if (extData.ColumnDefinitions == null)
-                {
-                    if (extData.DefinitionsU == null)
-                    {
-                        extData.DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
-                    }
-                }
-                else
-                {
-                    if (extData.ColumnDefinitions.Count == 0)
-                    {
-                        //  if column definitions collection is empty
-                        //  mockup array with one column
-                        extData.DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
-                    }
-                    else
-                    {
-                        extData.DefinitionsU = extData.ColumnDefinitions;
-                    }
-                }
+        //         if (_ColumnDefinitions == null)
+        //         {
+        //             if (_DefinitionsU == null)
+        //             {
+        //                 _DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
+        //             }
+        //         }
+        //         else
+        //         {
+        //             if (_ColumnDefinitions.Count == 0)
+        //             {
+        //                 //  if column definitions collection is empty
+        //                 //  mockup array with one column
+        //                 _DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
+        //             }
+        //             else
+        //             {
+        //                 _DefinitionsU = _ColumnDefinitions;
+        //             }
+        //         }
 
-                ColumnDefinitionsDirty = false;
-            }
+        //         ColumnDefinitionsDirty = false;
+        //     }
 
-            Debug.Assert(ExtData.DefinitionsU != null && ExtData.DefinitionsU.Count > 0);
-        }
+        //     Debug.Assert(_DefinitionsU != null && _DefinitionsU.Count > 0);
+        // }
 
         /// <summary>
         /// Initializes DefinitionsV memeber either to user supplied RowDefinitions collection
@@ -853,38 +850,38 @@ namespace Avalonia.Controls
         /// This is one of two methods, where RowDefinitions and DefinitionsV are directly accessed.
         /// All the rest measure / arrange / render code must use DefinitionsV.
         /// </remarks>
-        private void ValidateDefinitionsVStructure()
-        {
-            if (RowDefinitionsDirty)
-            {
-                ExtendedData extData = ExtData;
+        // private void ValidateDefinitionsVStructure()
+        // {
+        //     if (RowDefinitionsDirty)
+        //     {
+        //         
 
-                if (extData.RowDefinitions == null)
-                {
-                    if (extData.DefinitionsV == null)
-                    {
-                        extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
-                    }
-                }
-                else
-                {
-                    if (extData.RowDefinitions.Count == 0)
-                    {
-                        //  if row definitions collection is empty
-                        //  mockup array with one row
-                        extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
-                    }
-                    else
-                    {
-                        extData.DefinitionsV = extData.RowDefinitions;
-                    }
-                }
+        //         if (_RowDefinitions == null)
+        //         {
+        //             if (_DefinitionsV == null)
+        //             {
+        //                 _DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
+        //             }
+        //         }
+        //         else
+        //         {
+        //             if (_RowDefinitions.Count == 0)
+        //             {
+        //                 //  if row definitions collection is empty
+        //                 //  mockup array with one row
+        //                 _DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
+        //             }
+        //             else
+        //             {
+        //                 _DefinitionsV = _RowDefinitions;
+        //             }
+        //         }
 
-                RowDefinitionsDirty = false;
-            }
+        //         RowDefinitionsDirty = false;
+        //     }
 
-            Debug.Assert(ExtData.DefinitionsV != null && ExtData.DefinitionsV.Count > 0);
-        }
+        //     Debug.Assert(_DefinitionsV != null && _DefinitionsV.Count > 0);
+        // }
 
         /// <summary>
         /// Validates layout time size type information on given array of definitions.
@@ -952,15 +949,15 @@ namespace Avalonia.Controls
             {
                 if (isRows)
                 {
-                    minSizes[PrivateCells[i].RowIndex] = DefinitionsV[PrivateCells[i].RowIndex].MinSize;
+                    minSizes[_PrivateCells[i].RowIndex] = DefinitionsV[_PrivateCells[i].RowIndex].MinSize;
                 }
                 else
                 {
-                    minSizes[PrivateCells[i].ColumnIndex] = DefinitionsU[PrivateCells[i].ColumnIndex].MinSize;
+                    minSizes[_PrivateCells[i].ColumnIndex] = DefinitionsU[_PrivateCells[i].ColumnIndex].MinSize;
                 }
 
-                i = PrivateCells[i].Next;
-            } while (i < PrivateCells.Length);
+                i = _PrivateCells[i].Next;
+            } while (i < _PrivateCells.Length);
 
             return minSizes;
         }
@@ -1012,7 +1009,7 @@ namespace Avalonia.Controls
         {
             hasDesiredSizeUChanged = false;
 
-            if (cellsHead >= PrivateCells.Length)
+            if (cellsHead >= _PrivateCells.Length)
             {
                 return;
             }
@@ -1033,16 +1030,16 @@ namespace Avalonia.Controls
 
                 if (!ignoreDesiredSizeU)
                 {
-                    if (PrivateCells[i].ColumnSpan == 1)
+                    if (_PrivateCells[i].ColumnSpan == 1)
                     {
-                        DefinitionsU[PrivateCells[i].ColumnIndex].UpdateMinSize(Math.Min(children[i].DesiredSize.Width, DefinitionsU[PrivateCells[i].ColumnIndex].UserMaxSize));
+                        DefinitionsU[_PrivateCells[i].ColumnIndex].UpdateMinSize(Math.Min(children[i].DesiredSize.Width, DefinitionsU[_PrivateCells[i].ColumnIndex].UserMaxSize));
                     }
                     else
                     {
                         RegisterSpan(
                             ref spanStore,
-                            PrivateCells[i].ColumnIndex,
-                            PrivateCells[i].ColumnSpan,
+                            _PrivateCells[i].ColumnIndex,
+                            _PrivateCells[i].ColumnSpan,
                             true,
                             children[i].DesiredSize.Width);
                     }
@@ -1050,23 +1047,23 @@ namespace Avalonia.Controls
 
                 if (!ignoreDesiredSizeV)
                 {
-                    if (PrivateCells[i].RowSpan == 1)
+                    if (_PrivateCells[i].RowSpan == 1)
                     {
-                        DefinitionsV[PrivateCells[i].RowIndex].UpdateMinSize(Math.Min(children[i].DesiredSize.Height, DefinitionsV[PrivateCells[i].RowIndex].UserMaxSize));
+                        DefinitionsV[_PrivateCells[i].RowIndex].UpdateMinSize(Math.Min(children[i].DesiredSize.Height, DefinitionsV[_PrivateCells[i].RowIndex].UserMaxSize));
                     }
                     else
                     {
                         RegisterSpan(
                             ref spanStore,
-                            PrivateCells[i].RowIndex,
-                            PrivateCells[i].RowSpan,
+                            _PrivateCells[i].RowIndex,
+                            _PrivateCells[i].RowSpan,
                             false,
                             children[i].DesiredSize.Height);
                     }
                 }
 
-                i = PrivateCells[i].Next;
-            } while (i < PrivateCells.Length);
+                i = _PrivateCells[i].Next;
+            } while (i < _PrivateCells.Length);
 
             if (spanStore != null)
             {
@@ -1130,8 +1127,8 @@ namespace Avalonia.Controls
             double cellMeasureWidth;
             double cellMeasureHeight;
 
-            if (PrivateCells[cell].IsAutoU
-                && !PrivateCells[cell].IsStarU)
+            if (_PrivateCells[cell].IsAutoU
+                && !_PrivateCells[cell].IsStarU)
             {
                 //  if cell belongs to at least one Auto column and not a single Star column
                 //  then it should be calculated "to content", thus it is possible to "shortcut"
@@ -1143,16 +1140,16 @@ namespace Avalonia.Controls
                 //  otherwise...
                 cellMeasureWidth = GetMeasureSizeForRange(
                                         DefinitionsU,
-                                        PrivateCells[cell].ColumnIndex,
-                                        PrivateCells[cell].ColumnSpan);
+                                        _PrivateCells[cell].ColumnIndex,
+                                        _PrivateCells[cell].ColumnSpan);
             }
 
             if (forceInfinityV)
             {
                 cellMeasureHeight = double.PositiveInfinity;
             }
-            else if (PrivateCells[cell].IsAutoV
-                    && !PrivateCells[cell].IsStarV)
+            else if (_PrivateCells[cell].IsAutoV
+                    && !_PrivateCells[cell].IsStarV)
             {
                 //  if cell belongs to at least one Auto row and not a single Star row
                 //  then it should be calculated "to content", thus it is possible to "shortcut"
@@ -1163,8 +1160,8 @@ namespace Avalonia.Controls
             {
                 cellMeasureHeight = GetMeasureSizeForRange(
                                         DefinitionsV,
-                                        PrivateCells[cell].RowIndex,
-                                        PrivateCells[cell].RowSpan);
+                                        _PrivateCells[cell].RowIndex,
+                                        _PrivateCells[cell].RowSpan);
             }
 
 
@@ -2326,17 +2323,16 @@ namespace Avalonia.Controls
         /// </summary>
         private void SetValid()
         {
-            ExtendedData extData = ExtData;
-            if (extData != null)
+            if (!IsTrivial)
             {
                 //                for (int i = 0; i < PrivateColumnCount; ++i) DefinitionsU[i].SetValid ();
                 //                for (int i = 0; i < PrivateRowCount; ++i) DefinitionsV[i].SetValid ();
 
-                if (extData.TempDefinitions != null)
+                if (_TempDefinitions != null)
                 {
                     //  TempDefinitions has to be cleared to avoid "memory leaks"
-                    Array.Clear(extData.TempDefinitions, 0, Math.Max(DefinitionsU.Count, DefinitionsV.Count));
-                    extData.TempDefinitions = null;
+                    Array.Clear(_TempDefinitions, 0, Math.Max(DefinitionsU.Count, DefinitionsV.Count));
+                    _TempDefinitions = null;
                 }
             }
         }
@@ -2397,18 +2393,18 @@ namespace Avalonia.Controls
             return (flags == 0 || (_flags & flags) != 0);
         }
 
-        private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
-        {
-            Grid grid = (Grid)d;
+        // private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
+        // {
+        //     Grid grid = (Grid)d;
 
-            if (grid.ExtData != null    // trivial grid is 1 by 1. there is no grid lines anyway
-                && grid.ListenToNotifications)
-            {
-                grid.InvalidateVisual();
-            }
+        //     if (!grid  // trivial grid is 1 by 1. there is no grid lines anyway
+        //         && grid.ListenToNotifications)
+        //     {
+        //         grid.InvalidateVisual();
+        //     }
 
-            grid.SetFlags((bool)e.NewValue, Flags.ShowGridLinesPropertyValue);
-        }
+        //     grid.SetFlags((bool)e.NewValue, Flags.ShowGridLinesPropertyValue);
+        // }
 
         private static void OnCellAttachedPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
@@ -2417,69 +2413,57 @@ namespace Avalonia.Controls
             if (child != null)
             {
                 Grid grid = child.GetVisualParent<Grid>();
-                if (grid != null
-                    && grid.ExtData != null
-                    && grid.ListenToNotifications)
+                if (grid != null)
                 {
-                    grid.CellsStructureDirty = true;
+                    grid.Invalidate();
                 }
             }
         }
 
+        /// <summary>
+        /// Reflects the changes on the ColumnDefinition StyledProperty to the target grid.
+        /// </summary> 
         private static void ColumnDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs e)
         {
-            var val = e.NewValue as ColumnDefinitions;
-            SynchronizeColumnDefinitions(target, val);
+            var col = e.NewValue as ColumnDefinitions;
+
+            var isEmpty = (col is null);
+
+            target.ColIsEmpty = isEmpty;
+
+            if (!isEmpty)
+            {
+                col.Parent = target;
+            }
         }
 
         /// <summary>
-        /// Reflects the changes on the ColumnDefinition StyledProperty
-        /// to the backing ExtendedData class.
+        /// Reflects the changes on the RowDefinition StyledProperty to the target grid.
         /// </summary> 
-        private static void SynchronizeColumnDefinitions(Grid target, ColumnDefinitions colDef)
+        private static void RowDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs e)
         {
-            if (colDef is null)
-                return;
+            var row = e.NewValue as RowDefinitions;
 
-            if (target._data is null)
-                target._data = new ExtendedData();
+            var isEmpty = (row is null);
 
-            colDef.IsDirty = true;
-            colDef.Parent = target;
-            target._data.ColumnDefinitions = colDef;
+            target.RowIsEmpty = isEmpty;
 
+            if (!isEmpty)
+            {
+                row.IsDirty = true;
+                row.Parent = target;
+            }
 
-
-            target.GridIsTrivial = colDef.Count == 0;
-        }
-
-        private static void RowDefinitionsPropertyChanged(Grid target, AvaloniaPropertyChangedEventArgs rowDef)
-        {
-            var val = rowDef.NewValue as RowDefinitions;
-            SynchronizeRowDefinitions(target, val);
-        }
-
-        /// <summary>
-        /// Reflects the changes on the RowDefinition StyledProperty
-        /// to the backing ExtendedData class.
-        /// </summary> 
-        private static void SynchronizeRowDefinitions(Grid target, RowDefinitions rowDef)
-        {
-            if (rowDef is null)
-                return;
-
-            if (target._data is null)
-                target._data = new ExtendedData();
-
-            rowDef.IsDirty = true;
-            rowDef.Parent = target;
-            target._data.RowDefinitions = rowDef;
-
-            target.GridIsTrivial = rowDef.Count == 0;
-
+            target.RowOrColumnDefChanged = true;
         }
 
 
+        internal void DefinitionListIsMakingGridTrivial()
+        {
+            RowIsEmpty = (RowDefinitions?.Count ?? 0) == 0;
+            ColIsEmpty = (ColumnDefinitions?.Count ?? 0) == 0;
+            RowOrColumnDefChanged = true;
+        }
 
         /// <summary>
         /// Helper for Comparer methods.
@@ -2517,18 +2501,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Private version returning array of column definitions.
         /// </summary>
-        private IReadOnlyList<DefinitionBase> DefinitionsU
-        {
-            get { return (ExtData.DefinitionsU); }
-        }
+        private IReadOnlyList<DefinitionBase> DefinitionsU;
 
         /// <summary>
         /// Private version returning array of row definitions.
         /// </summary>
-        private IReadOnlyList<DefinitionBase> DefinitionsV
-        {
-            get { return (ExtData.DefinitionsV); }
-        }
+        private IReadOnlyList<DefinitionBase> DefinitionsV;
 
         /// <summary>
         /// Helper accessor to layout time array of definitions.
@@ -2537,30 +2515,30 @@ namespace Avalonia.Controls
         {
             get
             {
-                ExtendedData extData = ExtData;
+
                 int requiredLength = Math.Max(DefinitionsU.Count, DefinitionsV.Count) * 2;
 
-                if (extData.TempDefinitions == null
-                    || extData.TempDefinitions.Length < requiredLength)
+                if (_TempDefinitions == null
+                    || _TempDefinitions.Length < requiredLength)
                 {
                     WeakReference tempDefinitionsWeakRef = (WeakReference)Thread.GetData(s_tempDefinitionsDataSlot);
                     if (tempDefinitionsWeakRef == null)
                     {
-                        extData.TempDefinitions = new DefinitionBase[requiredLength];
-                        Thread.SetData(s_tempDefinitionsDataSlot, new WeakReference(extData.TempDefinitions));
+                        _TempDefinitions = new DefinitionBase[requiredLength];
+                        Thread.SetData(s_tempDefinitionsDataSlot, new WeakReference(_TempDefinitions));
                     }
                     else
                     {
-                        extData.TempDefinitions = (DefinitionBase[])tempDefinitionsWeakRef.Target;
-                        if (extData.TempDefinitions == null
-                            || extData.TempDefinitions.Length < requiredLength)
+                        _TempDefinitions = (DefinitionBase[])tempDefinitionsWeakRef.Target;
+                        if (_TempDefinitions == null
+                            || _TempDefinitions.Length < requiredLength)
                         {
-                            extData.TempDefinitions = new DefinitionBase[requiredLength];
-                            tempDefinitionsWeakRef.Target = extData.TempDefinitions;
+                            _TempDefinitions = new DefinitionBase[requiredLength];
+                            tempDefinitionsWeakRef.Target = _TempDefinitions;
                         }
                     }
                 }
-                return (extData.TempDefinitions);
+                return (_TempDefinitions);
             }
         }
 
@@ -2601,14 +2579,6 @@ namespace Avalonia.Controls
                 }
                 return _roundingErrors;
             }
-        }
-
-        /// <summary>
-        /// Private version returning array of cells.
-        /// </summary>
-        private CellCache[] PrivateCells
-        {
-            get { return (ExtData.CellCachesCollection); }
         }
 
         /// <summary>
@@ -2675,14 +2645,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Returns reference to extended data bag.
-        /// </summary>
-        private ExtendedData ExtData
-        {
-            get { return (_data); }
-        }
-
-        /// <summary>
         /// Returns *-weight, adjusted for scale computed during Phase 1
         /// </summary>
         static double StarWeight(DefinitionBase def, double scale)
@@ -2700,8 +2662,7 @@ namespace Avalonia.Controls
             }
         }
 
-        // Extended data instantiated on demand, for non-trivial case handling only
-        private ExtendedData _data;
+
 
         // Grid validity / property caches dirtiness flags
         private Flags _flags;
@@ -2712,6 +2673,8 @@ namespace Avalonia.Controls
 
         // Stores unrounded values and rounding errors during layout rounding.
         double[] _roundingErrors;
+        private bool RowIsEmpty = true;
+        private bool ColIsEmpty = true;
 
         // 5 is an arbitrary constant chosen to end the measure loop
         private const int c_layoutLoopMaxCount = 5;
@@ -2726,22 +2689,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Extended data instantiated on demand, when grid handles non-trivial case.
         /// </summary>
-        private class ExtendedData
-        {
-            internal ColumnDefinitions ColumnDefinitions;           //  collection of column definitions (logical tree support)
-            internal RowDefinitions RowDefinitions;                 // Collection of row definitions (logical tree support)
-            internal IReadOnlyList<DefinitionBase> DefinitionsU;    // Collection of column definitions used during calc
-            internal IReadOnlyList<DefinitionBase> DefinitionsV;    // Collection of row definitions used during calc
-            internal CellCache[] CellCachesCollection;              // Backing store for logical children
-            internal int CellGroup1;                                // Index of the first cell in first cell group
-            internal int CellGroup2;                                // Index of the first cell in second cell group
-            internal int CellGroup3;                                // Index of the first cell in third cell group
-            internal int CellGroup4;                                // Index of the first cell in forth cell group
-            internal DefinitionBase[] TempDefinitions;              // Temporary array used during layout for various purposes
-                                                                    // TempDefinitions.Length == Max(definitionsU.Length, definitionsV.Length)
-            internal int OldColumnCount;                            // Count of the previous column definition list. Invalidates the cells when it doesn't match up.
-            internal int OldRowCount;                               //  Count of the previous row definition list. Invalidates the cells when it doesn't match up.
-        }
+        CellCache[] _PrivateCells;              // Backing store for logical children
+        int _CellGroup1;                                // Index of the first cell in first cell group
+        int _CellGroup2;                                // Index of the first cell in second cell group
+        int _CellGroup3;                                // Index of the first cell in third cell group
+        int _CellGroup4;                                // Index of the first cell in forth cell group
+        DefinitionBase[] _TempDefinitions;              // Temporary array used during layout for various purposes
+                                                        // TempDefinitions.Length == Max(definitionsU.Length, definitionsV.Length)
+        int _OldColumnCount;                            // Count of the previous column definition list. Invalidates the cells when it doesn't match up.
+        int _OldRowCount;                               //  Count of the previous row definition list. Invalidates the cells when it doesn't match up.
+
 
         /// <summary>
         /// Grid validity / property caches dirtiness flags

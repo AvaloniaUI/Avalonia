@@ -31,7 +31,9 @@ namespace Avalonia.Controls.UnitTests
 
         private Grid CreateGrid(params (string name, GridLength width, double minWidth, double maxWidth)[] columns)
         {
-            var grid = new Grid();
+            var grid = new Grid(); 
+            grid.ColumnDefinitions = new ColumnDefinitions();
+
             foreach (var k in columns.Select(c => new ColumnDefinition
             {
                 SharedSizeGroup = c.name,

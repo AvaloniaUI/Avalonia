@@ -52,6 +52,7 @@ namespace Avalonia.Controls
             }
 
             IsDirty = true;
+            Parent?.DefinitionListIsMakingGridTrivial();
         }
     }
 }
