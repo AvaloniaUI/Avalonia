@@ -1,0 +1,9 @@
+C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/obj\Release\netstandard2.0\SharpGen/SharpGen-MSBuild.h
+C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/obj\Release\netstandard2.0\SharpGen/AvaloniaNative.h
+C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/../../native/Avalonia.Native/inc\avalonia-native.h
+C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/../../native/Avalonia.Native/inc/com.h
+C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/../../native/Avalonia.Native/inc/key.h
+C:\Users\danwa\.nuget\packages\sharpgentools.sdk\1.2.1\tools\CastXML/share/castxml/clang\include\stddef.h
+C:\Users\danwa\.nuget\packages\sharpgentools.sdk\1.2.1\tools\CastXML/share/castxml/clang\include/__stddef_max_align_t.h
+C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/../../native/Avalonia.Native/inc\com.h
+C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/obj\Release\netstandard2.0\SharpGen/SharpGen.Runtime.COM.h

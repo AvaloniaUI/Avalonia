@@ -1,0 +1,381 @@
+<?xml version="1.0"?>
+<config id="Avalonia.Native" xmlns="urn:SharpGen.Config">
+  <var name="THIS_CONFIG_PATH">C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native\obj\Release\netstandard2.0\SharpGen</var>
+  <include-prolog>
+    // Use unicode
+    #define UNICODE
+
+    // for SAL annotations
+    #define _PREFAST_
+
+    // To force GUID to be declared
+    #define INITGUID
+
+    #define _ALLOW_KEYWORD_MACROS
+
+    // Wrap all declspec for code-gen
+    #define __declspec(x) __attribute__((annotate(#x)))
+  
+
+</include-prolog>
+  <naming />
+  <extension>
+    <define struct="SharpGen.Runtime.Result" sizeof="4" />
+    <define struct="SharpGen.Runtime.FunctionCallback" sizeof="8" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" />
+    <define enum="System.IO.SeekOrigin" underlying="System.UInt32" sizeof="4" />
+    <define struct="SharpGen.Runtime.Win32.RawBool" sizeof="4" />
+    <define interface="SharpGen.Runtime.ComObject" />
+    <define interface="SharpGen.Runtime.Win32.PropertyBag" />
+    <define struct="SharpGen.Runtime.Win32.SecurityAttributes" sizeof="16" />
+    <define struct="SharpGen.Runtime.Win32.NativeMessage" sizeof="28" />
+    <define struct="SharpGen.Runtime.Win32.Variant" sizeof="16" />
+    <define struct="SharpGen.Runtime.Win32.BitmapInfoHeader" sizeof="40" />
+    <define struct="SharpGen.Runtime.Result" sizeof="4" />
+    <define struct="SharpGen.Runtime.FunctionCallback" sizeof="8" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" />
+    <define enum="System.IO.SeekOrigin" underlying="System.UInt32" sizeof="4" />
+    <define struct="SharpGen.Runtime.Win32.RawBool" sizeof="4" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Result" sizeof="4" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Win32.NativeMessage" sizeof="28" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Win32.SecurityAttributes" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Win32.Variant" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Win32.Variant" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.Win32.PropertyBag" shadow="SharpGen.Runtime.Win32.PropertyBagShadow" vtbl="SharpGen.Runtime.Win32.PropertyBagShadow.SharpGen.Runtime.Win32.PropertyBagVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.FunctionCallback" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define enum="SharpGen.Runtime.Win32.LockType" underlying="System.Int32" sizeof="4" />
+    <define enum="SharpGen.Runtime.Win32.CommitFlags" underlying="System.Int32" sizeof="4" />
+    <define enum="SharpGen.Runtime.Win32.StorageStatisticsFlags" underlying="System.Int32" sizeof="4" />
+    <define enum="SharpGen.Runtime.ErrorCode" underlying="System.Int32" sizeof="4" />
+    <define struct="SharpGen.Runtime.Win32.StorageStatistics" sizeof="80" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define interface="SharpGen.Runtime.IUnknown" native="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.Win32.IStreamBase" native="SharpGen.Runtime.Win32.ComStreamBase" shadow="SharpGen.Runtime.Win32.IStreamBaseShadow" vtbl="SharpGen.Runtime.Win32.IStreamBaseShadow.IStreamBaseVtbl" />
+    <define interface="SharpGen.Runtime.Win32.IStream" native="SharpGen.Runtime.Win32.ComStream" shadow="SharpGen.Runtime.Win32.IStreamShadow" vtbl="SharpGen.Runtime.Win32.IStreamShadow.IStreamVtbl" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.FunctionCallback" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define enum="System.IO.SeekOrigin" underlying="System.UInt32" sizeof="4" />
+    <define struct="SharpGen.Runtime.Win32.RawBool" sizeof="4" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Result" sizeof="4" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Win32.NativeMessage" sizeof="28" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Win32.SecurityAttributes" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Win32.Variant" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="SharpGen.Runtime.Win32.Variant" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.Win32.PropertyBag" shadow="SharpGen.Runtime.Win32.PropertyBagShadow" vtbl="SharpGen.Runtime.Win32.PropertyBagShadow.SharpGen.Runtime.Win32.PropertyBagVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.SharpGen.Runtime.ComObjectVtbl" />
+    <define enum="SharpGen.Runtime.Win32.LockType" underlying="System.Int32" sizeof="4" />
+    <define enum="SharpGen.Runtime.Win32.CommitFlags" underlying="System.Int32" sizeof="4" />
+    <define enum="SharpGen.Runtime.Win32.StorageStatisticsFlags" underlying="System.Int32" sizeof="4" />
+    <define enum="SharpGen.Runtime.ErrorCode" underlying="System.Int32" sizeof="4" />
+    <define struct="SharpGen.Runtime.Win32.StorageStatistics" sizeof="80" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define interface="SharpGen.Runtime.IUnknown" native="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectShadow.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.Win32.IStreamBase" native="SharpGen.Runtime.Win32.ComStreamBase" shadow="SharpGen.Runtime.Win32.IStreamBaseShadow" vtbl="SharpGen.Runtime.Win32.IStreamBaseShadow.IStreamBaseVtbl" />
+    <define interface="SharpGen.Runtime.Win32.IStream" native="SharpGen.Runtime.Win32.ComStream" shadow="SharpGen.Runtime.Win32.IStreamShadow" vtbl="SharpGen.Runtime.Win32.IStreamShadow.IStreamVtbl" />
+    <define enum="Avalonia.Native.Interop.SystemDecorations" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnPixelFormat" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnRawMouseEventType" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnRawKeyEventType" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnInputModifiers" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnDragDropEffects" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnDragEventType" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnWindowState" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnStandardCursorType" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnWindowEdge" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnMenuItemToggleType" underlying="System.Int32" sizeof="4" />
+    <define enum="Avalonia.Native.Interop.AvnExtendClientAreaChromeHints" underlying="System.Int32" sizeof="4" />
+    <define struct="Avalonia.Native.Interop.AvnSize" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="Avalonia.Native.Interop.AvnPixelSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="Avalonia.Native.Interop.AvnRect" sizeof="32" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="Avalonia.Native.Interop.AvnVector" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="Avalonia.Native.Interop.AvnPoint" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="Avalonia.Native.Interop.AvnScreen" sizeof="69" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="Avalonia.Native.Interop.AvnFramebuffer" sizeof="44" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define struct="Avalonia.Native.Interop.AvnColor" sizeof="4" align="0" marshal="false" static-marshal="false" custom-new="false" />
+    <define interface="Avalonia.Native.Interop.IAvnWindowEvents" shadow="Avalonia.Native.Interop.IAvnWindowEventsShadow" vtbl="Avalonia.Native.Interop.IAvnWindowEventsShadow.IAvnWindowEventsVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnWindow" shadow="Avalonia.Native.Interop.IAvnWindowShadow" vtbl="Avalonia.Native.Interop.IAvnWindowShadow.IAvnWindowVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnPopup" shadow="Avalonia.Native.Interop.IAvnPopupShadow" vtbl="Avalonia.Native.Interop.IAvnPopupShadow.IAvnPopupVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnMacOptions" shadow="Avalonia.Native.Interop.IAvnMacOptionsShadow" vtbl="Avalonia.Native.Interop.IAvnMacOptionsShadow.IAvnMacOptionsVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnPlatformThreadingInterface" shadow="Avalonia.Native.Interop.IAvnPlatformThreadingInterfaceShadow" vtbl="Avalonia.Native.Interop.IAvnPlatformThreadingInterfaceShadow.IAvnPlatformThreadingInterfaceVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnSystemDialogEvents" shadow="Avalonia.Native.Interop.IAvnSystemDialogEventsShadow" vtbl="Avalonia.Native.Interop.IAvnSystemDialogEventsShadow.IAvnSystemDialogEventsVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnSystemDialogs" shadow="Avalonia.Native.Interop.IAvnSystemDialogsShadow" vtbl="Avalonia.Native.Interop.IAvnSystemDialogsShadow.IAvnSystemDialogsVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnScreens" shadow="Avalonia.Native.Interop.IAvnScreensShadow" vtbl="Avalonia.Native.Interop.IAvnScreensShadow.IAvnScreensVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnClipboard" shadow="Avalonia.Native.Interop.IAvnClipboardShadow" vtbl="Avalonia.Native.Interop.IAvnClipboardShadow.IAvnClipboardVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnCursor" shadow="Avalonia.Native.Interop.IAvnCursorShadow" vtbl="Avalonia.Native.Interop.IAvnCursorShadow.IAvnCursorVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnCursorFactory" shadow="Avalonia.Native.Interop.IAvnCursorFactoryShadow" vtbl="Avalonia.Native.Interop.IAvnCursorFactoryShadow.IAvnCursorFactoryVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnGlContext" shadow="Avalonia.Native.Interop.IAvnGlContextShadow" vtbl="Avalonia.Native.Interop.IAvnGlContextShadow.IAvnGlContextVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnGlDisplay" shadow="Avalonia.Native.Interop.IAvnGlDisplayShadow" vtbl="Avalonia.Native.Interop.IAvnGlDisplayShadow.IAvnGlDisplayVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnGlSurfaceRenderTarget" shadow="Avalonia.Native.Interop.IAvnGlSurfaceRenderTargetShadow" vtbl="Avalonia.Native.Interop.IAvnGlSurfaceRenderTargetShadow.IAvnGlSurfaceRenderTargetVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnGlSurfaceRenderingSession" shadow="Avalonia.Native.Interop.IAvnGlSurfaceRenderingSessionShadow" vtbl="Avalonia.Native.Interop.IAvnGlSurfaceRenderingSessionShadow.IAvnGlSurfaceRenderingSessionVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnMenu" shadow="Avalonia.Native.Interop.IAvnMenuShadow" vtbl="Avalonia.Native.Interop.IAvnMenuShadow.IAvnMenuVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnMenuItem" shadow="Avalonia.Native.Interop.IAvnMenuItemShadow" vtbl="Avalonia.Native.Interop.IAvnMenuItemShadow.IAvnMenuItemVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnStringArray" shadow="Avalonia.Native.Interop.IAvnStringArrayShadow" vtbl="Avalonia.Native.Interop.IAvnStringArrayShadow.IAvnStringArrayVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnDndResultCallback" shadow="Avalonia.Native.Interop.IAvnDndResultCallbackShadow" vtbl="Avalonia.Native.Interop.IAvnDndResultCallbackShadow.IAvnDndResultCallbackVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnGCHandleDeallocatorCallback" shadow="Avalonia.Native.Interop.IAvnGCHandleDeallocatorCallbackShadow" vtbl="Avalonia.Native.Interop.IAvnGCHandleDeallocatorCallbackShadow.IAvnGCHandleDeallocatorCallbackVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnMenuEvents" shadow="Avalonia.Native.Interop.IAvnMenuEventsShadow" vtbl="Avalonia.Native.Interop.IAvnMenuEventsShadow.IAvnMenuEventsVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnNativeControlHost" shadow="Avalonia.Native.Interop.IAvnNativeControlHostShadow" vtbl="Avalonia.Native.Interop.IAvnNativeControlHostShadow.IAvnNativeControlHostVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnNativeControlHostTopLevelAttachment" shadow="Avalonia.Native.Interop.IAvnNativeControlHostTopLevelAttachmentShadow" vtbl="Avalonia.Native.Interop.IAvnNativeControlHostTopLevelAttachmentShadow.IAvnNativeControlHostTopLevelAttachmentVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvaloniaNativeFactory" shadow="Avalonia.Native.Interop.IAvaloniaNativeFactoryShadow" vtbl="Avalonia.Native.Interop.IAvaloniaNativeFactoryShadow.IAvaloniaNativeFactoryVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnString" shadow="Avalonia.Native.Interop.IAvnStringShadow" vtbl="Avalonia.Native.Interop.IAvnStringShadow.IAvnStringVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnWindowBase" shadow="Avalonia.Native.Interop.IAvnWindowBaseShadow" vtbl="Avalonia.Native.Interop.IAvnWindowBaseShadow.IAvnWindowBaseVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnWindowBaseEvents" shadow="Avalonia.Native.Interop.IAvnWindowBaseEventsShadow" vtbl="Avalonia.Native.Interop.IAvnWindowBaseEventsShadow.IAvnWindowBaseEventsVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnActionCallback" shadow="Avalonia.Native.Interop.IAvnActionCallbackShadow" vtbl="Avalonia.Native.Interop.IAvnActionCallbackShadow.IAvnActionCallbackVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnSignaledCallback" shadow="Avalonia.Native.Interop.IAvnSignaledCallbackShadow" vtbl="Avalonia.Native.Interop.IAvnSignaledCallbackShadow.IAvnSignaledCallbackVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnLoopCancellation" shadow="Avalonia.Native.Interop.IAvnLoopCancellationShadow" vtbl="Avalonia.Native.Interop.IAvnLoopCancellationShadow.IAvnLoopCancellationVtbl" />
+    <define interface="Avalonia.Native.Interop.IAvnPredicateCallback" shadow="Avalonia.Native.Interop.IAvnPredicateCallbackShadow" vtbl="Avalonia.Native.Interop.IAvnPredicateCallbackShadow.IAvnPredicateCallbackVtbl" />
+  </extension>
+  <bindings>
+    <bind from="void" to="void" />
+    <bind from="int" to="System.Int32" />
+    <bind from="unsigned int" to="System.UInt32" />
+    <bind from="short" to="System.Int16" />
+    <bind from="unsigned short" to="System.UInt16" />
+    <bind from="unsigned char" to="System.Byte" />
+    <bind from="longlong" to="System.Int64" />
+    <bind from="unsigned longlong" to="System.UInt64" />
+    <bind from="float" to="System.Single" />
+    <bind from="double" to="System.Double" />
+    <bind from="size_t" to="SharpGen.Runtime.PointerSize" />
+    <bind from="ptrdiff_t" to="SharpGen.Runtime.PointerSize" />
+    <bind from="bool" to="System.Boolean" marshal="System.Byte" />
+    <bind from="__function__stdcall" to="SharpGen.Runtime.FunctionCallback" />
+    <bind from="GUID" to="System.Guid" />
+    <bind from="SHARPGEN_RUNTIME_SEEKORIGIN" to="System.IO.SeekOrigin" />
+    <bind from="INT_PTR" to="System.IntPtr" />
+    <bind from="UINT_PTR" to="System.UIntPtr" />
+    <bind from="LONG_PTR" to="System.IntPtr" />
+    <bind from="ULONG_PTR" to="System.UIntPtr" />
+    <bind from="HANDLE_PTR" to="System.IntPtr" />
+    <bind from="BOOL" to="SharpGen.Runtime.Win32.RawBool" />
+    <bind from="HANDLE" to="System.IntPtr" />
+    <bind from="HRESULT" to="SharpGen.Runtime.Result" />
+    <bind from="SIZE_T" to="SharpGen.Runtime.PointerSize" />
+    <bind from="SSIZE_T" to="SharpGen.Runtime.PointerSize" />
+    <bind from="MSG" to="SharpGen.Runtime.Win32.NativeMessage" />
+    <bind from="ULARGE_INTEGER" to="System.UInt64" />
+    <bind from="LARGE_INTEGER" to="System.Int64" />
+    <bind from="FILETIME" to="System.Int64" />
+    <bind from="DWORD" to="System.Int32" />
+    <bind from="ULONG" to="System.UInt32" />
+    <bind from="LONG" to="System.Int32" />
+    <bind from="SECURITY_ATTRIBUTES" to="SharpGen.Runtime.Win32.SecurityAttributes" />
+    <bind from="VARIANT" to="SharpGen.Runtime.Win32.Variant" />
+    <bind from="PROPVARIANT" to="SharpGen.Runtime.Win32.Variant" />
+    <bind from="DISPPARAMS" to="System.Runtime.InteropServices.ComTypes.DISPPARAMS" />
+    <bind from="EXCEPINFO" to="System.Runtime.InteropServices.ComTypes.EXCEPINFO" />
+    <bind from="ITypeInfo" to="SharpGen.Runtime.ComObject" />
+    <bind from="IErrorLog" to="SharpGen.Runtime.ComObject" />
+    <bind from="IMoniker" to="SharpGen.Runtime.ComObject" />
+    <bind from="IEnumMoniker" to="SharpGen.Runtime.ComObject" />
+    <bind from="IBindCtx" to="SharpGen.Runtime.ComObject" />
+    <bind from="IRpcStubBuffer" to="SharpGen.Runtime.ComObject" />
+    <bind from="IRpcChannelBuffer" to="SharpGen.Runtime.ComObject" />
+    <bind from="IPropertyStore" to="SharpGen.Runtime.ComObject" />
+    <bind from="IPropertyBag2" to="SharpGen.Runtime.Win32.PropertyBag" />
+    <bind from="IClassFactory" to="SharpGen.Runtime.ComObject" />
+    <bind from="IEnumUnknown" to="SharpGen.Runtime.ComObject" />
+    <bind from="IEnumString" to="SharpGen.Runtime.ComObject" />
+    <bind from="INamedPropertyStore" to="SharpGen.Runtime.ComObject" />
+    <bind from="HSTRING" to="System.IntPtr" />
+    <bind from="LOCKTYPE" to="SharpGen.Runtime.Win32.LockType" />
+    <bind from="STGC" to="SharpGen.Runtime.Win32.CommitFlags" />
+    <bind from="STATFLAG" to="SharpGen.Runtime.Win32.StorageStatisticsFlags" />
+    <bind from="SHARPGEN_RUNTIME_COM_ERRORCODE" to="SharpGen.Runtime.ErrorCode" />
+    <bind from="STATSTG" to="SharpGen.Runtime.Win32.StorageStatistics" />
+    <bind from="IUnknown" to="SharpGen.Runtime.IUnknown" />
+    <bind from="ISequentialStream" to="SharpGen.Runtime.Win32.IStreamBase" />
+    <bind from="IStream" to="SharpGen.Runtime.Win32.IStream" />
+    <bind from="SystemDecorations" to="Avalonia.Native.Interop.SystemDecorations" />
+    <bind from="AvnPixelFormat" to="Avalonia.Native.Interop.AvnPixelFormat" />
+    <bind from="AvnRawMouseEventType" to="Avalonia.Native.Interop.AvnRawMouseEventType" />
+    <bind from="AvnRawKeyEventType" to="Avalonia.Native.Interop.AvnRawKeyEventType" />
+    <bind from="AvnInputModifiers" to="Avalonia.Native.Interop.AvnInputModifiers" />
+    <bind from="AvnDragDropEffects" to="Avalonia.Native.Interop.AvnDragDropEffects" />
+    <bind from="AvnDragEventType" to="Avalonia.Native.Interop.AvnDragEventType" />
+    <bind from="AvnWindowState" to="Avalonia.Native.Interop.AvnWindowState" />
+    <bind from="AvnStandardCursorType" to="Avalonia.Native.Interop.AvnStandardCursorType" />
+    <bind from="AvnWindowEdge" to="Avalonia.Native.Interop.AvnWindowEdge" />
+    <bind from="AvnMenuItemToggleType" to="Avalonia.Native.Interop.AvnMenuItemToggleType" />
+    <bind from="AvnExtendClientAreaChromeHints" to="Avalonia.Native.Interop.AvnExtendClientAreaChromeHints" />
+    <bind from="AvnSize" to="Avalonia.Native.Interop.AvnSize" />
+    <bind from="AvnPixelSize" to="Avalonia.Native.Interop.AvnPixelSize" />
+    <bind from="AvnRect" to="Avalonia.Native.Interop.AvnRect" />
+    <bind from="AvnVector" to="Avalonia.Native.Interop.AvnVector" />
+    <bind from="AvnPoint" to="Avalonia.Native.Interop.AvnPoint" />
+    <bind from="AvnScreen" to="Avalonia.Native.Interop.AvnScreen" />
+    <bind from="AvnFramebuffer" to="Avalonia.Native.Interop.AvnFramebuffer" />
+    <bind from="AvnColor" to="Avalonia.Native.Interop.AvnColor" />
+    <bind from="IAvnWindowEvents" to="Avalonia.Native.Interop.IAvnWindowEvents" />
+    <bind from="IAvnWindow" to="Avalonia.Native.Interop.IAvnWindow" />
+    <bind from="IAvnPopup" to="Avalonia.Native.Interop.IAvnPopup" />
+    <bind from="IAvnMacOptions" to="Avalonia.Native.Interop.IAvnMacOptions" />
+    <bind from="IAvnPlatformThreadingInterface" to="Avalonia.Native.Interop.IAvnPlatformThreadingInterface" />
+    <bind from="IAvnSystemDialogEvents" to="Avalonia.Native.Interop.IAvnSystemDialogEvents" />
+    <bind from="IAvnSystemDialogs" to="Avalonia.Native.Interop.IAvnSystemDialogs" />
+    <bind from="IAvnScreens" to="Avalonia.Native.Interop.IAvnScreens" />
+    <bind from="IAvnClipboard" to="Avalonia.Native.Interop.IAvnClipboard" />
+    <bind from="IAvnCursor" to="Avalonia.Native.Interop.IAvnCursor" />
+    <bind from="IAvnCursorFactory" to="Avalonia.Native.Interop.IAvnCursorFactory" />
+    <bind from="IAvnGlContext" to="Avalonia.Native.Interop.IAvnGlContext" />
+    <bind from="IAvnGlDisplay" to="Avalonia.Native.Interop.IAvnGlDisplay" />
+    <bind from="IAvnGlSurfaceRenderTarget" to="Avalonia.Native.Interop.IAvnGlSurfaceRenderTarget" />
+    <bind from="IAvnGlSurfaceRenderingSession" to="Avalonia.Native.Interop.IAvnGlSurfaceRenderingSession" />
+    <bind from="IAvnMenu" to="Avalonia.Native.Interop.IAvnMenu" />
+    <bind from="IAvnMenuItem" to="Avalonia.Native.Interop.IAvnMenuItem" />
+    <bind from="IAvnStringArray" to="Avalonia.Native.Interop.IAvnStringArray" />
+    <bind from="IAvnDndResultCallback" to="Avalonia.Native.Interop.IAvnDndResultCallback" />
+    <bind from="IAvnGCHandleDeallocatorCallback" to="Avalonia.Native.Interop.IAvnGCHandleDeallocatorCallback" />
+    <bind from="IAvnMenuEvents" to="Avalonia.Native.Interop.IAvnMenuEvents" />
+    <bind from="IAvnNativeControlHost" to="Avalonia.Native.Interop.IAvnNativeControlHost" />
+    <bind from="IAvnNativeControlHostTopLevelAttachment" to="Avalonia.Native.Interop.IAvnNativeControlHostTopLevelAttachment" />
+    <bind from="IAvaloniaNativeFactory" to="Avalonia.Native.Interop.IAvaloniaNativeFactory" />
+    <bind from="IAvnString" to="Avalonia.Native.Interop.IAvnString" />
+    <bind from="IAvnWindowBase" to="Avalonia.Native.Interop.IAvnWindowBase" />
+    <bind from="IAvnWindowBaseEvents" to="Avalonia.Native.Interop.IAvnWindowBaseEvents" />
+    <bind from="IAvnActionCallback" to="Avalonia.Native.Interop.IAvnActionCallback" />
+    <bind from="IAvnSignaledCallback" to="Avalonia.Native.Interop.IAvnSignaledCallback" />
+    <bind from="IAvnLoopCancellation" to="Avalonia.Native.Interop.IAvnLoopCancellation" />
+    <bind from="IAvnPredicateCallback" to="Avalonia.Native.Interop.IAvnPredicateCallback" />
+  </bindings>
+  <mapping>
+    <map doc="void" check="true" name="void" offset-translate="0" />
+    <map doc="int" check="true" name="System.Int32" offset-translate="0" />
+    <map doc="unsigned int" check="true" name="System.UInt32" offset-translate="0" />
+    <map doc="short" check="true" name="System.Int16" offset-translate="0" />
+    <map doc="unsigned short" check="true" name="System.UInt16" offset-translate="0" />
+    <map doc="unsigned char" check="true" name="System.Byte" offset-translate="0" />
+    <map doc="longlong" check="true" name="System.Int64" offset-translate="0" />
+    <map doc="unsigned longlong" check="true" name="System.UInt64" offset-translate="0" />
+    <map doc="float" check="true" name="System.Single" offset-translate="0" />
+    <map doc="double" check="true" name="System.Double" offset-translate="0" />
+    <map doc="size_t" check="true" name="SharpGen.Runtime.PointerSize" offset-translate="0" />
+    <map doc="ptrdiff_t" check="true" name="SharpGen.Runtime.PointerSize" offset-translate="0" />
+    <map doc="bool" check="true" name="System.Boolean" offset-translate="0" />
+    <map doc="__function__stdcall" check="true" name="SharpGen.Runtime.FunctionCallback" offset-translate="0" />
+    <map doc="GUID" check="true" name="System.Guid" offset-translate="0" />
+    <map doc="SHARPGEN_RUNTIME_SEEKORIGIN" check="true" name="System.IO.SeekOrigin" offset-translate="0" />
+    <map doc="INT_PTR" check="true" name="System.IntPtr" offset-translate="0" />
+    <map doc="UINT_PTR" check="true" name="System.UIntPtr" offset-translate="0" />
+    <map doc="LONG_PTR" check="true" name="System.IntPtr" offset-translate="0" />
+    <map doc="ULONG_PTR" check="true" name="System.UIntPtr" offset-translate="0" />
+    <map doc="HANDLE_PTR" check="true" name="System.IntPtr" offset-translate="0" />
+    <map doc="BOOL" check="true" name="SharpGen.Runtime.Win32.RawBool" offset-translate="0" />
+    <map doc="HANDLE" check="true" name="System.IntPtr" offset-translate="0" />
+    <map doc="HRESULT" check="true" name="SharpGen.Runtime.Result" offset-translate="0" />
+    <map doc="SIZE_T" check="true" name="SharpGen.Runtime.PointerSize" offset-translate="0" />
+    <map doc="SSIZE_T" check="true" name="SharpGen.Runtime.PointerSize" offset-translate="0" />
+    <map doc="MSG" check="true" name="SharpGen.Runtime.Win32.NativeMessage" offset-translate="0" />
+    <map doc="ULARGE_INTEGER" check="true" name="System.UInt64" offset-translate="0" />
+    <map doc="LARGE_INTEGER" check="true" name="System.Int64" offset-translate="0" />
+    <map doc="FILETIME" check="true" name="System.Int64" offset-translate="0" />
+    <map doc="DWORD" check="true" name="System.Int32" offset-translate="0" />
+    <map doc="ULONG" check="true" name="System.UInt32" offset-translate="0" />
+    <map doc="LONG" check="true" name="System.Int32" offset-translate="0" />
+    <map doc="SECURITY_ATTRIBUTES" check="true" name="SharpGen.Runtime.Win32.SecurityAttributes" offset-translate="0" />
+    <map doc="VARIANT" check="true" name="SharpGen.Runtime.Win32.Variant" offset-translate="0" />
+    <map doc="PROPVARIANT" check="true" name="SharpGen.Runtime.Win32.Variant" offset-translate="0" />
+    <map doc="DISPPARAMS" check="true" name="System.Runtime.InteropServices.ComTypes.DISPPARAMS" offset-translate="0" />
+    <map doc="EXCEPINFO" check="true" name="System.Runtime.InteropServices.ComTypes.EXCEPINFO" offset-translate="0" />
+    <map doc="ITypeInfo" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IErrorLog" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IMoniker" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IEnumMoniker" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IBindCtx" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IRpcStubBuffer" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IRpcChannelBuffer" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IPropertyStore" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IPropertyBag2" check="true" name="SharpGen.Runtime.Win32.PropertyBag" offset-translate="0" />
+    <map doc="IClassFactory" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IEnumUnknown" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="IEnumString" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="INamedPropertyStore" check="true" name="SharpGen.Runtime.ComObject" offset-translate="0" />
+    <map doc="HSTRING" check="true" name="System.IntPtr" offset-translate="0" />
+    <map doc="LOCKTYPE" check="true" name="SharpGen.Runtime.Win32.LockType" offset-translate="0" />
+    <map doc="STGC" check="true" name="SharpGen.Runtime.Win32.CommitFlags" offset-translate="0" />
+    <map doc="STATFLAG" check="true" name="SharpGen.Runtime.Win32.StorageStatisticsFlags" offset-translate="0" />
+    <map doc="SHARPGEN_RUNTIME_COM_ERRORCODE" check="true" name="SharpGen.Runtime.ErrorCode" offset-translate="0" />
+    <map doc="STATSTG" check="true" name="SharpGen.Runtime.Win32.StorageStatistics" offset-translate="0" />
+    <map doc="IUnknown" check="true" name="SharpGen.Runtime.IUnknown" offset-translate="0" />
+    <map doc="ISequentialStream" check="true" name="SharpGen.Runtime.Win32.IStreamBase" offset-translate="0" />
+    <map doc="IStream" check="true" name="SharpGen.Runtime.Win32.IStream" offset-translate="0" />
+    <map doc="SystemDecorations" check="true" name="Avalonia.Native.Interop.SystemDecorations" offset-translate="0" />
+    <map doc="AvnPixelFormat" check="true" name="Avalonia.Native.Interop.AvnPixelFormat" offset-translate="0" />
+    <map doc="AvnRawMouseEventType" check="true" name="Avalonia.Native.Interop.AvnRawMouseEventType" offset-translate="0" />
+    <map doc="AvnRawKeyEventType" check="true" name="Avalonia.Native.Interop.AvnRawKeyEventType" offset-translate="0" />
+    <map doc="AvnInputModifiers" check="true" name="Avalonia.Native.Interop.AvnInputModifiers" offset-translate="0" />
+    <map doc="AvnDragDropEffects" check="true" name="Avalonia.Native.Interop.AvnDragDropEffects" offset-translate="0" />
+    <map doc="AvnDragEventType" check="true" name="Avalonia.Native.Interop.AvnDragEventType" offset-translate="0" />
+    <map doc="AvnWindowState" check="true" name="Avalonia.Native.Interop.AvnWindowState" offset-translate="0" />
+    <map doc="AvnStandardCursorType" check="true" name="Avalonia.Native.Interop.AvnStandardCursorType" offset-translate="0" />
+    <map doc="AvnWindowEdge" check="true" name="Avalonia.Native.Interop.AvnWindowEdge" offset-translate="0" />
+    <map doc="AvnMenuItemToggleType" check="true" name="Avalonia.Native.Interop.AvnMenuItemToggleType" offset-translate="0" />
+    <map doc="AvnExtendClientAreaChromeHints" check="true" name="Avalonia.Native.Interop.AvnExtendClientAreaChromeHints" offset-translate="0" />
+    <map doc="AvnSize" check="true" name="Avalonia.Native.Interop.AvnSize" offset-translate="0" />
+    <map doc="AvnPixelSize" check="true" name="Avalonia.Native.Interop.AvnPixelSize" offset-translate="0" />
+    <map doc="AvnRect" check="true" name="Avalonia.Native.Interop.AvnRect" offset-translate="0" />
+    <map doc="AvnVector" check="true" name="Avalonia.Native.Interop.AvnVector" offset-translate="0" />
+    <map doc="AvnPoint" check="true" name="Avalonia.Native.Interop.AvnPoint" offset-translate="0" />
+    <map doc="AvnScreen" check="true" name="Avalonia.Native.Interop.AvnScreen" offset-translate="0" />
+    <map doc="AvnFramebuffer" check="true" name="Avalonia.Native.Interop.AvnFramebuffer" offset-translate="0" />
+    <map doc="AvnColor" check="true" name="Avalonia.Native.Interop.AvnColor" offset-translate="0" />
+    <map doc="IAvnWindowEvents" check="true" name="Avalonia.Native.Interop.IAvnWindowEvents" offset-translate="0" />
+    <map doc="IAvnWindow" check="true" name="Avalonia.Native.Interop.IAvnWindow" offset-translate="0" />
+    <map doc="IAvnPopup" check="true" name="Avalonia.Native.Interop.IAvnPopup" offset-translate="0" />
+    <map doc="IAvnMacOptions" check="true" name="Avalonia.Native.Interop.IAvnMacOptions" offset-translate="0" />
+    <map doc="IAvnPlatformThreadingInterface" check="true" name="Avalonia.Native.Interop.IAvnPlatformThreadingInterface" offset-translate="0" />
+    <map doc="IAvnSystemDialogEvents" check="true" name="Avalonia.Native.Interop.IAvnSystemDialogEvents" offset-translate="0" />
+    <map doc="IAvnSystemDialogs" check="true" name="Avalonia.Native.Interop.IAvnSystemDialogs" offset-translate="0" />
+    <map doc="IAvnScreens" check="true" name="Avalonia.Native.Interop.IAvnScreens" offset-translate="0" />
+    <map doc="IAvnClipboard" check="true" name="Avalonia.Native.Interop.IAvnClipboard" offset-translate="0" />
+    <map doc="IAvnCursor" check="true" name="Avalonia.Native.Interop.IAvnCursor" offset-translate="0" />
+    <map doc="IAvnCursorFactory" check="true" name="Avalonia.Native.Interop.IAvnCursorFactory" offset-translate="0" />
+    <map doc="IAvnGlContext" check="true" name="Avalonia.Native.Interop.IAvnGlContext" offset-translate="0" />
+    <map doc="IAvnGlDisplay" check="true" name="Avalonia.Native.Interop.IAvnGlDisplay" offset-translate="0" />
+    <map doc="IAvnGlSurfaceRenderTarget" check="true" name="Avalonia.Native.Interop.IAvnGlSurfaceRenderTarget" offset-translate="0" />
+    <map doc="IAvnGlSurfaceRenderingSession" check="true" name="Avalonia.Native.Interop.IAvnGlSurfaceRenderingSession" offset-translate="0" />
+    <map doc="IAvnMenu" check="true" name="Avalonia.Native.Interop.IAvnMenu" offset-translate="0" />
+    <map doc="IAvnMenuItem" check="true" name="Avalonia.Native.Interop.IAvnMenuItem" offset-translate="0" />
+    <map doc="IAvnStringArray" check="true" name="Avalonia.Native.Interop.IAvnStringArray" offset-translate="0" />
+    <map doc="IAvnDndResultCallback" check="true" name="Avalonia.Native.Interop.IAvnDndResultCallback" offset-translate="0" />
+    <map doc="IAvnGCHandleDeallocatorCallback" check="true" name="Avalonia.Native.Interop.IAvnGCHandleDeallocatorCallback" offset-translate="0" />
+    <map doc="IAvnMenuEvents" check="true" name="Avalonia.Native.Interop.IAvnMenuEvents" offset-translate="0" />
+    <map doc="IAvnNativeControlHost" check="true" name="Avalonia.Native.Interop.IAvnNativeControlHost" offset-translate="0" />
+    <map doc="IAvnNativeControlHostTopLevelAttachment" check="true" name="Avalonia.Native.Interop.IAvnNativeControlHostTopLevelAttachment" offset-translate="0" />
+    <map doc="IAvaloniaNativeFactory" check="true" name="Avalonia.Native.Interop.IAvaloniaNativeFactory" offset-translate="0" />
+    <map doc="IAvnString" check="true" name="Avalonia.Native.Interop.IAvnString" offset-translate="0" />
+    <map doc="IAvnWindowBase" check="true" name="Avalonia.Native.Interop.IAvnWindowBase" offset-translate="0" />
+    <map doc="IAvnWindowBaseEvents" check="true" name="Avalonia.Native.Interop.IAvnWindowBaseEvents" offset-translate="0" />
+    <map doc="IAvnActionCallback" check="true" name="Avalonia.Native.Interop.IAvnActionCallback" offset-translate="0" />
+    <map doc="IAvnSignaledCallback" check="true" name="Avalonia.Native.Interop.IAvnSignaledCallback" offset-translate="0" />
+    <map doc="IAvnLoopCancellation" check="true" name="Avalonia.Native.Interop.IAvnLoopCancellation" offset-translate="0" />
+    <map doc="IAvnPredicateCallback" check="true" name="Avalonia.Native.Interop.IAvnPredicateCallback" offset-translate="0" />
+  </mapping>
+</config>

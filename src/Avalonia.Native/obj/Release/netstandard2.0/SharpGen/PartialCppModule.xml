@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<cpp-module xmlns="urn:SharpGen.CppModel">
+  <items>
+    <include name="avalonia-native" />
+    <include name="com">
+      <items>
+        <macro name="S_OK" value="0x0L" />
+        <macro name="E_NOTIMPL" value="0x80004001L" />
+        <macro name="E_NOINTERFACE" value="0x80004002L" />
+        <macro name="E_POINTER" value="0x80004003L" />
+        <macro name="E_ABORT" value="0x80004004L" />
+        <macro name="E_FAIL" value="0x80004005L" />
+        <macro name="E_UNEXPECTED" value="0x8000FFFFL" />
+        <macro name="E_HANDLE" value="0x80070006L" />
+        <macro name="E_INVALIDARG" value="0x80070057L" />
+      </items>
+    </include>
+    <include name="SharpGen-MSBuild" />
+    <include name="AvaloniaNative" />
+    <include name="key" />
+    <include name="stddef">
+      <items>
+        <macro name="NULL" value="0" />
+      </items>
+    </include>
+    <include name="__stddef_max_align_t" />
+    <include name="SharpGen.Runtime.COM" />
+  </items>
+</cpp-module>

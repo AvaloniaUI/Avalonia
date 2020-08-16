@@ -1,0 +1,1462 @@
+<?xml version="1.0"?>
+<GCC_XML version="0.9.0" cvs_revision="1.145">
+  <Namespace id="_1" name="::" members="_2 _3 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13 _14 _15 _16 _17 _18 _19 _20 _21 _22 _23 _24 _25 _26 _27 _28 _29 _30 _31 _32 _33 _34 _35 _36 _37 _38 _39 _40 _41 _42 _43 _44 _45 _46 _47 _48 _49 _50 _51 _52 _53 _54 _55 _56 _57 _58 _59 _60 _61 _62 _63 _64 _65 _66 _67 _68 _69 _70 _71 _72 _73 _74 _75 _76 _77 _78 _79 _80 _81 _82 _83 _84 _85 _86 _87 _88 _89 _90 _91 _92 _93 _94 _95 _96 _97 _98 _99 _100 _101 _102 _103"/>
+  <Typedef id="_2" name="__NSConstantString" type="_104" context="_1" location="f0:0" file="f0" line="0"/>
+  <Class id="_3" name="type_info" context="_1" location="f0:0" file="f0" line="0" incomplete="1"/>
+  <Typedef id="_4" name="size_t" type="_105" context="_1" location="f0:0" file="f0" line="0"/>
+  <Typedef id="_5" name="__builtin_va_list" type="_106" context="_1" location="f0:0" file="f0" line="0"/>
+  <Struct id="_6" name="_GUID" context="_1" location="f1:7" file="f1" line="7" members="_107 _108 _109 _110 _111 _112 _113 _114" size="128" align="32"/>
+  <Typedef id="_7" name="GUID" type="_6" context="_1" location="f1:12" file="f1" line="12"/>
+  <Typedef id="_8" name="IID" type="_7" context="_1" location="f1:13" file="f1" line="13"/>
+  <Typedef id="_9" name="REFIID" type="_115" context="_1" location="f1:14" file="f1" line="14"/>
+  <Typedef id="_10" name="HRESULT" type="_105" context="_1" location="f1:15" file="f1" line="15"/>
+  <Typedef id="_11" name="DWORD" type="_105" context="_1" location="f1:16" file="f1" line="16"/>
+  <Typedef id="_12" name="ULONG" type="_11" context="_1" location="f1:17" file="f1" line="17"/>
+  <Struct id="_13" name="IUnknown" context="_1" location="f1:32" file="f1" line="32" abstract="1" members="_116 _117 _118 _119 _120 _121 _122" size="32" align="32"/>
+  <Enumeration id="_14" name="AvnKey" context="_1" location="f2:7" file="f2" line="7" size="32" align="32">
+    <EnumValue name="AvnKeyNone" init="0"/>
+    <EnumValue name="AvnKeyCancel" init="1"/>
+    <EnumValue name="AvnKeyBack" init="2"/>
+    <EnumValue name="AvnKeyTab" init="3"/>
+    <EnumValue name="AvnKeyLineFeed" init="4"/>
+    <EnumValue name="AvnKeyClear" init="5"/>
+    <EnumValue name="AvnKeyReturn" init="6"/>
+    <EnumValue name="AvnKeyEnter" init="6"/>
+    <EnumValue name="AvnKeyPause" init="7"/>
+    <EnumValue name="AvnKeyCapsLock" init="8"/>
+    <EnumValue name="AvnKeyCapital" init="8"/>
+    <EnumValue name="AvnKeyHangulMode" init="9"/>
+    <EnumValue name="AvnKeyKanaMode" init="9"/>
+    <EnumValue name="AvnKeyJunjaMode" init="10"/>
+    <EnumValue name="AvnKeyFinalMode" init="11"/>
+    <EnumValue name="AvnKeyKanjiMode" init="12"/>
+    <EnumValue name="HanjaMode" init="12"/>
+    <EnumValue name="Escape" init="13"/>
+    <EnumValue name="ImeConvert" init="14"/>
+    <EnumValue name="ImeNonConvert" init="15"/>
+    <EnumValue name="ImeAccept" init="16"/>
+    <EnumValue name="ImeModeChange" init="17"/>
+    <EnumValue name="Space" init="18"/>
+    <EnumValue name="PageUp" init="19"/>
+    <EnumValue name="Prior" init="19"/>
+    <EnumValue name="PageDown" init="20"/>
+    <EnumValue name="Next" init="20"/>
+    <EnumValue name="End" init="21"/>
+    <EnumValue name="Home" init="22"/>
+    <EnumValue name="Left" init="23"/>
+    <EnumValue name="Up" init="24"/>
+    <EnumValue name="Right" init="25"/>
+    <EnumValue name="Down" init="26"/>
+    <EnumValue name="Select" init="27"/>
+    <EnumValue name="Print" init="28"/>
+    <EnumValue name="Execute" init="29"/>
+    <EnumValue name="Snapshot" init="30"/>
+    <EnumValue name="PrintScreen" init="30"/>
+    <EnumValue name="Insert" init="31"/>
+    <EnumValue name="Delete" init="32"/>
+    <EnumValue name="Help" init="33"/>
+    <EnumValue name="D0" init="34"/>
+    <EnumValue name="D1" init="35"/>
+    <EnumValue name="D2" init="36"/>
+    <EnumValue name="D3" init="37"/>
+    <EnumValue name="D4" init="38"/>
+    <EnumValue name="D5" init="39"/>
+    <EnumValue name="D6" init="40"/>
+    <EnumValue name="D7" init="41"/>
+    <EnumValue name="D8" init="42"/>
+    <EnumValue name="D9" init="43"/>
+    <EnumValue name="A" init="44"/>
+    <EnumValue name="B" init="45"/>
+    <EnumValue name="C" init="46"/>
+    <EnumValue name="D" init="47"/>
+    <EnumValue name="E" init="48"/>
+    <EnumValue name="F" init="49"/>
+    <EnumValue name="G" init="50"/>
+    <EnumValue name="H" init="51"/>
+    <EnumValue name="I" init="52"/>
+    <EnumValue name="J" init="53"/>
+    <EnumValue name="AvnKeyK" init="54"/>
+    <EnumValue name="L" init="55"/>
+    <EnumValue name="M" init="56"/>
+    <EnumValue name="N" init="57"/>
+    <EnumValue name="O" init="58"/>
+    <EnumValue name="P" init="59"/>
+    <EnumValue name="Q" init="60"/>
+    <EnumValue name="R" init="61"/>
+    <EnumValue name="S" init="62"/>
+    <EnumValue name="T" init="63"/>
+    <EnumValue name="U" init="64"/>
+    <EnumValue name="V" init="65"/>
+    <EnumValue name="W" init="66"/>
+    <EnumValue name="X" init="67"/>
+    <EnumValue name="Y" init="68"/>
+    <EnumValue name="Z" init="69"/>
+    <EnumValue name="LWin" init="70"/>
+    <EnumValue name="RWin" init="71"/>
+    <EnumValue name="Apps" init="72"/>
+    <EnumValue name="Sleep" init="73"/>
+    <EnumValue name="NumPad0" init="74"/>
+    <EnumValue name="NumPad1" init="75"/>
+    <EnumValue name="NumPad2" init="76"/>
+    <EnumValue name="NumPad3" init="77"/>
+    <EnumValue name="NumPad4" init="78"/>
+    <EnumValue name="NumPad5" init="79"/>
+    <EnumValue name="NumPad6" init="80"/>
+    <EnumValue name="NumPad7" init="81"/>
+    <EnumValue name="NumPad8" init="82"/>
+    <EnumValue name="NumPad9" init="83"/>
+    <EnumValue name="Multiply" init="84"/>
+    <EnumValue name="Add" init="85"/>
+    <EnumValue name="Separator" init="86"/>
+    <EnumValue name="Subtract" init="87"/>
+    <EnumValue name="Decimal" init="88"/>
+    <EnumValue name="Divide" init="89"/>
+    <EnumValue name="F1" init="90"/>
+    <EnumValue name="F2" init="91"/>
+    <EnumValue name="F3" init="92"/>
+    <EnumValue name="F4" init="93"/>
+    <EnumValue name="F5" init="94"/>
+    <EnumValue name="F6" init="95"/>
+    <EnumValue name="F7" init="96"/>
+    <EnumValue name="F8" init="97"/>
+    <EnumValue name="F9" init="98"/>
+    <EnumValue name="F10" init="99"/>
+    <EnumValue name="F11" init="100"/>
+    <EnumValue name="F12" init="101"/>
+    <EnumValue name="F13" init="102"/>
+    <EnumValue name="F14" init="103"/>
+    <EnumValue name="F15" init="104"/>
+    <EnumValue name="F16" init="105"/>
+    <EnumValue name="F17" init="106"/>
+    <EnumValue name="F18" init="107"/>
+    <EnumValue name="F19" init="108"/>
+    <EnumValue name="F20" init="109"/>
+    <EnumValue name="F21" init="110"/>
+    <EnumValue name="F22" init="111"/>
+    <EnumValue name="F23" init="112"/>
+    <EnumValue name="F24" init="113"/>
+    <EnumValue name="NumLock" init="114"/>
+    <EnumValue name="Scroll" init="115"/>
+    <EnumValue name="LeftShift" init="116"/>
+    <EnumValue name="RightShift" init="117"/>
+    <EnumValue name="LeftCtrl" init="118"/>
+    <EnumValue name="RightCtrl" init="119"/>
+    <EnumValue name="LeftAlt" init="120"/>
+    <EnumValue name="RightAlt" init="121"/>
+    <EnumValue name="BrowserBack" init="122"/>
+    <EnumValue name="BrowserForward" init="123"/>
+    <EnumValue name="BrowserRefresh" init="124"/>
+    <EnumValue name="BrowserStop" init="125"/>
+    <EnumValue name="BrowserSearch" init="126"/>
+    <EnumValue name="BrowserFavorites" init="127"/>
+    <EnumValue name="BrowserHome" init="128"/>
+    <EnumValue name="VolumeMute" init="129"/>
+    <EnumValue name="VolumeDown" init="130"/>
+    <EnumValue name="VolumeUp" init="131"/>
+    <EnumValue name="MediaNextTrack" init="132"/>
+    <EnumValue name="MediaPreviousTrack" init="133"/>
+    <EnumValue name="MediaStop" init="134"/>
+    <EnumValue name="MediaPlayPause" init="135"/>
+    <EnumValue name="LaunchMail" init="136"/>
+    <EnumValue name="SelectMedia" init="137"/>
+    <EnumValue name="LaunchApplication1" init="138"/>
+    <EnumValue name="LaunchApplication2" init="139"/>
+    <EnumValue name="OemSemicolon" init="140"/>
+    <EnumValue name="Oem1" init="140"/>
+    <EnumValue name="OemPlus" init="141"/>
+    <EnumValue name="OemComma" init="142"/>
+    <EnumValue name="OemMinus" init="143"/>
+    <EnumValue name="OemPeriod" init="144"/>
+    <EnumValue name="OemQuestion" init="145"/>
+    <EnumValue name="Oem2" init="145"/>
+    <EnumValue name="OemTilde" init="146"/>
+    <EnumValue name="Oem3" init="146"/>
+    <EnumValue name="AbntC1" init="147"/>
+    <EnumValue name="AbntC2" init="148"/>
+    <EnumValue name="OemOpenBrackets" init="149"/>
+    <EnumValue name="Oem4" init="149"/>
+    <EnumValue name="OemPipe" init="150"/>
+    <EnumValue name="Oem5" init="150"/>
+    <EnumValue name="OemCloseBrackets" init="151"/>
+    <EnumValue name="Oem6" init="151"/>
+    <EnumValue name="OemQuotes" init="152"/>
+    <EnumValue name="Oem7" init="152"/>
+    <EnumValue name="Oem8" init="153"/>
+    <EnumValue name="OemBackslash" init="154"/>
+    <EnumValue name="Oem102" init="154"/>
+    <EnumValue name="ImeProcessed" init="155"/>
+    <EnumValue name="System" init="156"/>
+    <EnumValue name="OemAttn" init="157"/>
+    <EnumValue name="DbeAlphanumeric" init="157"/>
+    <EnumValue name="OemFinish" init="158"/>
+    <EnumValue name="DbeKatakana" init="158"/>
+    <EnumValue name="DbeHiragana" init="159"/>
+    <EnumValue name="OemCopy" init="159"/>
+    <EnumValue name="DbeSbcsChar" init="160"/>
+    <EnumValue name="OemAuto" init="160"/>
+    <EnumValue name="DbeDbcsChar" init="161"/>
+    <EnumValue name="OemEnlw" init="161"/>
+    <EnumValue name="OemBackTab" init="162"/>
+    <EnumValue name="DbeRoman" init="162"/>
+    <EnumValue name="DbeNoRoman" init="163"/>
+    <EnumValue name="Attn" init="163"/>
+    <EnumValue name="CrSel" init="164"/>
+    <EnumValue name="DbeEnterWordRegisterMode" init="164"/>
+    <EnumValue name="ExSel" init="165"/>
+    <EnumValue name="DbeEnterImeConfigureMode" init="165"/>
+    <EnumValue name="EraseEof" init="166"/>
+    <EnumValue name="DbeFlushString" init="166"/>
+    <EnumValue name="Play" init="167"/>
+    <EnumValue name="DbeCodeInput" init="167"/>
+    <EnumValue name="DbeNoCodeInput" init="168"/>
+    <EnumValue name="Zoom" init="168"/>
+    <EnumValue name="NoName" init="169"/>
+    <EnumValue name="DbeDetermineString" init="169"/>
+    <EnumValue name="DbeEnterDialogConversionMode" init="170"/>
+    <EnumValue name="Pa1" init="170"/>
+    <EnumValue name="OemClear" init="171"/>
+    <EnumValue name="DeadCharProcessed" init="172"/>
+  </Enumeration>
+  <Typedef id="_15" name="ptrdiff_t" type="_123" context="_1" location="f3:51" file="f3" line="51"/>
+  <Namespace id="_16" name="std" context="_1" members="_17"/>
+  <Typedef id="_17" name="nullptr_t" type="_124" context="_16" location="f3:109" file="f3" line="109"/>
+  <Typedef id="_18" name="max_align_t" type="_125" context="_1" location="f4:30" file="f4" line="30"/>
+  <Struct id="_19" name="IAvnWindowEvents" context="_1" location="f5:321" file="f5" line="321" abstract="1" members="_126 _127 _128 _129 _130 _131 _132" bases="_72" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f06))">
+    <Base type="_72" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_20" name="IAvnWindow" context="_1" location="f5:280" file="f5" line="280" abstract="1" members="_133 _134 _135 _136 _137 _138 _139 _140 _141 _142 _143 _144 _145 _146 _147 _148 _149" bases="_68" size="96" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f04))">
+    <Base type="_68" access="public" virtual="1"/>
+  </Struct>
+  <Struct id="_21" name="IAvnPopup" context="_1" location="f5:275" file="f5" line="275" abstract="1" members="_150 _151 _152 _153" bases="_68" size="64" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f03))">
+    <Base type="_68" access="public" virtual="1"/>
+  </Struct>
+  <Struct id="_22" name="IAvnMacOptions" context="_1" location="f5:335" file="f5" line="335" abstract="1" members="_154 _155 _156 _157 _158 _159" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f07))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_23" name="IAvnPlatformThreadingInterface" context="_1" location="f5:356" file="f5" line="356" abstract="1" members="_160 _161 _162 _163 _164 _165 _166 _167 _168 _169" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f0b))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_24" name="IAvnSystemDialogEvents" context="_1" location="f5:367" file="f5" line="367" abstract="1" members="_170 _171 _172 _173 _174" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f0c))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_25" name="IAvnSystemDialogs" context="_1" location="f5:372" file="f5" line="372" abstract="1" members="_175 _176 _177 _178 _179 _180 _181" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f0d))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_26" name="IAvnScreens" context="_1" location="f5:395" file="f5" line="395" abstract="1" members="_182 _183 _184 _185 _186 _187" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f0e))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_27" name="IAvnClipboard" context="_1" location="f5:401" file="f5" line="401" abstract="1" members="_188 _189 _190 _191 _192 _193 _194 _195 _196 _197 _198" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f0f))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_28" name="IAvnCursor" context="_1" location="f5:413" file="f5" line="413" abstract="1" members="_199 _200 _201 _202" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f10))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_29" name="IAvnCursorFactory" context="_1" location="f5:417" file="f5" line="417" abstract="1" members="_203 _204 _205 _206 _207" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f11))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_30" name="IAvnGlFeature" context="_1" location="f5:18" file="f5" line="18" incomplete="1"/>
+  <Struct id="_31" name="IAvnGlContext" context="_1" location="f5:430" file="f5" line="430" abstract="1" members="_208 _209 _210 _211 _212 _213 _214 _215 _216" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f14))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_32" name="IAvnGlDisplay" context="_1" location="f5:422" file="f5" line="422" abstract="1" members="_217 _218 _219 _220 _221 _222 _223 _224" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f13))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_33" name="IAvnGlSurfaceRenderTarget" context="_1" location="f5:439" file="f5" line="439" abstract="1" members="_225 _226 _227 _228 _229" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f15))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_34" name="IAvnGlSurfaceRenderingSession" context="_1" location="f5:444" file="f5" line="444" abstract="1" members="_230 _231 _232 _233 _234 _235" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f16))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_35" name="IAvnMenu" context="_1" location="f5:450" file="f5" line="450" abstract="1" members="_236 _237 _238 _239 _240 _241 _242 _243" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f17))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_36" name="IAvnMenuItem" context="_1" location="f5:463" file="f5" line="463" abstract="1" members="_244 _245 _246 _247 _248 _249 _250 _251 _252 _253 _254" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f19))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_37" name="IAvnStringArray" context="_1" location="f5:482" file="f5" line="482" abstract="1" members="_255 _256 _257 _258 _259 _260" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f20))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_38" name="IAvnDndResultCallback" context="_1" location="f5:488" file="f5" line="488" abstract="1" members="_261 _262 _263 _264 _265" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f21))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_39" name="IAvnGCHandleDeallocatorCallback" context="_1" location="f5:493" file="f5" line="493" abstract="1" members="_266 _267 _268 _269 _270" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f22))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_40" name="IAvnMenuEvents" context="_1" location="f5:474" file="f5" line="474" abstract="1" members="_271 _272 _273 _274 _275" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f1A))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_41" name="IAvnNativeControlHost" context="_1" location="f5:498" file="f5" line="498" abstract="1" members="_276 _277 _278 _279 _280 _281 _282" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f20))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Struct id="_42" name="IAvnNativeControlHostTopLevelAttachment" context="_1" location="f5:505" file="f5" line="505" abstract="1" members="_283 _284 _285 _286 _287 _288 _289 _290 _291 _292" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f21))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Enumeration id="_43" name="SystemDecorations" context="_1" location="f5:31" file="f5" line="31" size="32" align="32">
+    <EnumValue name="SystemDecorationsNone" init="0"/>
+    <EnumValue name="SystemDecorationsBorderOnly" init="1"/>
+    <EnumValue name="SystemDecorationsFull" init="2"/>
+  </Enumeration>
+  <Struct id="_44" name="AvnSize" context="_1" location="f5:37" file="f5" line="37" members="_293 _294 _295 _296 _297 _298" size="128" align="64"/>
+  <Struct id="_45" name="AvnPixelSize" context="_1" location="f5:42" file="f5" line="42" members="_299 _300 _301 _302 _303 _304" size="64" align="32"/>
+  <Struct id="_46" name="AvnRect" context="_1" location="f5:47" file="f5" line="47" members="_305 _306 _307 _308 _309 _310 _311 _312" size="256" align="64"/>
+  <Struct id="_47" name="AvnVector" context="_1" location="f5:52" file="f5" line="52" members="_313 _314 _315 _316 _317 _318" size="128" align="64"/>
+  <Struct id="_48" name="AvnPoint" context="_1" location="f5:57" file="f5" line="57" members="_319 _320 _321 _322 _323 _324" size="128" align="64"/>
+  <Struct id="_49" name="AvnScreen" context="_1" location="f5:62" file="f5" line="62" members="_325 _326 _327 _328 _329 _330 _331 _332" size="576" align="64"/>
+  <Enumeration id="_50" name="AvnPixelFormat" context="_1" location="f5:70" file="f5" line="70" size="32" align="32">
+    <EnumValue name="kAvnRgb565" init="0"/>
+    <EnumValue name="kAvnRgba8888" init="1"/>
+    <EnumValue name="kAvnBgra8888" init="2"/>
+  </Enumeration>
+  <Struct id="_51" name="AvnFramebuffer" context="_1" location="f5:77" file="f5" line="77" members="_333 _334 _335 _336 _337 _338 _339 _340 _341 _342" size="320" align="64"/>
+  <Struct id="_52" name="AvnColor" context="_1" location="f5:87" file="f5" line="87" members="_343 _344 _345 _346 _347 _348 _349 _350" size="32" align="8"/>
+  <Enumeration id="_53" name="AvnRawMouseEventType" context="_1" location="f5:95" file="f5" line="95" size="32" align="32">
+    <EnumValue name="LeaveWindow" init="0"/>
+    <EnumValue name="LeftButtonDown" init="1"/>
+    <EnumValue name="LeftButtonUp" init="2"/>
+    <EnumValue name="RightButtonDown" init="3"/>
+    <EnumValue name="RightButtonUp" init="4"/>
+    <EnumValue name="MiddleButtonDown" init="5"/>
+    <EnumValue name="MiddleButtonUp" init="6"/>
+    <EnumValue name="XButton1Down" init="7"/>
+    <EnumValue name="XButton1Up" init="8"/>
+    <EnumValue name="XButton2Down" init="9"/>
+    <EnumValue name="XButton2Up" init="10"/>
+    <EnumValue name="Move" init="11"/>
+    <EnumValue name="Wheel" init="12"/>
+    <EnumValue name="NonClientLeftButtonDown" init="13"/>
+    <EnumValue name="TouchBegin" init="14"/>
+    <EnumValue name="TouchUpdate" init="15"/>
+    <EnumValue name="TouchEnd" init="16"/>
+    <EnumValue name="TouchCancel" init="17"/>
+  </Enumeration>
+  <Enumeration id="_54" name="AvnRawKeyEventType" context="_1" location="f5:117" file="f5" line="117" size="32" align="32">
+    <EnumValue name="KeyDown" init="0"/>
+    <EnumValue name="KeyUp" init="1"/>
+  </Enumeration>
+  <Enumeration id="_55" name="AvnInputModifiers" context="_1" location="f5:123" file="f5" line="123" size="32" align="32">
+    <EnumValue name="AvnInputModifiersNone" init="0"/>
+    <EnumValue name="Alt" init="1"/>
+    <EnumValue name="Control" init="2"/>
+    <EnumValue name="Shift" init="4"/>
+    <EnumValue name="Windows" init="8"/>
+    <EnumValue name="LeftMouseButton" init="16"/>
+    <EnumValue name="RightMouseButton" init="32"/>
+    <EnumValue name="MiddleMouseButton" init="64"/>
+    <EnumValue name="XButton1MouseButton" init="128"/>
+    <EnumValue name="XButton2MouseButton" init="256"/>
+  </Enumeration>
+  <Enumeration id="_56" name="AvnDragDropEffects" context="_1" location="f5:137" file="f5" line="137" size="32" align="32">
+    <EnumValue name="None" init="0"/>
+    <EnumValue name="Copy" init="1"/>
+    <EnumValue name="Move" init="2"/>
+    <EnumValue name="Link" init="4"/>
+  </Enumeration>
+  <Enumeration id="_57" name="AvnDragEventType" context="_1" location="f5:145" file="f5" line="145" size="32" align="32">
+    <EnumValue name="Enter" init="0"/>
+    <EnumValue name="Over" init="1"/>
+    <EnumValue name="Leave" init="2"/>
+    <EnumValue name="Drop" init="3"/>
+  </Enumeration>
+  <Enumeration id="_58" name="AvnWindowState" context="_1" location="f5:153" file="f5" line="153" size="32" align="32">
+    <EnumValue name="Normal" init="0"/>
+    <EnumValue name="Minimized" init="1"/>
+    <EnumValue name="Maximized" init="2"/>
+    <EnumValue name="FullScreen" init="3"/>
+  </Enumeration>
+  <Enumeration id="_59" name="AvnStandardCursorType" context="_1" location="f5:161" file="f5" line="161" size="32" align="32">
+    <EnumValue name="CursorArrow" init="0"/>
+    <EnumValue name="CursorIbeam" init="1"/>
+    <EnumValue name="CursorWait" init="2"/>
+    <EnumValue name="CursorCross" init="3"/>
+    <EnumValue name="CursorUpArrow" init="4"/>
+    <EnumValue name="CursorSizeWestEast" init="5"/>
+    <EnumValue name="CursorSizeNorthSouth" init="6"/>
+    <EnumValue name="CursorSizeAll" init="7"/>
+    <EnumValue name="CursorNo" init="8"/>
+    <EnumValue name="CursorHand" init="9"/>
+    <EnumValue name="CursorAppStarting" init="10"/>
+    <EnumValue name="CursorHelp" init="11"/>
+    <EnumValue name="CursorTopSide" init="12"/>
+    <EnumValue name="CursorBottomSize" init="13"/>
+    <EnumValue name="CursorLeftSide" init="14"/>
+    <EnumValue name="CursorRightSide" init="15"/>
+    <EnumValue name="CursorTopLeftCorner" init="16"/>
+    <EnumValue name="CursorTopRightCorner" init="17"/>
+    <EnumValue name="CursorBottomLeftCorner" init="18"/>
+    <EnumValue name="CursorBottomRightCorner" init="19"/>
+    <EnumValue name="CursorDragMove" init="20"/>
+    <EnumValue name="CursorDragCopy" init="21"/>
+    <EnumValue name="CursorDragLink" init="22"/>
+    <EnumValue name="CursorNone" init="23"/>
+  </Enumeration>
+  <Enumeration id="_60" name="AvnWindowEdge" context="_1" location="f5:189" file="f5" line="189" size="32" align="32">
+    <EnumValue name="WindowEdgeNorthWest" init="0"/>
+    <EnumValue name="WindowEdgeNorth" init="1"/>
+    <EnumValue name="WindowEdgeNorthEast" init="2"/>
+    <EnumValue name="WindowEdgeWest" init="3"/>
+    <EnumValue name="WindowEdgeEast" init="4"/>
+    <EnumValue name="WindowEdgeSouthWest" init="5"/>
+    <EnumValue name="WindowEdgeSouth" init="6"/>
+    <EnumValue name="WindowEdgeSouthEast" init="7"/>
+  </Enumeration>
+  <Enumeration id="_61" name="AvnMenuItemToggleType" context="_1" location="f5:201" file="f5" line="201" size="32" align="32">
+    <EnumValue name="None" init="0"/>
+    <EnumValue name="CheckMark" init="1"/>
+    <EnumValue name="Radio" init="2"/>
+  </Enumeration>
+  <Enumeration id="_62" name="AvnExtendClientAreaChromeHints" context="_1" location="f5:208" file="f5" line="208" size="32" align="32">
+    <EnumValue name="AvnNoChrome" init="0"/>
+    <EnumValue name="AvnSystemChrome" init="1"/>
+    <EnumValue name="AvnPreferSystemChrome" init="2"/>
+    <EnumValue name="AvnOSXThickTitleBar" init="8"/>
+    <EnumValue name="AvnDefaultChrome" init="1"/>
+  </Enumeration>
+  <Variable id="_63" name="IID_IAvaloniaNativeFactory" type="_7c" context="_1" location="f5:217" file="f5" line="217" mangled="?IID_IAvaloniaNativeFactory@@3U_GUID@@B"/>
+  <CvQualifiedType id="_7c" type="_7" const="1"/>
+  <Struct id="_64" name="IAvaloniaNativeFactory" context="_1" location="f5:217" file="f5" line="217" abstract="1" members="_351 _352 _353 _354 _355 _356 _357 _358 _359 _360 _361 _362 _363 _364 _365 _366 _367 _368 _369" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f01))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Variable id="_65" name="IID_IAvnString" type="_7c" context="_1" location="f5:237" file="f5" line="237" mangled="?IID_IAvnString@@3U_GUID@@B"/>
+  <Struct id="_66" name="IAvnString" context="_1" location="f5:237" file="f5" line="237" abstract="1" members="_370 _371 _372 _373 _374 _375" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f17))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Variable id="_67" name="IID_IAvnWindowBase" type="_7c" context="_1" location="f5:243" file="f5" line="243" mangled="?IID_IAvnWindowBase@@3U_GUID@@B"/>
+  <Struct id="_68" name="IAvnWindowBase" context="_1" location="f5:243" file="f5" line="243" abstract="1" members="_376 _377 _378 _379 _380 _381 _382 _383 _384 _385 _386 _387 _388 _389 _390 _391 _392 _393 _394 _395 _396 _397 _398 _399 _400 _401 _402 _403 _404 _405 _406" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f02))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Variable id="_69" name="IID_IAvnPopup" type="_7c" context="_1" location="f5:275" file="f5" line="275" mangled="?IID_IAvnPopup@@3U_GUID@@B"/>
+  <Variable id="_70" name="IID_IAvnWindow" type="_7c" context="_1" location="f5:280" file="f5" line="280" mangled="?IID_IAvnWindow@@3U_GUID@@B"/>
+  <Variable id="_71" name="IID_IAvnWindowBaseEvents" type="_7c" context="_1" location="f5:297" file="f5" line="297" mangled="?IID_IAvnWindowBaseEvents@@3U_GUID@@B"/>
+  <Struct id="_72" name="IAvnWindowBaseEvents" context="_1" location="f5:297" file="f5" line="297" abstract="1" members="_407 _408 _409 _410 _411 _412 _413 _414 _415 _416 _417 _418 _419 _420 _421 _422 _423" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f05))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Variable id="_73" name="IID_IAvnWindowEvents" type="_7c" context="_1" location="f5:321" file="f5" line="321" mangled="?IID_IAvnWindowEvents@@3U_GUID@@B"/>
+  <Variable id="_74" name="IID_IAvnMacOptions" type="_7c" context="_1" location="f5:335" file="f5" line="335" mangled="?IID_IAvnMacOptions@@3U_GUID@@B"/>
+  <Variable id="_75" name="IID_IAvnActionCallback" type="_7c" context="_1" location="f5:341" file="f5" line="341" mangled="?IID_IAvnActionCallback@@3U_GUID@@B"/>
+  <Struct id="_76" name="IAvnActionCallback" context="_1" location="f5:341" file="f5" line="341" abstract="1" members="_424 _425 _426 _427 _428" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f08))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Variable id="_77" name="IID_IAvnSignaledCallback" type="_7c" context="_1" location="f5:346" file="f5" line="346" mangled="?IID_IAvnSignaledCallback@@3U_GUID@@B"/>
+  <Struct id="_78" name="IAvnSignaledCallback" context="_1" location="f5:346" file="f5" line="346" abstract="1" members="_429 _430 _431 _432 _433" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f09))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Variable id="_79" name="IID_IAvnLoopCancellation" type="_7c" context="_1" location="f5:351" file="f5" line="351" mangled="?IID_IAvnLoopCancellation@@3U_GUID@@B"/>
+  <Struct id="_80" name="IAvnLoopCancellation" context="_1" location="f5:351" file="f5" line="351" abstract="1" members="_434 _435 _436 _437 _438" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f0a))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Variable id="_81" name="IID_IAvnPlatformThreadingInterface" type="_7c" context="_1" location="f5:356" file="f5" line="356" mangled="?IID_IAvnPlatformThreadingInterface@@3U_GUID@@B"/>
+  <Variable id="_82" name="IID_IAvnSystemDialogEvents" type="_7c" context="_1" location="f5:367" file="f5" line="367" mangled="?IID_IAvnSystemDialogEvents@@3U_GUID@@B"/>
+  <Variable id="_83" name="IID_IAvnSystemDialogs" type="_7c" context="_1" location="f5:372" file="f5" line="372" mangled="?IID_IAvnSystemDialogs@@3U_GUID@@B"/>
+  <Variable id="_84" name="IID_IAvnScreens" type="_7c" context="_1" location="f5:395" file="f5" line="395" mangled="?IID_IAvnScreens@@3U_GUID@@B"/>
+  <Variable id="_85" name="IID_IAvnClipboard" type="_7c" context="_1" location="f5:401" file="f5" line="401" mangled="?IID_IAvnClipboard@@3U_GUID@@B"/>
+  <Variable id="_86" name="IID_IAvnCursor" type="_7c" context="_1" location="f5:413" file="f5" line="413" mangled="?IID_IAvnCursor@@3U_GUID@@B"/>
+  <Variable id="_87" name="IID_IAvnCursorFactory" type="_7c" context="_1" location="f5:417" file="f5" line="417" mangled="?IID_IAvnCursorFactory@@3U_GUID@@B"/>
+  <Variable id="_88" name="IID_IAvnGlDisplay" type="_7c" context="_1" location="f5:422" file="f5" line="422" mangled="?IID_IAvnGlDisplay@@3U_GUID@@B"/>
+  <Variable id="_89" name="IID_IAvnGlContext" type="_7c" context="_1" location="f5:430" file="f5" line="430" mangled="?IID_IAvnGlContext@@3U_GUID@@B"/>
+  <Variable id="_90" name="IID_IAvnGlSurfaceRenderTarget" type="_7c" context="_1" location="f5:439" file="f5" line="439" mangled="?IID_IAvnGlSurfaceRenderTarget@@3U_GUID@@B"/>
+  <Variable id="_91" name="IID_IAvnGlSurfaceRenderingSession" type="_7c" context="_1" location="f5:444" file="f5" line="444" mangled="?IID_IAvnGlSurfaceRenderingSession@@3U_GUID@@B"/>
+  <Variable id="_92" name="IID_IAvnMenu" type="_7c" context="_1" location="f5:450" file="f5" line="450" mangled="?IID_IAvnMenu@@3U_GUID@@B"/>
+  <Variable id="_93" name="IID_IAvnPredicateCallback" type="_7c" context="_1" location="f5:458" file="f5" line="458" mangled="?IID_IAvnPredicateCallback@@3U_GUID@@B"/>
+  <Struct id="_94" name="IAvnPredicateCallback" context="_1" location="f5:458" file="f5" line="458" abstract="1" members="_439 _440 _441 _442 _443" bases="_13" size="32" align="32" attributes="annotate(uuid(2e2cda0a-9ae5-4f1b-8e20-081a04279f18))">
+    <Base type="_13" access="public" virtual="0" offset="0"/>
+  </Struct>
+  <Variable id="_95" name="IID_IAvnMenuItem" type="_7c" context="_1" location="f5:463" file="f5" line="463" mangled="?IID_IAvnMenuItem@@3U_GUID@@B"/>
+  <Variable id="_96" name="IID_IAvnMenuEvents" type="_7c" context="_1" location="f5:474" file="f5" line="474" mangled="?IID_IAvnMenuEvents@@3U_GUID@@B"/>
+  <Variable id="_97" name="IID_IAvnStringArray" type="_7c" context="_1" location="f5:482" file="f5" line="482" mangled="?IID_IAvnStringArray@@3U_GUID@@B"/>
+  <Variable id="_98" name="IID_IAvnDndResultCallback" type="_7c" context="_1" location="f5:488" file="f5" line="488" mangled="?IID_IAvnDndResultCallback@@3U_GUID@@B"/>
+  <Variable id="_99" name="IID_IAvnGCHandleDeallocatorCallback" type="_7c" context="_1" location="f5:493" file="f5" line="493" mangled="?IID_IAvnGCHandleDeallocatorCallback@@3U_GUID@@B"/>
+  <Variable id="_100" name="IID_IAvnNativeControlHost" type="_7c" context="_1" location="f5:498" file="f5" line="498" mangled="?IID_IAvnNativeControlHost@@3U_GUID@@B"/>
+  <Variable id="_101" name="IID_IAvnNativeControlHostTopLevelAttachment" type="_7c" context="_1" location="f5:505" file="f5" line="505" mangled="?IID_IAvnNativeControlHostTopLevelAttachment@@3U_GUID@@B"/>
+  <Function id="_102" name="CreateAvaloniaNative" returns="_444" context="_1" location="f5:516" file="f5" line="516" mangled="?CreateAvaloniaNative@@9"/>
+  <Function id="_103" name="__builtin_memcpy" returns="_445" context="_1" location="f1:7" file="f1" line="7" extern="1" artificial="1" mangled="?__builtin_memcpy@@9">
+    <Argument type="_445"/>
+    <Argument type="_446"/>
+    <Argument type="_105"/>
+  </Function>
+  <Struct id="_104" name="__NSConstantString_tag" context="_1" location="f0:0" file="f0" line="0" members="_447 _448 _449 _450" size="128" align="32"/>
+  <FundamentalType id="_105" name="unsigned int" size="32" align="32"/>
+  <PointerType id="_106" type="_451" size="32" align="32"/>
+  <Field id="_107" name="Data1" type="_105" context="_6" access="public" location="f1:8" file="f1" line="8" offset="0"/>
+  <Field id="_108" name="Data2" type="_452" context="_6" access="public" location="f1:9" file="f1" line="9" offset="32"/>
+  <Field id="_109" name="Data3" type="_452" context="_6" access="public" location="f1:10" file="f1" line="10" offset="48"/>
+  <Field id="_110" name="Data4" type="_453" context="_6" access="public" location="f1:11" file="f1" line="11" offset="64"/>
+  <Constructor id="_111" name="_GUID" context="_6" access="public" location="f1:7" file="f1" line="7" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_112" name="_GUID" context="_6" access="public" location="f1:7" file="f1" line="7" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_454" location="f1:7" file="f1" line="7"/>
+  </Constructor>
+  <OperatorMethod id="_113" name="=" returns="_455" context="_6" access="public" location="f1:7" file="f1" line="7" inline="1" artificial="1" mangled="??4_GUID@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_454" location="f1:7" file="f1" line="7"/>
+  </OperatorMethod>
+  <Destructor id="_114" name="_GUID" context="_6" access="public" location="f1:7" file="f1" line="7" inline="1" artificial="1" attributes="__thiscall__"/>
+  <PointerType id="_115" type="_8c" size="32" align="32"/>
+  <CvQualifiedType id="_8c" type="_8" const="1"/>
+  <Method id="_116" name="QueryInterface" returns="_10" context="_13" access="public" location="f1:34" file="f1" line="34" virtual="1" pure_virtual="1" mangled="?QueryInterface@IUnknown@@UAEIPBU_GUID@@PAPAX@Z" attributes="__thiscall__">
+    <Argument name="riid" type="_9" location="f1:35" file="f1" line="35"/>
+    <Argument name="ppvObject" type="_456" location="f1:36" file="f1" line="36"/>
+  </Method>
+  <Method id="_117" name="AddRef" returns="_12" context="_13" access="public" location="f1:38" file="f1" line="38" virtual="1" pure_virtual="1" mangled="?AddRef@IUnknown@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_118" name="Release" returns="_12" context="_13" access="public" location="f1:40" file="f1" line="40" virtual="1" pure_virtual="1" mangled="?Release@IUnknown@@UAEIXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_119" name="=" returns="_457" context="_13" access="public" location="f1:32" file="f1" line="32" inline="1" artificial="1" mangled="??4IUnknown@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_458" location="f1:32" file="f1" line="32"/>
+  </OperatorMethod>
+  <Destructor id="_120" name="IUnknown" context="_13" access="public" location="f1:32" file="f1" line="32" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_121" name="IUnknown" context="_13" access="public" location="f1:32" file="f1" line="32" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_122" name="IUnknown" context="_13" access="public" location="f1:32" file="f1" line="32" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_458" location="f1:32" file="f1" line="32"/>
+  </Constructor>
+  <FundamentalType id="_123" name="int" size="32" align="32"/>
+  <Unimplemented id="_124" type_class="Decltype"/>
+  <FundamentalType id="_125" name="double" size="64" align="64"/>
+  <Method id="_126" name="Closing" returns="_459" context="_19" access="public" location="f5:328" file="f5" line="328" virtual="1" pure_virtual="1" mangled="?Closing@IAvnWindowEvents@@UAE_NXZ" attributes="__thiscall__"/>
+  <Method id="_127" name="WindowStateChanged" returns="_460" context="_19" access="public" location="f5:330" file="f5" line="330" virtual="1" pure_virtual="1" mangled="?WindowStateChanged@IAvnWindowEvents@@UAEXW4AvnWindowState@@@Z" attributes="__thiscall__">
+    <Argument name="state" type="_58" location="f5:330" file="f5" line="330"/>
+  </Method>
+  <Method id="_128" name="GotInputWhenDisabled" returns="_460" context="_19" access="public" location="f5:332" file="f5" line="332" virtual="1" pure_virtual="1" mangled="?GotInputWhenDisabled@IAvnWindowEvents@@UAEXXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_129" name="=" returns="_461" context="_19" access="public" location="f5:321" file="f5" line="321" inline="1" artificial="1" mangled="??4IAvnWindowEvents@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_462" location="f5:321" file="f5" line="321"/>
+  </OperatorMethod>
+  <Destructor id="_130" name="IAvnWindowEvents" context="_19" access="public" location="f5:321" file="f5" line="321" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_131" name="IAvnWindowEvents" context="_19" access="public" location="f5:321" file="f5" line="321" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_132" name="IAvnWindowEvents" context="_19" access="public" location="f5:321" file="f5" line="321" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_462" location="f5:321" file="f5" line="321"/>
+  </Constructor>
+  <Method id="_133" name="SetEnabled" returns="_10" context="_20" access="public" location="f5:282" file="f5" line="282" virtual="1" pure_virtual="1" mangled="?SetEnabled@IAvnWindow@@UAEI_N@Z" attributes="__thiscall__">
+    <Argument name="enable" type="_459" location="f5:282" file="f5" line="282"/>
+  </Method>
+  <Method id="_134" name="SetParent" returns="_10" context="_20" access="public" location="f5:283" file="f5" line="283" virtual="1" pure_virtual="1" mangled="?SetParent@IAvnWindow@@UAEIPAU1@@Z" attributes="__thiscall__">
+    <Argument name="parent" type="_463" location="f5:283" file="f5" line="283"/>
+  </Method>
+  <Method id="_135" name="SetCanResize" returns="_10" context="_20" access="public" location="f5:284" file="f5" line="284" virtual="1" pure_virtual="1" mangled="?SetCanResize@IAvnWindow@@UAEI_N@Z" attributes="__thiscall__">
+    <Argument name="value" type="_459" location="f5:284" file="f5" line="284"/>
+  </Method>
+  <Method id="_136" name="SetDecorations" returns="_10" context="_20" access="public" location="f5:285" file="f5" line="285" virtual="1" pure_virtual="1" mangled="?SetDecorations@IAvnWindow@@UAEIW4SystemDecorations@@@Z" attributes="__thiscall__">
+    <Argument name="value" type="_43" location="f5:285" file="f5" line="285"/>
+  </Method>
+  <Method id="_137" name="SetTitle" returns="_10" context="_20" access="public" location="f5:286" file="f5" line="286" virtual="1" pure_virtual="1" mangled="?SetTitle@IAvnWindow@@UAEIPAX@Z" attributes="__thiscall__">
+    <Argument name="utf8Title" type="_445" location="f5:286" file="f5" line="286"/>
+  </Method>
+  <Method id="_138" name="SetTitleBarColor" returns="_10" context="_20" access="public" location="f5:287" file="f5" line="287" virtual="1" pure_virtual="1" mangled="?SetTitleBarColor@IAvnWindow@@UAEIUAvnColor@@@Z" attributes="__thiscall__">
+    <Argument name="color" type="_52" location="f5:287" file="f5" line="287"/>
+  </Method>
+  <Method id="_139" name="SetWindowState" returns="_10" context="_20" access="public" location="f5:288" file="f5" line="288" virtual="1" pure_virtual="1" mangled="?SetWindowState@IAvnWindow@@UAEIW4AvnWindowState@@@Z" attributes="__thiscall__">
+    <Argument name="state" type="_58" location="f5:288" file="f5" line="288"/>
+  </Method>
+  <Method id="_140" name="GetWindowState" returns="_10" context="_20" access="public" location="f5:289" file="f5" line="289" virtual="1" pure_virtual="1" mangled="?GetWindowState@IAvnWindow@@UAEIPAW4AvnWindowState@@@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_464" location="f5:289" file="f5" line="289"/>
+  </Method>
+  <Method id="_141" name="TakeFocusFromChildren" returns="_10" context="_20" access="public" location="f5:290" file="f5" line="290" virtual="1" pure_virtual="1" mangled="?TakeFocusFromChildren@IAvnWindow@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_142" name="SetExtendClientArea" returns="_10" context="_20" access="public" location="f5:291" file="f5" line="291" virtual="1" pure_virtual="1" mangled="?SetExtendClientArea@IAvnWindow@@UAEI_N@Z" attributes="__thiscall__">
+    <Argument name="enable" type="_459" location="f5:291" file="f5" line="291"/>
+  </Method>
+  <Method id="_143" name="SetExtendClientAreaHints" returns="_10" context="_20" access="public" location="f5:292" file="f5" line="292" virtual="1" pure_virtual="1" mangled="?SetExtendClientAreaHints@IAvnWindow@@UAEIW4AvnExtendClientAreaChromeHints@@@Z" attributes="__thiscall__">
+    <Argument name="hints" type="_62" location="f5:292" file="f5" line="292"/>
+  </Method>
+  <Method id="_144" name="GetExtendTitleBarHeight" returns="_10" context="_20" access="public" location="f5:293" file="f5" line="293" virtual="1" pure_virtual="1" mangled="?GetExtendTitleBarHeight@IAvnWindow@@UAEIPAN@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_465" location="f5:293" file="f5" line="293"/>
+  </Method>
+  <Method id="_145" name="SetExtendTitleBarHeight" returns="_10" context="_20" access="public" location="f5:294" file="f5" line="294" virtual="1" pure_virtual="1" mangled="?SetExtendTitleBarHeight@IAvnWindow@@UAEIN@Z" attributes="__thiscall__">
+    <Argument name="value" type="_125" location="f5:294" file="f5" line="294"/>
+  </Method>
+  <OperatorMethod id="_146" name="=" returns="_466" context="_20" access="public" location="f5:280" file="f5" line="280" inline="1" artificial="1" mangled="??4IAvnWindow@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_467" location="f5:280" file="f5" line="280"/>
+  </OperatorMethod>
+  <Destructor id="_147" name="IAvnWindow" context="_20" access="public" location="f5:280" file="f5" line="280" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_148" name="IAvnWindow" context="_20" access="public" location="f5:280" file="f5" line="280" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_149" name="IAvnWindow" context="_20" access="public" location="f5:280" file="f5" line="280" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_467" location="f5:280" file="f5" line="280"/>
+  </Constructor>
+  <OperatorMethod id="_150" name="=" returns="_468" context="_21" access="public" location="f5:275" file="f5" line="275" inline="1" artificial="1" mangled="??4IAvnPopup@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_469" location="f5:275" file="f5" line="275"/>
+  </OperatorMethod>
+  <Destructor id="_151" name="IAvnPopup" context="_21" access="public" location="f5:275" file="f5" line="275" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_152" name="IAvnPopup" context="_21" access="public" location="f5:275" file="f5" line="275" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_153" name="IAvnPopup" context="_21" access="public" location="f5:275" file="f5" line="275" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_469" location="f5:275" file="f5" line="275"/>
+  </Constructor>
+  <Method id="_154" name="SetShowInDock" returns="_10" context="_22" access="public" location="f5:337" file="f5" line="337" virtual="1" pure_virtual="1" mangled="?SetShowInDock@IAvnMacOptions@@UAEIH@Z" attributes="__thiscall__">
+    <Argument name="show" type="_123" location="f5:337" file="f5" line="337"/>
+  </Method>
+  <Method id="_155" name="SetApplicationTitle" returns="_10" context="_22" access="public" location="f5:338" file="f5" line="338" virtual="1" pure_virtual="1" mangled="?SetApplicationTitle@IAvnMacOptions@@UAEIPAX@Z" attributes="__thiscall__">
+    <Argument name="utf8string" type="_445" location="f5:338" file="f5" line="338"/>
+  </Method>
+  <OperatorMethod id="_156" name="=" returns="_470" context="_22" access="public" location="f5:335" file="f5" line="335" inline="1" artificial="1" mangled="??4IAvnMacOptions@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_471" location="f5:335" file="f5" line="335"/>
+  </OperatorMethod>
+  <Destructor id="_157" name="IAvnMacOptions" context="_22" access="public" location="f5:335" file="f5" line="335" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_158" name="IAvnMacOptions" context="_22" access="public" location="f5:335" file="f5" line="335" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_159" name="IAvnMacOptions" context="_22" access="public" location="f5:335" file="f5" line="335" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_471" location="f5:335" file="f5" line="335"/>
+  </Constructor>
+  <Method id="_160" name="GetCurrentThreadIsLoopThread" returns="_459" context="_23" access="public" location="f5:358" file="f5" line="358" virtual="1" pure_virtual="1" mangled="?GetCurrentThreadIsLoopThread@IAvnPlatformThreadingInterface@@UAE_NXZ" attributes="__thiscall__"/>
+  <Method id="_161" name="SetSignaledCallback" returns="_460" context="_23" access="public" location="f5:359" file="f5" line="359" virtual="1" pure_virtual="1" mangled="?SetSignaledCallback@IAvnPlatformThreadingInterface@@UAEXPAUIAvnSignaledCallback@@@Z" attributes="__thiscall__">
+    <Argument name="cb" type="_472" location="f5:359" file="f5" line="359"/>
+  </Method>
+  <Method id="_162" name="CreateLoopCancellation" returns="_473" context="_23" access="public" location="f5:360" file="f5" line="360" virtual="1" pure_virtual="1" mangled="?CreateLoopCancellation@IAvnPlatformThreadingInterface@@UAEPAUIAvnLoopCancellation@@XZ" attributes="__thiscall__"/>
+  <Method id="_163" name="RunLoop" returns="_10" context="_23" access="public" location="f5:361" file="f5" line="361" virtual="1" pure_virtual="1" mangled="?RunLoop@IAvnPlatformThreadingInterface@@UAEIPAUIAvnLoopCancellation@@@Z" attributes="__thiscall__">
+    <Argument name="cancel" type="_473" location="f5:361" file="f5" line="361"/>
+  </Method>
+  <Method id="_164" name="Signal" returns="_460" context="_23" access="public" location="f5:363" file="f5" line="363" virtual="1" pure_virtual="1" mangled="?Signal@IAvnPlatformThreadingInterface@@UAEXH@Z" attributes="__thiscall__">
+    <Argument name="priority" type="_123" location="f5:363" file="f5" line="363"/>
+  </Method>
+  <Method id="_165" name="StartTimer" returns="_474" context="_23" access="public" location="f5:364" file="f5" line="364" virtual="1" pure_virtual="1" mangled="?StartTimer@IAvnPlatformThreadingInterface@@UAEPAUIUnknown@@HHPAUIAvnActionCallback@@@Z" attributes="__thiscall__">
+    <Argument name="priority" type="_123" location="f5:364" file="f5" line="364"/>
+    <Argument name="ms" type="_123" location="f5:364" file="f5" line="364"/>
+    <Argument name="callback" type="_475" location="f5:364" file="f5" line="364"/>
+  </Method>
+  <OperatorMethod id="_166" name="=" returns="_476" context="_23" access="public" location="f5:356" file="f5" line="356" inline="1" artificial="1" mangled="??4IAvnPlatformThreadingInterface@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_477" location="f5:356" file="f5" line="356"/>
+  </OperatorMethod>
+  <Destructor id="_167" name="IAvnPlatformThreadingInterface" context="_23" access="public" location="f5:356" file="f5" line="356" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_168" name="IAvnPlatformThreadingInterface" context="_23" access="public" location="f5:356" file="f5" line="356" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_169" name="IAvnPlatformThreadingInterface" context="_23" access="public" location="f5:356" file="f5" line="356" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_477" location="f5:356" file="f5" line="356"/>
+  </Constructor>
+  <Method id="_170" name="OnCompleted" returns="_460" context="_24" access="public" location="f5:369" file="f5" line="369" virtual="1" pure_virtual="1" mangled="?OnCompleted@IAvnSystemDialogEvents@@UAEXHPAX@Z" attributes="__thiscall__">
+    <Argument name="numResults" type="_123" location="f5:369" file="f5" line="369"/>
+    <Argument name="ptrFirstResult" type="_445" location="f5:369" file="f5" line="369"/>
+  </Method>
+  <OperatorMethod id="_171" name="=" returns="_478" context="_24" access="public" location="f5:367" file="f5" line="367" inline="1" artificial="1" mangled="??4IAvnSystemDialogEvents@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_479" location="f5:367" file="f5" line="367"/>
+  </OperatorMethod>
+  <Destructor id="_172" name="IAvnSystemDialogEvents" context="_24" access="public" location="f5:367" file="f5" line="367" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_173" name="IAvnSystemDialogEvents" context="_24" access="public" location="f5:367" file="f5" line="367" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_174" name="IAvnSystemDialogEvents" context="_24" access="public" location="f5:367" file="f5" line="367" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_479" location="f5:367" file="f5" line="367"/>
+  </Constructor>
+  <Method id="_175" name="SelectFolderDialog" returns="_460" context="_25" access="public" location="f5:374" file="f5" line="374" virtual="1" pure_virtual="1" mangled="?SelectFolderDialog@IAvnSystemDialogs@@UAEXPAUIAvnWindow@@PAUIAvnSystemDialogEvents@@PBD2@Z" attributes="__thiscall__">
+    <Argument name="parentWindowHandle" type="_463" location="f5:374" file="f5" line="374"/>
+    <Argument name="events" type="_480" location="f5:375" file="f5" line="375"/>
+    <Argument name="title" type="_481" location="f5:376" file="f5" line="376"/>
+    <Argument name="initialPath" type="_481" location="f5:377" file="f5" line="377"/>
+  </Method>
+  <Method id="_176" name="OpenFileDialog" returns="_460" context="_25" access="public" location="f5:379" file="f5" line="379" virtual="1" pure_virtual="1" mangled="?OpenFileDialog@IAvnSystemDialogs@@UAEXPAUIAvnWindow@@PAUIAvnSystemDialogEvents@@_NPBD333@Z" attributes="__thiscall__">
+    <Argument name="parentWindowHandle" type="_463" location="f5:379" file="f5" line="379"/>
+    <Argument name="events" type="_480" location="f5:380" file="f5" line="380"/>
+    <Argument name="allowMultiple" type="_459" location="f5:381" file="f5" line="381"/>
+    <Argument name="title" type="_481" location="f5:382" file="f5" line="382"/>
+    <Argument name="initialDirectory" type="_481" location="f5:383" file="f5" line="383"/>
+    <Argument name="initialFile" type="_481" location="f5:384" file="f5" line="384"/>
+    <Argument name="filters" type="_481" location="f5:385" file="f5" line="385"/>
+  </Method>
+  <Method id="_177" name="SaveFileDialog" returns="_460" context="_25" access="public" location="f5:387" file="f5" line="387" virtual="1" pure_virtual="1" mangled="?SaveFileDialog@IAvnSystemDialogs@@UAEXPAUIAvnWindow@@PAUIAvnSystemDialogEvents@@PBD222@Z" attributes="__thiscall__">
+    <Argument name="parentWindowHandle" type="_463" location="f5:387" file="f5" line="387"/>
+    <Argument name="events" type="_480" location="f5:388" file="f5" line="388"/>
+    <Argument name="title" type="_481" location="f5:389" file="f5" line="389"/>
+    <Argument name="initialDirectory" type="_481" location="f5:390" file="f5" line="390"/>
+    <Argument name="initialFile" type="_481" location="f5:391" file="f5" line="391"/>
+    <Argument name="filters" type="_481" location="f5:392" file="f5" line="392"/>
+  </Method>
+  <OperatorMethod id="_178" name="=" returns="_482" context="_25" access="public" location="f5:372" file="f5" line="372" inline="1" artificial="1" mangled="??4IAvnSystemDialogs@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_483" location="f5:372" file="f5" line="372"/>
+  </OperatorMethod>
+  <Destructor id="_179" name="IAvnSystemDialogs" context="_25" access="public" location="f5:372" file="f5" line="372" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_180" name="IAvnSystemDialogs" context="_25" access="public" location="f5:372" file="f5" line="372" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_181" name="IAvnSystemDialogs" context="_25" access="public" location="f5:372" file="f5" line="372" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_483" location="f5:372" file="f5" line="372"/>
+  </Constructor>
+  <Method id="_182" name="GetScreenCount" returns="_10" context="_26" access="public" location="f5:397" file="f5" line="397" virtual="1" pure_virtual="1" mangled="?GetScreenCount@IAvnScreens@@UAEIPAH@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_484" location="f5:397" file="f5" line="397"/>
+  </Method>
+  <Method id="_183" name="GetScreen" returns="_10" context="_26" access="public" location="f5:398" file="f5" line="398" virtual="1" pure_virtual="1" mangled="?GetScreen@IAvnScreens@@UAEIHPAUAvnScreen@@@Z" attributes="__thiscall__">
+    <Argument name="index" type="_123" location="f5:398" file="f5" line="398"/>
+    <Argument name="ret" type="_485" location="f5:398" file="f5" line="398"/>
+  </Method>
+  <OperatorMethod id="_184" name="=" returns="_486" context="_26" access="public" location="f5:395" file="f5" line="395" inline="1" artificial="1" mangled="??4IAvnScreens@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_487" location="f5:395" file="f5" line="395"/>
+  </OperatorMethod>
+  <Destructor id="_185" name="IAvnScreens" context="_26" access="public" location="f5:395" file="f5" line="395" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_186" name="IAvnScreens" context="_26" access="public" location="f5:395" file="f5" line="395" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_187" name="IAvnScreens" context="_26" access="public" location="f5:395" file="f5" line="395" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_487" location="f5:395" file="f5" line="395"/>
+  </Constructor>
+  <Method id="_188" name="GetText" returns="_10" context="_27" access="public" location="f5:403" file="f5" line="403" virtual="1" pure_virtual="1" mangled="?GetText@IAvnClipboard@@UAEIPADPAPAUIAvnString@@@Z" attributes="__thiscall__">
+    <Argument name="type" type="_106" location="f5:403" file="f5" line="403"/>
+    <Argument name="ppv" type="_488" location="f5:403" file="f5" line="403"/>
+  </Method>
+  <Method id="_189" name="SetText" returns="_10" context="_27" access="public" location="f5:404" file="f5" line="404" virtual="1" pure_virtual="1" mangled="?SetText@IAvnClipboard@@UAEIPADPAX@Z" attributes="__thiscall__">
+    <Argument name="type" type="_106" location="f5:404" file="f5" line="404"/>
+    <Argument name="utf8Text" type="_445" location="f5:404" file="f5" line="404"/>
+  </Method>
+  <Method id="_190" name="ObtainFormats" returns="_10" context="_27" access="public" location="f5:405" file="f5" line="405" virtual="1" pure_virtual="1" mangled="?ObtainFormats@IAvnClipboard@@UAEIPAPAUIAvnStringArray@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_489" location="f5:405" file="f5" line="405"/>
+  </Method>
+  <Method id="_191" name="GetStrings" returns="_10" context="_27" access="public" location="f5:406" file="f5" line="406" virtual="1" pure_virtual="1" mangled="?GetStrings@IAvnClipboard@@UAEIPADPAPAUIAvnStringArray@@@Z" attributes="__thiscall__">
+    <Argument name="type" type="_106" location="f5:406" file="f5" line="406"/>
+    <Argument name="ppv" type="_489" location="f5:406" file="f5" line="406"/>
+  </Method>
+  <Method id="_192" name="SetBytes" returns="_10" context="_27" access="public" location="f5:407" file="f5" line="407" virtual="1" pure_virtual="1" mangled="?SetBytes@IAvnClipboard@@UAEIPADPAXH@Z" attributes="__thiscall__">
+    <Argument name="type" type="_106" location="f5:407" file="f5" line="407"/>
+    <Argument name="utf8Text" type="_445" location="f5:407" file="f5" line="407"/>
+    <Argument name="len" type="_123" location="f5:407" file="f5" line="407"/>
+  </Method>
+  <Method id="_193" name="GetBytes" returns="_10" context="_27" access="public" location="f5:408" file="f5" line="408" virtual="1" pure_virtual="1" mangled="?GetBytes@IAvnClipboard@@UAEIPADPAPAUIAvnString@@@Z" attributes="__thiscall__">
+    <Argument name="type" type="_106" location="f5:408" file="f5" line="408"/>
+    <Argument name="ppv" type="_488" location="f5:408" file="f5" line="408"/>
+  </Method>
+  <Method id="_194" name="Clear" returns="_10" context="_27" access="public" location="f5:410" file="f5" line="410" virtual="1" pure_virtual="1" mangled="?Clear@IAvnClipboard@@UAEIXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_195" name="=" returns="_490" context="_27" access="public" location="f5:401" file="f5" line="401" inline="1" artificial="1" mangled="??4IAvnClipboard@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_491" location="f5:401" file="f5" line="401"/>
+  </OperatorMethod>
+  <Destructor id="_196" name="IAvnClipboard" context="_27" access="public" location="f5:401" file="f5" line="401" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_197" name="IAvnClipboard" context="_27" access="public" location="f5:401" file="f5" line="401" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_198" name="IAvnClipboard" context="_27" access="public" location="f5:401" file="f5" line="401" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_491" location="f5:401" file="f5" line="401"/>
+  </Constructor>
+  <OperatorMethod id="_199" name="=" returns="_492" context="_28" access="public" location="f5:413" file="f5" line="413" inline="1" artificial="1" mangled="??4IAvnCursor@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_493" location="f5:413" file="f5" line="413"/>
+  </OperatorMethod>
+  <Destructor id="_200" name="IAvnCursor" context="_28" access="public" location="f5:413" file="f5" line="413" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_201" name="IAvnCursor" context="_28" access="public" location="f5:413" file="f5" line="413" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_202" name="IAvnCursor" context="_28" access="public" location="f5:413" file="f5" line="413" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_493" location="f5:413" file="f5" line="413"/>
+  </Constructor>
+  <Method id="_203" name="GetCursor" returns="_10" context="_29" access="public" location="f5:419" file="f5" line="419" virtual="1" pure_virtual="1" mangled="?GetCursor@IAvnCursorFactory@@UAEIW4AvnStandardCursorType@@PAPAUIAvnCursor@@@Z" attributes="__thiscall__">
+    <Argument name="cursorType" type="_59" location="f5:419" file="f5" line="419"/>
+    <Argument name="retOut" type="_494" location="f5:419" file="f5" line="419"/>
+  </Method>
+  <OperatorMethod id="_204" name="=" returns="_495" context="_29" access="public" location="f5:417" file="f5" line="417" inline="1" artificial="1" mangled="??4IAvnCursorFactory@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_496" location="f5:417" file="f5" line="417"/>
+  </OperatorMethod>
+  <Destructor id="_205" name="IAvnCursorFactory" context="_29" access="public" location="f5:417" file="f5" line="417" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_206" name="IAvnCursorFactory" context="_29" access="public" location="f5:417" file="f5" line="417" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_207" name="IAvnCursorFactory" context="_29" access="public" location="f5:417" file="f5" line="417" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_496" location="f5:417" file="f5" line="417"/>
+  </Constructor>
+  <Method id="_208" name="MakeCurrent" returns="_10" context="_31" access="public" location="f5:432" file="f5" line="432" virtual="1" pure_virtual="1" mangled="?MakeCurrent@IAvnGlContext@@UAEIPAPAUIUnknown@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_497" location="f5:432" file="f5" line="432"/>
+  </Method>
+  <Method id="_209" name="LegacyMakeCurrent" returns="_10" context="_31" access="public" location="f5:433" file="f5" line="433" virtual="1" pure_virtual="1" mangled="?LegacyMakeCurrent@IAvnGlContext@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_210" name="GetSampleCount" returns="_123" context="_31" access="public" location="f5:434" file="f5" line="434" virtual="1" pure_virtual="1" mangled="?GetSampleCount@IAvnGlContext@@UAEHXZ" attributes="__thiscall__"/>
+  <Method id="_211" name="GetStencilSize" returns="_123" context="_31" access="public" location="f5:435" file="f5" line="435" virtual="1" pure_virtual="1" mangled="?GetStencilSize@IAvnGlContext@@UAEHXZ" attributes="__thiscall__"/>
+  <Method id="_212" name="GetNativeHandle" returns="_445" context="_31" access="public" location="f5:436" file="f5" line="436" virtual="1" pure_virtual="1" mangled="?GetNativeHandle@IAvnGlContext@@UAEPAXXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_213" name="=" returns="_498" context="_31" access="public" location="f5:430" file="f5" line="430" inline="1" artificial="1" mangled="??4IAvnGlContext@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_499" location="f5:430" file="f5" line="430"/>
+  </OperatorMethod>
+  <Destructor id="_214" name="IAvnGlContext" context="_31" access="public" location="f5:430" file="f5" line="430" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_215" name="IAvnGlContext" context="_31" access="public" location="f5:430" file="f5" line="430" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_216" name="IAvnGlContext" context="_31" access="public" location="f5:430" file="f5" line="430" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_499" location="f5:430" file="f5" line="430"/>
+  </Constructor>
+  <Method id="_217" name="CreateContext" returns="_10" context="_32" access="public" location="f5:424" file="f5" line="424" virtual="1" pure_virtual="1" mangled="?CreateContext@IAvnGlDisplay@@UAEIPAUIAvnGlContext@@PAPAU2@@Z" attributes="__thiscall__">
+    <Argument name="share" type="_500" location="f5:424" file="f5" line="424"/>
+    <Argument name="ppv" type="_501" location="f5:424" file="f5" line="424"/>
+  </Method>
+  <Method id="_218" name="LegacyClearCurrentContext" returns="_460" context="_32" access="public" location="f5:425" file="f5" line="425" virtual="1" pure_virtual="1" mangled="?LegacyClearCurrentContext@IAvnGlDisplay@@UAEXXZ" attributes="__thiscall__"/>
+  <Method id="_219" name="WrapContext" returns="_10" context="_32" access="public" location="f5:426" file="f5" line="426" virtual="1" pure_virtual="1" mangled="?WrapContext@IAvnGlDisplay@@UAEIPAXPAPAUIAvnGlContext@@@Z" attributes="__thiscall__">
+    <Argument name="native" type="_445" location="f5:426" file="f5" line="426"/>
+    <Argument name="ppv" type="_501" location="f5:426" file="f5" line="426"/>
+  </Method>
+  <Method id="_220" name="GetProcAddress" returns="_445" context="_32" access="public" location="f5:427" file="f5" line="427" virtual="1" pure_virtual="1" mangled="?GetProcAddress@IAvnGlDisplay@@UAEPAXPAD@Z" attributes="__thiscall__">
+    <Argument name="proc" type="_106" location="f5:427" file="f5" line="427"/>
+  </Method>
+  <OperatorMethod id="_221" name="=" returns="_502" context="_32" access="public" location="f5:422" file="f5" line="422" inline="1" artificial="1" mangled="??4IAvnGlDisplay@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_503" location="f5:422" file="f5" line="422"/>
+  </OperatorMethod>
+  <Destructor id="_222" name="IAvnGlDisplay" context="_32" access="public" location="f5:422" file="f5" line="422" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_223" name="IAvnGlDisplay" context="_32" access="public" location="f5:422" file="f5" line="422" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_224" name="IAvnGlDisplay" context="_32" access="public" location="f5:422" file="f5" line="422" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_503" location="f5:422" file="f5" line="422"/>
+  </Constructor>
+  <Method id="_225" name="BeginDrawing" returns="_10" context="_33" access="public" location="f5:441" file="f5" line="441" virtual="1" pure_virtual="1" mangled="?BeginDrawing@IAvnGlSurfaceRenderTarget@@UAEIPAPAUIAvnGlSurfaceRenderingSession@@@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_504" location="f5:441" file="f5" line="441"/>
+  </Method>
+  <OperatorMethod id="_226" name="=" returns="_505" context="_33" access="public" location="f5:439" file="f5" line="439" inline="1" artificial="1" mangled="??4IAvnGlSurfaceRenderTarget@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_506" location="f5:439" file="f5" line="439"/>
+  </OperatorMethod>
+  <Destructor id="_227" name="IAvnGlSurfaceRenderTarget" context="_33" access="public" location="f5:439" file="f5" line="439" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_228" name="IAvnGlSurfaceRenderTarget" context="_33" access="public" location="f5:439" file="f5" line="439" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_229" name="IAvnGlSurfaceRenderTarget" context="_33" access="public" location="f5:439" file="f5" line="439" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_506" location="f5:439" file="f5" line="439"/>
+  </Constructor>
+  <Method id="_230" name="GetPixelSize" returns="_10" context="_34" access="public" location="f5:446" file="f5" line="446" virtual="1" pure_virtual="1" mangled="?GetPixelSize@IAvnGlSurfaceRenderingSession@@UAEIPAUAvnPixelSize@@@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_507" location="f5:446" file="f5" line="446"/>
+  </Method>
+  <Method id="_231" name="GetScaling" returns="_10" context="_34" access="public" location="f5:447" file="f5" line="447" virtual="1" pure_virtual="1" mangled="?GetScaling@IAvnGlSurfaceRenderingSession@@UAEIPAN@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_465" location="f5:447" file="f5" line="447"/>
+  </Method>
+  <OperatorMethod id="_232" name="=" returns="_508" context="_34" access="public" location="f5:444" file="f5" line="444" inline="1" artificial="1" mangled="??4IAvnGlSurfaceRenderingSession@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_509" location="f5:444" file="f5" line="444"/>
+  </OperatorMethod>
+  <Destructor id="_233" name="IAvnGlSurfaceRenderingSession" context="_34" access="public" location="f5:444" file="f5" line="444" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_234" name="IAvnGlSurfaceRenderingSession" context="_34" access="public" location="f5:444" file="f5" line="444" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_235" name="IAvnGlSurfaceRenderingSession" context="_34" access="public" location="f5:444" file="f5" line="444" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_509" location="f5:444" file="f5" line="444"/>
+  </Constructor>
+  <Method id="_236" name="InsertItem" returns="_10" context="_35" access="public" location="f5:452" file="f5" line="452" virtual="1" pure_virtual="1" mangled="?InsertItem@IAvnMenu@@UAEIHPAUIAvnMenuItem@@@Z" attributes="__thiscall__">
+    <Argument name="index" type="_123" location="f5:452" file="f5" line="452"/>
+    <Argument name="item" type="_510" location="f5:452" file="f5" line="452"/>
+  </Method>
+  <Method id="_237" name="RemoveItem" returns="_10" context="_35" access="public" location="f5:453" file="f5" line="453" virtual="1" pure_virtual="1" mangled="?RemoveItem@IAvnMenu@@UAEIPAUIAvnMenuItem@@@Z" attributes="__thiscall__">
+    <Argument name="item" type="_510" location="f5:453" file="f5" line="453"/>
+  </Method>
+  <Method id="_238" name="SetTitle" returns="_10" context="_35" access="public" location="f5:454" file="f5" line="454" virtual="1" pure_virtual="1" mangled="?SetTitle@IAvnMenu@@UAEIPAX@Z" attributes="__thiscall__">
+    <Argument name="utf8String" type="_445" location="f5:454" file="f5" line="454"/>
+  </Method>
+  <Method id="_239" name="Clear" returns="_10" context="_35" access="public" location="f5:455" file="f5" line="455" virtual="1" pure_virtual="1" mangled="?Clear@IAvnMenu@@UAEIXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_240" name="=" returns="_511" context="_35" access="public" location="f5:450" file="f5" line="450" inline="1" artificial="1" mangled="??4IAvnMenu@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_512" location="f5:450" file="f5" line="450"/>
+  </OperatorMethod>
+  <Destructor id="_241" name="IAvnMenu" context="_35" access="public" location="f5:450" file="f5" line="450" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_242" name="IAvnMenu" context="_35" access="public" location="f5:450" file="f5" line="450" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_243" name="IAvnMenu" context="_35" access="public" location="f5:450" file="f5" line="450" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_512" location="f5:450" file="f5" line="450"/>
+  </Constructor>
+  <Method id="_244" name="SetSubMenu" returns="_10" context="_36" access="public" location="f5:465" file="f5" line="465" virtual="1" pure_virtual="1" mangled="?SetSubMenu@IAvnMenuItem@@UAEIPAUIAvnMenu@@@Z" attributes="__thiscall__">
+    <Argument name="menu" type="_513" location="f5:465" file="f5" line="465"/>
+  </Method>
+  <Method id="_245" name="SetTitle" returns="_10" context="_36" access="public" location="f5:466" file="f5" line="466" virtual="1" pure_virtual="1" mangled="?SetTitle@IAvnMenuItem@@UAEIPAX@Z" attributes="__thiscall__">
+    <Argument name="utf8String" type="_445" location="f5:466" file="f5" line="466"/>
+  </Method>
+  <Method id="_246" name="SetGesture" returns="_10" context="_36" access="public" location="f5:467" file="f5" line="467" virtual="1" pure_virtual="1" mangled="?SetGesture@IAvnMenuItem@@UAEIPAXW4AvnInputModifiers@@@Z" attributes="__thiscall__">
+    <Argument name="utf8String" type="_445" location="f5:467" file="f5" line="467"/>
+    <Argument name="modifiers" type="_55" location="f5:467" file="f5" line="467"/>
+  </Method>
+  <Method id="_247" name="SetAction" returns="_10" context="_36" access="public" location="f5:468" file="f5" line="468" virtual="1" pure_virtual="1" mangled="?SetAction@IAvnMenuItem@@UAEIPAUIAvnPredicateCallback@@PAUIAvnActionCallback@@@Z" attributes="__thiscall__">
+    <Argument name="predicate" type="_514" location="f5:468" file="f5" line="468"/>
+    <Argument name="callback" type="_475" location="f5:468" file="f5" line="468"/>
+  </Method>
+  <Method id="_248" name="SetIsChecked" returns="_10" context="_36" access="public" location="f5:469" file="f5" line="469" virtual="1" pure_virtual="1" mangled="?SetIsChecked@IAvnMenuItem@@UAEI_N@Z" attributes="__thiscall__">
+    <Argument name="isChecked" type="_459" location="f5:469" file="f5" line="469"/>
+  </Method>
+  <Method id="_249" name="SetToggleType" returns="_10" context="_36" access="public" location="f5:470" file="f5" line="470" virtual="1" pure_virtual="1" mangled="?SetToggleType@IAvnMenuItem@@UAEIW4AvnMenuItemToggleType@@@Z" attributes="__thiscall__">
+    <Argument name="toggleType" type="_61" location="f5:470" file="f5" line="470"/>
+  </Method>
+  <Method id="_250" name="SetIcon" returns="_10" context="_36" access="public" location="f5:471" file="f5" line="471" virtual="1" pure_virtual="1" mangled="?SetIcon@IAvnMenuItem@@UAEIPAXI@Z" attributes="__thiscall__">
+    <Argument name="data" type="_445" location="f5:471" file="f5" line="471"/>
+    <Argument name="length" type="_4" location="f5:471" file="f5" line="471"/>
+  </Method>
+  <OperatorMethod id="_251" name="=" returns="_515" context="_36" access="public" location="f5:463" file="f5" line="463" inline="1" artificial="1" mangled="??4IAvnMenuItem@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_516" location="f5:463" file="f5" line="463"/>
+  </OperatorMethod>
+  <Destructor id="_252" name="IAvnMenuItem" context="_36" access="public" location="f5:463" file="f5" line="463" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_253" name="IAvnMenuItem" context="_36" access="public" location="f5:463" file="f5" line="463" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_254" name="IAvnMenuItem" context="_36" access="public" location="f5:463" file="f5" line="463" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_516" location="f5:463" file="f5" line="463"/>
+  </Constructor>
+  <Method id="_255" name="GetCount" returns="_105" context="_37" access="public" location="f5:484" file="f5" line="484" virtual="1" pure_virtual="1" mangled="?GetCount@IAvnStringArray@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_256" name="Get" returns="_10" context="_37" access="public" location="f5:485" file="f5" line="485" virtual="1" pure_virtual="1" mangled="?Get@IAvnStringArray@@UAEIIPAPAUIAvnString@@@Z" attributes="__thiscall__">
+    <Argument name="index" type="_105" location="f5:485" file="f5" line="485"/>
+    <Argument name="ppv" type="_488" location="f5:485" file="f5" line="485"/>
+  </Method>
+  <OperatorMethod id="_257" name="=" returns="_517" context="_37" access="public" location="f5:482" file="f5" line="482" inline="1" artificial="1" mangled="??4IAvnStringArray@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_518" location="f5:482" file="f5" line="482"/>
+  </OperatorMethod>
+  <Destructor id="_258" name="IAvnStringArray" context="_37" access="public" location="f5:482" file="f5" line="482" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_259" name="IAvnStringArray" context="_37" access="public" location="f5:482" file="f5" line="482" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_260" name="IAvnStringArray" context="_37" access="public" location="f5:482" file="f5" line="482" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_518" location="f5:482" file="f5" line="482"/>
+  </Constructor>
+  <Method id="_261" name="OnDragAndDropComplete" returns="_460" context="_38" access="public" location="f5:490" file="f5" line="490" virtual="1" pure_virtual="1" mangled="?OnDragAndDropComplete@IAvnDndResultCallback@@UAEXW4AvnDragDropEffects@@@Z" attributes="__thiscall__">
+    <Argument name="effecct" type="_56" location="f5:490" file="f5" line="490"/>
+  </Method>
+  <OperatorMethod id="_262" name="=" returns="_519" context="_38" access="public" location="f5:488" file="f5" line="488" inline="1" artificial="1" mangled="??4IAvnDndResultCallback@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_520" location="f5:488" file="f5" line="488"/>
+  </OperatorMethod>
+  <Destructor id="_263" name="IAvnDndResultCallback" context="_38" access="public" location="f5:488" file="f5" line="488" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_264" name="IAvnDndResultCallback" context="_38" access="public" location="f5:488" file="f5" line="488" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_265" name="IAvnDndResultCallback" context="_38" access="public" location="f5:488" file="f5" line="488" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_520" location="f5:488" file="f5" line="488"/>
+  </Constructor>
+  <Method id="_266" name="FreeGCHandle" returns="_460" context="_39" access="public" location="f5:495" file="f5" line="495" virtual="1" pure_virtual="1" mangled="?FreeGCHandle@IAvnGCHandleDeallocatorCallback@@UAEXPAX@Z" attributes="__thiscall__">
+    <Argument name="handle" type="_445" location="f5:495" file="f5" line="495"/>
+  </Method>
+  <OperatorMethod id="_267" name="=" returns="_521" context="_39" access="public" location="f5:493" file="f5" line="493" inline="1" artificial="1" mangled="??4IAvnGCHandleDeallocatorCallback@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_522" location="f5:493" file="f5" line="493"/>
+  </OperatorMethod>
+  <Destructor id="_268" name="IAvnGCHandleDeallocatorCallback" context="_39" access="public" location="f5:493" file="f5" line="493" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_269" name="IAvnGCHandleDeallocatorCallback" context="_39" access="public" location="f5:493" file="f5" line="493" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_270" name="IAvnGCHandleDeallocatorCallback" context="_39" access="public" location="f5:493" file="f5" line="493" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_522" location="f5:493" file="f5" line="493"/>
+  </Constructor>
+  <Method id="_271" name="NeedsUpdate" returns="_460" context="_40" access="public" location="f5:479" file="f5" line="479" virtual="1" pure_virtual="1" mangled="?NeedsUpdate@IAvnMenuEvents@@UAEXXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_272" name="=" returns="_523" context="_40" access="public" location="f5:474" file="f5" line="474" inline="1" artificial="1" mangled="??4IAvnMenuEvents@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_524" location="f5:474" file="f5" line="474"/>
+  </OperatorMethod>
+  <Destructor id="_273" name="IAvnMenuEvents" context="_40" access="public" location="f5:474" file="f5" line="474" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_274" name="IAvnMenuEvents" context="_40" access="public" location="f5:474" file="f5" line="474" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_275" name="IAvnMenuEvents" context="_40" access="public" location="f5:474" file="f5" line="474" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_524" location="f5:474" file="f5" line="474"/>
+  </Constructor>
+  <Method id="_276" name="CreateDefaultChild" returns="_10" context="_41" access="public" location="f5:500" file="f5" line="500" virtual="1" pure_virtual="1" mangled="?CreateDefaultChild@IAvnNativeControlHost@@UAEIPAXPAPAX@Z" attributes="__thiscall__">
+    <Argument name="parent" type="_445" location="f5:500" file="f5" line="500"/>
+    <Argument name="retOut" type="_456" location="f5:500" file="f5" line="500"/>
+  </Method>
+  <Method id="_277" name="CreateAttachment" returns="_525" context="_41" access="public" location="f5:501" file="f5" line="501" virtual="1" pure_virtual="1" mangled="?CreateAttachment@IAvnNativeControlHost@@UAEPAUIAvnNativeControlHostTopLevelAttachment@@XZ" attributes="__thiscall__"/>
+  <Method id="_278" name="DestroyDefaultChild" returns="_460" context="_41" access="public" location="f5:502" file="f5" line="502" virtual="1" pure_virtual="1" mangled="?DestroyDefaultChild@IAvnNativeControlHost@@UAEXPAX@Z" attributes="__thiscall__">
+    <Argument name="child" type="_445" location="f5:502" file="f5" line="502"/>
+  </Method>
+  <OperatorMethod id="_279" name="=" returns="_526" context="_41" access="public" location="f5:498" file="f5" line="498" inline="1" artificial="1" mangled="??4IAvnNativeControlHost@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_527" location="f5:498" file="f5" line="498"/>
+  </OperatorMethod>
+  <Destructor id="_280" name="IAvnNativeControlHost" context="_41" access="public" location="f5:498" file="f5" line="498" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_281" name="IAvnNativeControlHost" context="_41" access="public" location="f5:498" file="f5" line="498" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_282" name="IAvnNativeControlHost" context="_41" access="public" location="f5:498" file="f5" line="498" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_527" location="f5:498" file="f5" line="498"/>
+  </Constructor>
+  <Method id="_283" name="GetParentHandle" returns="_445" context="_42" access="public" location="f5:507" file="f5" line="507" virtual="1" pure_virtual="1" mangled="?GetParentHandle@IAvnNativeControlHostTopLevelAttachment@@UAEPAXXZ" attributes="__thiscall__"/>
+  <Method id="_284" name="InitializeWithChildHandle" returns="_10" context="_42" access="public" location="f5:508" file="f5" line="508" virtual="1" pure_virtual="1" mangled="?InitializeWithChildHandle@IAvnNativeControlHostTopLevelAttachment@@UAEIPAX@Z" attributes="__thiscall__">
+    <Argument name="child" type="_445" location="f5:508" file="f5" line="508"/>
+  </Method>
+  <Method id="_285" name="AttachTo" returns="_10" context="_42" access="public" location="f5:509" file="f5" line="509" virtual="1" pure_virtual="1" mangled="?AttachTo@IAvnNativeControlHostTopLevelAttachment@@UAEIPAUIAvnNativeControlHost@@@Z" attributes="__thiscall__">
+    <Argument name="host" type="_528" location="f5:509" file="f5" line="509"/>
+  </Method>
+  <Method id="_286" name="ShowInBounds" returns="_460" context="_42" access="public" location="f5:510" file="f5" line="510" virtual="1" pure_virtual="1" mangled="?ShowInBounds@IAvnNativeControlHostTopLevelAttachment@@UAEXMMMM@Z" attributes="__thiscall__">
+    <Argument name="x" type="_529" location="f5:510" file="f5" line="510"/>
+    <Argument name="y" type="_529" location="f5:510" file="f5" line="510"/>
+    <Argument name="width" type="_529" location="f5:510" file="f5" line="510"/>
+    <Argument name="height" type="_529" location="f5:510" file="f5" line="510"/>
+  </Method>
+  <Method id="_287" name="HideWithSize" returns="_460" context="_42" access="public" location="f5:511" file="f5" line="511" virtual="1" pure_virtual="1" mangled="?HideWithSize@IAvnNativeControlHostTopLevelAttachment@@UAEXMM@Z" attributes="__thiscall__">
+    <Argument name="width" type="_529" location="f5:511" file="f5" line="511"/>
+    <Argument name="height" type="_529" location="f5:511" file="f5" line="511"/>
+  </Method>
+  <Method id="_288" name="ReleaseChild" returns="_460" context="_42" access="public" location="f5:512" file="f5" line="512" virtual="1" pure_virtual="1" mangled="?ReleaseChild@IAvnNativeControlHostTopLevelAttachment@@UAEXXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_289" name="=" returns="_530" context="_42" access="public" location="f5:505" file="f5" line="505" inline="1" artificial="1" mangled="??4IAvnNativeControlHostTopLevelAttachment@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_531" location="f5:505" file="f5" line="505"/>
+  </OperatorMethod>
+  <Destructor id="_290" name="IAvnNativeControlHostTopLevelAttachment" context="_42" access="public" location="f5:505" file="f5" line="505" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_291" name="IAvnNativeControlHostTopLevelAttachment" context="_42" access="public" location="f5:505" file="f5" line="505" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_292" name="IAvnNativeControlHostTopLevelAttachment" context="_42" access="public" location="f5:505" file="f5" line="505" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_531" location="f5:505" file="f5" line="505"/>
+  </Constructor>
+  <Field id="_293" name="Width" type="_125" context="_44" access="public" location="f5:39" file="f5" line="39" offset="0"/>
+  <Field id="_294" name="Height" type="_125" context="_44" access="public" location="f5:39" file="f5" line="39" offset="64"/>
+  <Constructor id="_295" name="AvnSize" context="_44" access="public" location="f5:37" file="f5" line="37" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_296" name="AvnSize" context="_44" access="public" location="f5:37" file="f5" line="37" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_532" location="f5:37" file="f5" line="37"/>
+  </Constructor>
+  <OperatorMethod id="_297" name="=" returns="_533" context="_44" access="public" location="f5:37" file="f5" line="37" inline="1" artificial="1" mangled="??4AvnSize@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_532" location="f5:37" file="f5" line="37"/>
+  </OperatorMethod>
+  <Destructor id="_298" name="AvnSize" context="_44" access="public" location="f5:37" file="f5" line="37" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Field id="_299" name="Width" type="_123" context="_45" access="public" location="f5:44" file="f5" line="44" offset="0"/>
+  <Field id="_300" name="Height" type="_123" context="_45" access="public" location="f5:44" file="f5" line="44" offset="32"/>
+  <Constructor id="_301" name="AvnPixelSize" context="_45" access="public" location="f5:42" file="f5" line="42" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_302" name="AvnPixelSize" context="_45" access="public" location="f5:42" file="f5" line="42" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_534" location="f5:42" file="f5" line="42"/>
+  </Constructor>
+  <OperatorMethod id="_303" name="=" returns="_535" context="_45" access="public" location="f5:42" file="f5" line="42" inline="1" artificial="1" mangled="??4AvnPixelSize@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_534" location="f5:42" file="f5" line="42"/>
+  </OperatorMethod>
+  <Destructor id="_304" name="AvnPixelSize" context="_45" access="public" location="f5:42" file="f5" line="42" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Field id="_305" name="X" type="_125" context="_46" access="public" location="f5:49" file="f5" line="49" offset="0"/>
+  <Field id="_306" name="Y" type="_125" context="_46" access="public" location="f5:49" file="f5" line="49" offset="64"/>
+  <Field id="_307" name="Width" type="_125" context="_46" access="public" location="f5:49" file="f5" line="49" offset="128"/>
+  <Field id="_308" name="Height" type="_125" context="_46" access="public" location="f5:49" file="f5" line="49" offset="192"/>
+  <Constructor id="_309" name="AvnRect" context="_46" access="public" location="f5:47" file="f5" line="47" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_310" name="AvnRect" context="_46" access="public" location="f5:47" file="f5" line="47" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_536" location="f5:47" file="f5" line="47"/>
+  </Constructor>
+  <OperatorMethod id="_311" name="=" returns="_537" context="_46" access="public" location="f5:47" file="f5" line="47" inline="1" artificial="1" mangled="??4AvnRect@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_536" location="f5:47" file="f5" line="47"/>
+  </OperatorMethod>
+  <Destructor id="_312" name="AvnRect" context="_46" access="public" location="f5:47" file="f5" line="47" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Field id="_313" name="X" type="_125" context="_47" access="public" location="f5:54" file="f5" line="54" offset="0"/>
+  <Field id="_314" name="Y" type="_125" context="_47" access="public" location="f5:54" file="f5" line="54" offset="64"/>
+  <Constructor id="_315" name="AvnVector" context="_47" access="public" location="f5:52" file="f5" line="52" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_316" name="AvnVector" context="_47" access="public" location="f5:52" file="f5" line="52" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_538" location="f5:52" file="f5" line="52"/>
+  </Constructor>
+  <OperatorMethod id="_317" name="=" returns="_539" context="_47" access="public" location="f5:52" file="f5" line="52" inline="1" artificial="1" mangled="??4AvnVector@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_538" location="f5:52" file="f5" line="52"/>
+  </OperatorMethod>
+  <Destructor id="_318" name="AvnVector" context="_47" access="public" location="f5:52" file="f5" line="52" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Field id="_319" name="X" type="_125" context="_48" access="public" location="f5:59" file="f5" line="59" offset="0"/>
+  <Field id="_320" name="Y" type="_125" context="_48" access="public" location="f5:59" file="f5" line="59" offset="64"/>
+  <Constructor id="_321" name="AvnPoint" context="_48" access="public" location="f5:57" file="f5" line="57" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_322" name="AvnPoint" context="_48" access="public" location="f5:57" file="f5" line="57" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_540" location="f5:57" file="f5" line="57"/>
+  </Constructor>
+  <OperatorMethod id="_323" name="=" returns="_541" context="_48" access="public" location="f5:57" file="f5" line="57" inline="1" artificial="1" mangled="??4AvnPoint@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_540" location="f5:57" file="f5" line="57"/>
+  </OperatorMethod>
+  <Destructor id="_324" name="AvnPoint" context="_48" access="public" location="f5:57" file="f5" line="57" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Field id="_325" name="Bounds" type="_46" context="_49" access="public" location="f5:64" file="f5" line="64" offset="0"/>
+  <Field id="_326" name="WorkingArea" type="_46" context="_49" access="public" location="f5:65" file="f5" line="65" offset="256"/>
+  <Field id="_327" name="PixelDensity" type="_529" context="_49" access="public" location="f5:66" file="f5" line="66" offset="512"/>
+  <Field id="_328" name="Primary" type="_459" context="_49" access="public" location="f5:67" file="f5" line="67" offset="544"/>
+  <Constructor id="_329" name="AvnScreen" context="_49" access="public" location="f5:62" file="f5" line="62" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_330" name="AvnScreen" context="_49" access="public" location="f5:62" file="f5" line="62" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_542" location="f5:62" file="f5" line="62"/>
+  </Constructor>
+  <OperatorMethod id="_331" name="=" returns="_543" context="_49" access="public" location="f5:62" file="f5" line="62" inline="1" artificial="1" mangled="??4AvnScreen@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_542" location="f5:62" file="f5" line="62"/>
+  </OperatorMethod>
+  <Destructor id="_332" name="AvnScreen" context="_49" access="public" location="f5:62" file="f5" line="62" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Field id="_333" name="Data" type="_445" context="_51" access="public" location="f5:79" file="f5" line="79" offset="0"/>
+  <Field id="_334" name="Width" type="_123" context="_51" access="public" location="f5:80" file="f5" line="80" offset="32"/>
+  <Field id="_335" name="Height" type="_123" context="_51" access="public" location="f5:81" file="f5" line="81" offset="64"/>
+  <Field id="_336" name="Stride" type="_123" context="_51" access="public" location="f5:82" file="f5" line="82" offset="96"/>
+  <Field id="_337" name="Dpi" type="_47" context="_51" access="public" location="f5:83" file="f5" line="83" offset="128"/>
+  <Field id="_338" name="PixelFormat" type="_50" context="_51" access="public" location="f5:84" file="f5" line="84" offset="256"/>
+  <Constructor id="_339" name="AvnFramebuffer" context="_51" access="public" location="f5:77" file="f5" line="77" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_340" name="AvnFramebuffer" context="_51" access="public" location="f5:77" file="f5" line="77" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_544" location="f5:77" file="f5" line="77"/>
+  </Constructor>
+  <OperatorMethod id="_341" name="=" returns="_545" context="_51" access="public" location="f5:77" file="f5" line="77" inline="1" artificial="1" mangled="??4AvnFramebuffer@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_544" location="f5:77" file="f5" line="77"/>
+  </OperatorMethod>
+  <Destructor id="_342" name="AvnFramebuffer" context="_51" access="public" location="f5:77" file="f5" line="77" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Field id="_343" name="Alpha" type="_546" context="_52" access="public" location="f5:89" file="f5" line="89" offset="0"/>
+  <Field id="_344" name="Red" type="_546" context="_52" access="public" location="f5:90" file="f5" line="90" offset="8"/>
+  <Field id="_345" name="Green" type="_546" context="_52" access="public" location="f5:91" file="f5" line="91" offset="16"/>
+  <Field id="_346" name="Blue" type="_546" context="_52" access="public" location="f5:92" file="f5" line="92" offset="24"/>
+  <Constructor id="_347" name="AvnColor" context="_52" access="public" location="f5:87" file="f5" line="87" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_348" name="AvnColor" context="_52" access="public" location="f5:87" file="f5" line="87" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_547" location="f5:87" file="f5" line="87"/>
+  </Constructor>
+  <OperatorMethod id="_349" name="=" returns="_548" context="_52" access="public" location="f5:87" file="f5" line="87" inline="1" artificial="1" mangled="??4AvnColor@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_547" location="f5:87" file="f5" line="87"/>
+  </OperatorMethod>
+  <Destructor id="_350" name="AvnColor" context="_52" access="public" location="f5:87" file="f5" line="87" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Method id="_351" name="Initialize" returns="_10" context="_64" access="public" location="f5:220" file="f5" line="220" virtual="1" pure_virtual="1" mangled="?Initialize@IAvaloniaNativeFactory@@UAEIPAUIAvnGCHandleDeallocatorCallback@@@Z" attributes="__thiscall__">
+    <Argument name="deallocator" type="_549" location="f5:220" file="f5" line="220"/>
+  </Method>
+  <Method id="_352" name="GetMacOptions" returns="_550" context="_64" access="public" location="f5:221" file="f5" line="221" virtual="1" pure_virtual="1" mangled="?GetMacOptions@IAvaloniaNativeFactory@@UAEPAUIAvnMacOptions@@XZ" attributes="__thiscall__"/>
+  <Method id="_353" name="CreateWindow" returns="_10" context="_64" access="public" location="f5:222" file="f5" line="222" virtual="1" pure_virtual="1" mangled="?CreateWindow@IAvaloniaNativeFactory@@UAEIPAUIAvnWindowEvents@@PAUIAvnGlContext@@PAPAUIAvnWindow@@@Z" attributes="__thiscall__">
+    <Argument name="cb" type="_551" location="f5:222" file="f5" line="222"/>
+    <Argument name="gl" type="_500" location="f5:222" file="f5" line="222"/>
+    <Argument name="ppv" type="_552" location="f5:222" file="f5" line="222"/>
+  </Method>
+  <Method id="_354" name="CreatePopup" returns="_10" context="_64" access="public" location="f5:223" file="f5" line="223" virtual="1" pure_virtual="1" mangled="?CreatePopup@IAvaloniaNativeFactory@@UAEIPAUIAvnWindowEvents@@PAUIAvnGlContext@@PAPAUIAvnPopup@@@Z" attributes="__thiscall__">
+    <Argument name="cb" type="_551" location="f5:223" file="f5" line="223"/>
+    <Argument name="gl" type="_500" location="f5:223" file="f5" line="223"/>
+    <Argument name="ppv" type="_553" location="f5:223" file="f5" line="223"/>
+  </Method>
+  <Method id="_355" name="CreatePlatformThreadingInterface" returns="_10" context="_64" access="public" location="f5:224" file="f5" line="224" virtual="1" pure_virtual="1" mangled="?CreatePlatformThreadingInterface@IAvaloniaNativeFactory@@UAEIPAPAUIAvnPlatformThreadingInterface@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_554" location="f5:224" file="f5" line="224"/>
+  </Method>
+  <Method id="_356" name="CreateSystemDialogs" returns="_10" context="_64" access="public" location="f5:225" file="f5" line="225" virtual="1" pure_virtual="1" mangled="?CreateSystemDialogs@IAvaloniaNativeFactory@@UAEIPAPAUIAvnSystemDialogs@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_555" location="f5:225" file="f5" line="225"/>
+  </Method>
+  <Method id="_357" name="CreateScreens" returns="_10" context="_64" access="public" location="f5:226" file="f5" line="226" virtual="1" pure_virtual="1" mangled="?CreateScreens@IAvaloniaNativeFactory@@UAEIPAPAUIAvnScreens@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_556" location="f5:226" file="f5" line="226"/>
+  </Method>
+  <Method id="_358" name="CreateClipboard" returns="_10" context="_64" access="public" location="f5:227" file="f5" line="227" virtual="1" pure_virtual="1" mangled="?CreateClipboard@IAvaloniaNativeFactory@@UAEIPAPAUIAvnClipboard@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_557" location="f5:227" file="f5" line="227"/>
+  </Method>
+  <Method id="_359" name="CreateDndClipboard" returns="_10" context="_64" access="public" location="f5:228" file="f5" line="228" virtual="1" pure_virtual="1" mangled="?CreateDndClipboard@IAvaloniaNativeFactory@@UAEIPAPAUIAvnClipboard@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_557" location="f5:228" file="f5" line="228"/>
+  </Method>
+  <Method id="_360" name="CreateCursorFactory" returns="_10" context="_64" access="public" location="f5:229" file="f5" line="229" virtual="1" pure_virtual="1" mangled="?CreateCursorFactory@IAvaloniaNativeFactory@@UAEIPAPAUIAvnCursorFactory@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_558" location="f5:229" file="f5" line="229"/>
+  </Method>
+  <Method id="_361" name="ObtainGlDisplay" returns="_10" context="_64" access="public" location="f5:230" file="f5" line="230" virtual="1" pure_virtual="1" mangled="?ObtainGlDisplay@IAvaloniaNativeFactory@@UAEIPAPAUIAvnGlDisplay@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_559" location="f5:230" file="f5" line="230"/>
+  </Method>
+  <Method id="_362" name="SetAppMenu" returns="_10" context="_64" access="public" location="f5:231" file="f5" line="231" virtual="1" pure_virtual="1" mangled="?SetAppMenu@IAvaloniaNativeFactory@@UAEIPAUIAvnMenu@@@Z" attributes="__thiscall__">
+    <Argument name="menu" type="_513" location="f5:231" file="f5" line="231"/>
+  </Method>
+  <Method id="_363" name="CreateMenu" returns="_10" context="_64" access="public" location="f5:232" file="f5" line="232" virtual="1" pure_virtual="1" mangled="?CreateMenu@IAvaloniaNativeFactory@@UAEIPAUIAvnMenuEvents@@PAPAUIAvnMenu@@@Z" attributes="__thiscall__">
+    <Argument name="cb" type="_560" location="f5:232" file="f5" line="232"/>
+    <Argument name="ppv" type="_561" location="f5:232" file="f5" line="232"/>
+  </Method>
+  <Method id="_364" name="CreateMenuItem" returns="_10" context="_64" access="public" location="f5:233" file="f5" line="233" virtual="1" pure_virtual="1" mangled="?CreateMenuItem@IAvaloniaNativeFactory@@UAEIPAPAUIAvnMenuItem@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_562" location="f5:233" file="f5" line="233"/>
+  </Method>
+  <Method id="_365" name="CreateMenuItemSeperator" returns="_10" context="_64" access="public" location="f5:234" file="f5" line="234" virtual="1" pure_virtual="1" mangled="?CreateMenuItemSeperator@IAvaloniaNativeFactory@@UAEIPAPAUIAvnMenuItem@@@Z" attributes="__thiscall__">
+    <Argument name="ppv" type="_562" location="f5:234" file="f5" line="234"/>
+  </Method>
+  <OperatorMethod id="_366" name="=" returns="_563" context="_64" access="public" location="f5:217" file="f5" line="217" inline="1" artificial="1" mangled="??4IAvaloniaNativeFactory@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_564" location="f5:217" file="f5" line="217"/>
+  </OperatorMethod>
+  <Destructor id="_367" name="IAvaloniaNativeFactory" context="_64" access="public" location="f5:217" file="f5" line="217" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_368" name="IAvaloniaNativeFactory" context="_64" access="public" location="f5:217" file="f5" line="217" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_369" name="IAvaloniaNativeFactory" context="_64" access="public" location="f5:217" file="f5" line="217" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_564" location="f5:217" file="f5" line="217"/>
+  </Constructor>
+  <Method id="_370" name="Pointer" returns="_10" context="_66" access="public" location="f5:239" file="f5" line="239" virtual="1" pure_virtual="1" mangled="?Pointer@IAvnString@@UAEIPAPAX@Z" attributes="__thiscall__">
+    <Argument name="retOut" type="_456" location="f5:239" file="f5" line="239"/>
+  </Method>
+  <Method id="_371" name="Length" returns="_10" context="_66" access="public" location="f5:240" file="f5" line="240" virtual="1" pure_virtual="1" mangled="?Length@IAvnString@@UAEIPAH@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_484" location="f5:240" file="f5" line="240"/>
+  </Method>
+  <OperatorMethod id="_372" name="=" returns="_565" context="_66" access="public" location="f5:237" file="f5" line="237" inline="1" artificial="1" mangled="??4IAvnString@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_566" location="f5:237" file="f5" line="237"/>
+  </OperatorMethod>
+  <Destructor id="_373" name="IAvnString" context="_66" access="public" location="f5:237" file="f5" line="237" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_374" name="IAvnString" context="_66" access="public" location="f5:237" file="f5" line="237" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_375" name="IAvnString" context="_66" access="public" location="f5:237" file="f5" line="237" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_566" location="f5:237" file="f5" line="237"/>
+  </Constructor>
+  <Method id="_376" name="Show" returns="_10" context="_68" access="public" location="f5:245" file="f5" line="245" virtual="1" pure_virtual="1" mangled="?Show@IAvnWindowBase@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_377" name="Hide" returns="_10" context="_68" access="public" location="f5:246" file="f5" line="246" virtual="1" pure_virtual="1" mangled="?Hide@IAvnWindowBase@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_378" name="Close" returns="_10" context="_68" access="public" location="f5:247" file="f5" line="247" virtual="1" pure_virtual="1" mangled="?Close@IAvnWindowBase@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_379" name="Activate" returns="_10" context="_68" access="public" location="f5:248" file="f5" line="248" virtual="1" pure_virtual="1" mangled="?Activate@IAvnWindowBase@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_380" name="GetClientSize" returns="_10" context="_68" access="public" location="f5:249" file="f5" line="249" virtual="1" pure_virtual="1" mangled="?GetClientSize@IAvnWindowBase@@UAEIPAUAvnSize@@@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_567" location="f5:249" file="f5" line="249"/>
+  </Method>
+  <Method id="_381" name="GetScaling" returns="_10" context="_68" access="public" location="f5:250" file="f5" line="250" virtual="1" pure_virtual="1" mangled="?GetScaling@IAvnWindowBase@@UAEIPAN@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_465" location="f5:250" file="f5" line="250"/>
+  </Method>
+  <Method id="_382" name="SetMinMaxSize" returns="_10" context="_68" access="public" location="f5:251" file="f5" line="251" virtual="1" pure_virtual="1" mangled="?SetMinMaxSize@IAvnWindowBase@@UAEIUAvnSize@@0@Z" attributes="__thiscall__">
+    <Argument name="minSize" type="_44" location="f5:251" file="f5" line="251"/>
+    <Argument name="maxSize" type="_44" location="f5:251" file="f5" line="251"/>
+  </Method>
+  <Method id="_383" name="Resize" returns="_10" context="_68" access="public" location="f5:252" file="f5" line="252" virtual="1" pure_virtual="1" mangled="?Resize@IAvnWindowBase@@UAEINN@Z" attributes="__thiscall__">
+    <Argument name="width" type="_125" location="f5:252" file="f5" line="252"/>
+    <Argument name="height" type="_125" location="f5:252" file="f5" line="252"/>
+  </Method>
+  <Method id="_384" name="Invalidate" returns="_10" context="_68" access="public" location="f5:253" file="f5" line="253" virtual="1" pure_virtual="1" mangled="?Invalidate@IAvnWindowBase@@UAEIUAvnRect@@@Z" attributes="__thiscall__">
+    <Argument name="rect" type="_46" location="f5:253" file="f5" line="253"/>
+  </Method>
+  <Method id="_385" name="BeginMoveDrag" returns="_10" context="_68" access="public" location="f5:254" file="f5" line="254" virtual="1" pure_virtual="1" mangled="?BeginMoveDrag@IAvnWindowBase@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_386" name="BeginResizeDrag" returns="_10" context="_68" access="public" location="f5:255" file="f5" line="255" virtual="1" pure_virtual="1" mangled="?BeginResizeDrag@IAvnWindowBase@@UAEIW4AvnWindowEdge@@@Z" attributes="__thiscall__">
+    <Argument name="edge" type="_60" location="f5:255" file="f5" line="255"/>
+  </Method>
+  <Method id="_387" name="GetPosition" returns="_10" context="_68" access="public" location="f5:256" file="f5" line="256" virtual="1" pure_virtual="1" mangled="?GetPosition@IAvnWindowBase@@UAEIPAUAvnPoint@@@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_568" location="f5:256" file="f5" line="256"/>
+  </Method>
+  <Method id="_388" name="SetPosition" returns="_10" context="_68" access="public" location="f5:257" file="f5" line="257" virtual="1" pure_virtual="1" mangled="?SetPosition@IAvnWindowBase@@UAEIUAvnPoint@@@Z" attributes="__thiscall__">
+    <Argument name="point" type="_48" location="f5:257" file="f5" line="257"/>
+  </Method>
+  <Method id="_389" name="PointToClient" returns="_10" context="_68" access="public" location="f5:258" file="f5" line="258" virtual="1" pure_virtual="1" mangled="?PointToClient@IAvnWindowBase@@UAEIUAvnPoint@@PAU2@@Z" attributes="__thiscall__">
+    <Argument name="point" type="_48" location="f5:258" file="f5" line="258"/>
+    <Argument name="ret" type="_568" location="f5:258" file="f5" line="258"/>
+  </Method>
+  <Method id="_390" name="PointToScreen" returns="_10" context="_68" access="public" location="f5:259" file="f5" line="259" virtual="1" pure_virtual="1" mangled="?PointToScreen@IAvnWindowBase@@UAEIUAvnPoint@@PAU2@@Z" attributes="__thiscall__">
+    <Argument name="point" type="_48" location="f5:259" file="f5" line="259"/>
+    <Argument name="ret" type="_568" location="f5:259" file="f5" line="259"/>
+  </Method>
+  <Method id="_391" name="ThreadSafeSetSwRenderedFrame" returns="_10" context="_68" access="public" location="f5:260" file="f5" line="260" virtual="1" pure_virtual="1" mangled="?ThreadSafeSetSwRenderedFrame@IAvnWindowBase@@UAEIPAUAvnFramebuffer@@PAUIUnknown@@@Z" attributes="__thiscall__">
+    <Argument name="fb" type="_569" location="f5:260" file="f5" line="260"/>
+    <Argument name="dispose" type="_474" location="f5:260" file="f5" line="260"/>
+  </Method>
+  <Method id="_392" name="SetTopMost" returns="_10" context="_68" access="public" location="f5:261" file="f5" line="261" virtual="1" pure_virtual="1" mangled="?SetTopMost@IAvnWindowBase@@UAEI_N@Z" attributes="__thiscall__">
+    <Argument name="value" type="_459" location="f5:261" file="f5" line="261"/>
+  </Method>
+  <Method id="_393" name="SetCursor" returns="_10" context="_68" access="public" location="f5:262" file="f5" line="262" virtual="1" pure_virtual="1" mangled="?SetCursor@IAvnWindowBase@@UAEIPAUIAvnCursor@@@Z" attributes="__thiscall__">
+    <Argument name="cursor" type="_570" location="f5:262" file="f5" line="262"/>
+  </Method>
+  <Method id="_394" name="CreateGlRenderTarget" returns="_10" context="_68" access="public" location="f5:263" file="f5" line="263" virtual="1" pure_virtual="1" mangled="?CreateGlRenderTarget@IAvnWindowBase@@UAEIPAPAUIAvnGlSurfaceRenderTarget@@@Z" attributes="__thiscall__">
+    <Argument name="ret" type="_571" location="f5:263" file="f5" line="263"/>
+  </Method>
+  <Method id="_395" name="SetMainMenu" returns="_10" context="_68" access="public" location="f5:264" file="f5" line="264" virtual="1" pure_virtual="1" mangled="?SetMainMenu@IAvnWindowBase@@UAEIPAUIAvnMenu@@@Z" attributes="__thiscall__">
+    <Argument name="menu" type="_513" location="f5:264" file="f5" line="264"/>
+  </Method>
+  <Method id="_396" name="ObtainNSWindowHandle" returns="_10" context="_68" access="public" location="f5:265" file="f5" line="265" virtual="1" pure_virtual="1" mangled="?ObtainNSWindowHandle@IAvnWindowBase@@UAEIPAPAX@Z" attributes="__thiscall__">
+    <Argument name="retOut" type="_456" location="f5:265" file="f5" line="265"/>
+  </Method>
+  <Method id="_397" name="ObtainNSWindowHandleRetained" returns="_10" context="_68" access="public" location="f5:266" file="f5" line="266" virtual="1" pure_virtual="1" mangled="?ObtainNSWindowHandleRetained@IAvnWindowBase@@UAEIPAPAX@Z" attributes="__thiscall__">
+    <Argument name="retOut" type="_456" location="f5:266" file="f5" line="266"/>
+  </Method>
+  <Method id="_398" name="ObtainNSViewHandle" returns="_10" context="_68" access="public" location="f5:267" file="f5" line="267" virtual="1" pure_virtual="1" mangled="?ObtainNSViewHandle@IAvnWindowBase@@UAEIPAPAX@Z" attributes="__thiscall__">
+    <Argument name="retOut" type="_456" location="f5:267" file="f5" line="267"/>
+  </Method>
+  <Method id="_399" name="ObtainNSViewHandleRetained" returns="_10" context="_68" access="public" location="f5:268" file="f5" line="268" virtual="1" pure_virtual="1" mangled="?ObtainNSViewHandleRetained@IAvnWindowBase@@UAEIPAPAX@Z" attributes="__thiscall__">
+    <Argument name="retOut" type="_456" location="f5:268" file="f5" line="268"/>
+  </Method>
+  <Method id="_400" name="CreateNativeControlHost" returns="_10" context="_68" access="public" location="f5:269" file="f5" line="269" virtual="1" pure_virtual="1" mangled="?CreateNativeControlHost@IAvnWindowBase@@UAEIPAPAUIAvnNativeControlHost@@@Z" attributes="__thiscall__">
+    <Argument name="retOut" type="_572" location="f5:269" file="f5" line="269"/>
+  </Method>
+  <Method id="_401" name="BeginDragAndDropOperation" returns="_10" context="_68" access="public" location="f5:270" file="f5" line="270" virtual="1" pure_virtual="1" mangled="?BeginDragAndDropOperation@IAvnWindowBase@@UAEIW4AvnDragDropEffects@@UAvnPoint@@PAUIAvnClipboard@@PAUIAvnDndResultCallback@@PAX@Z" attributes="__thiscall__">
+    <Argument name="effects" type="_56" location="f5:270" file="f5" line="270"/>
+    <Argument name="point" type="_48" location="f5:270" file="f5" line="270"/>
+    <Argument name="clipboard" type="_573" location="f5:271" file="f5" line="271"/>
+    <Argument name="cb" type="_574" location="f5:271" file="f5" line="271"/>
+    <Argument name="sourceHandle" type="_445" location="f5:271" file="f5" line="271"/>
+  </Method>
+  <Method id="_402" name="SetBlurEnabled" returns="_10" context="_68" access="public" location="f5:272" file="f5" line="272" virtual="1" pure_virtual="1" mangled="?SetBlurEnabled@IAvnWindowBase@@UAEI_N@Z" attributes="__thiscall__">
+    <Argument name="enable" type="_459" location="f5:272" file="f5" line="272"/>
+  </Method>
+  <OperatorMethod id="_403" name="=" returns="_575" context="_68" access="public" location="f5:243" file="f5" line="243" inline="1" artificial="1" mangled="??4IAvnWindowBase@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_576" location="f5:243" file="f5" line="243"/>
+  </OperatorMethod>
+  <Destructor id="_404" name="IAvnWindowBase" context="_68" access="public" location="f5:243" file="f5" line="243" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_405" name="IAvnWindowBase" context="_68" access="public" location="f5:243" file="f5" line="243" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_406" name="IAvnWindowBase" context="_68" access="public" location="f5:243" file="f5" line="243" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_576" location="f5:243" file="f5" line="243"/>
+  </Constructor>
+  <Method id="_407" name="Paint" returns="_10" context="_72" access="public" location="f5:299" file="f5" line="299" virtual="1" pure_virtual="1" mangled="?Paint@IAvnWindowBaseEvents@@UAEIXZ" attributes="__thiscall__"/>
+  <Method id="_408" name="Closed" returns="_460" context="_72" access="public" location="f5:300" file="f5" line="300" virtual="1" pure_virtual="1" mangled="?Closed@IAvnWindowBaseEvents@@UAEXXZ" attributes="__thiscall__"/>
+  <Method id="_409" name="Activated" returns="_460" context="_72" access="public" location="f5:301" file="f5" line="301" virtual="1" pure_virtual="1" mangled="?Activated@IAvnWindowBaseEvents@@UAEXXZ" attributes="__thiscall__"/>
+  <Method id="_410" name="Deactivated" returns="_460" context="_72" access="public" location="f5:302" file="f5" line="302" virtual="1" pure_virtual="1" mangled="?Deactivated@IAvnWindowBaseEvents@@UAEXXZ" attributes="__thiscall__"/>
+  <Method id="_411" name="Resized" returns="_460" context="_72" access="public" location="f5:303" file="f5" line="303" virtual="1" pure_virtual="1" mangled="?Resized@IAvnWindowBaseEvents@@UAEXABUAvnSize@@@Z" attributes="__thiscall__">
+    <Argument name="size" type="_532" location="f5:303" file="f5" line="303"/>
+  </Method>
+  <Method id="_412" name="PositionChanged" returns="_460" context="_72" access="public" location="f5:304" file="f5" line="304" virtual="1" pure_virtual="1" mangled="?PositionChanged@IAvnWindowBaseEvents@@UAEXUAvnPoint@@@Z" attributes="__thiscall__">
+    <Argument name="position" type="_48" location="f5:304" file="f5" line="304"/>
+  </Method>
+  <Method id="_413" name="RawMouseEvent" returns="_460" context="_72" access="public" location="f5:305" file="f5" line="305" virtual="1" pure_virtual="1" mangled="?RawMouseEvent@IAvnWindowBaseEvents@@UAEXW4AvnRawMouseEventType@@IW4AvnInputModifiers@@UAvnPoint@@UAvnVector@@@Z" attributes="__thiscall__">
+    <Argument name="type" type="_53" location="f5:305" file="f5" line="305"/>
+    <Argument name="timeStamp" type="_105" location="f5:306" file="f5" line="306"/>
+    <Argument name="modifiers" type="_55" location="f5:307" file="f5" line="307"/>
+    <Argument name="point" type="_48" location="f5:308" file="f5" line="308"/>
+    <Argument name="delta" type="_47" location="f5:309" file="f5" line="309"/>
+  </Method>
+  <Method id="_414" name="RawKeyEvent" returns="_459" context="_72" access="public" location="f5:310" file="f5" line="310" virtual="1" pure_virtual="1" mangled="?RawKeyEvent@IAvnWindowBaseEvents@@UAE_NW4AvnRawKeyEventType@@IW4AvnInputModifiers@@I@Z" attributes="__thiscall__">
+    <Argument name="type" type="_54" location="f5:310" file="f5" line="310"/>
+    <Argument name="timeStamp" type="_105" location="f5:310" file="f5" line="310"/>
+    <Argument name="modifiers" type="_55" location="f5:310" file="f5" line="310"/>
+    <Argument name="key" type="_105" location="f5:310" file="f5" line="310"/>
+  </Method>
+  <Method id="_415" name="RawTextInputEvent" returns="_459" context="_72" access="public" location="f5:311" file="f5" line="311" virtual="1" pure_virtual="1" mangled="?RawTextInputEvent@IAvnWindowBaseEvents@@UAE_NIPBD@Z" attributes="__thiscall__">
+    <Argument name="timeStamp" type="_105" location="f5:311" file="f5" line="311"/>
+    <Argument name="text" type="_481" location="f5:311" file="f5" line="311"/>
+  </Method>
+  <Method id="_416" name="ScalingChanged" returns="_460" context="_72" access="public" location="f5:312" file="f5" line="312" virtual="1" pure_virtual="1" mangled="?ScalingChanged@IAvnWindowBaseEvents@@UAEXN@Z" attributes="__thiscall__">
+    <Argument name="scaling" type="_125" location="f5:312" file="f5" line="312"/>
+  </Method>
+  <Method id="_417" name="RunRenderPriorityJobs" returns="_460" context="_72" access="public" location="f5:313" file="f5" line="313" virtual="1" pure_virtual="1" mangled="?RunRenderPriorityJobs@IAvnWindowBaseEvents@@UAEXXZ" attributes="__thiscall__"/>
+  <Method id="_418" name="LostFocus" returns="_460" context="_72" access="public" location="f5:314" file="f5" line="314" virtual="1" pure_virtual="1" mangled="?LostFocus@IAvnWindowBaseEvents@@UAEXXZ" attributes="__thiscall__"/>
+  <Method id="_419" name="DragEvent" returns="_56" context="_72" access="public" location="f5:315" file="f5" line="315" virtual="1" pure_virtual="1" mangled="?DragEvent@IAvnWindowBaseEvents@@UAE?AW4AvnDragDropEffects@@W4AvnDragEventType@@UAvnPoint@@W4AvnInputModifiers@@W42@PAUIAvnClipboard@@PAX@Z" attributes="__thiscall__">
+    <Argument name="type" type="_57" location="f5:315" file="f5" line="315"/>
+    <Argument name="position" type="_48" location="f5:315" file="f5" line="315"/>
+    <Argument name="modifiers" type="_55" location="f5:316" file="f5" line="316"/>
+    <Argument name="effects" type="_56" location="f5:316" file="f5" line="316"/>
+    <Argument name="clipboard" type="_573" location="f5:317" file="f5" line="317"/>
+    <Argument name="dataObjectHandle" type="_445" location="f5:317" file="f5" line="317"/>
+  </Method>
+  <OperatorMethod id="_420" name="=" returns="_577" context="_72" access="public" location="f5:297" file="f5" line="297" inline="1" artificial="1" mangled="??4IAvnWindowBaseEvents@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_578" location="f5:297" file="f5" line="297"/>
+  </OperatorMethod>
+  <Destructor id="_421" name="IAvnWindowBaseEvents" context="_72" access="public" location="f5:297" file="f5" line="297" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_422" name="IAvnWindowBaseEvents" context="_72" access="public" location="f5:297" file="f5" line="297" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_423" name="IAvnWindowBaseEvents" context="_72" access="public" location="f5:297" file="f5" line="297" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_578" location="f5:297" file="f5" line="297"/>
+  </Constructor>
+  <Method id="_424" name="Run" returns="_460" context="_76" access="public" location="f5:343" file="f5" line="343" virtual="1" pure_virtual="1" mangled="?Run@IAvnActionCallback@@UAEXXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_425" name="=" returns="_579" context="_76" access="public" location="f5:341" file="f5" line="341" inline="1" artificial="1" mangled="??4IAvnActionCallback@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_580" location="f5:341" file="f5" line="341"/>
+  </OperatorMethod>
+  <Destructor id="_426" name="IAvnActionCallback" context="_76" access="public" location="f5:341" file="f5" line="341" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_427" name="IAvnActionCallback" context="_76" access="public" location="f5:341" file="f5" line="341" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_428" name="IAvnActionCallback" context="_76" access="public" location="f5:341" file="f5" line="341" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_580" location="f5:341" file="f5" line="341"/>
+  </Constructor>
+  <Method id="_429" name="Signaled" returns="_460" context="_78" access="public" location="f5:348" file="f5" line="348" virtual="1" pure_virtual="1" mangled="?Signaled@IAvnSignaledCallback@@UAEXH_N@Z" attributes="__thiscall__">
+    <Argument name="priority" type="_123" location="f5:348" file="f5" line="348"/>
+    <Argument name="priorityContainsMeaningfulValue" type="_459" location="f5:348" file="f5" line="348"/>
+  </Method>
+  <OperatorMethod id="_430" name="=" returns="_581" context="_78" access="public" location="f5:346" file="f5" line="346" inline="1" artificial="1" mangled="??4IAvnSignaledCallback@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_582" location="f5:346" file="f5" line="346"/>
+  </OperatorMethod>
+  <Destructor id="_431" name="IAvnSignaledCallback" context="_78" access="public" location="f5:346" file="f5" line="346" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_432" name="IAvnSignaledCallback" context="_78" access="public" location="f5:346" file="f5" line="346" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_433" name="IAvnSignaledCallback" context="_78" access="public" location="f5:346" file="f5" line="346" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_582" location="f5:346" file="f5" line="346"/>
+  </Constructor>
+  <Method id="_434" name="Cancel" returns="_460" context="_80" access="public" location="f5:353" file="f5" line="353" virtual="1" pure_virtual="1" mangled="?Cancel@IAvnLoopCancellation@@UAEXXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_435" name="=" returns="_583" context="_80" access="public" location="f5:351" file="f5" line="351" inline="1" artificial="1" mangled="??4IAvnLoopCancellation@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_584" location="f5:351" file="f5" line="351"/>
+  </OperatorMethod>
+  <Destructor id="_436" name="IAvnLoopCancellation" context="_80" access="public" location="f5:351" file="f5" line="351" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_437" name="IAvnLoopCancellation" context="_80" access="public" location="f5:351" file="f5" line="351" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_438" name="IAvnLoopCancellation" context="_80" access="public" location="f5:351" file="f5" line="351" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_584" location="f5:351" file="f5" line="351"/>
+  </Constructor>
+  <Method id="_439" name="Evaluate" returns="_459" context="_94" access="public" location="f5:460" file="f5" line="460" virtual="1" pure_virtual="1" mangled="?Evaluate@IAvnPredicateCallback@@UAE_NXZ" attributes="__thiscall__"/>
+  <OperatorMethod id="_440" name="=" returns="_585" context="_94" access="public" location="f5:458" file="f5" line="458" inline="1" artificial="1" mangled="??4IAvnPredicateCallback@@QAEAAU0@ABU0@@Z" attributes="__thiscall__">
+    <Argument type="_586" location="f5:458" file="f5" line="458"/>
+  </OperatorMethod>
+  <Destructor id="_441" name="IAvnPredicateCallback" context="_94" access="public" location="f5:458" file="f5" line="458" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_442" name="IAvnPredicateCallback" context="_94" access="public" location="f5:458" file="f5" line="458" inline="1" artificial="1" attributes="__thiscall__"/>
+  <Constructor id="_443" name="IAvnPredicateCallback" context="_94" access="public" location="f5:458" file="f5" line="458" inline="1" artificial="1" attributes="__thiscall__">
+    <Argument type="_586" location="f5:458" file="f5" line="458"/>
+  </Constructor>
+  <PointerType id="_444" type="_64" size="32" align="32"/>
+  <PointerType id="_445" type="_460" size="32" align="32"/>
+  <PointerType id="_446" type="_460c" size="32" align="32"/>
+  <Field id="_447" name="isa" type="_587" context="_104" access="public" offset="0"/>
+  <Field id="_448" name="flags" type="_123" context="_104" access="public" offset="32"/>
+  <Field id="_449" name="str" type="_481" context="_104" access="public" offset="64"/>
+  <Field id="_450" name="length" type="_588" context="_104" access="public" offset="96"/>
+  <FundamentalType id="_452" name="short unsigned int" size="16" align="16"/>
+  <ArrayType id="_453" min="0" max="7" type="_546"/>
+  <ReferenceType id="_454" type="_6c" size="32" align="32"/>
+  <CvQualifiedType id="_6c" type="_6" const="1"/>
+  <ReferenceType id="_455" type="_6" size="32" align="32"/>
+  <PointerType id="_456" type="_445" size="32" align="32"/>
+  <ReferenceType id="_457" type="_13" size="32" align="32"/>
+  <ReferenceType id="_458" type="_13c" size="32" align="32"/>
+  <CvQualifiedType id="_13c" type="_13" const="1"/>
+  <FundamentalType id="_459" name="bool" size="8" align="8"/>
+  <FundamentalType id="_460" name="void" size="0" align="8"/>
+  <CvQualifiedType id="_460c" type="_460" const="1"/>
+  <ReferenceType id="_461" type="_19" size="32" align="32"/>
+  <ReferenceType id="_462" type="_19c" size="32" align="32"/>
+  <CvQualifiedType id="_19c" type="_19" const="1"/>
+  <PointerType id="_463" type="_20" size="32" align="32"/>
+  <PointerType id="_464" type="_58" size="32" align="32"/>
+  <PointerType id="_465" type="_125" size="32" align="32"/>
+  <ReferenceType id="_466" type="_20" size="32" align="32"/>
+  <ReferenceType id="_467" type="_20c" size="32" align="32"/>
+  <CvQualifiedType id="_20c" type="_20" const="1"/>
+  <ReferenceType id="_468" type="_21" size="32" align="32"/>
+  <ReferenceType id="_469" type="_21c" size="32" align="32"/>
+  <CvQualifiedType id="_21c" type="_21" const="1"/>
+  <ReferenceType id="_470" type="_22" size="32" align="32"/>
+  <ReferenceType id="_471" type="_22c" size="32" align="32"/>
+  <CvQualifiedType id="_22c" type="_22" const="1"/>
+  <PointerType id="_472" type="_78" size="32" align="32"/>
+  <PointerType id="_473" type="_80" size="32" align="32"/>
+  <PointerType id="_474" type="_13" size="32" align="32"/>
+  <PointerType id="_475" type="_76" size="32" align="32"/>
+  <ReferenceType id="_476" type="_23" size="32" align="32"/>
+  <ReferenceType id="_477" type="_23c" size="32" align="32"/>
+  <CvQualifiedType id="_23c" type="_23" const="1"/>
+  <ReferenceType id="_478" type="_24" size="32" align="32"/>
+  <ReferenceType id="_479" type="_24c" size="32" align="32"/>
+  <CvQualifiedType id="_24c" type="_24" const="1"/>
+  <PointerType id="_480" type="_24" size="32" align="32"/>
+  <PointerType id="_481" type="_451c" size="32" align="32"/>
+  <CvQualifiedType id="_451c" type="_451" const="1"/>
+  <ReferenceType id="_482" type="_25" size="32" align="32"/>
+  <ReferenceType id="_483" type="_25c" size="32" align="32"/>
+  <CvQualifiedType id="_25c" type="_25" const="1"/>
+  <PointerType id="_484" type="_123" size="32" align="32"/>
+  <PointerType id="_485" type="_49" size="32" align="32"/>
+  <ReferenceType id="_486" type="_26" size="32" align="32"/>
+  <ReferenceType id="_487" type="_26c" size="32" align="32"/>
+  <CvQualifiedType id="_26c" type="_26" const="1"/>
+  <PointerType id="_488" type="_589" size="32" align="32"/>
+  <PointerType id="_489" type="_590" size="32" align="32"/>
+  <ReferenceType id="_490" type="_27" size="32" align="32"/>
+  <ReferenceType id="_491" type="_27c" size="32" align="32"/>
+  <CvQualifiedType id="_27c" type="_27" const="1"/>
+  <ReferenceType id="_492" type="_28" size="32" align="32"/>
+  <ReferenceType id="_493" type="_28c" size="32" align="32"/>
+  <CvQualifiedType id="_28c" type="_28" const="1"/>
+  <PointerType id="_494" type="_570" size="32" align="32"/>
+  <ReferenceType id="_495" type="_29" size="32" align="32"/>
+  <ReferenceType id="_496" type="_29c" size="32" align="32"/>
+  <CvQualifiedType id="_29c" type="_29" const="1"/>
+  <PointerType id="_497" type="_474" size="32" align="32"/>
+  <ReferenceType id="_498" type="_31" size="32" align="32"/>
+  <ReferenceType id="_499" type="_31c" size="32" align="32"/>
+  <CvQualifiedType id="_31c" type="_31" const="1"/>
+  <PointerType id="_500" type="_31" size="32" align="32"/>
+  <PointerType id="_501" type="_500" size="32" align="32"/>
+  <ReferenceType id="_502" type="_32" size="32" align="32"/>
+  <ReferenceType id="_503" type="_32c" size="32" align="32"/>
+  <CvQualifiedType id="_32c" type="_32" const="1"/>
+  <PointerType id="_504" type="_591" size="32" align="32"/>
+  <ReferenceType id="_505" type="_33" size="32" align="32"/>
+  <ReferenceType id="_506" type="_33c" size="32" align="32"/>
+  <CvQualifiedType id="_33c" type="_33" const="1"/>
+  <PointerType id="_507" type="_45" size="32" align="32"/>
+  <ReferenceType id="_508" type="_34" size="32" align="32"/>
+  <ReferenceType id="_509" type="_34c" size="32" align="32"/>
+  <CvQualifiedType id="_34c" type="_34" const="1"/>
+  <PointerType id="_510" type="_36" size="32" align="32"/>
+  <ReferenceType id="_511" type="_35" size="32" align="32"/>
+  <ReferenceType id="_512" type="_35c" size="32" align="32"/>
+  <CvQualifiedType id="_35c" type="_35" const="1"/>
+  <PointerType id="_513" type="_35" size="32" align="32"/>
+  <PointerType id="_514" type="_94" size="32" align="32"/>
+  <ReferenceType id="_515" type="_36" size="32" align="32"/>
+  <ReferenceType id="_516" type="_36c" size="32" align="32"/>
+  <CvQualifiedType id="_36c" type="_36" const="1"/>
+  <ReferenceType id="_517" type="_37" size="32" align="32"/>
+  <ReferenceType id="_518" type="_37c" size="32" align="32"/>
+  <CvQualifiedType id="_37c" type="_37" const="1"/>
+  <ReferenceType id="_519" type="_38" size="32" align="32"/>
+  <ReferenceType id="_520" type="_38c" size="32" align="32"/>
+  <CvQualifiedType id="_38c" type="_38" const="1"/>
+  <ReferenceType id="_521" type="_39" size="32" align="32"/>
+  <ReferenceType id="_522" type="_39c" size="32" align="32"/>
+  <CvQualifiedType id="_39c" type="_39" const="1"/>
+  <ReferenceType id="_523" type="_40" size="32" align="32"/>
+  <ReferenceType id="_524" type="_40c" size="32" align="32"/>
+  <CvQualifiedType id="_40c" type="_40" const="1"/>
+  <PointerType id="_525" type="_42" size="32" align="32"/>
+  <ReferenceType id="_526" type="_41" size="32" align="32"/>
+  <ReferenceType id="_527" type="_41c" size="32" align="32"/>
+  <CvQualifiedType id="_41c" type="_41" const="1"/>
+  <PointerType id="_528" type="_41" size="32" align="32"/>
+  <FundamentalType id="_529" name="float" size="32" align="32"/>
+  <ReferenceType id="_530" type="_42" size="32" align="32"/>
+  <ReferenceType id="_531" type="_42c" size="32" align="32"/>
+  <CvQualifiedType id="_42c" type="_42" const="1"/>
+  <ReferenceType id="_532" type="_44c" size="32" align="32"/>
+  <CvQualifiedType id="_44c" type="_44" const="1"/>
+  <ReferenceType id="_533" type="_44" size="32" align="32"/>
+  <ReferenceType id="_534" type="_45c" size="32" align="32"/>
+  <CvQualifiedType id="_45c" type="_45" const="1"/>
+  <ReferenceType id="_535" type="_45" size="32" align="32"/>
+  <ReferenceType id="_536" type="_46c" size="32" align="32"/>
+  <CvQualifiedType id="_46c" type="_46" const="1"/>
+  <ReferenceType id="_537" type="_46" size="32" align="32"/>
+  <ReferenceType id="_538" type="_47c" size="32" align="32"/>
+  <CvQualifiedType id="_47c" type="_47" const="1"/>
+  <ReferenceType id="_539" type="_47" size="32" align="32"/>
+  <ReferenceType id="_540" type="_48c" size="32" align="32"/>
+  <CvQualifiedType id="_48c" type="_48" const="1"/>
+  <ReferenceType id="_541" type="_48" size="32" align="32"/>
+  <ReferenceType id="_542" type="_49c" size="32" align="32"/>
+  <CvQualifiedType id="_49c" type="_49" const="1"/>
+  <ReferenceType id="_543" type="_49" size="32" align="32"/>
+  <ReferenceType id="_544" type="_51c" size="32" align="32"/>
+  <CvQualifiedType id="_51c" type="_51" const="1"/>
+  <ReferenceType id="_545" type="_51" size="32" align="32"/>
+  <FundamentalType id="_546" name="unsigned char" size="8" align="8"/>
+  <ReferenceType id="_547" type="_52c" size="32" align="32"/>
+  <CvQualifiedType id="_52c" type="_52" const="1"/>
+  <ReferenceType id="_548" type="_52" size="32" align="32"/>
+  <PointerType id="_549" type="_39" size="32" align="32"/>
+  <PointerType id="_550" type="_22" size="32" align="32"/>
+  <PointerType id="_551" type="_19" size="32" align="32"/>
+  <PointerType id="_552" type="_463" size="32" align="32"/>
+  <PointerType id="_553" type="_592" size="32" align="32"/>
+  <PointerType id="_554" type="_593" size="32" align="32"/>
+  <PointerType id="_555" type="_594" size="32" align="32"/>
+  <PointerType id="_556" type="_595" size="32" align="32"/>
+  <PointerType id="_557" type="_573" size="32" align="32"/>
+  <PointerType id="_558" type="_596" size="32" align="32"/>
+  <PointerType id="_559" type="_597" size="32" align="32"/>
+  <PointerType id="_560" type="_40" size="32" align="32"/>
+  <PointerType id="_561" type="_513" size="32" align="32"/>
+  <PointerType id="_562" type="_510" size="32" align="32"/>
+  <ReferenceType id="_563" type="_64" size="32" align="32"/>
+  <ReferenceType id="_564" type="_64c" size="32" align="32"/>
+  <CvQualifiedType id="_64c" type="_64" const="1"/>
+  <ReferenceType id="_565" type="_66" size="32" align="32"/>
+  <ReferenceType id="_566" type="_66c" size="32" align="32"/>
+  <CvQualifiedType id="_66c" type="_66" const="1"/>
+  <PointerType id="_567" type="_44" size="32" align="32"/>
+  <PointerType id="_568" type="_48" size="32" align="32"/>
+  <PointerType id="_569" type="_51" size="32" align="32"/>
+  <PointerType id="_570" type="_28" size="32" align="32"/>
+  <PointerType id="_571" type="_598" size="32" align="32"/>
+  <PointerType id="_572" type="_528" size="32" align="32"/>
+  <PointerType id="_573" type="_27" size="32" align="32"/>
+  <PointerType id="_574" type="_38" size="32" align="32"/>
+  <ReferenceType id="_575" type="_68" size="32" align="32"/>
+  <ReferenceType id="_576" type="_68c" size="32" align="32"/>
+  <CvQualifiedType id="_68c" type="_68" const="1"/>
+  <ReferenceType id="_577" type="_72" size="32" align="32"/>
+  <ReferenceType id="_578" type="_72c" size="32" align="32"/>
+  <CvQualifiedType id="_72c" type="_72" const="1"/>
+  <ReferenceType id="_579" type="_76" size="32" align="32"/>
+  <ReferenceType id="_580" type="_76c" size="32" align="32"/>
+  <CvQualifiedType id="_76c" type="_76" const="1"/>
+  <ReferenceType id="_581" type="_78" size="32" align="32"/>
+  <ReferenceType id="_582" type="_78c" size="32" align="32"/>
+  <CvQualifiedType id="_78c" type="_78" const="1"/>
+  <ReferenceType id="_583" type="_80" size="32" align="32"/>
+  <ReferenceType id="_584" type="_80c" size="32" align="32"/>
+  <CvQualifiedType id="_80c" type="_80" const="1"/>
+  <ReferenceType id="_585" type="_94" size="32" align="32"/>
+  <ReferenceType id="_586" type="_94c" size="32" align="32"/>
+  <CvQualifiedType id="_94c" type="_94" const="1"/>
+  <PointerType id="_587" type="_123c" size="32" align="32"/>
+  <CvQualifiedType id="_123c" type="_123" const="1"/>
+  <FundamentalType id="_588" name="long int" size="32" align="32"/>
+  <FundamentalType id="_451" name="char" size="8" align="8"/>
+  <PointerType id="_589" type="_66" size="32" align="32"/>
+  <PointerType id="_590" type="_37" size="32" align="32"/>
+  <PointerType id="_591" type="_34" size="32" align="32"/>
+  <PointerType id="_592" type="_21" size="32" align="32"/>
+  <PointerType id="_593" type="_23" size="32" align="32"/>
+  <PointerType id="_594" type="_25" size="32" align="32"/>
+  <PointerType id="_595" type="_26" size="32" align="32"/>
+  <PointerType id="_596" type="_29" size="32" align="32"/>
+  <PointerType id="_597" type="_32" size="32" align="32"/>
+  <PointerType id="_598" type="_33" size="32" align="32"/>
+  <File id="f0" name="&lt;builtin&gt;"/>
+  <File id="f1" name="C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/../../native/Avalonia.Native/inc\com.h"/>
+  <File id="f2" name="C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/../../native/Avalonia.Native/inc/key.h"/>
+  <File id="f3" name="C:\Users\danwa\.nuget\packages\sharpgentools.sdk\1.2.1\tools\CastXML/share/castxml/clang\include\stddef.h"/>
+  <File id="f4" name="C:\Users\danwa\.nuget\packages\sharpgentools.sdk\1.2.1\tools\CastXML/share/castxml/clang\include/__stddef_max_align_t.h"/>
+  <File id="f5" name="C:\Users\danwa\Source\repos\Avalonia\src\Avalonia.Native/../../native/Avalonia.Native/inc\avalonia-native.h"/>
+</GCC_XML>

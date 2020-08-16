@@ -1,0 +1,1187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<cpp-module xmlns="urn:SharpGen.CppModel">
+  <items>
+    <include name="avalonia-native">
+      <items>
+        <interface name="IAvnWindowEvents" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f06" base="IAvnWindowBaseEvents">
+          <items>
+            <method name="Closing" call-conv="thiscall" offset="16">
+              <return typename="bool" const="false" array="false" />
+            </method>
+            <method name="WindowStateChanged" call-conv="thiscall" offset="17">
+              <items>
+                <param name="state" typename="AvnWindowState" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="GotInputWhenDisabled" call-conv="thiscall" offset="18">
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnWindow" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f04" base="IAvnWindowBase">
+          <items>
+            <method name="SetEnabled" call-conv="thiscall" offset="30">
+              <items>
+                <param name="enable" typename="bool" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetParent" call-conv="thiscall" offset="31">
+              <items>
+                <param name="parent" typename="IAvnWindow" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetCanResize" call-conv="thiscall" offset="32">
+              <items>
+                <param name="value" typename="bool" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetDecorations" call-conv="thiscall" offset="33">
+              <items>
+                <param name="value" typename="SystemDecorations" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetTitle" call-conv="thiscall" offset="34">
+              <items>
+                <param name="utf8Title" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetTitleBarColor" call-conv="thiscall" offset="35">
+              <items>
+                <param name="color" typename="AvnColor" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetWindowState" call-conv="thiscall" offset="36">
+              <items>
+                <param name="state" typename="AvnWindowState" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetWindowState" call-conv="thiscall" offset="37">
+              <items>
+                <param name="ret" typename="AvnWindowState" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="TakeFocusFromChildren" call-conv="thiscall" offset="38">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetExtendClientArea" call-conv="thiscall" offset="39">
+              <items>
+                <param name="enable" typename="bool" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetExtendClientAreaHints" call-conv="thiscall" offset="40">
+              <items>
+                <param name="hints" typename="AvnExtendClientAreaChromeHints" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetExtendTitleBarHeight" call-conv="thiscall" offset="41">
+              <items>
+                <param name="ret" typename="double" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetExtendTitleBarHeight" call-conv="thiscall" offset="42">
+              <items>
+                <param name="value" typename="double" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnPopup" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f03" base="IAvnWindowBase" />
+        <interface name="IAvnMacOptions" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f07" base="IUnknown">
+          <items>
+            <method name="SetShowInDock" call-conv="thiscall" offset="3">
+              <items>
+                <param name="show" typename="int" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetApplicationTitle" call-conv="thiscall" offset="4">
+              <items>
+                <param name="utf8string" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnPlatformThreadingInterface" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f0b" base="IUnknown">
+          <items>
+            <method name="GetCurrentThreadIsLoopThread" call-conv="thiscall" offset="3">
+              <return typename="bool" const="false" array="false" />
+            </method>
+            <method name="SetSignaledCallback" call-conv="thiscall" offset="4">
+              <items>
+                <param name="cb" typename="IAvnSignaledCallback" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="CreateLoopCancellation" call-conv="thiscall" offset="5">
+              <return typename="IAvnLoopCancellation" ptr="*" const="false" array="false" />
+            </method>
+            <method name="RunLoop" call-conv="thiscall" offset="6">
+              <items>
+                <param name="cancel" typename="IAvnLoopCancellation" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Signal" call-conv="thiscall" offset="7">
+              <items>
+                <param name="priority" typename="int" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="StartTimer" call-conv="thiscall" offset="8">
+              <items>
+                <param name="priority" typename="int" const="false" array="false" attributes="in" />
+                <param name="ms" typename="int" const="false" array="false" attributes="in" />
+                <param name="callback" typename="IAvnActionCallback" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="IUnknown" ptr="*" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnSystemDialogEvents" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f0c" base="IUnknown">
+          <items>
+            <method name="OnCompleted" call-conv="thiscall" offset="3">
+              <items>
+                <param name="numResults" typename="int" const="false" array="false" attributes="in" />
+                <param name="ptrFirstResult" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnSystemDialogs" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f0d" base="IUnknown">
+          <items>
+            <method name="SelectFolderDialog" call-conv="thiscall" offset="3">
+              <items>
+                <param name="parentWindowHandle" typename="IAvnWindow" ptr="*" const="false" array="false" attributes="in" />
+                <param name="events" typename="IAvnSystemDialogEvents" ptr="*" const="false" array="false" attributes="in" />
+                <param name="title" typename="char" ptr="*" const="true" array="false" attributes="in" />
+                <param name="initialPath" typename="char" ptr="*" const="true" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="OpenFileDialog" call-conv="thiscall" offset="4">
+              <items>
+                <param name="parentWindowHandle" typename="IAvnWindow" ptr="*" const="false" array="false" attributes="in" />
+                <param name="events" typename="IAvnSystemDialogEvents" ptr="*" const="false" array="false" attributes="in" />
+                <param name="allowMultiple" typename="bool" const="false" array="false" attributes="in" />
+                <param name="title" typename="char" ptr="*" const="true" array="false" attributes="in" />
+                <param name="initialDirectory" typename="char" ptr="*" const="true" array="false" attributes="in" />
+                <param name="initialFile" typename="char" ptr="*" const="true" array="false" attributes="in" />
+                <param name="filters" typename="char" ptr="*" const="true" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="SaveFileDialog" call-conv="thiscall" offset="5">
+              <items>
+                <param name="parentWindowHandle" typename="IAvnWindow" ptr="*" const="false" array="false" attributes="in" />
+                <param name="events" typename="IAvnSystemDialogEvents" ptr="*" const="false" array="false" attributes="in" />
+                <param name="title" typename="char" ptr="*" const="true" array="false" attributes="in" />
+                <param name="initialDirectory" typename="char" ptr="*" const="true" array="false" attributes="in" />
+                <param name="initialFile" typename="char" ptr="*" const="true" array="false" attributes="in" />
+                <param name="filters" typename="char" ptr="*" const="true" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnScreens" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f0e" base="IUnknown">
+          <items>
+            <method name="GetScreenCount" call-conv="thiscall" offset="3">
+              <items>
+                <param name="ret" typename="int" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetScreen" call-conv="thiscall" offset="4">
+              <items>
+                <param name="index" typename="int" const="false" array="false" attributes="in" />
+                <param name="ret" typename="AvnScreen" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnClipboard" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f0f" base="IUnknown">
+          <items>
+            <method name="GetText" call-conv="thiscall" offset="3">
+              <items>
+                <param name="type" typename="char" ptr="*" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnString" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetText" call-conv="thiscall" offset="4">
+              <items>
+                <param name="type" typename="char" ptr="*" const="false" array="false" attributes="in" />
+                <param name="utf8Text" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="ObtainFormats" call-conv="thiscall" offset="5">
+              <items>
+                <param name="ppv" typename="IAvnStringArray" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetStrings" call-conv="thiscall" offset="6">
+              <items>
+                <param name="type" typename="char" ptr="*" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnStringArray" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetBytes" call-conv="thiscall" offset="7">
+              <items>
+                <param name="type" typename="char" ptr="*" const="false" array="false" attributes="in" />
+                <param name="utf8Text" typename="void" ptr="*" const="false" array="false" attributes="in" />
+                <param name="len" typename="int" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetBytes" call-conv="thiscall" offset="8">
+              <items>
+                <param name="type" typename="char" ptr="*" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnString" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Clear" call-conv="thiscall" offset="9">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnCursor" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f10" base="IUnknown" />
+        <interface name="IAvnCursorFactory" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f11" base="IUnknown">
+          <items>
+            <method name="GetCursor" call-conv="thiscall" offset="3">
+              <items>
+                <param name="cursorType" typename="AvnStandardCursorType" const="false" array="false" attributes="in" />
+                <param name="retOut" typename="IAvnCursor" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnGlContext" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f14" base="IUnknown">
+          <items>
+            <method name="MakeCurrent" call-conv="thiscall" offset="3">
+              <items>
+                <param name="ppv" typename="IUnknown" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="LegacyMakeCurrent" call-conv="thiscall" offset="4">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetSampleCount" call-conv="thiscall" offset="5">
+              <return typename="int" const="false" array="false" />
+            </method>
+            <method name="GetStencilSize" call-conv="thiscall" offset="6">
+              <return typename="int" const="false" array="false" />
+            </method>
+            <method name="GetNativeHandle" call-conv="thiscall" offset="7">
+              <return typename="void" ptr="*" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnGlDisplay" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f13" base="IUnknown">
+          <items>
+            <method name="CreateContext" call-conv="thiscall" offset="3">
+              <items>
+                <param name="share" typename="IAvnGlContext" ptr="*" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnGlContext" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="LegacyClearCurrentContext" call-conv="thiscall" offset="4">
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="WrapContext" call-conv="thiscall" offset="5">
+              <items>
+                <param name="native" typename="void" ptr="*" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnGlContext" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetProcAddress" call-conv="thiscall" offset="6">
+              <items>
+                <param name="proc" typename="char" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" ptr="*" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnGlSurfaceRenderTarget" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f15" base="IUnknown">
+          <items>
+            <method name="BeginDrawing" call-conv="thiscall" offset="3">
+              <items>
+                <param name="ret" typename="IAvnGlSurfaceRenderingSession" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnGlSurfaceRenderingSession" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f16" base="IUnknown">
+          <items>
+            <method name="GetPixelSize" call-conv="thiscall" offset="3">
+              <items>
+                <param name="ret" typename="AvnPixelSize" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetScaling" call-conv="thiscall" offset="4">
+              <items>
+                <param name="ret" typename="double" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnMenu" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f17" base="IUnknown">
+          <items>
+            <method name="InsertItem" call-conv="thiscall" offset="3">
+              <items>
+                <param name="index" typename="int" const="false" array="false" attributes="in" />
+                <param name="item" typename="IAvnMenuItem" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="RemoveItem" call-conv="thiscall" offset="4">
+              <items>
+                <param name="item" typename="IAvnMenuItem" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetTitle" call-conv="thiscall" offset="5">
+              <items>
+                <param name="utf8String" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Clear" call-conv="thiscall" offset="6">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnMenuItem" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f19" base="IUnknown">
+          <items>
+            <method name="SetSubMenu" call-conv="thiscall" offset="3">
+              <items>
+                <param name="menu" typename="IAvnMenu" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetTitle" call-conv="thiscall" offset="4">
+              <items>
+                <param name="utf8String" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetGesture" call-conv="thiscall" offset="5">
+              <items>
+                <param name="utf8String" typename="void" ptr="*" const="false" array="false" attributes="in" />
+                <param name="modifiers" typename="AvnInputModifiers" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetAction" call-conv="thiscall" offset="6">
+              <items>
+                <param name="predicate" typename="IAvnPredicateCallback" ptr="*" const="false" array="false" attributes="in" />
+                <param name="callback" typename="IAvnActionCallback" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetIsChecked" call-conv="thiscall" offset="7">
+              <items>
+                <param name="isChecked" typename="bool" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetToggleType" call-conv="thiscall" offset="8">
+              <items>
+                <param name="toggleType" typename="AvnMenuItemToggleType" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetIcon" call-conv="thiscall" offset="9">
+              <items>
+                <param name="data" typename="void" ptr="*" const="false" array="false" attributes="in" />
+                <param name="length" typename="size_t" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnStringArray" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f20" base="IUnknown">
+          <items>
+            <method name="GetCount" call-conv="thiscall" offset="3">
+              <return typename="unsigned int" const="false" array="false" />
+            </method>
+            <method name="Get" call-conv="thiscall" offset="4">
+              <items>
+                <param name="index" typename="unsigned int" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnString" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnDndResultCallback" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f21" base="IUnknown">
+          <items>
+            <method name="OnDragAndDropComplete" call-conv="thiscall" offset="3">
+              <items>
+                <param name="effecct" typename="AvnDragDropEffects" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnGCHandleDeallocatorCallback" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f22" base="IUnknown">
+          <items>
+            <method name="FreeGCHandle" call-conv="thiscall" offset="3">
+              <items>
+                <param name="handle" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnMenuEvents" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f1A" base="IUnknown">
+          <items>
+            <method name="NeedsUpdate" call-conv="thiscall" offset="3">
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnNativeControlHost" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f20" base="IUnknown">
+          <items>
+            <method name="CreateDefaultChild" call-conv="thiscall" offset="3">
+              <items>
+                <param name="parent" typename="void" ptr="*" const="false" array="false" attributes="in" />
+                <param name="retOut" typename="void" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateAttachment" call-conv="thiscall" offset="4">
+              <return typename="IAvnNativeControlHostTopLevelAttachment" ptr="*" const="false" array="false" />
+            </method>
+            <method name="DestroyDefaultChild" call-conv="thiscall" offset="5">
+              <items>
+                <param name="child" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnNativeControlHostTopLevelAttachment" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f21" base="IUnknown">
+          <items>
+            <method name="GetParentHandle" call-conv="thiscall" offset="3">
+              <return typename="void" ptr="*" const="false" array="false" />
+            </method>
+            <method name="InitializeWithChildHandle" call-conv="thiscall" offset="4">
+              <items>
+                <param name="child" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="AttachTo" call-conv="thiscall" offset="5">
+              <items>
+                <param name="host" typename="IAvnNativeControlHost" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="ShowInBounds" call-conv="thiscall" offset="6">
+              <items>
+                <param name="x" typename="float" const="false" array="false" attributes="in" />
+                <param name="y" typename="float" const="false" array="false" attributes="in" />
+                <param name="width" typename="float" const="false" array="false" attributes="in" />
+                <param name="height" typename="float" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="HideWithSize" call-conv="thiscall" offset="7">
+              <items>
+                <param name="width" typename="float" const="false" array="false" attributes="in" />
+                <param name="height" typename="float" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="ReleaseChild" call-conv="thiscall" offset="8">
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <enum name="SystemDecorations" underlying-type="int">
+          <items>
+            <enum-item name="SystemDecorationsNone" value="0" />
+            <enum-item name="SystemDecorationsBorderOnly" value="1" />
+            <enum-item name="SystemDecorationsFull" value="2" />
+          </items>
+        </enum>
+        <struct name="AvnSize" align="8" union="false">
+          <items>
+            <field name="Width" typename="double" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="Height" typename="double" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <struct name="AvnPixelSize" align="0" union="false">
+          <items>
+            <field name="Width" typename="int" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="Height" typename="int" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <struct name="AvnRect" align="8" union="false">
+          <items>
+            <field name="X" typename="double" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="Y" typename="double" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+            <field name="Width" typename="double" const="false" array="false" offset="2" bitfield="false" bitoffset="0" />
+            <field name="Height" typename="double" const="false" array="false" offset="3" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <struct name="AvnVector" align="8" union="false">
+          <items>
+            <field name="X" typename="double" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="Y" typename="double" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <struct name="AvnPoint" align="8" union="false">
+          <items>
+            <field name="X" typename="double" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="Y" typename="double" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <struct name="AvnScreen" align="8" union="false">
+          <items>
+            <field name="Bounds" typename="AvnRect" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="WorkingArea" typename="AvnRect" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+            <field name="PixelDensity" typename="float" const="false" array="false" offset="2" bitfield="false" bitoffset="0" />
+            <field name="Primary" typename="bool" const="false" array="false" offset="3" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <enum name="AvnPixelFormat" underlying-type="int">
+          <items>
+            <enum-item name="kAvnRgb565" value="0" />
+            <enum-item name="kAvnRgba8888" value="1" />
+            <enum-item name="kAvnBgra8888" value="2" />
+          </items>
+        </enum>
+        <struct name="AvnFramebuffer" align="8" union="false">
+          <items>
+            <field name="Data" typename="void" ptr="*" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="Width" typename="int" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+            <field name="Height" typename="int" const="false" array="false" offset="2" bitfield="false" bitoffset="0" />
+            <field name="Stride" typename="int" const="false" array="false" offset="3" bitfield="false" bitoffset="0" />
+            <field name="Dpi" typename="AvnVector" const="false" array="false" offset="4" bitfield="false" bitoffset="0" />
+            <field name="PixelFormat" typename="AvnPixelFormat" const="false" array="false" offset="5" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <struct name="AvnColor" align="1" union="false">
+          <items>
+            <field name="Alpha" typename="unsigned char" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="Red" typename="unsigned char" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+            <field name="Green" typename="unsigned char" const="false" array="false" offset="2" bitfield="false" bitoffset="0" />
+            <field name="Blue" typename="unsigned char" const="false" array="false" offset="3" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <enum name="AvnRawMouseEventType" underlying-type="int">
+          <items>
+            <enum-item name="LeaveWindow" value="0" />
+            <enum-item name="LeftButtonDown" value="1" />
+            <enum-item name="LeftButtonUp" value="2" />
+            <enum-item name="RightButtonDown" value="3" />
+            <enum-item name="RightButtonUp" value="4" />
+            <enum-item name="MiddleButtonDown" value="5" />
+            <enum-item name="MiddleButtonUp" value="6" />
+            <enum-item name="XButton1Down" value="7" />
+            <enum-item name="XButton1Up" value="8" />
+            <enum-item name="XButton2Down" value="9" />
+            <enum-item name="XButton2Up" value="10" />
+            <enum-item name="Move" value="11" />
+            <enum-item name="Wheel" value="12" />
+            <enum-item name="NonClientLeftButtonDown" value="13" />
+            <enum-item name="TouchBegin" value="14" />
+            <enum-item name="TouchUpdate" value="15" />
+            <enum-item name="TouchEnd" value="16" />
+            <enum-item name="TouchCancel" value="17" />
+          </items>
+        </enum>
+        <enum name="AvnRawKeyEventType" underlying-type="int">
+          <items>
+            <enum-item name="KeyDown" value="0" />
+            <enum-item name="KeyUp" value="1" />
+          </items>
+        </enum>
+        <enum name="AvnInputModifiers" underlying-type="int">
+          <items>
+            <enum-item name="AvnInputModifiersNone" value="0" />
+            <enum-item name="Alt" value="1" />
+            <enum-item name="Control" value="2" />
+            <enum-item name="Shift" value="4" />
+            <enum-item name="Windows" value="8" />
+            <enum-item name="LeftMouseButton" value="16" />
+            <enum-item name="RightMouseButton" value="32" />
+            <enum-item name="MiddleMouseButton" value="64" />
+            <enum-item name="XButton1MouseButton" value="128" />
+            <enum-item name="XButton2MouseButton" value="256" />
+          </items>
+        </enum>
+        <enum name="AvnDragDropEffects" underlying-type="int">
+          <items>
+            <enum-item name="None" value="0" />
+            <enum-item name="Copy" value="1" />
+            <enum-item name="Move" value="2" />
+            <enum-item name="Link" value="4" />
+          </items>
+        </enum>
+        <enum name="AvnDragEventType" underlying-type="int">
+          <items>
+            <enum-item name="Enter" value="0" />
+            <enum-item name="Over" value="1" />
+            <enum-item name="Leave" value="2" />
+            <enum-item name="Drop" value="3" />
+          </items>
+        </enum>
+        <enum name="AvnWindowState" underlying-type="int">
+          <items>
+            <enum-item name="Normal" value="0" />
+            <enum-item name="Minimized" value="1" />
+            <enum-item name="Maximized" value="2" />
+            <enum-item name="FullScreen" value="3" />
+          </items>
+        </enum>
+        <enum name="AvnStandardCursorType" underlying-type="int">
+          <items>
+            <enum-item name="CursorArrow" value="0" />
+            <enum-item name="CursorIbeam" value="1" />
+            <enum-item name="CursorWait" value="2" />
+            <enum-item name="CursorCross" value="3" />
+            <enum-item name="CursorUpArrow" value="4" />
+            <enum-item name="CursorSizeWestEast" value="5" />
+            <enum-item name="CursorSizeNorthSouth" value="6" />
+            <enum-item name="CursorSizeAll" value="7" />
+            <enum-item name="CursorNo" value="8" />
+            <enum-item name="CursorHand" value="9" />
+            <enum-item name="CursorAppStarting" value="10" />
+            <enum-item name="CursorHelp" value="11" />
+            <enum-item name="CursorTopSide" value="12" />
+            <enum-item name="CursorBottomSize" value="13" />
+            <enum-item name="CursorLeftSide" value="14" />
+            <enum-item name="CursorRightSide" value="15" />
+            <enum-item name="CursorTopLeftCorner" value="16" />
+            <enum-item name="CursorTopRightCorner" value="17" />
+            <enum-item name="CursorBottomLeftCorner" value="18" />
+            <enum-item name="CursorBottomRightCorner" value="19" />
+            <enum-item name="CursorDragMove" value="20" />
+            <enum-item name="CursorDragCopy" value="21" />
+            <enum-item name="CursorDragLink" value="22" />
+            <enum-item name="CursorNone" value="23" />
+          </items>
+        </enum>
+        <enum name="AvnWindowEdge" underlying-type="int">
+          <items>
+            <enum-item name="WindowEdgeNorthWest" value="0" />
+            <enum-item name="WindowEdgeNorth" value="1" />
+            <enum-item name="WindowEdgeNorthEast" value="2" />
+            <enum-item name="WindowEdgeWest" value="3" />
+            <enum-item name="WindowEdgeEast" value="4" />
+            <enum-item name="WindowEdgeSouthWest" value="5" />
+            <enum-item name="WindowEdgeSouth" value="6" />
+            <enum-item name="WindowEdgeSouthEast" value="7" />
+          </items>
+        </enum>
+        <enum name="AvnMenuItemToggleType" underlying-type="int">
+          <items>
+            <enum-item name="None" value="0" />
+            <enum-item name="CheckMark" value="1" />
+            <enum-item name="Radio" value="2" />
+          </items>
+        </enum>
+        <enum name="AvnExtendClientAreaChromeHints" underlying-type="int">
+          <items>
+            <enum-item name="AvnNoChrome" value="0" />
+            <enum-item name="AvnSystemChrome" value="1" />
+            <enum-item name="AvnPreferSystemChrome" value="2" />
+            <enum-item name="AvnOSXThickTitleBar" value="8" />
+            <enum-item name="AvnDefaultChrome" value="1" />
+          </items>
+        </enum>
+        <interface name="IAvaloniaNativeFactory" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f01" base="IUnknown">
+          <items>
+            <method name="Initialize" call-conv="thiscall" offset="3">
+              <items>
+                <param name="deallocator" typename="IAvnGCHandleDeallocatorCallback" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetMacOptions" call-conv="thiscall" offset="4">
+              <return typename="IAvnMacOptions" ptr="*" const="false" array="false" />
+            </method>
+            <method name="CreateWindow" call-conv="thiscall" offset="5">
+              <items>
+                <param name="cb" typename="IAvnWindowEvents" ptr="*" const="false" array="false" attributes="in" />
+                <param name="gl" typename="IAvnGlContext" ptr="*" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnWindow" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreatePopup" call-conv="thiscall" offset="6">
+              <items>
+                <param name="cb" typename="IAvnWindowEvents" ptr="*" const="false" array="false" attributes="in" />
+                <param name="gl" typename="IAvnGlContext" ptr="*" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnPopup" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreatePlatformThreadingInterface" call-conv="thiscall" offset="7">
+              <items>
+                <param name="ppv" typename="IAvnPlatformThreadingInterface" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateSystemDialogs" call-conv="thiscall" offset="8">
+              <items>
+                <param name="ppv" typename="IAvnSystemDialogs" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateScreens" call-conv="thiscall" offset="9">
+              <items>
+                <param name="ppv" typename="IAvnScreens" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateClipboard" call-conv="thiscall" offset="10">
+              <items>
+                <param name="ppv" typename="IAvnClipboard" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateDndClipboard" call-conv="thiscall" offset="11">
+              <items>
+                <param name="ppv" typename="IAvnClipboard" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateCursorFactory" call-conv="thiscall" offset="12">
+              <items>
+                <param name="ppv" typename="IAvnCursorFactory" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="ObtainGlDisplay" call-conv="thiscall" offset="13">
+              <items>
+                <param name="ppv" typename="IAvnGlDisplay" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetAppMenu" call-conv="thiscall" offset="14">
+              <items>
+                <param name="menu" typename="IAvnMenu" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateMenu" call-conv="thiscall" offset="15">
+              <items>
+                <param name="cb" typename="IAvnMenuEvents" ptr="*" const="false" array="false" attributes="in" />
+                <param name="ppv" typename="IAvnMenu" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateMenuItem" call-conv="thiscall" offset="16">
+              <items>
+                <param name="ppv" typename="IAvnMenuItem" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateMenuItemSeperator" call-conv="thiscall" offset="17">
+              <items>
+                <param name="ppv" typename="IAvnMenuItem" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnString" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f17" base="IUnknown">
+          <items>
+            <method name="Pointer" call-conv="thiscall" offset="3">
+              <items>
+                <param name="retOut" typename="void" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Length" call-conv="thiscall" offset="4">
+              <items>
+                <param name="ret" typename="int" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnWindowBase" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f02" base="IUnknown">
+          <items>
+            <method name="Show" call-conv="thiscall" offset="3">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Hide" call-conv="thiscall" offset="4">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Close" call-conv="thiscall" offset="5">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Activate" call-conv="thiscall" offset="6">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetClientSize" call-conv="thiscall" offset="7">
+              <items>
+                <param name="ret" typename="AvnSize" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetScaling" call-conv="thiscall" offset="8">
+              <items>
+                <param name="ret" typename="double" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetMinMaxSize" call-conv="thiscall" offset="9">
+              <items>
+                <param name="minSize" typename="AvnSize" const="false" array="false" attributes="in" />
+                <param name="maxSize" typename="AvnSize" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Resize" call-conv="thiscall" offset="10">
+              <items>
+                <param name="width" typename="double" const="false" array="false" attributes="in" />
+                <param name="height" typename="double" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Invalidate" call-conv="thiscall" offset="11">
+              <items>
+                <param name="rect" typename="AvnRect" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="BeginMoveDrag" call-conv="thiscall" offset="12">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="BeginResizeDrag" call-conv="thiscall" offset="13">
+              <items>
+                <param name="edge" typename="AvnWindowEdge" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="GetPosition" call-conv="thiscall" offset="14">
+              <items>
+                <param name="ret" typename="AvnPoint" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetPosition" call-conv="thiscall" offset="15">
+              <items>
+                <param name="point" typename="AvnPoint" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="PointToClient" call-conv="thiscall" offset="16">
+              <items>
+                <param name="point" typename="AvnPoint" const="false" array="false" attributes="in" />
+                <param name="ret" typename="AvnPoint" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="PointToScreen" call-conv="thiscall" offset="17">
+              <items>
+                <param name="point" typename="AvnPoint" const="false" array="false" attributes="in" />
+                <param name="ret" typename="AvnPoint" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="ThreadSafeSetSwRenderedFrame" call-conv="thiscall" offset="18">
+              <items>
+                <param name="fb" typename="AvnFramebuffer" ptr="*" const="false" array="false" attributes="in" />
+                <param name="dispose" typename="IUnknown" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetTopMost" call-conv="thiscall" offset="19">
+              <items>
+                <param name="value" typename="bool" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetCursor" call-conv="thiscall" offset="20">
+              <items>
+                <param name="cursor" typename="IAvnCursor" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateGlRenderTarget" call-conv="thiscall" offset="21">
+              <items>
+                <param name="ret" typename="IAvnGlSurfaceRenderTarget" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetMainMenu" call-conv="thiscall" offset="22">
+              <items>
+                <param name="menu" typename="IAvnMenu" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="ObtainNSWindowHandle" call-conv="thiscall" offset="23">
+              <items>
+                <param name="retOut" typename="void" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="ObtainNSWindowHandleRetained" call-conv="thiscall" offset="24">
+              <items>
+                <param name="retOut" typename="void" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="ObtainNSViewHandle" call-conv="thiscall" offset="25">
+              <items>
+                <param name="retOut" typename="void" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="ObtainNSViewHandleRetained" call-conv="thiscall" offset="26">
+              <items>
+                <param name="retOut" typename="void" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="CreateNativeControlHost" call-conv="thiscall" offset="27">
+              <items>
+                <param name="retOut" typename="IAvnNativeControlHost" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="BeginDragAndDropOperation" call-conv="thiscall" offset="28">
+              <items>
+                <param name="effects" typename="AvnDragDropEffects" const="false" array="false" attributes="in" />
+                <param name="point" typename="AvnPoint" const="false" array="false" attributes="in" />
+                <param name="clipboard" typename="IAvnClipboard" ptr="*" const="false" array="false" attributes="in" />
+                <param name="cb" typename="IAvnDndResultCallback" ptr="*" const="false" array="false" attributes="in" />
+                <param name="sourceHandle" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="SetBlurEnabled" call-conv="thiscall" offset="29">
+              <items>
+                <param name="enable" typename="bool" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnWindowBaseEvents" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f05" base="IUnknown">
+          <items>
+            <method name="Paint" call-conv="thiscall" offset="3">
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="Closed" call-conv="thiscall" offset="4">
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="Activated" call-conv="thiscall" offset="5">
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="Deactivated" call-conv="thiscall" offset="6">
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="Resized" call-conv="thiscall" offset="7">
+              <items>
+                <param name="size" typename="AvnSize" ptr="&amp;" const="true" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="PositionChanged" call-conv="thiscall" offset="8">
+              <items>
+                <param name="position" typename="AvnPoint" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="RawMouseEvent" call-conv="thiscall" offset="9">
+              <items>
+                <param name="type" typename="AvnRawMouseEventType" const="false" array="false" attributes="in" />
+                <param name="timeStamp" typename="unsigned int" const="false" array="false" attributes="in" />
+                <param name="modifiers" typename="AvnInputModifiers" const="false" array="false" attributes="in" />
+                <param name="point" typename="AvnPoint" const="false" array="false" attributes="in" />
+                <param name="delta" typename="AvnVector" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="RawKeyEvent" call-conv="thiscall" offset="10">
+              <items>
+                <param name="type" typename="AvnRawKeyEventType" const="false" array="false" attributes="in" />
+                <param name="timeStamp" typename="unsigned int" const="false" array="false" attributes="in" />
+                <param name="modifiers" typename="AvnInputModifiers" const="false" array="false" attributes="in" />
+                <param name="key" typename="unsigned int" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="bool" const="false" array="false" />
+            </method>
+            <method name="RawTextInputEvent" call-conv="thiscall" offset="11">
+              <items>
+                <param name="timeStamp" typename="unsigned int" const="false" array="false" attributes="in" />
+                <param name="text" typename="char" ptr="*" const="true" array="false" attributes="in" />
+              </items>
+              <return typename="bool" const="false" array="false" />
+            </method>
+            <method name="ScalingChanged" call-conv="thiscall" offset="12">
+              <items>
+                <param name="scaling" typename="double" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="RunRenderPriorityJobs" call-conv="thiscall" offset="13">
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="LostFocus" call-conv="thiscall" offset="14">
+              <return typename="void" const="false" array="false" />
+            </method>
+            <method name="DragEvent" call-conv="thiscall" offset="15">
+              <items>
+                <param name="type" typename="AvnDragEventType" const="false" array="false" attributes="in" />
+                <param name="position" typename="AvnPoint" const="false" array="false" attributes="in" />
+                <param name="modifiers" typename="AvnInputModifiers" const="false" array="false" attributes="in" />
+                <param name="effects" typename="AvnDragDropEffects" const="false" array="false" attributes="in" />
+                <param name="clipboard" typename="IAvnClipboard" ptr="*" const="false" array="false" attributes="in" />
+                <param name="dataObjectHandle" typename="void" ptr="*" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="AvnDragDropEffects" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnActionCallback" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f08" base="IUnknown">
+          <items>
+            <method name="Run" call-conv="thiscall" offset="3">
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnSignaledCallback" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f09" base="IUnknown">
+          <items>
+            <method name="Signaled" call-conv="thiscall" offset="3">
+              <items>
+                <param name="priority" typename="int" const="false" array="false" attributes="in" />
+                <param name="priorityContainsMeaningfulValue" typename="bool" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnLoopCancellation" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f0a" base="IUnknown">
+          <items>
+            <method name="Cancel" call-conv="thiscall" offset="3">
+              <return typename="void" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <interface name="IAvnPredicateCallback" guid="2e2cda0a-9ae5-4f1b-8e20-081a04279f18" base="IUnknown">
+          <items>
+            <method name="Evaluate" call-conv="thiscall" offset="3">
+              <return typename="bool" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+        <function name="CreateAvaloniaNative" call-conv="cdecl">
+          <return typename="IAvaloniaNativeFactory" ptr="*" const="false" array="false" />
+        </function>
+      </items>
+    </include>
+    <include name="com">
+      <items>
+        <macro name="S_OK" value="0x0L">
+          <items />
+        </macro>
+        <macro name="E_NOTIMPL" value="0x80004001L">
+          <items />
+        </macro>
+        <macro name="E_NOINTERFACE" value="0x80004002L">
+          <items />
+        </macro>
+        <macro name="E_POINTER" value="0x80004003L">
+          <items />
+        </macro>
+        <macro name="E_ABORT" value="0x80004004L">
+          <items />
+        </macro>
+        <macro name="E_FAIL" value="0x80004005L">
+          <items />
+        </macro>
+        <macro name="E_UNEXPECTED" value="0x8000FFFFL">
+          <items />
+        </macro>
+        <macro name="E_HANDLE" value="0x80070006L">
+          <items />
+        </macro>
+        <macro name="E_INVALIDARG" value="0x80070057L">
+          <items />
+        </macro>
+        <struct name="GUID" align="0" union="false">
+          <items>
+            <field name="Data1" typename="unsigned int" const="false" array="false" offset="0" bitfield="false" bitoffset="0" />
+            <field name="Data2" typename="unsigned short" const="false" array="false" offset="1" bitfield="false" bitoffset="0" />
+            <field name="Data3" typename="unsigned short" const="false" array="false" offset="2" bitfield="false" bitoffset="0" />
+            <field name="Data4" typename="unsigned char" const="false" array="true" array-dim="8" offset="3" bitfield="false" bitoffset="0" />
+          </items>
+        </struct>
+        <interface name="IUnknown">
+          <items>
+            <method name="QueryInterface" call-conv="thiscall" offset="0">
+              <items>
+                <param name="riid" typename="GUID" ptr="*" const="true" array="false" attributes="in" />
+                <param name="ppvObject" typename="void" ptr="**" const="false" array="false" attributes="in" />
+              </items>
+              <return typename="HRESULT" const="false" array="false" />
+            </method>
+            <method name="AddRef" call-conv="thiscall" offset="1">
+              <return typename="ULONG" const="false" array="false" />
+            </method>
+            <method name="Release" call-conv="thiscall" offset="2">
+              <return typename="ULONG" const="false" array="false" />
+            </method>
+          </items>
+        </interface>
+      </items>
+    </include>
+    <include name="SharpGen-MSBuild">
+      <items />
+    </include>
+    <include name="AvaloniaNative">
+      <items />
+    </include>
+    <include name="key">
+      <items />
+    </include>
+    <include name="stddef">
+      <items>
+        <macro name="NULL" value="0">
+          <items />
+        </macro>
+      </items>
+    </include>
+    <include name="__stddef_max_align_t">
+      <items />
+    </include>
+    <include name="SharpGen.Runtime.COM">
+      <items />
+    </include>
+  </items>
+</cpp-module>
