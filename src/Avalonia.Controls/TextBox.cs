@@ -410,10 +410,15 @@ namespace Avalonia.Controls
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-            SelectionStart = 0;
-            SelectionEnd = 0;
+
+            if (ContextMenu == null || !ContextMenu.IsOpen)
+            {
+                SelectionStart = 0;
+                SelectionEnd = 0;
+                RevealPassword = false;
+            }
+            
             _presenter?.HideCaret();
-            RevealPassword = false;
         }
 
         protected override void OnTextInput(TextInputEventArgs e)
