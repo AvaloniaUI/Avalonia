@@ -4,7 +4,7 @@
   <Styles.Resources>
     <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
     <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
-
+    <SolidColorBrush x:Key="SplitViewLightDismissOverlayBackground" Color="{DynamicResource ThemeControlLowColor}" Opacity="0.6"/>
     <!-- Not used here (directly) since they're strings, but preserving for reference
         <x:String x:Key="SplitViewPaneAnimationOpenDuration">00:00:00.2</x:String>
         <x:String x:Key="SplitViewPaneAnimationOpenPreDuration">00:00:00.19999</x:String>
