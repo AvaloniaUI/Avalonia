@@ -63,7 +63,7 @@ namespace Avalonia.Platform
         /// <param name="brush">The brush used to fill the rectangle, or <c>null</c> for no fill.</param>
         /// <param name="pen">The pen used to stroke the rectangle, or <c>null</c> for no stroke.</param>
         /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="boxShadows">Box shadow effect parameters</param>
+        /// <param name="boxShadow">Box shadow effect parameters</param>
         /// <remarks>
         /// The brush and the pen can both be null. If the brush is null, then no fill is performed.
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.

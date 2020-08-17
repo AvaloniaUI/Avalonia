@@ -3,7 +3,6 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using Avalonia.Markup.Xaml.XamlIl;
-// ReSharper disable CheckNamespace
 
 namespace Avalonia.Markup.Xaml
 {
@@ -14,9 +13,9 @@ namespace Avalonia.Markup.Xaml
         /// </summary>
         /// <param name="xaml">The string containing the XAML.</param>
         /// <param name="localAssembly">Default assembly for clr-namespace:</param>
-        /// <param name="rootInstance">
-        /// The optional instance into which the XAML should be loaded.
-        /// </param>
+        /// <param name="rootInstance"> instance into which the XAML should be loaded</param>
+        /// <param name="uri"/>
+        /// <param name="designMode">indicates whether the xaml object is loading in design mode</param>
         /// <returns>The loaded object.</returns>
         public static object Load(string xaml, Assembly localAssembly = null, object rootInstance = null, Uri uri = null, bool designMode = false)
         {
