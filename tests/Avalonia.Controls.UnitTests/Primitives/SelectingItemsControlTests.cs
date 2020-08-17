@@ -1092,7 +1092,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_Item_Before_SelectedItem_Should_Update_Container_Selection_When_SelectionModel_Present()
         {
-            // Issue #4496.
+            // Issue #4496 (part 1).
             var items = new ObservableCollection<string>
             {
                "Foo",
@@ -1119,6 +1119,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var container = (ListBoxItem)target.ItemContainerGenerator.ContainerFromIndex(0);
             Assert.True(container.IsSelected);
+        }
+
+        [Fact]
+        public void Binding_SelectedIndex_Does_Not_Cause_ArgumentOutOfRange()
+        {
+            // Issue #4496 (part 2)
+            var items = new ObservableCollection<string>();
+
+            var other = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                [!ListBox.SelectedIndexProperty] = other[!ListBox.SelectedIndexProperty],
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            other.ApplyTemplate();
+            other.Presenter.ApplyTemplate();
+
+            items.Add("Foo");
         }
 
         [Fact]
