@@ -21,7 +21,7 @@ namespace Avalonia.Controls.UnitTests.Shapes
 
             var root = new TestRoot(target);
             var renderer = Mock.Get(root.Renderer);
-            renderer.ResetCalls();
+            renderer.Invocations.Clear();
 
             ((SolidColorBrush)target.Fill).Color = Colors.Green;
 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls.UnitTests.Shapes
 
             var root = new TestRoot(target);
             var renderer = Mock.Get(root.Renderer);
-            renderer.ResetCalls();
+            renderer.Invocations.Clear();
 
             ((SolidColorBrush)target.Stroke).Color = Colors.Green;
 
