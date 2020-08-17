@@ -18,7 +18,7 @@ namespace Avalonia.Controls.UnitTests
     public class TextBoxTests
     {
         [Fact]
-        public void Opening_Context_Menu_Does_not_Loose_Selection()
+        public void Opening_Context_Menu_Does_not_Lose_Selection()
         {
             using (UnitTestApplication.Start(FocusServices))
             {
