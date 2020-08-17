@@ -1090,6 +1090,38 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Removing_Item_Before_SelectedItem_Should_Update_Container_Selection_When_SelectionModel_Present()
+        {
+            // Issue #4496.
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+            };
+
+            var selection = new SelectionModel();
+            selection.Select(1);
+            target.Selection = selection;
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            items.RemoveAt(0);
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            var container = (ListBoxItem)target.ItemContainerGenerator.ContainerFromIndex(0);
+            Assert.True(container.IsSelected);
+        }
+
+        [Fact]
         public void Replacing_Selected_Item_Should_Update_SelectedItem()
         {
             var items = new ObservableCollection<string>
