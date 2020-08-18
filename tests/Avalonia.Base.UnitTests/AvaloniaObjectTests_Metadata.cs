@@ -46,6 +46,11 @@ namespace Avalonia.Base.UnitTests
 
                 Assert.Equal("foo", baseValue);
                 Assert.Equal("bar", derivedValue);
+
+                var class1 = new Class1();
+                Assert.Equal("foo", class1.Direct);
+                var class2 = new Class2();
+                Assert.Equal("bar", class2.Direct);
             }
 
             [Fact]
@@ -56,6 +61,11 @@ namespace Avalonia.Base.UnitTests
 
                 Assert.Equal("foo", baseValue);
                 Assert.Equal("baz", addOwneredValue);
+
+                var class1 = new Class1();
+                Assert.Equal("foo", class1.Direct);
+                var class3 = new Class3();
+                Assert.Equal("baz", class3.Direct);
             }
         }
 
@@ -65,13 +75,13 @@ namespace Avalonia.Base.UnitTests
                 AvaloniaProperty.Register<Class1, string>("Styled", "foo");
 
             public static readonly DirectProperty<Class1, string> DirectProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>("Styled", o => o.Direct, unsetValue: "foo");
+                AvaloniaProperty.RegisterDirect<Class1, string>("Styled", o => o._direct, unsetValue: "foo");
 
             private string _direct;
 
-            public string Direct
+            public string Direct 
             {
-                get => _direct;
+                get => GetValue(DirectProperty); 
             }
         }
 
@@ -90,7 +100,7 @@ namespace Avalonia.Base.UnitTests
                 Class1.StyledProperty.AddOwner<Class3>();
 
             public static readonly DirectProperty<Class3, string> DirectProperty =
-                Class1.DirectProperty.AddOwner<Class3>(o => o.Direct, unsetValue: "baz");
+                Class1.DirectProperty.AddOwner<Class3>(o => o._direct, unsetValue: "baz");
 
             private string _direct;
 
@@ -99,9 +109,9 @@ namespace Avalonia.Base.UnitTests
                 StyledProperty.OverrideDefaultValue<Class3>("baz");
             }
 
-            public string Direct
+            public string Direct 
             {
-                get => _direct;
+                get => GetValue(DirectProperty); 
             }
         }
     }
