@@ -108,7 +108,6 @@
               </ContentPresenter.DataTemplates>
             </ContentPresenter>
             <Popup Name="PART_Popup"
-                   IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
