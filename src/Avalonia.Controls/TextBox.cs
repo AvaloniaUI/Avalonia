@@ -19,6 +19,15 @@ namespace Avalonia.Controls
 {
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
+        public static KeyGesture CutGesture { get; } =
+            AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.Cut.FirstOrDefault();
+
+        public static KeyGesture CopyGesture { get; } = AvaloniaLocator.Current
+            .GetService<PlatformHotkeyConfiguration>()?.Copy.FirstOrDefault();
+
+        public static KeyGesture PasteGesture { get; } = AvaloniaLocator.Current
+            .GetService<PlatformHotkeyConfiguration>()?.Paste.FirstOrDefault();
+        
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsReturn));
 
