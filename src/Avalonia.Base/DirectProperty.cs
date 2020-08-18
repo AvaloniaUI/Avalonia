@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -156,7 +157,10 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override TValue InvokeGetter(IAvaloniaObject instance)
         {
-            return Getter((TOwner)instance);
+            var value = Getter((TOwner)instance);
+            if (EqualityComparer<TValue>.Default.Equals(value, default))
+                return GetUnsetValue(instance.GetType());
+            return value;
         }
 
         /// <inheritdoc/>
