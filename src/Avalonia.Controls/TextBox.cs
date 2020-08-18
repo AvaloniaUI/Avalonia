@@ -1,3 +1,4 @@
+using System.Windows.Input;
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
@@ -103,6 +104,21 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> RevealPasswordProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(RevealPassword));
+        
+        public static readonly DirectProperty<TextBox, bool> CanCutProperty =
+                    AvaloniaProperty.RegisterDirect<TextBox, bool>(
+                        nameof(CanCut),
+                        o => o.CanCut);
+
+        public static readonly DirectProperty<TextBox, bool> CanCopyProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(
+                nameof(CanCopy),
+                o => o.CanCopy);
+
+        public static readonly DirectProperty<TextBox, bool> CanPasteProperty =
+                    AvaloniaProperty.RegisterDirect<TextBox, bool>(
+                        nameof(CanPaste),
+                        o => o.CanPaste);
 
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -126,6 +142,9 @@ namespace Avalonia.Controls
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
+        private bool _canCut;
+        private bool _canCopy;
+        private bool _canPaste;
         private string _newLine = Environment.NewLine;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
@@ -378,6 +397,33 @@ namespace Avalonia.Controls
             SelectionStart = SelectionEnd = CaretIndex;
         }
 
+        /// <summary>
+        /// Property for determining if the Cut command can be executed.
+        /// </summary>
+        public bool CanCut
+        {
+            get { return _canCut; }
+            private set { SetAndRaise(CanCutProperty, ref _canCut, value); }
+        }
+
+        /// <summary>
+        /// Property for determining if the Copy command can be executed.
+        /// </summary>
+        public bool CanCopy
+        {
+            get { return _canCopy; }
+            private set { SetAndRaise(CanCopyProperty, ref _canCopy, value); }
+        }
+
+        /// <summary>
+        /// Property for determining if the Paste command can be executed.
+        /// </summary>
+        public bool CanPaste
+        {
+            get { return _canPaste; }
+            private set { SetAndRaise(CanPasteProperty, ref _canPaste, value); }
+        }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
@@ -395,7 +441,17 @@ namespace Avalonia.Controls
             if (change.Property == TextProperty)
             {
                 UpdatePseudoclasses();
+                UpdateCommandStates();
             }
+        }
+
+        private void UpdateCommandStates()
+        {
+            var text = GetSelection();
+            var b1 = string.IsNullOrEmpty(text);
+            CanCopy = !b1;
+            CanCut = !b1;
+            CanPaste = !IsReadOnly;
         }
 
         protected override void OnGotFocus(GotFocusEventArgs e)
@@ -412,6 +468,8 @@ namespace Avalonia.Controls
                 SelectAll();
             }
 
+            UpdateCommandStates();
+
             _presenter?.ShowCaret();
         }
 
@@ -424,6 +482,8 @@ namespace Avalonia.Controls
                 ClearSelection();
                 RevealPassword = false;
             }
+
+            UpdateCommandStates();
 
             _presenter?.HideCaret();
         }
@@ -469,6 +529,9 @@ namespace Avalonia.Controls
 
         public async void Cut()
         {
+            var text = GetSelection();
+            if (text is null) return;
+
             _undoRedoHelper.Snapshot();
             Copy();
             DeleteSelection();
@@ -477,17 +540,18 @@ namespace Avalonia.Controls
 
         public async void Copy()
         {
+            var text = GetSelection();
+            if (text is null) return;
+
             await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
-                .SetTextAsync(GetSelection());
+                .SetTextAsync(text);
         }
 
         public async void Paste()
         {
             var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
-            if (text == null)
-            {
-                return;
-            }
+
+            if (text is null) return;
 
             _undoRedoHelper.Snapshot();
             HandleTextInput(text);
