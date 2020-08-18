@@ -18,22 +18,18 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         private readonly SimpleWebSocketHttpServer _simpleServer;
         private readonly Dictionary<string, byte[]> _resources;
         private SimpleWebSocket _pendingSocket;
-        private bool _disposed;
         private object _lock = new object();
         private AutoResetEvent _wakeup = new AutoResetEvent(false);
         private FrameMessage _lastFrameMessage = null;
         private FrameMessage _lastSentFrameMessage = null;
-        private RequestViewportResizeMessage _lastViewportRequest;
         private Action<IAvaloniaRemoteTransportConnection, object> _onMessage;
         private Action<IAvaloniaRemoteTransportConnection, Exception> _onException;
-        
         private static readonly Dictionary<string, string> Mime = new Dictionary<string, string>
         {
             ["html"] = "text/html", ["htm"] = "text/html", ["js"] = "text/javascript", ["css"] = "text/css"
         };
 
         private static readonly byte[] NotFound = Encoding.UTF8.GetBytes("404 - Not Found");
-        
 
         public HtmlWebSocketTransport(IAvaloniaRemoteTransportConnection signalTransport, Uri listenUri)
         {
@@ -139,7 +135,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 SimpleWebSocket socket = null;
                 while (true)
                 {
-                    if (_disposed)
+                    if (IsDisposed)
                     {
                         socket?.Dispose();
                         return;
@@ -175,13 +171,6 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 Console.Error.WriteLine(e.ToString());
             }
         }
-        
-        public void Dispose()
-        {
-            _pendingSocket?.Dispose();
-            _simpleServer.Dispose();
-        }
-
         
         public Task Send(object data)
         {
@@ -262,6 +251,26 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         private void OnSignalTransportException(IAvaloniaRemoteTransportConnection arg1, Exception ex)
         {
             _onException?.Invoke(this, ex);
+        }
+
+        public bool IsDisposed { get; private set; }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!IsDisposed)
+            {
+                if (disposing)
+                {
+                    _pendingSocket?.Dispose();
+                    _simpleServer.Dispose();
+                }
+                IsDisposed = true;
+            }
+        }
+
+        public void Dispose()
+        {            
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
         #endregion
     }
