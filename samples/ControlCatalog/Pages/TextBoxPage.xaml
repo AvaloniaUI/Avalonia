@@ -1,18 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ControlCatalog.Pages.TextBoxPage">
   <StackPanel Orientation="Vertical" Spacing="4">
-    <StackPanel.Resources>
-      <ContextMenu x:Key="DefaultTextBoxContextMenu">
-        <MenuItem Header="Cut" Command="{Binding $parent[TextBox].Cut}" IsEnabled="{Binding $parent[TextBox].CanCut}" InputGesture="{x:Static TextBox.CutGesture}" />
-        <MenuItem Header="Copy" Command="{Binding $parent[TextBox].Copy}" IsEnabled="{Binding $parent[TextBox].CanCopy}" InputGesture="{x:Static TextBox.CopyGesture}"/>
-        <MenuItem Header="Paste" Command="{Binding $parent[TextBox].Paste}" IsEnabled="{Binding $parent[TextBox].CanPaste}" InputGesture="{x:Static TextBox.PasteGesture}"/>
-      </ContextMenu>
-    </StackPanel.Resources>
-    <StackPanel.Styles>
-      <Style Selector=":is(TextBox)">
-        <Setter Property="ContextMenu" Value="{StaticResource DefaultTextBoxContextMenu}" />
-      </Style>
-    </StackPanel.Styles>
     <TextBlock Classes="h1">TextBox</TextBlock>
     <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
 
