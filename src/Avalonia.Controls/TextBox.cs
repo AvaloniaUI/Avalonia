@@ -417,7 +417,7 @@ namespace Avalonia.Controls
                 SelectionEnd = 0;
                 RevealPassword = false;
             }
-            
+
             _presenter?.HideCaret();
         }
 
@@ -460,13 +460,21 @@ namespace Avalonia.Controls
             return text;
         }
 
-        private async void Copy()
+        public async void Cut()
+        {
+            _undoRedoHelper.Snapshot();
+            Copy();
+            DeleteSelection();
+            _undoRedoHelper.Snapshot();
+        }
+
+        public async void Copy()
         {
             await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
                 .SetTextAsync(GetSelection());
         }
 
-        private async void Paste()
+        public async void Paste()
         {
             var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
             if (text == null)
@@ -511,23 +519,18 @@ namespace Avalonia.Controls
             {
                 if (!IsPasswordBox)
                 {
-                    _undoRedoHelper.Snapshot();
-                    Copy();
-                    DeleteSelection();
-                    _undoRedoHelper.Snapshot();
+                    Cut();
                 }
 
                 handled = true;
             }
             else if (Match(keymap.Paste))
             {
-
                 Paste();
                 handled = true;
             }
             else if (Match(keymap.Undo))
             {
-
                 try
                 {
                     _isUndoingRedoing = true;
