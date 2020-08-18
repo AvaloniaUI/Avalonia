@@ -108,6 +108,8 @@
               </ContentPresenter.DataTemplates>
             </ContentPresenter>
             <Popup Name="PART_Popup"
+                   IsLightDismissEnabled="True"
+                   OverlayInputPassThroughElement="{Binding $parent[Menu]}"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
