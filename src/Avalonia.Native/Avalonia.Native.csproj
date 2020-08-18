@@ -7,7 +7,7 @@
     <CastXmlPath Condition="Exists('/usr/bin/castxml')">/usr/bin/castxml</CastXmlPath>
     <CastXmlPath Condition="Exists('/usr/local/bin/castxml')">/usr/local/bin/castxml</CastXmlPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <SharpGenGenerateConsumerBinding>false</SharpGenGenerateConsumerBinding>
+    <SharpGenGenerateConsumerBindMapping>false</SharpGenGenerateConsumerBindMapping>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release' AND '$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
