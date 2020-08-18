@@ -10,6 +10,7 @@ namespace Avalonia.Skia
     class GlSkiaGpu : IOpenGlAwareSkiaGpu
     {
         private GRContext _grContext;
+        private static List<int> _aliveTextures = new List<int>();
 
         class GenTexturesProxy
         {
@@ -33,8 +34,15 @@ namespace Avalonia.Skia
                 
                 for (int i = 0; i < size; i++)
                 {
-                    Console.WriteLine("Generate" + *p);
-                    
+                    if (GlSkiaGpu._aliveTextures.Contains(*p))
+                    {
+                        Console.WriteLine("Trying to add multiple textures with same id???");
+                    }
+                    else
+                    {
+                        GlSkiaGpu._aliveTextures.Add(*p);   
+                    }
+
                     p++;
                 }
                 _original(size, strings);
@@ -63,7 +71,15 @@ namespace Avalonia.Skia
                 
                 for (int i = 0; i < size; i++)
                 {
-                    Console.WriteLine("Delete" + *p);
+                    if (GlSkiaGpu._aliveTextures.Contains(*p))
+                    {
+                        _aliveTextures.Remove(*p);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Deleting unknown texture");
+                        
+                    }
                     
                     p++;
                 }
