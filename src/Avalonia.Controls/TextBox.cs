@@ -1,4 +1,3 @@
-using System.Windows.Input;
 using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
@@ -19,8 +18,8 @@ namespace Avalonia.Controls
 {
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
-        public static KeyGesture CutGesture { get; } =
-            AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.Cut.FirstOrDefault();
+        public static KeyGesture CutGesture { get; } = AvaloniaLocator.Current
+            .GetService<PlatformHotkeyConfiguration>()?.Cut.FirstOrDefault();
 
         public static KeyGesture CopyGesture { get; } = AvaloniaLocator.Current
             .GetService<PlatformHotkeyConfiguration>()?.Copy.FirstOrDefault();
