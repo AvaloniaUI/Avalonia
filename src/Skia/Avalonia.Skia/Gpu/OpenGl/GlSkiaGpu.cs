@@ -28,12 +28,13 @@ namespace Avalonia.Skia
 
             public IntPtr Pointer { get; }
 
-            unsafe void Proxy(int size, IntPtr strings)
+            unsafe void Proxy(int size, IntPtr textureIds)
             {
-                int* p = (int*)strings.ToPointer();
+                int* p = (int*)textureIds.ToPointer();
                 
                 for (int i = 0; i < size; i++)
                 {
+                    Console.WriteLine($"glGenTexture: {*p}");
                     if (GlSkiaGpu._aliveTextures.Contains(*p))
                     {
                         Console.WriteLine("Trying to add multiple textures with same id???");
@@ -45,7 +46,7 @@ namespace Avalonia.Skia
 
                     p++;
                 }
-                _original(size, strings);
+                _original(size, textureIds);
             }
         }
         
@@ -65,12 +66,13 @@ namespace Avalonia.Skia
 
             public IntPtr Pointer { get; }
 
-            unsafe void Proxy(int size, IntPtr strings)
+            unsafe void Proxy(int size, IntPtr textureIds)
             {
-                int* p = (int*)strings.ToPointer();
+                int* p = (int*)textureIds.ToPointer();
                 
                 for (int i = 0; i < size; i++)
                 {
+                    Console.WriteLine($"glDeleteTexture: {*p}");
                     if (GlSkiaGpu._aliveTextures.Contains(*p))
                     {
                         _aliveTextures.Remove(*p);
@@ -83,7 +85,7 @@ namespace Avalonia.Skia
                     
                     p++;
                 }
-                _original(size, strings);
+                _original(size, textureIds);
             }
         }
 
