@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -241,28 +240,104 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            bool canUseTransparency = false;
-            bool canUseAcrylic = false;
-
-            if (Win32Platform.WindowsVersion.Major >= 10)
+            if (Win32Platform.WindowsVersion.Major >= 6)
             {
-                canUseTransparency = true;
-
-                if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
+                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
                 {
-                    canUseAcrylic = true;
+                    return WindowTransparencyLevel.None;
+                }
+                else if (Win32Platform.WindowsVersion.Major >= 10)
+                {
+                    return Win10EnableBlur(transparencyLevel);
+                }
+                else if (Win32Platform.WindowsVersion.Minor >= 2)
+                {
+                    return Win8xEnableBlur(transparencyLevel);
+                }
+                else
+                {
+                    return Win7EnableBlur(transparencyLevel);
                 }
             }
-
-            if (!canUseTransparency || DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+            else
             {
                 return WindowTransparencyLevel.None;
             }
+        }
+
+        private WindowTransparencyLevel Win7EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+            var blurInfo = new DWM_BLURBEHIND(false);
+            
+            if (transparencyLevel == WindowTransparencyLevel.Blur)
+            {
+                blurInfo = new DWM_BLURBEHIND(true);
+            }
+            
+            DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                return WindowTransparencyLevel.None;
+            }
+            else
+            {
+                return transparencyLevel;
+            }
+        }
+
+        private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+            }
+            else
+            {
+                accent.AccentState = AccentState.ACCENT_DISABLED;
+            }
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);
+
+            if (transparencyLevel >= WindowTransparencyLevel.Blur)
+            {
+                Win7EnableBlur(transparencyLevel);
+            }
+
+            return transparencyLevel;
+        }
+
+        private WindowTransparencyLevel Win10EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
 
-            if(transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
             {
                 transparencyLevel = WindowTransparencyLevel.Blur;
             }
@@ -302,7 +377,7 @@ namespace Avalonia.Win32
 
             SetWindowCompositionAttribute(_hwnd, ref data);
 
-            Marshal.FreeHGlobal(accentPtr);            
+            Marshal.FreeHGlobal(accentPtr);
 
             return transparencyLevel;
         }

@@ -7,5 +7,6 @@ namespace Avalonia.Skia
     {
         SKCanvas SkCanvas { get; }
         GRContext GrContext { get; }
+        SKSurface SkSurface { get; }
     }
 }

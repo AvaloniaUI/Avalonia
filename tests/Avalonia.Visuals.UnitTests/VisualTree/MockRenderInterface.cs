@@ -47,7 +47,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             throw new NotImplementedException();
         }
@@ -58,13 +58,15 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         }
 
         public bool SupportsIndividualRoundRects { get; set; }
+        public AlphaFormat DefaultAlphaFormat { get; }
+        public PixelFormat DefaultPixelFormat { get; }
 
         public IFontManagerImpl CreateFontManager()
         {
             return new MockFontManagerImpl();
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? fmt)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat fmt, AlphaFormat alphaFormat)
         {
             throw new NotImplementedException();
         }

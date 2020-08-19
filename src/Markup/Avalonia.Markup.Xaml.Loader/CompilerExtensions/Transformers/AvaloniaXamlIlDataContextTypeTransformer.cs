@@ -74,11 +74,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     {
                         // Infer data type from collection binding on a control that displays items.
                         var parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().FirstOrDefault();
-                        if (parentObject != null && context.GetAvaloniaTypes().IItemsPresenterHost.IsDirectlyAssignableFrom(parentObject.Type.GetClrType()))
+                        if (parentObject != null)
                         {
-                            inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject);
+                            var parentType = parentObject.Type.GetClrType();
+
+                            if (context.GetAvaloniaTypes().IItemsPresenterHost.IsDirectlyAssignableFrom(parentType)
+                                || context.GetAvaloniaTypes().ItemsRepeater.IsDirectlyAssignableFrom(parentType))
+                            {
+                                inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject);
+                            }
                         }
-                        else
+
+                        if (inferredDataContextTypeNode is null)
                         {
                             inferredDataContextTypeNode = new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
                         }

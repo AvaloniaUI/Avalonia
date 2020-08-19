@@ -4,8 +4,10 @@
     <DefineConstants>AVALONIA_REMOTE_PROTOCOL;$(DefineConstants)</DefineConstants>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
+    <PackageId>Avalonia.Remote.Protocol</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.Input\Key.cs" />
   </ItemGroup>
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>

@@ -265,7 +265,8 @@ namespace Avalonia.Controls
                     PlacementMode = PlacementMode,
                     PlacementRect = PlacementRect,
                     PlacementTarget = PlacementTarget ?? control,
-                    StaysOpen = false
+                    IsLightDismissEnabled = true,
+                    OverlayDismissEventPassThrough = true,
                 };
 
                 _popup.Opened += PopupOpened;
@@ -279,9 +280,8 @@ namespace Avalonia.Controls
             }
 
             _popup.Child = this;
-            _popup.IsOpen = true;
-
             IsOpen = true;
+            _popup.IsOpen = true;
 
             RaiseEvent(new RoutedEventArgs
             {

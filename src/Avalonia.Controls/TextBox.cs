@@ -95,6 +95,15 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
                 textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
 
+        public static readonly StyledProperty<object> InnerLeftContentProperty =
+            AvaloniaProperty.Register<TextBox, object>(nameof(InnerLeftContent));
+
+        public static readonly StyledProperty<object> InnerRightContentProperty =
+            AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
+
+        public static readonly StyledProperty<bool> RevealPasswordProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(RevealPassword));
+
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -148,6 +157,8 @@ namespace Avalonia.Controls
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
             _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
+
+            UpdatePseudoclasses();
         }
 
         public bool AcceptsReturn
@@ -285,7 +296,7 @@ namespace Avalonia.Controls
                 else
                 {
                     HandleTextInput(value);
-                } 
+                }
                 _undoRedoHelper.Snapshot();
             }
         }
@@ -326,6 +337,24 @@ namespace Avalonia.Controls
             set { SetValue(UseFloatingWatermarkProperty, value); }
         }
 
+        public object InnerLeftContent
+        {
+            get { return GetValue(InnerLeftContentProperty); }
+            set { SetValue(InnerLeftContentProperty, value); }
+        }
+
+        public object InnerRightContent
+        {
+            get { return GetValue(InnerRightContentProperty); }
+            set { SetValue(InnerRightContentProperty, value); }
+        }
+
+        public bool RevealPassword
+        {
+            get { return GetValue(RevealPasswordProperty); }
+            set { SetValue(RevealPasswordProperty, value); }
+        }
+
         public TextWrapping TextWrapping
         {
             get { return GetValue(TextWrappingProperty); }
@@ -351,6 +380,16 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TextProperty)
+            {
+                UpdatePseudoclasses();
+            }
+        }
+
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
@@ -371,8 +410,14 @@ namespace Avalonia.Controls
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-            SelectionStart = 0;
-            SelectionEnd = 0;
+
+            if (ContextMenu == null || !ContextMenu.IsOpen)
+            {
+                SelectionStart = 0;
+                SelectionEnd = 0;
+                RevealPassword = false;
+            }
+            
             _presenter?.HideCaret();
         }
 
@@ -756,7 +801,7 @@ namespace Avalonia.Controls
                     // if it did not, we change the selection to where the user clicked
                     var firstSelection = Math.Min(SelectionStart, SelectionEnd);
                     var lastSelection = Math.Max(SelectionStart, SelectionEnd);
-                    var didClickInSelection = SelectionStart != SelectionEnd && 
+                    var didClickInSelection = SelectionStart != SelectionEnd &&
                         caretIndex >= firstSelection && caretIndex <= lastSelection;
                     if (!didClickInSelection)
                     {
@@ -801,6 +846,11 @@ namespace Avalonia.Controls
             {
                 return value;
             }
+        }
+
+        public void Clear()
+        {
+            Text = string.Empty;
         }
 
         private int DeleteCharacter(int index)
@@ -1066,6 +1116,11 @@ namespace Avalonia.Controls
             SelectionStart = CaretIndex;
             MoveHorizontal(1, true, false);
             SelectionEnd = CaretIndex;
+        }
+
+        private void UpdatePseudoclasses()
+        {
+            PseudoClasses.Set(":empty", string.IsNullOrWhiteSpace(Text));
         }
 
         private bool IsPasswordBox => PasswordChar != default(char);

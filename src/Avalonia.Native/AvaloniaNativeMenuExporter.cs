@@ -11,7 +11,7 @@ namespace Avalonia.Native
     class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
     {
         private IAvaloniaNativeFactory _factory;
-        private bool _resetQueued;
+        private bool _resetQueued = true;
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
@@ -39,8 +39,7 @@ namespace Avalonia.Native
         public void SetNativeMenu(NativeMenu menu)
         {
             _menu = menu == null ? new NativeMenu() : menu;
-
-            DoLayoutReset();
+            DoLayoutReset(true);
         }
 
         internal void UpdateIfNeeded()
@@ -74,31 +73,34 @@ namespace Avalonia.Native
             return result;
         }
 
-        void DoLayoutReset()
+        private void DoLayoutReset(bool forceUpdate = false)
         {
-            _resetQueued = false;
-
-            if (_nativeWindow is null)
+            if (_resetQueued || forceUpdate)
             {
-                var appMenu = NativeMenu.GetMenu(Application.Current);
+                _resetQueued = false;
 
-                if (appMenu == null)
+                if (_nativeWindow is null)
                 {
-                    appMenu = CreateDefaultAppMenu();           
-                    NativeMenu.SetMenu(Application.Current, appMenu);         
+                    var appMenu = NativeMenu.GetMenu(Application.Current);
+
+                    if (appMenu == null)
+                    {
+                        appMenu = CreateDefaultAppMenu();
+                        NativeMenu.SetMenu(Application.Current, appMenu);
+                    }
+
+                    SetMenu(appMenu);
+                }
+                else
+                {
+                    if (_menu != null)
+                    {
+                        SetMenu(_nativeWindow, _menu);
+                    }
                 }
 
-                SetMenu(appMenu);
+                _exported = true;
             }
-            else
-            {
-                if (_menu != null)
-                {
-                    SetMenu(_nativeWindow, _menu);
-                }
-            }
-
-            _exported = true;
         }
 
         internal void QueueReset()
@@ -106,7 +108,7 @@ namespace Avalonia.Native
             if (_resetQueued)
                 return;
             _resetQueued = true;
-            Dispatcher.UIThread.Post(DoLayoutReset, DispatcherPriority.Background);
+            Dispatcher.UIThread.Post(() => DoLayoutReset(), DispatcherPriority.Background);
         }
 
         private void SetMenu(NativeMenu menu)
