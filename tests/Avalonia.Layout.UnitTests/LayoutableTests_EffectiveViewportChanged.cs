@@ -28,6 +28,8 @@ namespace Avalonia.Layout.UnitTests
 
                 root.Child = target;
 
+                await Task.CompletedTask;
+
                 Assert.Equal(0, raised);
             });
         }
