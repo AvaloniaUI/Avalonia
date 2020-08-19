@@ -45,7 +45,7 @@ namespace Avalonia.Diagnostics.Views
             switch (e.Key)
             {
                 case Key.Enter:
-                    vm.Execute();
+                    vm.Execute().RunSynchronously();
                     e.Handled = true;
                     break;
                 case Key.Up:
