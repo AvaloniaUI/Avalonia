@@ -27,11 +27,11 @@ namespace ControlCatalog
                 MaxItems = 3
             };
 
-            DataContext = new MainWindowViewModel(_notificationArea);
-            _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
+            //DataContext = new MainWindowViewModel(_notificationArea);
+            //_recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
 
-            var mainMenu = this.FindControl<Menu>("MainMenu");
-            mainMenu.AttachedToVisualTree += MenuAttached;
+            //var mainMenu = this.FindControl<Menu>("MainMenu");
+            //mainMenu.AttachedToVisualTree += MenuAttached;
         }
 
         public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
@@ -76,6 +76,8 @@ namespace ControlCatalog
                 theme.TryGetResource("Button", out _);
             }
             AvaloniaXamlLoader.Load(this);
+
+            //Console.ReadLine();
         }
     }
 }

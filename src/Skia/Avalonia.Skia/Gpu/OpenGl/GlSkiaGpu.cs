@@ -91,6 +91,7 @@ namespace Avalonia.Skia
 
         private static IntPtr GetProcAddress(string proc, Func<string, IntPtr> actualGetProcAddress)
         {
+            Console.WriteLine(proc);
             switch (proc)
             {
                 case "glGenTextures" :
