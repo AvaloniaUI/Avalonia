@@ -1089,6 +1089,68 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("Bar", target.SelectedItem);
         }
 
+        [Fact(Skip = "We don't handle this properly yet")]
+        public void Binding_SelectedIndex_Selects_Correct_Item()
+        {
+            // Issue #4496 (part 2)
+            var items = new ObservableCollection<string>();
+
+            var other = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                [!ListBox.SelectedIndexProperty] = other[!ListBox.SelectedIndexProperty],
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            other.ApplyTemplate();
+            other.Presenter.ApplyTemplate();
+
+            items.Add("Foo");
+
+            Assert.Equal(0, other.SelectedIndex);
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact(Skip = "We don't handle this properly yet")]
+        public void Binding_SelectedItem_Selects_Correct_Item()
+        {
+            // Issue #4496 (part 2)
+            var items = new ObservableCollection<string>();
+
+            var other = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                [!ListBox.SelectedItemProperty] = other[!ListBox.SelectedItemProperty],
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            other.ApplyTemplate();
+            other.Presenter.ApplyTemplate();
+
+            items.Add("Foo");
+
+            Assert.Equal(0, other.SelectedIndex);
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
         [Fact]
         public void Replacing_Selected_Item_Should_Update_SelectedItem()
         {
