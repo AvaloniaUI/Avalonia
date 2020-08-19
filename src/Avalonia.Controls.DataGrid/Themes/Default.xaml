@@ -28,7 +28,7 @@
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="SeparatorBrush" Value="{DynamicResource ThemeControlDarkBrush}" />
+    <Setter Property="SeparatorBrush" Value="{DynamicResource ThemeControlLowColor}" />
     <Setter Property="Padding" Value="4" />
     <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
 
@@ -188,7 +188,7 @@
   </Style>
 
   <Style Selector="DataGrid">
-    <Setter Property="RowBackground" Value="{DynamicResource SystemAccentColorDark2}" />
+    <Setter Property="RowBackground" Value="{DynamicResource ThemeAccentBrush4}" />
     <Setter Property="AlternatingRowBackground" Value="#00FFFFFF" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="HeadersVisibility" Value="Column" />
@@ -196,9 +196,9 @@
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="SelectionMode" Value="Extended" />
     <Setter Property="GridLinesVisibility" Value="Vertical" />
-    <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
-    <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
+    <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource ThemeBorderHighColor}" />
+    <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource ThemeBorderHighColor}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowColor}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="DropLocationIndicatorTemplate">
       <Template>
