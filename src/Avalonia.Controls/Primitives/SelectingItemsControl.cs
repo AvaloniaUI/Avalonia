@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Utils;
@@ -504,30 +505,56 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         protected void SelectAll()
         {
-            UpdateSelectedItems(() =>
+            _selection.Clear();
+
+            for (var i = 0; i < ItemCount; ++i)
             {
-                _selection.Clear();
+                _selection.Add(i);
+            }
 
-                for (var i = 0; i < ItemCount; ++i)
-                {
-                    _selection.Add(i);
-                }
+            UpdateSelectedItem(0, false);
 
-                UpdateSelectedItem(0, false);
-
-                foreach (var container in ItemContainerGenerator.Containers)
-                {
-                    MarkItemSelected(container.Index, true);
-                }
-
-                ResetSelectedItems();
-            });
+            SyncSelection();
         }
 
         /// <summary>
         /// Deselects all items in the control.
         /// </summary>
         protected void UnselectAll() => UpdateSelectedItem(-1);
+
+        private void SyncSelection()
+        {
+            UpdateSelectedItems(() =>
+            {
+                var selection = _selection.Select(x => ElementAt(Items, x)).ToList();
+                var added = selection.Except(SelectedItems.Cast<object>()).ToList();
+                var removed = SelectedItems.Cast<object>().Except(selection).ToList();
+
+                foreach (var container in ItemContainerGenerator.Containers)
+                {
+                    MarkItemSelected(container.Index, _selection.Contains(container.Index));
+                }
+
+                foreach (var i in added)
+                {
+                    SelectedItems.Add(i);
+                }
+
+                foreach (var i in removed)
+                {
+                    SelectedItems.Remove(i);
+                }
+
+                if (added.Count > 0 || removed.Count > 0)
+                {
+                    var changed = new SelectionChangedEventArgs(
+                        SelectionChangedEvent,
+                        removed ?? Empty,
+                        added ?? Empty);
+                    RaiseEvent(changed);
+                }
+            });
+        }
 
         /// <summary>
         /// Updates the selection for an item based on user interaction.
@@ -562,56 +589,36 @@ namespace Avalonia.Controls.Primitives
                     }
                     else if (range)
                     {
-                        UpdateSelectedItems(() =>
+                        var start = SelectedIndex != -1 ? SelectedIndex : 0;
+                        var step = start < index ? 1 : -1;
+
+                        _selection.Clear();
+
+                        for (var i = start; i != index; i += step)
                         {
-                            var start = SelectedIndex != -1 ? SelectedIndex : 0;
-                            var step = start < index ? 1 : -1;
+                            _selection.Add(i);
+                        }
 
-                            _selection.Clear();
-
-                            for (var i = start; i != index; i += step)
-                            {
-                                _selection.Add(i);
-                            }
-
-                            _selection.Add(index);
-
-                            var first = Math.Min(start, index);
-                            var last = Math.Max(start, index);
-
-                            foreach (var container in ItemContainerGenerator.Containers)
-                            {
-                                MarkItemSelected(
-                                    container.Index,
-                                    container.Index >= first && container.Index <= last);
-                            }
-
-                            ResetSelectedItems();
-                        });
+                        _selection.Add(index);
+                        SyncSelection();
                     }
                     else if (multi && toggle)
                     {
-                        UpdateSelectedItems(() =>
+                        if (!_selection.Contains(index))
                         {
-                            if (!_selection.Contains(index))
-                            {
-                                _selection.Add(index);
-                                MarkItemSelected(index, true);
-                                SelectedItems.Add(ElementAt(Items, index));
-                            }
-                            else
-                            {
-                                _selection.Remove(index);
-                                MarkItemSelected(index, false);
+                            _selection.Add(index);
+                        }
+                        else
+                        {
+                            _selection.Remove(index);
 
-                                if (index == _selectedIndex)
-                                {
-                                    UpdateSelectedItem(_selection.First(), false);
-                                }
-
-                                SelectedItems.Remove(ElementAt(Items, index));
+                            if (index == _selectedIndex)
+                            {
+                                UpdateSelectedItem(_selection.First(), false);
                             }
-                        });
+                        }
+
+                        SyncSelection();
                     }
                     else if (toggle)
                     {
@@ -976,7 +983,8 @@ namespace Avalonia.Controls.Primitives
             var item = ElementAt(Items, index);
             var itemChanged = !Equals(item, oldItem);
             var added = -1;
-            HashSet<int> removed = null;
+            HashSet<int> removedIndexes = null;
+            List<object> removedItems = null;
 
             _selectedIndex = index;
             _selectedItem = item;
@@ -985,7 +993,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (clear)
                 {
-                    removed = _selection.Clear();
+                    removedIndexes = _selection.Clear();
                 }
 
                 if (index != -1)
@@ -995,16 +1003,21 @@ namespace Avalonia.Controls.Primitives
                         added = index;
                     }
 
-                    if (removed?.Contains(index) == true)
+                    if (removedIndexes?.Contains(index) == true)
                     {
-                        removed.Remove(index);
+                        removedIndexes.Remove(index);
                         added = -1;
                     }
                 }
-
-                if (removed != null)
+                else
                 {
-                    foreach (var i in removed)
+                    removedItems ??= new List<object>();
+                    removedItems.Add(oldItem);
+                }
+
+                if (removedIndexes != null)
+                {
+                    foreach (var i in removedIndexes)
                     {
                         MarkItemSelected(i, false);
                     }
@@ -1026,18 +1039,33 @@ namespace Avalonia.Controls.Primitives
                     item);
             }
 
-            if (removed != null && index != -1)
+            if (removedIndexes != null && index != -1)
             {
-                removed.Remove(index);
+                removedIndexes.Remove(index);
             }
 
-            if (added != -1 || removed?.Count > 0)
+            if (added != -1 || removedItems?.Count > 0 || removedIndexes?.Count > 0)
             {
                 ResetSelectedItems();
 
+                if (removedIndexes is object)
+                {
+                    removedItems ??= new List<object>();
+
+                    foreach (var removed in removedIndexes)
+                    {
+                        var i = ElementAt(Items, removed);
+
+                        if (!removedItems.Contains(i))
+                        {
+                            removedItems.Add(i);
+                        }
+                    }
+                }
+
                 var e = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    removed?.Select(x => ElementAt(Items, x)).ToArray() ?? Array.Empty<object>(),
+                    (IList)removedItems ?? Array.Empty<object>(),
                     added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>());
                 RaiseEvent(e);
             }
