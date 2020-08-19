@@ -132,7 +132,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
-        private IInputElement _overlayInputPassThroughElement;
+        private IInputElement _overlayInputPassThroughElement = null!;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
