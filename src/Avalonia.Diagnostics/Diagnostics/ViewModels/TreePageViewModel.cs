@@ -13,21 +13,9 @@ namespace Avalonia.Diagnostics.ViewModels
         public TreePageViewModel(TreeNode[] nodes)
         {
             Nodes = nodes;
-            Selection = new SelectionModel
-            { 
-                SingleSelect = true,
-                Source = Nodes 
-            };
-
-            Selection.SelectionChanged += (s, e) =>
-            {
-                SelectedNode = (TreeNode)Selection.SelectedItem;
-            };
        }
 
         public TreeNode[] Nodes { get; protected set; }
-
-        public SelectionModel Selection { get; }
 
         public TreeNode SelectedNode
         {
@@ -103,8 +91,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (node != null)
             {
+                SelectedNode = node;
                 ExpandNode(node.Parent);
-                Selection.SelectedIndex = node.Index;
             }
         }
 

@@ -67,7 +67,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Removing_Selected_Should_Select_First()
+        public void Removing_Selected_Should_Select_Next()
         {
             var items = new ObservableCollection<TabItem>()
             {
@@ -96,9 +96,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Same(items[1], target.SelectedItem);
             items.RemoveAt(1);
 
-            Assert.Equal(0, target.SelectedIndex);
-            Assert.Same(items[0], target.SelectedItem);
-            Assert.Same("first", ((TabItem)target.SelectedItem).Name);
+            // Assert for former element [2] now [1] == "3rd"
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Same(items[1], target.SelectedItem);
+            Assert.Same("3rd", ((TabItem)target.SelectedItem).Name);
         }
 
         private Control CreateTabStripTemplate(TabStrip parent, INameScope scope)

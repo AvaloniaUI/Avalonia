@@ -1111,8 +1111,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             items[1] = "Qux";
 
-            Assert.Equal(-1, target.SelectedIndex);
-            Assert.Null(target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal("Qux", target.SelectedItem);
         }
 
         [Fact]

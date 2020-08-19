@@ -95,7 +95,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Removal_Should_Set_First_Tab()
+        public void Removal_Should_Set_Next_Tab()
         {
             var collection = new ObservableCollection<TabItem>()
             {
@@ -126,7 +126,8 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedItem = collection[1];
             collection.RemoveAt(1);
 
-            Assert.Same(collection[0], target.SelectedItem);
+            // compare with former [2] now [1] == "3rd"
+            Assert.Same(collection[1], target.SelectedItem);
         }
 
         [Fact]

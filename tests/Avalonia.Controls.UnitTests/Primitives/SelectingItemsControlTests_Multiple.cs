@@ -1259,183 +1259,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
-            target.Selection.Select(1);
+            target.SelectedItems.Add("bar");
 
             Assert.Equal(1, target.SelectedIndex);
-        }
-
-        [Fact]
-        public void Assigning_Null_To_Selection_Should_Create_New_SelectionModel()
-        {
-            var target = new TestSelector
-            {
-                Items = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
-            var oldSelection = target.Selection;
-
-            target.Selection = null;
-
-            Assert.NotNull(target.Selection);
-            Assert.NotSame(oldSelection, target.Selection);
-        }
-
-        [Fact]
-        public void Assigning_SelectionModel_With_Different_Source_To_Selection_Should_Fail()
-        {
-            var target = new TestSelector
-            {
-                Items = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
-            var selection = new SelectionModel { Source = new[] { "baz" } };
-            Assert.Throws<ArgumentException>(() => target.Selection = selection);
-        }
-
-        [Fact]
-        public void Assigning_SelectionModel_With_Null_Source_To_Selection_Should_Set_Source()
-        {
-            var target = new TestSelector
-            {
-                Items = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
-            var selection = new SelectionModel();
-            target.Selection = selection;
-
-            Assert.Same(target.Items, selection.Source);
-        }
-
-        [Fact]
-        public void Assigning_Single_Selected_Item_To_Selection_Should_Set_SelectedIndex()
-        {
-            var target = new TestSelector
-            {
-                Items = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var selection = new SelectionModel { Source = target.Items };
-            selection.Select(1);
-            target.Selection = selection;
-
-            Assert.Equal(1, target.SelectedIndex);
-            Assert.Equal(new[] { "bar" }, target.Selection.SelectedItems);
-            Assert.Equal(new[] { 1 }, SelectedContainers(target));
-        }
-
-        [Fact]
-        public void Assigning_Multiple_Selected_Items_To_Selection_Should_Set_SelectedIndex()
-        {
-            var target = new TestSelector
-            {
-                Items = new[] { "foo", "bar", "baz" },
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var selection = new SelectionModel { Source = target.Items };
-            selection.SelectRange(new IndexPath(0), new IndexPath(2));
-            target.Selection = selection;
-
-            Assert.Equal(0, target.SelectedIndex);
-            Assert.Equal(new[] { "foo", "bar", "baz" }, target.Selection.SelectedItems);
-            Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
-        }
-
-        [Fact]
-        public void Reassigning_Selection_Should_Clear_Selection()
-        {
-            var target = new TestSelector
-            {
-                Items = new[] { "foo", "bar" },
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.Selection.Select(1);
-            target.Selection = new SelectionModel();
-
-            Assert.Equal(-1, target.SelectedIndex);
-            Assert.Null(target.SelectedItem);
-        }
-
-        [Fact]
-        public void Assigning_Selection_Should_Set_Item_IsSelected()
-        {
-            var items = new[]
-            {
-                new ListBoxItem(),
-                new ListBoxItem(),
-                new ListBoxItem(),
-            };
-
-            var target = new TestSelector
-            {
-                Items = items,
-                Template = Template(),
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var selection = new SelectionModel { Source = items };
-            selection.SelectRange(new IndexPath(0), new IndexPath(1));
-            target.Selection = selection;
-
-            Assert.True(items[0].IsSelected);
-            Assert.True(items[1].IsSelected);
-            Assert.False(items[2].IsSelected);
-        }
-
-        [Fact]
-        public void Assigning_Selection_Should_Raise_SelectionChanged()
-        {
-            var items = new[] { "foo", "bar", "baz" };
-
-            var target = new TestSelector
-            {
-                Items = items,
-                Template = Template(),
-                SelectedItem = "bar",
-            };
-
-            var raised = 0;
-
-            target.SelectionChanged += (s, e) =>
-            {
-                if (raised == 0)
-                {
-                    Assert.Empty(e.AddedItems.Cast<object>());
-                    Assert.Equal(new[] { "bar" }, e.RemovedItems.Cast<object>());
-                }
-                else
-                {
-                    Assert.Equal(new[] { "foo", "baz" }, e.AddedItems.Cast<object>());
-                    Assert.Empty(e.RemovedItems.Cast<object>());
-                }
-
-                ++raised;
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-
-            var selection = new SelectionModel { Source = items };
-            selection.Select(0);
-            selection.Select(2);
-            target.Selection = selection;
-
-            Assert.Equal(2, raised);
         }
 
         private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
@@ -1472,20 +1298,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 set { base.SelectedItems = value; }
             }
 
-            public new ISelectionModel Selection
-            {
-                get => base.Selection;
-                set => base.Selection = value;
-            }
-
             public new SelectionMode SelectionMode
             {
                 get { return base.SelectionMode; }
                 set { base.SelectionMode = value; }
             }
 
-            public void SelectAll() => Selection.SelectAll();
-            public void UnselectAll() => Selection.ClearSelection();
+            public new void SelectAll() => base.SelectAll();
+            public new void UnselectAll() => base.UnselectAll();
             public void SelectRange(int index) => UpdateSelection(index, true, true);
             public void Toggle(int index) => UpdateSelection(index, true, false, true);
         }

@@ -15,16 +15,16 @@ namespace ControlCatalog.ViewModels
         public ListBoxPageViewModel()
         {
             Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
-            Selection = new SelectionModel();
-            Selection.Select(1);
+            SelectedItems = new ObservableCollection<string>();
+            SelectedItems.Add(Items[1]);
 
             AddItemCommand = ReactiveCommand.Create(() => Items.Add(GenerateItem()));
 
             RemoveItemCommand = ReactiveCommand.Create(() =>
             {
-                while (Selection.SelectedItems.Count > 0)
+                while (SelectedItems.Count > 0)
                 {
-                    Items.Remove((string)Selection.SelectedItems.First());
+                    Items.Remove(SelectedItems.First());
                 }
             });
 
@@ -32,17 +32,14 @@ namespace ControlCatalog.ViewModels
             {
                 var random = new Random();
 
-                using (Selection.Update())
-                {
-                    Selection.ClearSelection();
-                    Selection.Select(random.Next(Items.Count - 1));
-                }
+                SelectedItems.Clear();
+                SelectedItems.Add(Items[random.Next(Items.Count - 1)]);
             });
         }
 
         public ObservableCollection<string> Items { get; }
 
-        public SelectionModel Selection { get; }
+        public ObservableCollection<string> SelectedItems { get; }
 
         public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
@@ -55,7 +52,6 @@ namespace ControlCatalog.ViewModels
             get => _selectionMode;
             set
             {
-                Selection.ClearSelection();
                 this.RaiseAndSetIfChanged(ref _selectionMode, value);
             }
         }

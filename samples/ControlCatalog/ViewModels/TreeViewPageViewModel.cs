@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -18,8 +17,7 @@ namespace ControlCatalog.ViewModels
             _root = new Node();
 
             Items = _root.Children;
-            Selection = new SelectionModel();
-            Selection.SelectionChanged += SelectionChanged;
+            SelectedItems = new ObservableCollection<Node>();
 
             AddItemCommand = ReactiveCommand.Create(AddItem);
             RemoveItemCommand = ReactiveCommand.Create(RemoveItem);
@@ -27,7 +25,7 @@ namespace ControlCatalog.ViewModels
         }
 
         public ObservableCollection<Node> Items { get; }
-        public SelectionModel Selection { get; }
+        public ObservableCollection<Node> SelectedItems { get; }
         public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
         public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
         public ReactiveCommand<Unit, Unit> SelectRandomItemCommand { get; }
@@ -37,24 +35,24 @@ namespace ControlCatalog.ViewModels
             get => _selectionMode;
             set
             {
-                Selection.ClearSelection();
+                SelectedItems.Clear();
                 this.RaiseAndSetIfChanged(ref _selectionMode, value);
             }
         }
 
         private void AddItem()
         {
-            var parentItem = Selection.SelectedItems.Count > 0 ? (Node)Selection.SelectedItems[0] : _root;
+            var parentItem = SelectedItems.Count > 0 ? (Node)SelectedItems[0] : _root;
             parentItem.AddItem();
         }
 
         private void RemoveItem()
         {
-            while (Selection.SelectedItems.Count > 0)
+            while (SelectedItems.Count > 0)
             {
-                Node lastItem = (Node)Selection.SelectedItems[0];
+                Node lastItem = (Node)SelectedItems[0];
                 RecursiveRemove(Items, lastItem);
-                Selection.DeselectAt(Selection.SelectedIndices[0]);
+                SelectedItems.RemoveAt(0);
             }
 
             bool RecursiveRemove(ObservableCollection<Node> items, Node selectedItem)
@@ -80,16 +78,16 @@ namespace ControlCatalog.ViewModels
         {
             var random = new Random();
             var depth = random.Next(4);
-            var indexes = Enumerable.Range(0, 4).Select(x => random.Next(10));
-            var path = new IndexPath(indexes);
-            Selection.SelectedIndex = path;
-        }
+            var indexes = Enumerable.Range(0, depth).Select(x => random.Next(10));
+            var node = _root;
 
-        private void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
-        {
-            var selected = string.Join(",", e.SelectedIndices);
-            var deselected = string.Join(",", e.DeselectedIndices);
-            System.Diagnostics.Debug.WriteLine($"Selected '{selected}', Deselected '{deselected}'");
+            foreach (var i in indexes)
+            {
+                node = node.Children[i];
+            }
+
+            SelectedItems.Clear();
+            SelectedItems.Add(node);
         }
 
         public class Node

@@ -347,7 +347,7 @@ namespace Avalonia.Controls
 
                 if (container == null && SelectedIndex != -1)
                 {
-                    ScrollIntoView(Selection.SelectedIndex);
+                    ScrollIntoView(SelectedItems[0]);
                     container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 }
 

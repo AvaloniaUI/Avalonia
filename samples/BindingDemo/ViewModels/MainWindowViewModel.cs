@@ -28,7 +28,7 @@ namespace BindingDemo.ViewModels
                     Detail = "Item " + x + " details",
                 }));
 
-            Selection = new SelectionModel();
+            SelectedItems = new ObservableCollection<TestItem>();
 
             ShuffleItems = ReactiveCommand.Create(() =>
             {
@@ -57,7 +57,7 @@ namespace BindingDemo.ViewModels
         }
 
         public ObservableCollection<TestItem> Items { get; }
-        public SelectionModel Selection { get; }
+        public ObservableCollection<TestItem> SelectedItems { get; }
         public ReactiveCommand<Unit, Unit> ShuffleItems { get; }
 
         public string BooleanString

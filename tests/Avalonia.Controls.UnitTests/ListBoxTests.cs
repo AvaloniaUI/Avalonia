@@ -385,7 +385,6 @@ namespace Avalonia.Controls.UnitTests
 
             // First an item that is not index 0 must be selected.
             _mouse.Click(target.Presenter.Panel.Children[1]);
-            Assert.Equal(new IndexPath(1), target.Selection.AnchorIndex);
 
             // We're going to be clicking on item 9.
             var item = (ListBoxItem)target.Presenter.Panel.Children[9];

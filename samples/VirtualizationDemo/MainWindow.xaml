@@ -44,8 +44,8 @@
         </StackPanel>
 
         <ListBox Name="listBox" 
-                 Items="{Binding Items}" 
-                 Selection="{Binding Selection}"
+                 Items="{Binding Items}"
+                 SelectedItems="{Binding SelectedItems}"
                  SelectionMode="Multiple"
                  VirtualizationMode="{Binding VirtualizationMode}"
                  ScrollViewer.HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility, Mode=TwoWay}"
