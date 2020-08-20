@@ -456,9 +456,9 @@ namespace Avalonia.Controls
         private void UpdateCommandStates()
         {
             var text = GetSelection();
-            var b1 = string.IsNullOrEmpty(text);
-            CanCopy = !b1;
-            CanCut = !b1;
+            var isNullOrEmpty = string.IsNullOrEmpty(text);
+            CanCopy = !isNullOrEmpty;
+            CanCut = !isNullOrEmpty && !IsReadOnly;
             CanPaste = !IsReadOnly;
         }
 
