@@ -8,6 +8,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Controls.Utils;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -21,30 +24,40 @@ namespace Avalonia.Controls
     /// view of the Items. That way, each component does not need to know if the source is an
     /// IEnumerable, an IList, or something else.
     /// </remarks>
-    public class ItemsSourceView : INotifyCollectionChanged, IDisposable
+    public class ItemsSourceView<T> : INotifyCollectionChanged, IDisposable, IReadOnlyList<T>
     {
-        private readonly IList _inner;
-        private INotifyCollectionChanged _notifyCollectionChanged;
+        /// <summary>
+        ///  Gets an empty <see cref="ItemsSourceView"/>
+        /// </summary>
+        public static ItemsSourceView<T> Empty { get; } = new ItemsSourceView<T>(Array.Empty<T>());
+
+        private readonly IList<T> _inner;
+        private INotifyCollectionChanged? _notifyCollectionChanged;
 
         /// <summary>
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
         /// <param name="source">The data source.</param>
-        public ItemsSourceView(IEnumerable source)
+        public ItemsSourceView(IEnumerable<T> source)
+            : this((IEnumerable)source)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+        }
 
-            if (source is IList list)
+        private protected ItemsSourceView(IEnumerable source)
+        {
+            source = source ?? throw new ArgumentNullException(nameof(source));
+
+            if (source is IList<T> list)
             {
                 _inner = list;
             }
-            else if (source is IEnumerable<object> objectEnumerable)
+            else if (source is IEnumerable<T> objectEnumerable)
             {
-                _inner = new List<object>(objectEnumerable);
+                _inner = new List<T>(objectEnumerable);
             }
             else
             {
-                _inner = new List<object>(source.Cast<object>());
+                _inner = new List<T>(source.Cast<T>());
             }
 
             ListenToCollectionChanges();
@@ -64,9 +77,16 @@ namespace Avalonia.Controls
         public bool HasKeyIndexMapping => false;
 
         /// <summary>
+        /// Retrieves the item at the specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>The item.</returns>
+        public T this[int index] => GetAt(index);
+
+        /// <summary>
         /// Occurs when the collection has changed to indicate the reason for the change and which items changed.
         /// </summary>
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         /// <inheritdoc/>
         public void Dispose()
@@ -81,10 +101,26 @@ namespace Avalonia.Controls
         /// Retrieves the item at the specified index.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns>the item.</returns>
-        public object GetAt(int index) => _inner[index];
+        /// <returns>The item.</returns>
+        public T GetAt(int index) => _inner[index];
 
-        public int IndexOf(object item) => _inner.IndexOf(item);
+        public int IndexOf(T item) => _inner.IndexOf(item);
+
+        public static ItemsSourceView<T> GetOrCreate(IEnumerable<T>? items)
+        {
+            if (items is ItemsSourceView<T> isv)
+            {
+                return isv;
+            }
+            else if (items is null)
+            {
+                return Empty;
+            }
+            else
+            {
+                return new ItemsSourceView<T>(items);
+            }
+        }
 
         /// <summary>
         /// Retrieves the index of the item that has the specified unique identifier (key).
@@ -112,6 +148,25 @@ namespace Avalonia.Controls
             throw new NotImplementedException();
         }
 
+        public IEnumerator<T> GetEnumerator() => _inner.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+
+        internal void AddListener(ICollectionChangedListener listener)
+        {
+            if (_inner is INotifyCollectionChanged incc)
+            {
+                CollectionChangedEventManager.Instance.AddListener(incc, listener);
+            }
+        }
+
+        internal void RemoveListener(ICollectionChangedListener listener)
+        {
+            if (_inner is INotifyCollectionChanged incc)
+            {
+                CollectionChangedEventManager.Instance.RemoveListener(incc, listener);
+            }
+        }
+
         protected void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
         {
             CollectionChanged?.Invoke(this, args);
@@ -129,6 +184,14 @@ namespace Avalonia.Controls
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             OnItemsSourceChanged(e);
+        }
+    }
+
+    public class ItemsSourceView : ItemsSourceView<object>
+    {
+        public ItemsSourceView(IEnumerable source)
+            : base(source)
+        {
         }
     }
 }
