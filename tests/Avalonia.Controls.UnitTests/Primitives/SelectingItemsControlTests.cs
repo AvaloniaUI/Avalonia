@@ -781,6 +781,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Items = items;
             ((ISupportInitialize)target).EndInit();
 
+            Prepare(target);
+
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
         }
@@ -795,6 +797,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItem = "Bar";
             target.Items = items;
             ((ISupportInitialize)target).EndInit();
+
+            Prepare(target);
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
@@ -1079,7 +1083,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("Bar", target.SelectedItem);
         }
 
-        [Fact(Skip = "We don't handle this properly yet")]
+        [Fact]
         public void Binding_SelectedIndex_Selects_Correct_Item()
         {
             // Issue #4496 (part 2)
@@ -1099,9 +1103,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 [!ListBox.SelectedIndexProperty] = other[!ListBox.SelectedIndexProperty],
             };
 
+            Prepare(other);
             Prepare(target);
-            other.ApplyTemplate();
-            other.Presenter.ApplyTemplate();
 
             items.Add("Foo");
 
@@ -1109,7 +1112,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(0, target.SelectedIndex);
         }
 
-        [Fact(Skip = "We don't handle this properly yet")]
+        [Fact]
         public void Binding_SelectedItem_Selects_Correct_Item()
         {
             // Issue #4496 (part 2)
@@ -1160,8 +1163,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             items[1] = "Qux";
 
-            Assert.Equal(1, target.SelectedIndex);
-            Assert.Equal("Qux", target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Null(target.SelectedItem);
         }
 
         [Fact]
@@ -1242,6 +1245,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems = selectedItems;
             target.SelectedItem = "Bar";
             target.EndInit();
+
+            Prepare(target);
 
             Assert.Equal("Bar", target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);

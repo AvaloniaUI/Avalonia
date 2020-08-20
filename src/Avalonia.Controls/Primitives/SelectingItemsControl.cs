@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Selection;
@@ -183,7 +182,7 @@ namespace Avalonia.Controls.Primitives
                     _selection = CreateDefaultSelectionModel();
                     InitializeSelectionModel(_selection);
                 }
-                
+
                 return _selection;
             }
             set
