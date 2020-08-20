@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -13,6 +14,7 @@ using Avalonia.Skia;
 using Avalonia.ReactiveUI;
 using Avalonia.Threading;
 using Avalonia.Dialogs;
+using Avalonia.OpenGL;
 
 namespace ControlCatalog.NetCore
 {
@@ -118,6 +120,14 @@ namespace ControlCatalog.NetCore
                     EnableMultitouch = true,
                     AllowEglInitialization = true
                 })
+                .With(new AngleOptions
+                    {
+                        AllowedPlatformApis = new List<AngleOptions.PlatformApi>
+                        {
+                             AngleOptions.PlatformApi.DirectX11
+                        }
+                    }
+                )
                 .UseSkia()
                 .UseReactiveUI()
                 .UseManagedSystemDialogs()

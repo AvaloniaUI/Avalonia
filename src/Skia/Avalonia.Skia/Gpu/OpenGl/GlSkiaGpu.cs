@@ -11,6 +11,7 @@ namespace Avalonia.Skia
     {
         private GRContext _grContext;
         private static List<int> _aliveTextures = new List<int>();
+        private static IGlContext _glContext;
 
         class GenTexturesProxy
         {
@@ -30,23 +31,30 @@ namespace Avalonia.Skia
 
             unsafe void Proxy(int size, IntPtr textureIds)
             {
+                _original(size, textureIds);
+                
                 int* p = (int*)textureIds.ToPointer();
                 
                 for (int i = 0; i < size; i++)
                 {
-                    Console.WriteLine($"glGenTexture: {*p}");
+                    Console.WriteLine($"glGenTexture: {*p} - ({_aliveTextures.Count})");
                     if (GlSkiaGpu._aliveTextures.Contains(*p))
                     {
                         Console.WriteLine("Trying to add multiple textures with same id???");
                     }
                     else
                     {
-                        GlSkiaGpu._aliveTextures.Add(*p);   
+                        GlSkiaGpu._aliveTextures.Add(*p);
+                        _glContext.GlInterface.BindTexture(GlConsts.GL_TEXTURE_2D, *p);
+
+                        int param = 0;
+                        var pParam = new IntPtr(&param);
+                        _glContext.GlInterface.GetTextureLevelParameteriv(*p, 0,
+                            GlConsts.GL_TEXTURE_WIDTH, pParam);
                     }
 
                     p++;
                 }
-                _original(size, textureIds);
             }
         }
         
@@ -68,11 +76,12 @@ namespace Avalonia.Skia
 
             unsafe void Proxy(int size, IntPtr textureIds)
             {
-                int* p = (int*)textureIds.ToPointer();
+                _original(size, textureIds);
                 
+                int* p = (int*)textureIds.ToPointer();
+
                 for (int i = 0; i < size; i++)
                 {
-                    Console.WriteLine($"glDeleteTexture: {*p}");
                     if (GlSkiaGpu._aliveTextures.Contains(*p))
                     {
                         _aliveTextures.Remove(*p);
@@ -80,12 +89,12 @@ namespace Avalonia.Skia
                     else
                     {
                         Console.WriteLine("Deleting unknown texture");
-                        
                     }
+                    
+                    Console.WriteLine($"glDeleteTexture: {*p} - ({_aliveTextures.Count})");
                     
                     p++;
                 }
-                _original(size, textureIds);
             }
         }
 
@@ -116,6 +125,7 @@ namespace Avalonia.Skia
                     GRGlInterface.CreateGles(proc => GetProcAddress(proc, context.GlInterface.GetProcAddress)))
                 {
                     _grContext = GRContext.CreateGl(iface);
+                    _glContext = context;
                     if (maxResourceBytes.HasValue)
                     {
                         _grContext.SetResourceCacheLimit(maxResourceBytes.Value);

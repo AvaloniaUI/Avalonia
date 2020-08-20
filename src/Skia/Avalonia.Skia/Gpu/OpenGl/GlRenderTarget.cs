@@ -19,7 +19,14 @@ namespace Avalonia.Skia
             _surface = glSurface.CreateGlRenderTarget();
         }
 
-        public void Dispose() => _surface.Dispose();
+        public void Dispose()
+        {
+            _surface.Dispose();
+            //_grContext.ResetContext();
+            //_grContext.SetResourceCacheLimit(000000);
+            //_grContext.GetResourceCacheUsage(out var maxResource, out var maxBytes);
+            //Console.WriteLine($"ResCount: {maxResource}, ResBytes: {(double)maxBytes / 1000000}, Limit: {(double)_grContext.GetResourceCacheLimit() / 1000000}");
+        }
 
         public bool IsCorrupted => (_surface as IGlPlatformSurfaceRenderTargetWithCorruptionInfo)?.IsCorrupted == true;
 

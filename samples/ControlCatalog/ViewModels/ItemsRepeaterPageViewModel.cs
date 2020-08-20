@@ -53,7 +53,7 @@ namespace ControlCatalog.ViewModels
             _newGenerationIndex++;
 
             return new ObservableCollection<Item>(
-                Enumerable.Range(1, 100000).Select(i => new Item(i)
+                Enumerable.Range(1, 2).Select(i => new Item(i)
                 {
                     Text = $"Item {i.ToString()} {suffix}"
                 }));
