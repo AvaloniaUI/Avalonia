@@ -407,7 +407,7 @@ namespace Avalonia.Controls
             _presenter?.ShowCaret();
         }
 
-        private void ClearSelection()
+        public void ClearSelection()
         {
             SelectionStart = SelectionEnd = CaretIndex;
         }
