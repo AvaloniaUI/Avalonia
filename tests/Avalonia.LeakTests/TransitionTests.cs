@@ -23,6 +23,12 @@ namespace Avalonia.LeakTests
 
             using (UnitTestApplication.Start(new TestServices(globalClock: clock)))
             {
+                var initialCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialCount = memory.GetObjects(where => where.Type.Is<TransitionInstance>()).ObjectsCount;
+                });
+                
                 Func<Border> run = () =>
                 {
                     var border = new Border
@@ -53,7 +59,7 @@ namespace Avalonia.LeakTests
                 var result = run();
 
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TransitionInstance>()).ObjectsCount));
+                    Assert.Equal(initialCount, memory.GetObjects(where => where.Type.Is<TransitionInstance>()).ObjectsCount));
             }
         }
     }
