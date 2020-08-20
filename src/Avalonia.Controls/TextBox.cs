@@ -413,8 +413,7 @@ namespace Avalonia.Controls
 
             if (ContextMenu == null || !ContextMenu.IsOpen)
             {
-                SelectionStart = 0;
-                SelectionEnd = 0;
+                SelectionStart = SelectionEnd = CaretIndex;
                 RevealPassword = false;
             }
             
