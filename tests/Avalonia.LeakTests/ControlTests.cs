@@ -493,14 +493,23 @@ namespace Avalonia.LeakTests
 
                 Assert.Same(window, FocusManager.Instance.Current);
 
+                // Context menu in resources means the baseline may not be 0.
+                var initialMenuCount = 0;
+                var initialMenuItemCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
+                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
+                });
+                
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
                 Mock.Get(window.PlatformImpl).ResetCalls();
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
             }
         }
 
