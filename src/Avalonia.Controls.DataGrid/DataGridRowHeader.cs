@@ -99,7 +99,7 @@ namespace Avalonia.Controls.Primitives
             _rootElement = e.NameScope.Find<Control>(DATAGRIDROWHEADER_elementRootName);
             if (_rootElement != null)
             {
-                ApplyOwnerStatus();
+                UpdatePseudoClasses();
             }
         } 
 
@@ -131,12 +131,27 @@ namespace Avalonia.Controls.Primitives
             return measuredSize;
         }
 
-        //TODO Implement
-        internal void ApplyOwnerStatus()
+        internal void UpdatePseudoClasses()
         {
             if (_rootElement != null && Owner != null && Owner.IsVisible)
             {
+                if (OwningRow != null)
+                {
+                    PseudoClasses.Set(":invalid", !OwningRow.IsValid);
 
+                    PseudoClasses.Set(":selected", OwningRow.IsSelected);
+
+                    PseudoClasses.Set(":editing", OwningRow.IsEditing);
+
+                    if (OwningGrid != null)
+                    {
+                        PseudoClasses.Set(":current", OwningRow.Slot == OwningGrid.CurrentSlot);
+                    }
+                }
+                else if (OwningRowGroupHeader != null && OwningGrid != null)
+                {
+                    PseudoClasses.Set(":current", OwningRowGroupHeader.RowGroupInfo.Slot == OwningGrid.CurrentSlot);
+                }
             }
         }
 
