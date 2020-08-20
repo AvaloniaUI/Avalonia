@@ -7,6 +7,7 @@
     </ContextMenu>
   </Styles.Resources>
   <Style Selector="TextBox">
+    <Setter Property="CaretBrush" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
