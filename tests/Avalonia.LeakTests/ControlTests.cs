@@ -426,16 +426,7 @@ namespace Avalonia.LeakTests
         public void Attached_ContextMenu_Is_Freed()
         {
             using (Start())
-            {
-                // Context menu in resources means the baseline may not be 0.
-                var initialMenuCount = 0;
-                var initialMenuItemCount = 0;
-                dotMemory.Check(memory =>
-                {
-                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
-                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
-                });
-                
+            {   
                 void AttachShowAndDetachContextMenu(Control control)
                 {
                     var contextMenu = new ContextMenu
@@ -458,6 +449,15 @@ namespace Avalonia.LeakTests
 
                 Assert.Same(window, FocusManager.Instance.Current);
 
+                // Context menu in resources means the baseline may not be 0.
+                var initialMenuCount = 0;
+                var initialMenuItemCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
+                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
+                });
+                
                 AttachShowAndDetachContextMenu(window);
 
                 Mock.Get(window.PlatformImpl).ResetCalls();
