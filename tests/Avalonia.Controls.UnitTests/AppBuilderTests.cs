@@ -21,17 +21,14 @@ namespace Avalonia.Controls.UnitTests
 
         public class AppWithDependencies : Application
         {
-            public AppWithDependencies()
-            {
-                throw new NotSupportedException();
-            }
-
             public AppWithDependencies(object dependencyA, object dependencyB)
             {
                 DependencyA = dependencyA;
                 DependencyB = dependencyB;
             }
+
             public object DependencyA { get; }
+
             public object DependencyB { get; }
         }
 
