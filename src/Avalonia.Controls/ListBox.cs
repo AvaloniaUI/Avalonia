@@ -95,12 +95,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Selects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public void SelectAll() => base.SelectAll();
+        public void SelectAll() => Selection.SelectAll();
 
         /// <summary>
         /// Deselects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public void UnselectAll() => base.UnselectAll();
+        public void UnselectAll() => Selection.Clear();
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()

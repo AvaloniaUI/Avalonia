@@ -1,19 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http.Headers;
-using Avalonia.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Logging;
 using Avalonia.VisualTree;
 
 #nullable enable
@@ -28,9 +25,9 @@ namespace Avalonia.Controls.Primitives
     /// <see cref="SelectingItemsControl"/> provides a base class for <see cref="ItemsControl"/>s
     /// that maintain a selection (single or multiple). By default only its 
     /// <see cref="SelectedIndex"/> and <see cref="SelectedItem"/> properties are visible; the
-    /// current multiple <see cref="SelectedItems"/> together with the <see cref="SelectionMode"/>
-    /// properties are protected, however a derived class can expose these if it wishes to support
-    /// multiple selection.
+    /// current multiple <see cref="Selection"/> and <see cref="SelectedItems"/> together with the
+    /// <see cref="SelectionMode"/> properties are protected, however a derived class can expose
+    /// these if it wishes to support multiple selection.
     /// </para>
     /// <para>
     /// <see cref="SelectingItemsControl"/> maintains a selection respecting the current 
@@ -80,6 +77,15 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.SelectedItems = v);
 
         /// <summary>
+        /// Defines the <see cref="Selection"/> property.
+        /// </summary>
+        protected static readonly DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
+            AvaloniaProperty.RegisterDirect<SelectingItemsControl, ISelectionModel>(
+                nameof(Selection),
+                o => o.Selection,
+                (o, v) => o.Selection = v);
+
+        /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
         protected static readonly StyledProperty<SelectionMode> SelectionModeProperty =
@@ -105,15 +111,12 @@ namespace Avalonia.Controls.Primitives
                 RoutingStrategies.Bubble);
 
         private static readonly IList Empty = Array.Empty<object>();
-        private readonly Selection _selection = new Selection();
-        private int _selectedIndex = -1;
-        private object? _selectedItem;
-        private IList? _selectedItems;
+        private SelectedItemsSync? _selectedItemsSync;
+        private ISelectionModel? _selection;
+        private int _oldSelectedIndex;
+        private object? _oldSelectedItem;
+        private int _initializing;
         private bool _ignoreContainerSelectionChanged;
-        private bool _syncingSelectedItems;
-        private int _updateCount;
-        private int _updateSelectedIndex;
-        private object? _updateSelectedItem;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -146,20 +149,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public int SelectedIndex
         {
-            get => _selectedIndex;
-            set
-            {
-                if (_updateCount == 0)
-                {
-                    var effective = (value >= 0 && value < ItemCount) ? value : -1;
-                    UpdateSelectedItem(effective);
-                }
-                else
-                {
-                    _updateSelectedIndex = value;
-                    _updateSelectedItem = null;
-                }
-            }
+            get => Selection.SelectedIndex;
+            set => Selection.SelectedIndex = value;
         }
 
         /// <summary>
@@ -167,19 +158,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public object? SelectedItem
         {
-            get => _selectedItem;
-            set
-            {
-                if (_updateCount == 0)
-                {
-                    UpdateSelectedItem(IndexOf(Items, value));
-                }
-                else
-                {
-                    _updateSelectedItem = value;
-                    _updateSelectedIndex = int.MinValue;
-                }
-            }
+            get => Selection.SelectedItem;
+            set => Selection.SelectedItem = value;
         }
 
         /// <summary>
@@ -187,28 +167,42 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         protected IList SelectedItems
         {
+            get => SelectedItemsSync.GetOrCreateSelectedItems();
+            set => SelectedItemsSync.SetSelectedItems(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the model that holds the current selection.
+        /// </summary>
+        protected ISelectionModel Selection
+        {
             get
             {
-                if (_selectedItems == null)
+                if (_selection is null)
                 {
-                    _selectedItems = new AvaloniaList<object>();
-                    SubscribeToSelectedItems();
+                    _selection = CreateDefaultSelectionModel();
+                    InitializeSelectionModel(_selection);
                 }
-
-                return _selectedItems;
+                
+                return _selection;
             }
-
             set
             {
-                if (value?.IsFixedSize == true || value?.IsReadOnly == true)
-                {
-                    throw new NotSupportedException(
-                        "Cannot use a fixed size or read-only collection as SelectedItems.");
-                }
+                value ??= CreateDefaultSelectionModel();
 
-                UnsubscribeFromSelectedItems();
-                _selectedItems = value ?? new AvaloniaList<object>();
-                SubscribeToSelectedItems();
+                if (_selection != value)
+                {
+                    if (value.Source != null && value.Source != Items)
+                    {
+                        throw new ArgumentException(
+                            "The supplied ISelectionModel already has an assigned Source but this " +
+                            "collection is different to the Items on the control.");
+                    }
+
+                    DeinitializeSelectionModel(_selection);
+                    _selection = value;
+                    InitializeSelectionModel(_selection);
+                }
             }
         }
 
@@ -230,20 +224,20 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         protected bool AlwaysSelected => (SelectionMode & SelectionMode.AlwaysSelected) != 0;
 
+        private SelectedItemsSync SelectedItemsSync => _selectedItemsSync ??= new SelectedItemsSync(Selection);
+
         /// <inheritdoc/>
         public override void BeginInit()
         {
             base.BeginInit();
-
-            InternalBeginInit();
+            ++_initializing;
         }
 
         /// <inheritdoc/>
         public override void EndInit()
         {
-            InternalEndInit();
-
             base.EndInit();
+            --_initializing;
         }
 
         /// <summary>
@@ -286,79 +280,22 @@ namespace Avalonia.Controls.Primitives
         {
             base.ItemsChanged(e);
 
-            if (_updateCount == 0)
-            {
-                var newIndex = -1;
+            //if (_updateCount == 0)
+            //{
+            //    var newIndex = -1;
 
-                if (SelectedIndex != -1)
-                {
-                    newIndex = IndexOf((IEnumerable?)e.NewValue, SelectedItem);
-                }
+            //    if (SelectedIndex != -1)
+            //    {
+            //        newIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
+            //    }
 
-                if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
-                {
-                    newIndex = 0;
-                }
+            //    if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
+            //    {
+            //        newIndex = 0;
+            //    }
 
-                SelectedIndex = newIndex;
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (_updateCount > 0)
-            {
-                base.ItemsCollectionChanged(sender, e);
-                return;
-            }
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    _selection.ItemsInserted(e.NewStartingIndex, e.NewItems.Count);
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    _selection.ItemsRemoved(e.OldStartingIndex, e.OldItems.Count);
-                    break;
-            }
-
-            base.ItemsCollectionChanged(sender, e);
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    if (AlwaysSelected && SelectedIndex == -1)
-                    {
-                        SelectedIndex = 0;
-                    }
-                    else
-                    {
-                        UpdateSelectedItem(_selection.First(), false);
-                    }
-
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    UpdateSelectedItem(_selection.First(), false);
-                    ResetSelectedItems();
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    UpdateSelectedItem(SelectedIndex, false);
-                    ResetSelectedItems();
-                    break;
-
-                case NotifyCollectionChangedAction.Move:
-                case NotifyCollectionChangedAction.Reset:
-                    SelectedIndex = IndexOf(Items, SelectedItem);
-
-                    if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
-                    {
-                        SelectedIndex = 0;
-                    }
-                    break;
-            }
+            //    SelectedIndex = newIndex;
+            //}
         }
 
         /// <inheritdoc/>
@@ -366,35 +303,17 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnContainersMaterialized(e);
 
-            var resetSelectedItems = false;
-
             foreach (var container in e.Containers)
             {
                 if ((container.ContainerControl as ISelectable)?.IsSelected == true)
                 {
-                    if (SelectionMode.HasFlag(SelectionMode.Multiple))
-                    {
-                        if (_selection.Add(container.Index))
-                        {
-                            resetSelectedItems = true;
-                        }
-                    }
-                    else
-                    {
-                        SelectedIndex = container.Index;
-                    }
-
+                    Selection.Select(container.Index);
                     MarkContainerSelected(container.ContainerControl, true);
                 }
-                else if (_selection.Contains(container.Index))
+                else if (Selection.IsSelected(container.Index) == true)
                 {
                     MarkContainerSelected(container.ContainerControl, true);
                 }
-            }
-
-            if (resetSelectedItems)
-            {
-                ResetSelectedItems();
             }
         }
 
@@ -424,7 +343,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (i.ContainerControl != null && i.Item != null)
                 {
-                    bool selected = _selection.Contains(i.Index);
+                    bool selected = Selection.IsSelected(i.Index);
                     MarkContainerSelected(i.ContainerControl, selected);
                 }
             }
@@ -435,7 +354,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDataContextBeginUpdate();
 
-            InternalBeginInit();
+            //InternalBeginInit();
         }
 
         /// <inheritdoc/>
@@ -443,7 +362,17 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDataContextEndUpdate();
 
-            InternalEndInit();
+            //InternalEndInit();
+        }
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+
+            if (_selection is object)
+            {
+                _selection.Source = Items;
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -460,9 +389,19 @@ namespace Avalonia.Controls.Primitives
                     (((SelectionMode & SelectionMode.Multiple) != 0) ||
                       (SelectionMode & SelectionMode.Toggle) != 0))
                 {
-                    SelectAll();
+                    Selection.SelectAll();
                     e.Handled = true;
                 }
+            }
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ItemsProperty && _initializing == 0 && _selection is object)
+            {
+                _selection.Source = change.NewValue.GetValueOrDefault<IEnumerable>();
             }
         }
 
@@ -503,62 +442,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Selects all items in the control.
-        /// </summary>
-        protected void SelectAll()
-        {
-            _selection.Clear();
-
-            for (var i = 0; i < ItemCount; ++i)
-            {
-                _selection.Add(i);
-            }
-
-            UpdateSelectedItem(0, false);
-
-            SyncSelection();
-        }
-
-        /// <summary>
-        /// Deselects all items in the control.
-        /// </summary>
-        protected void UnselectAll() => UpdateSelectedItem(-1);
-
-        private void SyncSelection()
-        {
-            UpdateSelectedItems(() =>
-            {
-                var selection = _selection.Select(x => ElementAt(Items, x)).ToList();
-                var added = selection.Except(SelectedItems.Cast<object>()).ToList();
-                var removed = SelectedItems.Cast<object>().Except(selection).ToList();
-
-                foreach (var container in ItemContainerGenerator.Containers)
-                {
-                    MarkItemSelected(container.Index, _selection.Contains(container.Index));
-                }
-
-                foreach (var i in added)
-                {
-                    SelectedItems.Add(i);
-                }
-
-                foreach (var i in removed)
-                {
-                    SelectedItems.Remove(i);
-                }
-
-                if (added.Count > 0 || removed.Count > 0)
-                {
-                    var changed = new SelectionChangedEventArgs(
-                        SelectionChangedEvent,
-                        removed ?? Empty,
-                        added ?? Empty);
-                    RaiseEvent(changed);
-                }
-            });
-        }
-
-        /// <summary>
         /// Updates the selection for an item based on user interaction.
         /// </summary>
         /// <param name="index">The index of the item.</param>
@@ -573,76 +456,61 @@ namespace Avalonia.Controls.Primitives
             bool toggleModifier = false,
             bool rightButton = false)
         {
-            if (index != -1)
+            if (index < 0 || index >= ItemCount)
             {
-                if (select)
+                return;
+            }
+
+            var mode = SelectionMode;
+            var multi = (mode & SelectionMode.Multiple) != 0;
+            var toggle = (toggleModifier || (mode & SelectionMode.Toggle) != 0);
+            var range = multi && rangeModifier;
+
+            if (!select)
+            {
+                Selection.Deselect(index);
+            }
+            else if (rightButton)
+            {
+                if (Selection.IsSelected(index) == false)
                 {
-                    var mode = SelectionMode;
-                    var multi = (mode & SelectionMode.Multiple) != 0;
-                    var toggle = (toggleModifier || (mode & SelectionMode.Toggle) != 0);
-                    var range = multi && rangeModifier;
-
-                    if (rightButton)
-                    {
-                        if (!_selection.Contains(index))
-                        {
-                            UpdateSelectedItem(index);
-                        }
-                    }
-                    else if (range)
-                    {
-                        var start = SelectedIndex != -1 ? SelectedIndex : 0;
-                        var step = start < index ? 1 : -1;
-
-                        _selection.Clear();
-
-                        for (var i = start; i != index; i += step)
-                        {
-                            _selection.Add(i);
-                        }
-
-                        _selection.Add(index);
-                        SyncSelection();
-                    }
-                    else if (multi && toggle)
-                    {
-                        if (!_selection.Contains(index))
-                        {
-                            _selection.Add(index);
-                        }
-                        else
-                        {
-                            _selection.Remove(index);
-
-                            if (index == _selectedIndex)
-                            {
-                                UpdateSelectedItem(_selection.First(), false);
-                            }
-                        }
-
-                        SyncSelection();
-                    }
-                    else if (toggle)
-                    {
-                        SelectedIndex = (SelectedIndex == index) ? -1 : index;
-                    }
-                    else
-                    {
-                        UpdateSelectedItem(index);
-                    }
-
-                    if (Presenter?.Panel != null)
-                    {
-                        var container = ItemContainerGenerator.ContainerFromIndex(index);
-                        KeyboardNavigation.SetTabOnceActiveElement(
-                            (InputElement)Presenter.Panel,
-                            container);
-                    }
+                    SelectedIndex = index;
+                }
+            }
+            else if (range)
+            {
+                using var operation = Selection.BatchUpdate();
+                Selection.Clear();
+                Selection.SelectRange(Selection.AnchorIndex, index);
+            }
+            else if (multi && toggle)
+            {
+                if (Selection.IsSelected(index) == true)
+                {
+                    Selection.Deselect(index);
                 }
                 else
                 {
-                    LostSelection();
+                    Selection.Select(index);
                 }
+            }
+            else if (toggle)
+            {
+                SelectedIndex = (SelectedIndex == index) ? -1 : index;
+            }
+            else
+            {
+                using var operation = Selection.BatchUpdate();
+                Selection.Clear();
+                Selection.Select(index);
+            }
+
+            if (Presenter?.Panel != null)
+            {
+                var container = ItemContainerGenerator.ContainerFromIndex(index);
+                KeyboardNavigation.SetTabOnceActiveElement(
+                    (InputElement)Presenter.Panel,
+                    container);
             }
         }
 
@@ -701,6 +569,73 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Called when <see cref="INotifyPropertyChanged.PropertyChanged"/> is raised on
+        /// <see cref="Selection"/>.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event args.</param>
+        private void OnSelectionModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ISelectionModel.AnchorIndex) && AutoScrollToSelectedItem)
+            {
+                if (Selection.AnchorIndex > 0)
+                {
+                    ScrollIntoView(Selection.AnchorIndex);
+                }
+            }
+            else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex))
+            {
+                RaisePropertyChanged(SelectedIndexProperty, _oldSelectedIndex, SelectedIndex);
+                _oldSelectedIndex = SelectedIndex;
+            }
+            else if (e.PropertyName == nameof(ISelectionModel.SelectedItem))
+            {
+                RaisePropertyChanged(SelectedItemProperty, _oldSelectedItem, SelectedItem);
+                _oldSelectedItem = SelectedItem;
+            }
+        }
+
+        /// <summary>
+        /// Called when <see cref="ISelectionModel.SelectionChanged"/> event is raised on
+        /// <see cref="Selection"/>.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event args.</param>
+        private void OnSelectionModelSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        {
+            void Mark(int index, bool selected)
+            {
+                var container = ItemContainerGenerator.ContainerFromIndex(index);
+
+                if (container != null)
+                {
+                    MarkContainerSelected(container, selected);
+                }
+            }
+
+            foreach (var i in e.SelectedIndexes)
+            {
+                Mark(i, true);
+            }
+
+            foreach (var i in e.DeselectedIndexes)
+            {
+                Mark(i, false);
+            }
+
+            var route = BuildEventRoute(SelectionChangedEvent);
+
+            if (route.HasHandlers)
+            {
+                var ev = new SelectionChangedEventArgs(
+                    SelectionChangedEvent,
+                    e.DeselectedItems.ToList(),
+                    e.SelectedItems.ToList());
+                RaiseEvent(ev);
+            }
+        }
+
+        /// <summary>
         /// Called when a container raises the <see cref="IsSelectedChangedEvent"/>.
         /// </summary>
         /// <param name="e">The event.</param>
@@ -724,23 +659,6 @@ namespace Avalonia.Controls.Primitives
             {
                 e.Handled = true;
             }
-        }
-
-        /// <summary>
-        /// Called when the currently selected item is lost and the selection must be changed
-        /// depending on the <see cref="SelectionMode"/> property.
-        /// </summary>
-        private void LostSelection()
-        {
-            var items = Items?.Cast<object>();
-            var index = -1;
-
-            if (items != null && AlwaysSelected)
-            {
-                index = Math.Min(SelectedIndex, items.Count() - 1);
-            }
-
-            SelectedIndex = index;
         }
 
         /// <summary>
@@ -817,431 +735,98 @@ namespace Avalonia.Controls.Primitives
             return index;
         }
 
-        private void ResetSelectedItems()
+        private void UpdateContainerSelection()
         {
-            UpdateSelectedItems(() =>
+            if (Presenter?.Panel is IPanel panel)
             {
-                SelectedItems.Clear();
-
-                foreach (var i in _selection)
+                foreach (var container in panel.Children)
                 {
-                    SelectedItems.Add(ElementAt(Items, i));
+                    MarkContainerSelected(
+                        container,
+                        Selection.IsSelected(ItemContainerGenerator.IndexFromContainer(container)));
                 }
-            });
-        }
-
-        /// <summary>
-        /// Called when the <see cref="SelectedItems"/> CollectionChanged event is raised.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private void SelectedItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (_syncingSelectedItems)
-            {
-                return;
-            }
-
-            void Add(IList newItems, IList? addedItems = null)
-            {
-                foreach (var item in newItems)
-                {
-                    var index = MarkItemSelected(item, true);
-
-                    if (index != -1 && _selection.Add(index) && addedItems != null)
-                    {
-                        addedItems.Add(item);
-                    }
-                }
-            }
-
-            void UpdateSelection()
-            {
-                if ((SelectedIndex != -1 && !_selection.Contains(SelectedIndex)) ||
-                    (SelectedIndex == -1 && _selection.HasItems))
-                {
-                    _selectedIndex = _selection.First();
-                    _selectedItem = ElementAt(Items, _selectedIndex);
-                    RaisePropertyChanged(SelectedIndexProperty, -1, _selectedIndex, BindingPriority.LocalValue);
-                    RaisePropertyChanged(SelectedItemProperty, null, _selectedItem, BindingPriority.LocalValue);
-                }
-            }
-
-            IList? added = null;
-            IList? removed = null;
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    {
-                        Add(e.NewItems);
-                        UpdateSelection();
-                        added = e.NewItems;
-                    }
-
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    if (SelectedItems.Count == 0)
-                    {
-                        SelectedIndex = -1;
-                    }
-
-                    foreach (var item in e.OldItems)
-                    {
-                        var index = MarkItemSelected(item, false);
-                        _selection.Remove(index);
-                    }
-
-                    removed = e.OldItems;
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    throw new NotSupportedException("Replacing items in a SelectedItems collection is not supported.");
-
-                case NotifyCollectionChangedAction.Move:
-                    throw new NotSupportedException("Moving items in a SelectedItems collection is not supported.");
-
-                case NotifyCollectionChangedAction.Reset:
-                    {
-                        removed = new List<object>();
-                        added = new List<object>();
-
-                        foreach (var index in _selection.ToList())
-                        {
-                            var item = ElementAt(Items, index);
-
-                            if (!SelectedItems.Contains(item))
-                            {
-                                MarkItemSelected(index, false);
-                                removed.Add(item);
-                                _selection.Remove(index);
-                            }
-                        }
-
-                        Add(SelectedItems, added);
-                        UpdateSelection();
-                    }
-
-                    break;
-            }
-
-            if (added?.Count > 0 || removed?.Count > 0)
-            {
-                var changed = new SelectionChangedEventArgs(
-                    SelectionChangedEvent,
-                    removed ?? Empty,
-                    added ?? Empty);
-                RaiseEvent(changed);
             }
         }
 
-        /// <summary>
-        /// Subscribes to the <see cref="SelectedItems"/> CollectionChanged event, if any.
-        /// </summary>
-        private void SubscribeToSelectedItems()
+        private ISelectionModel CreateDefaultSelectionModel()
         {
-            var incc = _selectedItems as INotifyCollectionChanged;
-
-            if (incc != null)
+            return new SelectionModel<object>
             {
-                incc.CollectionChanged += SelectedItemsCollectionChanged;
-            }
-
-            SelectedItemsCollectionChanged(
-                _selectedItems,
-                new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                SingleSelect = !SelectionMode.HasFlagCustom(SelectionMode.Multiple),
+            };
         }
 
-        /// <summary>
-        /// Unsubscribes from the <see cref="SelectedItems"/> CollectionChanged event, if any.
-        /// </summary>
-        private void UnsubscribeFromSelectedItems()
+        private void InitializeSelectionModel(ISelectionModel model)
         {
-            var incc = _selectedItems as INotifyCollectionChanged;
-
-            if (incc != null)
+            if (_initializing == 0)
             {
-                incc.CollectionChanged -= SelectedItemsCollectionChanged;
-            }
-        }
-
-        /// <summary>
-        /// Updates the selection due to a change to <see cref="SelectedIndex"/> or
-        /// <see cref="SelectedItem"/>.
-        /// </summary>
-        /// <param name="index">The new selected index.</param>
-        /// <param name="clear">Whether to clear existing selection.</param>
-        private void UpdateSelectedItem(int index, bool clear = true)
-        {
-            var oldIndex = _selectedIndex;
-            var oldItem = _selectedItem;
-
-            if (index == -1 && AlwaysSelected)
-            {
-                index = Math.Min(SelectedIndex, ItemCount - 1);
+                model.Source = Items;
             }
 
-            var item = ElementAt(Items, index);
-            var itemChanged = !Equals(item, oldItem);
-            var added = -1;
-            HashSet<int>? removedIndexes = null;
-            List<object?>? removedItems = null;
+            model.PropertyChanged += OnSelectionModelPropertyChanged;
+            model.SelectionChanged += OnSelectionModelSelectionChanged;
 
-            _selectedIndex = index;
-            _selectedItem = item;
-
-            if (oldIndex != index || itemChanged || _selection.HasMultiple)
+            if (model.SingleSelect)
             {
-                if (clear)
-                {
-                    removedIndexes = _selection.Clear();
-                }
-
-                if (index != -1)
-                {
-                    if (_selection.Add(index))
-                    {
-                        added = index;
-                    }
-
-                    if (removedIndexes?.Contains(index) == true)
-                    {
-                        removedIndexes.Remove(index);
-                        added = -1;
-                    }
-                }
-                else
-                {
-                    removedItems ??= new List<object?>();
-                    removedItems.Add(oldItem);
-                }
-
-                if (removedIndexes != null)
-                {
-                    foreach (var i in removedIndexes)
-                    {
-                        MarkItemSelected(i, false);
-                    }
-                }
-
-                MarkItemSelected(index, true);
-
-                RaisePropertyChanged(
-                    SelectedIndexProperty,
-                    oldIndex,
-                    index);
-            }
-
-            if (itemChanged)
-            {
-                RaisePropertyChanged(
-                    SelectedItemProperty,
-                    oldItem,
-                    item);
-            }
-
-            if (removedIndexes != null && index != -1)
-            {
-                removedIndexes.Remove(index);
-            }
-
-            if (added != -1 || removedItems?.Count > 0 || removedIndexes?.Count > 0)
-            {
-                ResetSelectedItems();
-
-                if (removedIndexes is object)
-                {
-                    removedItems ??= new List<object?>();
-
-                    foreach (var removed in removedIndexes)
-                    {
-                        var i = ElementAt(Items, removed);
-
-                        if (!removedItems.Contains(i))
-                        {
-                            removedItems.Add(i);
-                        }
-                    }
-                }
-
-                var e = new SelectionChangedEventArgs(
-                    SelectionChangedEvent,
-                    (IList?)removedItems ?? Array.Empty<object>(),
-                    added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>());
-                RaiseEvent(e);
-            }
-
-            if (AutoScrollToSelectedItem && _selectedIndex != -1)
-            {
-                ScrollIntoView(_selectedItem);
-            }
-        }
-
-        private void UpdateSelectedItems(Action action)
-        {
-            try
-            {
-                _syncingSelectedItems = true;
-                action();
-            }
-            catch (Exception ex)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.Property)?.Log(
-                    this,
-                    "Error thrown updating SelectedItems: {Error}",
-                    ex);
-            }
-            finally
-            {
-                _syncingSelectedItems = false;
-            }
-        }
-
-        private void UpdateFinished()
-        {
-            if (_updateSelectedItem != null)
-            {
-                SelectedItem = _updateSelectedItem;
+                SelectionMode &= ~SelectionMode.Multiple;
             }
             else
             {
-                if (ItemCount == 0 && SelectedIndex != -1)
-                {
-                    SelectedIndex = -1;
-                }
-                else
-                {
-                    if (_updateSelectedIndex != int.MinValue)
-                    {
-                        SelectedIndex = _updateSelectedIndex;
-                    }
-
-                    if (AlwaysSelected && SelectedIndex == -1)
-                    {
-                        SelectedIndex = 0;
-                    }
-                }
+                SelectionMode |= SelectionMode.Multiple;
             }
+
+            _oldSelectedIndex = model.SelectedIndex;
+            _oldSelectedItem = model.SelectedItem;
+
+            //if (model.AutoSelect)
+            //{
+            //    SelectionMode |= SelectionMode.AlwaysSelected;
+            //}
+            //else
+            //{
+            //    SelectionMode &= ~SelectionMode.AlwaysSelected;
+            //}
+
+            //if (Items is INotifyCollectionChanged incc)
+            //{
+            //    // At this point we can be sure that SelectionModel has subscribed to collection
+            //    // changes.
+            //    incc.CollectionChanged += AfterItemsCollectionChanged;
+            //}
+
+            //UpdateContainerSelection();
+
+            //var selectedIndex = SelectedIndex;
+            //var selectedItem = SelectedItem;
+
+            //if (_selectedIndex != selectedIndex)
+            //{
+            //    RaisePropertyChanged(SelectedIndexProperty, _selectedIndex, selectedIndex);
+            //    _selectedIndex = selectedIndex;
+            //}
+
+            //if (_selectedItem != selectedItem)
+            //{
+            //    RaisePropertyChanged(SelectedItemProperty, _selectedItem, selectedItem);
+            //    _selectedItem = selectedItem;
+            //}
+
+            //if (selectedIndex != -1)
+            //{
+            //    RaiseEvent(new SelectionChangedEventArgs(
+            //        SelectionChangedEvent,
+            //        Array.Empty<object>(),
+            //        Selection.SelectedItems.ToList()));
+            //}
         }
 
-        private void InternalBeginInit()
+        private void DeinitializeSelectionModel(ISelectionModel? model)
         {
-            if (_updateCount == 0)
+            if (model is object)
             {
-                _updateSelectedIndex = int.MinValue;
+                model.PropertyChanged -= OnSelectionModelPropertyChanged;
+                model.SelectionChanged -= OnSelectionModelSelectionChanged;
             }
-
-            ++_updateCount;
-        }
-
-        private void InternalEndInit()
-        {
-            Debug.Assert(_updateCount > 0);
-
-            if (--_updateCount == 0)
-            {
-                UpdateFinished();
-            }
-        }
-
-        private class Selection : IEnumerable<int>
-        {
-            private readonly List<int> _list = new List<int>();
-            private HashSet<int> _set = new HashSet<int>();
-
-            public bool HasItems => _set.Count > 0;
-            public bool HasMultiple => _set.Count > 1;
-
-            public bool Add(int index)
-            {
-                if (index == -1)
-                {
-                    throw new ArgumentException("Invalid index", "index");
-                }
-
-                if (_set.Add(index))
-                {
-                    _list.Add(index);
-                    return true;
-                }
-
-                return false;
-            }
-
-            public bool Remove(int index)
-            {
-                if (_set.Remove(index))
-                {
-                    _list.RemoveAll(x => x == index);
-                    return true;
-                }
-
-                return false;
-            }
-
-            public HashSet<int> Clear()
-            {
-                var result = _set;
-                _list.Clear();
-                _set = new HashSet<int>();
-                return result;
-            }
-
-            public void ItemsInserted(int index, int count)
-            {
-                _set = new HashSet<int>();
-
-                for (var i = 0; i < _list.Count; ++i)
-                {
-                    var ix = _list[i];
-
-                    if (ix >= index)
-                    {
-                        var newIndex = ix + count;
-                        _list[i] = newIndex;
-                        _set.Add(newIndex);
-                    }
-                    else
-                    {
-                        _set.Add(ix);
-                    }
-                }
-            }
-
-            public void ItemsRemoved(int index, int count)
-            {
-                var last = (index + count) - 1;
-
-                _set = new HashSet<int>();
-
-                for (var i = 0; i < _list.Count; ++i)
-                {
-                    var ix = _list[i];
-
-                    if (ix >= index && ix <= last)
-                    {
-                        _list.RemoveAt(i--);
-                    }
-                    else if (ix > last)
-                    {
-                        var newIndex = ix - count;
-                        _list[i] = newIndex;
-                        _set.Add(newIndex);
-                    }
-                    else
-                    {
-                        _set.Add(ix);
-                    }
-                }
-            }
-
-            public bool Contains(int index) => _set.Contains(index);
-
-            public int First() => HasItems ? _list[0] : -1;
-
-            public IEnumerator<int> GetEnumerator() => _set.GetEnumerator();
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

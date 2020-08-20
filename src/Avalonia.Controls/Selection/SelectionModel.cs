@@ -20,6 +20,8 @@ namespace Avalonia.Controls.Selection
         private SelectedItems<T>? _selectedItems;
         private SelectedItems<T>.Untyped? _selectedItemsUntyped;
         private EventHandler<SelectionModelSelectionChangedEventArgs>? _untypedSelectionChanged;
+        [AllowNull] private T _initSelectedItem = default;
+        private bool _hasInitSelectedItem;
 
         public SelectionModel()
         {
@@ -51,7 +53,18 @@ namespace Avalonia.Controls.Selection
 
                     using var update = BatchUpdate();
                     update.Operation.IsSourceUpdate = true;
-                    TrimInvalidSelections(update.Operation);
+
+                    if (_hasInitSelectedItem)
+                    {
+                        SelectedItem = _initSelectedItem;
+                        _initSelectedItem = default;
+                        _hasInitSelectedItem = false;
+                    }
+                    else
+                    {
+                        TrimInvalidSelections(update.Operation);
+                    }
+
                     RaisePropertyChanged(nameof(Source));
                 }
             }
@@ -90,10 +103,37 @@ namespace Avalonia.Controls.Selection
 
         public IReadOnlyList<int> SelectedIndexes => _selectedIndexes ??= new SelectedIndexes<T>(this);
 
-        [MaybeNull]
-        public T SelectedItem => GetItemAt(_selectedIndex);
+        [MaybeNull, AllowNull]
+        public T SelectedItem
+        {
+            get => ItemsView is object ? GetItemAt(_selectedIndex) : _initSelectedItem;
+            set
+            {
+                if (ItemsView is object)
+                {
+                    SelectedIndex = ItemsView.IndexOf(value!);
+                }
+                else
+                {
+                    Clear();
+                    _initSelectedItem = value;
+                    _hasInitSelectedItem = true;
+                }
+            }
+        }
 
-        public IReadOnlyList<T> SelectedItems => _selectedItems ??= new SelectedItems<T>(this);
+        public IReadOnlyList<T> SelectedItems
+        {
+            get
+            {
+                if (ItemsView is null && _hasInitSelectedItem)
+                {
+                    return new[] { _initSelectedItem };
+                }
+
+                return _selectedItems ??= new SelectedItems<T>(this);
+            }
+        }
 
         public int AnchorIndex 
         {
@@ -127,7 +167,22 @@ namespace Avalonia.Controls.Selection
             set => Source = (IEnumerable<T>?)value;
         }
 
-        object? ISelectionModel.SelectedItem => SelectedItem;
+        object? ISelectionModel.SelectedItem
+        {
+            get => SelectedItem;
+            set
+            {
+                if (value is T t)
+                {
+                    SelectedItem = t;
+                }
+                else
+                {
+                    SelectedIndex = -1;
+                }
+            }
+                
+        }
 
         IReadOnlyList<object?> ISelectionModel.SelectedItems 
         {
@@ -226,8 +281,12 @@ namespace Avalonia.Controls.Selection
             {
                 o.SelectedIndex = -1;
             }
+
+            _initSelectedItem = default;
+            _hasInitSelectedItem = false;
         }
 
+        public void SelectAll() => SelectRange(0, int.MaxValue);
         public void Clear() => DeselectRange(0, int.MaxValue);
 
         protected void RaisePropertyChanged(string propertyName)
@@ -429,6 +488,9 @@ namespace Avalonia.Controls.Selection
             {
                 o.SelectedIndex = o.AnchorIndex = start;
             }
+
+            _initSelectedItem = default;
+            _hasInitSelectedItem = false;
         }
 
         [return: MaybeNull]

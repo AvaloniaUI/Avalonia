@@ -1304,8 +1304,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 set { base.SelectionMode = value; }
             }
 
-            public new void SelectAll() => base.SelectAll();
-            public new void UnselectAll() => base.UnselectAll();
+            public void SelectAll() => Selection.SelectAll();
+            public void UnselectAll() => Selection.Clear();
             public void SelectRange(int index) => UpdateSelection(index, true, true);
             public void Toggle(int index) => UpdateSelection(index, true, false, true);
         }

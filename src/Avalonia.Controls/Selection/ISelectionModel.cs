@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Selection
         bool SingleSelect { get; set; }
         int SelectedIndex { get; set; }
         IReadOnlyList<int> SelectedIndexes { get; }
-        object? SelectedItem { get; }
+        object? SelectedItem { get; set; }
         IReadOnlyList<object?> SelectedItems { get; }
         int AnchorIndex { get; set; }
         int Count { get; }
@@ -30,19 +30,37 @@ namespace Avalonia.Controls.Selection
         void Deselect(int index);
         void SelectRange(int start, int end);
         void DeselectRange(int start, int end);
+        void SelectAll();
         void Clear();
     }
 
     public static class SelectionModelExtensions
     {
-        public static void SelectAll(this ISelectionModel model)
+        public static IDisposable BatchUpdate(this ISelectionModel model)
         {
-            model.SelectRange(0, int.MaxValue);
+            return new BatchUpdateOperation(model);
         }
 
-        public static void SelectRangeFromAnchor(this ISelectionModel model, int to)
+        public struct BatchUpdateOperation : IDisposable
         {
-            model.SelectRange(model.AnchorIndex, to);
+            private readonly ISelectionModel _owner;
+            private bool _isDisposed;
+
+            public BatchUpdateOperation(ISelectionModel owner)
+            {
+                _owner = owner;
+                _isDisposed = false;
+                owner.BeginBatchUpdate();
+            }
+
+            public void Dispose()
+            {
+                if (!_isDisposed)
+                {
+                    _owner?.EndBatchUpdate();
+                    _isDisposed = true;
+                }
+            }
         }
     }
 }
