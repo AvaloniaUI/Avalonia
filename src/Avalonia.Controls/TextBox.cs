@@ -369,6 +369,14 @@ namespace Avalonia.Controls
             get { return _newLine; }
             set { SetAndRaise(NewLineProperty, ref _newLine, value); }
         }
+        
+        /// <summary>
+        /// Clears the current selection, maintaining the <see cref="CaretIndex"/>
+        /// </summary>
+        public void ClearSelection()
+        {
+            SelectionStart = SelectionEnd = CaretIndex;
+        }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -405,11 +413,6 @@ namespace Avalonia.Controls
             }
 
             _presenter?.ShowCaret();
-        }
-
-        public void ClearSelection()
-        {
-            SelectionStart = SelectionEnd = CaretIndex;
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
