@@ -555,7 +555,7 @@ namespace Avalonia.Media
                 }
             }
 
-            return new Rect(0, 0, width, height);
+            return new Rect(0, GlyphTypeface.Ascent * Scale, width, height);
         }
 
         private void Set<T>(ref T field, T value)
@@ -595,8 +595,6 @@ namespace Avalonia.Media
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this, out var width);
 
             var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
-
-            _bounds = new Rect(0, 0, width, height);
         }
 
         void IDisposable.Dispose()
