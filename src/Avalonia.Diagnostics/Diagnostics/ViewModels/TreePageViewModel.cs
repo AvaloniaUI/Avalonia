@@ -8,7 +8,8 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private TreeNode _selectedNode;
         private ControlDetailsViewModel _details;
-        private string _propertyFilter;
+        private string _propertyFilter = string.Empty;
+        private bool _useRegexFilter;
 
         public TreePageViewModel(TreeNode[] nodes)
         {
@@ -34,15 +35,10 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _selectedNode;
             private set
             {
-                if (Details != null)
-                {
-                    _propertyFilter = Details.PropertyFilter;
-                }
-
                 if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
                     Details = value != null ?
-                        new ControlDetailsViewModel(value.Visual, _propertyFilter) :
+                        new ControlDetailsViewModel(this, value.Visual) :
                         null;
                 }
             }
@@ -58,6 +54,30 @@ namespace Avalonia.Diagnostics.ViewModels
                 if (RaiseAndSetIfChanged(ref _details, value))
                 {
                     oldValue?.Dispose();
+                }
+            }
+        }
+
+        public string PropertyFilter
+        {
+            get => _propertyFilter;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _propertyFilter, value))
+                {
+                    Details.PropertiesView.Refresh();
+                }
+            }
+        }
+
+        public bool UseRegexFilter
+        {
+            get => _useRegexFilter;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _useRegexFilter, value))
+                {
+                    Details.PropertiesView.Refresh();
                 }
             }
         }

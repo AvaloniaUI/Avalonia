@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Avalonia.Collections;
 using Avalonia.VisualTree;
 
@@ -12,11 +13,12 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly IVisual _control;
         private readonly IDictionary<object, List<PropertyViewModel>> _propertyIndex;
         private AvaloniaPropertyViewModel _selectedProperty;
-        private string _propertyFilter;
 
-        public ControlDetailsViewModel(IVisual control, string propertyFilter)
+        public ControlDetailsViewModel(TreePageViewModel treePage, IVisual control)
         {
             _control = control;
+
+            TreePage = treePage;
 
             var properties = GetAvaloniaProperties(control)
                 .Concat(GetClrProperties(control))
@@ -25,7 +27,6 @@ namespace Avalonia.Diagnostics.ViewModels
                 .ToList();
 
             _propertyIndex = properties.GroupBy(x => x.Key).ToDictionary(x => x.Key, x => x.ToList());
-            _propertyFilter = propertyFilter;
 
             var view = new DataGridCollectionView(properties);
             view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
@@ -43,19 +44,9 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public DataGridCollectionView PropertiesView { get; }
+        public TreePageViewModel TreePage { get; }
 
-        public string PropertyFilter
-        {
-            get => _propertyFilter;
-            set
-            {
-                if (RaiseAndSetIfChanged(ref _propertyFilter, value))
-                {
-                    PropertiesView.Refresh();
-                }
-            }
-        }
+        public DataGridCollectionView PropertiesView { get; }
 
         public AvaloniaPropertyViewModel SelectedProperty
         {
@@ -137,9 +128,15 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private bool FilterProperty(object arg)
         {
-            if (!string.IsNullOrWhiteSpace(PropertyFilter) && arg is PropertyViewModel property)
+            if (!string.IsNullOrWhiteSpace(TreePage.PropertyFilter) && arg is PropertyViewModel property)
             {
-                return property.Name.IndexOf(PropertyFilter, StringComparison.OrdinalIgnoreCase) != -1;
+                if (TreePage.UseRegexFilter)
+                {
+                    var regex = new Regex(TreePage.PropertyFilter);
+                    return regex.IsMatch(property.Name);
+                }
+
+                return property.Name.IndexOf(TreePage.PropertyFilter, StringComparison.OrdinalIgnoreCase) != -1;
             }
 
             return true;
