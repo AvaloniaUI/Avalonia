@@ -6,10 +6,12 @@ namespace Avalonia.Base.UnitTests.Collections
 {
     public class AvaloniaListExtenionsTests
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         [Fact]
         public void CreateDerivedList_Creates_Initial_Items()
         {
             var source = new AvaloniaList<int>(new[] { 0, 1, 2, 3 });
+
             var target = source.CreateDerivedList(x => new Wrapper(x));
             var result = target.Select(x => x.Value).ToList();
 
@@ -137,6 +139,8 @@ namespace Avalonia.Base.UnitTests.Collections
 
             Assert.Equal(source, result);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
+
 
         private class Wrapper
         {
