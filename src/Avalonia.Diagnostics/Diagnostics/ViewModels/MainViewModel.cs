@@ -16,12 +16,13 @@ namespace Avalonia.Diagnostics.ViewModels
         private int _selectedTab;
         private string _focusedControl;
         private string _pointerOverElement;
+        private bool _shouldVisualizeMarginPadding = true;
 
         public MainViewModel(IControl root)
         {
             _root = root;
-            _logicalTree = new TreePageViewModel(LogicalTreeNode.Create(root));
-            _visualTree = new TreePageViewModel(VisualTreeNode.Create(root));
+            _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
+            _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root));
             _events = new EventsPageViewModel(root);
 
             UpdateFocusedControl();
@@ -37,6 +38,17 @@ namespace Avalonia.Diagnostics.ViewModels
             root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
             Console = new ConsoleViewModel(UpdateConsoleContext);
+        }
+
+        public bool ShouldVisualizeMarginPadding
+        {
+            get => _shouldVisualizeMarginPadding;
+            set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
+        }
+
+        public void ToggleVisualizeMarginPadding()
+        {
+            ShouldVisualizeMarginPadding = !ShouldVisualizeMarginPadding;
         }
 
         public ConsoleViewModel Console { get; }
