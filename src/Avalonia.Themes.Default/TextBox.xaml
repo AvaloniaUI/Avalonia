@@ -14,6 +14,7 @@
     <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}"/>
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource HighlightForegroundBrush}"/>
     <Setter Property="Padding" Value="4"/>
+    <Setter Property="ContextMenu" Value="{DynamicResource DefaultTextBoxContextMenu}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="border"

@@ -426,7 +426,7 @@ namespace Avalonia.LeakTests
         public void Attached_ContextMenu_Is_Freed()
         {
             using (Start())
-            {   
+            {
                 void AttachShowAndDetachContextMenu(Control control)
                 {
                     var contextMenu = new ContextMenu
