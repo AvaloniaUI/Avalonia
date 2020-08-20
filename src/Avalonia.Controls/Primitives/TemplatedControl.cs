@@ -265,7 +265,9 @@ namespace Avalonia.Controls.Primitives
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
+#pragma warning disable CS0618 // Type or member is obsolete
                     OnTemplateApplied(e);
+#pragma warning restore CS0618 // Type or member is obsolete
                     RaiseEvent(e);
                 }
 
@@ -333,6 +335,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="e">The event args.</param>
         [Obsolete("Use OnApplyTemplate")]
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
         }
