@@ -280,9 +280,8 @@ namespace Avalonia.Controls
             }
 
             _popup.Child = this;
-            _popup.IsOpen = true;
-
             IsOpen = true;
+            _popup.IsOpen = true;
 
             RaiseEvent(new RoutedEventArgs
             {

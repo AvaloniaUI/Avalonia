@@ -48,7 +48,7 @@
                  ContentTemplate="{TemplateBinding HeaderTemplate}"
                  Margin="{DynamicResource TimePickerTopHeaderMargin}"
                  MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
-                 TextBlock.Foreground="{DynamicResource TimePickerHeaderForeground}"
+                 TextBlock.Foreground="{DynamicResource ThemeForegroundColor}"
                  HorizontalAlignment="Stretch"
                  VerticalAlignment="Top" />
 

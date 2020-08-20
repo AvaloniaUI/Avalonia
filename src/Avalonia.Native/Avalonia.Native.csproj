@@ -7,6 +7,7 @@
     <CastXmlPath Condition="Exists('/usr/bin/castxml')">/usr/bin/castxml</CastXmlPath>
     <CastXmlPath Condition="Exists('/usr/local/bin/castxml')">/usr/local/bin/castxml</CastXmlPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SharpGenGenerateConsumerBindMapping>false</SharpGenGenerateConsumerBindMapping>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release' AND '$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
@@ -18,8 +19,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <SharpGenMapping Include="Mappings.xml" />
-    <!--<PackageReference Include="SharpGenTools.Sdk" Version="1.2.1" PrivateAssets="all" />-->
+    <!--<SharpGenMapping Include="Mappings.xml" />-->
+    <PackageReference Include="SharpGenTools.Sdk" Version="1.2.1" PrivateAssets="all" />
     <PackageReference Include="SharpGen.Runtime" Version="1.2.1" />
     <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
