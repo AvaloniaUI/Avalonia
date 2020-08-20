@@ -16,6 +16,8 @@ using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -61,8 +63,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.
         /// </summary>
-        public static readonly DirectProperty<SelectingItemsControl, object> SelectedItemProperty =
-            AvaloniaProperty.RegisterDirect<SelectingItemsControl, object>(
+        public static readonly DirectProperty<SelectingItemsControl, object?> SelectedItemProperty =
+            AvaloniaProperty.RegisterDirect<SelectingItemsControl, object?>(
                 nameof(SelectedItem),
                 o => o.SelectedItem,
                 (o, v) => o.SelectedItem = v,
@@ -105,13 +107,13 @@ namespace Avalonia.Controls.Primitives
         private static readonly IList Empty = Array.Empty<object>();
         private readonly Selection _selection = new Selection();
         private int _selectedIndex = -1;
-        private object _selectedItem;
-        private IList _selectedItems;
+        private object? _selectedItem;
+        private IList? _selectedItems;
         private bool _ignoreContainerSelectionChanged;
         private bool _syncingSelectedItems;
         private int _updateCount;
         private int _updateSelectedIndex;
-        private object _updateSelectedItem;
+        private object? _updateSelectedItem;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -163,7 +165,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
-        public object SelectedItem
+        public object? SelectedItem
         {
             get => _selectedItem;
             set
@@ -261,7 +263,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="eventSource">The control that raised the event.</param>
         /// <returns>The container or null if the event did not originate in a container.</returns>
-        protected IControl GetContainerFromEventSource(IInteractive eventSource)
+        protected IControl? GetContainerFromEventSource(IInteractive eventSource)
         {
             var parent = (IVisual)eventSource;
 
@@ -290,7 +292,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (SelectedIndex != -1)
                 {
-                    newIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
+                    newIndex = IndexOf((IEnumerable?)e.NewValue, SelectedItem);
                 }
 
                 if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
@@ -483,7 +485,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="direction">The direction to move.</param>
         /// <param name="wrap">Whether to wrap when the selection reaches the first or last item.</param>
         /// <returns>True if the selection was moved; otherwise false.</returns>
-        protected bool MoveSelection(IControl from, NavigationDirection direction, bool wrap)
+        protected bool MoveSelection(IControl? from, NavigationDirection direction, bool wrap)
         {
             if (Presenter?.Panel is INavigableContainer container &&
                 GetNextControl(container, direction, from, wrap) is IControl next)
@@ -833,14 +835,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void SelectedItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void SelectedItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (_syncingSelectedItems)
             {
                 return;
             }
 
-            void Add(IList newItems, IList addedItems = null)
+            void Add(IList newItems, IList? addedItems = null)
             {
                 foreach (var item in newItems)
                 {
@@ -865,8 +867,8 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            IList added = null;
-            IList removed = null;
+            IList? added = null;
+            IList? removed = null;
 
             switch (e.Action)
             {
@@ -983,8 +985,8 @@ namespace Avalonia.Controls.Primitives
             var item = ElementAt(Items, index);
             var itemChanged = !Equals(item, oldItem);
             var added = -1;
-            HashSet<int> removedIndexes = null;
-            List<object> removedItems = null;
+            HashSet<int>? removedIndexes = null;
+            List<object?>? removedItems = null;
 
             _selectedIndex = index;
             _selectedItem = item;
@@ -1011,7 +1013,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    removedItems ??= new List<object>();
+                    removedItems ??= new List<object?>();
                     removedItems.Add(oldItem);
                 }
 
@@ -1050,7 +1052,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (removedIndexes is object)
                 {
-                    removedItems ??= new List<object>();
+                    removedItems ??= new List<object?>();
 
                     foreach (var removed in removedIndexes)
                     {
@@ -1065,7 +1067,7 @@ namespace Avalonia.Controls.Primitives
 
                 var e = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    (IList)removedItems ?? Array.Empty<object>(),
+                    (IList?)removedItems ?? Array.Empty<object>(),
                     added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>());
                 RaiseEvent(e);
             }
