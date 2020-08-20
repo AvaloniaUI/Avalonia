@@ -10,8 +10,9 @@ namespace Avalonia.Diagnostics.ViewModels
         private ControlDetailsViewModel _details;
         private string _propertyFilter;
 
-        public TreePageViewModel(TreeNode[] nodes)
+        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
         {
+            MainView = mainView;
             Nodes = nodes;
             Selection = new SelectionModel
             { 
@@ -23,7 +24,9 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 SelectedNode = (TreeNode)Selection.SelectedItem;
             };
-       }
+        }
+
+        public MainViewModel MainView { get; }
 
         public TreeNode[] Nodes { get; protected set; }
 
