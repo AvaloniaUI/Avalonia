@@ -15,23 +15,17 @@ using Avalonia.Controls.Utils;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Represents a standardized view of the supported interactions between a given ItemsSource
-    /// object and an <see cref="ItemsRepeater"/> control.
+    /// Represents a standardized view of the supported interactions between a given
+    /// <see cref="ItemsControl"/> or <see cref="ItemsRepeater"/> and its items.
     /// </summary>
-    /// <remarks>
-    /// Components written to work with ItemsRepeater should consume the
-    /// <see cref="ItemsRepeater.Items"/> via ItemsSourceView since this provides a normalized
-    /// view of the Items. That way, each component does not need to know if the source is an
-    /// IEnumerable, an IList, or something else.
-    /// </remarks>
     public class ItemsSourceView<T> : INotifyCollectionChanged, IDisposable, IReadOnlyList<T>
     {
         /// <summary>
-        ///  Gets an empty <see cref="ItemsSourceView"/>
+        ///  Gets an empty <see cref="ItemsSourceView{T}"/>
         /// </summary>
         public static ItemsSourceView<T> Empty { get; } = new ItemsSourceView<T>(Array.Empty<T>());
 
-        private readonly IList<T> _inner;
+        private readonly IList _inner;
         private INotifyCollectionChanged? _notifyCollectionChanged;
 
         /// <summary>
@@ -47,17 +41,17 @@ namespace Avalonia.Controls
         {
             source = source ?? throw new ArgumentNullException(nameof(source));
 
-            if (source is IList<T> list)
+            if (source is IList list)
             {
                 _inner = list;
             }
-            else if (source is IEnumerable<T> objectEnumerable)
+            else if (source is IEnumerable<object?> enumerable)
             {
-                _inner = new List<T>(objectEnumerable);
+                _inner = new List<object?>(enumerable);
             }
             else
             {
-                _inner = new List<T>(source.Cast<T>());
+                _inner = new List<object?>(source.Cast<object?>());
             }
 
             ListenToCollectionChanges();
@@ -102,9 +96,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public T GetAt(int index) => _inner[index];
+        public T GetAt(int index) => _inner is IList<T> typed ? typed[index] : (T)_inner[index];
 
-        public int IndexOf(T item) => _inner.IndexOf(item);
+        public int IndexOf(object? item) => _inner.IndexOf(item);
 
         public static ItemsSourceView<T> GetOrCreate(IEnumerable<T>? items)
         {
@@ -148,7 +142,9 @@ namespace Avalonia.Controls
             throw new NotImplementedException();
         }
 
-        public IEnumerator<T> GetEnumerator() => _inner.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => _inner is IList<T> typed ?
+            typed.GetEnumerator() : _inner.Cast<T>().GetEnumerator();
+
         IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
 
         internal void AddListener(ICollectionChangedListener listener)
@@ -187,7 +183,7 @@ namespace Avalonia.Controls
         }
     }
 
-    public class ItemsSourceView : ItemsSourceView<object>
+    public class ItemsSourceView : ItemsSourceView<object?>
     {
         public ItemsSourceView(IEnumerable source)
             : base(source)
