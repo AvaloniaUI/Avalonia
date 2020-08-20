@@ -181,6 +181,17 @@ namespace Avalonia.Media.TextFormatting
                 return nextCharacterHit;
             }
 
+            if (characterHit.FirstCharacterIndex + characterHit.TrailingLength <= TextRange.Start + TextRange.Length)
+            {
+                return characterHit; // Can't move, we're after the last character
+            }
+
+            var runIndex = GetRunIndexAtCodepointIndex(TextRange.End);
+
+            var textRun = _textRuns[runIndex];
+
+            characterHit = textRun.GlyphRun.GetNextCaretCharacterHit(characterHit);
+
             return characterHit; // Can't move, we're after the last character
         }
 
@@ -190,6 +201,11 @@ namespace Avalonia.Media.TextFormatting
             if (TryFindPreviousCharacterHit(characterHit, out var previousCharacterHit))
             {
                 return previousCharacterHit;
+            }
+
+            if (characterHit.FirstCharacterIndex < TextRange.Start)
+            {
+                characterHit = new CharacterHit(TextRange.Start);
             }
 
             return characterHit; // Can't move, we're before the first character
