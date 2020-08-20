@@ -132,8 +132,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 if (TreePage.UseRegexFilter)
                 {
-                    var regex = new Regex(TreePage.PropertyFilter);
-                    return regex.IsMatch(property.Name);
+                    return TreePage.FilterRegex?.IsMatch(property.Name) ?? true;
                 }
 
                 return property.Name.IndexOf(TreePage.PropertyFilter, StringComparison.OrdinalIgnoreCase) != -1;
