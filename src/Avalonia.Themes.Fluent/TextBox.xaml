@@ -27,9 +27,7 @@
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
-    <Setter Property="ContextMenu" Value="{StaticResource DefaultTextBoxContextMenu}" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
-    <Setter Property="ContextMenu" Value="{StaticResource DefaultTextBoxContextMenu}" />
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
