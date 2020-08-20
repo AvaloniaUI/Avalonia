@@ -166,7 +166,8 @@ namespace Avalonia.Win32
                                 WindowsMessage.WM_XBUTTONDOWN =>
                                 HighWord(ToInt32(wParam)) == 1 ?
                                     RawPointerEventType.XButton1Down :
-                                    RawPointerEventType.XButton2Down
+                                    RawPointerEventType.XButton2Down,
+                                _ => throw new NotImplementedException()
                             },
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
@@ -196,6 +197,7 @@ namespace Avalonia.Win32
                                 HighWord(ToInt32(wParam)) == 1 ?
                                     RawPointerEventType.XButton1Up :
                                     RawPointerEventType.XButton2Up,
+                                _ => throw new NotImplementedException(),
                             },
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
@@ -284,6 +286,7 @@ namespace Avalonia.Win32
                                 HighWord(ToInt32(wParam)) == 1 ?
                                     RawPointerEventType.XButton1Down :
                                     RawPointerEventType.XButton2Down,
+                                _ => throw new NotImplementedException(),
                             },
                             PointToClient(PointFromLParam(lParam)), GetMouseModifiers(wParam));
                         break;

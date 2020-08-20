@@ -402,7 +402,8 @@ namespace Avalonia.X11
                             2 => RawPointerEventType.MiddleButtonDown,
                             3 => RawPointerEventType.RightButtonDown,
                             8 => RawPointerEventType.XButton1Down,
-                            9 => RawPointerEventType.XButton2Down
+                            9 => RawPointerEventType.XButton2Down,
+                            _ => throw new NotImplementedException()
                         },
                         ref ev, ev.ButtonEvent.state);
                 else
@@ -430,7 +431,8 @@ namespace Avalonia.X11
                             2 => RawPointerEventType.MiddleButtonUp,
                             3 => RawPointerEventType.RightButtonUp,
                             8 => RawPointerEventType.XButton1Up,
-                            9 => RawPointerEventType.XButton2Up
+                            9 => RawPointerEventType.XButton2Up,
+                            _ => throw new NotImplementedException()
                         },
                         ref ev, ev.ButtonEvent.state);
             }
