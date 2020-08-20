@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -10,6 +9,65 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     public class TextLineTests
     {
+        private static readonly string s_multiLineText = "012345678\r\r0123456789";
+
+        [Fact]
+        public void Should_Get_First_CharacterHit()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(s_multiLineText, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var currentIndex = 0;
+
+                while (currentIndex < s_multiLineText.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, currentIndex, double.PositiveInfinity,
+                            new GenericTextParagraphProperties(defaultProperties));
+
+                    var firstCharacterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(int.MinValue));
+
+                    Assert.Equal(textLine.TextRange.Start, firstCharacterHit.FirstCharacterIndex);
+
+                    currentIndex += textLine.TextRange.Length;
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Last_CharacterHit()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(s_multiLineText, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var currentIndex = 0;
+
+                while (currentIndex < s_multiLineText.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, currentIndex, double.PositiveInfinity,
+                            new GenericTextParagraphProperties(defaultProperties));
+
+                    var lastCharacterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(int.MaxValue));
+
+                    Assert.Equal(textLine.TextRange.Start + textLine.TextRange.Length,
+                        lastCharacterHit.FirstCharacterIndex + lastCharacterHit.TrailingLength);
+
+                    currentIndex += textLine.TextRange.Length;
+                }
+            }
+        }
+
         [InlineData("𐐷𐐷𐐷𐐷𐐷")]
         [InlineData("𐐷1234")]
         [Theory]
