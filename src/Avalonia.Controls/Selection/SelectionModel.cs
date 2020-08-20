@@ -320,12 +320,18 @@ namespace Avalonia.Controls.Selection
 
         private protected override void OnSelectionChanged(IReadOnlyList<T> deselectedItems)
         {
-            if (SelectionChanged is object || _untypedSelectionChanged is object)
+            // Note: We're *not* putting this in a using scope. A collection update is still in progress
+            // so the operation won't get commited by normal means: we have to commit it manually.
+            var update = BatchUpdate();
+
+            update.Operation.DeselectedItems = deselectedItems;
+
+            if (_selectedIndex == -1 && LostSelection is object)
             {
-                var e = new SelectionModelSelectionChangedEventArgs<T>(deselectedItems: deselectedItems);
-                SelectionChanged?.Invoke(this, e);
-                _untypedSelectionChanged?.Invoke(this, e);
+                LostSelection(this, EventArgs.Empty);
             }
+
+            CommitOperation(update.Operation);
         }
 
         private protected override CollectionChangeState OnItemsAdded(int index, IList items)
@@ -613,13 +619,23 @@ namespace Avalonia.Controls.Selection
                         }
                     }
 
-                    if (deselected?.Count > 0 || selected?.Count > 0)
+                    if (deselected?.Count > 0 || selected?.Count > 0 || operation.DeselectedItems is object)
                     {
+                        // If the operation was caused by Source being updated, then use a null source
+                        // so that the items will appear as nulls.
                         var deselectedSource = operation.IsSourceUpdate ? null : ItemsView;
+
+                        // If the operation contains DeselectedItems then we're notifying a source
+                        // CollectionChanged event. LostFocus may have caused another item to have been
+                        // selected, but it can't have caused a deselection (as it was called due to
+                        // selection being lost) so we're ok to discard `deselected` here.
+                        var deselectedItems = operation.DeselectedItems ??
+                            SelectedItems<T>.Create(deselected, deselectedSource);
+
                         var e = new SelectionModelSelectionChangedEventArgs<T>(
                             SelectedIndexes<T>.Create(deselected),
                             SelectedIndexes<T>.Create(selected),
-                            SelectedItems<T>.Create(deselected, deselectedSource),
+                            deselectedItems,
                             SelectedItems<T>.Create(selected, ItemsView));
                         SelectionChanged?.Invoke(this, e);
                         _untypedSelectionChanged?.Invoke(this, e);
@@ -689,6 +705,7 @@ namespace Avalonia.Controls.Selection
             public int SelectedIndex { get; set; }
             public List<IndexRange>? SelectedRanges { get; set; }
             public List<IndexRange>? DeselectedRanges { get; set; }
+            public IReadOnlyList<T> DeselectedItems { get; set; }
         }
     }
 }

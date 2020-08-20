@@ -635,6 +635,20 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Called when <see cref="ISelectionModel.LostSelection"/> event is raised on
+        /// <see cref="Selection"/>.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The event args.</param>
+        private void OnSelectionModelLostSelection(object sender, EventArgs e)
+        {
+            if (AlwaysSelected)
+            {
+                SelectedIndex = 0;
+            }
+        }
+
+        /// <summary>
         /// Called when a container raises the <see cref="IsSelectedChangedEvent"/>.
         /// </summary>
         /// <param name="e">The event.</param>
@@ -764,6 +778,7 @@ namespace Avalonia.Controls.Primitives
 
             model.PropertyChanged += OnSelectionModelPropertyChanged;
             model.SelectionChanged += OnSelectionModelSelectionChanged;
+            model.LostSelection += OnSelectionModelLostSelection;
 
             if (model.SingleSelect)
             {
@@ -777,14 +792,10 @@ namespace Avalonia.Controls.Primitives
             _oldSelectedIndex = model.SelectedIndex;
             _oldSelectedItem = model.SelectedItem;
 
-            //if (model.AutoSelect)
-            //{
-            //    SelectionMode |= SelectionMode.AlwaysSelected;
-            //}
-            //else
-            //{
-            //    SelectionMode &= ~SelectionMode.AlwaysSelected;
-            //}
+            if (AlwaysSelected && model.Count == 0)
+            {
+                model.SelectedIndex = 0;
+            }
 
             //if (Items is INotifyCollectionChanged incc)
             //{

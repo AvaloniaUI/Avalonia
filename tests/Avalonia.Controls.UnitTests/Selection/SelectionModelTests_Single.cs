@@ -1066,7 +1066,7 @@ namespace Avalonia.Controls.UnitTests.Selection
         public class LostSelection
         {
             [Fact]
-            public void Can_Select_First_Item_On_LostSelection()
+            public void LostSelection_Called_On_Clear()
             {
                 var target = CreateTarget();
                 var raised = 0;
@@ -1089,6 +1089,36 @@ namespace Avalonia.Controls.UnitTests.Selection
 
                 target.Clear();
 
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void LostSelection_Called_When_SelectedItem_Removed()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var raised = 0;
+
+                target.SelectedIndex = 1;
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Equal(new[] { "bar" }, e.DeselectedItems);
+                    Assert.Equal(new[] { 0 }, e.SelectedIndexes);
+                    Assert.Equal(new[] { "foo" }, e.SelectedItems);
+                    ++raised;
+                };
+
+                target.LostSelection += (s, e) =>
+                {
+                    target.Select(0);
+                };
+
+                data.RemoveAt(1);
+
+                Assert.Equal(0, target.SelectedIndex);
                 Assert.Equal(1, raised);
             }
         }
