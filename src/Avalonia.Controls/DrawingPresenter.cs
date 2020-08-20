@@ -6,6 +6,8 @@ using Avalonia.Metadata;
 namespace Avalonia.Controls
 {
     [Obsolete("Use Image control with DrawingImage source")]
+    [System.ComponentModel.Browsable(false)]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public class DrawingPresenter : Control
     {
         static DrawingPresenter()
