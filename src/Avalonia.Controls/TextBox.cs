@@ -407,13 +407,18 @@ namespace Avalonia.Controls
             _presenter?.ShowCaret();
         }
 
+        private void ClearSelection()
+        {
+            SelectionStart = SelectionEnd = CaretIndex;
+        }
+
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
 
             if (ContextMenu == null || !ContextMenu.IsOpen)
             {
-                SelectionStart = SelectionEnd = CaretIndex;
+                ClearSelection();
                 RevealPassword = false;
             }
             
@@ -443,7 +448,7 @@ namespace Avalonia.Controls
                     text = Text ?? string.Empty;
                     SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
                     CaretIndex += input.Length;
-                    SelectionStart = SelectionEnd = CaretIndex;
+                    ClearSelection();
                     _undoRedoHelper.DiscardRedo();
                 }
             }
@@ -661,7 +666,7 @@ namespace Avalonia.Controls
                             SetTextInternal(text.Substring(0, caretIndex - removedCharacters) +
                                             text.Substring(caretIndex));
                             CaretIndex -= removedCharacters;
-                            SelectionStart = SelectionEnd = CaretIndex;
+                            ClearSelection();
                         }
                         _undoRedoHelper.Snapshot();
 
@@ -734,7 +739,7 @@ namespace Avalonia.Controls
             }
             else if (movement)
             {
-                SelectionStart = SelectionEnd = CaretIndex;
+                ClearSelection();
             }
 
             if (handled || movement)
@@ -1041,7 +1046,8 @@ namespace Avalonia.Controls
                     var end = Math.Max(selectionStart, selectionEnd);
                     var text = Text;
                     SetTextInternal(text.Substring(0, start) + text.Substring(end));
-                    SelectionStart = SelectionEnd = CaretIndex = start;
+                    CaretIndex = start;
+                    ClearSelection();
                     return true;
                 }
                 else
@@ -1130,7 +1136,8 @@ namespace Avalonia.Controls
             set
             {
                 Text = value.Text;
-                SelectionStart = SelectionEnd = CaretIndex = value.CaretPosition;
+                CaretIndex = value.CaretPosition;
+                ClearSelection();
             }
         }
     }
