@@ -4,7 +4,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.iOS
 {
-    class EmbeddableImpl : TopLevelImpl, IEmbeddableWindowImpl
+    class EmbeddableImpl : TopLevelImpl
     {
         public void SetTitle(string title)
         {
@@ -22,12 +22,6 @@ namespace Avalonia.iOS
 
         public void SetSystemDecorations(SystemDecorations enabled)
         {
-        }
-
-        public event Action LostFocus
-        {
-            add {}
-            remove {}
         }
     }
 }

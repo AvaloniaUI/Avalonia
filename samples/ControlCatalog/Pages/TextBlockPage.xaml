@@ -12,7 +12,7 @@
       <StackPanel.Styles>
         <Style Selector="Border">
           <Setter Property="BorderThickness" Value="1"/>
-          <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumLowBrush}"/>
           <Setter Property="Padding" Value="2"/>
         </Style>
       </StackPanel.Styles>
@@ -49,7 +49,7 @@
       <StackPanel.Styles>
         <Style Selector="Border">
           <Setter Property="BorderThickness" Value="1"/>
-          <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumLowBrush}"/>
           <Setter Property="Padding" Value="2"/>
         </Style>
       </StackPanel.Styles>
@@ -64,51 +64,42 @@
               <TextDecorationCollection>
                 <TextDecoration
                   Location="Overline"
-                  PenThicknessUnit="Pixel">
-                  <TextDecoration.Pen>
-                    <Pen Thickness="2">
-                      <Pen.Brush>
-                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                          <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0" Color="Red"/>
-                            <GradientStop Offset="1" Color="Green"/>
-                          </LinearGradientBrush.GradientStops>
-                        </LinearGradientBrush>
-                      </Pen.Brush>
-                    </Pen>
-                  </TextDecoration.Pen>
+                  StrokeThicknessUnit="Pixel"
+                  StrokeThickness="2">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Red"/>
+                        <GradientStop Offset="1" Color="Green"/>
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
                 </TextDecoration>
                 <TextDecoration
                   Location="Strikethrough"
-                  PenThicknessUnit="Pixel">
-                  <TextDecoration.Pen>
-                    <Pen Thickness="1">
-                      <Pen.Brush>
-                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                          <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0" Color="Green"/>
-                            <GradientStop Offset="1" Color="Blue"/>
-                          </LinearGradientBrush.GradientStops>
-                        </LinearGradientBrush>
-                      </Pen.Brush>
-                    </Pen>
-                  </TextDecoration.Pen>
+                  StrokeThicknessUnit="Pixel"
+                  StrokeThickness="1">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Green"/>
+                        <GradientStop Offset="1" Color="Blue"/>
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
                 </TextDecoration>
                 <TextDecoration
                   Location="Underline"
-                  PenThicknessUnit="Pixel">
-                  <TextDecoration.Pen>
-                    <Pen Thickness="2">
-                      <Pen.Brush>
-                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                          <LinearGradientBrush.GradientStops>
-                            <GradientStop Offset="0" Color="Blue"/>
-                            <GradientStop Offset="1" Color="Red"/>
-                          </LinearGradientBrush.GradientStops>
-                        </LinearGradientBrush>
-                      </Pen.Brush>
-                    </Pen>
-                  </TextDecoration.Pen>
+                  StrokeThicknessUnit="Pixel"
+                  StrokeThickness="2">
+                  <TextDecoration.Stroke>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="Blue"/>
+                        <GradientStop Offset="1" Color="Red"/>
+                      </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                  </TextDecoration.Stroke>
                 </TextDecoration>
               </TextDecorationCollection>
             </TextBlock.TextDecorations>

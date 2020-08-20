@@ -1,7 +1,7 @@
 ﻿namespace Avalonia.Media
 {
     /// <summary>
-    /// Specifies the unit type of either a <see cref="TextDecoration.PenOffset"/> or a <see cref="Pen"/> thickness value.
+    /// Specifies the unit type of either a <see cref="TextDecoration.StrokeOffset"/> or a <see cref="TextDecoration.StrokeThickness"/> value.
     /// </summary>
     public enum TextDecorationUnit
     {

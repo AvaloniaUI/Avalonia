@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Collections;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -64,6 +65,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TickPlacement> TickPlacementProperty =
             AvaloniaProperty.Register<TickBar, TickPlacement>(nameof(TickPlacement), 0d);
 
+        /// <summary>
+        /// Defines the <see cref="TicksProperty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<AvaloniaList<double>> TicksProperty =
+            TickBar.TicksProperty.AddOwner<Slider>();
+
         // Slider required parts
         private bool _isDragging = false;
         private Track _track;
@@ -83,7 +90,8 @@ namespace Avalonia.Controls
             PressedMixin.Attach<Slider>();
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
-            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e), RoutingStrategies.Bubble);
+            Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
+                RoutingStrategies.Bubble);
         }
 
         /// <summary>
@@ -92,6 +100,15 @@ namespace Avalonia.Controls
         public Slider()
         {
             UpdatePseudoClasses(Orientation);
+        }
+
+        /// <summary>
+        /// Defines the ticks to be drawn on the tick bar.
+        /// </summary>
+        public AvaloniaList<double> Ticks
+        {
+            get => GetValue(TicksProperty);
+            set => SetValue(TicksProperty, value);
         }
 
         /// <summary>
@@ -240,18 +257,49 @@ namespace Avalonia.Controls
         /// <param name="value">Value that want to snap to closest Tick.</param>
         private double SnapToTick(double value)
         {
-            var previous = Minimum;
-            var next = Maximum;
-
-            if (TickFrequency > 0.0)
+            if (IsSnapToTickEnabled)
             {
-                previous = Minimum + (Math.Round((value - Minimum) / TickFrequency) * TickFrequency);
-                next = Math.Min(Maximum, previous + TickFrequency);
+                double previous = Minimum;
+                double next = Maximum;
+
+                // This property is rarely set so let's try to avoid the GetValue
+                var ticks = Ticks;
+
+                // If ticks collection is available, use it.
+                // Note that ticks may be unsorted.
+                if ((ticks != null) && (ticks.Count > 0))
+                {
+                    for (int i = 0; i < ticks.Count; i++)
+                    {
+                        double tick = ticks[i];
+                        if (MathUtilities.AreClose(tick, value))
+                        {
+                            return value;
+                        }
+
+                        if (MathUtilities.LessThan(tick, value) && MathUtilities.GreaterThan(tick, previous))
+                        {
+                            previous = tick;
+                        }
+                        else if (MathUtilities.GreaterThan(tick, value) && MathUtilities.LessThan(tick, next))
+                        {
+                            next = tick;
+                        }
+                    }
+                }
+                else if (MathUtilities.GreaterThan(TickFrequency, 0.0))
+                {
+                    previous = Minimum + (Math.Round(((value - Minimum) / TickFrequency)) * TickFrequency);
+                    next = Math.Min(Maximum, previous + TickFrequency);
+                }
+
+                // Choose the closest value between previous and next. If tie, snap to 'next'.
+                value = MathUtilities.GreaterThanOrClose(value, (previous + next) * 0.5) ? next : previous;
             }
 
-            // Choose the closest value between previous and next. If tie, snap to 'next'.
-            return MathUtilities.GreaterThanOrClose(value, (previous + next) * 0.5) ? next : previous;
+            return value;
         }
+
 
         private void UpdatePseudoClasses(Orientation o)
         {

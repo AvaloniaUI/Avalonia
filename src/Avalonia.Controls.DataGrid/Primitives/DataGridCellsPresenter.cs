@@ -299,6 +299,11 @@ namespace Avalonia.Controls.Primitives
             DesiredHeight = 0;
         }
 
+        internal void InvalidateDesiredHeight()
+        {
+            DesiredHeight = 0;
+        }
+
         private bool ShouldDisplayCell(DataGridColumn column, double frozenLeftEdge, double scrollingLeftEdge)
         {
             if (!column.IsVisible)

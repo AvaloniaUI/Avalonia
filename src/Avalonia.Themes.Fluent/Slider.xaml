@@ -38,8 +38,7 @@
   <Style Selector="Slider:horizontal">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
     <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
-    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -99,8 +98,7 @@
   <Style Selector="Slider:vertical">
     <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
     <Setter Property="BorderThickness" Value="{DynamicResource SliderBorderThemeThickness}" />
-    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="Foreground" Value="{DynamicResource SliderTrackValueFill}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -182,6 +180,7 @@
 
   <Style Selector="Slider /template/ TickBar">
     <Setter Property="IsVisible" Value="False" />
+    <Setter Property="Ticks" Value="{TemplateBinding Ticks}" />
   </Style>
 
   <!-- TickBar Placement States -->

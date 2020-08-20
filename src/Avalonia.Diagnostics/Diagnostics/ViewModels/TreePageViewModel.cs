@@ -65,7 +65,15 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void Dispose() => _details?.Dispose();
+        public void Dispose()
+        {
+            foreach (var node in Nodes)
+            {
+                node.Dispose();
+            }
+
+            _details?.Dispose();
+        }
 
         public TreeNode FindNode(IControl control)
         {

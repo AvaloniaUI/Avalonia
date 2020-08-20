@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
             }
         }
 
-        public double Scaling
+        public double RenderScaling
         {
             get { return _scaling; }
             set
@@ -52,6 +52,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
+        /// <inheritdoc/>
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
+
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
         public virtual Point PointToClient(PixelPoint point) => point.ToPoint(1);
@@ -63,6 +66,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         }
 
         public Action Closed { get; set; }
+        public Action LostFocus { get; set; }
         public abstract IMouseDevice MouseDevice { get; }
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }

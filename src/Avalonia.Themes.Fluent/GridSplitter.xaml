@@ -4,10 +4,10 @@
     <Setter Property="Focusable" Value="True" />
     <Setter Property="MinWidth" Value="6" />
     <Setter Property="MinHeight" Value="6" />
-    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
     <Setter Property="PreviewContent">
       <Template>
-        <Rectangle Fill="{DynamicResource HighlightBrush}" />
+        <Rectangle Fill="{DynamicResource SystemAccentColor}" />
       </Template>
     </Setter>
     <Setter Property="Template">

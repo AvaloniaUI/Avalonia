@@ -13,6 +13,11 @@ namespace Avalonia.Platform
         /// Hides the window.
         /// </summary>
         void Hide();
+        
+        /// <summary>
+        /// Gets the scaling factor for Window positioning and sizing.
+        /// </summary>
+        double DesktopScaling { get; }
 
         /// <summary>
         /// Gets the position of the window in device pixels.

@@ -1,4 +1,4 @@
-﻿using Avalonia.Utility;
+﻿using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -112,7 +112,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             count = 1;
 
-            if (index > text.End)
+            if (index > text.Length)
             {
                 return ReplacementCodepoint;
             }

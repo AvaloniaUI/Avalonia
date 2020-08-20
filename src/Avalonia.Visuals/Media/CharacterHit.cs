@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Avalonia.Media
 {
@@ -9,6 +10,7 @@ namespace Avalonia.Media
     ///     The CharacterHit structure provides information about the index of the first
     ///     character that got hit as well as information about leading or trailing edge.
     /// </remarks>
+    [DebuggerDisplay("CharacterHit({FirstCharacterIndex}, {TrailingLength})")]
     public readonly struct CharacterHit : IEquatable<CharacterHit>
     {
         /// <summary>

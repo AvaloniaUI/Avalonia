@@ -31,8 +31,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         public void Should_Parse_Points_in_Xaml(string input)
         {
             var xaml = $"<Polygon xmlns='https://github.com/avaloniaui' Points='{input}' />";
-            var loader = new AvaloniaXamlLoader();
-            var polygon = (Polygon)loader.Load(xaml);
+            var polygon = (Polygon)AvaloniaRuntimeXamlLoader.Load(xaml);
 
             var points = polygon.Points;
 

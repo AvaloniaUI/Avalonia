@@ -67,6 +67,9 @@ namespace Avalonia.Controls.Platform
                 window.Deactivated += WindowDeactivated;
             }
 
+            if (_root is TopLevel tl)
+                tl.PlatformImpl.LostFocus += TopLevelLostPlatformFocus;
+
             _inputManagerSubscription = InputManager?.Process.Subscribe(RawInput);
         }
 
@@ -96,6 +99,9 @@ namespace Avalonia.Controls.Platform
             {
                 root.Deactivated -= WindowDeactivated;
             }
+            
+            if (_root is TopLevel tl)
+                tl.PlatformImpl.LostFocus -= TopLevelLostPlatformFocus;
 
             _inputManagerSubscription?.Dispose();
 
@@ -228,7 +234,9 @@ namespace Avalonia.Controls.Platform
                             // If the the parent is an IMenu which successfully moved its selection,
                             // and the current menu is open then close the current menu and open the
                             // new menu.
-                            if (item.IsSubMenuOpen && item.Parent is IMenu)
+                            if (item.IsSubMenuOpen &&
+                                item.Parent is IMenu &&
+                                item.Parent.SelectedItem is object)
                             {
                                 item.Close();
                                 Open(item.Parent.SelectedItem, true);
@@ -333,6 +341,10 @@ namespace Avalonia.Controls.Platform
                 {
                     item.Parent.SelectedItem = null;
                 }
+                else if (!item.IsPointerOverSubMenu)
+                {
+                    item.IsSubMenuOpen = false;
+                }
             }
         }
 
@@ -352,6 +364,11 @@ namespace Avalonia.Controls.Platform
                 }
                 else
                 {
+                    if (item.IsTopLevel && item.Parent is IMainMenu mainMenu)
+                    {
+                        mainMenu.Open();
+                    }
+
                     Open(item, false);
                 }
 
@@ -374,7 +391,7 @@ namespace Avalonia.Controls.Platform
         {
             if (e.Source == Menu)
             {
-                Menu.MoveSelection(NavigationDirection.First, true);
+                Menu?.MoveSelection(NavigationDirection.First, true);
             }
         }
 
@@ -402,6 +419,11 @@ namespace Avalonia.Controls.Platform
         }
 
         protected internal virtual void WindowDeactivated(object sender, EventArgs e)
+        {
+            Menu?.Close();
+        }
+        
+        private void TopLevelLostPlatformFocus()
         {
             Menu?.Close();
         }

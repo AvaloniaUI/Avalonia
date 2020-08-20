@@ -18,11 +18,6 @@ namespace Avalonia
         event EventHandler Initialized;
 
         /// <summary>
-        /// Raised when resources on the element are changed.
-        /// </summary>
-        event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
-
-        /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
         /// </summary>
         bool IsInitialized { get; }

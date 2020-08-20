@@ -2,6 +2,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 {
     public enum BiDiClass
     {
+        LeftToRight, //L
         ArabicLetter, //AL
         ArabicNumber, //AN
         ParagraphSeparator, //B
@@ -11,7 +12,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
         EuropeanSeparator, //ES
         EuropeanTerminator, //ET
         FirstStrongIsolate, //FSI
-        LeftToRight, //L
         LeftToRightEmbedding, //LRE
         LeftToRightIsolate, //LRI
         LeftToRightOverride, //LRO

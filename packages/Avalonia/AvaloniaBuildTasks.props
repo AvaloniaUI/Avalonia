@@ -1,3 +1,11 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
+  <ItemGroup>
+    <AvailableItemName Include="AvaloniaXaml" />
+    <AvailableItemName Include="AvaloniaResource" />
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)AvaloniaItemSchema.xaml" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(EnableDefaultItems)'=='True'">
+    <AvaloniaXaml Include="**\*.axaml" SubType="Designer" />
+    <AvaloniaXaml Include="**\*.paml" SubType="Designer" />
+  </ItemGroup>
 </Project>

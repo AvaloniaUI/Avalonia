@@ -191,8 +191,7 @@ namespace Avalonia.Controls.UnitTests
     </StackPanel>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var target1 = window.Find<TextBlock>("target1");
                 var target2 = window.Find<TextBlock>("target2");
                 var mouse = new MouseTestHelper();
@@ -235,8 +234,7 @@ namespace Avalonia.Controls.UnitTests
     </StackPanel>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var target1 = window.Find<TextBlock>("target1");
                 var target2 = window.Find<TextBlock>("target2");
                 var mouse = new MouseTestHelper();
@@ -298,7 +296,7 @@ namespace Avalonia.Controls.UnitTests
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
-            popupImpl.SetupGet(x => x.Scaling).Returns(1);
+            popupImpl.SetupGet(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
 
             windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);

@@ -93,7 +93,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupProperty(x => x.Resized);
-                impl.SetupGet(x => x.Scaling).Returns(1);
+                impl.SetupGet(x => x.RenderScaling).Returns(1);
 
                 var target = new TestTopLevel(impl.Object)
                 {
@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
 
-                target.LayoutManager.ExecuteInitialLayoutPass(target);
+                target.LayoutManager.ExecuteInitialLayoutPass();
 
                 Assert.Equal(new Rect(0, 0, 321, 432), target.Bounds);
             }
@@ -268,12 +268,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Close_Should_Dispose_LayoutManager()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = new Mock<ITopLevelImpl>();
+                impl.SetupAllProperties();
+
+                var layoutManager = new Mock<ILayoutManager>();
+                var target = new TestTopLevel(impl.Object, layoutManager.Object);
+
+                impl.Object.Closed();
+
+                layoutManager.Verify(x => x.Dispose());
+            }
+        }
+
+        [Fact]
         public void Reacts_To_Changes_In_Global_Styles()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var impl = new Mock<ITopLevelImpl>();
-                impl.SetupGet(x => x.Scaling).Returns(1);
+                impl.SetupGet(x => x.RenderScaling).Returns(1);
 
                 var child = new Border { Classes = { "foo" } };
                 var target = new TestTopLevel(impl.Object)
@@ -282,7 +299,7 @@ namespace Avalonia.Controls.UnitTests
                     Content = child,
                 };
 
-                target.LayoutManager.ExecuteInitialLayoutPass(target);
+                target.LayoutManager.ExecuteInitialLayoutPass();
 
                 Assert.Equal(new Thickness(0), child.BorderThickness);
 
@@ -295,7 +312,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 Application.Current.Styles.Add(style);
-                target.LayoutManager.ExecuteInitialLayoutPass(target);
+                target.LayoutManager.ExecuteInitialLayoutPass();
 
                 Assert.Equal(new Thickness(2), child.BorderThickness);
 
@@ -323,7 +340,7 @@ namespace Avalonia.Controls.UnitTests
             public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
                 : base(impl)
             {
-                _layoutManager = layoutManager ?? new LayoutManager();
+                _layoutManager = layoutManager ?? new LayoutManager(this);
             }
 
             protected override ILayoutManager CreateLayoutManager() => _layoutManager;

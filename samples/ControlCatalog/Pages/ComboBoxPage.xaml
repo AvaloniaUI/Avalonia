@@ -16,7 +16,7 @@
       <ComboBox SelectedIndex="0">
         <ComboBoxItem>
           <Panel>
-            <Rectangle Fill="{DynamicResource ThemeAccentBrush}"/>
+            <Rectangle Fill="{DynamicResource SystemAccentColor}"/>
             <TextBlock Margin="8">Control Items</TextBlock>
           </Panel>
         </ComboBoxItem>

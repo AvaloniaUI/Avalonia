@@ -1,4 +1,5 @@
-﻿using Avalonia.Data;
+﻿using System.Diagnostics.CodeAnalysis;
+using Avalonia.Data;
 
 #nullable enable
 
@@ -11,9 +12,9 @@ namespace Avalonia.PropertyStore
     /// <typeparam name="T">The property type.</typeparam>
     internal class LocalValueEntry<T> : IValue<T>
     {
-        private T _value;
+        [AllowNull] private T _value;
 
-        public LocalValueEntry(T value) => _value = value;
+        public LocalValueEntry([AllowNull] T value) => _value = value;
         public BindingPriority Priority => BindingPriority.LocalValue;
         Optional<object> IValue.GetValue() => new Optional<object>(_value);
         

@@ -43,18 +43,21 @@ namespace Avalonia.Skia
             {
                 var assetStream = assetLoader.Open(asset);
 
-                if (assetStream == null) throw new InvalidOperationException("Asset could not be loaded.");
+                if (assetStream == null)
+                    throw new InvalidOperationException("Asset could not be loaded.");
 
                 var typeface = SKTypeface.FromStream(assetStream);
 
-                if(typeface == null) throw new InvalidOperationException("Typeface could not be loaded.");
+                if (typeface == null)
+                    throw new InvalidOperationException("Typeface could not be loaded.");
 
                 if (typeface.FamilyName != fontFamily.Name)
                 {
                     continue;
                 }
 
-                var key = new FontKey(fontFamily.Name, (FontWeight)typeface.FontWeight, (FontStyle)typeface.FontSlant);
+                var key = new FontKey(fontFamily.Name, typeface.FontSlant.ToAvalonia(),
+                    (FontWeight)typeface.FontWeight);
 
                 typeFaceCollection.AddTypeface(key, typeface);
             }

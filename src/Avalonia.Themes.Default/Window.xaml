@@ -1,21 +1,24 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="Window">
-  <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+  <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>  
+  <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource HighlightForegroundColor}" />
   <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
-  <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
+  <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>  
   <Setter Property="Template">
     <ControlTemplate>
       <Panel>
         <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
-        <Border Background="{TemplateBinding Background}">
-          <VisualLayerManager>
-            <ContentPresenter Name="PART_ContentPresenter"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Content="{TemplateBinding Content}"
-                              Margin="{TemplateBinding Padding}"
-                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-          </VisualLayerManager>
-        </Border>
+        <Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
+        <VisualLayerManager>
+          <VisualLayerManager.ChromeOverlayLayer>
+            <TitleBar />
+          </VisualLayerManager.ChromeOverlayLayer>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </VisualLayerManager>
       </Panel>
     </ControlTemplate>
   </Setter>

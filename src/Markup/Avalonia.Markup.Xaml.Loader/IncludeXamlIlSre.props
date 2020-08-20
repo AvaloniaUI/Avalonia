@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup>
+    <None Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\*.*" />
+    <Content Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\*.*" />
+    <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\*.*" />
+    <Compile Include="$(MSBuildThisFileDirectory)\xamlil.github\src\XamlX\**\*.cs" />
+    <Compile Remove="$(MSBuildThisFileDirectory)\xamlil.github\**\obj\**\*.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\Avalonia.Markup.Xaml\Parsers\PropertyParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs" />
+  </ItemGroup>
+</Project>

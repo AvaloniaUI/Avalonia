@@ -23,8 +23,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Window.DataTemplates>
     <ContentControl Name='target' Content='Foo'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var target = window.FindControl<ContentControl>("target");
 
                 window.ApplyTemplate();
@@ -52,8 +51,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         </ItemsControl.ItemTemplate>
     </ItemsControl>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var itemsControl = window.FindControl<ItemsControl>("itemsControl");
 
                 window.DataContext = new[] { "item1", "item2" };
@@ -81,8 +79,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Window.DataTemplates>
     <ContentControl Name='target' Content='{Binding Child}'/>
 </Window>";
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var target = window.FindControl<ContentControl>("target");
 
                 var viewModel = new TestViewModel

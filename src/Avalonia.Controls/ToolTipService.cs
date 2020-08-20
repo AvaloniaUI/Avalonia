@@ -37,6 +37,27 @@ namespace Avalonia.Controls
             }
         }
 
+        internal void TipOpenChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var control = (Control)e.Sender;
+
+            if (e.OldValue is false && e.NewValue is true)
+            {
+                control.DetachedFromVisualTree += ControlDetaching;
+            }
+            else if(e.OldValue is true && e.NewValue is false)
+            {
+                control.DetachedFromVisualTree -= ControlDetaching;
+            }
+        }
+        
+        private void ControlDetaching(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            var control = (Control)sender;
+            control.DetachedFromVisualTree -= ControlDetaching;
+            Close(control);
+        }
+
         /// <summary>
         /// Called when the pointer enters a control with an attached tooltip.
         /// </summary>

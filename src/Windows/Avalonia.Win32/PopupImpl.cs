@@ -7,13 +7,41 @@ namespace Avalonia.Win32
 {
     class PopupImpl : WindowImpl, IPopupImpl
     {
+        private readonly IWindowBaseImpl _parent;
         private bool _dropShadowHint = true;
         private Size? _maxAutoSize;
+
+
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        [ThreadStatic]
+        private static IntPtr s_parentHandle;
 
         public override void Show()
         {
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
+
+            // We need to steal focus if it's held by a child window of our toplevel window
+            var parent = _parent;
+            while(parent != null)
+            {
+                if(parent is PopupImpl pi)
+                   parent = pi._parent;
+                else
+                    break;
+            }
+
+            if(parent == null)
+                return;
+
+            var focusOwner = UnmanagedMethods.GetFocus();
+            if (focusOwner != IntPtr.Zero &&
+                UnmanagedMethods.GetAncestor(focusOwner, UnmanagedMethods.GetAncestorFlags.GA_ROOT)
+                == parent.Handle.Handle)
+                UnmanagedMethods.SetFocus(parent.Handle.Handle);
         }
+
+        protected override bool ShouldTakeFocusOnClick => false;
 
         public override Size MaxAutoSizeHint
         {
@@ -29,7 +57,7 @@ namespace Avalonia.Win32
                     {
                         var info = UnmanagedMethods.MONITORINFO.Create();
                         UnmanagedMethods.GetMonitorInfo(monitor, ref info);
-                        _maxAutoSize = info.rcWork.ToPixelRect().ToRect(Scaling).Size;
+                        _maxAutoSize = info.rcWork.ToPixelRect().ToRect(RenderScaling).Size;
                     }
                 }
 
@@ -56,10 +84,11 @@ namespace Avalonia.Win32
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
-                IntPtr.Zero,
+                s_parentHandle,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+            s_parentHandle = IntPtr.Zero;
 
             EnableBoxShadow(result, _dropShadowHint);
 
@@ -80,8 +109,24 @@ namespace Avalonia.Win32
             }
         }
 
-        public PopupImpl(IWindowBaseImpl parent)
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        static IWindowBaseImpl SaveParentHandle(IWindowBaseImpl parent)
         {
+            s_parentHandle = parent.Handle.Handle;
+            return parent;
+        }
+
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        public PopupImpl(IWindowBaseImpl parent) : this(SaveParentHandle(parent), false)
+        {
+
+        }
+
+        private PopupImpl(IWindowBaseImpl parent, bool dummy) : base()
+        {
+            _parent = parent;
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
 

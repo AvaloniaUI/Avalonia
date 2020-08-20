@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -43,9 +44,9 @@ namespace Avalonia.Native
     }
 
     public abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface
+        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
-        IInputRoot _inputRoot;
+        protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
@@ -57,6 +58,7 @@ namespace Avalonia.Native
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
+        private NativeControlHostImpl _nativeControlHost;
         private IGlContext _glContext;
 
         internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, GlPlatformFeature glFeature)
@@ -79,7 +81,8 @@ namespace Avalonia.Native
                 _glSurface = new GlPlatformSurface(window, _glContext);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
-            _savedScaling = Scaling;
+            _savedScaling = RenderScaling;
+            _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
@@ -101,6 +104,8 @@ namespace Avalonia.Native
             this 
         };
 
+        public INativeControlHostImpl NativeControlHost => _nativeControlHost;
+
         public ILockedFramebuffer Lock()
         {
             var w = _savedLogicalSize.Width * _savedScaling;
@@ -119,6 +124,8 @@ namespace Avalonia.Native
             }, (int)w, (int)h, new Vector(dpi, dpi));
         }
 
+        public Action LostFocus { get; set; }
+        
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
@@ -201,6 +208,11 @@ namespace Avalonia.Native
             {
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
             }
+            
+            void IAvnWindowBaseEvents.LostFocus()
+            {
+                _parent.LostFocus?.Invoke();
+            }
 
             public AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                 AvnInputModifiers modifiers,
@@ -254,6 +266,11 @@ namespace Avalonia.Native
             return args.Handled;
         }
 
+        protected virtual bool ChromeHitTest(RawPointerEventArgs e)
+        {
+            return false;
+        }
+
         public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
@@ -265,7 +282,12 @@ namespace Avalonia.Native
                     break;
 
                 default:
-                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers));
+                    var e = new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (RawInputModifiers)modifiers);
+                    
+                    if(!ChromeHitTest(e))
+                    {
+                        Input?.Invoke(e);
+                    }
                     break;
             }
         }
@@ -278,7 +300,15 @@ namespace Avalonia.Native
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             if (_deferredRendering)
-                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+            {
+                var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+                var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+
+                if (customRendererFactory != null)
+                    return customRendererFactory.Create(root, loop);
+                return new DeferredRenderer(root, loop);
+            }
+
             return new ImmediateRenderer(root);
         }
 
@@ -288,6 +318,9 @@ namespace Avalonia.Native
             _native?.Dispose();
             _native = null;
 
+            _nativeControlHost?.Dispose();
+            _nativeControlHost = null;
+            
             (Screen as ScreenImpl)?.Dispose();
         }
 
@@ -304,7 +337,7 @@ namespace Avalonia.Native
         }
 
 
-        public void Show()
+        public virtual void Show()
         {
             _native.Show();
         }
@@ -344,7 +377,9 @@ namespace Avalonia.Native
             _native.SetTopMost(value);
         }
 
-        public double Scaling => _native?.GetScaling() ?? 1;
+        public double RenderScaling => _native?.GetScaling() ?? 1;
+
+        public double DesktopScaling => 1;
 
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
@@ -407,12 +442,14 @@ namespace Avalonia.Native
 
                 TransparencyLevel = transparencyLevel;
 
-                _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                _native?.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
 
         public IPlatformHandle Handle { get; private set; }
     }

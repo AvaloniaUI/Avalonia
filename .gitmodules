@@ -2,5 +2,5 @@
 	path = nukebuild/Numerge
 	url = https://github.com/kekekeks/Numerge.git
 [submodule "src/Markup/Avalonia.Markup.Xaml/XamlIl/xamlil.github"]
-	path = src/Markup/Avalonia.Markup.Xaml/XamlIl/xamlil.github
-	url = https://github.com/kekekeks/XamlIl.git
+	path = src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github
+	url = https://github.com/kekekeks/XamlX.git

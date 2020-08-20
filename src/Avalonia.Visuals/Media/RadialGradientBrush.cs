@@ -30,6 +30,11 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<RadialGradientBrush, double>(
                 nameof(Radius),
                 0.5);
+        
+        static RadialGradientBrush()
+        {
+            AffectsRender<RadialGradientBrush>(CenterProperty, GradientOriginProperty, RadiusProperty);
+        }
 
         /// <summary>
         /// Gets or sets the start point for the gradient.
