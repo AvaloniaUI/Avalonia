@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls.Platform
@@ -83,7 +80,5 @@ namespace Avalonia.Controls.Platform
 
         public bool CurrentThreadIsLoopThread => TlsCurrentThreadIsLoopThread;
         public event Action<DispatcherPriority?> Signaled;
-        public event Action<TimeSpan> Tick;
-
     }
 }

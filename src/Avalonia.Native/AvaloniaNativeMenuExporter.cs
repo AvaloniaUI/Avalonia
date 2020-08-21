@@ -98,7 +98,8 @@ namespace Avalonia.Native
                         SetMenu(_nativeWindow, _menu);
                     }
                 }
-
+                OnIsNativeMenuExportedChanged?
+                    .Invoke(this, EventArgs.Empty);
                 _exported = true;
             }
         }

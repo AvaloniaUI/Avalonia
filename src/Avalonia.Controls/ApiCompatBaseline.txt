@@ -1,4 +1,6 @@
 Compat issues with assembly Avalonia.Controls:
+MembersMustExist : Member 'public void Avalonia.Controls.Platform.InternalPlatformThreadingInterface.add_Tick(System.Action<System.TimeSpan>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.Platform.InternalPlatformThreadingInterface.remove_Tick(System.Action<System.TimeSpan>)' does not exist in the implementation but it does exist in the contract.
 TypesMustExist : Type 'Avalonia.Controls.IndexPath' does not exist in the implementation but it does exist in the contract.
 TypesMustExist : Type 'Avalonia.Controls.ISelectedItemInfo' does not exist in the implementation but it does exist in the contract.
 TypesMustExist : Type 'Avalonia.Controls.ISelectionModel' does not exist in the implementation but it does exist in the contract.
