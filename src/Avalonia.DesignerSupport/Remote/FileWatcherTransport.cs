@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
-using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
@@ -70,16 +69,24 @@ namespace Avalonia.DesignerSupport.Remote
         {
             while (!_disposed)
             {
-                var data = File.ReadAllText(_path);
-                if (data != _lastContents)
+                try
                 {
-                    Console.WriteLine("Triggering XAML update");
-                    _lastContents = data;
-                    _onMessage?.Invoke(this, new UpdateXamlMessage
+                    var data = File.ReadAllText(_path);
+                    if (data != _lastContents)
                     {
-                        Xaml = data,
-                        AssemblyPath = _appPath
-                    });
+                        Console.WriteLine("Triggering XAML update");
+                        _lastContents = data;
+                        _onMessage?.Invoke(this, new UpdateXamlMessage
+                        {
+                            Xaml = data,
+                            AssemblyPath = _appPath
+                        });
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    OnException?.Invoke(this, ex);
                 }
 
                 await Task.Delay(100);
