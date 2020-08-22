@@ -110,11 +110,20 @@ namespace Avalonia.Native
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
-                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
-                ;
+                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory));
+
             if (_options.UseGpu)
-                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
-                    .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
+            {
+                try
+                {
+                    AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
+                        .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
         }
 
         public IWindowImpl CreateWindow()
