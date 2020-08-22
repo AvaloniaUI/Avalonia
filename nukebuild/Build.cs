@@ -240,6 +240,7 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Visuals.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
+            RunCoreTest("Avalonia.ReactiveUI.Events.UnitTests");
         });
 
     Target RunRenderTests => _ => _

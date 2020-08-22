@@ -226,6 +226,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Markup.Xaml.Loader
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.ReactiveUI.Events", "src\Avalonia.ReactiveUI.Events\Avalonia.ReactiveUI.Events.csproj", "{28F18757-C3E6-4BBE-A37D-11BA2AB9177C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.ReactiveUI.Events.UnitTests", "tests\Avalonia.ReactiveUI.Events.UnitTests\Avalonia.ReactiveUI.Events.UnitTests.csproj", "{780AC0FE-8DD2-419F-A1DC-AC7E3EB393F7}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
@@ -2120,6 +2122,7 @@ Global
 		{351337F5-D66F-461B-A957-4EF60BDB4BA6} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{3C84E04B-36CF-4D0D-B965-C26DD649D1F3} = {A0CC0258-D18C-4AB3-854F-7101680FC3F9}
 		{909A8CBD-7D0E-42FD-B841-022AD8925820} = {8B6A8209-894F-4BA1-B880-965FD453982C}
+		{780AC0FE-8DD2-419F-A1DC-AC7E3EB393F7} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
