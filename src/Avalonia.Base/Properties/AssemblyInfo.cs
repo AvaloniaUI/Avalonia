@@ -9,3 +9,4 @@ using Avalonia.Metadata;
 [assembly: InternalsVisibleTo("Avalonia.UnitTests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 [assembly: InternalsVisibleTo("Avalonia.Controls.DataGrid")]
+[assembly: InternalsVisibleTo("Avalonia.Markup.Xaml.UnitTests")]
