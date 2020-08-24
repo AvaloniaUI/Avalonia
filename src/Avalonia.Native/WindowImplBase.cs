@@ -94,8 +94,13 @@ namespace Avalonia.Native
         {
             get
             {
-                var s = _native.GetClientSize();
-                return new Size(s.Width, s.Height);
+                if (_native != null)
+                {
+                    var s = _native.GetClientSize();
+                    return new Size(s.Width, s.Height);
+                }
+
+                return default;
             }
         }
 
