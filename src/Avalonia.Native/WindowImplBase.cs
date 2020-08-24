@@ -351,12 +351,12 @@ namespace Avalonia.Native
 
         public Point PointToClient(PixelPoint point)
         {
-            return _native.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint();
+            return _native?.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint() ?? default;
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint();
+            return _native?.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint() ?? default;
         }
 
         public void Hide()

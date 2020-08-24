@@ -563,6 +563,41 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
+        public void TextBox_CaretIndex_Persists_When_Focus_Lost()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "5678"
+                };
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+                
+                var root = new TestRoot { Child = sp };
+
+                target2.Focus();
+                target2.CaretIndex = 2;
+                Assert.False(target1.IsFocused);
+                Assert.True(target2.IsFocused);
+
+                target1.Focus();
+                
+                Assert.Equal(2, target2.CaretIndex);
+            }
+        }
+        
+        [Fact]
         public void TextBox_Reveal_Password_Reset_When_Lost_Focus()
         {
             using (UnitTestApplication.Start(FocusServices))

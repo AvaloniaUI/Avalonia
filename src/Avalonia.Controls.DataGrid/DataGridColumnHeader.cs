@@ -458,7 +458,7 @@ namespace Avalonia.Controls
 
         private void DataGridColumnHeader_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (OwningColumn == null || e.Handled || !IsEnabled || e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (OwningColumn == null || e.Handled || !IsEnabled || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 return;
             }

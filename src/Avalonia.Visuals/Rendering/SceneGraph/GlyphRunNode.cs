@@ -25,7 +25,7 @@ namespace Avalonia.Rendering.SceneGraph
             GlyphRun glyphRun,
             Point baselineOrigin,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(glyphRun.Bounds, transform)
+            : base(glyphRun.Bounds.Translate(baselineOrigin), transform)
         {
             Transform = transform;
             Foreground = foreground?.ToImmutable();
