@@ -29,4 +29,5 @@
   </ItemGroup>
   
   <Import Project="..\..\build\BuildTargets.targets" />
+  <Import Project="..\..\build\SkiaSharp.props" />
 </Project>

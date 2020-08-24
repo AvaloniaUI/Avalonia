@@ -6,9 +6,12 @@ using Avalonia.Dialogs;
 using Avalonia.Platform;
 using System;
 using ReactiveUI;
+using SkiaSharp;
 
 namespace ControlCatalog.ViewModels
 {
+    
+    
     class MainWindowViewModel : ReactiveObject
     {
         private IManagedNotificationManager _notificationManager;
@@ -91,7 +94,13 @@ namespace ControlCatalog.ViewModels
 
             SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
-        }        
+        }
+
+        public void DumpStats()
+        {
+        //    var trace = new  AvaloniaSkiaTraceDump();
+          //  SKGraphics.DumpMemoryStatistics(trace);
+        }
 
         public int TransparencyLevel
         {

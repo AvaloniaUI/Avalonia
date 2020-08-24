@@ -79,6 +79,7 @@
         </Menu>
         <local:MainView />
       </DockPanel>
+      <Button Content="Dump VMemStats" Command="{Binding DumpStats}" VerticalAlignment="Bottom" />
     </Panel>
     <Border IsVisible="{Binding ExtendClientAreaEnabled}" BorderThickness="1 1 1 0" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 8 0 0">
       <Border.Background>

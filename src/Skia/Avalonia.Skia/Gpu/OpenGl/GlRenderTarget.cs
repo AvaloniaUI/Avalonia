@@ -8,6 +8,28 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
+    class AvaloniaSkiaTraceDump : SKTraceMemoryDump
+    {
+        public AvaloniaSkiaTraceDump() : base(true, true)
+        {
+            
+        }
+
+        protected override void OnDumpNumericValue(string dumpName, string valueName, string units, ulong value)
+        {
+            base.OnDumpNumericValue(dumpName, valueName, units, value);
+            
+            Console.WriteLine($"{dumpName}: {valueName} - {value} ({units}");
+        }
+
+        protected override void OnDumpStringValue(string dumpName, string valueName, string value)
+        {
+            base.OnDumpStringValue(dumpName, valueName, value);
+            
+            Console.WriteLine($"{dumpName}: {valueName} - {value}");
+        }
+    }
+    
     internal class GlRenderTarget : ISkiaGpuRenderTarget
     {
         private readonly GRContext _grContext;
@@ -46,6 +68,14 @@ namespace Avalonia.Skia
                 _backendRenderTarget.Dispose();
                 GrContext.Flush();
                 _glSession.Dispose();
+                
+                /*Console.WriteLine("Stats:");
+                GrContext.DumpMemoryStatistics(new AvaloniaSkiaTraceDump());
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();*/
+
+                
             }
 
             public GRContext GrContext { get; }
