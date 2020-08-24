@@ -1,5 +1,11 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!--TODO: Validation and Focus-->
+
+  <Styles.Resources>
+    <Thickness x:Key="DataGridTextColumnCellTextBlockMargin">4</Thickness>
+  </Styles.Resources>
+  
   <Style Selector="DataGridCell">
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
