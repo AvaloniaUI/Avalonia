@@ -149,7 +149,6 @@ namespace Avalonia.Native
             void IAvnWindowBaseEvents.Closed()
             {
                 var n = _parent._native;
-                _parent._native = null;
                 try
                 {
                     _parent?.Closed?.Invoke();
@@ -158,6 +157,7 @@ namespace Avalonia.Native
                 {
                     n?.Dispose();
                 }
+                
                 _parent._mouse.Dispose();
             }
 
