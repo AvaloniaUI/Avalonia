@@ -7,12 +7,10 @@
                      Color="#3F4346" />
     <SolidColorBrush x:Key="DisabledVisualElementBackground"
                      Color="#8CFFFFFF" />
-    <SolidColorBrush x:Key="InvalidBrush"
-                     Color="#FFFF00" />
     <SolidColorBrush x:Key="FillerGridLinesBrush"
                      Color="Transparent" />
     <StaticResource x:Key="ScrollBarsSeparatorBackground"
-                    ResourceKey="SystemControlPageBackgroundChromeLowBrush" />
+                    ResourceKey="SystemChromeLowColor" />
     <StaticResource x:Key="DataGridColumnHeaderForegroundBrush"
                     ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <StaticResource x:Key="DataGridColumnHeaderBackgroundColor"
@@ -90,7 +88,7 @@
     <StaticResource x:Key="DataGridRowGroupHeaderForegroundBrush"
                     ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="DataGridRowInvalidBrush"
-                    ResourceKey="InvalidBrush" />
+                    ResourceKey="SystemControlErrorTextForegroundBrush" />
     <StaticResource x:Key="DataGridCellBackgroundBrush"
                     ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="DataGridCellFocusVisualPrimaryBrush"
@@ -98,7 +96,7 @@
     <StaticResource x:Key="DataGridCellFocusVisualSecondaryBrush"
                     ResourceKey="SystemControlFocusVisualSecondaryBrush" />
     <StaticResource x:Key="DataGridCellInvalidBrush"
-                    ResourceKey="InvalidBrush" />
+                    ResourceKey="SystemControlErrorTextForegroundBrush" />
   </Styles.Resources>
 
   <Style Selector="DataGridCell">
@@ -433,7 +431,7 @@
     <Setter Property="MinHeight" Value="32" />
     <Setter Property="Template">
       <ControlTemplate>
-        <DataGridFrozenGrid Name="Root"
+        <DataGridFrozenGrid Name="PART_Root"
                             MinHeight="{TemplateBinding MinHeight}"
                             ColumnDefinitions="Auto,Auto,Auto,Auto,*"
                             RowDefinitions="*,Auto">
@@ -492,11 +490,11 @@
                        StrokeThickness="1" />
           </Grid>
 
-          <DataGridRowHeader Name="RowHeader"
+          <DataGridRowHeader Name="PART_RowHeader"
                              Grid.RowSpan="2"
                              DataGridFrozenGrid.IsFrozen="True" />
 
-          <Rectangle x:Name="BottomGridLine"
+          <Rectangle x:Name="PART_BottomGridLine"
                      Grid.Row="1"
                      Grid.ColumnSpan="5"
                      Height="1" />
@@ -533,13 +531,13 @@
     <Setter Property="Stretch" Value="UniformToFill" />
   </Style>
 
-  <Style Selector="DataGridRowGroupHeader /template/ DataGridFrozenGrid#Root">
+  <Style Selector="DataGridRowGroupHeader /template/ DataGridFrozenGrid#PART_Root">
     <Setter Property="Background" Value="{Binding $parent[DataGridRowGroupHeader].Background}" />
   </Style>
-  <Style Selector="DataGridRowGroupHeader:pointerover /template/ DataGridFrozenGrid#Root">
+  <Style Selector="DataGridRowGroupHeader:pointerover /template/ DataGridFrozenGrid#PART_Root">
     <Setter Property="Background" Value="{DynamicResource DataGridRowGroupHeaderHoveredBackgroundBrush}" />
   </Style>
-  <Style Selector="DataGridRowGroupHeader:pressed /template/ DataGridFrozenGrid#Root">
+  <Style Selector="DataGridRowGroupHeader:pressed /template/ DataGridFrozenGrid#PART_Root">
     <Setter Property="Background" Value="{DynamicResource DataGridRowGroupHeaderPressedBackgroundBrush}" />
   </Style>
 

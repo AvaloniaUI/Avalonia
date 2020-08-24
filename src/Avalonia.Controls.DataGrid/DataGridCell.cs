@@ -19,7 +19,7 @@ namespace Avalonia.Controls
         private Rectangle _rightGridLine;
         private DataGridColumn _owningColumn;
 
-        bool _isValid;
+        bool _isValid = true;
 
         public static readonly DirectProperty<DataGridCell, bool> IsValidProperty =
             AvaloniaProperty.RegisterDirect<DataGridCell, bool>(
@@ -191,7 +191,7 @@ namespace Avalonia.Controls
 
             PseudoClasses.Set(":edited", IsEdited);
 
-            // PseudoClasses.Set(":invalid", !IsValid);
+            PseudoClasses.Set(":invalid", !IsValid);
         }
 
         // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the 

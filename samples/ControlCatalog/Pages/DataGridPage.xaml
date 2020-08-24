@@ -18,7 +18,7 @@
     </StackPanel>
     <TabControl Grid.Row="1">
       <TabItem Header="DataGrid">
-        <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True">
+        <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" />
             <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" />

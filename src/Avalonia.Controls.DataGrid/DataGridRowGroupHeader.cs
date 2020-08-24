@@ -334,7 +334,7 @@ namespace Avalonia.Controls
         {
             if (_headerElement != null && OwningGrid != null)
             {
-                _headerElement.IsVisible = OwningGrid.AreColumnHeadersVisible;
+                _headerElement.IsVisible = OwningGrid.AreRowHeadersVisible;
             }
         }
 
