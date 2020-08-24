@@ -162,7 +162,7 @@ namespace Avalonia.Controls.Primitives
         //TODO TabStop
         private void DataGridRowHeader_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 return;
             }
