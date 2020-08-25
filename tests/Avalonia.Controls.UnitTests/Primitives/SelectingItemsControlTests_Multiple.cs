@@ -801,7 +801,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { 3, 4 }, SelectedContainers(target));
         }
 
-        [Fact(Skip = "Can't handle duplicates yet")]
+        [Fact]
         public void Should_Shift_Select_Correct_Item_When_Duplicates_Are_Present()
         {
             var target = new ListBox
@@ -822,7 +822,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { 3, 4, 5 }, SelectedContainers(target));
         }
 
-        [Fact(Skip = "Can't handle duplicates yet")]
+        [Fact]
         public void Can_Shift_Select_All_Items_When_Duplicates_Are_Present()
         {
             var target = new ListBox
@@ -889,7 +889,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             VerifyRemoved("Qux");
         }
 
-        [Fact(Skip = "Can't handle duplicates yet")]
+        [Fact]
         public void Duplicate_Items_Are_Added_To_SelectedItems_In_Order()
         {
             var target = new ListBox
@@ -981,7 +981,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(null, target.SelectedItem);
         }
 
-        [Fact(Skip = "Can't handle duplicates yet")]
+        [Fact]
         public void SelectAll_Handles_Duplicate_Items()
         {
             var target = new TestSelector
