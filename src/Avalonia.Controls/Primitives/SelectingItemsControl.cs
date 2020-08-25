@@ -798,6 +798,9 @@ namespace Avalonia.Controls.Primitives
 
             UpdateContainerSelection();
 
+            _selectedItemsSync ??= new SelectedItemsSync(model);
+            _selectedItemsSync.SelectionModel = model;
+
             if (SelectedIndex != -1)
             {
                 RaiseEvent(new SelectionChangedEventArgs(

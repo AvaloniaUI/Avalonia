@@ -34,11 +34,14 @@ namespace Avalonia.Controls.Utils
             get => _selectionModel;
             set
             {
-                value = value ?? throw new ArgumentNullException(nameof(value));
-                UnsubscribeFromSelectionModel(_selectionModel);
-                _selectionModel = value;
-                SubscribeToSelectionModel(_selectionModel);
-                SyncSelectedItemsWithSelectionModel();
+                if (_selectionModel != value)
+                {
+                    value = value ?? throw new ArgumentNullException(nameof(value));
+                    UnsubscribeFromSelectionModel(_selectionModel);
+                    _selectionModel = value;
+                    SubscribeToSelectionModel(_selectionModel);
+                    SyncSelectedItemsWithSelectionModel();
+                }
             }
         }
         
@@ -49,16 +52,19 @@ namespace Avalonia.Controls.Utils
             {
                 value ??= new AvaloniaList<object?>();
 
-                if (value.IsFixedSize)
+                if (_selectedItems != value)
                 {
-                    throw new NotSupportedException(
-                        "Cannot assign fixed size selection to SelectedItems.");
-                }
+                    if (value.IsFixedSize)
+                    {
+                        throw new NotSupportedException(
+                            "Cannot assign fixed size selection to SelectedItems.");
+                    }
 
-                UnsubscribeFromSelectedItems(_selectedItems);
-                _selectedItems = value;
-                SubscribeToSelectedItems(_selectedItems);
-                SyncSelectionModelWithSelectedItems();
+                    UnsubscribeFromSelectedItems(_selectedItems);
+                    _selectedItems = value;
+                    SubscribeToSelectedItems(_selectedItems);
+                    SyncSelectionModelWithSelectedItems();
+                }
             }
         }
 
@@ -226,6 +232,12 @@ namespace Avalonia.Controls.Utils
             }
         }
 
+        private void SelectionModelSourceReset(object sender, EventArgs e)
+        {
+            SyncSelectionModelWithSelectedItems();
+        }
+
+
         private void SubscribeToSelectedItems(IList selectedItems)
         {
             if (selectedItems is INotifyCollectionChanged incc)
@@ -238,6 +250,7 @@ namespace Avalonia.Controls.Utils
         {
             model.PropertyChanged += SelectionModelPropertyChanged;
             model.SelectionChanged += SelectionModelSelectionChanged;
+            model.SourceReset += SelectionModelSourceReset;
         }
 
         private void UnsubscribeFromSelectedItems(IList selectedItems)
@@ -252,6 +265,7 @@ namespace Avalonia.Controls.Utils
         {
             model.PropertyChanged -= SelectionModelPropertyChanged;
             model.SelectionChanged -= SelectionModelSelectionChanged;
+            model.SourceReset -= SelectionModelSourceReset;
         }
 
         private static int IndexOf(object? source, object? item)

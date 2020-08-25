@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
@@ -230,6 +231,19 @@ namespace Avalonia.Controls.UnitTests.Utils
             Assert.Equal(1, model.SelectedIndex);
         }
 
+        [Fact]
+        public void Restores_Selection_On_Items_Reset()
+        {
+            var items = new ResettingCollection(new[] { "foo", "bar", "baz" });
+            var model = new SelectionModel<string> { Source = items };
+            var target = new SelectedItemsSync(model);
+
+            model.SelectedIndex = 1;
+            items.Reset(new[] { "baz", "foo", "bar" });
+
+            Assert.Equal(2, model.SelectedIndex);
+        }
+
         private static SelectedItemsSync CreateTarget(
             IEnumerable<string> items = null)
         {
@@ -240,6 +254,25 @@ namespace Avalonia.Controls.UnitTests.Utils
 
             var target = new SelectedItemsSync(model);
             return target;
+        }
+
+        private class ResettingCollection : List<string>, INotifyCollectionChanged
+        {
+            public ResettingCollection(IEnumerable<string> items)
+            {
+                AddRange(items);
+            }
+
+            public void Reset(IEnumerable<string> items)
+            {
+                Clear();
+                AddRange(items);
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
         }
     }
 }
