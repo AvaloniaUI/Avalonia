@@ -44,7 +44,8 @@
           <DataGrid Name="dataGridEdit" Margin="12" Grid.Row="0">
             <DataGrid.Columns>
               <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" />
-              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="*" />
+              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="2*" />
+              <DataGridCheckBoxColumn Header="Is Banned" Binding="{Binding IsBanned}" Width="*" />
             </DataGrid.Columns>
           </DataGrid>
           <Button Grid.Row="1" Name="btnAdd" Margin="12,0,12,12" Content="Add" HorizontalAlignment="Right" />

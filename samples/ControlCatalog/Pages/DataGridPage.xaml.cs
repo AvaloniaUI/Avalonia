@@ -33,7 +33,7 @@ namespace ControlCatalog.Pages
             var items = new List<Person>
             {
                 new Person { FirstName = "John", LastName = "Doe" },
-                new Person { FirstName = "Elizabeth", LastName = "Thomas" },
+                new Person { FirstName = "Elizabeth", LastName = "Thomas", IsBanned = true },
                 new Person { FirstName = "Zack", LastName = "Ward" }
             };
             var collectionView3 = new DataGridCollectionView(items);
