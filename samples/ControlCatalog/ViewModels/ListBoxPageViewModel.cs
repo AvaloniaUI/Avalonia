@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using Avalonia.Controls;
+using Avalonia.Controls.Selection;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
@@ -15,16 +16,16 @@ namespace ControlCatalog.ViewModels
         public ListBoxPageViewModel()
         {
             Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
-            SelectedItems = new ObservableCollection<string>();
-            SelectedItems.Add(Items[1]);
+            Selection = new SelectionModel<string>();
+            Selection.Select(1);
 
             AddItemCommand = ReactiveCommand.Create(() => Items.Add(GenerateItem()));
 
             RemoveItemCommand = ReactiveCommand.Create(() =>
             {
-                while (SelectedItems.Count > 0)
+                while (Selection.Count > 0)
                 {
-                    Items.Remove(SelectedItems.First());
+                    Items.Remove(Selection.SelectedItems.First());
                 }
             });
 
@@ -32,14 +33,17 @@ namespace ControlCatalog.ViewModels
             {
                 var random = new Random();
 
-                SelectedItems.Clear();
-                SelectedItems.Add(Items[random.Next(Items.Count - 1)]);
+                using (Selection.BatchUpdate())
+                {
+                    Selection.Clear();
+                    Selection.Select(random.Next(Items.Count - 1));
+                }
             });
         }
 
         public ObservableCollection<string> Items { get; }
 
-        public ObservableCollection<string> SelectedItems { get; }
+        public SelectionModel<string> Selection { get; }
 
         public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
@@ -52,6 +56,7 @@ namespace ControlCatalog.ViewModels
             get => _selectionMode;
             set
             {
+                Selection.Clear();
                 this.RaiseAndSetIfChanged(ref _selectionMode, value);
             }
         }
