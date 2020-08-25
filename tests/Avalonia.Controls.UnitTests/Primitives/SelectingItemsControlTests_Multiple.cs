@@ -367,7 +367,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedIndex = 3;
             target.SelectRange(1);
 
-            Assert.Equal(new[] { "qux", "baz", "bar" }, target.SelectedItems.Cast<object>().ToList());
+            Assert.Equal(new[] { "bar", "baz", "qux" }, target.SelectedItems.Cast<object>().ToList());
         }
 
         [Fact]
@@ -1111,7 +1111,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectAll();
             items[1] = "Qux";
 
-            Assert.Equal(new[] { "Foo", "Qux", "Baz" }, target.SelectedItems);
+            Assert.Equal(new[] { "Foo", "Baz" }, target.SelectedItems);
         }
 
         [Fact]
