@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -118,16 +119,17 @@ namespace Avalonia.Controls.Utils
 
             if (sender is INotifyCollectionChanged incc && _entries.TryGetValue(incc, out var listeners))
             {
+                var l = listeners.ToList();
+
                 if (Dispatcher.UIThread.CheckAccess())
                 {
-                    Notify(incc, e, listeners);
+                    Notify(incc, e, l);
                 }
                 else
                 {
                     var inccCapture = incc;
                     var eCapture = e;
-                    var listenersCapture = listeners;
-                    Dispatcher.UIThread.Post(() => Notify(inccCapture, eCapture, listenersCapture));
+                    Dispatcher.UIThread.Post(() => Notify(inccCapture, eCapture, l));
                 }
             }
         }
