@@ -610,7 +610,7 @@ namespace Avalonia.Controls
             // refresh sort description
             foreach (DataGridColumn column in _owner.ColumnsItemsInternal)
             {
-                column.HeaderCell.ApplyState();
+                column.HeaderCell.UpdatePseudoClasses();
             }
         }
 

@@ -13,6 +13,7 @@ using System.Diagnostics;
 using Avalonia.Utilities;
 using System;
 using Avalonia.Controls.Utils;
+using Avalonia.Controls.Mixins;
 
 namespace Avalonia.Controls
 {
@@ -39,7 +40,7 @@ namespace Avalonia.Controls
         private static Cursor _originalCursor;
         private static double _originalHorizontalOffset;
         private static double _originalWidth;
-        private bool _desiredSeparatorVisibility;
+        private bool _desiredSeparatorVisibility = true;
         private static Point? _dragStart;
         private static DataGridColumn _dragColumn;
         private static double _frozenColumnsWidth;
@@ -68,6 +69,7 @@ namespace Avalonia.Controls
         static DataGridColumnHeader()
         {
             AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x, e) => x.OnAreSeparatorsVisibleChanged(e));
+            PressedMixin.Attach<DataGridColumnHeader>();
         }
 
         /// <summary>
@@ -149,8 +151,7 @@ namespace Avalonia.Controls
             }
         }
 
-        //TODO Implement
-        internal void ApplyState()
+        internal void UpdatePseudoClasses()
         {
             CurrentSortingState = null;
             if (OwningGrid != null
@@ -441,7 +442,7 @@ namespace Avalonia.Controls
 
             Point mousePosition = e.GetPosition(this);
             OnMouseEnter(mousePosition);
-            ApplyState();
+            UpdatePseudoClasses();
         }
 
         private void DataGridColumnHeader_PointerLeave(object sender, PointerEventArgs e)
@@ -452,7 +453,7 @@ namespace Avalonia.Controls
             }
 
             OnMouseLeave();
-            ApplyState();
+            UpdatePseudoClasses();
         }
 
         private void DataGridColumnHeader_PointerPressed(object sender, PointerPressedEventArgs e)
@@ -467,7 +468,7 @@ namespace Avalonia.Controls
             OnMouseLeftButtonDown(ref handled, e, mousePosition);
             e.Handled = handled;
 
-            ApplyState();
+            UpdatePseudoClasses();
         }
 
         private void DataGridColumnHeader_PointerReleased(object sender, PointerReleasedEventArgs e)
@@ -483,7 +484,7 @@ namespace Avalonia.Controls
             OnMouseLeftButtonUp(ref handled, e, mousePosition, mousePositionHeaders);
             e.Handled = handled;
 
-            ApplyState();
+            UpdatePseudoClasses();
         }
 
         private void DataGridColumnHeader_PointerMove(object sender, PointerEventArgs e)
