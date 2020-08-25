@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -10,6 +11,24 @@ namespace Avalonia.Styling.UnitTests
 {
     public class StyleTests
     {
+        [Fact]
+        public void Style_Should_Assign_Color_Value_From_Stringrepr()
+        {
+            Style style = new Style(x => x.OfType<Class1>())
+            {
+                Setters =
+                {
+                    new Setter(Class1.TestColorProperty, "#11223344"),
+                },
+            };
+
+            var target = new Class1();
+
+            style.TryAttach(target, null);
+
+            Assert.Equal(Color.Parse("#11223344"), target.TestColor);
+        }
+
         [Fact]
         public void Style_With_Only_Type_Selector_Should_Update_Value()
         {
@@ -457,6 +476,15 @@ namespace Avalonia.Styling.UnitTests
             {
                 get { return GetValue(FooProperty); }
                 set { SetValue(FooProperty, value); }
+            }
+
+            public static readonly StyledProperty<Color> TestColorProperty =
+                AvaloniaProperty.Register<Class1, Color>(nameof(TestColor), default(Color));
+
+            public Color TestColor
+            {
+                get { return GetValue(TestColorProperty); } 
+                set { SetValue(TestColorProperty, value); }
             }
 
             protected override Size MeasureOverride(Size availableSize)
