@@ -199,8 +199,18 @@ namespace Avalonia.Controls.Primitives
                             "collection is different to the Items on the control.");
                     }
 
+                    var oldSelection = _selection?.SelectedItems.ToList();
                     DeinitializeSelectionModel(_selection);
                     _selection = value;
+
+                    if (oldSelection?.Count > 0)
+                    {
+                        RaiseEvent(new SelectionChangedEventArgs(
+                            SelectionChangedEvent,
+                            oldSelection,
+                            Array.Empty<object>()));
+                    }
+
                     InitializeSelectionModel(_selection);
                 }
             }
@@ -786,37 +796,15 @@ namespace Avalonia.Controls.Primitives
                 model.SelectedIndex = 0;
             }
 
-            //if (Items is INotifyCollectionChanged incc)
-            //{
-            //    // At this point we can be sure that SelectionModel has subscribed to collection
-            //    // changes.
-            //    incc.CollectionChanged += AfterItemsCollectionChanged;
-            //}
+            UpdateContainerSelection();
 
-            //UpdateContainerSelection();
-
-            //var selectedIndex = SelectedIndex;
-            //var selectedItem = SelectedItem;
-
-            //if (_selectedIndex != selectedIndex)
-            //{
-            //    RaisePropertyChanged(SelectedIndexProperty, _selectedIndex, selectedIndex);
-            //    _selectedIndex = selectedIndex;
-            //}
-
-            //if (_selectedItem != selectedItem)
-            //{
-            //    RaisePropertyChanged(SelectedItemProperty, _selectedItem, selectedItem);
-            //    _selectedItem = selectedItem;
-            //}
-
-            //if (selectedIndex != -1)
-            //{
-            //    RaiseEvent(new SelectionChangedEventArgs(
-            //        SelectionChangedEvent,
-            //        Array.Empty<object>(),
-            //        Selection.SelectedItems.ToList()));
-            //}
+            if (SelectedIndex != -1)
+            {
+                RaiseEvent(new SelectionChangedEventArgs(
+                    SelectionChangedEvent,
+                    Array.Empty<object>(),
+                    Selection.SelectedItems.ToList()));
+            }
         }
 
         private void DeinitializeSelectionModel(ISelectionModel? model)
