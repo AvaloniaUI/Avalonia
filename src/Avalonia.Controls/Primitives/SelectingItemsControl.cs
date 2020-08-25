@@ -631,7 +631,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void OnSelectionModelLostSelection(object sender, EventArgs e)
         {
-            if (AlwaysSelected)
+            if (AlwaysSelected && Items is object)
             {
                 SelectedIndex = 0;
             }
