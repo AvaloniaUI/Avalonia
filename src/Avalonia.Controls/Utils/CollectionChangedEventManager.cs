@@ -44,11 +44,14 @@ namespace Avalonia.Controls.Utils
                     this);
             }
 
-            //if (listeners.Contains(listener))
-            //{
-            //    throw new InvalidOperationException(
-            //        "Collection listener already added for this collection/listener combination.");
-            //}
+            foreach (var l in listeners)
+            {
+                if (l.TryGetTarget(out var target) && target == listener)
+                {
+                    throw new InvalidOperationException(
+                        "Collection listener already added for this collection/listener combination.");
+                }
+            }
 
             listeners.Add(new WeakReference<ICollectionChangedListener>(listener));
         }
