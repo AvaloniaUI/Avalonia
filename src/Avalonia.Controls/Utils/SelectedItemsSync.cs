@@ -13,76 +13,98 @@ namespace Avalonia.Controls.Utils
     /// <summary>
     /// Synchronizes an <see cref="ISelectionModel"/> with a list of SelectedItems.
     /// </summary>
-    internal class SelectedItemsSync
+    internal class SelectedItemsSync : IDisposable
     {
-        private IList? _selectedItems;
+        private ISelectionModel _selectionModel;
+        private IList _selectedItems;
         private bool _updatingItems;
         private bool _updatingModel;
-        private bool _initializeOnSourceAssignment;
 
         public SelectedItemsSync(ISelectionModel model)
         {
-            model = model ?? throw new ArgumentNullException(nameof(model));
-            Model = model;
+            _selectionModel = model ?? throw new ArgumentNullException(nameof(model));
+            _selectedItems = new AvaloniaList<object?>();
+            SyncSelectedItemsWithSelectionModel();
+            SubscribeToSelectedItems(_selectedItems);
+            SubscribeToSelectionModel(model);
         }
 
-        public ISelectionModel Model { get; private set; }
-
-        public IList GetOrCreateSelectedItems()
+        public ISelectionModel SelectionModel 
         {
-            if (_selectedItems == null)
+            get => _selectionModel;
+            set
             {
-                var items = new AvaloniaList<object?>(Model.SelectedItems);
-                items.CollectionChanged += ItemsCollectionChanged;
-                Model.SelectionChanged += SelectionModelSelectionChanged;
-                _selectedItems = items;
+                value = value ?? throw new ArgumentNullException(nameof(value));
+                UnsubscribeFromSelectionModel(_selectionModel);
+                _selectionModel = value;
+                SubscribeToSelectionModel(_selectionModel);
+                SyncSelectedItemsWithSelectionModel();
             }
+        }
+        
+        public IList SelectedItems 
+        {
+            get => _selectedItems;
+            set
+            {
+                value ??= new AvaloniaList<object?>();
 
-            return _selectedItems;
+                if (value.IsFixedSize)
+                {
+                    throw new NotSupportedException(
+                        "Cannot assign fixed size selection to SelectedItems.");
+                }
+
+                UnsubscribeFromSelectedItems(_selectedItems);
+                _selectedItems = value;
+                SubscribeToSelectedItems(_selectedItems);
+                SyncSelectionModelWithSelectedItems();
+            }
         }
 
-        public void SetSelectedItems(IList? items)
+        public void Dispose()
         {
-            items ??= new AvaloniaList<object>();
+            UnsubscribeFromSelectedItems(_selectedItems);
+            UnsubscribeFromSelectionModel(_selectionModel);
+        }
 
-            if (items.IsFixedSize)
+        private void SyncSelectedItemsWithSelectionModel()
+        {
+            if (_selectionModel.Source is null)
             {
-                throw new NotSupportedException(
-                    "Cannot assign fixed size selection to SelectedItems.");
+                return;
             }
 
-            if (_selectedItems is INotifyCollectionChanged incc)
-            {
-                incc.CollectionChanged -= ItemsCollectionChanged;
-            }
-
-            if (_selectedItems == null)
-            {
-                Model.SelectionChanged += SelectionModelSelectionChanged;
-            }
+            _updatingItems = true;
 
             try
             {
-                _updatingModel = true;
-                _selectedItems = items;
+                _selectedItems.Clear();
 
-                if (Model.Source is object)
+                foreach (var i in SelectionModel.SelectedItems)
                 {
-                    using (Model.BatchUpdate())
+                    _selectedItems.Add(i);
+                }
+            }
+            finally
+            {
+                _updatingItems = false;
+            }
+        }
+
+        private void SyncSelectionModelWithSelectedItems()
+        {
+            _updatingModel = true;
+
+            try
+            {
+                if (_selectionModel.Source is object)
+                {
+                    using (_selectionModel.BatchUpdate())
                     {
-                        Model.Clear();
-                        Add(items);
+                        SelectionModel.Clear();
+                        Add(_selectedItems);
                     }
-                }
-                else if (!_initializeOnSourceAssignment)
-                {
-                    Model.PropertyChanged += SelectionModelPropertyChanged;
-                    _initializeOnSourceAssignment = true;
-                }
-
-                if (_selectedItems is INotifyCollectionChanged incc2)
-                {
-                    incc2.CollectionChanged += ItemsCollectionChanged;
                 }
             }
             finally
@@ -91,36 +113,7 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        public void SetModel(ISelectionModel model)
-        {
-            model = model ?? throw new ArgumentNullException(nameof(model));
-
-            if (_selectedItems != null)
-            {
-                Model.PropertyChanged -= SelectionModelPropertyChanged;
-                Model.SelectionChanged -= SelectionModelSelectionChanged;
-                Model = model;
-                Model.SelectionChanged += SelectionModelSelectionChanged;
-                _initializeOnSourceAssignment = false;
-
-                try
-                {
-                    _updatingItems = true;
-                    _selectedItems.Clear();
-
-                    foreach (var i in model.SelectedItems)
-                    {
-                        _selectedItems.Add(i);
-                    }
-                }
-                finally
-                {
-                    _updatingItems = false;
-                }
-            }
-        }
-
-        private void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void SelectedItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (_updatingItems)
             {
@@ -136,18 +129,18 @@ namespace Avalonia.Controls.Utils
             {
                 foreach (var i in e.OldItems)
                 {
-                    var index = IndexOf(Model.Source, i);
+                    var index = IndexOf(SelectionModel.Source, i);
 
                     if (index != -1)
                     {
-                        Model.Deselect(index);
+                        SelectionModel.Deselect(index);
                     }
                 }
             }
 
             try
             {
-                using var operation = Model.BatchUpdate();
+                using var operation = SelectionModel.BatchUpdate();
 
                 _updatingModel = true;
 
@@ -164,7 +157,7 @@ namespace Avalonia.Controls.Utils
                         Add(e.NewItems);
                         break;
                     case NotifyCollectionChangedAction.Reset:
-                        Model.Clear();
+                        SelectionModel.Clear();
                         Add(_selectedItems);
                         break;
                 }
@@ -179,44 +172,35 @@ namespace Avalonia.Controls.Utils
         {
             foreach (var i in newItems)
             {
-                var index = IndexOf(Model.Source, i);
+                var index = IndexOf(SelectionModel.Source, i);
 
                 if (index != -1)
                 {
-                    Model.Select(index);
+                    SelectionModel.Select(index);
                 }
             }
         }
 
         private void SelectionModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (_initializeOnSourceAssignment &&
-                _selectedItems != null &&
-                e.PropertyName == nameof(ISelectionModel.Source))
+            if (e.PropertyName == nameof(ISelectionModel.Source))
             {
-                try
+                if (_selectedItems.Count > 0)
                 {
-                    _updatingModel = true;
-                    Add(_selectedItems);
-                    _initializeOnSourceAssignment = false;
+                    SyncSelectionModelWithSelectedItems();
                 }
-                finally
+                else
                 {
-                    _updatingModel = false;
+                    SyncSelectedItemsWithSelectionModel();
                 }
             }
         }
 
         private void SelectionModelSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
         {
-            if (_updatingModel)
+            if (_updatingModel || _selectionModel.Source is null)
             {
                 return;
-            }
-
-            if (_selectedItems == null)
-            {
-                throw new AvaloniaInternalException("SelectionModelChanged raised but we don't have items.");
             }
 
             try
@@ -240,6 +224,34 @@ namespace Avalonia.Controls.Utils
             {
                 _updatingItems = false;
             }
+        }
+
+        private void SubscribeToSelectedItems(IList selectedItems)
+        {
+            if (selectedItems is INotifyCollectionChanged incc)
+            {
+                incc.CollectionChanged += SelectedItemsCollectionChanged;
+            }
+        }
+
+        private void SubscribeToSelectionModel(ISelectionModel model)
+        {
+            model.PropertyChanged += SelectionModelPropertyChanged;
+            model.SelectionChanged += SelectionModelSelectionChanged;
+        }
+
+        private void UnsubscribeFromSelectedItems(IList selectedItems)
+        {
+            if (selectedItems is INotifyCollectionChanged incc)
+            {
+                incc.CollectionChanged -= SelectedItemsCollectionChanged;
+            }
+        }
+
+        private void UnsubscribeFromSelectionModel(ISelectionModel model)
+        {
+            model.PropertyChanged -= SelectionModelPropertyChanged;
+            model.SelectionChanged -= SelectionModelSelectionChanged;
         }
 
         private static int IndexOf(object? source, object? item)

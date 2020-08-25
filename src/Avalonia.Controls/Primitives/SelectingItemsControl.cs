@@ -167,8 +167,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         protected IList SelectedItems
         {
-            get => SelectedItemsSync.GetOrCreateSelectedItems();
-            set => SelectedItemsSync.SetSelectedItems(value);
+            get => SelectedItemsSync.SelectedItems;
+            set => SelectedItemsSync.SelectedItems = value;
         }
 
         /// <summary>
