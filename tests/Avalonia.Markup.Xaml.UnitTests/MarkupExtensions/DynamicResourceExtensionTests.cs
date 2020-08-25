@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Logging;
 using Avalonia.Markup.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -790,6 +791,40 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             var brush = (ISolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
+        public void Should_Log_Missing_DynamicResource()
+        {
+            var called = false;
+            var expectedMessageTemplate = "Warning: Dynamic resource '{Key}' was not found in the {Target}.";
+            var expectedResourceKey = "brush";
+
+            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            {
+                if (level == LogEventLevel.Warning &&
+                    area == LogArea.Binding &&
+                    mt == expectedMessageTemplate &&
+                    ((string)pv[0]) == expectedResourceKey)
+                {
+                    called = true;
+                }
+            };
+
+            using (var testLogSink = TestLogSink.Start(checkLogMessage))
+            {
+
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border Name='border' Background='{DynamicResource brush}'/>
+</UserControl>";
+
+                var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var border = userControl.FindControl<Border>("border");
+                Assert.Null(border.Background);
+                Assert.True(called);
+            }
         }
 
         private IDisposable StyledWindow(params (string, string)[] assets)
