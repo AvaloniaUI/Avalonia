@@ -46,26 +46,30 @@ namespace Avalonia.Controls.Selection
 
                     if (base.Source is object)
                     {
+                        using var update = BatchUpdate();
+                        update.Operation.SkipLostSelection = true;
                         Clear();
                     }
 
                     base.Source = value;
 
-                    using var update = BatchUpdate();
-                    update.Operation.IsSourceUpdate = true;
-
-                    if (_hasInitSelectedItem)
+                    using (var update = BatchUpdate())
                     {
-                        SelectedItem = _initSelectedItem;
-                        _initSelectedItem = default;
-                        _hasInitSelectedItem = false;
-                    }
-                    else
-                    {
-                        TrimInvalidSelections(update.Operation);
-                    }
+                        update.Operation.IsSourceUpdate = true;
 
-                    RaisePropertyChanged(nameof(Source));
+                        if (_hasInitSelectedItem)
+                        {
+                            SelectedItem = _initSelectedItem;
+                            _initSelectedItem = default;
+                            _hasInitSelectedItem = false;
+                        }
+                        else
+                        {
+                            TrimInvalidSelections(update.Operation);
+                        }
+
+                        RaisePropertyChanged(nameof(Source));
+                    }
                 }
             }
         }
@@ -582,7 +586,7 @@ namespace Avalonia.Controls.Selection
                 var oldSelectedIndex = _selectedIndex;
                 var indexesChanged = false;
 
-                if (operation.SelectedIndex == -1 && LostSelection is object)
+                if (operation.SelectedIndex == -1 && LostSelection is object && !operation.SkipLostSelection)
                 {
                     operation.UpdateCount++;
                     LostSelection?.Invoke(this, EventArgs.Empty);
@@ -701,6 +705,7 @@ namespace Avalonia.Controls.Selection
 
             public int UpdateCount { get; set; }
             public bool IsSourceUpdate { get; set; }
+            public bool SkipLostSelection { get; set; }
             public int AnchorIndex { get; set; }
             public int SelectedIndex { get; set; }
             public List<IndexRange>? SelectedRanges { get; set; }

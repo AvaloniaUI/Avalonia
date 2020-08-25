@@ -1121,6 +1121,26 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal(0, target.SelectedIndex);
                 Assert.Equal(1, raised);
             }
+
+            [Fact]
+            public void LostSelection_Not_Called_With_Old_Source_When_Changing_Source()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var raised = 0;
+
+                target.LostSelection += (s, e) =>
+                {
+                    if (target.Source == data)
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.Source = null;
+
+                Assert.Equal(0, raised);
+            }
         }
 
         public class UntypedInterface
