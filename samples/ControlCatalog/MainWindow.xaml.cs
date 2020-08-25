@@ -8,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
@@ -42,7 +43,7 @@ namespace ControlCatalog
         public async void OpenPopup()
         {
             await Task.Delay(5000);
-
+            
             var popup = new Popup
             {
                 Height = 100, Width = 400,
@@ -52,7 +53,10 @@ namespace ControlCatalog
                 IsLightDismissEnabled = false,
             };
             
+            this.LogicalChildren.Add(popup);
+            
             popup.Open();
+            var root = popup.GetVisualRoot();
         }
 
         public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
