@@ -2,6 +2,7 @@ using System.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.VisualTree;
@@ -30,6 +31,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
+
+        /// <summary>
+        /// Defines the <see cref="Selection"/> property.
+        /// </summary>
+        public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
+            SelectingItemsControl.SelectionProperty;
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
@@ -68,6 +75,13 @@ namespace Avalonia.Controls
         {
             get => base.SelectedItems;
             set => base.SelectedItems = value;
+        }
+
+        /// <inheritdoc/>
+        public new ISelectionModel Selection
+        {
+            get => base.Selection;
+            set => base.Selection = value;
         }
 
         /// <summary>
