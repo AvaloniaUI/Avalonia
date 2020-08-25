@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Generators;
@@ -274,27 +275,14 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
-        /// <inheritdoc/>
-        protected override void ItemsChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ItemsChanged(e);
+            base.ItemsCollectionChanged(sender, e);
 
-            //if (_updateCount == 0)
-            //{
-            //    var newIndex = -1;
-
-            //    if (SelectedIndex != -1)
-            //    {
-            //        newIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
-            //    }
-
-            //    if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
-            //    {
-            //        newIndex = 0;
-            //    }
-
-            //    SelectedIndex = newIndex;
-            //}
+            if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
+            {
+                SelectedIndex = 0;
+            }
         }
 
         /// <inheritdoc/>
@@ -309,9 +297,10 @@ namespace Avalonia.Controls.Primitives
                     Selection.Select(container.Index);
                     MarkContainerSelected(container.ContainerControl, true);
                 }
-                else if (Selection.IsSelected(container.Index) == true)
+                else
                 {
-                    MarkContainerSelected(container.ContainerControl, true);
+                    var selected = Selection.IsSelected(container.Index);
+                    MarkContainerSelected(container.ContainerControl, selected);
                 }
             }
         }
