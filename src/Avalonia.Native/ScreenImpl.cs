@@ -20,21 +20,26 @@ namespace Avalonia.Native
         {
             get
             {
-                var count = ScreenCount;
-                var result = new Screen[count];
-
-                for(int i = 0; i < count; i++)
+                if (_native != null)
                 {
-                    var screen = _native.GetScreen(i);
+                    var count = ScreenCount;
+                    var result = new Screen[count];
 
-                    result[i] = new Screen(
-                        screen.PixelDensity,
-                        screen.Bounds.ToAvaloniaPixelRect(),
-                        screen.WorkingArea.ToAvaloniaPixelRect(),
-                        screen.Primary);
+                    for (int i = 0; i < count; i++)
+                    {
+                        var screen = _native.GetScreen(i);
+
+                        result[i] = new Screen(
+                            screen.PixelDensity,
+                            screen.Bounds.ToAvaloniaPixelRect(),
+                            screen.WorkingArea.ToAvaloniaPixelRect(),
+                            screen.Primary);
+                    }
+
+                    return result;
                 }
 
-                return result;
+                return new List<Screen>();
             }
         }
 
