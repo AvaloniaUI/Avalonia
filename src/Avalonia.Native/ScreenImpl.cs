@@ -39,7 +39,7 @@ namespace Avalonia.Native
                     return result;
                 }
 
-                return new List<Screen>();
+                return Array.Empty<Screen>();
             }
         }
 
