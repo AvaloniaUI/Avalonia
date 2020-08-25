@@ -102,9 +102,11 @@ namespace Avalonia.Styling
                 data.result = new PropertySetterInstance<T>(
                     data.target,
                     property,
-#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8601 // Possible null reference argument.
+#pragma warning disable CS8604
                     (T)data.value);
 #pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8601
             }
         }
 
@@ -124,9 +126,11 @@ namespace Avalonia.Styling
                 data.result = new PropertySetterInstance<T>(
                     data.target,
                     property,
+#pragma warning disable CS8601
 #pragma warning disable CS8604 // Possible null reference argument.
                     (T)data.value);
 #pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8601
             }
         }
 
