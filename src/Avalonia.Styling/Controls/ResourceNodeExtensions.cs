@@ -1,6 +1,5 @@
 ﻿using System;
-using Avalonia.Data.Converters;
-using Avalonia.LogicalTree;
+using Avalonia.Logging;
 using Avalonia.Reactive;
 
 #nullable enable
@@ -106,7 +105,13 @@ namespace Avalonia.Controls
 
             protected override void Subscribed(IObserver<object?> observer, bool first)
             {
-                observer.OnNext(Convert(_target.FindResource(_key)));
+                if (!_target.TryFindResource(_key, out var value))
+                {
+                    value = AvaloniaProperty.UnsetValue;
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(this, "Warning: Dynamic resource '{Key}' was not found in the {Target}.", _key, _target.GetType().Name);
+                }
+
+                observer.OnNext(Convert(value));
             }
 
             private void ResourcesChanged(object sender, ResourcesChangedEventArgs e)
@@ -145,9 +150,15 @@ namespace Avalonia.Controls
 
             protected override void Subscribed(IObserver<object?> observer, bool first)
             {
-                if (_target.Owner is object)
+                if (_target.Owner is IResourceHost owner)
                 {
-                    observer.OnNext(Convert(_target.Owner?.FindResource(_key)));
+                    if (!owner.TryFindResource(_key, out var value))
+                    {
+                        value = AvaloniaProperty.UnsetValue;
+                        Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(this, "Warning: Dynamic resource '{Key}' was not found in the {Owner}.", _key, owner.GetType().Name);
+                    }
+
+                    observer.OnNext(Convert(value));
                 }
             }
 
