@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class DataGridRowHeader : ContentControl
     {
-        private const string DATAGRIDROWHEADER_elementRootName = "Root";
+        private const string DATAGRIDROWHEADER_elementRootName = "PART_Root";
         private const double DATAGRIDROWHEADER_separatorThickness = 1;
 
         private Control _rootElement;

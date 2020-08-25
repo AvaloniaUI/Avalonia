@@ -40,7 +40,7 @@ namespace Avalonia.Controls
         private static Cursor _originalCursor;
         private static double _originalHorizontalOffset;
         private static double _originalWidth;
-        private bool _desiredSeparatorVisibility;
+        private bool _desiredSeparatorVisibility = true;
         private static Point? _dragStart;
         private static DataGridColumn _dragColumn;
         private static double _frozenColumnsWidth;

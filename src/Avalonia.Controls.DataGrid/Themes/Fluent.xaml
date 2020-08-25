@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Styles.Resources>
     <Thickness x:Key="DataGridTextColumnCellTextBlockMargin">12,0,12,0</Thickness>
-    
+
     <SolidColorBrush x:Key="DropLocationIndicatorBackground"
                      Color="#3F4346" />
     <SolidColorBrush x:Key="DisabledVisualElementBackground"
@@ -88,7 +88,7 @@
     <StaticResource x:Key="DataGridRowGroupHeaderForegroundBrush"
                     ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="DataGridRowInvalidBrush"
-                    ResourceKey="SystemControlErrorTextForegroundBrush" />
+                    ResourceKey="SystemErrorTextColor" />
     <StaticResource x:Key="DataGridCellBackgroundBrush"
                     ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="DataGridCellFocusVisualPrimaryBrush"
@@ -96,7 +96,7 @@
     <StaticResource x:Key="DataGridCellFocusVisualSecondaryBrush"
                     ResourceKey="SystemControlFocusVisualSecondaryBrush" />
     <StaticResource x:Key="DataGridCellInvalidBrush"
-                    ResourceKey="SystemControlErrorTextForegroundBrush" />
+                    ResourceKey="SystemErrorTextColor" />
   </Styles.Resources>
 
   <Style Selector="DataGridCell">
@@ -356,7 +356,7 @@
     <Setter Property="AreSeparatorsVisible" Value="False" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid x:Name="PART_RowHeaderRoot"
+        <Grid x:Name="PART_Root"
               RowDefinitions="*,*,Auto"
               ColumnDefinitions="Auto,*">
           <Border Grid.RowSpan="3"
@@ -403,14 +403,14 @@
   <Style Selector="DataGridRowHeader /template/ Rectangle#BackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SystemControlTransparentBrush}" />
   </Style>
-  <Style Selector="DataGridRowHeader:pointerover /template/ Rectangle#BackgroundRectangle">
+  <Style Selector="DataGridRow:pointerover DataGridRowHeader /template/ Rectangle#BackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource SystemListLowColor}" />
   </Style>
   <Style Selector="DataGridRowHeader:selected /template/ Rectangle#BackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedUnfocusedBackgroundColor}" />
     <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedUnfocusedBackgroundOpacity}" />
   </Style>
-  <Style Selector="DataGridRowHeader:selected:pointerover /template/ Rectangle#BackgroundRectangle">
+  <Style Selector="DataGridRow:pointerover DataGridRowHeader:selected /template/ Rectangle#BackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedHoveredUnfocusedBackgroundColor}" />
     <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedHoveredUnfocusedBackgroundOpacity}" />
   </Style>
@@ -418,7 +418,7 @@
     <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedBackgroundColor}" />
     <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedBackgroundOpacity}" />
   </Style>
-  <Style Selector="DataGridRowHeader:selected:pointerover:focus /template/ Rectangle#BackgroundRectangle">
+  <Style Selector="DataGridRow:pointerover DataGridRowHeader:selected:focus /template/ Rectangle#BackgroundRectangle">
     <Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedHoveredBackgroundColor}" />
     <Setter Property="Opacity" Value="{DynamicResource DataGridRowSelectedHoveredBackgroundOpacity}" />
   </Style>
@@ -606,18 +606,24 @@
             <!--<DataGridColumnHeader Name="PART_TopRightCornerHeader"
                                   Grid.Column="2"
                                   Template="{StaticResource TopRightHeaderTemplate}" />-->
-            <Rectangle Name="PART_ColumnHeadersAndRowsSeparator"
+            <!--<Rectangle Name="PART_ColumnHeadersAndRowsSeparator"
                        Grid.ColumnSpan="3"
                        VerticalAlignment="Bottom"
                        StrokeThickness="1"
                        Height="1"
-                       Fill="{DynamicResource GridLinesBrush}" />
+                       Fill="{DynamicResource GridLinesBrush}" />-->
+            <Border Name="PART_ColumnHeadersAndRowsSeparator"
+                    Grid.ColumnSpan="3"
+                    Height="2"
+                    VerticalAlignment="Bottom"
+                    BorderThickness="0,0,0,1"
+                    BorderBrush="{DynamicResource GridLinesBrush}" />
 
             <DataGridRowsPresenter Name="PART_RowsPresenter"
                                    Grid.Row="1"
                                    Grid.RowSpan="2"
                                    Grid.ColumnSpan="3" />
-            <Rectangle Name="BottomRightCorner"
+            <Rectangle Name="PART_BottomRightCorner"
                        Fill="{DynamicResource ScrollBarsSeparatorBackground}"
                        Grid.Column="2"
                        Grid.Row="2" />
