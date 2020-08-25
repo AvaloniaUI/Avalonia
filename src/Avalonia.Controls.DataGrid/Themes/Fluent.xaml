@@ -3,20 +3,33 @@
   <Styles.Resources>
     <Thickness x:Key="DataGridTextColumnCellTextBlockMargin">12,0,12,0</Thickness>
 
-    <SolidColorBrush x:Key="DropLocationIndicatorBackground"
+    <x:Double x:Key="ListAccentLowOpacity">0.6</x:Double>
+    <x:Double x:Key="ListAccentMediumOpacity">0.8</x:Double>
+
+    <StreamGeometry x:Key="DataGridSortIconAscendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
+    <StreamGeometry x:Key="DataGridSortIconDescendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
+    <StreamGeometry x:Key="DataGridRowGroupHeaderIconClosedPath">M515 93l930 931l-930 931l90 90l1022 -1021l-1022 -1021z</StreamGeometry>
+    <StreamGeometry x:Key="DataGridRowGroupHeaderIconOpenedPath">M1939 1581l90 -90l-1005 -1005l-1005 1005l90 90l915 -915z</StreamGeometry>
+
+    <SolidColorBrush x:Key="DataGridGridLinesBrush"
+                     Color="{StaticResource SystemBaseMediumLowColor}"
+                     Opacity="0.4" />
+    <SolidColorBrush x:Key="DataGridDropLocationIndicatorBackground"
                      Color="#3F4346" />
-    <SolidColorBrush x:Key="DisabledVisualElementBackground"
+    <SolidColorBrush x:Key="DataGridDisabledVisualElementBackground"
                      Color="#8CFFFFFF" />
-    <SolidColorBrush x:Key="FillerGridLinesBrush"
+    <SolidColorBrush x:Key="DataGridFillerGridLinesBrush"
                      Color="Transparent" />
-    <StaticResource x:Key="ScrollBarsSeparatorBackground"
-                    ResourceKey="SystemChromeLowColor" />
-    <StaticResource x:Key="DataGridColumnHeaderForegroundBrush"
-                    ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <SolidColorBrush x:Key="DataGridCurrencyVisualPrimaryBrush"
+                     Color="Transparent" />
     <StaticResource x:Key="DataGridColumnHeaderBackgroundColor"
                     ResourceKey="SystemAltHighColor" />
     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush"
                      Color="{StaticResource DataGridColumnHeaderBackgroundColor}" />
+    <StaticResource x:Key="DataGridScrollBarsSeparatorBackground"
+                    ResourceKey="SystemChromeLowColor" />
+    <StaticResource x:Key="DataGridColumnHeaderForegroundBrush"
+                    ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <StaticResource x:Key="DataGridColumnHeaderHoveredBackgroundColor"
                     ResourceKey="SystemListLowColor" />
     <StaticResource x:Key="DataGridColumnHeaderPressedBackgroundColor"
@@ -27,38 +40,10 @@
                     ResourceKey="SystemControlHighlightListLowBrush" />
     <StaticResource x:Key="DataGridColumnHeaderPressedBrush"
                     ResourceKey="SystemControlHighlightListMediumBrush" />
-
-    <SolidColorBrush x:Key="SystemControlGridLinesBaseMediumLowBrush"
-                     Color="{StaticResource SystemBaseMediumLowColor}"
-                     Opacity="0.4" />
-    <SolidColorBrush x:Key="SystemControlRowGroupHeaderBackgroundMediumBrush"
-                     Color="{StaticResource SystemChromeMediumColor}" />
-    <SolidColorBrush x:Key="DataGridCurrencyVisualPrimaryBrush"
-                     Color="Transparent" />
-
-    <StreamGeometry x:Key="SortIconAscendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
-    <StreamGeometry x:Key="SortIconDescendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
-    <StreamGeometry x:Key="RowGroupHeaderIconClosedPath">M515 93l930 931l-930 931l90 90l1022 -1021l-1022 -1021z</StreamGeometry>
-    <StreamGeometry x:Key="RowGroupHeaderIconOpenedPath">M1939 1581l90 -90l-1005 -1005l-1005 1005l90 90l915 -915z</StreamGeometry>
-
-    <!--<x:String x:Key="ScrollBarsSeparatorExpandBeginTime">00:00:00.40</x:String>
-    <x:String x:Key="ScrollBarsSeparatorExpandDuration">00:00:00.1</x:String>
-    <x:String x:Key="ScrollBarsSeparatorContractBeginTime">00:00:02.00</x:String>
-    <x:String x:Key="ScrollBarsSeparatorContractDelay">00:00:02</x:String>
-    <x:String x:Key="ScrollBarsSeparatorContractDuration">00:00:00.1</x:String>
-    <x:String x:Key="ScrollBarsSeparatorContractFinalKeyframe">00:00:02.1</x:String>
-    <x:String x:Key="ScrollBarsSeparatorNoTouchDuration">00:00:00.5</x:String>-->
-
-    <x:Double x:Key="ListAccentLowOpacity">0.6</x:Double>
-    <x:Double x:Key="ListAccentMediumOpacity">0.8</x:Double>
-
-    <StaticResource x:Key="GridLinesBrush"
-                    ResourceKey="SystemControlGridLinesBaseMediumLowBrush" />
-
     <StaticResource x:Key="DataGridDetailsPresenterBackgroundBrush"
                     ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     <StaticResource x:Key="DataGridFillerColumnGridLinesBrush"
-                    ResourceKey="FillerGridLinesBrush" />
+                    ResourceKey="DataGridFillerGridLinesBrush" />
     <StaticResource x:Key="DataGridRowSelectedBackgroundColor"
                     ResourceKey="SystemAccentColor" />
     <StaticResource x:Key="DataGridRowSelectedBackgroundOpacity"
@@ -185,7 +170,7 @@
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="SeparatorBrush" Value="{DynamicResource GridLinesBrush}" />
+    <Setter Property="SeparatorBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
     <Setter Property="Padding" Value="12,0,0,0" />
     <Setter Property="FontSize" Value="12" />
     <Setter Property="MinHeight" Value="32" />
@@ -252,9 +237,6 @@
     <Setter Property="IsVisible" Value="True" />
   </Style>
 
-  <Style Selector="DataGridColumnHeader /template/ Grid#PART_ColumnHeaderRoot">
-    <Setter Property="Background" Value="{DynamicResource DataGridColumnHeaderBackgroundColor}" />
-  </Style>
   <Style Selector="DataGridColumnHeader:pointerover /template/ Grid#PART_ColumnHeaderRoot">
     <Setter Property="Background" Value="{DynamicResource DataGridColumnHeaderHoveredBackgroundColor}" />
   </Style>
@@ -272,12 +254,12 @@
 
   <Style Selector="DataGridColumnHeader:sortascending /template/ Path#SortIcon">
     <Setter Property="IsVisible" Value="True" />
-    <Setter Property="Data" Value="{StaticResource SortIconAscendingPath}" />
+    <Setter Property="Data" Value="{StaticResource DataGridSortIconAscendingPath}" />
   </Style>
 
   <Style Selector="DataGridColumnHeader:sortdescending /template/ Path#SortIcon">
     <Setter Property="IsVisible" Value="True" />
-    <Setter Property="Data" Value="{StaticResource SortIconDescendingPath}" />
+    <Setter Property="Data" Value="{StaticResource DataGridSortIconDescendingPath}" />
   </Style>
 
   <Style Selector="DataGridRow">
@@ -352,7 +334,7 @@
   <Style Selector="DataGridRowHeader">
     <Setter Property="Background" Value="{DynamicResource DataGridRowHeaderBackgroundBrush}" />
     <Setter Property="Focusable" Value="False" />
-    <Setter Property="SeparatorBrush" Value="{DynamicResource GridLinesBrush}" />
+    <Setter Property="SeparatorBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
     <Setter Property="AreSeparatorsVisible" Value="False" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -522,12 +504,12 @@
   </Style>
 
   <Style Selector="DataGridRowGroupHeader /template/ ToggleButton#ExpanderButton /template/ Path">
-    <Setter Property="Data" Value="{StaticResource RowGroupHeaderIconOpenedPath}" />
+    <Setter Property="Data" Value="{StaticResource DataGridRowGroupHeaderIconOpenedPath}" />
     <Setter Property="Stretch" Value="Uniform" />
   </Style>
 
   <Style Selector="DataGridRowGroupHeader /template/ ToggleButton#ExpanderButton:checked /template/ Path">
-    <Setter Property="Data" Value="{StaticResource RowGroupHeaderIconClosedPath}" />
+    <Setter Property="Data" Value="{StaticResource DataGridRowGroupHeaderIconClosedPath}" />
     <Setter Property="Stretch" Value="UniformToFill" />
   </Style>
 
@@ -562,11 +544,11 @@
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="SelectionMode" Value="Extended" />
     <Setter Property="GridLinesVisibility" Value="None" />
-    <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource GridLinesBrush}" />
-    <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource GridLinesBrush}" />
+    <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
+    <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DataGridGridLinesBrush}" />
     <Setter Property="DropLocationIndicatorTemplate">
       <Template>
-        <Rectangle Fill="{DynamicResource DropLocationIndicatorBackground}"
+        <Rectangle Fill="{DynamicResource DataGridDropLocationIndicatorBackground}"
                    Width="2" />
       </Template>
     </Setter>
@@ -584,12 +566,12 @@
                       RowDefinitions="*,*,Auto">
                   <Border Grid.RowSpan="2"
                           BorderThickness="0,0,1,0"
-                          BorderBrush="{DynamicResource GridLinesBrush}" />
+                          BorderBrush="{DynamicResource DataGridGridLinesBrush}" />
                   <Rectangle Grid.RowSpan="2"
                              VerticalAlignment="Bottom"
                              StrokeThickness="1"
                              Height="1"
-                             Fill="{DynamicResource GridLinesBrush}" />
+                             Fill="{DynamicResource DataGridGridLinesBrush}" />
                 </Grid>
               </ControlTemplate>
               <ControlTemplate x:Key="TopRightHeaderTemplate"
@@ -611,24 +593,24 @@
                        VerticalAlignment="Bottom"
                        StrokeThickness="1"
                        Height="1"
-                       Fill="{DynamicResource GridLinesBrush}" />-->
+                       Fill="{DynamicResource DataGridGridLinesBrush}" />-->
             <Border Name="PART_ColumnHeadersAndRowsSeparator"
                     Grid.ColumnSpan="3"
                     Height="2"
                     VerticalAlignment="Bottom"
                     BorderThickness="0,0,0,1"
-                    BorderBrush="{DynamicResource GridLinesBrush}" />
+                    BorderBrush="{DynamicResource DataGridGridLinesBrush}" />
 
             <DataGridRowsPresenter Name="PART_RowsPresenter"
                                    Grid.Row="1"
                                    Grid.RowSpan="2"
                                    Grid.ColumnSpan="3" />
             <Rectangle Name="PART_BottomRightCorner"
-                       Fill="{DynamicResource ScrollBarsSeparatorBackground}"
+                       Fill="{DynamicResource DataGridScrollBarsSeparatorBackground}"
                        Grid.Column="2"
                        Grid.Row="2" />
             <!--<Rectangle Name="BottomLeftCorner"
-                       Fill="{DynamicResource ScrollBarsSeparatorBackground}"
+                       Fill="{DynamicResource DataGridScrollBarsSeparatorBackground}"
                        Grid.Row="2"
                        Grid.ColumnSpan="2" />-->
             <ScrollBar Name="PART_VerticalScrollbar"
@@ -653,7 +635,7 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     CornerRadius="2"
-                    Background="{DynamicResource DisabledVisualElementBackground}"
+                    Background="{DynamicResource DataGridDisabledVisualElementBackground}"
                     IsVisible="{Binding !$parent[DataGrid].IsEnabled}" />
           </Grid>
         </Border>
