@@ -624,17 +624,17 @@ namespace Avalonia.Controls
         {
             if (_headerElement != null && OwningGrid.AreRowHeadersVisible)
             {
-                _headerElement.ApplyOwnerStatus();
+                _headerElement.UpdatePseudoClasses();
             }
         }
 
-        //TODO Implement
         internal void UpdatePseudoClasses()
         {
-            PseudoClasses.Set(":selected", IsSelected);
-            PseudoClasses.Set(":editing", IsEditing);
             if (RootElement != null && OwningGrid != null && IsVisible)
             {
+                PseudoClasses.Set(":selected", IsSelected);
+                PseudoClasses.Set(":editing", IsEditing);
+                PseudoClasses.Set(":invalid", !IsValid);
                 ApplyHeaderStatus();
             } 
         }
