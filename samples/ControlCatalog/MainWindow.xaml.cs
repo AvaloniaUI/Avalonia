@@ -1,10 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
@@ -32,6 +35,24 @@ namespace ControlCatalog
 
             var mainMenu = this.FindControl<Menu>("MainMenu");
             mainMenu.AttachedToVisualTree += MenuAttached;
+            
+            OpenPopup();
+        }
+
+        public async void OpenPopup()
+        {
+            await Task.Delay(5000);
+
+            var popup = new Popup
+            {
+                Height = 100, Width = 400,
+                Child = new Panel { Background = Brushes.Red },
+                PlacementTarget = this,
+                PlacementMode = PlacementMode.Pointer,
+                IsLightDismissEnabled = false,
+            };
+            
+            popup.Open();
         }
 
         public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
