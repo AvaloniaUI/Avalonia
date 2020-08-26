@@ -1,8 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.App">
-  <Application.Styles>        
-    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
+  <Application.Styles>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="16" />
       <Setter Property="FontWeight" Value="Medium" />

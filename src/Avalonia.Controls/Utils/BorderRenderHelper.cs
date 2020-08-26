@@ -141,7 +141,7 @@ namespace Avalonia.Controls.Utils
             var radiusY = keypoints.RightTop.Y - boundRect.TopRight.Y;
             if (radiusX != 0 || radiusY != 0)
             {
-                context.ArcTo(keypoints.RightTop, new Size(radiusY, radiusY), 0, false, SweepDirection.Clockwise);
+                context.ArcTo(keypoints.RightTop, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
             }
 
             // Right

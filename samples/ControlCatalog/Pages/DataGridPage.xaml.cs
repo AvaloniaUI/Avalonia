@@ -13,7 +13,7 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
             var dg1 = this.FindControl<DataGrid>("dataGrid1");
             dg1.IsReadOnly = true;
-
+            dg1.LoadingRow += Dg1_LoadingRow;
             var collectionView1 = new DataGridCollectionView(Countries.All);
             //collectionView.GroupDescriptions.Add(new PathGroupDescription("Region"));
 
@@ -33,7 +33,7 @@ namespace ControlCatalog.Pages
             var items = new List<Person>
             {
                 new Person { FirstName = "John", LastName = "Doe" },
-                new Person { FirstName = "Elizabeth", LastName = "Thomas" },
+                new Person { FirstName = "Elizabeth", LastName = "Thomas", IsBanned = true },
                 new Person { FirstName = "Zack", LastName = "Ward" }
             };
             var collectionView3 = new DataGridCollectionView(items);
@@ -42,6 +42,11 @@ namespace ControlCatalog.Pages
 
             var addButton = this.FindControl<Button>("btnAdd");
             addButton.Click += (a, b) => collectionView3.AddNew();
+        }
+
+        private void Dg1_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            e.Row.Header = e.Row.GetIndex() + 1;
         }
 
         private void InitializeComponent()

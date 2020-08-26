@@ -257,15 +257,7 @@ namespace Avalonia.Controls.Presenters
                 return base.ArrangeOverride(finalSize);
             }
 
-            try
-            {
-                _arranging = true;
-                return ArrangeWithAnchoring(finalSize);
-            }
-            finally
-            {
-                _arranging = false;
-            }
+            return ArrangeWithAnchoring(finalSize);
         }
 
         private Size ArrangeWithAnchoring(Size finalSize)
@@ -316,7 +308,17 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 Extent = newExtent;
-                Offset = newOffset;
+
+                try
+                {
+                    _arranging = true;
+                    Offset = newOffset;
+                }
+                finally
+                {
+                    _arranging = false;    
+                }
+                
                 ArrangeOverrideImpl(size, -Offset);
             }
 

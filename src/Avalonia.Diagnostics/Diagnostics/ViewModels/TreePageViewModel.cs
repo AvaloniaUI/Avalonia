@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Selection;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -10,10 +11,13 @@ namespace Avalonia.Diagnostics.ViewModels
         private ControlDetailsViewModel _details;
         private string _propertyFilter;
 
-        public TreePageViewModel(TreeNode[] nodes)
+        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
         {
+            MainView = mainView;
             Nodes = nodes;
-       }
+        }
+
+        public MainViewModel MainView { get; }
 
         public TreeNode[] Nodes { get; protected set; }
 
