@@ -18,7 +18,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
-    public class ItemsControl : TemplatedControl, IItemsPresenterHost
+    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -53,7 +53,6 @@ namespace Avalonia.Controls
         private IEnumerable _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
-        private IDisposable _itemsCollectionChangedSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -148,6 +147,19 @@ namespace Avalonia.Controls
         {
             Presenter = presenter;
             ItemContainerGenerator.Clear();
+        }
+
+        void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+        }
+
+        void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+        }
+
+        void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
+        {
+            ItemsCollectionChanged(sender, e);
         }
 
         /// <summary>
@@ -315,11 +327,13 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         protected virtual void ItemsChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            _itemsCollectionChangedSubscription?.Dispose();
-            _itemsCollectionChangedSubscription = null;
-
             var oldValue = e.OldValue as IEnumerable;
             var newValue = e.NewValue as IEnumerable;
+
+            if (oldValue is INotifyCollectionChanged incc)
+            {
+                CollectionChangedEventManager.Instance.RemoveListener(incc, this);
+            }
 
             UpdateItemCount();
             RemoveControlItemsFromLogicalChildren(oldValue);
@@ -418,11 +432,9 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":empty", items == null || items.Count() == 0);
             PseudoClasses.Set(":singleitem", items != null && items.Count() == 1);
 
-            var incc = items as INotifyCollectionChanged;
-
-            if (incc != null)
+            if (items is INotifyCollectionChanged incc)
             {
-                _itemsCollectionChangedSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
+                CollectionChangedEventManager.Instance.AddListener(incc, this);
             }
         }
 
