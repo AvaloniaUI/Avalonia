@@ -32,46 +32,10 @@ namespace Avalonia.Controls.Selection
             Source = source;
         }
 
-        public override IEnumerable<T>? Source
+        public new IEnumerable<T>? Source
         {
-            get => base.Source;
-            set
-            {
-                if (base.Source != value)
-                {
-                    if (_operation is object)
-                    {
-                        throw new InvalidOperationException("Cannot change source while update is in progress.");
-                    }
-
-                    if (base.Source is object && value is object)
-                    {
-                        using var update = BatchUpdate();
-                        update.Operation.SkipLostSelection = true;
-                        Clear();
-                    }
-
-                    base.Source = value;
-
-                    using (var update = BatchUpdate())
-                    {
-                        update.Operation.IsSourceUpdate = true;
-
-                        if (_hasInitSelectedItem)
-                        {
-                            SelectedItem = _initSelectedItem;
-                            _initSelectedItem = default;
-                            _hasInitSelectedItem = false;
-                        }
-                        else
-                        {
-                            TrimInvalidSelections(update.Operation);
-                        }
-
-                        RaisePropertyChanged(nameof(Source));
-                    }
-                }
-            }
+            get => base.Source as IEnumerable<T>;
+            set => SetSource(value);
         }
 
         public bool SingleSelect 
@@ -168,7 +132,7 @@ namespace Avalonia.Controls.Selection
         IEnumerable? ISelectionModel.Source 
         {
             get => Source;
-            set => Source = (IEnumerable<T>?)value;
+            set => SetSource(value);
         }
 
         object? ISelectionModel.SelectedItem
@@ -296,6 +260,44 @@ namespace Avalonia.Controls.Selection
         protected void RaisePropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void SetSource(IEnumerable? value)
+        {
+            if (base.Source != value)
+            {
+                if (_operation is object)
+                {
+                    throw new InvalidOperationException("Cannot change source while update is in progress.");
+                }
+
+                if (base.Source is object && value is object)
+                {
+                    using var update = BatchUpdate();
+                    update.Operation.SkipLostSelection = true;
+                    Clear();
+                }
+
+                base.Source = value;
+
+                using (var update = BatchUpdate())
+                {
+                    update.Operation.IsSourceUpdate = true;
+
+                    if (_hasInitSelectedItem)
+                    {
+                        SelectedItem = _initSelectedItem;
+                        _initSelectedItem = default;
+                        _hasInitSelectedItem = false;
+                    }
+                    else
+                    {
+                        TrimInvalidSelections(update.Operation);
+                    }
+
+                    RaisePropertyChanged(nameof(Source));
+                }
+            }
         }
 
         private protected override void OnIndexesChanged(int shiftIndex, int shiftDelta)
@@ -511,7 +513,7 @@ namespace Avalonia.Controls.Selection
                 return default;
             }
 
-            return ItemsView.GetAt(index);
+            return ItemsView[index];
         }
 
         private int CoerceIndex(int index)
@@ -710,7 +712,7 @@ namespace Avalonia.Controls.Selection
             public int SelectedIndex { get; set; }
             public List<IndexRange>? SelectedRanges { get; set; }
             public List<IndexRange>? DeselectedRanges { get; set; }
-            public IReadOnlyList<T> DeselectedItems { get; set; }
+            public IReadOnlyList<T>? DeselectedItems { get; set; }
         }
     }
 }

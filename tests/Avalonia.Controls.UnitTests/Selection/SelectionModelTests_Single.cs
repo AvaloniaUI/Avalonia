@@ -237,6 +237,14 @@ namespace Avalonia.Controls.UnitTests.Selection
 
                 Assert.Equal(1, raised);
             }
+
+            [Fact]
+            public void Can_Assign_ValueType_Collection_To_SelectionModel_Of_Object()
+            {
+                var target = (ISelectionModel)new SelectionModel<object>();
+
+                target.Source = new[] { 1, 2, 3 };
+            }
         }
 
         public class SelectedIndex

@@ -10,12 +10,12 @@ namespace Avalonia.Controls.Selection
 {
     public abstract class SelectionNodeBase<T> : ICollectionChangedListener
     {
-        private IEnumerable<T>? _source;
+        private IEnumerable? _source;
         private bool _rangesEnabled;
         private List<IndexRange>? _ranges;
         private int _collectionChanging;
 
-        public virtual IEnumerable<T>? Source
+        protected IEnumerable? Source
         {
             get => _source;
             set
