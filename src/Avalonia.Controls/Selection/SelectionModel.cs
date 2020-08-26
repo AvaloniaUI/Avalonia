@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Selection
                         throw new InvalidOperationException("Cannot change source while update is in progress.");
                     }
 
-                    if (base.Source is object)
+                    if (base.Source is object && value is object)
                     {
                         using var update = BatchUpdate();
                         update.Operation.SkipLostSelection = true;

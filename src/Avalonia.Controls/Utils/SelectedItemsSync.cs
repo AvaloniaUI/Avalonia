@@ -76,20 +76,18 @@ namespace Avalonia.Controls.Utils
 
         private void SyncSelectedItemsWithSelectionModel()
         {
-            if (_selectionModel.Source is null)
-            {
-                return;
-            }
-
             _updatingItems = true;
 
             try
             {
                 _selectedItems.Clear();
 
-                foreach (var i in SelectionModel.SelectedItems)
+                if (_selectionModel.Source is object)
                 {
-                    _selectedItems.Add(i);
+                    foreach (var i in _selectionModel.SelectedItems)
+                    {
+                        _selectedItems.Add(i);
+                    }
                 }
             }
             finally

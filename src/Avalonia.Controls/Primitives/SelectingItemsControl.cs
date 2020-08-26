@@ -351,16 +351,30 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDataContextBeginUpdate()
         {
             base.OnDataContextBeginUpdate();
+            ++_initializing;
 
-            //InternalBeginInit();
+            if (_selection is object)
+            {
+                _selection.Source = null;
+            }
         }
 
         /// <inheritdoc/>
         protected override void OnDataContextEndUpdate()
         {
             base.OnDataContextEndUpdate();
+            --_initializing;
 
-            //InternalEndInit();
+            if (_selection is object && _initializing == 0)
+            {
+                _selection.Source = Items;
+
+                if (Items is null)
+                {
+                    _selection.Clear();
+                    _selectedItemsSync?.SelectedItems?.Clear();
+                }
+            }
         }
 
         protected override void OnInitialized()
@@ -397,9 +411,17 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == ItemsProperty && _initializing == 0 && _selection is object)
+            if (change.Property == ItemsProperty &&
+                _initializing == 0 &&
+                _selection is object)
             {
-                _selection.Source = change.NewValue.GetValueOrDefault<IEnumerable>();
+                var newValue = change.NewValue.GetValueOrDefault<IEnumerable>();
+                _selection.Source = newValue;
+
+                if (newValue is null)
+                {
+                    _selection.Clear();
+                }
             }
         }
 

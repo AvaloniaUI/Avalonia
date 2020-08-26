@@ -517,7 +517,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         /// DataContext is in the process of changing.
         /// </remarks>
         [Fact]
-        public void Should_Not_Write_To_Old_DataContext()
+        public void Should_Not_Write_SelectedItems_To_Old_DataContext()
         {
             var vm = new OldDataContextViewModel();
             var target = new TestSelector();
@@ -548,6 +548,46 @@ namespace Avalonia.Controls.UnitTests.Primitives
             // Clear DataContext and ensure that SelectedItems is still set in the VM.
             target.DataContext = null;
             Assert.Equal(new[] { "bar" }, vm.SelectedItems);
+
+            // Ensure target's SelectedItems is now clear.
+            Assert.Empty(target.SelectedItems);
+        }
+
+        /// <summary>
+        /// See <see cref="Should_Not_Write_SelectedItems_To_Old_DataContext"/>.
+        /// </summary>
+        [Fact]
+        public void Should_Not_Write_SelectionModel_To_Old_DataContext()
+        {
+            var vm = new OldDataContextViewModel();
+            var target = new TestSelector();
+
+            var itemsBinding = new Binding
+            {
+                Path = "Items",
+                Mode = BindingMode.OneWay,
+            };
+
+            var selectionBinding = new Binding
+            {
+                Path = "Selection",
+                Mode = BindingMode.OneWay,
+            };
+
+            // Bind Items and Selection to the VM.
+            target.Bind(TestSelector.ItemsProperty, itemsBinding);
+            target.Bind(TestSelector.SelectionProperty, selectionBinding);
+
+            // Set DataContext and SelectedIndex
+            target.DataContext = vm;
+            target.SelectedIndex = 1;
+
+            // Make sure selection is written to selection model
+            Assert.Equal(1, vm.Selection.SelectedIndex);
+
+            // Clear DataContext and ensure that selection is still set in model.
+            target.DataContext = null;
+            Assert.Equal(1, vm.Selection.SelectedIndex);
 
             // Ensure target's SelectedItems is now clear.
             Assert.Empty(target.SelectedItems);
@@ -1459,6 +1499,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             public static readonly new AvaloniaProperty<IList> SelectedItemsProperty = 
                 SelectingItemsControl.SelectedItemsProperty;
+            public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
+                SelectingItemsControl.SelectionProperty;
 
             public TestSelector()
             {
@@ -1495,10 +1537,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Items = new List<string> { "foo", "bar" };
                 SelectedItems = new List<string>();
+                Selection = new SelectionModel<string>();
             }
 
             public List<string> Items { get; } 
             public List<string> SelectedItems { get; }
+            public SelectionModel<string> Selection { get; }
         }
 
         private class ItemContainer : Control, ISelectable
