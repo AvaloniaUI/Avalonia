@@ -86,7 +86,7 @@
   <Style Selector="Expander /template/ ToggleButton#PART_toggle">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border BorderThickness="1">
+        <Border BorderThickness="1" Background="Transparent">
           <Grid ColumnDefinitions="Auto,Auto">
             <Border Grid.Column="0" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
               <Path Fill="{DynamicResource ThemeForegroundBrush}"

@@ -18,7 +18,7 @@
     </StackPanel>
     <TabControl Grid.Row="1">
       <TabItem Header="DataGrid">
-        <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True">
+        <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" />
             <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" />
@@ -44,7 +44,8 @@
           <DataGrid Name="dataGridEdit" Margin="12" Grid.Row="0">
             <DataGrid.Columns>
               <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" />
-              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="*" />
+              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="2*" />
+              <DataGridCheckBoxColumn Header="Is Banned" Binding="{Binding IsBanned}" Width="*" />
             </DataGrid.Columns>
           </DataGrid>
           <Button Grid.Row="1" Name="btnAdd" Margin="12,0,12,12" Content="Add" HorizontalAlignment="Right" />
