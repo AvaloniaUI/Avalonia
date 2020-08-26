@@ -712,6 +712,54 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
         }
 
+        public class SingleSelect
+        {
+            [Fact]
+            public void Converting_To_Single_Selection_Removes_Multiple_Selection()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectRange(1, 3);
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Equal(new[] { 2, 3 }, e.DeselectedIndexes);
+                    Assert.Equal(new[] { "baz", "qux" }, e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++raised;
+                };
+
+                target.SingleSelect = true;
+
+                Assert.Equal(1, target.SelectedIndex);
+                Assert.Equal(new[] { 1 }, target.SelectedIndexes);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar" }, target.SelectedItems);
+                Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void Raises_PropertyChanged()
+            {
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SingleSelect))
+                    {
+                        ++raised;
+                    }
+                };
+
+                target.SingleSelect = true;
+
+                Assert.Equal(1, raised);
+            }
+        }
+
         public class CollectionChanges
         {
             [Fact]

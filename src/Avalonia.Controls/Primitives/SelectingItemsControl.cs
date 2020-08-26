@@ -423,6 +423,11 @@ namespace Avalonia.Controls.Primitives
                     _selection.Clear();
                 }
             }
+            else if (change.Property == SelectionModeProperty && _selection is object)
+            {
+                var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
+                _selection.SingleSelect = !newValue.HasFlagCustom(SelectionMode.Multiple);
+            }
         }
 
         /// <summary>

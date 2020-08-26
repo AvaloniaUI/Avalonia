@@ -45,6 +45,14 @@ namespace Avalonia.Controls.Selection
             {
                 if (_singleSelect != value)
                 {
+                    if (value == true)
+                    {
+                        using var update = BatchUpdate();
+                        var selectedIndex = SelectedIndex;
+                        Clear();
+                        SelectedIndex = selectedIndex;
+                    }
+
                     _singleSelect = value;
                     RangesEnabled = !value;
 

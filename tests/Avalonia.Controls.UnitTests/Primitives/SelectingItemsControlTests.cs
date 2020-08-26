@@ -7,6 +7,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -1321,6 +1322,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(1, target.SelectedIndex);
         }
 
+        [Fact]
+        public void Setting_SelectionMode_Should_Update_SelectionModel()
+        {
+            var target = new TestSelector();
+            var model = target.Selection;
+
+            Assert.True(model.SingleSelect);
+
+            target.SelectionMode = SelectionMode.Multiple;
+
+            Assert.False(model.SingleSelect);
+        }
+
         private static void Prepare(SelectingItemsControl target)
         {
             var root = new TestRoot
@@ -1399,6 +1413,18 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public TestSelector(SelectionMode selectionMode)
             {
                 SelectionMode = selectionMode;
+            }
+
+            public new ISelectionModel Selection
+            {
+                get => base.Selection;
+                set => base.Selection = value;
+            }
+
+            public new SelectionMode SelectionMode
+            {
+                get => base.SelectionMode;
+                set => base.SelectionMode = value;
             }
 
             public new bool MoveSelection(NavigationDirection direction, bool wrap)
