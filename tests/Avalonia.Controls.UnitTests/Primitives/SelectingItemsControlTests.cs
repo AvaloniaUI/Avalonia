@@ -188,7 +188,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedIndex_Before_Initialize_Should_Retain()
+        public void Setting_SelectedIndex_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -245,7 +245,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
 
         [Fact]
-        public void Setting_SelectedItems_Before_Initialize_Should_Retain()
+        public void Setting_SelectedItems_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
