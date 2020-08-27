@@ -168,7 +168,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Selected_Index_Changes_To_When_Items_Assigned_Null()
+        public void Selected_Index_Changes_To_None_When_Items_Assigned_Null()
         {
             var items = new ObservableCollection<string>
             {

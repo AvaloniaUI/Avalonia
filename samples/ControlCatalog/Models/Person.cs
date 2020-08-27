@@ -15,6 +15,7 @@ namespace ControlCatalog.Models
     {
         string _firstName;
         string _lastName;
+        bool _isBanned;
 
         public string FirstName
         {
@@ -44,6 +45,17 @@ namespace ControlCatalog.Models
                     SetError(nameof(LastName), null);
 
                 OnPropertyChanged(nameof(LastName));
+            }
+        }
+
+        public bool IsBanned
+        {
+            get => _isBanned;
+            set
+            {
+                _isBanned = value;
+
+                OnPropertyChanged(nameof(_isBanned));
             }
         }
 
