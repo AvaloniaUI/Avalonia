@@ -106,7 +106,7 @@
               <Setter Property="(ToolTip.Tip)" Value="Show Password" />
             </Style>
           </Panel.Styles>
-          <ToggleButton Classes="PasswordBoxRevealButton" Background="Transparent" Cursor="Arrow" IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
+          <ToggleButton Classes="passwordBoxRevealButton" Background="Transparent" Cursor="Arrow" IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
         </Panel>
       </Template>
     </Setter>
@@ -118,7 +118,7 @@
     <Setter Property="MinWidth" Value="400" />
   </Style>
   
-  <Style Selector="ToggleButton.PasswordBoxRevealButton">
+  <Style Selector="ToggleButton.passwordBoxRevealButton">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
@@ -149,15 +149,15 @@
     </Setter>
   </Style>
   
-  <Style Selector="ToggleButton.PasswordBoxRevealButton:not(ToggleButton:checked) /template/ Path#PART_GlyphElement_Hide">
+  <Style Selector="ToggleButton.passwordBoxRevealButton:not(ToggleButton:checked) /template/ Path#PART_GlyphElement_Hide">
     <Setter Property="IsVisible" Value="False" />
   </Style>
   
-  <Style Selector="ToggleButton.PasswordBoxRevealButton:checked /template/ Path#PART_GlyphElement_Reveal">
+  <Style Selector="ToggleButton.passwordBoxRevealButton:checked /template/ Path#PART_GlyphElement_Reveal">
     <Setter Property="IsVisible" Value="False" />
   </Style>
 
-  <Style Selector="Button.TextBoxClearButton, ToggleButton.PasswordBoxRevealButton">    
+  <Style Selector="Button.textBoxClearButton, ToggleButton.passwordBoxRevealButton">    
     <Setter Property="Focusable" Value="False" />
   </Style>
 </Styles>
