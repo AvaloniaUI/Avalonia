@@ -170,7 +170,7 @@
   <Style Selector="TextBox.revealPasswordButton[AcceptsReturn=False][IsReadOnly=False]:not(TextBox:empty)">
     <Setter Property="InnerRightContent">
       <Template>
-        <ToggleButton Classes="PasswordBoxRevealButton"
+        <ToggleButton Classes="passwordBoxRevealButton"
                       IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}" />
       </Template>
     </Setter>
@@ -179,13 +179,13 @@
   <Style Selector="TextBox.clearButton[AcceptsReturn=False][IsReadOnly=False]:focus:not(TextBox:empty)">
     <Setter Property="InnerRightContent">
       <Template>
-        <Button Classes="TextBoxClearButton"
+        <Button Classes="textBoxClearButton"
                 Command="{Binding $parent[TextBox].Clear}" />
       </Template>
     </Setter>
   </Style>
 
-  <Style Selector="ToggleButton.PasswordBoxRevealButton">
+  <Style Selector="ToggleButton.passwordBoxRevealButton">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ToggleButton">
@@ -213,7 +213,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="Button.TextBoxClearButton">
+  <Style Selector="Button.textBoxClearButton">
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
@@ -233,60 +233,60 @@
   </Style>
 
   <!-- TextBox.Button Normal State -->
-  <Style Selector="Button.TextBoxClearButton, ToggleButton.PasswordBoxRevealButton">
+  <Style Selector="Button.textBoxClearButton, ToggleButton.passwordBoxRevealButton">
     <Setter Property="MinWidth" Value="34" />
     <Setter Property="Width" Value="{Binding $self.Bounds.Height}"/>
     <Setter Property="Focusable" Value="False" />
     <Setter Property="VerticalAlignment" Value="Stretch" />    
   </Style>
-  <Style Selector="Button.TextBoxClearButton /template/ Border#PART_ButtonLayoutBorder,
-                   ToggleButton.PasswordBoxRevealButton /template/ Border#PART_ButtonLayoutBorder">
+  <Style Selector="Button.textBoxClearButton /template/ Border#PART_ButtonLayoutBorder,
+                   ToggleButton.passwordBoxRevealButton /template/ Border#PART_ButtonLayoutBorder">
     <Setter Property="Background" Value="{DynamicResource TextControlButtonBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrush}" />
   </Style>
-  <Style Selector="Button.TextBoxClearButton /template/ Path#PART_GlyphElement,
-                   ToggleButton.PasswordBoxRevealButton /template/ Path#PART_GlyphElement_Reveal,
-                   ToggleButton.PasswordBoxRevealButton /template/ Path#PART_GlyphElement_Hide">
+  <Style Selector="Button.textBoxClearButton /template/ Path#PART_GlyphElement,
+                   ToggleButton.passwordBoxRevealButton /template/ Path#PART_GlyphElement_Reveal,
+                   ToggleButton.passwordBoxRevealButton /template/ Path#PART_GlyphElement_Hide">
     <Setter Property="Fill" Value="{DynamicResource TextControlButtonForeground}" />
   </Style>
 
   <!-- TextBox.Button PointerOver State -->
-  <Style Selector="Button.TextBoxClearButton:pointerover /template/ Border#PART_ButtonLayoutBorder,
-                   ToggleButton.PasswordBoxRevealButton:pointerover /template/ Border#PART_ButtonLayoutBorder">
+  <Style Selector="Button.textBoxClearButton:pointerover /template/ Border#PART_ButtonLayoutBorder,
+                   ToggleButton.passwordBoxRevealButton:pointerover /template/ Border#PART_ButtonLayoutBorder">
     <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPointerOver}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrushPointerOver}" />
   </Style>
-  <Style Selector="Button.TextBoxClearButton:pointerover /template/ Path#PART_GlyphElement,
-                   ToggleButton.PasswordBoxRevealButton:pointerover /template/ Path#PART_GlyphElement_Reveal,
-                   ToggleButton.PasswordBoxRevealButton:pointerover /template/ Path#PART_GlyphElement_Hide">
+  <Style Selector="Button.textBoxClearButton:pointerover /template/ Path#PART_GlyphElement,
+                   ToggleButton.passwordBoxRevealButton:pointerover /template/ Path#PART_GlyphElement_Reveal,
+                   ToggleButton.passwordBoxRevealButton:pointerover /template/ Path#PART_GlyphElement_Hide">
     <Setter Property="Fill" Value="{DynamicResource TextControlButtonForegroundPointerOver}" />
   </Style>
 
   <!-- TextBox.Button Pressed State -->
-  <Style Selector="Button.TextBoxClearButton:pressed /template/ Border#PART_ButtonLayoutBorder,
-                   ToggleButton.PasswordBoxRevealButton:pressed /template/ Border#PART_ButtonLayoutBorder,
-                   ToggleButton.PasswordBoxRevealButton:checked /template/ Border#PART_ButtonLayoutBorder,
-                   ToggleButton.PasswordBoxRevealButton:indeterminate /template/ Border#PART_ButtonLayoutBorder">
+  <Style Selector="Button.textBoxClearButton:pressed /template/ Border#PART_ButtonLayoutBorder,
+                   ToggleButton.passwordBoxRevealButton:pressed /template/ Border#PART_ButtonLayoutBorder,
+                   ToggleButton.passwordBoxRevealButton:checked /template/ Border#PART_ButtonLayoutBorder,
+                   ToggleButton.passwordBoxRevealButton:indeterminate /template/ Border#PART_ButtonLayoutBorder">
     <Setter Property="Background" Value="{DynamicResource TextControlButtonBackgroundPressed}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrushPressed}" />
   </Style>
-  <Style Selector="Button.TextBoxClearButton:pressed /template/ Path#PART_GlyphElement,
-                   ToggleButton.PasswordBoxRevealButton:pressed /template/ Path#PART_GlyphElement_Reveal,
-                   ToggleButton.PasswordBoxRevealButton:checked /template/ Path#PART_GlyphElement_Hide,
-                   ToggleButton.PasswordBoxRevealButton:indeterminate /template/ Path#PART_GlyphElement_Reveal">
+  <Style Selector="Button.textBoxClearButton:pressed /template/ Path#PART_GlyphElement,
+                   ToggleButton.passwordBoxRevealButton:pressed /template/ Path#PART_GlyphElement_Reveal,
+                   ToggleButton.passwordBoxRevealButton:checked /template/ Path#PART_GlyphElement_Hide,
+                   ToggleButton.passwordBoxRevealButton:indeterminate /template/ Path#PART_GlyphElement_Reveal">
     <Setter Property="Fill" Value="{DynamicResource TextControlButtonForegroundPressed}" />
   </Style>
 
   <!-- TextBox.Button Disabled State -->
-  <Style Selector="Button.TextBoxClearButton:disabled /template/ Border#PART_ButtonLayoutBorder,
-                   ToggleButton.PasswordBoxRevealButton:disabled /template/ Border#PART_ButtonLayoutBorder">
+  <Style Selector="Button.textBoxClearButton:disabled /template/ Border#PART_ButtonLayoutBorder,
+                   ToggleButton.passwordBoxRevealButton:disabled /template/ Border#PART_ButtonLayoutBorder">
     <Setter Property="Opacity" Value="0" />
   </Style>
 
-  <Style Selector="ToggleButton.PasswordBoxRevealButton:not(ToggleButton:checked) /template/ Path#PART_GlyphElement_Hide">
+  <Style Selector="ToggleButton.passwordBoxRevealButton:not(ToggleButton:checked) /template/ Path#PART_GlyphElement_Hide">
     <Setter Property="IsVisible" Value="False" />
   </Style>
-  <Style Selector="ToggleButton.PasswordBoxRevealButton:checked /template/ Path#PART_GlyphElement_Reveal">
+  <Style Selector="ToggleButton.passwordBoxRevealButton:checked /template/ Path#PART_GlyphElement_Reveal">
     <Setter Property="IsVisible" Value="False" />
   </Style>
 

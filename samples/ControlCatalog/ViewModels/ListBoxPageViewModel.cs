@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using Avalonia.Controls;
+using Avalonia.Controls.Selection;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
@@ -15,16 +16,16 @@ namespace ControlCatalog.ViewModels
         public ListBoxPageViewModel()
         {
             Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
-            Selection = new SelectionModel();
+            Selection = new SelectionModel<string>();
             Selection.Select(1);
 
             AddItemCommand = ReactiveCommand.Create(() => Items.Add(GenerateItem()));
 
             RemoveItemCommand = ReactiveCommand.Create(() =>
             {
-                while (Selection.SelectedItems.Count > 0)
+                while (Selection.Count > 0)
                 {
-                    Items.Remove((string)Selection.SelectedItems.First());
+                    Items.Remove(Selection.SelectedItems.First());
                 }
             });
 
@@ -32,9 +33,9 @@ namespace ControlCatalog.ViewModels
             {
                 var random = new Random();
 
-                using (Selection.Update())
+                using (Selection.BatchUpdate())
                 {
-                    Selection.ClearSelection();
+                    Selection.Clear();
                     Selection.Select(random.Next(Items.Count - 1));
                 }
             });
@@ -42,7 +43,7 @@ namespace ControlCatalog.ViewModels
 
         public ObservableCollection<string> Items { get; }
 
-        public SelectionModel Selection { get; }
+        public SelectionModel<string> Selection { get; }
 
         public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
@@ -55,7 +56,7 @@ namespace ControlCatalog.ViewModels
             get => _selectionMode;
             set
             {
-                Selection.ClearSelection();
+                Selection.Clear();
                 this.RaiseAndSetIfChanged(ref _selectionMode, value);
             }
         }
