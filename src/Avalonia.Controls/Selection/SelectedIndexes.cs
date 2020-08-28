@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Selection
         {
             IEnumerator<int> SingleSelect()
             {
-                if (_owner.SelectedIndex >= 0)
+                if (_owner!.SelectedIndex >= 0)
                 {
                     yield return _owner.SelectedIndex;
                 }
