@@ -70,7 +70,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 try
                 {
-                    FilterRegex = new Regex(PropertyFilter);
+                    FilterRegex = new Regex(PropertyFilter, RegexOptions.Compiled);
                     ClearError();
                 }
                 catch (Exception exception)
