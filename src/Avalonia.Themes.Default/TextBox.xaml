@@ -45,34 +45,35 @@
             </TextBlock>
 
             <DataValidationErrors>
-              <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                            VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
-                
-                <Grid ColumnDefinitions="Auto,*,Auto">
-                  <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
-                  <TextBlock Name="watermark"
-                             Opacity="0.5"
-                             Text="{TemplateBinding Watermark}"
-                             TextAlignment="{TemplateBinding TextAlignment}"
-                             TextWrapping="{TemplateBinding TextWrapping}"
-                             IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-                             Grid.Column="1" Grid.ColumnSpan="1"/>
-                  <TextPresenter Name="PART_TextPresenter"
-                                 Text="{TemplateBinding Text, Mode=TwoWay}"
-                                 CaretIndex="{TemplateBinding CaretIndex}"
-                                 SelectionStart="{TemplateBinding SelectionStart}"
-                                 SelectionEnd="{TemplateBinding SelectionEnd}"
-                                 TextAlignment="{TemplateBinding TextAlignment}"
-                                 TextWrapping="{TemplateBinding TextWrapping}"
-                                 PasswordChar="{TemplateBinding PasswordChar}"
-                                 RevealPassword="{TemplateBinding RevealPassword}"
-                                 SelectionBrush="{TemplateBinding SelectionBrush}"
-                                 SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                 CaretBrush="{TemplateBinding CaretBrush}"
-                                 Grid.Column="1" Grid.ColumnSpan="1"/>
-                  <ContentPresenter Grid.Column="2" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>
-                </Grid>
-              </ScrollViewer>
+
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
+                <ScrollViewer Grid.Column="1" Grid.ColumnSpan="1"
+                              HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                              VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                  <Panel>
+                    <TextBlock Name="watermark"
+                              Opacity="0.5"
+                              Text="{TemplateBinding Watermark}"
+                              TextAlignment="{TemplateBinding TextAlignment}"
+                              TextWrapping="{TemplateBinding TextWrapping}"
+                              IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
+                    <TextPresenter Name="PART_TextPresenter"
+                                    Text="{TemplateBinding Text, Mode=TwoWay}"
+                                    CaretIndex="{TemplateBinding CaretIndex}"
+                                    SelectionStart="{TemplateBinding SelectionStart}"
+                                    SelectionEnd="{TemplateBinding SelectionEnd}"
+                                    TextAlignment="{TemplateBinding TextAlignment}"
+                                    TextWrapping="{TemplateBinding TextWrapping}"
+                                    PasswordChar="{TemplateBinding PasswordChar}"
+                                    RevealPassword="{TemplateBinding RevealPassword}"
+                                    SelectionBrush="{TemplateBinding SelectionBrush}"
+                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                    CaretBrush="{TemplateBinding CaretBrush}" />
+                  </Panel>
+                </ScrollViewer>
+                <ContentPresenter Grid.Column="2" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>             
+              </Grid>
             </DataValidationErrors>
           </DockPanel>
         </Border>
@@ -129,7 +130,7 @@
   <Style Selector="TextBox.revealPasswordButton[AcceptsReturn=False][IsReadOnly=False]:not(TextBox:empty)">
     <Setter Property="InnerRightContent">
       <Template>
-        <Panel Margin="0,0,4,0">
+        <Panel Margin="4,0">
           <Panel.Styles>
             <Style Selector="ToggleButton[IsChecked=True]">
               <Setter Property="(ToolTip.Tip)" Value="Hide Password" />
