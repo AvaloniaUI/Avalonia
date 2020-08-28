@@ -71,7 +71,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (o is AvaloniaObject ao)
             {
                 return AvaloniaPropertyRegistry.Instance.GetRegistered(ao)
-                    .Concat(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(ao.GetType()))
+                    .Union(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(ao.GetType()))
                     .Select(x => new AvaloniaPropertyViewModel(ao, x));
             }
             else
