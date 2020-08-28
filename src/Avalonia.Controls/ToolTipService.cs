@@ -35,6 +35,13 @@ namespace Avalonia.Controls
                 control.PointerEnter += ControlPointerEnter;
                 control.PointerLeave += ControlPointerLeave;
             }
+
+            if (e.NewValue != e.OldValue && ToolTip.GetIsOpen(control))
+            {
+                var tip = control.GetValue(ToolTip.ToolTipProperty);
+
+                tip.Content = e.NewValue;
+            }
         }
 
         internal void TipOpenChanged(AvaloniaPropertyChangedEventArgs e)
