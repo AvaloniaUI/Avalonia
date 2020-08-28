@@ -16,20 +16,15 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _propertyFilter = string.Empty;
         private bool _useRegexFilter;
 
-        public TreePageViewModel(TreeNode[] nodes)
+        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
         {
+            MainView = mainView;
             Nodes = nodes;
-            Selection = new SelectionModel { SingleSelect = true, Source = Nodes };
-
-            Selection.SelectionChanged += (s, e) =>
-            {
-                SelectedNode = (TreeNode)Selection.SelectedItem;
-            };
         }
 
-        public TreeNode[] Nodes { get; protected set; }
+        public MainViewModel MainView { get; }
 
-        public SelectionModel Selection { get; }
+        public TreeNode[] Nodes { get; protected set; }
 
         public TreeNode SelectedNode
         {
@@ -157,8 +152,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (node != null)
             {
+                SelectedNode = node;
                 ExpandNode(node.Parent);
-                Selection.SelectedIndex = node.Index;
             }
         }
 

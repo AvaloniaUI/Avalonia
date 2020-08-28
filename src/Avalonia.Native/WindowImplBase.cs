@@ -94,8 +94,13 @@ namespace Avalonia.Native
         {
             get
             {
-                var s = _native.GetClientSize();
-                return new Size(s.Width, s.Height);
+                if (_native != null)
+                {
+                    var s = _native.GetClientSize();
+                    return new Size(s.Width, s.Height);
+                }
+
+                return default;
             }
         }
 
@@ -144,7 +149,6 @@ namespace Avalonia.Native
             void IAvnWindowBaseEvents.Closed()
             {
                 var n = _parent._native;
-                _parent._native = null;
                 try
                 {
                     _parent?.Closed?.Invoke();
@@ -153,6 +157,7 @@ namespace Avalonia.Native
                 {
                     n?.Dispose();
                 }
+                
                 _parent._mouse.Dispose();
             }
 
@@ -351,12 +356,12 @@ namespace Avalonia.Native
 
         public Point PointToClient(PixelPoint point)
         {
-            return _native.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint();
+            return _native?.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint() ?? default;
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint();
+            return _native?.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint() ?? default;
         }
 
         public void Hide()

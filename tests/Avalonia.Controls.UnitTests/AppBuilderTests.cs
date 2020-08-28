@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.UnitTests;
+﻿using System;
+using Avalonia.Controls.UnitTests;
 using Avalonia.Platform;
 using Xunit;
 
@@ -16,6 +17,19 @@ namespace Avalonia.Controls.UnitTests
     {
         class App : Application
         {
+        }
+
+        public class AppWithDependencies : Application
+        {
+            public AppWithDependencies(object dependencyA, object dependencyB)
+            {
+                DependencyA = dependencyA;
+                DependencyB = dependencyB;
+            }
+
+            public object DependencyA { get; }
+
+            public object DependencyB { get; }
         }
 
         public class DefaultModule
@@ -53,7 +67,30 @@ namespace Avalonia.Controls.UnitTests
                 IsLoaded = true;
             }
         }
-        
+
+        [Fact]
+        public void UseAppFactory()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+
+                Func<AppWithDependencies> appFactory = () => new AppWithDependencies(dependencyA: new object(), dependencyB: new object());
+
+                var builder = AppBuilder.Configure<AppWithDependencies>(appFactory)
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { })
+                    .UseAvaloniaModules()
+                    .SetupWithoutStarting();
+
+                AppWithDependencies app = (AppWithDependencies)builder.Instance;
+                Assert.NotNull(app.DependencyA);
+                Assert.NotNull(app.DependencyB);
+
+                Assert.True(DefaultModule.IsLoaded);
+            }
+        }
+
         [Fact]
         public void LoadsDefaultModule()
         {
