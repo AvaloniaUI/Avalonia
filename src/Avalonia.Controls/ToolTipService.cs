@@ -36,7 +36,7 @@ namespace Avalonia.Controls
                 control.PointerLeave += ControlPointerLeave;
             }
 
-            if (e.NewValue != e.OldValue && ToolTip.GetIsOpen(control))
+            if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
             {
                 var tip = control.GetValue(ToolTip.ToolTipProperty);
 
