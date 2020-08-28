@@ -124,6 +124,35 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(ToolTip.GetIsOpen(target));
             }
         }
+        
+        [Fact]
+        public void Content_Should_Update_When_Tip_Property_Changes_And_Already_Open()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                var target = new Decorator()
+                {
+                    [ToolTip.TipProperty] = "Tip",
+                    [ToolTip.ShowDelayProperty] = 0
+                };
+
+                window.Content = target;
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                _mouseHelper.Enter(target);
+
+                Assert.True(ToolTip.GetIsOpen(target));
+                Assert.Equal("Tip", target.GetValue(ToolTip.ToolTipProperty).Content);
+                
+                
+                ToolTip.SetTip(target, "Tip1");
+                Assert.Equal("Tip1", target.GetValue(ToolTip.ToolTipProperty).Content);
+            }
+        }
 
         [Fact]
         public void Should_Open_On_Pointer_Enter_With_Delay()

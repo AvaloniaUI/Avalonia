@@ -201,7 +201,6 @@
     <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="SelectionMode" Value="Extended" />
-    <Setter Property="GridLinesVisibility" Value="Vertical" />
     <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource ThemeBorderHighColor}" />
     <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource ThemeBorderHighColor}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowColor}"/>
