@@ -567,7 +567,9 @@ namespace Avalonia.Controls.Selection
         {
             if (ItemsView is null || index < 0 || index >= ItemsView.Count)
             {
+#pragma warning disable CS8653
                 return default;
+#pragma warning restore CS8653
             }
 
             return ItemsView[index];

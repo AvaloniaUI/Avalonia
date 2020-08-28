@@ -43,7 +43,9 @@ namespace Avalonia.Controls.Selection
                 }
                 else
                 {
+#pragma warning disable CS8653
                     return default;
+#pragma warning restore CS8653
                 }
             }
         }
