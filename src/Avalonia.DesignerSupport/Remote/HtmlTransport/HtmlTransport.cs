@@ -115,11 +115,11 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 while (true)
                 {
                     var msg = await socket.ReceiveMessage().ConfigureAwait(false);
-                    if(msg == null)
-                        return;
-                    if (msg.IsText)
+                    if(msg != null && msg.IsText)
                     {
-                        ProcessingReceiveMessage(msg.AsString());
+                        var message = ParseMessage(msg.AsString());
+                        if (message != null)
+                            _onMessage?.Invoke(this, message);
                     }
                 }
             }
@@ -178,7 +178,6 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             _pendingSocket?.Dispose();
             _simpleServer.Dispose();
         }
-
         
         public Task Send(object data)
         {
@@ -262,70 +261,57 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         }
         #endregion
 
-        private void ProcessingReceiveMessage(string message)
+        private static object ParseMessage(string message)
         {
             var parts = message.Split(':');
             switch (parts[0])
             {
                 case "frame-received":
                     {
-                        _onMessage?.Invoke(
-                            this,
-                            new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) });
-                        break;
+                        return new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) };
                     }
                 case "pointer-released":
                     {
-                        _onMessage?.Invoke(
-                            this,
-                            new InputProtocol.PointerReleasedEventMessage
-                            {
-                                Modifiers = ParseInputModifiers(parts[1]),
-                                X = ParseDouble(parts[2]),
-                                Y = ParseDouble(parts[3]),
-                                Button = ParseMouseButton(parts[4]),
-                            });
-                        break;
+                        return new InputProtocol.PointerReleasedEventMessage
+                        {
+                            Modifiers = ParseInputModifiers(parts[1]),
+                            X = ParseDouble(parts[2]),
+                            Y = ParseDouble(parts[3]),
+                            Button = ParseMouseButton(parts[4]),
+                        };
                     }
                 case "pointer-pressed":
                     {
-                        _onMessage?.Invoke(
-                            this,
-                            new InputProtocol.PointerPressedEventMessage
-                            {
-                                Modifiers = ParseInputModifiers(parts[1]),
-                                X = ParseDouble(parts[2]),
-                                Y = ParseDouble(parts[3]),
-                                Button = ParseMouseButton(parts[4]),
-                            });
-                        break;
+                        return new InputProtocol.PointerPressedEventMessage
+                        {
+                            Modifiers = ParseInputModifiers(parts[1]),
+                            X = ParseDouble(parts[2]),
+                            Y = ParseDouble(parts[3]),
+                            Button = ParseMouseButton(parts[4]),
+                        };
                     }
                 case "pointer-moved":
                     {
-                        _onMessage?.Invoke(
-                            this,
-                            new InputProtocol.PointerMovedEventMessage
-                            {
-                                Modifiers = ParseInputModifiers(parts[1]),
-                                X = ParseDouble(parts[2]),
-                                Y = ParseDouble(parts[3]),
-                            });
-                        break;
+                        return new InputProtocol.PointerMovedEventMessage
+                        {
+                            Modifiers = ParseInputModifiers(parts[1]),
+                            X = ParseDouble(parts[2]),
+                            Y = ParseDouble(parts[3]),
+                        };
                     }
                 case "scroll":
                     {
-                        _onMessage?.Invoke(
-                            this,
-                            new InputProtocol.ScrollEventMessage
-                            {
-                                Modifiers = ParseInputModifiers(parts[1]),
-                                X = ParseDouble(parts[2]),
-                                Y = ParseDouble(parts[3]),
-                                DeltaX = ParseDouble(parts[4]),
-                                DeltaY = ParseDouble(parts[5]),
-                            });
-                        break;
+                        return new InputProtocol.ScrollEventMessage
+                        {
+                            Modifiers = ParseInputModifiers(parts[1]),
+                            X = ParseDouble(parts[2]),
+                            Y = ParseDouble(parts[3]),
+                            DeltaX = ParseDouble(parts[4]),
+                            DeltaY = ParseDouble(parts[5]),
+                        };
                     }
+                default:
+                    return null;
             }
         }
 
@@ -345,6 +331,6 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 typeof(InputProtocol.MouseButton), buttonText, true);
 
         private static double ParseDouble(string text) =>
-            double.Parse(text, CultureInfo.InvariantCulture);
+            double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture);
     }
 }
