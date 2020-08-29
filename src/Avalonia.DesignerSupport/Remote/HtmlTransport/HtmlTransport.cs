@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -280,8 +281,8 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                             new InputProtocol.PointerReleasedEventMessage
                             {
                                 Modifiers = ParseInputModifiers(parts[1]),
-                                X = double.Parse(parts[2]),
-                                Y = double.Parse(parts[3]),
+                                X = ParseDouble(parts[2]),
+                                Y = ParseDouble(parts[3]),
                                 Button = ParseMouseButton(parts[4]),
                             });
                         break;
@@ -293,8 +294,8 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                             new InputProtocol.PointerPressedEventMessage
                             {
                                 Modifiers = ParseInputModifiers(parts[1]),
-                                X = double.Parse(parts[2]),
-                                Y = double.Parse(parts[3]),
+                                X = ParseDouble(parts[2]),
+                                Y = ParseDouble(parts[3]),
                                 Button = ParseMouseButton(parts[4]),
                             });
                         break;
@@ -306,8 +307,8 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                             new InputProtocol.PointerMovedEventMessage
                             {
                                 Modifiers = ParseInputModifiers(parts[1]),
-                                X = double.Parse(parts[2]),
-                                Y = double.Parse(parts[3]),
+                                X = ParseDouble(parts[2]),
+                                Y = ParseDouble(parts[3]),
                             });
                         break;
                     }
@@ -318,10 +319,10 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                             new InputProtocol.ScrollEventMessage
                             {
                                 Modifiers = ParseInputModifiers(parts[1]),
-                                X = double.Parse(parts[2]),
-                                Y = double.Parse(parts[3]),
-                                DeltaX = double.Parse(parts[4]),
-                                DeltaY = double.Parse(parts[5]),
+                                X = ParseDouble(parts[2]),
+                                Y = ParseDouble(parts[3]),
+                                DeltaX = ParseDouble(parts[4]),
+                                DeltaY = ParseDouble(parts[5]),
                             });
                         break;
                     }
@@ -334,13 +335,16 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             : modifiersText
                 .Split(',')
                 .Select(x => (InputProtocol.InputModifiers)Enum.Parse(
-                    typeof(InputProtocol.InputModifiers), x))
+                    typeof(InputProtocol.InputModifiers), x, true))
                 .ToArray();
 
         private static InputProtocol.MouseButton ParseMouseButton(string buttonText) =>
             string.IsNullOrEmpty(buttonText)
             ? InputProtocol.MouseButton.None
             : (InputProtocol.MouseButton)Enum.Parse(
-                typeof(InputProtocol.MouseButton), buttonText);
+                typeof(InputProtocol.MouseButton), buttonText, true);
+
+        private static double ParseDouble(string text) =>
+            double.Parse(text, CultureInfo.InvariantCulture);
     }
 }
