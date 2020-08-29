@@ -17,12 +17,12 @@ namespace Avalonia.Controls.Utils
         void PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e);
     }
 
-    internal class CollectionChangedEventManager : IWeakSubscriber<NotifyCollectionChangedEventArgs>
+    internal class CollectionChangedEventManager
     {
         public static CollectionChangedEventManager Instance { get; } = new CollectionChangedEventManager();
 
-        private ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>> _entries =
-            new ConditionalWeakTable<INotifyCollectionChanged, List<WeakReference<ICollectionChangedListener>>>();
+        private ConditionalWeakTable<INotifyCollectionChanged, Entry> _entries =
+            new ConditionalWeakTable<INotifyCollectionChanged, Entry>();
 
         private CollectionChangedEventManager()
         {
@@ -34,17 +34,13 @@ namespace Avalonia.Controls.Utils
             listener = listener ?? throw new ArgumentNullException(nameof(listener));
             Dispatcher.UIThread.VerifyAccess();
 
-            if (!_entries.TryGetValue(collection, out var listeners))
+            if (!_entries.TryGetValue(collection, out var entry))
             {
-                listeners = new List<WeakReference<ICollectionChangedListener>>();
-                _entries.Add(collection, listeners);
-                WeakSubscriptionManager.Subscribe(
-                    collection,
-                    nameof(INotifyCollectionChanged.CollectionChanged),
-                    this);
+                entry = new Entry(collection);
+                _entries.Add(collection, entry);
             }
 
-            foreach (var l in listeners)
+            foreach (var l in entry.Listeners)
             {
                 if (l.TryGetTarget(out var target) && target == listener)
                 {
@@ -53,7 +49,7 @@ namespace Avalonia.Controls.Utils
                 }
             }
 
-            listeners.Add(new WeakReference<ICollectionChangedListener>(listener));
+            entry.Listeners.Add(new WeakReference<ICollectionChangedListener>(listener));
         }
 
         public void RemoveListener(INotifyCollectionChanged collection, ICollectionChangedListener listener)
@@ -62,8 +58,10 @@ namespace Avalonia.Controls.Utils
             listener = listener ?? throw new ArgumentNullException(nameof(listener));
             Dispatcher.UIThread.VerifyAccess();
 
-            if (_entries.TryGetValue(collection, out var listeners))
+            if (_entries.TryGetValue(collection, out var entry))
             {
+                var listeners = entry.Listeners;
+
                 for (var i = 0; i < listeners.Count; ++i)
                 {
                     if (listeners[i].TryGetTarget(out var target) && target == listener)
@@ -72,10 +70,7 @@ namespace Avalonia.Controls.Utils
 
                         if (listeners.Count == 0)
                         {
-                            WeakSubscriptionManager.Unsubscribe(
-                                collection,
-                                nameof(INotifyCollectionChanged.CollectionChanged),
-                                this);
+                            entry.Dispose();
                             _entries.Remove(collection);
                         }
 
@@ -88,51 +83,72 @@ namespace Avalonia.Controls.Utils
                 "Collection listener not registered for this collection/listener combination.");
         }
 
-        void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object sender, NotifyCollectionChangedEventArgs e)
+        private class Entry : IWeakSubscriber<NotifyCollectionChangedEventArgs>, IDisposable
         {
-            static void Notify(
-                INotifyCollectionChanged incc,
-                NotifyCollectionChangedEventArgs args,
-                List<WeakReference<ICollectionChangedListener>> listeners)
+            private INotifyCollectionChanged _collection;
+
+            public Entry(INotifyCollectionChanged collection)
             {
-                foreach (var l in listeners)
-                {
-                    if (l.TryGetTarget(out var target))
-                    {
-                        target.PreChanged(incc, args);
-                    }
-                }
-
-                foreach (var l in listeners)
-                {
-                    if (l.TryGetTarget(out var target))
-                    {
-                        target.Changed(incc, args);
-                    }
-                }
-
-                foreach (var l in listeners)
-                {
-                    if (l.TryGetTarget(out var target))
-                    {
-                        target.PostChanged(incc, args);
-                    }
-                }
+                _collection = collection;
+                Listeners = new List<WeakReference<ICollectionChangedListener>>();
+                WeakSubscriptionManager.Subscribe(
+                    _collection,
+                    nameof(INotifyCollectionChanged.CollectionChanged),
+                    this);
             }
 
-            if (sender is INotifyCollectionChanged incc && _entries.TryGetValue(incc, out var listeners))
+            public List<WeakReference<ICollectionChangedListener>> Listeners { get; }
+
+            public void Dispose()
             {
-                var l = listeners.ToList();
+                WeakSubscriptionManager.Unsubscribe(
+                    _collection,
+                    nameof(INotifyCollectionChanged.CollectionChanged),
+                    this);
+            }
+
+            void IWeakSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                static void Notify(
+                    INotifyCollectionChanged incc,
+                    NotifyCollectionChangedEventArgs args,
+                    List<WeakReference<ICollectionChangedListener>> listeners)
+                {
+                    foreach (var l in listeners)
+                    {
+                        if (l.TryGetTarget(out var target))
+                        {
+                            target.PreChanged(incc, args);
+                        }
+                    }
+
+                    foreach (var l in listeners)
+                    {
+                        if (l.TryGetTarget(out var target))
+                        {
+                            target.Changed(incc, args);
+                        }
+                    }
+
+                    foreach (var l in listeners)
+                    {
+                        if (l.TryGetTarget(out var target))
+                        {
+                            target.PostChanged(incc, args);
+                        }
+                    }
+                }
+
+                var l = Listeners.ToList();
 
                 if (Dispatcher.UIThread.CheckAccess())
                 {
-                    Notify(incc, e, l);
+                    Notify(_collection, e, l);
                 }
                 else
                 {
-                    var inccCapture = incc;
                     var eCapture = e;
-                    Dispatcher.UIThread.Post(() => Notify(inccCapture, eCapture, l));
+                    Dispatcher.UIThread.Post(() => Notify(_collection, eCapture, l));
                 }
             }
         }
