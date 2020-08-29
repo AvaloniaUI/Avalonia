@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Interactivity.UnitTests
+namespace Avalonia.Input.UnitTests
 {
     public class GesturesTests
     {
@@ -45,7 +44,7 @@ namespace Avalonia.Interactivity.UnitTests
         }
 
         [Fact]
-        public void Tapped_Should_Be_Raised_For_Middle_Button()
+        public void Tapped_Should_Not_Be_Raised_For_Middle_Button()
         {
             Border border = new Border();
             var decorator = new Decorator
@@ -58,7 +57,7 @@ namespace Avalonia.Interactivity.UnitTests
 
             _mouse.Click(border, MouseButton.Middle);
 
-            Assert.True(raised);
+            Assert.False(raised);
         }
 
         [Fact]
