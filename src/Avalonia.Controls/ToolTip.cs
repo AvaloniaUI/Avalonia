@@ -55,7 +55,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
-        private static readonly AttachedProperty<ToolTip> ToolTipProperty =
+        internal static readonly AttachedProperty<ToolTip> ToolTipProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip>("ToolTip");
 
         private IPopupHost _popup;

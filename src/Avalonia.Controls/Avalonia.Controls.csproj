@@ -3,6 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>    
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj" />
