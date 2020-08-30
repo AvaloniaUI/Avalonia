@@ -60,6 +60,7 @@ namespace Avalonia
         private string? _name;
         private readonly Classes _classes = new Classes();
         private ILogicalRoot? _logicalRoot;
+        private IGlobalStyles? _globalStyles;
         private IAvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
         private Styles? _styles;
@@ -300,7 +301,8 @@ namespace Avalonia
         bool IStyleHost.IsStylesInitialized => _styles != null;
 
         /// <inheritdoc/>
-        IStyleHost? IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
+        IStyleHost? IStyleHost.StylingParent => (IStyleHost)InheritanceParent
+            ?? (_globalStyles ??= AvaloniaLocator.Current.GetService<IGlobalStyles>());
 
         /// <inheritdoc/>
         public virtual void BeginInit()
