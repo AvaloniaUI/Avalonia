@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -14,7 +15,7 @@ using UIKit;
 namespace Avalonia.iOS
 {
     [Adopts("UIKeyInput")]
-    class TopLevelImpl : UIView, ITopLevelImpl, IFramebufferPlatformSurface
+    class TopLevelImpl : UIView, ITopLevelImpl, IFramebufferPlatformSurface, IGetInputRoot
     {
         private readonly KeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
 
@@ -139,7 +140,19 @@ namespace Avalonia.iOS
         public ILockedFramebuffer Lock() => new EmulatedFramebuffer(this);
 
         public IPopupImpl CreatePopup() => null;
-        
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        {
+            //No-op
+        }
+
+        public IInputRoot GetInputRoot() => _inputRoot;
+
         public Action LostFocus { get; set; }
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(0, 0, 0);
     }
 }

@@ -10,7 +10,7 @@ namespace Avalonia.iOS
             throw new NotSupportedException();
         }
 
-        public WindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
         }
