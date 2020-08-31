@@ -41,7 +41,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ResolveByNameExtension { get; }
 
         public IXamlType DataTemplate { get; }
+        public IXamlType IDataTemplate { get; }
         public IXamlType IItemsPresenterHost { get; }
+        public IXamlType ItemsRepeater { get; }
         public IXamlType ReflectionBindingExtension { get; }
 
         public IXamlType RelativeSource { get; }
@@ -97,7 +99,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             CompiledBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindingExtension");
             ResolveByNameExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ResolveByNameExtension");
             DataTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.DataTemplate");
+            IDataTemplate = cfg.TypeSystem.GetType("Avalonia.Controls.Templates.IDataTemplate");
             IItemsPresenterHost = cfg.TypeSystem.GetType("Avalonia.Controls.Presenters.IItemsPresenterHost");
+            ItemsRepeater = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsRepeater");
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
             RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");
         }

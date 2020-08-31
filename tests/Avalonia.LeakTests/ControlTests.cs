@@ -355,7 +355,7 @@ namespace Avalonia.LeakTests
                 var renderer = new Mock<IRenderer>();
                 renderer.Setup(x => x.Dispose());
                 var impl = new Mock<IWindowImpl>();
-                impl.SetupGet(x => x.Scaling).Returns(1);
+                impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
                 impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
@@ -449,13 +449,22 @@ namespace Avalonia.LeakTests
 
                 Assert.Same(window, FocusManager.Instance.Current);
 
+                // Context menu in resources means the baseline may not be 0.
+                var initialMenuCount = 0;
+                var initialMenuItemCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
+                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
+                });
+                
                 AttachShowAndDetachContextMenu(window);
 
                 Mock.Get(window.PlatformImpl).ResetCalls();
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
             }
         }
 
@@ -484,14 +493,23 @@ namespace Avalonia.LeakTests
 
                 Assert.Same(window, FocusManager.Instance.Current);
 
+                // Context menu in resources means the baseline may not be 0.
+                var initialMenuCount = 0;
+                var initialMenuItemCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
+                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
+                });
+                
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
                 Mock.Get(window.PlatformImpl).ResetCalls();
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
             }
         }
 

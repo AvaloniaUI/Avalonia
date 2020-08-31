@@ -142,7 +142,6 @@ namespace Avalonia.Controls.Generators
             private readonly IDataTemplate _inner;
             public WrapperTreeDataTemplate(IDataTemplate inner) => _inner = inner;
             public IControl Build(object param) => _inner.Build(param);
-            public bool SupportsRecycling => _inner.SupportsRecycling;
             public bool Match(object data) => _inner.Match(data);
             public InstancedBinding ItemsSelector(object item) => null;
         }

@@ -42,9 +42,9 @@ namespace Avalonia.Skia
         public struct CreateInfo
         {
             /// <summary>
-            /// Canvas to draw to.
+            /// Surface to draw to.
             /// </summary>
-            public SKCanvas Canvas;
+            public SKSurface Surface;
 
             /// <summary>
             /// Dpi of drawings.
@@ -81,8 +81,8 @@ namespace Avalonia.Skia
             _grContext = createInfo.GrContext;
             if (_grContext != null)
                 Monitor.Enter(_grContext);
-            
-            Canvas = createInfo.Canvas;
+            Surface = createInfo.Surface;
+            Canvas = createInfo.Surface.Canvas;
 
             if (Canvas == null)
             {
@@ -102,8 +102,10 @@ namespace Avalonia.Skia
         /// Skia canvas.
         /// </summary>
         public SKCanvas Canvas { get; }
+        public SKSurface Surface { get; }
 
         SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
+        SKSurface ISkiaDrawingContextImpl.SkSurface => Surface;
         GRContext ISkiaDrawingContextImpl.GrContext => _grContext;
 
         /// <inheritdoc />

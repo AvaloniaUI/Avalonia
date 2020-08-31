@@ -18,6 +18,46 @@ namespace Avalonia.Controls.UnitTests
     public class TextBoxTests
     {
         [Fact]
+        public void Opening_Context_Menu_Does_not_Lose_Selection()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    ContextMenu = new TestContextMenu()
+                };
+
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "5678"
+                };
+                
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+                
+                var root = new TestRoot() { Child = sp };
+
+                target1.SelectionStart = 0;
+                target1.SelectionEnd = 3;
+                
+                target1.Focus();
+                Assert.False(target2.IsFocused);
+                Assert.True(target1.IsFocused);
+
+                target2.Focus();
+                
+                Assert.Equal("123", target1.SelectedText);
+            }
+        }
+        
+        [Fact]
         public void DefaultBindingMode_Should_Be_TwoWay()
         {
             Assert.Equal(
@@ -521,6 +561,75 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, lfcount);
             }
         }
+        
+        [Fact]
+        public void TextBox_CaretIndex_Persists_When_Focus_Lost()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "5678"
+                };
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+                
+                var root = new TestRoot { Child = sp };
+
+                target2.Focus();
+                target2.CaretIndex = 2;
+                Assert.False(target1.IsFocused);
+                Assert.True(target2.IsFocused);
+
+                target1.Focus();
+                
+                Assert.Equal(2, target2.CaretIndex);
+            }
+        }
+        
+        [Fact]
+        public void TextBox_Reveal_Password_Reset_When_Lost_Focus()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    PasswordChar = '*'
+                };
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "5678"
+                };
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+                
+                var root = new TestRoot { Child = sp };
+
+                target1.Focus();
+                target1.RevealPassword = true;
+                
+                target2.Focus();
+                
+                Assert.False(target1.RevealPassword);
+            }
+        }
 
         [Fact]
         public void Setting_Bound_Text_To_Null_Works()
@@ -659,6 +768,14 @@ namespace Avalonia.Controls.UnitTests
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
             public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
+        }
+        
+        private class TestContextMenu : ContextMenu
+        {
+            public TestContextMenu()
+            {
+                IsOpen = true;
+            }
         }
     }
 }

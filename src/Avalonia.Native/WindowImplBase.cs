@@ -81,7 +81,7 @@ namespace Avalonia.Native
                 _glSurface = new GlPlatformSurface(window, _glContext);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
-            _savedScaling = Scaling;
+            _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
@@ -94,8 +94,13 @@ namespace Avalonia.Native
         {
             get
             {
-                var s = _native.GetClientSize();
-                return new Size(s.Width, s.Height);
+                if (_native != null)
+                {
+                    var s = _native.GetClientSize();
+                    return new Size(s.Width, s.Height);
+                }
+
+                return default;
             }
         }
 
@@ -144,7 +149,6 @@ namespace Avalonia.Native
             void IAvnWindowBaseEvents.Closed()
             {
                 var n = _parent._native;
-                _parent._native = null;
                 try
                 {
                     _parent?.Closed?.Invoke();
@@ -153,6 +157,7 @@ namespace Avalonia.Native
                 {
                     n?.Dispose();
                 }
+                
                 _parent._mouse.Dispose();
             }
 
@@ -300,7 +305,15 @@ namespace Avalonia.Native
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             if (_deferredRendering)
-                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+            {
+                var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+                var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+
+                if (customRendererFactory != null)
+                    return customRendererFactory.Create(root, loop);
+                return new DeferredRenderer(root, loop);
+            }
+
             return new ImmediateRenderer(root);
         }
 
@@ -343,12 +356,12 @@ namespace Avalonia.Native
 
         public Point PointToClient(PixelPoint point)
         {
-            return _native.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint();
+            return _native?.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint() ?? default;
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint();
+            return _native?.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint() ?? default;
         }
 
         public void Hide()
@@ -369,7 +382,9 @@ namespace Avalonia.Native
             _native.SetTopMost(value);
         }
 
-        public double Scaling => _native?.GetScaling() ?? 1;
+        public double RenderScaling => _native?.GetScaling() ?? 1;
+
+        public double DesktopScaling => 1;
 
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
@@ -432,7 +447,7 @@ namespace Avalonia.Native
 
                 TransparencyLevel = transparencyLevel;
 
-                _native.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                _native?.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }

@@ -17,4 +17,5 @@
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
-using Avalonia.Platform;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -17,6 +15,7 @@ namespace Avalonia.Media.TextFormatting
         private readonly ReadOnlySlice<char> _text;
         private readonly TextParagraphProperties _paragraphProperties;
         private readonly IReadOnlyList<ValueSpan<TextRunProperties>> _textStyleOverrides;
+        private readonly TextTrimming _textTrimming;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextLayout" /> class.
@@ -54,8 +53,10 @@ namespace Avalonia.Media.TextFormatting
                 new ReadOnlySlice<char>(text.AsMemory());
 
             _paragraphProperties =
-                CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping, textTrimming,
+                CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
                     textDecorations, lineHeight);
+
+            _textTrimming = textTrimming;
 
             _textStyleOverrides = textStyleOverrides;
 
@@ -143,18 +144,16 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="foreground">The foreground.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="textWrapping">The text wrapping.</param>
-        /// <param name="textTrimming">The text trimming.</param>
         /// <param name="textDecorations">The text decorations.</param>
         /// <param name="lineHeight">The height of each line of text.</param>
         /// <returns></returns>
         private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
-            IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping, TextTrimming textTrimming,
+            IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping,
             TextDecorationCollection textDecorations, double lineHeight)
         {
             var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
 
-            return new GenericTextParagraphProperties(textRunStyle, textAlignment, textWrapping, textTrimming,
-                lineHeight);
+            return new GenericTextParagraphProperties(textRunStyle, textAlignment, textWrapping, lineHeight);
         }
 
         /// <summary>
@@ -184,7 +183,10 @@ namespace Avalonia.Media.TextFormatting
             var glyphRun = TextShaper.Current.ShapeText(new ReadOnlySlice<char>(s_empty, startingIndex, 1),
                 properties.Typeface, properties.FontRenderingEmSize, properties.CultureInfo);
 
-            var textRuns = new[] { new ShapedTextCharacters(glyphRun, _paragraphProperties.DefaultTextRunProperties) };
+            var textRuns = new List<ShapedTextCharacters>
+            {
+                new ShapedTextCharacters(glyphRun, _paragraphProperties.DefaultTextRunProperties)
+            };
 
             return new TextLineImpl(textRuns,
                 TextLineMetrics.Create(textRuns, new TextRange(startingIndex, 1), MaxWidth, _paragraphProperties));
@@ -214,25 +216,44 @@ namespace Avalonia.Media.TextFormatting
                 var textSource = new FormattedTextSource(_text,
                     _paragraphProperties.DefaultTextRunProperties, _textStyleOverrides);
 
-                TextLineBreak previousLineBreak = null;
+                TextLine previousLine = null;
 
-                while (currentPosition < _text.Length && (MaxLines == 0 || textLines.Count < MaxLines))
+                while (currentPosition < _text.Length)
                 {
                     var textLine = TextFormatter.Current.FormatLine(textSource, currentPosition, MaxWidth,
-                        _paragraphProperties, previousLineBreak);
+                        _paragraphProperties, previousLine?.LineBreak);
 
-                    previousLineBreak = textLine.LineBreak;
+                    currentPosition += textLine.TextRange.Length;
+
+                    if (textLines.Count > 0)
+                    {
+                        if (textLines.Count == MaxLines || !double.IsPositiveInfinity(MaxHeight) &&
+                            height + textLine.LineMetrics.Size.Height > MaxHeight)
+                        {
+                            if (previousLine?.LineBreak != null && _textTrimming != TextTrimming.None)
+                            {
+                                var collapsedLine =
+                                    previousLine.Collapse(GetCollapsingProperties(MaxWidth));
+
+                                textLines[textLines.Count - 1] = collapsedLine;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    var hasOverflowed = textLine.LineMetrics.HasOverflowed;
+
+                    if (hasOverflowed && _textTrimming != TextTrimming.None)
+                    {
+                        textLine = textLine.Collapse(GetCollapsingProperties(MaxWidth));
+                    }
 
                     textLines.Add(textLine);
 
                     UpdateBounds(textLine, ref width, ref height);
 
-                    if (!double.IsPositiveInfinity(MaxHeight) && height > MaxHeight)
-                    {
-                        break;
-                    }
-
-                    currentPosition += textLine.TextRange.Length;
+                    previousLine = textLine;
 
                     if (currentPosition != _text.Length || textLine.LineBreak == null)
                     {
@@ -248,6 +269,23 @@ namespace Avalonia.Media.TextFormatting
 
                 TextLines = textLines;
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="TextCollapsingProperties"/> for current text trimming mode.
+        /// </summary>
+        /// <param name="width">The collapsing width.</param>
+        /// <returns>The <see cref="TextCollapsingProperties"/>.</returns>
+        private TextCollapsingProperties GetCollapsingProperties(double width)
+        {
+            return _textTrimming switch
+            {
+                TextTrimming.CharacterEllipsis => new TextTrailingCharacterEllipsis(width,
+                    _paragraphProperties.DefaultTextRunProperties),
+                TextTrimming.WordEllipsis => new TextTrailingWordEllipsis(width,
+                    _paragraphProperties.DefaultTextRunProperties),
+                _ => throw new ArgumentOutOfRangeException(),
+            };
         }
 
         private readonly struct FormattedTextSource : ITextSource

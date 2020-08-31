@@ -93,7 +93,7 @@ const config = {
     plugins:
         [
         new Printer(),
-        new CleanWebpackPlugin([path.resolve(__dirname, 'build')]),
+        new CleanWebpackPlugin([path.resolve(__dirname, 'build')], { verbose: false }),
         new MiniCssExtractPlugin({
             filename: "[name].[chunkhash]h" +
             ".css",

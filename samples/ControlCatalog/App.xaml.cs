@@ -9,12 +9,23 @@ namespace ControlCatalog
 {
     public class App : Application
     {
+        private static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        {
+            Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml")
+        };
+
+        private static readonly StyleInclude DataGridDefault = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        {
+            Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Default.xaml")
+        };
+
         public static Styles FluentDark = new Styles
         {
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentDark.xaml")
             },
+            DataGridFluent
         };
 
         public static Styles FluentLight = new Styles
@@ -23,6 +34,7 @@ namespace ControlCatalog
             {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentLight.xaml")
             },
+            DataGridFluent
         };
 
         public static Styles DefaultLight = new Styles
@@ -43,6 +55,7 @@ namespace ControlCatalog
             {
                 Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
             },
+            DataGridDefault
         };
 
         public static Styles DefaultDark = new Styles
@@ -63,13 +76,14 @@ namespace ControlCatalog
             {
                 Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
             },
+            DataGridDefault
         };
 
         public override void Initialize()
         {
-            AvaloniaXamlLoader.Load(this);
-
             Styles.Insert(0, FluentDark);
+
+            AvaloniaXamlLoader.Load(this);
         }
 
         public override void OnFrameworkInitializationCompleted()

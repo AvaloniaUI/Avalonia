@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -164,7 +163,9 @@ namespace Avalonia.Win32
             }
         }
 
-        public double Scaling => _scaling;
+        public double RenderScaling => _scaling;
+
+        public double DesktopScaling => RenderScaling;
 
         public Size ClientSize
         {
@@ -172,7 +173,7 @@ namespace Avalonia.Win32
             {
                 GetClientRect(_hwnd, out var rect);
 
-                return new Size(rect.right, rect.bottom) / Scaling;
+                return new Size(rect.right, rect.bottom) / RenderScaling;
             }
         }
 
@@ -180,7 +181,7 @@ namespace Avalonia.Win32
 
         public IPlatformHandle Handle { get; private set; }
 
-        public virtual Size MaxAutoSizeHint => new Size(_maxTrackSize.X / Scaling, _maxTrackSize.Y / Scaling);
+        public virtual Size MaxAutoSizeHint => new Size(_maxTrackSize.X / RenderScaling, _maxTrackSize.Y / RenderScaling);
 
         public IMouseDevice MouseDevice => _mouseDevice;
 
@@ -228,28 +229,104 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            bool canUseTransparency = false;
-            bool canUseAcrylic = false;
-
-            if (Win32Platform.WindowsVersion.Major >= 10)
+            if (Win32Platform.WindowsVersion.Major >= 6)
             {
-                canUseTransparency = true;
-
-                if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
+                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
                 {
-                    canUseAcrylic = true;
+                    return WindowTransparencyLevel.None;
+                }
+                else if (Win32Platform.WindowsVersion.Major >= 10)
+                {
+                    return Win10EnableBlur(transparencyLevel);
+                }
+                else if (Win32Platform.WindowsVersion.Minor >= 2)
+                {
+                    return Win8xEnableBlur(transparencyLevel);
+                }
+                else
+                {
+                    return Win7EnableBlur(transparencyLevel);
                 }
             }
-
-            if (!canUseTransparency || DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+            else
             {
                 return WindowTransparencyLevel.None;
             }
+        }
+
+        private WindowTransparencyLevel Win7EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+            var blurInfo = new DWM_BLURBEHIND(false);
+            
+            if (transparencyLevel == WindowTransparencyLevel.Blur)
+            {
+                blurInfo = new DWM_BLURBEHIND(true);
+            }
+            
+            DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                return WindowTransparencyLevel.None;
+            }
+            else
+            {
+                return transparencyLevel;
+            }
+        }
+
+        private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+            }
+            else
+            {
+                accent.AccentState = AccentState.ACCENT_DISABLED;
+            }
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);
+
+            if (transparencyLevel >= WindowTransparencyLevel.Blur)
+            {
+                Win7EnableBlur(transparencyLevel);
+            }
+
+            return transparencyLevel;
+        }
+
+        private WindowTransparencyLevel Win10EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
 
-            if(transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
             {
                 transparencyLevel = WindowTransparencyLevel.Blur;
             }
@@ -289,7 +366,7 @@ namespace Avalonia.Win32
 
             SetWindowCompositionAttribute(_hwnd, ref data);
 
-            Marshal.FreeHGlobal(accentPtr);            
+            Marshal.FreeHGlobal(accentPtr);
 
             return transparencyLevel;
         }
@@ -342,8 +419,8 @@ namespace Avalonia.Win32
 
         public void Resize(Size value)
         {
-            int requestedClientWidth = (int)(value.Width * Scaling);
-            int requestedClientHeight = (int)(value.Height * Scaling);
+            int requestedClientWidth = (int)(value.Width * RenderScaling);
+            int requestedClientHeight = (int)(value.Height * RenderScaling);
 
             GetClientRect(_hwnd, out var clientRect);
 
@@ -395,7 +472,7 @@ namespace Avalonia.Win32
 
         public void Invalidate(Rect rect)
         {
-            var scaling = Scaling;
+            var scaling = RenderScaling;
             var r = new RECT
             {
                 left = (int)Math.Floor(rect.X * scaling),
@@ -411,12 +488,12 @@ namespace Avalonia.Win32
         {
             var p = new POINT { X = point.X, Y = point.Y };
             UnmanagedMethods.ScreenToClient(_hwnd, ref p);
-            return new Point(p.X, p.Y) / Scaling;
+            return new Point(p.X, p.Y) / RenderScaling;
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            point *= Scaling;
+            point *= RenderScaling;
             var p = new POINT { X = (int)point.X, Y = (int)point.Y };
             ClientToScreen(_hwnd, ref p);
             return new PixelPoint(p.X, p.Y);
@@ -710,19 +787,19 @@ namespace Avalonia.Win32
 
             if (_extendTitleBarHint != -1)
             {
-                borderCaptionThickness.top = (int)(_extendTitleBarHint * Scaling);                
+                borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
             }
 
             margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
 
             if (WindowState == WindowState.Maximized)
             {
-                _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / Scaling, 0, 0);
-                _offScreenMargin = new Thickness(borderThickness.left / Scaling, borderThickness.top / Scaling, borderThickness.right / Scaling, borderThickness.bottom / Scaling);
+                _extendedMargins = new Thickness(0, (borderCaptionThickness.top - borderThickness.top) / RenderScaling, 0, 0);
+                _offScreenMargin = new Thickness(borderThickness.left / RenderScaling, borderThickness.top / RenderScaling, borderThickness.right / RenderScaling, borderThickness.bottom / RenderScaling);
             }
             else
             {
-                _extendedMargins = new Thickness(0, (borderCaptionThickness.top) / Scaling, 0, 0);
+                _extendedMargins = new Thickness(0, (borderCaptionThickness.top) / RenderScaling, 0, 0);
                 _offScreenMargin = new Thickness();
             }
 
@@ -1033,6 +1110,8 @@ namespace Avalonia.Win32
                     Math.Max(1, rect.bottom - rect.top));
             }
         }
+
+        double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => RenderScaling;
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
 

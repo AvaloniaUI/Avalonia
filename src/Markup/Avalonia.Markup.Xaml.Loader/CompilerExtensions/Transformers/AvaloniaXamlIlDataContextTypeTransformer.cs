@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using Avalonia.Markup.Parsers;
-using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
-using Avalonia.Utilities;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
@@ -29,7 +24,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 AvaloniaXamlIlDataContextTypeMetadataNode inferredDataContextTypeNode = null;
                 AvaloniaXamlIlDataContextTypeMetadataNode directiveDataContextTypeNode = null;
-                bool isDataTemplate = on.Type.GetClrType().Equals(context.GetAvaloniaTypes().DataTemplate);
 
                 for (int i = 0; i < on.Children.Count; ++i)
                 {
@@ -62,7 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         {
                             inferredDataContextTypeNode = ParseDataContext(context, on, obj);
                         }
-                        else if(isDataTemplate
+                        else if(context.GetAvaloniaTypes().DataTemplate.IsAssignableFrom(on.Type.GetClrType())
                             && pa.Property.Name == "DataType"
                             && pa.Values[0] is XamlTypeExtensionNode dataTypeNode)
                         {
@@ -75,15 +69,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 // do more specialized inference
                 if (directiveDataContextTypeNode is null)
                 {
-                    if (isDataTemplate && inferredDataContextTypeNode is null)
+                    if (context.GetAvaloniaTypes().IDataTemplate.IsAssignableFrom(on.Type.GetClrType())
+                        && inferredDataContextTypeNode is null)
                     {
                         // Infer data type from collection binding on a control that displays items.
                         var parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().FirstOrDefault();
-                        if (parentObject != null && context.GetAvaloniaTypes().IItemsPresenterHost.IsDirectlyAssignableFrom(parentObject.Type.GetClrType()))
+                        if (parentObject != null)
                         {
-                            inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject);
+                            var parentType = parentObject.Type.GetClrType();
+
+                            if (context.GetAvaloniaTypes().IItemsPresenterHost.IsDirectlyAssignableFrom(parentType)
+                                || context.GetAvaloniaTypes().ItemsRepeater.IsDirectlyAssignableFrom(parentType))
+                            {
+                                inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject);
+                            }
                         }
-                        else
+
+                        if (inferredDataContextTypeNode is null)
                         {
                             inferredDataContextTypeNode = new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
                         }
@@ -129,12 +131,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             if (itemsCollectionType != null)
             {
-                var elementType = itemsCollectionType
-                    .GetAllInterfaces()
-                    .FirstOrDefault(i =>
-                        i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableT) == true)
-                    .GenericArguments[0];
-                return new AvaloniaXamlIlDataContextTypeMetadataNode(on, elementType);
+                foreach (var i in GetAllInterfacesIncludingSelf(itemsCollectionType))
+                {
+                    if (i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableT) == true)
+                    {
+                        return new AvaloniaXamlIlDataContextTypeMetadataNode(on, i.GenericArguments[0]);
+                    }
+                }
             }
             // We can't infer the collection type and the currently calculated type is definitely wrong.
             // Notify the user that we were unable to infer the data context type if they use a compiled binding.
@@ -164,6 +167,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             return new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
+        }
+
+        private static IEnumerable<IXamlType> GetAllInterfacesIncludingSelf(IXamlType type)
+        {
+            if (type.IsInterface)
+                yield return type;
+
+            foreach (var i in type.GetAllInterfaces())
+                yield return i;
         }
     }
 

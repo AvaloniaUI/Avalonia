@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Disposables;
+using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -64,6 +65,39 @@ namespace Avalonia.Controls.UnitTests
                 Assert.False(ToolTip.GetIsOpen(target));
             }
         }
+        
+        [Fact]
+        public void Should_Close_When_Tip_Is_Opened_And_Detached_From_Visual_Tree()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Panel x:Name='PART_panel'>
+        <Decorator x:Name='PART_target' ToolTip.Tip='{Binding Tip}' ToolTip.ShowDelay='0' />
+    </Panel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                
+                window.DataContext = new ToolTipViewModel();
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                var target = window.Find<Decorator>("PART_target");
+                var panel = window.Find<Panel>("PART_panel");
+                
+                Assert.True((target as IVisual).IsAttachedToVisualTree);                               
+
+                _mouseHelper.Enter(target);
+
+                Assert.True(ToolTip.GetIsOpen(target));
+
+                panel.Children.Remove(target);
+                
+                Assert.False(ToolTip.GetIsOpen(target));
+            }
+        }
 
         [Fact]
         public void Should_Open_On_Pointer_Enter()
@@ -88,6 +122,35 @@ namespace Avalonia.Controls.UnitTests
                 _mouseHelper.Enter(target);
 
                 Assert.True(ToolTip.GetIsOpen(target));
+            }
+        }
+        
+        [Fact]
+        public void Content_Should_Update_When_Tip_Property_Changes_And_Already_Open()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                var target = new Decorator()
+                {
+                    [ToolTip.TipProperty] = "Tip",
+                    [ToolTip.ShowDelayProperty] = 0
+                };
+
+                window.Content = target;
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                _mouseHelper.Enter(target);
+
+                Assert.True(ToolTip.GetIsOpen(target));
+                Assert.Equal("Tip", target.GetValue(ToolTip.ToolTipProperty).Content);
+                
+                
+                ToolTip.SetTip(target, "Tip1");
+                Assert.Equal("Tip1", target.GetValue(ToolTip.ToolTipProperty).Content);
             }
         }
 
@@ -207,5 +270,10 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Empty(toolTip.Classes);
             }
         }
+    }
+
+    internal class ToolTipViewModel
+    {
+        public string Tip => "Tip";
     }
 }

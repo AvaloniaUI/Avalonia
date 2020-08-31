@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Primitives
 {
     public class ChromeOverlayLayer : Panel, ICustomSimpleHitTest
     {
-        public static ChromeOverlayLayer? GetOverlayLayer(IVisual visual)
+        public static Panel? GetOverlayLayer(IVisual visual)
         {
             foreach (var v in visual.GetVisualAncestors())
                 if (v is VisualLayerManager vlm)
@@ -22,6 +22,11 @@ namespace Avalonia.Controls.Primitives
             }
 
             return null;
+        }
+
+        public void Add(Control c)
+        {
+            base.Children.Add(c);
         }
 
         public bool HitTest(Point point) => Children.HitTestCustom(point);

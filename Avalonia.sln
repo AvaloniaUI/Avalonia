@@ -121,10 +121,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.NetCore", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1-27F5-4255-9AFC-04ABFD11683A}"
 	ProjectSection(SolutionItems) = preProject
+		build\AndroidWorkarounds.props = build\AndroidWorkarounds.props
 		build\Base.props = build\Base.props
 		build\Binding.props = build\Binding.props
-		build\BuildTargets.targets = build\BuildTargets.targets
+		build\CoreLibraries.props = build\CoreLibraries.props
+		build\EmbedXaml.props = build\EmbedXaml.props
 		build\HarfBuzzSharp.props = build\HarfBuzzSharp.props
+		build\iOSWorkarounds.props = build\iOSWorkarounds.props
 		build\JetBrains.Annotations.props = build\JetBrains.Annotations.props
 		build\JetBrains.dotMemoryUnit.props = build\JetBrains.dotMemoryUnit.props
 		build\Magick.NET-Q16-AnyCPU.props = build\Magick.NET-Q16-AnyCPU.props
@@ -134,17 +137,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\NetCore.props = build\NetCore.props
 		build\NetFX.props = build\NetFX.props
 		build\ReactiveUI.props = build\ReactiveUI.props
+		build\ReferenceCoreLibraries.props = build\ReferenceCoreLibraries.props
 		build\Rx.props = build\Rx.props
 		build\SampleApp.props = build\SampleApp.props
+		build\SharedVersion.props = build\SharedVersion.props
 		build\SharpDX.props = build\SharpDX.props
 		build\SkiaSharp.props = build\SkiaSharp.props
+		build\SourceLink.props = build\SourceLink.props
+		build\System.Drawing.Common.props = build\System.Drawing.Common.props
 		build\System.Memory.props = build\System.Memory.props
+		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props
 		build\XUnit.props = build\XUnit.props
+		build\ApiDiff.props = build\ApiDiff.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{4D6FAF79-58B4-482F-9122-0668C346364C}"
 	ProjectSection(SolutionItems) = preProject
 		build\UnitTests.NetCore.targets = build\UnitTests.NetCore.targets
+		build\BuildTargets.targets = build\BuildTargets.targets
+		build\LegacyProject.targets = build\LegacyProject.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}"

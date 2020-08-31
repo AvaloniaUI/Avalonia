@@ -12,91 +12,29 @@ namespace Avalonia.Controls.Chrome
     public class TitleBar : TemplatedControl
     {
         private CompositeDisposable? _disposables;
-        private readonly Window? _hostWindow;
         private CaptionButtons? _captionButtons;
 
-        public TitleBar(Window hostWindow)
+        private void UpdateSize(Window window)
         {
-            _hostWindow = hostWindow;
-        }
-
-        public TitleBar()
-        {
-
-        }
-
-        public void Attach()
-        {
-            if (_disposables == null)
-            {
-                var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
-
-                layer?.Children.Add(this);
-
-                if (_hostWindow != null)
-                {
-                    _disposables = new CompositeDisposable
-                    {
-                        _hostWindow.GetObservable(Window.WindowDecorationMarginProperty)
-                            .Subscribe(x => UpdateSize()),
-
-                        _hostWindow.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
-                            .Subscribe(x => UpdateSize()),
-
-                        _hostWindow.GetObservable(Window.OffScreenMarginProperty)
-                            .Subscribe(x => UpdateSize()),
-
-                        _hostWindow.GetObservable(Window.WindowStateProperty)
-                            .Subscribe(x =>
-                            {
-                                PseudoClasses.Set(":minimized", x == WindowState.Minimized);
-                                PseudoClasses.Set(":normal", x == WindowState.Normal);
-                                PseudoClasses.Set(":maximized", x == WindowState.Maximized);
-                                PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
-                            })
-                    };
-
-                    _captionButtons?.Attach(_hostWindow);
-                }
-
-                UpdateSize();
-            }
-        }
-
-        private void UpdateSize()
-        {
-            if (_hostWindow != null)
+            if (window != null)
             {
                 Margin = new Thickness(
-                    _hostWindow.OffScreenMargin.Left,
-                    _hostWindow.OffScreenMargin.Top,
-                    _hostWindow.OffScreenMargin.Right,
-                    _hostWindow.OffScreenMargin.Bottom);
+                    window.OffScreenMargin.Left,
+                    window.OffScreenMargin.Top,
+                    window.OffScreenMargin.Right,
+                    window.OffScreenMargin.Bottom);
 
-                if (_hostWindow.WindowState != WindowState.FullScreen)
+                if (window.WindowState != WindowState.FullScreen)
                 {
-                    Height = _hostWindow.WindowDecorationMargin.Top;
+                    Height = window.WindowDecorationMargin.Top;
 
                     if (_captionButtons != null)
                     {
                         _captionButtons.Height = Height;
                     }
                 }
-            }
-        }
 
-        public void Detach()
-        {
-            if (_disposables != null)
-            {
-                var layer = ChromeOverlayLayer.GetOverlayLayer(_hostWindow);
-
-                layer?.Children.Remove(this);
-
-                _disposables.Dispose();
-                _disposables = null;
-
-                _captionButtons?.Detach();
+                IsVisible = window.PlatformImpl.NeedsManagedDecorations;
             }
         }
 
@@ -104,14 +42,56 @@ namespace Avalonia.Controls.Chrome
         {
             base.OnApplyTemplate(e);
 
+            _captionButtons?.Detach();
+            
             _captionButtons = e.NameScope.Get<CaptionButtons>("PART_CaptionButtons");
 
-            if (_hostWindow != null)
+            if (VisualRoot is Window window)
             {
-                _captionButtons.Attach(_hostWindow);
+                _captionButtons?.Attach(window);   
+                
+                UpdateSize(window);
             }
+        }
 
-            UpdateSize();
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if (VisualRoot is Window window)
+            {
+                _disposables = new CompositeDisposable
+                {
+                    window.GetObservable(Window.WindowDecorationMarginProperty)
+                        .Subscribe(x => UpdateSize(window)),
+                    window.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
+                        .Subscribe(x => UpdateSize(window)),
+                    window.GetObservable(Window.OffScreenMarginProperty)
+                        .Subscribe(x => UpdateSize(window)),
+                    window.GetObservable(Window.ExtendClientAreaChromeHintsProperty)
+                        .Subscribe(x => UpdateSize(window)),
+                    window.GetObservable(Window.WindowStateProperty)
+                        .Subscribe(x =>
+                        {
+                            PseudoClasses.Set(":minimized", x == WindowState.Minimized);
+                            PseudoClasses.Set(":normal", x == WindowState.Normal);
+                            PseudoClasses.Set(":maximized", x == WindowState.Maximized);
+                            PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
+                        }),
+                    window.GetObservable(Window.IsExtendedIntoWindowDecorationsProperty)
+                        .Subscribe(x => UpdateSize(window))
+                };
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _disposables?.Dispose();
+            
+            _captionButtons?.Detach();
+            _captionButtons = null;
         }
     }
 }

@@ -11,8 +11,7 @@ namespace Avalonia.Base.UnitTests
                 "test", 
                 o => null, 
                 null,
-                new DirectPropertyMetadata<string>(),
-                false);
+                new DirectPropertyMetadata<string>());
 
             Assert.True(target.IsDirect);
         }
