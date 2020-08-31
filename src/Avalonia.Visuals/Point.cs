@@ -77,6 +77,17 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Checks for equality between a point and cortege off double numbers <see cref="Point"/>s.
+        /// </summary>
+        /// <param name="left">The point.</param>
+        /// <param name="right">Cortege off double numbers</param>
+        /// <returns>True if the point and cortege off double numbers are equal; otherwise false.</returns>
+        public static bool operator ==(Point left, (double x, double y) right)
+        {
+            return !((left._x.Equals(right.x)) && (left._y.Equals(right.y)));
+        }
+
+        /// <summary>
         /// Checks for inequality between two <see cref="Point"/>s.
         /// </summary>
         /// <param name="left">The first point.</param>
@@ -85,6 +96,17 @@ namespace Avalonia
         public static bool operator !=(Point left, Point right)
         {
             return !(left == right);
+        }
+
+        /// <summary>
+        /// Checks for inequality between a point and cortege off double numbers<see cref="Point"/>s.
+        /// </summary>
+        /// <param name="left">The point.</param>
+        /// <param name="right">Cortege off double numbers</param>
+        /// <returns>True if the point and cortege off double numbers are unequal; otherwise false.</returns>
+        public static bool operator !=(Point left, (double x, double y) right)
+        {
+            return !((left._x == right.x) && (left._y== right.y));
         }
 
         /// <summary>
@@ -110,6 +132,28 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Add a cortege off double numbers
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">cortege off doubles</param>
+        /// <returns>A point that is the result of the addition.</returns>
+        public static Point operator +(Point a, (double x, double y) b)
+        {
+            return new Point(a._x + b.x, a._y + b.y);
+        }
+
+        /// <summary>
+        /// Add a double number to both coordinates
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">double number</param>
+        /// <returns>A point that is the result of the addition.</returns>
+        public static Point operator +(Point a, double b)
+        {
+            return new Point(a._x + b, a._y + b);
+        }
+
+        /// <summary>
         /// Subtracts two points.
         /// </summary>
         /// <param name="a">The first point.</param>
@@ -132,6 +176,28 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Subtracts a cortege off double numbers
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">cortege off doubles</param>
+        /// <returns>A point that is the result of the subtraction.</returns>
+        public static Point operator -(Point a, (double x, double y) b)
+        {
+            return new Point(a._x - b.x, a._y - b.y);
+        }
+
+        /// <summary>
+        /// Subtracts a double number to both coordinates
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">double number</param>
+        /// <returns>A point that is the result of the subtraction.</returns>
+        public static Point operator -(Point a, double b)
+        {
+            return new Point(a._x - b, a._y - b);
+        }
+
+        /// <summary>
         /// Multiplies a point by a factor coordinate-wise
         /// </summary>
         /// <param name="p">Point to multiply</param>
@@ -148,12 +214,34 @@ namespace Avalonia
         public static Point operator *(double k, Point p) => new Point(p.X * k, p.Y * k);
 
         /// <summary>
+        /// Multiplies a cortege off double numbers
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">cortege off doubles</param>
+        /// <returns>Points having its coordinates multiplied.</returns>
+        public static Point operator *(Point a, (double x, double y) b)
+        {
+            return new Point(a._x * b.x, a._y * b.y);
+        }
+
+        /// <summary>
         /// Divides a point by a factor coordinate-wise
         /// </summary>
         /// <param name="p">Point to divide by</param>
         /// <param name="k">Factor</param>
         /// <returns>Points having its coordinates divided</returns>
         public static Point operator /(Point p, double k) => new Point(p.X / k, p.Y / k);
+
+        /// <summary>
+        /// Divides a point by a cortege off double numbers
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">cortege off doubles</param>
+        /// <returns>Points having its coordinates divided</returns>
+        public static Point operator /(Point a, (double x, double y) b)
+        {
+            return new Point(a._x / b.x, a._y / b.y);
+        }
 
         /// <summary>
         /// Applies a matrix to a point.
@@ -266,6 +354,33 @@ namespace Avalonia
         public Point WithY(double y)
         {
             return new Point(_x, y);
+        }
+
+        /// <summary>
+        /// Returns a new point with the opposite coordinates.
+        /// </summary>
+        /// <returns>The new point.</returns>
+        public Point Miror()
+        {
+            return new Point(-_x, -_y);
+        }
+
+        /// <summary>
+        /// Returns a new point with the opposite X coordinate.
+        /// </summary>
+        /// <returns>The new point.</returns>
+        public Point WithMirorX()
+        {
+            return new Point(-_x, _y);
+        }
+
+        /// <summary>
+        /// Returns a new point with the opposite Y coordinate.
+        /// </summary>
+        /// <returns>The new point.</returns>
+        public Point WithMirorY()
+        {
+            return new Point(_x, -_y);
         }
     }
 }
