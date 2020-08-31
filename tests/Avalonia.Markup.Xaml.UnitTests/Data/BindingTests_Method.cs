@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.UnitTests;
@@ -142,6 +144,41 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
+        public async void Binding_AsyncMethod_To_Command()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Button Name='button' Command='{Binding PrivateDoAsync}' CommandParameter='{Binding Parameter, Mode=OneWay}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+                var vm = new ViewModel()
+                {
+                    Parameter = null,
+                };
+
+                button.DataContext = vm;
+                window.ApplyTemplate();
+
+                Assert.NotNull(button.Command);
+                var timeOut = new Stopwatch();
+                timeOut.Start();
+                PerformClick(button);
+                await vm.TaskCompletated.Task;
+
+                
+                timeOut.Stop();
+                Threading.Dispatcher.UIThread.RunJobs();
+                Assert.Equal(button.IsEffectivelyEnabled, true);                
+                Assert.Equal(vm.CalledPrivateDo, true);
+            }
+        }
+
+        [Fact]
         public void Binding_Method_To_Command_Collected()
         {
             WeakReference<ViewModel> MakeRef()
@@ -202,6 +239,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             public string Method2(int i, int j) => Value = $"Called {i},{j}";
             public string Value { get; private set; } = "Not called";
 
+            public bool CalledPrivateDo { get; private set; }
+
             object _parameter;
             public object Parameter
             {
@@ -230,6 +269,41 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             {
                 return ReferenceEquals(null, parameter) == false;
             }
+
+
+            bool _IsBusy = false;
+            public bool IsBusy
+            {
+                get
+                {
+                    return _IsBusy;
+                }
+                private set
+                {
+                    if (_IsBusy == value)
+                    {
+                        return;
+                    }
+                    _IsBusy = value;
+                    PropertyChanged?
+                        .Invoke(this, new PropertyChangedEventArgs(nameof(IsBusy)));
+                }
+            }
+
+            public TaskCompletionSource<bool> TaskCompletated { get; set; }
+
+            async Task PrivateDoAsync(object parameter)
+            {
+                TaskCompletated = new TaskCompletionSource<bool>();
+                IsBusy = true;
+                await Task.Delay(10);                
+                CalledPrivateDo = true;
+                TaskCompletated.SetResult(true);
+                IsBusy = false;                
+            }
+
+            [Metadata.DependsOn(nameof(IsBusy))]
+            bool CanPrivateDoAsync(object parameter) => IsBusy == false;
         }
     }
 }
