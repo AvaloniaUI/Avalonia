@@ -122,6 +122,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1-27F5-4255-9AFC-04ABFD11683A}"
 	ProjectSection(SolutionItems) = preProject
 		build\AndroidWorkarounds.props = build\AndroidWorkarounds.props
+		build\ApiDiff.props = build\ApiDiff.props
 		build\Base.props = build\Base.props
 		build\Binding.props = build\Binding.props
 		build\CoreLibraries.props = build\CoreLibraries.props
@@ -148,14 +149,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\System.Memory.props = build\System.Memory.props
 		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props
 		build\XUnit.props = build\XUnit.props
-		build\ApiDiff.props = build\ApiDiff.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{4D6FAF79-58B4-482F-9122-0668C346364C}"
 	ProjectSection(SolutionItems) = preProject
-		build\UnitTests.NetCore.targets = build\UnitTests.NetCore.targets
 		build\BuildTargets.targets = build\BuildTargets.targets
 		build\LegacyProject.targets = build\LegacyProject.targets
+		build\UnitTests.NetCore.targets = build\UnitTests.NetCore.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}"
@@ -226,7 +226,6 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3e908f67-5543-4879-a1dc-08eace79b3cd}*SharedItemsImports = 5
-		src\Shared\PlatformSupport\PlatformSupport.projitems*{4488ad85-1495-4809-9aa4-ddfe0a48527e}*SharedItemsImports = 5
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{7b92af71-6287-4693-9dcb-bd5b6e927e23}*SharedItemsImports = 5
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{7d2d3083-71dd-4cc9-8907-39a0d86fb322}*SharedItemsImports = 5
 		src\Shared\PlatformSupport\PlatformSupport.projitems*{88060192-33d5-4932-b0f9-8bd2763e857d}*SharedItemsImports = 5

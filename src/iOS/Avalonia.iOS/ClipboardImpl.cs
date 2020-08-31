@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Avalonia.iOS
 {
-    public class Clipboard : IClipboard
+    public class ClipboardImpl : IClipboard
     {
         public Task<string> GetTextAsync()
         {

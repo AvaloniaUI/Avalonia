@@ -176,4 +176,5 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\build\LegacyProject.targets" />
+  <Import Project="..\..\build\SkiaSharp.props" />
 </Project>
