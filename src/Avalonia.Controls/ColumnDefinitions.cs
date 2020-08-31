@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Text;
 using Avalonia.Collections;
 
 namespace Avalonia.Controls
@@ -13,7 +14,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnDefinitions"/> class.
         /// </summary>
-        public ColumnDefinitions() : base ()
+        public ColumnDefinitions()
         {
         }
 
@@ -25,6 +26,11 @@ namespace Avalonia.Controls
             : this()
         {
             AddRange(GridLength.ParseLengths(s).Select(x => new ColumnDefinition(x)));
+        }
+
+        public override string ToString()
+        {
+            return string.Join(",", this.Select(x => x.Width));
         }
 
         /// <summary>

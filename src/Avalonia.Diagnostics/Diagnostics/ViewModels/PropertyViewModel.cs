@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
@@ -8,8 +9,8 @@ namespace Avalonia.Diagnostics.ViewModels
     internal abstract class PropertyViewModel : ViewModelBase
     {
         private const BindingFlags PublicStatic = BindingFlags.Public | BindingFlags.Static;
-        private static readonly Type[] StringParameter = new[] { typeof(string) };
-        private static readonly Type[] StringIFormatProviderParameters = new[] { typeof(string), typeof(IFormatProvider) };
+        private static readonly Type[] StringParameter = { typeof(string) };
+        private static readonly Type[] StringIFormatProviderParameters = { typeof(string), typeof(IFormatProvider) };
 
         public abstract object Key { get; }
         public abstract string Name { get; }
@@ -25,19 +26,37 @@ namespace Avalonia.Diagnostics.ViewModels
                 return "(null)";
             }
 
-            var converter = TypeDescriptor.GetConverter(value);
-            return converter?.ConvertToString(value) ?? value.ToString();
+            //Check if there's an user provided ToString(), prefer that over the TypeDescriptor conversion
+            if (value.GetType().GetMethod(nameof(ToString), System.Type.EmptyTypes)
+                .DeclaringType != typeof(object))
+            {
+                return value.ToString();
+            }
+
+            try
+            {
+                var converter = TypeDescriptor.GetConverter(value);
+
+                return converter.ConvertToString(value);
+            }
+            catch
+            {
+                return value.ToString();
+            }
         }
 
         protected static object ConvertFromString(string s, Type targetType)
         {
-            var converter = TypeDescriptor.GetConverter(targetType);
-            
-            if (converter != null && converter.CanConvertFrom(typeof(string)))
+            try
             {
-                return converter.ConvertFrom(null, CultureInfo.InvariantCulture, s);
+                var converter = TypeDescriptor.GetConverter(targetType);
+
+                if (converter.CanConvertFrom(typeof(string)))
+                {
+                    return converter.ConvertFrom(null, CultureInfo.InvariantCulture, s);
+                }
             }
-            else
+            catch
             {
                 var method = targetType.GetMethod("Parse", PublicStatic, null, StringIFormatProviderParameters, null);
 
