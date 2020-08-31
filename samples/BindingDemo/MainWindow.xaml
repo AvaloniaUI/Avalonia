@@ -119,5 +119,26 @@
         <Button Content="Command Method Do" Command="{Binding Do}" x:Name="ToDo"/>
       </StackPanel>
     </TabItem>
+    <TabItem Header="Async Command">
+      <DockPanel>
+        <DockPanel DockPanel.Dock="Top">
+          <TextBlock Text="Location:"
+                     DockPanel.Dock="Left"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"/>
+          <TextBox Text="{Binding DownloadLocation,Mode=TwoWay}"
+                   Margin="5"
+                   IsEnabled="{Binding !IsBusy, Mode=OneWay}"
+                   />
+        </DockPanel>
+        <ProgressBar Value="{Binding DownloadProgess,Mode=OneWay}" 
+                     DockPanel.Dock="Bottom"/>
+        <Button Content="Download"
+                Command="{Binding DownloadAsync,Mode=OneTime}"
+                CommandParameter="{Binding DownloadLocation,Mode=TwoWay}"
+                DockPanel.Dock="Top"/>
+        <ListBox Items="{Binding DownloadMessage,Mode=OneTime}"/>
+      </DockPanel>
+    </TabItem>
   </TabControl>
 </Window>
