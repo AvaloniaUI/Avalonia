@@ -8,7 +8,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a point.
     /// </summary>
-    public readonly struct Point : IEquatable<Point>
+    public readonly struct Point : IEquatable<Point>, IEquatable<(double x,double y)>
     {
         static Point()
         {
@@ -77,17 +77,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Checks for equality between a point and cortege off double numbers <see cref="Point"/>s.
-        /// </summary>
-        /// <param name="left">The point.</param>
-        /// <param name="right">Cortege off double numbers</param>
-        /// <returns>True if the point and cortege off double numbers are equal; otherwise false.</returns>
-        public static bool operator ==(Point left, (double x, double y) right)
-        {
-            return !((left._x.Equals(right.x)) && (left._y.Equals(right.y)));
-        }
-
-        /// <summary>
         /// Checks for inequality between two <see cref="Point"/>s.
         /// </summary>
         /// <param name="left">The first point.</param>
@@ -96,17 +85,6 @@ namespace Avalonia
         public static bool operator !=(Point left, Point right)
         {
             return !(left == right);
-        }
-
-        /// <summary>
-        /// Checks for inequality between a point and cortege off double numbers<see cref="Point"/>s.
-        /// </summary>
-        /// <param name="left">The point.</param>
-        /// <param name="right">Cortege off double numbers</param>
-        /// <returns>True if the point and cortege off double numbers are unequal; otherwise false.</returns>
-        public static bool operator !=(Point left, (double x, double y) right)
-        {
-            return !((left._x == right.x) && (left._y== right.y));
         }
 
         /// <summary>
@@ -365,6 +343,26 @@ namespace Avalonia
         {
             x = this._x;
             y = this._y;
+        }
+
+        /// <summary>
+        /// Returns a boolean indicating whether the point is equal to the other given point.
+        /// </summary>
+        /// <param name="other">The other point to test equality against.</param>
+        /// <returns>True if this point is equal to other; False otherwise.</returns>
+
+
+        /// <summary>
+        /// Returns a boolean indicating whether the point is equal to cortege off double numbers.
+        /// </summary>
+        /// <param name="other">Ñortege off double numbers</param>
+        /// <returns>
+        /// True if <paramref name="obj"/> is cortege off double numbersthat equals the current point.
+        /// </returns>
+        public bool Equals((double x, double y) other)
+        {
+            return _x == other.x &&
+               _y == other.y;
         }
 
         /// <summary>
