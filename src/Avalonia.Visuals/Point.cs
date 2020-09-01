@@ -357,30 +357,22 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Returns a new point with the opposite coordinates.
+        /// Deconstructor for decomposition Point
         /// </summary>
-        /// <returns>The new point.</returns>
-        public Point Miror()
+        /// <param name="x">The X position.</param>
+        /// <param name="y">The Y position.</param>
+        public void Deconstruct(out double x, out double y)
         {
-            return new Point(-_x, -_y);
+            x = this._x;
+            y = this._y;
         }
 
         /// <summary>
-        /// Returns a new point with the opposite X coordinate.
+        /// Gets a value indicating that Point coordinatrs is zero
         /// </summary>
-        /// <returns>The new point.</returns>
-        public Point WithMirorX()
+        public bool IsEmpty
         {
-            return new Point(-_x, _y);
-        }
-
-        /// <summary>
-        /// Returns a new point with the opposite Y coordinate.
-        /// </summary>
-        /// <returns>The new point.</returns>
-        public Point WithMirorY()
-        {
-            return new Point(_x, -_y);
+            get { return (_x == 0) && (_y == 0); }
         }
     }
 }
