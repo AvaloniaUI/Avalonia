@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Selection;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -14,23 +15,11 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             MainView = mainView;
             Nodes = nodes;
-            Selection = new SelectionModel
-            { 
-                SingleSelect = true,
-                Source = Nodes 
-            };
-
-            Selection.SelectionChanged += (s, e) =>
-            {
-                SelectedNode = (TreeNode)Selection.SelectedItem;
-            };
         }
 
         public MainViewModel MainView { get; }
 
         public TreeNode[] Nodes { get; protected set; }
-
-        public SelectionModel Selection { get; }
 
         public TreeNode SelectedNode
         {
@@ -106,8 +95,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (node != null)
             {
+                SelectedNode = node;
                 ExpandNode(node.Parent);
-                Selection.SelectedIndex = node.Index;
             }
         }
 

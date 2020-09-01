@@ -8,11 +8,17 @@ using System.Collections.Generic;
 
 #nullable enable
 
-namespace Avalonia.Controls
+namespace Avalonia.Controls.Selection
 {
     internal readonly struct IndexRange : IEquatable<IndexRange>
     {
         private static readonly IndexRange s_invalid = new IndexRange(int.MinValue, int.MinValue);
+
+        public IndexRange(int index)
+        {
+            Begin = index;
+            End = index;
+        }
 
         public IndexRange(int begin, int end)
         {
@@ -87,6 +93,43 @@ namespace Avalonia.Controls
         public static bool operator ==(IndexRange left, IndexRange right) => left.Equals(right);
         public static bool operator !=(IndexRange left, IndexRange right) => !(left == right);
 
+        public static bool Contains(IReadOnlyList<IndexRange>? ranges, int index)
+        {
+            if (ranges is null || index < 0)
+            {
+                return false;
+            }
+
+            foreach (var range in ranges)
+            {
+                if (range.Contains(index))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static int GetAt(IReadOnlyList<IndexRange> ranges, int index)
+        {
+            var currentIndex = 0;
+
+            foreach (var range in ranges)
+            {
+                var currentCount = range.Count;
+
+                if (index >= currentIndex && index < currentIndex + currentCount)
+                {
+                    return range.Begin + (index - currentIndex);
+                }
+
+                currentIndex += currentCount;
+            }
+
+            throw new IndexOutOfRangeException("The index was out of range.");
+        }
+
         public static int Add(
             IList<IndexRange> ranges,
             IndexRange range,
@@ -129,6 +172,21 @@ namespace Avalonia.Controls
             }
 
             MergeRanges(ranges);
+            return result;
+        }
+
+        public static int Add(
+            IList<IndexRange> destination,
+            IReadOnlyList<IndexRange> source,
+            IList<IndexRange>? added = null)
+        {
+            var result = 0;
+
+            foreach (var range in source)
+            {
+                result += Add(destination, range, added);
+            }
+
             return result;
         }
 
@@ -180,10 +238,15 @@ namespace Avalonia.Controls
         }
 
         public static int Remove(
-            IList<IndexRange> ranges,
+            IList<IndexRange>? ranges,
             IndexRange range,
             IList<IndexRange>? removed = null)
         {
+            if (ranges is null)
+            {
+                return 0;
+            }
+
             var result = 0;
 
             for (var i = 0; i < ranges.Count; ++i)
@@ -224,15 +287,16 @@ namespace Avalonia.Controls
             return result;
         }
 
-        public static IEnumerable<IndexRange> Subtract(
-            IndexRange lhs,
-            IEnumerable<IndexRange> rhs)
+        public static int Remove(
+            IList<IndexRange> destination,
+            IReadOnlyList<IndexRange> source,
+            IList<IndexRange>? added = null)
         {
-            var result = new List<IndexRange> { lhs };
-            
-            foreach (var range in rhs)
+            var result = 0;
+
+            foreach (var range in source)
             {
-                Remove(result, range);
+                result += Remove(destination, range, added);
             }
 
             return result;
