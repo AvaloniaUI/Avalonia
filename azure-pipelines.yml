@@ -34,7 +34,7 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
-  - task: DotNetCoreInstaller@0
+  - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.302'
     inputs:
       version: 3.1.302
@@ -105,7 +105,7 @@ jobs:
   pool:
     vmImage: 'windows-2019'
   steps:
-  - task: DotNetCoreInstaller@0
+  - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.302'
     inputs:
       version: 3.1.302
