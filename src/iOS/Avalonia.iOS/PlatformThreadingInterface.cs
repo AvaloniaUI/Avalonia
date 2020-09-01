@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using CoreFoundation;
 using Foundation;
 
 namespace Avalonia.iOS
@@ -18,32 +19,7 @@ namespace Avalonia.iOS
             //Mobile platforms are using external main loop
             throw new NotSupportedException(); 
         }
-        /*
-        class Timer : NSObject
-        {
-            private readonly Action _tick;
-            private NSTimer _timer;
-
-            public Timer(TimeSpan interval, Action tick)
-            {
-                _tick = tick;
-                _timer = new NSTimer(NSDate.Now, interval.TotalSeconds, true, OnTick);
-            }
-
-            [Export("onTick")]
-            private void OnTick(NSTimer nsTimer)
-            {
-                _tick();
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                if(disposing)
-                    _timer.Dispose();
-                base.Dispose(disposing);
-            }
-        }*/
-
+        
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             => NSTimer.CreateRepeatingScheduledTimer(interval, _ => tick());
 
@@ -55,7 +31,8 @@ namespace Avalonia.iOS
                     return;
                 _signaled = true;
             }
-            NSRunLoop.Main.BeginInvokeOnMainThread(() =>
+
+            DispatchQueue.MainQueue.DispatchAsync(() =>
             {
                 lock (this)
                     _signaled = false;
