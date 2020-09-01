@@ -264,53 +264,55 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         private static object ParseMessage(string message)
         {
             var parts = message.Split(':');
-            var key = parts[0];
-            if (key.Equals("frame-received", StringComparison.InvariantCultureIgnoreCase))
+            switch (parts[0])
             {
-                return new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) };
+                case "frame-received":
+                    {
+                        return new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) };
+                    }
+                case "pointer-released":
+                    {
+                        return new InputProtocol.PointerReleasedEventMessage
+                        {
+                            Modifiers = ParseInputModifiers(parts[1]),
+                            X = ParseDouble(parts[2]),
+                            Y = ParseDouble(parts[3]),
+                            Button = ParseMouseButton(parts[4]),
+                        };
+                    }
+                case "pointer-pressed":
+                    {
+                        return new InputProtocol.PointerPressedEventMessage
+                        {
+                            Modifiers = ParseInputModifiers(parts[1]),
+                            X = ParseDouble(parts[2]),
+                            Y = ParseDouble(parts[3]),
+                            Button = ParseMouseButton(parts[4]),
+                        };
+                    }
+                case "pointer-moved":
+                    {
+                        return new InputProtocol.PointerMovedEventMessage
+                        {
+                            Modifiers = ParseInputModifiers(parts[1]),
+                            X = ParseDouble(parts[2]),
+                            Y = ParseDouble(parts[3]),
+                        };
+                    }
+                case "scroll":
+                    {
+                        return new InputProtocol.ScrollEventMessage
+                        {
+                            Modifiers = ParseInputModifiers(parts[1]),
+                            X = ParseDouble(parts[2]),
+                            Y = ParseDouble(parts[3]),
+                            DeltaX = ParseDouble(parts[4]),
+                            DeltaY = ParseDouble(parts[5]),
+                        };
+                    }
+                default:
+                    return null;
             }
-            else if (key.Equals("pointer-released", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new InputProtocol.PointerReleasedEventMessage
-                {
-                    Modifiers = ParseInputModifiers(parts[1]),
-                    X = ParseDouble(parts[2]),
-                    Y = ParseDouble(parts[3]),
-                    Button = ParseMouseButton(parts[4]),
-                };
-            }
-            else if (key.Equals("pointer-pressed", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new InputProtocol.PointerPressedEventMessage
-                {
-                    Modifiers = ParseInputModifiers(parts[1]),
-                    X = ParseDouble(parts[2]),
-                    Y = ParseDouble(parts[3]),
-                    Button = ParseMouseButton(parts[4]),
-                };
-            }
-            else if (key.Equals("pointer-moved", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new InputProtocol.PointerMovedEventMessage
-                {
-                    Modifiers = ParseInputModifiers(parts[1]),
-                    X = ParseDouble(parts[2]),
-                    Y = ParseDouble(parts[3]),
-                };
-            }
-            else if (key.Equals("scroll", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new InputProtocol.ScrollEventMessage
-                {
-                    Modifiers = ParseInputModifiers(parts[1]),
-                    X = ParseDouble(parts[2]),
-                    Y = ParseDouble(parts[3]),
-                    DeltaX = ParseDouble(parts[4]),
-                    DeltaY = ParseDouble(parts[5]),
-                };
-            }
-            
-            return null;
         }
 
         private static InputProtocol.InputModifiers[] ParseInputModifiers(string modifiersText) =>
