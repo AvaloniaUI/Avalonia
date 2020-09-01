@@ -1,5 +1,0 @@
-<Project>
-  <PropertyGroup Condition="'$(iOSRoslynPathHackRequired)' == 'true'">
-    <CscToolPath>$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
-  </PropertyGroup>
-</Project>
