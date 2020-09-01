@@ -35,9 +35,9 @@ jobs:
     vmImage: 'macOS-10.14'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.302'
+    displayName: 'Use .NET Core SDK 3.1.401'
     inputs:
-      version: 3.1.302
+      version: 3.1.401
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -106,9 +106,9 @@ jobs:
     vmImage: 'windows-2019'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.302'
+    displayName: 'Use .NET Core SDK 3.1.401'
     inputs:
-      version: 3.1.302
+      version: 3.1.401
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
