@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Logging;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 
 #nullable enable
 
@@ -19,7 +20,7 @@ namespace Avalonia.Controls
             control = control ?? throw new ArgumentNullException(nameof(control));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            if (control.TryFindResource(key, out var value))
+            if (control.TryFindResourceWithParentCheck(key, out var value).found)
             {
                 return value;
             }
@@ -39,23 +40,7 @@ namespace Avalonia.Controls
             control = control ?? throw new ArgumentNullException(nameof(control));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            IResourceHost? current = control;
-
-            while (current != null)
-            {
-                if (current is IResourceHost host)
-                {
-                    if (host.TryGetResource(key, out value))
-                    {
-                        return true;
-                    }
-                }
-
-                current = (current as IStyledElement)?.StylingParent as IResourceHost;
-            }
-
-            value = null;
-            return false;
+            return control.TryFindResourceWithParentCheck(key, out value).found;
         }
 
         public static IObservable<object?> GetResourceObservable(
@@ -78,6 +63,33 @@ namespace Avalonia.Controls
             key = key ?? throw new ArgumentNullException(nameof(key));
 
             return new FloatingResourceObservable(resourceProvider, key, converter);
+        }
+
+        private static (bool found, bool? hostAttachedToStylingTree) TryFindResourceWithParentCheck(this IResourceHost control, object key, out object? value)
+        {
+            IResourceHost? current = control;
+            IResourceHost? last = current;
+
+            while (current != null)
+            {
+                last = current;
+
+                if (current is IResourceHost host)
+                {
+                    if (host.TryGetResource(key, out value))
+                    {
+                        // We return null because there is no enough information on current loop iteration.
+                        return (true, last is IGlobalStyles ? true : null);
+                    }
+                }
+
+                current = (current as IStyledElement)?.StylingParent as IResourceHost;
+            }
+
+            value = null;
+
+            // IGlobalStyles is styling tree root node.
+            return (false, last is IGlobalStyles);
         }
 
         private class ResourceObservable : LightweightObservableBase<object?>
@@ -105,10 +117,15 @@ namespace Avalonia.Controls
 
             protected override void Subscribed(IObserver<object?> observer, bool first)
             {
-                if (!_target.TryFindResource(_key, out var value))
+                var (found, hostAttachedToStylingTree) = _target.TryFindResourceWithParentCheck(_key, out var value);
+                if (!found)
                 {
                     value = AvaloniaProperty.UnsetValue;
-                    Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(this, "Warning: Dynamic resource '{Key}' was not found in the {Target}.", _key, _target.GetType().Name);
+
+                    if (hostAttachedToStylingTree == true)
+                    {
+                        Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(this, "Warning: Dynamic resource '{Key}' was not found in the {Target}.", _key, _target.GetType().Name);
+                    }
                 }
 
                 observer.OnNext(Convert(value));
@@ -152,10 +169,15 @@ namespace Avalonia.Controls
             {
                 if (_target.Owner is IResourceHost owner)
                 {
-                    if (!owner.TryFindResource(_key, out var value))
+                    var (found, hostAttachedToStylingTree) = owner.TryFindResourceWithParentCheck(_key, out var value);
+                    if (!found)
                     {
                         value = AvaloniaProperty.UnsetValue;
-                        Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(this, "Warning: Dynamic resource '{Key}' was not found in the {Owner}.", _key, owner.GetType().Name);
+
+                        if (hostAttachedToStylingTree == true)
+                        {
+                            Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(this, "Warning: Dynamic resource '{Key}' was not found in the {Owner}.", _key, owner.GetType().Name);
+                        }
                     }
 
                     observer.OnNext(Convert(value));
