@@ -35,9 +35,9 @@ namespace Avalonia.Media.TextFormatting
         /// Gets the state of the line when broken by line breaking process.
         /// </summary>
         /// <returns>
-        /// A <see cref="LineBreak"/> value that represents the line break.
+        /// A <see cref="TextLineBreak"/> value that represents the line break.
         /// </returns>
-        public abstract TextLineBreak LineBreak { get; }
+        public abstract TextLineBreak TextLineBreak { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the line is collapsed.
