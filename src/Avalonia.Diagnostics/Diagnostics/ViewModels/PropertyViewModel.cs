@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
@@ -26,7 +25,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 return "(null)";
             }
 
-            //Check if there's an user provided ToString(), prefer that over the TypeDescriptor conversion
+            //Check if there's an user-provided ToString(), prefer that over the TypeDescriptor conversion
             if (value.GetType().GetMethod(nameof(ToString), System.Type.EmptyTypes)
                 .DeclaringType != typeof(object))
             {
