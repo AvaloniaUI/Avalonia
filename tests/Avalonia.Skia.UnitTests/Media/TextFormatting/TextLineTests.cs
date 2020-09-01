@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -328,6 +330,30 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     Assert.Equal(expected[i], trimmedText[i]);
                 }
+            }
+        }
+
+        [Fact]
+        public void Should_Ignore_Invisible_Characters()
+        {
+            using (Start())
+            {
+                var defaultTextRunProperties =
+                    new GenericTextRunProperties(Typeface.Default);
+
+                const string text = "01234567🎉\n";
+
+                var source = new SingleBufferTextSource(text, defaultTextRunProperties);
+
+                var textParagraphProperties = new GenericTextParagraphProperties(defaultTextRunProperties);
+
+                var formatter = TextFormatter.Current;
+
+                var textLine = formatter.FormatLine(source, 0, double.PositiveInfinity, textParagraphProperties);
+
+                var nextCharacterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(8, 2));
+
+                Assert.Equal(new CharacterHit(8, 2), nextCharacterHit);
             }
         }
 
