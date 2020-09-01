@@ -264,8 +264,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         private static object ParseMessage(string message)
         {
             var parts = message.Split(':');
-            var key = parts[0].ToLowerInvariant();
-            switch (key)
+            switch (parts[0])
             {
                 case "frame-received":
                     {
