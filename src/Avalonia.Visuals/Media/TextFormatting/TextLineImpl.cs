@@ -13,7 +13,7 @@ namespace Avalonia.Media.TextFormatting
         {
             _textRuns = textRuns;
             LineMetrics = lineMetrics;
-            LineBreak = lineBreak;
+            TextLineBreak = lineBreak;
             HasCollapsed = hasCollapsed;
         }
 
@@ -27,7 +27,7 @@ namespace Avalonia.Media.TextFormatting
         public override TextLineMetrics LineMetrics { get; }
 
         /// <inheritdoc/>
-        public override TextLineBreak LineBreak { get; }
+        public override TextLineBreak TextLineBreak { get; }
 
         /// <inheritdoc/>
         public override bool HasCollapsed { get; }
@@ -122,7 +122,7 @@ namespace Avalonia.Media.TextFormatting
                     textLineMetrics = new TextLineMetrics(new Size(shapedWidth, LineMetrics.Size.Height),
                         LineMetrics.TextBaseline, textRange, false);
 
-                    return new TextLineImpl(shapedTextCharacters, textLineMetrics, LineBreak, true);
+                    return new TextLineImpl(shapedTextCharacters, textLineMetrics, TextLineBreak, true);
                 }
 
                 availableWidth -= currentRun.GlyphRun.Bounds.Width;
@@ -267,6 +267,17 @@ namespace Avalonia.Media.TextFormatting
 
                 var isAtEnd = foundCharacterHit.FirstCharacterIndex + foundCharacterHit.TrailingLength ==
                               TextRange.Length;
+
+                var characterIndex = codepointIndex - run.Text.Start;
+
+                var codepoint = Codepoint.ReadAt(run.GlyphRun.Characters, characterIndex, out _);
+
+                if (codepoint.IsBreakChar)
+                {
+                    foundCharacterHit = run.GlyphRun.FindNearestCharacterHit(codepointIndex - 1, out _);
+
+                    isAtEnd = true;
+                }
 
                 nextCharacterHit = isAtEnd || characterHit.TrailingLength != 0 ?
                     foundCharacterHit :
