@@ -119,17 +119,48 @@
         <Button Content="Command Method Do" Command="{Binding Do}" x:Name="ToDo"/>
       </StackPanel>
     </TabItem>
-    <TabItem Header="Async Command">
-      <DockPanel>
-        <DockPanel DockPanel.Dock="Top">
-          <TextBlock Text="Location:"
-                     DockPanel.Dock="Left"
+    <TabItem Header="Async Commands">
+      <DockPanel Margin="5">
+        <DockPanel.DataContext>
+          <vm:DownloadViewModel/>
+        </DockPanel.DataContext>
+        <Grid DockPanel.Dock="Top"
+              IsEnabled="{Binding !IsBusy, Mode=OneWay}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <TextBlock Text="Source:"
                      VerticalAlignment="Center"
                      HorizontalAlignment="Right"/>
-          <TextBox Text="{Binding DownloadLocation,Mode=TwoWay}"
-                   Margin="5"
+          <TextBox Text="{Binding Source,Mode=TwoWay}"
+                   Grid.Column="1"
+                   Margin="5 5 0 5"
                    IsEnabled="{Binding !IsBusy, Mode=OneWay}"
                    />
+          <TextBlock Text="Destination:"                     
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Grid.Row="1"/>
+          <DockPanel Grid.Column="1"
+                     Grid.Row="1">
+            <Button Content="..."
+                    Command="{Binding ChangeDestination,Mode=OneTime}"
+                    CommandParameter="{Binding Destination,Mode=TwoWay}"
+                    DockPanel.Dock="Right"
+                    Margin="0,5,0,5"/>
+            <TextBox Text="{Binding Destination,Mode=OneWay}"
+                     IsReadOnly="True"
+                     Margin="5"
+                   />
+          </DockPanel>
+
+        </Grid>
+        <DockPanel DockPanel.Dock="Top">
         </DockPanel>
         <ProgressBar Value="{Binding DownloadProgess,Mode=OneWay}" 
                      DockPanel.Dock="Bottom"/>

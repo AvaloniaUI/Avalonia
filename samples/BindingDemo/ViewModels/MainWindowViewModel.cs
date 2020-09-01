@@ -10,7 +10,6 @@ using Avalonia.Controls;
 using Avalonia.Metadata;
 using Avalonia.Controls.Selection;
 using System.Diagnostics;
-using System.Net.Http.Headers;
 
 namespace BindingDemo.ViewModels
 {
@@ -116,65 +115,6 @@ namespace BindingDemo.ViewModels
         bool CanDo(object parameter)
         {
             return BooleanFlag;
-        }
-
-
-        bool _isBusy;
-
-        public bool IsBusy
-        {
-            get { return _isBusy; }
-            private set { this.RaiseAndSetIfChanged(ref _isBusy, value); }
-        }
-
-        double _downloadProgess;
-
-        public double DownloadProgess
-        {
-            get { return _downloadProgess; }
-            private set { this.RaiseAndSetIfChanged(ref _downloadProgess, value); }
-        }
-
-
-        string _downloadLocation= @"https://github.com/AvaloniaUI/Avalonia.git";
-        public string DownloadLocation
-        {
-            get { return _downloadLocation; }
-            private set { this.RaiseAndSetIfChanged(ref _downloadLocation, value); }
-        }
-
-
-        [DependsOn(nameof(IsBusy))]
-        [DependsOn(nameof(DownloadLocation))]
-        bool CanDownloadAsync(object paramter)
-        {
-            return IsBusy == false
-                && string.IsNullOrWhiteSpace(DownloadLocation) == false;
-        }
-
-        ObservableCollection<string> DownloadMessage { get; } = new ObservableCollection<string>();
-
-        public async Task DownloadAsync(string parameter)
-        {
-            //object parameter = null;
-            IsBusy = true;
-            var watch = new Stopwatch();
-            DownloadMessage.Clear();
-            watch.Start();
-            DownloadProgess = 0;
-            await Task.Delay(3000);            
-            DownloadProgess = 10;
-            DownloadMessage.Insert(0, $"Donwload from {parameter} {DownloadProgess}% Elapsed {watch.ElapsedMilliseconds}ms.");
-            await Task.Delay(3000);            
-            DownloadProgess = 20;
-            DownloadMessage.Insert(0, $"Donwload from {parameter} {DownloadProgess}% Elapsed {watch.ElapsedMilliseconds}ms.");
-            await Task.Delay(3000);            
-            DownloadProgess = 30;
-            DownloadMessage.Insert(0, $"Donwload from {parameter} {DownloadProgess}% Elapsed {watch.ElapsedMilliseconds}ms.");
-            await Task.Delay(3000);            
-            DownloadProgess = 100;
-            DownloadMessage.Insert(0, $"Donwload from {parameter} {DownloadProgess}% Elapsed {watch.ElapsedMilliseconds}ms.");
-            IsBusy = false;
         }
     }
 }
