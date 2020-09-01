@@ -25,54 +25,47 @@ namespace Avalonia.Diagnostics.ViewModels
                 return "(null)";
             }
 
-            //Check if there's an user-provided ToString(), prefer that over the TypeDescriptor conversion
-            if (value.GetType().GetMethod(nameof(ToString), System.Type.EmptyTypes)
-                .DeclaringType != typeof(object))
+            var converter = TypeDescriptor.GetConverter(value);
+
+            //CollectionConverter does not deliver any important information. It just displays "(Collection)".
+            if (!converter.CanConvertTo(typeof(string)) || 
+                converter.GetType() == typeof(CollectionConverter))
             {
                 return value.ToString();
             }
 
-            try
-            {
-                var converter = TypeDescriptor.GetConverter(value);
+            return converter.ConvertToString(value);
+        }
 
-                return converter.ConvertToString(value);
-            }
-            catch
+        private static object InvokeParse(string s, Type targetType)
+        {
+            var method = targetType.GetMethod("Parse", PublicStatic, null, StringIFormatProviderParameters, null);
+
+            if (method != null)
             {
-                return value.ToString();
+                return method.Invoke(null, new object[] { s, CultureInfo.InvariantCulture });
             }
+
+            method = targetType.GetMethod("Parse", PublicStatic, null, StringParameter, null);
+
+            if (method != null)
+            {
+                return method.Invoke(null, new object[] { s });
+            }
+
+            throw new InvalidCastException("Unable to convert value.");
         }
 
         protected static object ConvertFromString(string s, Type targetType)
         {
-            try
+            var converter = TypeDescriptor.GetConverter(targetType);
+
+            if (converter.CanConvertFrom(typeof(string)))
             {
-                var converter = TypeDescriptor.GetConverter(targetType);
-
-                if (converter.CanConvertFrom(typeof(string)))
-                {
-                    return converter.ConvertFrom(null, CultureInfo.InvariantCulture, s);
-                }
-            }
-            catch
-            {
-                var method = targetType.GetMethod("Parse", PublicStatic, null, StringIFormatProviderParameters, null);
-
-                if (method != null)
-                {
-                    return method.Invoke(null, new object[] { s, CultureInfo.InvariantCulture });
-                }
-
-                method = targetType.GetMethod("Parse", PublicStatic, null, StringParameter, null);
-
-                if (method != null)
-                {
-                    return method.Invoke(null, new object[] { s });
-                }
+                return converter.ConvertFrom(null, CultureInfo.InvariantCulture, s);
             }
 
-            throw new InvalidCastException("Unable to convert value.");
+            return InvokeParse(s, targetType);
         }
     }
 }
