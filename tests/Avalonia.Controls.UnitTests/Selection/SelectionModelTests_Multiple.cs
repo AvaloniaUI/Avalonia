@@ -1230,6 +1230,38 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal(1, resetRaised);
                 Assert.Equal(1, selectedIndexRaised);
             }
+
+            [Fact]
+            public void Handles_Selection_Made_In_CollectionChanged()
+            {
+                // Tests the following scenario:
+                //
+                // - Items changes from empty to having 2 items
+                // - ViewModel auto-selects range 0..1 in CollectionChanged
+                // - SelectionModel receives CollectionChanged
+                // - And so adjusts the selected item from 0..1 to 2..4, which is past the end of
+                //   the items.
+                //
+                // There's not much we can do about this situation because the order in which
+                // CollectionChanged handlers are called can't be known (the problem also exists with
+                // WPF). The best we can do is not select an invalid index.
+                var target = CreateTarget(createData: false);
+                var data = new AvaloniaList<string>();
+
+                data.CollectionChanged += (s, e) =>
+                {
+                    target.SelectRange(0, 1);
+                };
+
+                target.Source = data;
+                data.AddRange(new[] { "foo", "bar" });
+
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(new[] { 0, 1 }, target.SelectedIndexes);
+                Assert.Equal("foo", target.SelectedItem);
+                Assert.Equal(new[] { "foo", "bar" }, target.SelectedItems);
+                Assert.Equal(0, target.AnchorIndex);
+            }
         }
 
         public class BatchUpdate
