@@ -22,6 +22,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
     {
         protected bool UsePopupHost;
         
+
+        [Fact]
+        public void Popup_Without_TopLevel_Shouldnt_Call_Open()
+        {
+            int openedEvent = 0;
+            var target = new Popup();
+            target.Opened += (s, a) => openedEvent++;
+            target.IsOpen = true;
+
+            Assert.Equal(0, openedEvent);
+        }
+
+        [Fact]
+        public void Opening_Popup_Shouldnt_Throw_When_Not_In_Visual_Tree()
+        {
+            var target = new Popup();
+            target.IsOpen = true;
+        }
+
+        [Fact]
+        public void Opening_Popup_Shouldnt_Throw_When_In_Tree_Without_TopLevel()
+        {
+            Control c = new Control();
+            var target = new Popup();
+            ((ISetLogicalParent)target).SetParent(c);
+            target.IsOpen = true;
+        }
+
         [Fact]
         public void Setting_Child_Should_Set_Child_Controls_LogicalParent()
         {
