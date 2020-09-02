@@ -1,13 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
+using Avalonia.Platform;
+
+#nullable enable
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class PerformanceViewModel : ViewModelBase
     {
+        private readonly IGraphicsMemoryDiagnostics? _gpu;
         private long _totalMemory;
         private long _managedMemory;
-        
+        private long? _gpuMemory;
+
+        public PerformanceViewModel(IGraphicsMemoryDiagnostics? gpu)
+        {
+            _gpu = gpu;
+        }
+
         public string TotalMemory
         {
             get => PrettyPrint(_totalMemory, 1);
@@ -18,6 +28,11 @@ namespace Avalonia.Diagnostics.ViewModels
             get => PrettyPrint(_managedMemory, 1);
         }
 
+        public string GraphicsMemory
+        {
+            get => _gpuMemory is object ? PrettyPrint(_gpuMemory.Value, 1) : "N/A";
+        }
+
         public void Update()
         {
             using (var p = Process.GetCurrentProcess())
@@ -25,10 +40,12 @@ namespace Avalonia.Diagnostics.ViewModels
                 p.Refresh();
                 _totalMemory = p.PrivateMemorySize64;
                 _managedMemory = GC.GetTotalMemory(true);
+                _gpuMemory = (long?)_gpu?.GetResourceUsage();
             }
 
             RaisePropertyChanged(nameof(TotalMemory));
             RaisePropertyChanged(nameof(ManagedMemory));
+            RaisePropertyChanged(nameof(GraphicsMemory));
         }
 
         public static string PrettyPrint(long value, int decimalPlaces = 0)

@@ -31,8 +31,12 @@ namespace Avalonia.Skia
             }
 
             var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
-            if (gl != null) 
-                _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
+            if (gl != null)
+            {
+                var gpu = new GlSkiaGpu(gl, maxResourceBytes);
+                _skiaGpu = gpu;
+                AvaloniaLocator.CurrentMutable.BindToSelf<IGraphicsMemoryDiagnostics>(gpu);
+            }
         }
 
         /// <inheritdoc />

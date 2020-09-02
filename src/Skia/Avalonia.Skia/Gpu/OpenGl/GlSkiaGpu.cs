@@ -1,11 +1,13 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    class GlSkiaGpu : IOpenGlAwareSkiaGpu
+    class GlSkiaGpu : IOpenGlAwareSkiaGpu, IGraphicsMemoryDiagnostics
     {
         private GRContext _grContext;
 
@@ -41,5 +43,26 @@ namespace Avalonia.Skia
         }
 
         public IOpenGlTextureBitmapImpl CreateOpenGlTextureBitmap() => new OpenGlTextureBitmapImpl();
+
+        ulong IGraphicsMemoryDiagnostics.GetResourceUsage()
+        {
+            var trace = new TraceDump();
+            _grContext.DumpMemoryStatistics(trace);
+            return trace.TotalBytes;
+        }
+
+        class TraceDump : SKTraceMemoryDump
+        {
+            public TraceDump() : base(true, true) { }
+            public ulong TotalBytes { get; private set; }
+            protected override void OnDumpNumericValue(string dumpName, string valueName, string units, ulong value)
+            {
+                if (valueName == "size")
+                {
+                    if (units != "bytes") throw new NotSupportedException();
+                    TotalBytes += value;
+                }
+            }
+        }
     }
 }

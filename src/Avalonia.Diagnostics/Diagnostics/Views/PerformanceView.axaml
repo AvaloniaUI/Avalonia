@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Avalonia.Diagnostics.Views.PerformanceView">
-    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto">
         <Grid.Styles>
             <Style Selector="TextBlock">
                 <Setter Property="Margin" Value="4"/>
@@ -14,5 +14,7 @@
         <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding TotalMemory}"/>
         <TextBlock Grid.Column="0" Grid.Row="1">Managed memory</TextBlock>
         <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding ManagedMemory}"/>
+        <TextBlock Grid.Column="0" Grid.Row="2">Graphics memory</TextBlock>
+        <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding GraphicsMemory}"/>
     </Grid>
 </UserControl>

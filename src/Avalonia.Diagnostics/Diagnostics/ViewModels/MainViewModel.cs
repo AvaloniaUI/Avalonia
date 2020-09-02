@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -27,7 +28,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
             _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root));
             _events = new EventsPageViewModel(root);
-            _perf = new PerformanceViewModel();
+            _perf = new PerformanceViewModel(AvaloniaLocator.Current.GetService<IGraphicsMemoryDiagnostics>());
 
             UpdateFocusedControl();
             KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
