@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Disposables;
+using System.Text;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -8,6 +9,48 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
+    class AvaloniaSkiaTraceDump : SKTraceMemoryDump
+    {
+        private bool _outputToConsole;
+
+        public AvaloniaSkiaTraceDump(bool outputToConsole) : base(true, true)
+        {
+            _outputToConsole = outputToConsole;
+        }
+
+        public ulong TotalBytes { get; private set; }
+
+        protected override void OnDumpNumericValue(string dumpName, string valueName, string units, ulong value)
+        {
+            base.OnDumpNumericValue(dumpName, valueName, units, value);
+
+            if (_outputToConsole)
+            {
+                Console.WriteLine($"{dumpName}: {valueName} - {value} ({units})");
+            }
+
+            if (valueName == "size")
+            {
+                if (units != "bytes")
+                {
+                    throw new NotSupportedException();
+                }
+
+                TotalBytes += value;
+            }
+        }
+
+        protected override void OnDumpStringValue(string dumpName, string valueName, string value)
+        {
+            base.OnDumpStringValue(dumpName, valueName, value);
+
+            if (_outputToConsole)
+            {
+                Console.WriteLine($"{dumpName}: {valueName} - {value}");
+            }
+        }
+    }
+
     internal class GlRenderTarget : ISkiaGpuRenderTarget
     {
         private readonly GRContext _grContext;
@@ -42,6 +85,7 @@ namespace Avalonia.Skia
                 IGlPlatformSurfaceRenderingSession glSession)
             {
                 GrContext = grContext;
+                //GrContext.PurgeResources();
                 _backendRenderTarget = backendRenderTarget;
                 _surface = surface;
                 _glSession = glSession;
@@ -52,6 +96,10 @@ namespace Avalonia.Skia
                 _surface.Dispose();
                 _backendRenderTarget.Dispose();
                 GrContext.Flush();
+                //GrContext.PurgeResources();
+                var dump = new AvaloniaSkiaTraceDump(false);
+                GrContext.DumpMemoryStatistics(dump);
+                Console.WriteLine("Total bytes: " + dump.TotalBytes);
                 _glSession.Dispose();
             }
 
