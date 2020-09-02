@@ -35,7 +35,6 @@ namespace Avalonia.Skia
                 IGlPlatformSurfaceRenderingSession glSession)
             {
                 GrContext = grContext;
-                GrContext.PurgeResources();
                 _backendRenderTarget = backendRenderTarget;
                 _surface = surface;
                 _glSession = glSession;
@@ -46,7 +45,6 @@ namespace Avalonia.Skia
                 _surface.Dispose();
                 _backendRenderTarget.Dispose();
                 GrContext.Flush();
-                GrContext.PurgeResources();
                 _glSession.Dispose();
             }
 
