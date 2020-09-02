@@ -78,7 +78,7 @@ namespace Avalonia.Controls
                 {
                     if (host.TryGetResource(key, out value))
                     {
-                        // We return null because there is no enough information on current loop iteration.
+                        // We return null because there is no enough information on the current loop iteration.
                         return (true, last is IGlobalStyles ? true : (bool?)null);
                     }
                 }
@@ -88,7 +88,7 @@ namespace Avalonia.Controls
 
             value = null;
 
-            // IGlobalStyles is styling tree root node.
+            // IGlobalStyles is root node of the styling tree.
             return (false, last is IGlobalStyles);
         }
 
@@ -214,7 +214,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    PublishNext(Convert(null));
+                    PublishNext(Convert(AvaloniaProperty.UnsetValue));
                 }
             }
 
