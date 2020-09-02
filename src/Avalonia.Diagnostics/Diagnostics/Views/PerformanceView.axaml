@@ -1,0 +1,18 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Avalonia.Diagnostics.Views.PerformanceView">
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
+        <Grid.Styles>
+            <Style Selector="TextBlock">
+                <Setter Property="Margin" Value="4"/>
+            </Style>
+        </Grid.Styles>
+        <TextBlock Grid.Column="0" Grid.Row="0">Total memory</TextBlock>
+        <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding TotalMemory}"/>
+        <TextBlock Grid.Column="0" Grid.Row="1">Managed memory</TextBlock>
+        <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding ManagedMemory}"/>
+    </Grid>
+</UserControl>

@@ -31,6 +31,7 @@
       <TabStripItem Content="Logical Tree"/>
       <TabStripItem Content="Visual Tree"/>
       <TabStripItem Content="Events"/>
+      <TabStripItem Content="Performance"/>
     </TabStrip>
 
     <ContentControl Grid.Row="2"
