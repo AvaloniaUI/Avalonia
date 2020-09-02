@@ -110,10 +110,10 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Add a cortege off double numbers
+        /// Add a 2-tuple of double
         /// </summary>
         /// <param name="a">The point.</param>
-        /// <param name="b">cortege off doubles</param>
+        /// <param name="b">2-tuple of double</param>
         /// <returns>A point that is the result of the addition.</returns>
         public static Point operator +(Point a, (double x, double y) b)
         {
@@ -154,10 +154,10 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Subtracts a cortege off double numbers
+        /// Subtracts a 2-tuple of double
         /// </summary>
         /// <param name="a">The point.</param>
-        /// <param name="b">cortege off doubles</param>
+        /// <param name="b">2-tuple of double</param>
         /// <returns>A point that is the result of the subtraction.</returns>
         public static Point operator -(Point a, (double x, double y) b)
         {
@@ -192,10 +192,10 @@ namespace Avalonia
         public static Point operator *(double k, Point p) => new Point(p.X * k, p.Y * k);
 
         /// <summary>
-        /// Multiplies a cortege off double numbers
+        /// Multiplies a 2-tuple of double
         /// </summary>
         /// <param name="a">The point.</param>
-        /// <param name="b">cortege off doubles</param>
+        /// <param name="b">2-tuple of double</param>
         /// <returns>Points having its coordinates multiplied.</returns>
         public static Point operator *(Point a, (double x, double y) b)
         {
@@ -211,10 +211,10 @@ namespace Avalonia
         public static Point operator /(Point p, double k) => new Point(p.X / k, p.Y / k);
 
         /// <summary>
-        /// Divides a point by a cortege off double numbers
+        /// Divides a point by a 2-tuple of doubles
         /// </summary>
         /// <param name="a">The point.</param>
-        /// <param name="b">cortege off doubles</param>
+        /// <param name="b">2-tuple of double</param>
         /// <returns>Points having its coordinates divided</returns>
         public static Point operator /(Point a, (double x, double y) b)
         {
@@ -346,11 +346,11 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Returns a boolean indicating whether the point is equal to cortege off double numbers.
+        /// Returns a boolean indicating whether the point coordinates are equal to 2-tuple of double
         /// </summary>
-        /// <param name="other">Ñortege off double numbers</param>
+        /// <param name="other">2-tuple of double</param>
         /// <returns>
-        /// True if <paramref name="other"/> is cortege off double numbersthat equals the current point.
+        /// True if <paramref name="other"/> is 2-tuple of double equals coordinates current point.
         /// </returns>
         public bool Equals((double x, double y) other)
         {
@@ -359,7 +359,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a value indicating that Point coordinatrs is zero
+        /// Gets a value indicating that point coordinates are zero
         /// </summary>
         public bool IsDefault
         {
