@@ -346,18 +346,11 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Returns a boolean indicating whether the point is equal to the other given point.
-        /// </summary>
-        /// <param name="other">The other point to test equality against.</param>
-        /// <returns>True if this point is equal to other; False otherwise.</returns>
-
-
-        /// <summary>
         /// Returns a boolean indicating whether the point is equal to cortege off double numbers.
         /// </summary>
         /// <param name="other">Ñortege off double numbers</param>
         /// <returns>
-        /// True if <paramref name="obj"/> is cortege off double numbersthat equals the current point.
+        /// True if <paramref name="other"/> is cortege off double numbersthat equals the current point.
         /// </returns>
         public bool Equals((double x, double y) other)
         {
@@ -368,7 +361,7 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating that Point coordinatrs is zero
         /// </summary>
-        public bool IsEmpty
+        public bool IsDefault
         {
             get { return (_x == 0) && (_y == 0); }
         }
