@@ -79,7 +79,7 @@ namespace Avalonia.Controls
                     if (host.TryGetResource(key, out value))
                     {
                         // We return null because there is no enough information on current loop iteration.
-                        return (true, last is IGlobalStyles ? true : null);
+                        return (true, last is IGlobalStyles ? true : (bool?)null);
                     }
                 }
 
@@ -133,7 +133,18 @@ namespace Avalonia.Controls
 
             private void ResourcesChanged(object sender, ResourcesChangedEventArgs e)
             {
-                PublishNext(Convert(_target.FindResource(_key)));
+                var (found, hostAttachedToStylingTree) = _target.TryFindResourceWithParentCheck(_key, out var value);
+                if (!found)
+                {
+                    value = AvaloniaProperty.UnsetValue;
+
+                    if (hostAttachedToStylingTree == true)
+                    {
+                        Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(this, "Warning: Dynamic resource '{Key}' was not found in the {Target}.", _key, _target.GetType().Name);
+                    }
+                }
+
+                PublishNext(Convert(value));
             }
 
             private object? Convert(object? value) => _converter?.Invoke(value) ?? value;
@@ -186,7 +197,25 @@ namespace Avalonia.Controls
 
             private void PublishNext()
             {
-                PublishNext(Convert(_target.Owner?.FindResource(_key)));
+                if (_target.Owner is IResourceHost owner)
+                {
+                    var (found, hostAttachedToStylingTree) = owner.TryFindResourceWithParentCheck(_key, out var value);
+                    if (!found)
+                    {
+                        value = AvaloniaProperty.UnsetValue;
+
+                        if (hostAttachedToStylingTree == true)
+                        {
+                            Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(this, "Warning: Dynamic resource '{Key}' was not found in the {Owner}.", _key, owner.GetType().Name);
+                        }
+                    }
+
+                    PublishNext(Convert(value));
+                }
+                else
+                {
+                    PublishNext(Convert(null));
+                }
             }
 
             private void OwnerChanged(object sender, EventArgs e)

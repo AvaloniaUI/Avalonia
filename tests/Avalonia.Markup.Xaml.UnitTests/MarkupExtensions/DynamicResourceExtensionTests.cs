@@ -800,7 +800,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var expectedMessageTemplate = "Warning: Dynamic resource '{Key}' was not found in the {Target}.";
             var expectedResourceKey = "brush";
 
-            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            void checkLogMessage(LogEventLevel level, string area, object src, string mt, object[] pv)
             {
                 if (level == LogEventLevel.Warning &&
                     area == LogArea.Binding &&
@@ -809,11 +809,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 {
                     called = true;
                 }
-            };
+            }
 
+            using (UnitTestApplication.Start(TestServices.RealStyler))
             using (var testLogSink = TestLogSink.Start(checkLogMessage))
             {
-
                 var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
@@ -822,6 +822,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = userControl.FindControl<Border>("border");
+
+                // Control isn't attached to the visual tree yet.
+                Assert.Null(border.Background);
+                Assert.False(called);
+
+                var root = new TestRoot(true, userControl);
+
                 Assert.Null(border.Background);
                 Assert.True(called);
             }
