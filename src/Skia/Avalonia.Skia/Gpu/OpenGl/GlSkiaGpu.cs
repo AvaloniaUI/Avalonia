@@ -48,9 +48,9 @@ namespace Avalonia.Skia
                         _glContext.GlInterface.BindTexture(GlConsts.GL_TEXTURE_2D, *p);
 
                         int param = 0;
-                        var pParam = new IntPtr(&param);
-                        _glContext.GlInterface.GetTextureLevelParameteriv(*p, 0,
-                            GlConsts.GL_TEXTURE_WIDTH, pParam);
+                        //var pParam = new IntPtr(&param);
+                        //_glContext.GlInterface.GetTextureLevelParameteriv(*p, 0,
+                        //    GlConsts.GL_TEXTURE_WIDTH, pParam);
                     }
 
                     p++;

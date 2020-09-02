@@ -158,9 +158,9 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glTexParameteri")]
         public GlTexParameteri TexParameteri { get; }
 
-        public delegate void GlGetTextLevelParameteriv(int texture, int level, int name, IntPtr parameters);
-        [GlEntryPoint("glGetTextureLevelParameteriv")]
-        public GlGetTextLevelParameteriv GetTextureLevelParameteriv { get; }
+        //public delegate void GlGetTextLevelParameteriv(int texture, int level, int name, IntPtr parameters);
+        //[GlEntryPoint("glGetTextureLevelParameteriv")]
+        //public GlGetTextLevelParameteriv GetTextureLevelParameteriv { get; }
 
         public delegate void GlFramebufferTexture2D(int target, int attachment,
             int texTarget, int texture, int level);
