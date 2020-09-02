@@ -1335,6 +1335,47 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.False(model.SingleSelect);
         }
 
+        [Fact]
+        public void Does_The_Best_It_Can_With_AutoSelecting_ViewModel()
+        {
+            // Tests the following scenario:
+            //
+            // - Items changes from empty to having 1 item
+            // - ViewModel auto-selects item 0 in CollectionChanged
+            // - SelectionModel receives CollectionChanged
+            // - And so adjusts the selected item from 0 to 1, which is past the end of the items.
+            //
+            // There's not much we can do about this situation because the order in which
+            // CollectionChanged handlers are called can't be known (the problem also exists with
+            // WPF). The best we can do is not select an invalid index.
+            var vm = new SelectionViewModel();
+
+            vm.Items.CollectionChanged += (s, e) =>
+            {
+                if (vm.SelectedIndex == -1 && vm.Items.Count > 0)
+                {
+                    vm.SelectedIndex = 0;
+                }
+            };
+
+            var target = new ListBox
+            {
+                [!ListBox.ItemsProperty] = new Binding("Items"),
+                [!ListBox.SelectedIndexProperty] = new Binding("SelectedIndex"),
+                DataContext = vm,
+            };
+
+            Prepare(target);
+
+            vm.Items.Add("foo");
+            vm.Items.Add("bar");
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(new[] { 0 }, target.Selection.SelectedIndexes);
+            Assert.Equal("foo", target.SelectedItem);
+            Assert.Equal(new[] { "foo" }, target.SelectedItems);
+        }
+
         private static void Prepare(SelectingItemsControl target)
         {
             var root = new TestRoot
@@ -1395,6 +1436,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public IList<Item> Items { get; set; }
             public Item SelectedItem { get; set; }
             public int SelectedIndex { get; set; }
+        }
+
+        private class SelectionViewModel : NotifyingBase
+        {
+            private int _selectedIndex = -1;
+
+            public SelectionViewModel()
+            {
+                Items = new ObservableCollection<string>();
+            }
+
+            public int SelectedIndex
+            {
+                get => _selectedIndex;
+                set
+                {
+                    _selectedIndex = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public ObservableCollection<string> Items { get; }
         }
 
         private class RootWithItems : TestRoot

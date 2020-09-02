@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Controls.Utils;
 
 #nullable enable
@@ -234,6 +235,11 @@ namespace Avalonia.Controls.Selection
             var shiftIndex = -1;
             List<T>? removed = null;
 
+            if (!IsValidCollectionChange(e))
+            {
+                return;
+            }
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -274,6 +280,34 @@ namespace Avalonia.Controls.Selection
             {
                 OnSelectionChanged(removed);
             }
+        }
+
+        private protected virtual bool IsValidCollectionChange(NotifyCollectionChangedEventArgs e)
+        {
+            // If the selection is modified in a CollectionChanged handler before the selection
+            // model's CollectionChanged handler has had chance to run then we can end up with
+            // a selected index that refers to the *new* state of the Source intermixed with
+            // indexes that reference an old state of the source.
+            //
+            // There's not much we can do in this situation, so detect whether shifting the
+            // current selected indexes would result in an invalid index in the source, and if
+            // so bail.
+            //
+            // See unit test Handles_Selection_Made_In_CollectionChanged for more details.
+            if (ItemsView is object &&
+                RangesEnabled &&
+                Ranges.Count > 0 &&
+                e.Action == NotifyCollectionChangedAction.Add)
+            {
+                var lastIndex = Ranges.Last().End;
+
+                if (e.NewStartingIndex <= lastIndex)
+                {
+                    return lastIndex + e.NewItems.Count < ItemsView.Count;
+                }
+            }
+
+            return true;
         }
 
         private protected struct CollectionChangeState
