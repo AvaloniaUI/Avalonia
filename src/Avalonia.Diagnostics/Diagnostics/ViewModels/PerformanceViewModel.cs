@@ -33,6 +33,11 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _gpuMemory is object ? PrettyPrint(_gpuMemory.Value, 1) : "N/A";
         }
 
+        public string DarkMatter
+        {
+            get => PrettyPrint(_totalMemory - _managedMemory - (_gpuMemory ?? 0));
+        }
+
         public void Update()
         {
             using (var p = Process.GetCurrentProcess())
@@ -46,6 +51,7 @@ namespace Avalonia.Diagnostics.ViewModels
             RaisePropertyChanged(nameof(TotalMemory));
             RaisePropertyChanged(nameof(ManagedMemory));
             RaisePropertyChanged(nameof(GraphicsMemory));
+            RaisePropertyChanged(nameof(DarkMatter));
         }
 
         public static string PrettyPrint(long value, int decimalPlaces = 0)
