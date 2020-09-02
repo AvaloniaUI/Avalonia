@@ -1209,6 +1209,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _queuedDisplayFromThread;
     NSTrackingArea* _area;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed, _isMouseOver;
+    AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
     AvnPixelSize _lastPixelSize;
@@ -1251,6 +1252,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _lastPixelSize.Height = 100;
     _lastPixelSize.Width = 100;
     [self registerForDraggedTypes: @[@"public.data", GetAvnCustomDataType()]];
+    
+    _modifierState = AvnInputModifiersNone;
     return self;
 }
 
@@ -1592,6 +1595,63 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _lastKeyHandled = false;
     
     return result;
+}
+
+- (void)flagsChanged:(NSEvent *)event
+{
+    auto newModifierState = [self getModifiers:[event modifierFlags]];
+    
+    bool isAltCurrentlyPressed = (_modifierState & Alt) == Alt;
+    bool isControlCurrentlyPressed = (_modifierState & Control) == Control;
+    bool isShiftCurrentlyPressed = (_modifierState & Shift) == Shift;
+    bool isCommandCurrentlyPressed = (_modifierState & Windows) == Windows;
+    
+    bool isAltPressed = (newModifierState & Alt) == Alt;
+    bool isControlPressed = (newModifierState & Control) == Control;
+    bool isShiftPressed = (newModifierState & Shift) == Shift;
+    bool isCommandPressed = (newModifierState & Windows) == Windows;
+    
+    
+    if (isAltPressed && !isAltCurrentlyPressed)
+    {
+        [self keyboardEvent:event withType:KeyDown];
+    }
+    else if (isAltCurrentlyPressed && !isAltPressed)
+    {
+        [self keyboardEvent:event withType:KeyUp];
+    }
+    
+    if (isControlPressed && !isControlCurrentlyPressed)
+    {
+        [self keyboardEvent:event withType:KeyDown];
+    }
+    else if (isControlCurrentlyPressed && !isControlPressed)
+    {
+        [self keyboardEvent:event withType:KeyUp];
+    }
+    
+    if (isShiftPressed && !isShiftCurrentlyPressed)
+    {
+        [self keyboardEvent:event withType:KeyDown];
+    }
+    else if(isShiftCurrentlyPressed && !isShiftPressed)
+    {
+        [self keyboardEvent:event withType:KeyUp];
+    }
+    
+    if(isCommandPressed && !isCommandCurrentlyPressed)
+    {
+        [self keyboardEvent:event withType:KeyDown];
+    }
+    else if(isCommandCurrentlyPressed && ! isCommandPressed)
+    {
+        [self keyboardEvent:event withType:KeyUp];
+    }
+    
+    _modifierState = newModifierState;
+    
+    [[self inputContext] handleEvent:event];
+    [super flagsChanged:event];
 }
 
 - (void)keyDown:(NSEvent *)event
