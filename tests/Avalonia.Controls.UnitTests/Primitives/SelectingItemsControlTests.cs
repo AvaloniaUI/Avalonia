@@ -7,6 +7,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -19,7 +20,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class SelectingItemsControlTests
+    public partial class SelectingItemsControlTests
     {
         private MouseTestHelper _helper = new MouseTestHelper();
 
@@ -56,7 +57,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
+            Prepare(target);
 
             Assert.False(items[0].IsSelected);
             Assert.False(items[1].IsSelected);
@@ -77,8 +78,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
+
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -101,8 +102,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.SelectedItem = items[1];
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             Assert.False(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
@@ -159,6 +159,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Template = Template();
             target.EndInit();
 
+            Prepare(target);
+
             Assert.Equal(0, target.SelectedIndex);
         }
 
@@ -181,11 +183,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             listBox.EndInit();
 
+            Prepare(listBox);
+
             Assert.Equal("B", listBox.SelectedItem);
         }
 
         [Fact]
-        public void Setting_SelectedIndex_Before_Initialize_Should_Retain()
+        public void Setting_SelectedIndex_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -223,7 +227,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedItem_Before_Initialize_Should_Retain()
+        public void Setting_SelectedItem_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -242,7 +246,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
 
         [Fact]
-        public void Setting_SelectedItems_Before_Initialize_Should_Retain()
+        public void Setting_SelectedItems_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -290,7 +294,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedIndex_Before_Initialize_With_AlwaysSelected_Should_Retain()
+        public void Setting_SelectedIndex_Before_Initialize_With_AlwaysSelected_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -324,8 +328,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.SelectedIndex = 1;
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             Assert.False(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
@@ -480,8 +483,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             items.Add(new Item { IsSelected = true });
 
             Assert.Equal(2, target.SelectedIndex);
@@ -530,8 +532,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             target.SelectedIndex = 1;
 
             Assert.Equal(items[1], target.SelectedItem);
@@ -568,8 +569,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Template = Template();
             target.EndInit();
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             target.SelectedIndex = 0;
 
             Assert.Equal(items[0], target.SelectedItem);
@@ -635,8 +635,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -666,8 +665,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -757,8 +755,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             var called = false;
 
@@ -785,6 +782,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Items = items;
             ((ISupportInitialize)target).EndInit();
 
+            Prepare(target);
+
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
         }
@@ -799,6 +798,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItem = "Bar";
             target.Items = items;
             ((ISupportInitialize)target).EndInit();
+
+            Prepare(target);
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
@@ -897,8 +898,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
 
             var panel = target.Presenter.Panel;
@@ -919,8 +919,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = items,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             _helper.Down(target.Presenter.Panel.Children[1]);
 
@@ -1014,8 +1013,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
             Assert.Equal(3, target.SelectedIndex);
@@ -1030,8 +1028,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
             Assert.Equal(new[] { ":pressed", ":selected" }, target.Presenter.Panel.Children[3].Classes);
@@ -1054,8 +1051,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             items.Insert(0, "Qux");
 
@@ -1080,13 +1076,71 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             items.RemoveAt(0);
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
+        }
+
+        [Fact]
+        public void Binding_SelectedIndex_Selects_Correct_Item()
+        {
+            // Issue #4496 (part 2)
+            var items = new ObservableCollection<string>();
+
+            var other = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                [!ListBox.SelectedIndexProperty] = other[!ListBox.SelectedIndexProperty],
+            };
+
+            Prepare(other);
+            Prepare(target);
+
+            items.Add("Foo");
+
+            Assert.Equal(0, other.SelectedIndex);
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Binding_SelectedItem_Selects_Correct_Item()
+        {
+            // Issue #4496 (part 2)
+            var items = new ObservableCollection<string>();
+
+            var other = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                [!ListBox.SelectedItemProperty] = other[!ListBox.SelectedItemProperty],
+            };
+
+            Prepare(target);
+            other.ApplyTemplate();
+            other.Presenter.ApplyTemplate();
+
+            items.Add("Foo");
+
+            Assert.Equal(0, other.SelectedIndex);
+            Assert.Equal(0, target.SelectedIndex);
         }
 
         [Fact]
@@ -1106,8 +1160,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             items[1] = "Qux";
 
@@ -1131,8 +1184,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = items,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             var raised = false;
             target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
@@ -1194,6 +1246,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems = selectedItems;
             target.SelectedItem = "Bar";
             target.EndInit();
+
+            Prepare(target);
 
             Assert.Equal("Bar", target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
@@ -1261,16 +1315,90 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Items = items;
 
-            target.ApplyTemplate();
-
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             Assert.Equal(second, target.SelectedItem);
 
             Assert.Equal(1, target.SelectedIndex);
         }
 
-        private FuncControlTemplate Template()
+        [Fact]
+        public void Setting_SelectionMode_Should_Update_SelectionModel()
+        {
+            var target = new TestSelector();
+            var model = target.Selection;
+
+            Assert.True(model.SingleSelect);
+
+            target.SelectionMode = SelectionMode.Multiple;
+
+            Assert.False(model.SingleSelect);
+        }
+
+        [Fact]
+        public void Does_The_Best_It_Can_With_AutoSelecting_ViewModel()
+        {
+            // Tests the following scenario:
+            //
+            // - Items changes from empty to having 1 item
+            // - ViewModel auto-selects item 0 in CollectionChanged
+            // - SelectionModel receives CollectionChanged
+            // - And so adjusts the selected item from 0 to 1, which is past the end of the items.
+            //
+            // There's not much we can do about this situation because the order in which
+            // CollectionChanged handlers are called can't be known (the problem also exists with
+            // WPF). The best we can do is not select an invalid index.
+            var vm = new SelectionViewModel();
+
+            vm.Items.CollectionChanged += (s, e) =>
+            {
+                if (vm.SelectedIndex == -1 && vm.Items.Count > 0)
+                {
+                    vm.SelectedIndex = 0;
+                }
+            };
+
+            var target = new ListBox
+            {
+                [!ListBox.ItemsProperty] = new Binding("Items"),
+                [!ListBox.SelectedIndexProperty] = new Binding("SelectedIndex"),
+                DataContext = vm,
+            };
+
+            Prepare(target);
+
+            vm.Items.Add("foo");
+            vm.Items.Add("bar");
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(new[] { 0 }, target.Selection.SelectedIndexes);
+            Assert.Equal("foo", target.SelectedItem);
+            Assert.Equal(new[] { "foo" }, target.SelectedItems);
+        }
+
+        private static void Prepare(SelectingItemsControl target)
+        {
+            var root = new TestRoot
+            {
+                Child = target,
+                Width = 100,
+                Height = 100,
+                Styles =
+                {
+                    new Style(x => x.Is<SelectingItemsControl>())
+                    {
+                        Setters =
+                        {
+                            new Setter(ListBox.TemplateProperty, Template()),
+                        },
+                    },
+                },
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+        }
+
+        private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter
@@ -1310,6 +1438,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public int SelectedIndex { get; set; }
         }
 
+        private class SelectionViewModel : NotifyingBase
+        {
+            private int _selectedIndex = -1;
+
+            public SelectionViewModel()
+            {
+                Items = new ObservableCollection<string>();
+            }
+
+            public int SelectedIndex
+            {
+                get => _selectedIndex;
+                set
+                {
+                    _selectedIndex = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public ObservableCollection<string> Items { get; }
+        }
+
         private class RootWithItems : TestRoot
         {
             public List<string> Items { get; set; } = new List<string>() { "a", "b", "c", "d", "e" };
@@ -1326,6 +1476,18 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public TestSelector(SelectionMode selectionMode)
             {
                 SelectionMode = selectionMode;
+            }
+
+            public new ISelectionModel Selection
+            {
+                get => base.Selection;
+                set => base.Selection = value;
+            }
+
+            public new SelectionMode SelectionMode
+            {
+                get => base.SelectionMode;
+                set => base.SelectionMode = value;
             }
 
             public new bool MoveSelection(NavigationDirection direction, bool wrap)

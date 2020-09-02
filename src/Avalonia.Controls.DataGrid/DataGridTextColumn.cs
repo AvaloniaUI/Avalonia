@@ -9,6 +9,7 @@ using Avalonia.Media;
 using System;
 using System.ComponentModel;
 using Avalonia.Layout;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Controls
 {
@@ -17,6 +18,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridTextColumn : DataGridBoundColumn
     {
+        private const string DATAGRID_TextColumnCellTextBlockMarginKey = "DataGridTextColumnCellTextBlockMargin";
 
         private double? _fontSize;
         private FontStyle? _fontStyle;
@@ -186,7 +188,7 @@ namespace Avalonia.Controls
         {
             TextBlock textBlockElement = new TextBlock
             {
-                Margin = new Thickness(4),
+                [!Layoutable.MarginProperty] = new DynamicResourceExtension(DATAGRID_TextColumnCellTextBlockMarginKey),
                 VerticalAlignment = VerticalAlignment.Center
             };
 

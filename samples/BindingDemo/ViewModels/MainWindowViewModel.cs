@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using ReactiveUI;
 using Avalonia.Controls;
+using Avalonia.Metadata;
+using Avalonia.Controls.Selection;
 
 namespace BindingDemo.ViewModels
 {
@@ -28,7 +30,7 @@ namespace BindingDemo.ViewModels
                     Detail = "Item " + x + " details",
                 }));
 
-            Selection = new SelectionModel();
+            Selection = new SelectionModel<TestItem> { SingleSelect = false };
 
             ShuffleItems = ReactiveCommand.Create(() =>
             {
@@ -57,7 +59,7 @@ namespace BindingDemo.ViewModels
         }
 
         public ObservableCollection<TestItem> Items { get; }
-        public SelectionModel Selection { get; }
+        public SelectionModel<TestItem> Selection { get; }
         public ReactiveCommand<Unit, Unit> ShuffleItems { get; }
 
         public string BooleanString
@@ -101,6 +103,17 @@ namespace BindingDemo.ViewModels
         {
             get { return _nested; }
             private set { this.RaiseAndSetIfChanged(ref _nested, value); }
+        }
+
+        public void Do(object parameter)
+        {
+
+        }
+
+        [DependsOn(nameof(BooleanFlag))]
+        bool CanDo(object parameter)
+        {
+            return BooleanFlag;
         }
     }
 }

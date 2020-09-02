@@ -38,7 +38,7 @@ namespace Avalonia.Skia
 
             public GlGpuSession(GRContext grContext,
                 GRBackendRenderTarget backendRenderTarget,
-                SKSurface surface, 
+                SKSurface surface,
                 IGlPlatformSurfaceRenderingSession glSession)
             {
                 GrContext = grContext;
@@ -100,7 +100,7 @@ namespace Avalonia.Skia
             }
             finally
             {
-                if(!success)
+                if (!success)
                     glSession.Dispose();
             }
         }
