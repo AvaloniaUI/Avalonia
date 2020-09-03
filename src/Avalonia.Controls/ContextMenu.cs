@@ -279,10 +279,14 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup).SetParent(control);
             }
 
-            _popup.Child = this;
-            _popup.IsOpen = true;
+            if (PlacementTarget is null && _popup.PlacementTarget != control)
+            {
+                _popup.PlacementTarget = control;
+            }
 
+            _popup.Child = this;
             IsOpen = true;
+            _popup.IsOpen = true;
 
             RaiseEvent(new RoutedEventArgs
             {
