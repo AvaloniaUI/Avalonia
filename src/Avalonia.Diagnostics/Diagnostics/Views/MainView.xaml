@@ -24,6 +24,13 @@
                       IsEnabled="False"/>
           </MenuItem.Icon>
         </MenuItem>
+        <MenuItem Header="Visualize dirty rects" Command="{Binding ToggleVisualizeDirtyRects}">
+          <MenuItem.Icon>
+            <CheckBox BorderThickness="0"
+                      IsChecked="{Binding ShouldVisualizeDirtyRects}"
+                      IsEnabled="False"/>
+          </MenuItem.Icon>
+        </MenuItem>
       </MenuItem>
     </Menu>
     

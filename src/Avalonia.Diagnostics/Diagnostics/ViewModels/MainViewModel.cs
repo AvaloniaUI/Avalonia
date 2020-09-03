@@ -9,7 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class MainViewModel : ViewModelBase, IDisposable
     {
-        private readonly IControl _root;
+        private readonly TopLevel _root;
         private readonly TreePageViewModel _logicalTree;
         private readonly TreePageViewModel _visualTree;
         private readonly EventsPageViewModel _events;
@@ -19,8 +19,9 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _focusedControl;
         private string _pointerOverElement;
         private bool _shouldVisualizeMarginPadding = true;
+        private bool _shouldVisualizeDirtyRects;
 
-        public MainViewModel(IControl root)
+        public MainViewModel(TopLevel root)
         {
             _root = root;
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
@@ -39,6 +40,22 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get => _shouldVisualizeMarginPadding;
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
+        }
+        
+        public bool ShouldVisualizeDirtyRects
+        {
+            get => _shouldVisualizeDirtyRects;
+            set
+            {
+                RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
+
+                _root.Renderer.DrawDirtyRects = value;
+            }
+        }
+
+        public void ToggleVisualizeDirtyRects()
+        {
+            ShouldVisualizeDirtyRects = !ShouldVisualizeDirtyRects;
         }
 
         public void ToggleVisualizeMarginPadding()
@@ -128,10 +145,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             var tree = Content as TreePageViewModel;
 
-            if (tree != null)
-            {
-                tree.SelectControl(control);
-            }
+            tree?.SelectControl(control);
         }
 
         public void Dispose()
@@ -140,6 +154,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription.Dispose();
             _logicalTree.Dispose();
             _visualTree.Dispose();
+            _root.Renderer.DrawDirtyRects = false;
         }
 
         private void UpdateFocusedControl()
