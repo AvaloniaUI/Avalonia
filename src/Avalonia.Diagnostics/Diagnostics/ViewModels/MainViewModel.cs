@@ -20,6 +20,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _pointerOverElement;
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
+        private bool _showFpsOverlay;
 
         public MainViewModel(TopLevel root)
         {
@@ -47,9 +48,8 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeDirtyRects;
             set
             {
-                RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
-
                 _root.Renderer.DrawDirtyRects = value;
+                RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
             }
         }
 
@@ -61,6 +61,21 @@ namespace Avalonia.Diagnostics.ViewModels
         public void ToggleVisualizeMarginPadding()
         {
             ShouldVisualizeMarginPadding = !ShouldVisualizeMarginPadding;
+        }
+
+        public bool ShowFpsOverlay
+        {
+            get => _showFpsOverlay;
+            set
+            {
+                _root.Renderer.DrawFps = value;
+                RaiseAndSetIfChanged(ref _showFpsOverlay, value);
+            }
+        }
+
+        public void ToggleFpsOverlay()
+        {
+            ShowFpsOverlay = !ShowFpsOverlay;
         }
 
         public ConsoleViewModel Console { get; }
@@ -155,6 +170,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _logicalTree.Dispose();
             _visualTree.Dispose();
             _root.Renderer.DrawDirtyRects = false;
+            _root.Renderer.DrawFps = false;
         }
 
         private void UpdateFocusedControl()
