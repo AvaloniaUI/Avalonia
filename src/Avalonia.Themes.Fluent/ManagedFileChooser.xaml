@@ -1,0 +1,304 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:dialogs="clr-namespace:Avalonia.Dialogs;assembly=Avalonia.Dialogs">
+  <Style Selector="dialogs|ManagedFileChooser">
+    <Style.Resources>
+        <ResourceDictionary>
+            <GradientStops x:Key="IconRes.FolderBackGradientStops">
+            </GradientStops>
+            <GradientStops x:Key="IconRes.FolderFrontGradientStops">
+                <GradientStop Offset="0" Color="#FFFFDA6F"/>
+                <GradientStop Offset="1" Color="#FFFEC326"/>
+            </GradientStops>
+            <DrawingGroup x:Key="LevelUp">
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M14.5,0L6.39,0 5.39,2 2.504,2C1.677,2,1,2.673,1,3.5L1,10.582 1,10.586 1,15.414 3,13.414 3,16 7,16 7,13.414 9,15.414 9,13 14.5,13C15.327,13,16,12.327,16,11.5L16,1.5C16,0.673,15.327,0,14.5,0" />
+                <GeometryDrawing Brush="#FFDCB679" Geometry="F1M14,3L7.508,3 8.008,2 8.012,2 14,2z M14.5,1L7.008,1 6.008,3 2.504,3C2.227,3,2,3.224,2,3.5L2,9.582 4.998,6.586 9,10.586 9,12 14.5,12C14.775,12,15,11.776,15,11.5L15,1.5C15,1.224,14.775,1,14.5,1" />
+                <GeometryDrawing Brush="#FF00529C" Geometry="F1M8,11L5,8 2,11 2,13 4,11 4,15 6,15 6,11 8,13z" />
+                <GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M8.0001,1.9996L7.5001,3.0006 14.0001,3.0006 14.0001,1.9996z" />
+            </DrawingGroup>
+            <dialogs:ResourceSelectorConverter x:Key="Icons">
+                <DrawingGroup x:Key="Icon_Folder">
+                    <GeometryDrawing Geometry="M 0 0 L 22 0 L 22 16 L 24 18 L 24 28 L 0 28 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0" Color="#FFE09F00"/>
+                                <GradientStop Offset="1" Color="#FFD18B00"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 0 0 L 20 4 L 20 20 L 18 21 L 18 32 L 0 28 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0" Color="#FFFFDA6F"/>
+                                <GradientStop Offset="1" Color="#FFFEC326"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <!--DrawingGroup x:Key="Icon_Folder">
+                    <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M0,0L16,0 16,16 0,16z" />
+                    <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M1.5,1L9.61,1 10.61,3 13.496,3C14.323,3,14.996,3.673,14.996,4.5L14.996,12.5C14.996,13.327,14.323,14,13.496,14L1.5,14C0.673,14,0,13.327,0,12.5L0,2.5C0,1.673,0.673,1,1.5,1" />
+                    <GeometryDrawing Brush="#FFDCB67A" Geometry="F1M2,3L8.374,3 8.874,4 2,4z M13.496,4L10,4 9.992,4 8.992,2 1.5,2C1.225,2,1,2.224,1,2.5L1,12.5C1,12.776,1.225,13,1.5,13L13.496,13C13.773,13,13.996,12.776,13.996,12.5L13.996,4.5C13.996,4.224,13.773,4,13.496,4" />
+                    <GeometryDrawing Brush="#FFEFEFF0" Geometry="F1M2,3L8.374,3 8.874,4 2,4z" />
+                </DrawingGroup-->
+                <DrawingGroup x:Key="Icon_File">
+                    <GeometryDrawing Geometry="M 4 0 L 24 0 L 28 4 L 28 32 L 4 32 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0" Color="#FFB9B9B9"/>
+                                <GradientStop Offset="1" Color="#FFAFAFAF"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 5 1 L 23 1 L 27 5 L 27 31 L 5 31 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0" Color="#FFFFFFFF"/>
+                                <GradientStop Offset="1" Color="#FFF9F9F9"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <!--DrawingGroup x:Key="Icon_File">
+                    <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                    <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M4,15C3.03,15,2,14.299,2,13L2,3C2,1.701,3.03,1,4,1L10.061,1 14,4.556 14,13C14,13.97,13.299,15,12,15z" />
+                    <GeometryDrawing Brush="#FF9B4E96" Geometry="F1M12,13L4,13 4,3 9,3 9,6 12,6z M9.641,2L3.964,2C3.964,2,3,2,3,3L3,13C3,14,3.964,14,3.964,14L11.965,14C12.965,14,13,13,13,13L13,5z" />
+                    <GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M4,3L9,3 9,6 12,6 12,13 4,13z" />
+                </DrawingGroup-->
+                <DrawingGroup x:Key="Icon_Volume">
+                    <GeometryDrawing Geometry="M 0 0 L 32 0 L 32 32 L 0 32 Z"/>
+                    <GeometryDrawing Geometry="M 4 0 L 28 0 L 28 32 L 4 32 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Offset="0" Color="#FFB9B9B9"/>
+                                <GradientStop Offset="1" Color="#FFAFAFAF"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <EllipseGeometry Rect="10,13,12,12"/>
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="8">
+                                <Pen.Brush>
+                                    <LinearGradientBrush StartPoint="0%,37%" EndPoint="0%,100%">
+                                        <GradientStop Offset="0" Color="#FFFFFFFF"/>
+                                        <GradientStop Offset="1" Color="#FFF9F9F9"/>
+                                    </LinearGradientBrush>
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 15 23 L 6 28 L 6.5 30 L 9 31 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="30,23" EndPoint="6,31">
+                                <GradientStop Offset="0" Color="#FF898D98"/>
+                                <GradientStop Offset="1" Color="#FF6F767C"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 9 3 L 26 3 L 26 6 L 9 6 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0,3" EndPoint="0,6">
+                                <GradientStop Offset="0" Color="#FFE9E9E9"/>
+                                <GradientStop Offset="1" Color="#FFDFDFDF"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+            </DrawingGroup>
+                <!--DrawingGroup x:Key="Icon_Volume">
+                    <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+                    <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M0,12L0,6.5C0,5.122,1.122,4,2.5,4L13.5,4C14.879,4,16,5.122,16,6.5L16,12z" />
+                    <GeometryDrawing Brush="#FFEFEFF0" Geometry="F1M13,8L12,8 12,7 13,7z M11,8L10,8 10,7 11,7z M13.5,6L2.5,6C2.224,6,2,6.224,2,6.5L2,10 14,10 14,6.5C14,6.224,13.775,6,13.5,6" />
+                    <GeometryDrawing Brush="#FF424242" Geometry="F1M13,7L12,7 12,8 13,8z M11,7L10,7 10,8 11,8z M2,10L14,10 14,6.5C14,6.224,13.775,6,13.5,6L2.5,6C2.224,6,2,6.224,2,6.5z M15,11L1,11 1,6.5C1,5.673,1.673,5,2.5,5L13.5,5C14.327,5,15,5.673,15,6.5z" />
+                </DrawingGroup-->
+            </dialogs:ResourceSelectorConverter>
+        </ResourceDictionary>
+    </Style.Resources>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DockPanel Background="{DynamicResource SystemControlDisabledChromeDisabledHighBrush}">
+          <Border DockPanel.Dock="Top" Height="39" BorderBrush="{DynamicResource SystemControlHighlightAltBaseMediumLowBrush}" BorderThickness="0,0,0,1">
+            <DockPanel Height="30" Margin="8,0" VerticalAlignment="Center">
+                <DockPanel.Styles>
+                    <Style Selector="Button,TextBox">
+                        <Setter Property="Height" Value="30"/>
+                    </Style>
+                    <Style Selector="Button">
+                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                        <Setter Property="Width" Value="40"/>
+                        <Setter Property="Margin" Value="0,0,8,0"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                    </Style>
+                    <Style Selector="Button:not(:pointerover):not(:pressed)">
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                    <Style Selector="TextBox:not(:pointerover):not(:pressed)">
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                        <!--Setter Property="BorderThickness" Value="0"/-->
+                    </Style>
+                    <!--Style Selector="TextBox:not(:pointerover):not(:pressed) /template/ Border#PART_BorderElement">
+                        <Setter Property="Margin" Value="1"/>
+                    </Style-->
+                </DockPanel.Styles>
+                <!--dialogs:ChildFitter DockPanel.Dock="Left" Width="{Binding ElementName=Location, Path=Bounds.Height}"-->
+                <Button Command="{Binding GoUp}" DockPanel.Dock="Left">
+                    <!--DrawingPresenter Drawing="{StaticResource LevelUp}" Stretch="Fill"/-->
+                    <Path Data="M 0 7 L 7 0 L 14 7 M 7 0 L 7 16" Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+                <!--/dialogs:ChildFitter-->
+                <TextBox x:Name="Location" Text="{Binding Location}">
+                    <TextBox.KeyBindings>
+                        <KeyBinding Command="{Binding EnterPressed}" Gesture="Enter"/>
+                    </TextBox.KeyBindings>
+                </TextBox>
+            </DockPanel>
+          </Border>
+          <ListBox x:Name="QuickLinks" Margin="0" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource SystemControlHighlightAltBaseMediumHighBrush}" Items="{Binding QuickLinks}" Width="250" Padding="0,20"
+                  SelectedIndex="{Binding QuickLinksSelectedIndex}"
+                  DockPanel.Dock="Left" Focusable="False">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Height" Value="32"/>
+                        <Setter Property="Padding" Value="34,6"/>
+                        <Setter Property="Template">
+                            <ControlTemplate>
+                                <Border x:Name="LayoutRoot" CornerRadius="2" Margin="10,0">
+                                    <Panel>
+                                        <Border x:Name="SelectedLine" HorizontalAlignment="Left" Margin="2,6" CornerRadius="0.5" Width="3" Background="{DynamicResource SystemControlHighlightAccentBrush}" IsVisible="{TemplateBinding IsSelected}"/>
+                                        <ContentPresenter Name="PART_ContentPresenter"
+                                                    Background="Transparent"
+                                                    BorderBrush="Transparent"
+                                                    BorderThickness="0"
+                                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                    Content="{TemplateBinding Content}"
+                                                    Padding="{TemplateBinding Padding}"
+                                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+
+                                    </Panel>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter>
+                    </Style>
+                    <Style Selector="ListBoxItem:pointerover /template/ Border#LayoutRoot">
+                        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:selected /template/ Border#LayoutRoot">
+                        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+                    </Style>
+                </ListBox.Styles>
+              <ListBox.ItemTemplate>
+                  <DataTemplate>
+                      <StackPanel Spacing="4" Orientation="Horizontal" Background="Transparent">
+                          <DrawingPresenter Width="16" Height="16" Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                          <TextBlock Text="{Binding DisplayName}"/>
+                      </StackPanel>
+                  </DataTemplate>
+              </ListBox.ItemTemplate>
+          </ListBox>
+          <DockPanel Margin="4" DockPanel.Dock="Bottom">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                <ComboBox DockPanel.Dock="Right"
+                    IsVisible="{Binding ShowFilters}" 
+                    Items="{Binding Filters}"
+                    SelectedItem="{Binding SelectedFilter}" />
+                <TextBox Text="{Binding FileName}" Watermark="File name" IsVisible="{Binding !SelectingFolder}" />
+            </DockPanel>
+              <CheckBox IsChecked="{Binding ShowHiddenFiles}" Content="Show hidden files" DockPanel.Dock="Left"/>
+              <UniformGrid HorizontalAlignment="Right" Rows="1">
+                  <UniformGrid.Styles>
+                      <Style Selector="Button">
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                            <Setter Property="Margin" Value="4,0,0,0"/>
+                      </Style>
+                      <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                      </Style>
+                  </UniformGrid.Styles>
+                  <Button Command="{Binding Ok}">OK</Button>
+                  <Button Command="{Binding Cancel}">Cancel</Button>
+              </UniformGrid>
+          </DockPanel>
+
+          <DockPanel Grid.IsSharedSizeScope="True">
+              <Grid DockPanel.Dock="Top" Margin="15 5 0 0" HorizontalAlignment="Stretch">
+                  <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="20" SharedSizeGroup="Icon" />
+                      <ColumnDefinition Width="16" SharedSizeGroup="Splitter"  />
+                      <ColumnDefinition Width="400" SharedSizeGroup="Name" />
+                      <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
+                      <ColumnDefinition Width="200" SharedSizeGroup="Modified" />
+                      <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
+                      <ColumnDefinition Width="150" SharedSizeGroup="Type" />
+                      <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
+                      <ColumnDefinition Width="200" SharedSizeGroup="Size" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.Styles>
+                    <Style Selector="GridSplitter">
+                        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightAltBaseMediumLowBrush}"/>
+                        <Setter Property="Template">
+                            <ControlTemplate>
+                                <Border VerticalAlignment="Stretch" BorderThickness="0" Background="#01000000">
+                                    <Rectangle Width="1" VerticalAlignment="Stretch" Fill="{TemplateBinding Background}"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter>
+                    </Style>
+                  </Grid.Styles>
+                  <GridSplitter Grid.Column="1" />
+                  <TextBlock Grid.Column="2" Text="Name" />
+                  <GridSplitter Grid.Column="3" />
+                  <TextBlock Grid.Column="4" Text="Date Modified" />
+                  <GridSplitter Grid.Column="5" />
+                  <TextBlock Grid.Column="6" Text="Type" />
+                  <GridSplitter Grid.Column="7" />
+                  <TextBlock Grid.Column="8" Text="Size" />
+              </Grid>
+              <ListBox x:Name="Files"
+                  VirtualizationMode="Simple"
+                  Items="{Binding Items}"
+                  Margin="0 5"
+                  SelectionMode="{Binding SelectionMode}"
+                  SelectedItems="{Binding SelectedItems}"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                  <ListBox.ItemTemplate>
+                      <DataTemplate>
+                          <Grid Background="Transparent">
+                              <Grid.ColumnDefinitions>
+                                  <ColumnDefinition SharedSizeGroup="Icon" />
+                                  <ColumnDefinition SharedSizeGroup="Splitter"  />
+                                  <ColumnDefinition SharedSizeGroup="Name" />
+                                  <ColumnDefinition SharedSizeGroup="Splitter" />
+                                  <ColumnDefinition SharedSizeGroup="Modified" />
+                                  <ColumnDefinition SharedSizeGroup="Splitter" />
+                                  <ColumnDefinition SharedSizeGroup="Type" />
+                                  <ColumnDefinition SharedSizeGroup="Splitter" />
+                                  <ColumnDefinition SharedSizeGroup="Size" />
+                              </Grid.ColumnDefinitions>
+                              <DrawingPresenter Width="16" Height="16" Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                              <TextBlock Grid.Column="2" Text="{Binding DisplayName}"/>
+                              <TextBlock Grid.Column="4" Text="{Binding Modified}" />
+                              <TextBlock Grid.Column="6" Text="{Binding Type}" />
+                              <TextBlock Grid.Column="8">
+                                <TextBlock.Text>
+                                    <Binding Path="Size">
+                                        <Binding.Converter>
+                                            <dialogs:FileSizeStringConverter/>
+                                        </Binding.Converter>
+                                    </Binding>
+                                </TextBlock.Text>
+                              </TextBlock>
+                          </Grid>
+                      </DataTemplate>
+                  </ListBox.ItemTemplate>
+              </ListBox>
+          </DockPanel>
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

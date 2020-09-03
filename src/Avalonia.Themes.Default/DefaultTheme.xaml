@@ -58,4 +58,5 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.SplitView.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.DatePicker.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TimePicker.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.ManagedFileChooser.xaml?assembly=Avalonia.Themes.Default"/>
 </Styles>
