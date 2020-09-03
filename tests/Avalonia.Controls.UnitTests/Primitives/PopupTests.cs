@@ -21,7 +21,22 @@ namespace Avalonia.Controls.UnitTests.Primitives
     public class PopupTests
     {
         protected bool UsePopupHost;
-        
+
+        [Fact]
+        public void Popup_Open_Without_Target_Should_Attach_Itself_Later()
+        {
+            using (CreateServices())
+            {
+                int openedEvent = 0;
+                var target = new Popup();
+                target.Opened += (s, a) => openedEvent++;
+                target.IsOpen = true;
+
+                var window = PreparedWindow(target);
+                window.Show();
+                Assert.Equal(1, openedEvent);
+            }
+        }
 
         [Fact]
         public void Popup_Without_TopLevel_Shouldnt_Call_Open()
