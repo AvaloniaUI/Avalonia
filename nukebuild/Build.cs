@@ -126,12 +126,12 @@ partial class Build : NukeBuild
 
     Target CompileHtmlPreviewer => _ => _
         .DependsOn(Clean)
+        .OnlyWhenStatic(() => !Parameters.SkipPreviewer)
         .Executes(() =>
         {
             var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
 
             NpmTasks.NpmInstall(c => c
-                .AddPackages("typescript")
                 .SetWorkingDirectory(webappDir)
                 .SetArgumentConfigurator(a => a.Add("--silent")));
             NpmTasks.NpmRun(c => c
