@@ -1,10 +1,12 @@
+using System;
 using System.Threading.Tasks;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using UIKit;
 
 namespace Avalonia.iOS
 {
-    public class Clipboard : IClipboard
+    public class ClipboardImpl : IClipboard
     {
         public Task<string> GetTextAsync()
         {
