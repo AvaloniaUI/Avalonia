@@ -45,7 +45,9 @@ namespace Avalonia.Diagnostics.Views
             switch (e.Key)
             {
                 case Key.Enter:
-                    vm.Execute().RunSynchronously();
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                    vm.Execute();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                     e.Handled = true;
                     break;
                 case Key.Up:
