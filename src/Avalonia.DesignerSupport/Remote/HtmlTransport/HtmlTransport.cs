@@ -18,6 +18,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         private readonly SimpleWebSocketHttpServer _simpleServer;
         private readonly Dictionary<string, byte[]> _resources;
         private SimpleWebSocket _pendingSocket;
+        private bool _disposed;
         private object _lock = new object();
         private AutoResetEvent _wakeup = new AutoResetEvent(false);
         private FrameMessage _lastFrameMessage = null;
@@ -135,7 +136,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 SimpleWebSocket socket = null;
                 while (true)
                 {
-                    if (IsDisposed)
+                    if (_disposed)
                     {
                         socket?.Dispose();
                         return;
@@ -171,7 +172,14 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 Console.Error.WriteLine(e.ToString());
             }
         }
-        
+
+        public void Dispose()
+        {
+            _disposed = true;
+            _pendingSocket?.Dispose();
+            _simpleServer.Dispose();
+        }
+
         public Task Send(object data)
         {
             if (data is FrameMessage frame)
@@ -253,25 +261,6 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             _onException?.Invoke(this, ex);
         }
 
-        public bool IsDisposed { get; private set; }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!IsDisposed)
-            {
-                if (disposing)
-                {
-                    _pendingSocket?.Dispose();
-                    _simpleServer.Dispose();
-                }
-                IsDisposed = true;
-            }
-        }
-
-        public void Dispose()
-        {            
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
         #endregion
     }
 }
