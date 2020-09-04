@@ -2,6 +2,7 @@ using System.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.VisualTree;
@@ -76,9 +77,7 @@ namespace Avalonia.Controls
             set => base.SelectedItems = value;
         }
 
-        /// <summary>
-        /// Gets or sets a model holding the current selection.
-        /// </summary>
+        /// <inheritdoc/>
         public new ISelectionModel Selection
         {
             get => base.Selection;
@@ -115,7 +114,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Deselects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public void UnselectAll() => Selection.ClearSelection();
+        public void UnselectAll() => Selection.Clear();
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -136,7 +135,8 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.KeyModifiers & KeyModifiers.Shift) != 0);
+                    (e.KeyModifiers & KeyModifiers.Shift) != 0,
+                    (e.KeyModifiers & KeyModifiers.Control) != 0);
             }
         }
 

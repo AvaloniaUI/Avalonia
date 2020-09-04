@@ -103,8 +103,11 @@ namespace Avalonia.Input
 
                 if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                 {
-                    var et = e.InitialPressMouseButton != MouseButton.Right ? TappedEvent : RightTappedEvent;
-                    e.Source.RaiseEvent(new RoutedEventArgs(et));
+                    if (e.InitialPressMouseButton == MouseButton.Left || e.InitialPressMouseButton == MouseButton.Right)
+                    {
+                        var et = e.InitialPressMouseButton != MouseButton.Right ? TappedEvent : RightTappedEvent;
+                        e.Source.RaiseEvent(new RoutedEventArgs(et));
+                    }
                 }
             }
         }

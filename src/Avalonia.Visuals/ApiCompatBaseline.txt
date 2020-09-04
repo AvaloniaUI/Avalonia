@@ -1,4 +1,5 @@
 Compat issues with assembly Avalonia.Visuals:
-EnumValuesMustMatch : Enum value 'Avalonia.Media.FontStyle Avalonia.Media.FontStyle.Italic' is (System.Int32)1 in the implementation but (System.Int32)2 in the contract.
-EnumValuesMustMatch : Enum value 'Avalonia.Media.FontStyle Avalonia.Media.FontStyle.Oblique' is (System.Int32)2 in the implementation but (System.Int32)1 in the contract.
-Total Issues: 2
+CannotAddAbstractMembers : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.TextLineBreak' is abstract in the implementation but is missing in the contract.
+MembersMustExist : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.LineBreak.get()' does not exist in the implementation but it does exist in the contract.
+CannotAddAbstractMembers : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.TextLineBreak.get()' is abstract in the implementation but is missing in the contract.
+Total Issues: 3

@@ -83,27 +83,6 @@ namespace Avalonia.Diagnostics.ViewModels
             private set;
         }
 
-        public IndexPath Index
-        {
-            get
-            {
-                var indices = new List<int>();
-                var child = this;
-                var parent = Parent;
-                
-                while (parent is object)
-                {
-                    indices.Add(IndexOf(parent.Children, child));
-                    child = child.Parent;
-                    parent = parent.Parent;
-                }
-
-                indices.Add(0);
-                indices.Reverse();
-                return new IndexPath(indices);
-            }
-        }
-
         public void Dispose()
         {
             _classesSubscription.Dispose();

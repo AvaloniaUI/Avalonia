@@ -183,7 +183,10 @@ namespace Avalonia.Media.TextFormatting
             var glyphRun = TextShaper.Current.ShapeText(new ReadOnlySlice<char>(s_empty, startingIndex, 1),
                 properties.Typeface, properties.FontRenderingEmSize, properties.CultureInfo);
 
-            var textRuns = new[] { new ShapedTextCharacters(glyphRun, _paragraphProperties.DefaultTextRunProperties) };
+            var textRuns = new List<ShapedTextCharacters>
+            {
+                new ShapedTextCharacters(glyphRun, _paragraphProperties.DefaultTextRunProperties)
+            };
 
             return new TextLineImpl(textRuns,
                 TextLineMetrics.Create(textRuns, new TextRange(startingIndex, 1), MaxWidth, _paragraphProperties));
@@ -218,7 +221,7 @@ namespace Avalonia.Media.TextFormatting
                 while (currentPosition < _text.Length)
                 {
                     var textLine = TextFormatter.Current.FormatLine(textSource, currentPosition, MaxWidth,
-                        _paragraphProperties, previousLine?.LineBreak);
+                        _paragraphProperties, previousLine?.TextLineBreak);
 
                     currentPosition += textLine.TextRange.Length;
 
@@ -227,7 +230,7 @@ namespace Avalonia.Media.TextFormatting
                         if (textLines.Count == MaxLines || !double.IsPositiveInfinity(MaxHeight) &&
                             height + textLine.LineMetrics.Size.Height > MaxHeight)
                         {
-                            if (previousLine?.LineBreak != null && _textTrimming != TextTrimming.None)
+                            if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
                             {
                                 var collapsedLine =
                                     previousLine.Collapse(GetCollapsingProperties(MaxWidth));
@@ -252,7 +255,7 @@ namespace Avalonia.Media.TextFormatting
 
                     previousLine = textLine;
 
-                    if (currentPosition != _text.Length || textLine.LineBreak == null)
+                    if (currentPosition != _text.Length || textLine.TextLineBreak == null)
                     {
                         continue;
                     }

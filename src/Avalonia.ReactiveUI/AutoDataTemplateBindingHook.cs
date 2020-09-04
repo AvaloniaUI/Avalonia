@@ -48,6 +48,10 @@ namespace Avalonia.ReactiveUI
             if (itemsControl.ItemTemplate != null)
                 return true;
 
+            if (itemsControl.DataTemplates != null &&
+                itemsControl.DataTemplates.Count > 0)
+                return true;
+
             itemsControl.ItemTemplate = DefaultItemTemplate;
             return true;
         }

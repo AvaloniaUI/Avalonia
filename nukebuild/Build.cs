@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.Git;
@@ -15,6 +16,7 @@ using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Tools.Npm;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
+using Pharmacist.Core;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -124,6 +126,7 @@ partial class Build : NukeBuild
 
     Target CompileHtmlPreviewer => _ => _
         .DependsOn(Clean)
+        .OnlyWhenStatic(() => !Parameters.SkipPreviewer)
         .Executes(() =>
         {
             var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
@@ -139,7 +142,7 @@ partial class Build : NukeBuild
     Target Compile => _ => _
         .DependsOn(Clean)
         .DependsOn(CompileHtmlPreviewer)
-        .Executes(() =>
+        .Executes(async () =>
         {
             if (Parameters.IsRunningOnWindows)
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
@@ -153,7 +156,43 @@ partial class Build : NukeBuild
                     .AddProperty("PackageVersion", Parameters.Version)
                     .SetConfiguration(Parameters.Configuration)
                 );
+
+            await CompileReactiveEvents();
         });
+
+    async Task CompileReactiveEvents()
+    {
+        var avaloniaBuildOutput = Path.Combine(RootDirectory, "packages", "Avalonia", "bin", Parameters.Configuration);
+        var avaloniaAssemblies = GlobFiles(avaloniaBuildOutput, "**/Avalonia*.dll")
+            .Where(file => !file.Contains("Avalonia.Build.Tasks") &&
+                            !file.Contains("Avalonia.Remote.Protocol"));
+
+        var eventsDirectory = GlobDirectories($"{RootDirectory}/src/**/Avalonia.ReactiveUI.Events").First();
+        var eventsBuildFile = Path.Combine(eventsDirectory, "Events_Avalonia.cs");
+        if (File.Exists(eventsBuildFile))
+            File.Delete(eventsBuildFile);
+
+        using (var stream = File.Create(eventsBuildFile))
+        using (var writer = new StreamWriter(stream))
+        {
+            await ObservablesForEventGenerator.ExtractEventsFromAssemblies(
+                writer, avaloniaAssemblies, new string[0], "netstandard2.0"
+            );
+        }
+
+        var eventsProject = Path.Combine(eventsDirectory, "Avalonia.ReactiveUI.Events.csproj");
+        if (Parameters.IsRunningOnWindows)
+            MsBuildCommon(eventsProject, c => c
+                .SetArgumentConfigurator(a => a.Add("/r"))
+                .AddTargets("Build")
+            );
+        else
+            DotNetBuild(c => c
+                .SetProjectFile(eventsProject)
+                .AddProperty("PackageVersion", Parameters.Version)
+                .SetConfiguration(Parameters.Configuration)
+            );
+    }
 
     void RunCoreTest(string projectName)
     {
@@ -202,6 +241,7 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Visuals.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
+            RunCoreTest("Avalonia.ReactiveUI.Events.UnitTests");
         });
 
     Target RunRenderTests => _ => _

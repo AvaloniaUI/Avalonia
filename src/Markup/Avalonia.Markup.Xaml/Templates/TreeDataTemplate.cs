@@ -2,7 +2,9 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.Templates
@@ -16,7 +18,7 @@ namespace Avalonia.Markup.Xaml.Templates
         public object Content { get; set; }
 
         [AssignBinding]
-        public Binding ItemsSource { get; set; }
+        public BindingBase ItemsSource { get; set; }
 
         public bool Match(object data)
         {
@@ -34,7 +36,13 @@ namespace Avalonia.Markup.Xaml.Templates
         {
             if (ItemsSource != null)
             {
-                var obs = ExpressionObserverBuilder.Build(item, ItemsSource.Path);
+                var obs = ItemsSource switch
+                {
+                    Binding reflection => ExpressionObserverBuilder.Build(item, reflection.Path),
+                    CompiledBindingExtension compiled => new ExpressionObserver(item, compiled.Path.BuildExpression(false)),
+                    _ => throw new InvalidOperationException("TreeDataTemplate currently only supports Binding and CompiledBindingExtension!")
+                };
+
                 return InstancedBinding.OneWay(obs, BindingPriority.Style);
             }
 

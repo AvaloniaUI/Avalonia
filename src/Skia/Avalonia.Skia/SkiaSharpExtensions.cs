@@ -105,6 +105,28 @@ namespace Avalonia.Skia
             throw new ArgumentException("Unknown pixel format: " + fmt);
         }
 
+        public static SKAlphaType ToSkAlphaType(this AlphaFormat fmt)
+        {
+            return fmt switch
+            {
+                AlphaFormat.Premul => SKAlphaType.Premul,
+                AlphaFormat.Unpremul => SKAlphaType.Unpremul,
+                AlphaFormat.Opaque => SKAlphaType.Opaque,
+                _ => throw new ArgumentException($"Unknown alpha format: {fmt}")
+            };
+        }
+
+        public static AlphaFormat ToAlphaFormat(this SKAlphaType fmt)
+        {
+            return fmt switch
+            {
+                SKAlphaType.Premul => AlphaFormat.Premul,
+                SKAlphaType.Unpremul => AlphaFormat.Unpremul,
+                SKAlphaType.Opaque => AlphaFormat.Opaque,
+                _ => throw new ArgumentException($"Unknown alpha format: {fmt}")
+            };
+        }
+
         public static SKShaderTileMode ToSKShaderTileMode(this Media.GradientSpreadMethod m)
         {
             switch (m)

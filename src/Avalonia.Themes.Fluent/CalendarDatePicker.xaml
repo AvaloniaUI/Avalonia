@@ -120,7 +120,7 @@
 
           <Popup Name="PART_Popup"
                  PlacementTarget="{TemplateBinding}"
-                 StaysOpen="False">
+                 IsLightDismissEnabled="True">
             <Calendar Name="PART_Calendar"
                       FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
                       IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"/>

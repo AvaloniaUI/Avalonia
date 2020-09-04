@@ -20,6 +20,7 @@
 
         <TextBox Width="200"
                  Watermark="Password Box"
+                 Classes="revealPasswordButton"
                  UseFloatingWatermark="True"
                  PasswordChar="*"
                  Text="Password" />
@@ -37,6 +38,8 @@
                  Text="Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
         <TextBox AcceptsReturn="True" Width="200" Height="125"
                  Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
+        
+        <TextBox Classes="clearButton" Text="Clear Content" Width="200" FontWeight="Normal" FontStyle="Normal" Watermark="Watermark" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
       </StackPanel>
         <StackPanel Orientation="Vertical" Spacing="8">
             <TextBlock Classes="h2">resm fonts</TextBlock>
