@@ -36,7 +36,12 @@ namespace Avalonia.OpenGL
                         throw new OpenGlException("eglGetPlatformDisplayEXT is not supported by libegl.dll");
 
                     var allowedApis = AvaloniaLocator.Current.GetService<AngleOptions>()?.AllowedPlatformApis
-                                      ?? new [] {AngleOptions.PlatformApi.DirectX11, AngleOptions.PlatformApi.DirectX9};
+                                      ?? new []
+                                      {
+                                          AngleOptions.PlatformApi.WGL,
+                                          AngleOptions.PlatformApi.DirectX11, 
+                                          AngleOptions.PlatformApi.DirectX9
+                                      };
 
                     foreach (var platformApi in allowedApis)
                     {
@@ -45,6 +50,8 @@ namespace Avalonia.OpenGL
                             dapi = EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE;
                         else if (platformApi == AngleOptions.PlatformApi.DirectX11)
                             dapi = EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE;
+                        else if (platformApi == AngleOptions.PlatformApi.WGL)
+                            dapi = EGL_PLATFORM_ANGLE_TYPE_ANGLE;
                         else
                             continue;
 

@@ -7,7 +7,8 @@ namespace Avalonia.OpenGL
         public enum PlatformApi
         {
 			DirectX9,
-			DirectX11
+			DirectX11,
+            WGL
         }
 
         public IList<PlatformApi> AllowedPlatformApis { get; set; } = null;
