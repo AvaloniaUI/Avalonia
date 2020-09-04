@@ -1,4 +1,5 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="Label">
+  <Setter Property="Padding" Value="3"/>
   <Setter Property="Template">
     <ControlTemplate>
       <ContentPresenter Name="PART_ContentPresenter"

@@ -31,11 +31,6 @@ namespace Avalonia.Controls
         private bool _isContentTemplateProvided;
 
         /// <summary>
-        /// Custom template to provide for Access Key show
-        /// </summary>
-        private FuncDataTemplate<string> _accessTextTemplate;
-
-        /// <summary>
         /// Label focus Target
         /// </summary>
         public IInputElement Target
@@ -50,18 +45,6 @@ namespace Avalonia.Controls
         public Label()
         {
             this.GetObservable(ContentProperty).Subscribe(ContentChanged);
-            _accessTextTemplate = new FuncDataTemplate<string>(
-                (val, ns) =>
-                {
-                    var accessText = new AccessText
-                    {
-                        [!AccessText.TextProperty] = new Binding(),
-                    };
-                    accessText.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, (s,a) => LabelActivated());
-                    return accessText;
-                });
-
-            
         }
 
         /// <summary>
@@ -78,13 +61,19 @@ namespace Avalonia.Controls
         /// <param name="obj">new value</param>
         private void ContentChanged(object obj)
         {
-            if (obj is string)
+            if (obj is string strVal)
             {
-                if (ContentTemplate == null)
-                {
-                    _isContentTemplateProvided = true;
-                    ContentTemplate = _accessTextTemplate;
-                }
+                ContentTemplate = new FuncDataTemplate<string>(
+                    (val, ns) =>
+                    {
+                        var accessText = new AccessText {
+                            Text = strVal,
+                        };
+                        accessText.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, (s, a) => LabelActivated());
+                        return accessText;
+                    });
+
+                _isContentTemplateProvided = true;
             }
             else if (_isContentTemplateProvided)
             {

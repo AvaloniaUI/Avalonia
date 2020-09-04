@@ -39,16 +39,16 @@
                  Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
       </StackPanel>
         <StackPanel Orientation="Vertical" Spacing="8">
-            <TextBlock Classes="h2">resm fonts</TextBlock>
-            <TextBox Width="200" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
-                <TextBox Width="200" Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
-                <TextBox Width="200" Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-Italic.ttf?assembly=ControlCatalog#Source Sans Pro"/>
-                <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-*.ttf?assembly=ControlCatalog#Source Sans Pro"/>
+            <Label Target="{Binding ElementName=resmFirst}" Classes="h2">res_m fonts</Label>
+            <TextBox x:Name="resmFirst" Width="200" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
+            <TextBox Width="200" Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
+            <TextBox Width="200" Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-Italic.ttf?assembly=ControlCatalog#Source Sans Pro"/>
+            <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-*.ttf?assembly=ControlCatalog#Source Sans Pro"/>
         </StackPanel>
         
         <StackPanel Orientation="Vertical" Spacing="8">
-            <TextBlock Classes="h2">res fonts</TextBlock>
-            <TextBox Width="200" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
+            <Label Target="{Binding ElementName=resFirst}" Classes="h2">_res fonts</Label>
+            <TextBox x:Name="resFirst" Width="200" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
             <TextBox Width="200" Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
             <TextBox Width="200" Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-Italic.ttf#Source Sans Pro"/>
             <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-*.ttf#Source Sans Pro"/>

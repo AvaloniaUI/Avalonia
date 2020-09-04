@@ -15,6 +15,16 @@
     <Style Selector="TextBlock.h3">
       <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
     </Style>
+    <Style Selector="Label.h1">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
+      <Setter Property="FontWeight" Value="Medium"/>
+    </Style>
+    <Style Selector="Label.h2">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
+    </Style>
+    <Style Selector="Label.h3">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
+    </Style>
     <StyleInclude Source="/SideBar.xaml"/>
   </Application.Styles>
 </Application>
