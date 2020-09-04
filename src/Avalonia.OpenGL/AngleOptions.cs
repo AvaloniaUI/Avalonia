@@ -12,7 +12,7 @@ namespace Avalonia.OpenGL
 
         public List<PlatformApi> AllowedPlatformApis = new List<PlatformApi>
         {
-            PlatformApi.DirectX9
+            PlatformApi.DirectX11
         };
     }
 }
