@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -26,11 +27,6 @@ namespace Avalonia.Controls
         private IInputElement _target;
 
         /// <summary>
-        /// Flag indicating that custom template was provided to show Access Key
-        /// </summary>
-        private bool _isContentTemplateProvided;
-
-        /// <summary>
         /// Label focus Target
         /// </summary>
         public IInputElement Target
@@ -39,47 +35,27 @@ namespace Avalonia.Controls
             set => SetAndRaise(TargetProperty, ref _target, value);
         }
 
+        static Label()
+        {
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Label>((lbl, args) => lbl.LabelActivated(args));
+            // IsTabStopProperty.OverrideDefaultValue<Label>(false)
+            FocusableProperty.OverrideDefaultValue<Label>(false);
+        }
+
         /// <summary>
         /// Initializes instance of <see cref="Label"/> control
         /// </summary>
         public Label()
         {
-            this.GetObservable(ContentProperty).Subscribe(ContentChanged);
         }
 
         /// <summary>
         /// Method which focuses <see cref="Target"/> input element
         /// </summary>
-        private void LabelActivated()
+        private void LabelActivated(RoutedEventArgs args)
         {
             Target?.Focus();
-        }
-
-        /// <summary>
-        /// Handler for Content property change event
-        /// </summary>
-        /// <param name="obj">new value</param>
-        private void ContentChanged(object obj)
-        {
-            if (obj is string strVal)
-            {
-                ContentTemplate = new FuncDataTemplate<string>(
-                    (val, ns) =>
-                    {
-                        var accessText = new AccessText {
-                            Text = strVal,
-                        };
-                        accessText.AddHandler(AccessKeyHandler.AccessKeyPressedEvent, (s, a) => LabelActivated());
-                        return accessText;
-                    });
-
-                _isContentTemplateProvided = true;
-            }
-            else if (_isContentTemplateProvided)
-            {
-                ContentTemplate = null;
-                _isContentTemplateProvided = false;
-            }
+            args.Handled = Target != null;
         }
 
         /// <summary>
@@ -90,13 +66,9 @@ namespace Avalonia.Controls
         {
             if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
-                LabelActivated();
-                e.Handled = true;
+                LabelActivated(e);
             }
-            else
-            {
-                base.OnPointerPressed(e);
-            }
+            base.OnPointerPressed(e);
         }
     }
 }
