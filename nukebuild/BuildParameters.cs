@@ -19,10 +19,14 @@ public partial class Build
     [Parameter("force-nuget-version")]
     public string ForceNugetVersion { get; set; }
 
+    [Parameter("skip-previewer")]
+    public bool SkipPreviewer { get; set; }
+
     public class BuildParameters
     {
         public string Configuration { get; }
         public bool SkipTests { get; }
+        public bool SkipPreviewer {get;}
         public string MainRepo { get; }
         public string MasterBranch { get; }
         public string RepositoryName { get; }
@@ -63,6 +67,7 @@ public partial class Build
             // ARGUMENTS
             Configuration = b.Configuration ?? "Release";
             SkipTests = b.SkipTests;
+            SkipPreviewer = b.SkipPreviewer;
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";

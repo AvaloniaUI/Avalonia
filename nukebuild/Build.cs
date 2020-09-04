@@ -126,6 +126,7 @@ partial class Build : NukeBuild
 
     Target CompileHtmlPreviewer => _ => _
         .DependsOn(Clean)
+        .OnlyWhenStatic(() => !Parameters.SkipPreviewer)
         .Executes(() =>
         {
             var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
