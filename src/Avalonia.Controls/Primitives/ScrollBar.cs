@@ -141,7 +141,7 @@ namespace Avalonia.Controls.Primitives
                 _ => throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.")
             };
 
-            SetValue(IsVisibleProperty, isVisible, BindingPriority.Style);
+            SetValue(IsVisibleProperty, isVisible);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
