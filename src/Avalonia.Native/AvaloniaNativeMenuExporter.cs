@@ -34,8 +34,9 @@ namespace Avalonia.Native
 
         public bool IsNativeMenuExported => _exported;
 
+#pragma warning disable CS0067
         public event EventHandler OnIsNativeMenuExportedChanged;
-
+#pragma warning restore CS0067
         public void SetNativeMenu(NativeMenu menu)
         {
             _menu = menu == null ? new NativeMenu() : menu;
@@ -98,8 +99,7 @@ namespace Avalonia.Native
                         SetMenu(_nativeWindow, _menu);
                     }
                 }
-                OnIsNativeMenuExportedChanged?
-                    .Invoke(this, EventArgs.Empty);
+
                 _exported = true;
             }
         }
