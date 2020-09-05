@@ -537,18 +537,20 @@ namespace Avalonia.Controls
             return text;
         }
 
-        public async System.Threading.Tasks.Task Cut()
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async void Cut()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             var text = GetSelection();
             if (text is null) return;
 
             _undoRedoHelper.Snapshot();
-            await Copy();
+            Copy();
             DeleteSelection();
             _undoRedoHelper.Snapshot();
         }
 
-        public async System.Threading.Tasks.Task Copy()
+        public async void Copy()
         {
             var text = GetSelection();
             if (text is null) return;
@@ -557,7 +559,7 @@ namespace Avalonia.Controls
                 .SetTextAsync(text);
         }
 
-        public async System.Threading.Tasks.Task Paste()
+        public async void Paste()
         {
             var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
 
@@ -591,7 +593,7 @@ namespace Avalonia.Controls
             {
                 if (!IsPasswordBox)
                 {
-                    Copy().GetAwaiter().GetResult();
+                    Copy();
                 }
 
                 handled = true;
@@ -600,14 +602,14 @@ namespace Avalonia.Controls
             {
                 if (!IsPasswordBox)
                 {
-                   Cut().GetAwaiter().GetResult();
+                    Cut();
                 }
 
                 handled = true;
             }
             else if (Match(keymap.Paste))
             {
-                Paste().GetAwaiter().GetResult();
+                Paste();
                 handled = true;
             }
             else if (Match(keymap.Undo))
