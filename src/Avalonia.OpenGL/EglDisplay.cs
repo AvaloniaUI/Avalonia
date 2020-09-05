@@ -38,7 +38,6 @@ namespace Avalonia.OpenGL
                     var allowedApis = AvaloniaLocator.Current.GetService<AngleOptions>()?.AllowedPlatformApis
                                       ?? new []
                                       {
-                                          AngleOptions.PlatformApi.WGL,
                                           AngleOptions.PlatformApi.DirectX11, 
                                           AngleOptions.PlatformApi.DirectX9
                                       };
@@ -50,8 +49,6 @@ namespace Avalonia.OpenGL
                             dapi = EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE;
                         else if (platformApi == AngleOptions.PlatformApi.DirectX11)
                             dapi = EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE;
-                        else if (platformApi == AngleOptions.PlatformApi.WGL)
-                            dapi = EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE;
                         else
                             continue;
 
