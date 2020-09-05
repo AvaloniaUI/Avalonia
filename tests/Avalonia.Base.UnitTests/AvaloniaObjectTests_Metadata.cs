@@ -65,13 +65,13 @@ namespace Avalonia.Base.UnitTests
                 AvaloniaProperty.Register<Class1, string>("Styled", "foo");
 
             public static readonly DirectProperty<Class1, string> DirectProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>("Styled", o => o._direct, unsetValue: "foo");
+                AvaloniaProperty.RegisterDirect<Class1, string>("Styled", o => o.Direct, unsetValue: "foo");
 
             private string _direct = default;
 
             public string Direct
             {
-                get => GetValue(DirectProperty);
+                get => _direct;
             }
         }
 
@@ -90,7 +90,7 @@ namespace Avalonia.Base.UnitTests
                 Class1.StyledProperty.AddOwner<Class3>();
 
             public static readonly DirectProperty<Class3, string> DirectProperty =
-                Class1.DirectProperty.AddOwner<Class3>(o => o._direct, unsetValue: "baz");
+                Class1.DirectProperty.AddOwner<Class3>(o => o.Direct, unsetValue: "baz");
 
             private string _direct = default;
 
@@ -101,7 +101,7 @@ namespace Avalonia.Base.UnitTests
 
             public string Direct
             {
-                get => GetValue(DirectProperty);
+                get => _direct;
             }
         }
     }
