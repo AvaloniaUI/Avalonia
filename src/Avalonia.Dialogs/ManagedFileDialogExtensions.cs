@@ -1,19 +1,15 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Dialogs;
-using Avalonia.Platform;
 
 namespace Avalonia.Dialogs
 {
     public static class ManagedFileDialogExtensions
     {
-        class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
+        private class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
         {
-            async Task<string[]> Show(SystemDialog d, IWindowImpl parent, ManagedFileDialogOptions options = null)
+            async Task<string[]> Show(SystemDialog d, Window parent, ManagedFileDialogOptions options = null)
             {
                 var model = new ManagedFileChooserViewModel((FileSystemDialog)d,
                     options ?? new ManagedFileDialogOptions());
@@ -41,19 +37,19 @@ namespace Avalonia.Dialogs
                 return result;
             }
 
-            public async Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
+            public async Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
             {
                 return await Show(dialog, parent);
             }
 
-            public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+            public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
             {
                 return (await Show(dialog, parent))?.FirstOrDefault();
             }
             
             public async Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent, ManagedFileDialogOptions options)
             {
-                return await Show(dialog, parent.PlatformImpl, options);
+                return await Show(dialog, parent, options);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
@@ -169,6 +170,154 @@ namespace Avalonia.Layout.UnitTests
             Assert.False(root.IsMeasureValid);
             Assert.False(control.IsMeasureValid);
             target.Verify(x => x.InvalidateMeasure(root), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(16, 6, 5.333333333333333)]
+        [InlineData(18, 10, 4)]
+        public void UseLayoutRounding_Arranges_Center_Alignment_Correctly_With_Fractional_Scaling(
+            double containerWidth,
+            double childWidth,
+            double expectedX)
+        {
+            Border target;
+            var root = new TestRoot
+            {
+                LayoutScaling = 1.5,
+                UseLayoutRounding = true,
+                Child = new Decorator
+                {
+                    Width = containerWidth,
+                    Height = 100,
+                    Child = target = new Border
+                    {
+                        Width = childWidth,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    }
+                }
+            };
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(expectedX, 0, childWidth, 100), target.Bounds);
+        }
+
+        [Fact]
+        public void LayoutUpdated_Is_Called_At_End_Of_Layout_Pass()
+        {
+            Border border1;
+            Border border2;
+            var root = new TestRoot
+            {
+                Child = border1 = new Border
+                {
+                    Child = border2 = new Border(),
+                },
+            };
+            var raised = 0;
+
+            void ValidateBounds(object sender, EventArgs e)
+            {
+                Assert.Equal(new Rect(0, 0, 100, 100), border1.Bounds);
+                Assert.Equal(new Rect(0, 0, 100, 100), border2.Bounds);
+                ++raised;
+            }
+
+            root.LayoutUpdated += ValidateBounds;
+            border1.LayoutUpdated += ValidateBounds;
+            border2.LayoutUpdated += ValidateBounds;
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(0, 0, 100, 100));
+            
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(3, raised);
+            Assert.Equal(new Rect(0, 0, 100, 100), border1.Bounds);
+            Assert.Equal(new Rect(0, 0, 100, 100), border2.Bounds);
+        }
+
+        [Fact]
+        public void LayoutUpdated_Subscribes_To_LayoutManager()
+        {
+            Border target;
+            var layoutManager = new Mock<ILayoutManager>();
+            layoutManager.SetupAdd(m => m.LayoutUpdated += (sender, args) => { });
+
+            var root = new TestRoot
+            {
+                Child = new Border
+                {
+                    Child = target = new Border(),
+                },
+                LayoutManager = layoutManager.Object,
+            };
+
+            void Handler(object sender, EventArgs e) {}
+
+            layoutManager.Invocations.Clear();
+            target.LayoutUpdated += Handler;
+
+            layoutManager.VerifyAdd(
+                x => x.LayoutUpdated += It.IsAny<EventHandler>(),
+                Times.Once);
+
+            layoutManager.Invocations.Clear();
+            target.LayoutUpdated -= Handler;
+
+            layoutManager.VerifyRemove(
+                x => x.LayoutUpdated -= It.IsAny<EventHandler>(),
+                Times.Once);
+        }
+
+        [Fact]
+        public void LayoutManager_LayoutUpdated_Is_Subscribed_When_Attached_To_Tree()
+        {
+            Border border1;
+            var layoutManager = new Mock<ILayoutManager>();
+            layoutManager.SetupAdd(m => m.LayoutUpdated += (sender, args) => { });
+
+            var root = new TestRoot
+            {
+                Child = border1 = new Border(),
+                LayoutManager = layoutManager.Object,
+            };
+
+            var border2 = new Border();
+            border2.LayoutUpdated += (s, e) => { };
+
+            layoutManager.Invocations.Clear();
+            border1.Child = border2;
+
+            layoutManager.VerifyAdd(
+                x => x.LayoutUpdated += It.IsAny<EventHandler>(),
+                Times.Once);
+        }
+
+        [Fact]
+        public void LayoutManager_LayoutUpdated_Is_Unsubscribed_When_Detached_From_Tree()
+        {
+            Border border1;
+            var layoutManager = new Mock<ILayoutManager>();
+            layoutManager.SetupAdd(m => m.LayoutUpdated += (sender, args) => { });
+
+            var root = new TestRoot
+            {
+                Child = border1 = new Border(),
+                LayoutManager = layoutManager.Object,
+            };
+
+            var border2 = new Border();
+            border2.LayoutUpdated += (s, e) => { };
+            border1.Child = border2;
+
+            layoutManager.Invocations.Clear();
+            border1.Child = null;
+
+            layoutManager.VerifyRemove(
+                x => x.LayoutUpdated -= It.IsAny<EventHandler>(),
+                Times.Once);
         }
 
         private class TestLayoutable : Layoutable

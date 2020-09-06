@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.LinuxFramebuffer.Input;
@@ -9,7 +10,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    class FramebufferToplevelImpl : IEmbeddableWindowImpl, IScreenInfoProvider
+    class FramebufferToplevelImpl : ITopLevelImpl, IScreenInfoProvider
     {
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
@@ -64,19 +65,24 @@ namespace Avalonia.LinuxFramebuffer
         public IMouseDevice MouseDevice => new MouseDevice();
         public IPopupImpl CreatePopup() => null;
 
-        public double Scaling => _outputBackend.Scaling;
+        public double RenderScaling => _outputBackend.Scaling;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
-        public Action Closed { get; set; }
-        public event Action LostFocus
-        {
-            add {}
-            remove {}
-        }
 
-        public Size ScaledSize => _outputBackend.PixelSize.ToSize(Scaling);
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+
+        public Action Closed { get; set; }
+        public Action LostFocus { get; set; }
+
+        public Size ScaledSize => _outputBackend.PixelSize.ToSize(RenderScaling);
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 }

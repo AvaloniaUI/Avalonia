@@ -1,0 +1,24 @@
+<Style xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Style.Resources>
+    <!-- https://docs.microsoft.com/en-us/previous-versions/windows/apps/dn518235(v=win.10)?redirectedfrom=MSDN -->
+    <!-- SystemColor Color Resources (Reflect OS High Contrast Settings) -->
+    <Color x:Key="SystemColorButtonFaceColor">#FFF0F0F0</Color>
+    <Color x:Key="SystemColorButtonTextColor">#FF000000</Color>
+    <Color x:Key="SystemColorGrayTextColor">#FF6D6D6D</Color>
+    <Color x:Key="SystemColorHighlightColor">#FF3399FF</Color>
+    <Color x:Key="SystemColorHighlightTextColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemColorHotlightColor">#FF0066CC</Color>
+    <Color x:Key="SystemColorWindowColor">#FFFFFFFF</Color>
+    <Color x:Key="SystemColorWindowTextColor">#FF000000</Color>
+    <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Themes.Fluent/Assets#Roboto</FontFamily>
+    <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
+
+    <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+    <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
+    <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+    <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
+  </Style.Resources>
+</Style>

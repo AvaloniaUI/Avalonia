@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -18,7 +16,7 @@ namespace Avalonia.Win32.Interop
     [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1310:FieldNamesMustNotContainUnderscore", Justification = "Using Win32 naming for consistency.")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements must be documented", Justification = "Look in Win32 docs.")]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1602:Enumeration items must be documented", Justification = "Look in Win32 docs.")]
-    internal static class UnmanagedMethods
+    internal unsafe static class UnmanagedMethods
     {
         public const int CW_USEDEFAULT = unchecked((int)0x80000000);
 
@@ -463,6 +461,7 @@ namespace Avalonia.Win32.Interop
             WS_SIZEFRAME = 0x40000,
             WS_SYSMENU = 0x80000,
             WS_TABSTOP = 0x10000,
+            WS_THICKFRAME = 0x40000,
             WS_VISIBLE = 0x10000000,
             WS_VSCROLL = 0x200000,
             WS_EX_DLGMODALFRAME = 0x00000001,
@@ -991,6 +990,12 @@ namespace Avalonia.Win32.Interop
             }
         }
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+
+        [DllImport("user32.dll")]
+        public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
@@ -1002,6 +1007,10 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool InvalidateRect(IntPtr hWnd, ref RECT lpRect, bool bErase);
+
+
+        [DllImport("user32.dll")]
+        public static extern bool InvalidateRect(IntPtr hWnd, RECT* lpRect, bool bErase);
 
         [DllImport("user32.dll")]
         public static extern bool IsWindowEnabled(IntPtr hWnd);
@@ -1051,7 +1060,21 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool SetFocus(IntPtr hWnd);
         [DllImport("user32.dll")]
+        public static extern IntPtr GetFocus();
+        [DllImport("user32.dll")]
         public static extern bool SetParent(IntPtr hWnd, IntPtr hWndNewParent);
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetParent(IntPtr hWnd);
+
+        public enum GetAncestorFlags
+        {
+            GA_PARENT = 1,
+            GA_ROOT = 2,
+            GA_ROOTOWNER = 3
+        }
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetAncestor(IntPtr hwnd, GetAncestorFlags gaFlags);
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
 
@@ -1149,7 +1172,10 @@ namespace Avalonia.Win32.Interop
         internal static extern int CoCreateInstance(ref Guid clsid,
             IntPtr ignore1, int ignore2, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown), Out] out object pUnkOuter);
 
-        
+        [DllImport("ole32.dll", PreserveSig = true)]
+        internal static extern int CoCreateInstance(ref Guid clsid,
+            IntPtr ignore1, int ignore2, ref Guid iid, [Out] out IntPtr pUnkOuter);
+
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string pszPath, IntPtr pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem ppv);
 
@@ -1167,6 +1193,12 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
+
+        [DllImport("ole32.dll", PreserveSig = false)]
+        public static extern int OleGetClipboard(out IOleDataObject dataObject);
+
+        [DllImport("ole32.dll", PreserveSig = true)]
+        public static extern int OleSetClipboard(IOleDataObject dataObject);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);
@@ -1298,7 +1330,142 @@ namespace Avalonia.Win32.Interop
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
         internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, out int finalEffect);
 
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
 
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmIsCompositionEnabled(out bool enabled);
+
+        [DllImport("dwmapi.dll")]
+        public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
+        
+        [DllImport("dwmapi.dll")]
+        public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
+
+        [Flags]
+        public enum DWM_BB
+        {
+            Enable = 1,
+            BlurRegion = 2,
+            TransitionMaximized = 4
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DWM_BLURBEHIND
+        {
+            public DWM_BB dwFlags;
+            public bool fEnable;
+            public IntPtr hRgnBlur;
+            public bool fTransitionOnMaximized;
+
+            public DWM_BLURBEHIND(bool enabled)
+            {
+                fEnable = enabled ? true : false;
+                hRgnBlur = IntPtr.Zero;
+                fTransitionOnMaximized = false;
+                dwFlags = DWM_BB.Enable;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct RTL_OSVERSIONINFOEX
+        {
+            internal uint dwOSVersionInfoSize;
+            internal uint dwMajorVersion;
+            internal uint dwMinorVersion;
+            internal uint dwBuildNumber;
+            internal uint dwPlatformId;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+            internal string szCSDVersion;
+        }
+
+        [DllImport("ntdll")]
+        private static extern int RtlGetVersion(out RTL_OSVERSIONINFOEX lpVersionInformation);
+
+        internal static Version RtlGetVersion()
+        {
+            RTL_OSVERSIONINFOEX v = new RTL_OSVERSIONINFOEX();
+            v.dwOSVersionInfoSize = (uint)Marshal.SizeOf(v);
+            if (RtlGetVersion(out v) == 0)
+            {
+                return new Version((int)v.dwMajorVersion, (int)v.dwMinorVersion, (int)v.dwBuildNumber, (int)v.dwPlatformId);
+            }
+            else
+            {
+                throw new Exception("RtlGetVersion failed!");
+            }
+        }
+        
+        [DllImport("kernel32", EntryPoint="WaitForMultipleObjectsEx", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern int IntWaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable);
+
+        public const int WAIT_FAILED = unchecked((int)0xFFFFFFFF);
+
+        internal static int WaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable)
+        {
+            int result = IntWaitForMultipleObjectsEx(nCount, pHandles, bWaitAll, dwMilliseconds, bAlertable);
+            if(result ==  WAIT_FAILED)
+            {
+                throw new Win32Exception();
+            }
+
+            return result;
+        }
+
+        [DllImport("user32.dll")]
+        internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct WindowCompositionAttributeData
+        {
+            public WindowCompositionAttribute Attribute;
+            public IntPtr Data;
+            public int SizeOfData;
+        }
+
+        internal enum WindowCompositionAttribute
+        {
+            // ...
+            WCA_ACCENT_POLICY = 19
+            // ...
+        }
+
+        internal enum AccentState
+        {
+            ACCENT_DISABLED = 0,
+            ACCENT_ENABLE_GRADIENT = 1,
+            ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
+            ACCENT_ENABLE_BLURBEHIND = 3,
+            ACCENT_ENABLE_ACRYLIC = 4, //1703 and above
+            ACCENT_ENABLE_HOSTBACKDROP = 5,        // RS5 1809
+            ACCENT_INVALID_STATE = 6
+        }
+
+        internal enum AccentFlags
+        {
+            DrawLeftBorder = 0x20,
+            DrawTopBorder = 0x40,
+            DrawRightBorder = 0x80,
+            DrawBottomBorder = 0x100,            
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct AccentPolicy
+        {
+            public AccentState AccentState;
+            public int AccentFlags;
+            public int GradientColor;
+            public int AnimationId;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct MARGINS
+        {
+            public int cxLeftWidth;
+            public int cxRightWidth;
+            public int cyTopHeight;
+            public int cyBottomHeight;
+        }
 
         public enum MONITOR
         {
@@ -1635,6 +1802,8 @@ namespace Avalonia.Win32.Interop
             public static readonly Guid SaveFileDialog = Guid.Parse("C0B4E2F3-BA21-4773-8DBA-335EC946EB8B");
             public static readonly Guid IFileDialog = Guid.Parse("42F85136-DB7E-439C-85F1-E4075D135FC8");
             public static readonly Guid IShellItem = Guid.Parse("43826D1E-E718-42EE-BC55-A1E261C37BFE");
+            public static readonly Guid TaskBarList = Guid.Parse("56FDF344-FD6D-11D0-958A-006097C9A090");
+            public static readonly Guid ITaskBarList2 = Guid.Parse("ea1afb91-9e28-4b86-90e9-9e9f8a5eefaf");
         }
 
         [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -1866,6 +2035,22 @@ namespace Avalonia.Win32.Interop
             public string pszName;
             [MarshalAs(UnmanagedType.LPWStr)]
             public string pszSpec;
+        }
+
+        public delegate void MarkFullscreenWindow(IntPtr This, IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool fullscreen);
+        public delegate HRESULT HrInit(IntPtr This);
+
+        public struct ITaskBarList2VTable
+        {
+            public IntPtr IUnknown1;
+            public IntPtr IUnknown2;
+            public IntPtr IUnknown3;
+            public IntPtr HrInit;
+            public IntPtr AddTab;
+            public IntPtr DeleteTab;
+            public IntPtr ActivateTab;
+            public IntPtr SetActiveAlt;
+            public IntPtr MarkFullscreenWindow;
         }
     }
 

@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Media
+﻿using Avalonia.Platform;
+
+namespace Avalonia.Media
 {
     public abstract class Drawing : AvaloniaObject
     {

@@ -1,5 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
 using System;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -110,13 +108,22 @@ namespace Avalonia.Native
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
-                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows))
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
-                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
-                ;
+                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory));
+
             if (_options.UseGpu)
-                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
-                    .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
+            {
+                try
+                {
+                    AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
+                        .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
         }
 
         public IWindowImpl CreateWindow()
@@ -124,7 +131,7 @@ namespace Avalonia.Native
             return new WindowImpl(_factory, _options, _glFeature);
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

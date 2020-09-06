@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
 using Xunit;
 
@@ -180,6 +177,35 @@ namespace Avalonia.Input.UnitTests
                         }
                     },
                     (next = new Button { Name = "Button4" }),
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
+
+            Assert.Equal(next, result);
+        }
+
+        [Fact]
+        public void Next_Skips_Non_TabStop_Siblings()
+        {
+            Button current;
+            Button next;
+
+            var top = new StackPanel
+            {
+                Children =
+                {
+                    new StackPanel
+                    {
+                        Children =
+                        {
+                            new Button { Name = "Button1" },
+                            new Button { Name = "Button2" },
+                            (current = new Button { Name = "Button3" }),
+                            new Button { Name="Button4", [KeyboardNavigation.IsTabStopProperty] = false }
+                        }
+                    },
+                    (next = new Button { Name = "Button5" }),
                 }
             };
 

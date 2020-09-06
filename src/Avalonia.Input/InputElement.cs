@@ -1,9 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -159,6 +158,7 @@ namespace Avalonia.Input
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
+        private bool _isFocusVisible;
         private bool _isPointerOver;
         private GestureRecognizerCollection _gestureRecognizers;
 
@@ -181,10 +181,11 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
+        }
 
-            PseudoClass<InputElement, bool>(IsEffectivelyEnabledProperty, x => !x, ":disabled");
-            PseudoClass<InputElement>(IsFocusedProperty, ":focus");
-            PseudoClass<InputElement>(IsPointerOverProperty, ":pointerover");
+        public InputElement()
+        {
+            UpdatePseudoClasses(IsFocused, IsPointerOver);
         }
 
         /// <summary>
@@ -342,7 +343,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the control is focused.
+        /// Gets a value indicating whether the control is focused.
         /// </summary>
         public bool IsFocused
         {
@@ -360,7 +361,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the pointer is currently over the control.
+        /// Gets a value indicating whether the pointer is currently over the control.
         /// </summary>
         public bool IsPointerOver
         {
@@ -372,7 +373,11 @@ namespace Avalonia.Input
         public bool IsEffectivelyEnabled
         {
             get => _isEffectivelyEnabled;
-            private set => SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
+            private set
+            {
+                SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
+                PseudoClasses.Set(":disabled", !value);
+            }
         }
 
         public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
@@ -423,7 +428,9 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnGotFocus(GotFocusEventArgs e)
         {
-            IsFocused = e.Source == this;
+            var isFocused = e.Source == this;
+            _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
+            IsFocused = isFocused;
         }
 
         /// <summary>
@@ -432,6 +439,7 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnLostFocus(RoutedEventArgs e)
         {
+            _isFocusVisible = false;
             IsFocused = false;
         }
 
@@ -522,6 +530,20 @@ namespace Avalonia.Input
         {
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsFocusedProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
+            }
+            else if (change.Property == IsPointerOverProperty)
+            {
+                UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
+            }
+        }
+
         /// <summary>
         /// Updates the <see cref="IsEffectivelyEnabled"/> property value according to the parent
         /// control's enabled state and <see cref="IsEnabledCore"/>.
@@ -576,6 +598,20 @@ namespace Avalonia.Input
                 var child = children[i] as InputElement;
 
                 child?.UpdateIsEffectivelyEnabled(this);
+            }
+        }
+
+        private void UpdatePseudoClasses(bool? isFocused, bool? isPointerOver)
+        {
+            if (isFocused.HasValue)
+            {
+                PseudoClasses.Set(":focus", isFocused.Value);
+                PseudoClasses.Set(":focus-visible", _isFocusVisible);
+            }
+            
+            if (isPointerOver.HasValue)
+            {
+                PseudoClasses.Set(":pointerover", isPointerOver.Value);
             }
         }
     }

@@ -126,7 +126,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view.Visibility = ViewStates.Visible;
         }
 
-        public double Scaling => 1;
+        public double RenderScaling => 1;
 
         void Draw()
         {
@@ -194,6 +194,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         }
 
         public IPopupImpl CreatePopup() => null;
+        
+        public Action LostFocus { get; set; }
 
         ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
     }

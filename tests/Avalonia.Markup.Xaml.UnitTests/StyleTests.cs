@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
@@ -20,8 +17,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
             {
                 var xaml = "<Style Selector='Button' xmlns='https://github.com/avaloniaui'><Setter Property='Content' Value='{Binding}'/></Style>";
-                var loader = new AvaloniaXamlLoader();
-                var style = (Style)loader.Load(xaml);
+                var style = (Style)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var setter = (Setter)(style.Setters.First());
 
                 Assert.IsType<Binding>(setter.Value);
@@ -53,42 +49,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                     }
                 };
 
-                setter.Apply(null, control, null);
-                Assert.Equal("foo", control.Text);
-
-                control.Text = "bar";
-                Assert.Equal("bar", data.Foo);
-            }
-        }
-
-        [Fact]
-        public void Setter_With_TwoWay_Binding_And_Activator_Should_Update_Source()
-        {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
-            {
-                var data = new Data
-                {
-                    Foo = "foo",
-                };
-
-                var control = new TextBox
-                {
-                    DataContext = data,
-                };
-
-                var setter = new Setter
-                {
-                    Property = TextBox.TextProperty,
-                    Value = new Binding
-                    {
-                        Path = "Foo",
-                        Mode = BindingMode.TwoWay
-                    }
-                };
-
-                var activator = Observable.Never<bool>().StartWith(true);
-
-                setter.Apply(null, control, activator);
+                setter.Instance(control).Start(false);
                 Assert.Equal("foo", control.Text);
 
                 control.Text = "bar";

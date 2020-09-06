@@ -1,19 +1,24 @@
 using System.Collections.Generic;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
     public class VisualLayerManager : Decorator
     {
         private const int AdornerZIndex = int.MaxValue - 100;
-        private const int OverlayZIndex = int.MaxValue - 99;
-        private IStyleHost _styleRoot;
+        private const int ChromeZIndex = int.MaxValue - 99;
+        private const int LightDismissOverlayZIndex = int.MaxValue - 98;
+        private const int OverlayZIndex = int.MaxValue - 97;
+
+        private ILogicalRoot _logicalRoot;
         private readonly List<Control> _layers = new List<Control>();
-        
+
+        public static readonly StyledProperty<ChromeOverlayLayer> ChromeOverlayLayerProperty =
+            AvaloniaProperty.Register<VisualLayerManager, ChromeOverlayLayer>(nameof(ChromeOverlayLayer));
 
         public bool IsPopup { get; set; }
-        
+
         public AdornerLayer AdornerLayer
         {
             get
@@ -25,6 +30,26 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        public ChromeOverlayLayer ChromeOverlayLayer
+        {
+            get
+            {
+                var current = GetValue(ChromeOverlayLayerProperty);
+
+                if (current is null)
+                {
+                    var chromeOverlayLayer = new ChromeOverlayLayer();
+                    AddLayer(chromeOverlayLayer, ChromeZIndex);
+
+                    SetValue(ChromeOverlayLayerProperty, chromeOverlayLayer);
+
+                    current = chromeOverlayLayer;
+                }
+
+                return current;
+            }
+        }
+
         public OverlayLayer OverlayLayer
         {
             get
@@ -32,8 +57,29 @@ namespace Avalonia.Controls.Primitives
                 if (IsPopup)
                     return null;
                 var rv = FindLayer<OverlayLayer>();
-                if(rv == null)
+                if (rv == null)
                     AddLayer(rv = new OverlayLayer(), OverlayZIndex);
+                return rv;
+            }
+        }
+
+        public LightDismissOverlayLayer LightDismissOverlayLayer
+        {
+            get
+            {
+                if (IsPopup)
+                    return null;
+                var rv = FindLayer<LightDismissOverlayLayer>();
+                if (rv == null)
+                {
+                    rv = new LightDismissOverlayLayer
+                    {
+                        Background = Brushes.Transparent,
+                        IsVisible = false
+                    };
+
+                    AddLayer(rv, LightDismissOverlayZIndex);
+                }
                 return rv;
             }
         }
@@ -53,15 +99,23 @@ namespace Avalonia.Controls.Primitives
             layer.ZIndex = zindex;
             VisualChildren.Add(layer);
             if (((ILogical)this).IsAttachedToLogicalTree)
-                ((ILogical)layer).NotifyAttachedToLogicalTree(new LogicalTreeAttachmentEventArgs(_styleRoot));
+                ((ILogical)layer).NotifyAttachedToLogicalTree(
+                    new LogicalTreeAttachmentEventArgs(_logicalRoot, layer, this));
             InvalidateArrange();
         }
-        
-        
+
+        protected override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            foreach (var l in _layers)
+                ((ILogical)l).NotifyResourcesChanged(e);
+
+            base.NotifyChildResourcesChanged(e);
+        }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
-            _styleRoot = e.Root;
+            _logicalRoot = e.Root;
 
             foreach (var l in _layers)
                 ((ILogical)l).NotifyAttachedToLogicalTree(e);
@@ -69,12 +123,11 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            _styleRoot = null;
+            _logicalRoot = null;
             base.OnDetachedFromLogicalTree(e);
             foreach (var l in _layers)
                 ((ILogical)l).NotifyDetachedFromLogicalTree(e);
         }
-
 
         protected override Size MeasureOverride(Size availableSize)
         {

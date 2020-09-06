@@ -2,11 +2,12 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+      <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
       <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
-    </ItemGroup>
-
+    </ItemGroup>    
 </Project>

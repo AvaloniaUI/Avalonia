@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -166,6 +163,10 @@ namespace Avalonia.Rendering.SceneGraph
             var visual = node.Visual;
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
+            var clipToBoundsRadius = visual is IVisualWithRoundRectClip roundRectClip ?
+                roundRectClip.ClipToBoundsRadius :
+                default;
+            
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
@@ -204,6 +205,7 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.LayoutBounds = globalBounds;
+                    node.ClipToBoundsRadius = clipToBoundsRadius;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
 

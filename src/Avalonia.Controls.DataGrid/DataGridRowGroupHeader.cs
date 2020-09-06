@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -68,25 +69,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGridRowGroupHeader, double>(
                 nameof(SublevelIndent),
                 defaultValue: DataGrid.DATAGRID_defaultRowGroupSublevelIndent,
-                validate: ValidateSublevelIndent);
+                validate: IsValidSublevelIndent);
 
-        private static double ValidateSublevelIndent(DataGridRowGroupHeader header, double value)
+        private static bool IsValidSublevelIndent(double value)
         {
-            // We don't need to revert to the old value if our input is bad because we never read this property value
-            if (double.IsNaN(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToNAN(nameof(SublevelIndent));
-            }
-            else if (double.IsInfinity(value))
-            {
-                throw DataGridError.DataGrid.ValueCannotBeSetToInfinity(nameof(SublevelIndent));
-            }
-            else if (value < 0)
-            {
-                throw DataGridError.DataGrid.ValueMustBeGreaterThanOrEqualTo(nameof(value), nameof(SublevelIndent), 0);
-            }
-
-            return value;
+            return !double.IsNaN(value) && !double.IsInfinity(value) && value >= 0;
         }
 
         /// <summary>
@@ -110,6 +97,7 @@ namespace Avalonia.Controls
         static DataGridRowGroupHeader()
         {
             SublevelIndentProperty.Changed.AddClassHandler<DataGridRowGroupHeader>((x,e) => x.OnSublevelIndentChanged(e));
+            PressedMixin.Attach<DataGridRowGroupHeader>();
         }
 
         /// <summary>
@@ -182,7 +170,7 @@ namespace Avalonia.Controls
 
         private IDisposable _expanderButtonSubscription;
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _rootElement = e.NameScope.Find<Panel>(DataGridRow.DATAGRIDROW_elementRoot);
 
@@ -213,22 +201,24 @@ namespace Avalonia.Controls
             _itemCountElement = e.NameScope.Find<TextBlock>(DATAGRIDROWGROUPHEADER_itemCountElement);
             _propertyNameElement = e.NameScope.Find<TextBlock>(DATAGRIDROWGROUPHEADER_propertyNameElement);
             UpdateTitleElements();
-
-            base.OnTemplateApplied(e);
         }
 
         internal void ApplyHeaderStatus()
         {
             if (_headerElement != null && OwningGrid.AreRowHeadersVisible)
             {
-                _headerElement.ApplyOwnerStatus();
+                _headerElement.UpdatePseudoClasses();
             }
         }
 
-        //TODO Implement
-        internal void ApplyState(bool useTransitions)
+        internal void UpdatePseudoClasses()
         {
+            PseudoClasses.Set(":current", IsCurrent);
 
+            if (RowGroupInfo?.CollectionViewGroup != null)
+            {
+                PseudoClasses.Set(":expanded", RowGroupInfo.IsVisible && RowGroupInfo.CollectionViewGroup.ItemCount > 0);
+            }
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -291,7 +281,7 @@ namespace Avalonia.Controls
         //TODO TabStop
         private void DataGridRowGroupHeader_PointerPressed(PointerPressedEventArgs e)
         {
-            if (OwningGrid != null && e.MouseButton == MouseButton.Left)
+            if (OwningGrid != null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 if (OwningGrid.IsDoubleClickRecordsClickOnCall(this) && !e.Handled)
                 {
@@ -344,7 +334,7 @@ namespace Avalonia.Controls
         {
             if (_headerElement != null && OwningGrid != null)
             {
-                _headerElement.IsVisible = OwningGrid.AreColumnHeadersVisible;
+                _headerElement.IsVisible = OwningGrid.AreRowHeadersVisible;
             }
         }
 
@@ -360,7 +350,7 @@ namespace Avalonia.Controls
         {
             EnsureExpanderButtonIsChecked();
             EnsureHeaderVisibility();
-            ApplyState(useTransitions: false);
+            UpdatePseudoClasses();
             ApplyHeaderStatus();
         }
 
@@ -369,7 +359,7 @@ namespace Avalonia.Controls
             if (IsEnabled)
             {
                 IsMouseOver = true;
-                ApplyState(useTransitions: true);
+                UpdatePseudoClasses();
             }
 
             base.OnPointerEnter(e);
@@ -380,7 +370,7 @@ namespace Avalonia.Controls
             if (IsEnabled)
             {
                 IsMouseOver = false;
-                ApplyState(useTransitions: true);
+                UpdatePseudoClasses();
             }
 
             base.OnPointerLeave(e);
@@ -418,7 +408,7 @@ namespace Avalonia.Controls
 
                 EnsureExpanderButtonIsChecked();
 
-                ApplyState(true /*useTransitions*/);
+                UpdatePseudoClasses();
             }
         }
 

@@ -39,6 +39,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<WindowBase, bool>(nameof(Topmost));
 
+        private int _autoSizing;
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
         private bool _ignoreVisibilityChange;
@@ -97,11 +98,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Whether an auto-size operation is in progress.
         /// </summary>
-        protected bool AutoSizing
-        {
-            get;
-            private set;
-        }
+        protected bool AutoSizing => _autoSizing > 0;
 
         /// <summary>
         /// Gets or sets the owner of the window.
@@ -109,7 +106,7 @@ namespace Avalonia.Controls
         public WindowBase Owner
         {
             get { return _owner; }
-            set { SetAndRaise(OwnerProperty, ref _owner, value); }
+            protected set { SetAndRaise(OwnerProperty, ref _owner, value); }
         }
 
         /// <summary>
@@ -162,7 +159,7 @@ namespace Avalonia.Controls
 
                 if (!_hasExecutedInitialLayoutPass)
                 {
-                    LayoutManager.ExecuteInitialLayoutPass(this);
+                    LayoutManager.ExecuteInitialLayoutPass();
                     _hasExecutedInitialLayoutPass = true;
                 }
                 PlatformImpl?.Show();
@@ -186,8 +183,8 @@ namespace Avalonia.Controls
         /// </remarks>
         protected IDisposable BeginAutoSizing()
         {
-            AutoSizing = true;
-            return Disposable.Create(() => AutoSizing = false);
+            ++_autoSizing;
+            return Disposable.Create(() => --_autoSizing);
         }
 
         /// <summary>
@@ -241,6 +238,7 @@ namespace Avalonia.Controls
         /// </remarks>
         protected override Size MeasureCore(Size availableSize)
         {
+            ApplyStyling();
             ApplyTemplate();
 
             var constraint = LayoutHelper.ApplyLayoutConstraints(this, availableSize);

@@ -8,41 +8,57 @@ namespace Avalonia.Native
 {
     class GlPlatformFeature : IWindowingPlatformGlFeature
     {
+        private readonly IAvnGlDisplay _display;
+
         public GlPlatformFeature(IAvnGlDisplay display)
         {
+            _display = display;
             var immediate = display.CreateContext(null);
             var deferred = display.CreateContext(immediate);
-            GlDisplay = new GlDisplay(display, immediate.SampleCount, immediate.StencilSize);
             
-            ImmediateContext = new GlContext(Display, immediate);
-            DeferredContext = new GlContext(Display, deferred);
+
+            int major, minor;
+            GlInterface glInterface;
+            using (immediate.MakeCurrent())
+            {
+                var basic = new GlBasicInfoInterface(display.GetProcAddress);
+                basic.GetIntegerv(GlConsts.GL_MAJOR_VERSION, out major);
+                basic.GetIntegerv(GlConsts.GL_MINOR_VERSION, out minor);
+                _version = new GlVersion(GlProfileType.OpenGL, major, minor);
+                glInterface = new GlInterface(_version, (name) =>
+                {
+                    var rv = _display.GetProcAddress(name);
+                    return rv;
+                });
+            }
+
+            GlDisplay = new GlDisplay(display, glInterface, immediate.SampleCount, immediate.StencilSize);
+            
+            ImmediateContext = new GlContext(GlDisplay, immediate, _version);
+            DeferredContext = new GlContext(GlDisplay, deferred, _version);
         }
 
-        public IGlContext ImmediateContext { get; }
+        internal IGlContext ImmediateContext { get; }
+        public IGlContext MainContext => DeferredContext;
         internal GlContext DeferredContext { get; }
         internal GlDisplay GlDisplay;
-        public GlDisplay Display => GlDisplay;
+        private readonly GlVersion _version;
+
+        public IGlContext CreateContext() => new GlContext(GlDisplay,
+            _display.CreateContext(((GlContext)ImmediateContext).Context), _version);
     }
 
-    class GlDisplay : IGlDisplay
+    class GlDisplay
     {
         private readonly IAvnGlDisplay _display;
 
-        public GlDisplay(IAvnGlDisplay display, int sampleCount, int stencilSize)
+        public GlDisplay(IAvnGlDisplay display, GlInterface glInterface, int sampleCount, int stencilSize)
         {
             _display = display;
             SampleCount = sampleCount;
             StencilSize = stencilSize;
-            GlInterface = new GlInterface((name, optional) =>
-            {
-                var rv = _display.GetProcAddress(name);
-                if (rv == IntPtr.Zero && !optional)
-                    throw new OpenGlException($"{name} not found in system OpenGL");
-                return rv;
-            });
+            GlInterface = glInterface;
         }
-
-        public GlDisplayType Type => GlDisplayType.OpenGL2;
 
         public GlInterface GlInterface { get; }
 
@@ -55,19 +71,26 @@ namespace Avalonia.Native
 
     class GlContext : IGlContext
     {
-        public IAvnGlContext Context { get; }
+        private readonly GlDisplay _display;
+        public IAvnGlContext Context { get; private set; }
 
-        public GlContext(GlDisplay display, IAvnGlContext context)
+        public GlContext(GlDisplay display, IAvnGlContext context, GlVersion version)
         {
-            Display = display;
+            _display = display;
             Context = context;
+            Version = version;
         }
 
-        public IGlDisplay Display { get; }
+        public GlVersion Version { get; }
+        public GlInterface GlInterface => _display.GlInterface;
+        public int SampleCount => _display.SampleCount;
+        public int StencilSize => _display.StencilSize;
+        public IDisposable MakeCurrent() => Context.MakeCurrent();
 
-        public void MakeCurrent()
+        public void Dispose()
         {
-            Context.LegacyMakeCurrent();
+            Context.Dispose();
+            Context = null;
         }
     }
 
@@ -75,15 +98,18 @@ namespace Avalonia.Native
     class GlPlatformSurfaceRenderTarget : IGlPlatformSurfaceRenderTarget
     {
         private IAvnGlSurfaceRenderTarget _target;
-        public GlPlatformSurfaceRenderTarget(IAvnGlSurfaceRenderTarget target)
+        private readonly IGlContext _context;
+
+        public GlPlatformSurfaceRenderTarget(IAvnGlSurfaceRenderTarget target, IGlContext context)
         {
             _target = target;
+            _context = context;
         }
 
         public IGlPlatformSurfaceRenderingSession BeginDraw()
         {
             var feature = (GlPlatformFeature)AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
-            return new GlPlatformSurfaceRenderingSession(feature.Display, _target.BeginDrawing());
+            return new GlPlatformSurfaceRenderingSession(_context, _target.BeginDrawing());
         }
 
         public void Dispose()
@@ -97,13 +123,13 @@ namespace Avalonia.Native
     {
         private IAvnGlSurfaceRenderingSession _session;
 
-        public GlPlatformSurfaceRenderingSession(GlDisplay display, IAvnGlSurfaceRenderingSession session)
+        public GlPlatformSurfaceRenderingSession(IGlContext context, IAvnGlSurfaceRenderingSession session)
         {
-            Display = display;
+            Context = context;
             _session = session;
         }
 
-        public IGlDisplay Display { get; }
+        public IGlContext Context { get; }
 
         public PixelSize Size
         {
@@ -129,14 +155,16 @@ namespace Avalonia.Native
     class GlPlatformSurface : IGlPlatformSurface
     {
         private readonly IAvnWindowBase _window;
+        private readonly IGlContext _context;
 
-        public GlPlatformSurface(IAvnWindowBase window)
+        public GlPlatformSurface(IAvnWindowBase window, IGlContext context)
         {
             _window = window;
+            _context = context;
         }
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
         {
-            return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget());
+            return new GlPlatformSurfaceRenderTarget(_window.CreateGlRenderTarget(), _context);
         }
 
     }

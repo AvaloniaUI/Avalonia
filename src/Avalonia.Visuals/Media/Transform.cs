@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
@@ -11,11 +8,12 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents a transform on an <see cref="IVisual"/>.
     /// </summary>
-    public abstract class Transform : Animatable
+    public abstract class Transform : Animatable, IMutableTransform
     {
         static Transform()
         {
-            Animation.Animation.RegisterAnimator<TransformAnimator>(prop => typeof(Transform).IsAssignableFrom(prop.OwnerType));
+            Animation.Animation.RegisterAnimator<TransformAnimator>(prop =>
+                typeof(ITransform).IsAssignableFrom(prop.OwnerType));
         }
 
         /// <summary>

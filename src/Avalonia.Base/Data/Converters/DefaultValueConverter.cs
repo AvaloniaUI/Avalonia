@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
 using System.Windows.Input;
@@ -36,7 +33,7 @@ namespace Avalonia.Data.Converters
 
             if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d && d.Method.GetParameters().Length <= 1)
             {
-                return new AlwaysEnabledDelegateCommand(d);
+                return new MethodToCommandConverter(d);
             }
 
             if (TypeUtilities.TryConvert(targetType, value, culture, out object result))

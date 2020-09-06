@@ -1,9 +1,11 @@
-﻿using Avalonia.Controls.Shapes;
+﻿using System;
+using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
+    [Obsolete("Use Image control with DrawingImage source")]
     public class DrawingPresenter : Control
     {
         static DrawingPresenter()

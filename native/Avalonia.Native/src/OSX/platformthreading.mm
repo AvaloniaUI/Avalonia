@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #include "common.h"
 
 class PlatformThreadingInterface;
@@ -57,9 +54,11 @@ private:
     {
     public:
         FORWARD_IUNKNOWN()
+        
         bool Running = false;
         bool Cancelled = false;
-        virtual void Cancel()
+        
+        virtual void Cancel() override
         {
             Cancelled = true;
             if(Running)

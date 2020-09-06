@@ -19,7 +19,7 @@ namespace Avalonia.Controls
         private Rectangle _rightGridLine;
         private DataGridColumn _owningColumn;
 
-        bool _isValid;
+        bool _isValid = true;
 
         public static readonly DirectProperty<DataGridCell, bool> IsValidProperty =
             AvaloniaProperty.RegisterDirect<DataGridCell, bool>(
@@ -121,10 +121,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Builds the visual tree for the cell control when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             UpdatePseudoClasses();
             _rightGridLine = e.NameScope.Find<Rectangle>(DATAGRIDCELL_elementRightGridLine);
             if (_rightGridLine != null && OwningColumn == null)
@@ -164,7 +162,7 @@ namespace Avalonia.Controls
             if (OwningGrid != null)
             {
                 OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
-                if (e.MouseButton == MouseButton.Left)
+                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
                 {
                     if (!e.Handled)
                     //if (!e.Handled && OwningGrid.IsTabStop)
@@ -182,7 +180,18 @@ namespace Avalonia.Controls
 
         internal void UpdatePseudoClasses()
         {
+            if (OwningGrid == null || OwningColumn == null || OwningRow == null || !OwningRow.IsVisible || OwningRow.Slot == -1)
+            {
+                return;
+            }
 
+            PseudoClasses.Set(":selected", OwningRow.IsSelected);
+
+            PseudoClasses.Set(":current", IsCurrent);
+
+            PseudoClasses.Set(":edited", IsEdited);
+
+            PseudoClasses.Set(":invalid", !IsValid);
         }
 
         // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the 

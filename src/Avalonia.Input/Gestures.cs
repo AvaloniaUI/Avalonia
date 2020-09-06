@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -74,12 +72,13 @@ namespace Avalonia.Input
             if (ev.Route == RoutingStrategies.Bubble)
             {
                 var e = (PointerPressedEventArgs)ev;
+                var visual = (IVisual)ev.Source;
 
                 if (e.ClickCount <= 1)
                 {
                     s_lastPress = new WeakReference<IInteractive>(e.Source);
                 }
-                else if (s_lastPress != null && e.ClickCount == 2 && e.MouseButton == MouseButton.Left)
+                else if (s_lastPress != null && e.ClickCount == 2 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
@@ -97,8 +96,11 @@ namespace Avalonia.Input
 
                 if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                 {
-                    var et = e.InitialPressMouseButton != MouseButton.Right ? TappedEvent : RightTappedEvent;
-                    e.Source.RaiseEvent(new RoutedEventArgs(et));
+                    if (e.InitialPressMouseButton == MouseButton.Left || e.InitialPressMouseButton == MouseButton.Right)
+                    {
+                        var et = e.InitialPressMouseButton != MouseButton.Right ? TappedEvent : RightTappedEvent;
+                        e.Source.RaiseEvent(new RoutedEventArgs(et));
+                    }
                 }
             }
         }

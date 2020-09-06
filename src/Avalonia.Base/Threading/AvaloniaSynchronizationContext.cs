@@ -1,6 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+using System;
+using System.Runtime.ConstrainedExecution;
 using System.Threading;
 
 namespace Avalonia.Threading
@@ -10,6 +9,20 @@ namespace Avalonia.Threading
     /// </summary>
     public class AvaloniaSynchronizationContext : SynchronizationContext
     {
+        public interface INonPumpingPlatformWaitProvider
+        {
+            int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout);
+        }
+
+        private readonly INonPumpingPlatformWaitProvider _waitProvider;
+
+        public AvaloniaSynchronizationContext(INonPumpingPlatformWaitProvider waitProvider)
+        {
+            _waitProvider = waitProvider;
+            if (_waitProvider != null)
+                SetWaitNotificationRequired();
+        }
+
         /// <summary>
         /// Controls if SynchronizationContext should be installed in InstallIfNeeded. Used by Designer.
         /// </summary>
@@ -25,7 +38,8 @@ namespace Avalonia.Threading
                 return;
             }
 
-            SetSynchronizationContext(new AvaloniaSynchronizationContext());
+            SetSynchronizationContext(new AvaloniaSynchronizationContext(AvaloniaLocator.Current
+                .GetService<INonPumpingPlatformWaitProvider>()));
         }
 
         /// <inheritdoc/>
@@ -41,6 +55,14 @@ namespace Avalonia.Threading
                 d(state);
             else
                 Dispatcher.UIThread.InvokeAsync(() => d(state), DispatcherPriority.Send).Wait();
+        }
+
+        [PrePrepareMethod]
+        public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
+        {
+            if (_waitProvider != null)
+                return _waitProvider.Wait(waitHandles, waitAll, millisecondsTimeout);
+            return base.Wait(waitHandles, waitAll, millisecondsTimeout);
         }
     }
 }

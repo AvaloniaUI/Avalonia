@@ -1,9 +1,3 @@
-// -----------------------------------------------------------------------
-// <copyright file="WindowTests.cs" company="Steven Kirk">
-// Copyright 2015 MIT Licence. See licence.md for more information.
-// </copyright>
-// -----------------------------------------------------------------------
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -106,7 +100,8 @@ namespace Avalonia.Controls.UnitTests
         {
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.SetupProperty(x => x.Closed);
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             var services = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
@@ -162,7 +157,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = Mock.Of<IWindowImpl>();
+                var parent = Mock.Of<Window>();
                 var renderer = new Mock<IRenderer>();
                 var target = new Window(CreateImpl(renderer));
 
@@ -177,7 +172,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = Mock.Of<IWindowImpl>();
+                var parent = Mock.Of<Window>();
                 var target = new Window();
                 var raised = false;
 
@@ -209,10 +204,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = new Mock<IWindowImpl>();
+                var parent = new Mock<Window>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
-                windowImpl.Setup(x => x.Scaling).Returns(1);
+                windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+                windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent.Object);
@@ -248,10 +244,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = new Mock<IWindowImpl>();
+                var parent = new Mock<Window>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
-                windowImpl.Setup(x => x.Scaling).Returns(1);
+                windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+                windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent.Object);
@@ -279,7 +276,8 @@ namespace Avalonia.Controls.UnitTests
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -303,13 +301,15 @@ namespace Avalonia.Controls.UnitTests
         {
             var parentWindowImpl = MockWindowingPlatform.CreateWindowMock();
             parentWindowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
-            parentWindowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
-            parentWindowImpl.Setup(x => x.Scaling).Returns(1);
+            parentWindowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1920, 1080));
+            parentWindowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            parentWindowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(320, 200));
-            windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1920, 1080));
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             var parentWindowServices = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => parentWindowImpl.Object));
@@ -328,10 +328,9 @@ namespace Avalonia.Controls.UnitTests
                 {
                     var window = new Window();
                     window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    window.Position = new PixelPoint(60, 40);
-                    window.Owner = parentWindow;
+                    window.Position = new PixelPoint(60, 40);                    
 
-                    window.Show();
+                    window.ShowDialog(parentWindow);
 
                     var expectedPosition = new PixelPoint(
                         (int)(parentWindow.Position.X + parentWindow.ClientSize.Width / 2 - window.ClientSize.Width / 2),
@@ -342,217 +341,237 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        [Fact]
-        public void Child_Should_Be_Measured_With_Width_And_Height_If_SizeToContent_Is_Manual()
+        public class SizingTests
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            [Fact]
+            public void Child_Should_Be_Measured_With_Width_And_Height_If_SizeToContent_Is_Manual()
             {
-                var child = new ChildControl();
-                var target = new Window 
-                { 
-                    Width = 100,
-                    Height = 50,
-                    SizeToContent = SizeToContent.Manual,
-                    Content = child 
-                };
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new ChildControl();
+                    var target = new Window
+                    {
+                        Width = 100,
+                        Height = 50,
+                        SizeToContent = SizeToContent.Manual,
+                        Content = child
+                    };
 
-                target.Show();
+                    Show(target);
 
-                Assert.Equal(1, child.MeasureSizes.Count);
-                Assert.Equal(new Size(100, 50), child.MeasureSizes[0]);
+                    Assert.Equal(1, child.MeasureSizes.Count);
+                    Assert.Equal(new Size(100, 50), child.MeasureSizes[0]);
+                }
+            }
+
+            [Fact]
+            public void Child_Should_Be_Measured_With_ClientSize_If_SizeToContent_Is_Manual_And_No_Width_Height_Specified()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                    windowImpl.Setup(x => x.ClientSize).Returns(new Size(550, 450));
+
+                    var child = new ChildControl();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                        Content = child
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(1, child.MeasureSizes.Count);
+                    Assert.Equal(new Size(550, 450), child.MeasureSizes[0]);
+                }
+            }
+
+            [Fact]
+            public void Child_Should_Be_Measured_With_MaxAutoSizeHint_If_SizeToContent_Is_WidthAndHeight()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                    windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1200, 1000));
+
+                    var child = new ChildControl();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        Width = 100,
+                        Height = 50,
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child
+                    };
+
+                    target.Show();
+
+                    Assert.Equal(1, child.MeasureSizes.Count);
+                    Assert.Equal(new Size(1200, 1000), child.MeasureSizes[0]);
+                }
+            }
+
+            [Fact]
+            public void Should_Not_Have_Offset_On_Bounds_When_Content_Larger_Than_Max_Window_Size()
+            {
+                // Issue #3784.
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                    var clientSize = new Size(200, 200);
+                    var maxClientSize = new Size(480, 480);
+
+                    windowImpl.Setup(x => x.Resize(It.IsAny<Size>())).Callback<Size>(size =>
+                    {
+                        clientSize = size.Constrain(maxClientSize);
+                        windowImpl.Object.Resized?.Invoke(clientSize);
+                    });
+
+                    windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
+
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 800,
+                    };
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(new Size(400, 480), target.Bounds.Size);
+
+                    // Issue #3784 causes this to be (0, 160) which makes no sense as Window has no
+                    // parent control to be offset against.
+                    Assert.Equal(new Point(0, 0), target.Bounds.Position);
+                }
+            }
+
+            [Fact]
+            public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_WidthAndHeight()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 800,
+                    };
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(400, target.Width);
+                    Assert.Equal(800, target.Height);
+                }
+            }
+
+            [Fact]
+            public void SizeToContent_Should_Not_Be_Lost_On_Show()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 800,
+                    };
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
+                }
+            }
+
+            [Fact]
+            public void Width_Height_Should_Be_Updated_When_SizeToContent_Is_WidthAndHeight()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 800,
+                    };
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(400, target.Width);
+                    Assert.Equal(800, target.Height);
+
+                    child.Width = 410;
+                    target.LayoutManager.ExecuteLayoutPass();
+
+                    Assert.Equal(410, target.Width);
+                    Assert.Equal(800, target.Height);
+                    Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
+                }
+            }
+
+            [Fact]
+            public void Setting_Width_Should_Resize_WindowImpl()
+            {
+                // Issue #3796
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var target = new Window()
+                    {
+                        Width = 400,
+                        Height = 800,
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(400, target.Width);
+                    Assert.Equal(800, target.Height);
+
+                    target.Width = 410;
+                    target.LayoutManager.ExecuteLayoutPass();
+
+                    var windowImpl = Mock.Get(target.PlatformImpl);
+                    windowImpl.Verify(x => x.Resize(new Size(410, 800)));
+                    Assert.Equal(410, target.Width);
+                }
+            }
+
+            protected virtual void Show(Window window)
+            {
+                window.Show();
             }
         }
 
-        [Fact]
-        public void Child_Should_Be_Measured_With_ClientSize_If_SizeToContent_Is_Manual_And_No_Width_Height_Specified()
+        public class DialogSizingTests : SizingTests
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            protected override void Show(Window window)
             {
-                var windowImpl = MockWindowingPlatform.CreateWindowMock();
-                windowImpl.Setup(x => x.ClientSize).Returns(new Size(550, 450));
-
-                var child = new ChildControl();
-                var target = new Window(windowImpl.Object)
-                {
-                    SizeToContent = SizeToContent.Manual,
-                    Content = child
-                };
-
-                target.Show();
-
-                Assert.Equal(1, child.MeasureSizes.Count);
-                Assert.Equal(new Size(550, 450), child.MeasureSizes[0]);
-            }
-        }
-
-        [Fact]
-        public void Child_Should_Be_Measured_With_Infinity_If_SizeToContent_Is_WidthAndHeight()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var child = new ChildControl();
-                var target = new Window
-                {
-                    Width = 100,
-                    Height = 50,
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    Content = child
-                };
-
-                target.Show();
-
-                Assert.Equal(1, child.MeasureSizes.Count);
-                Assert.Equal(Size.Infinity, child.MeasureSizes[0]);
-            }
-        }
-
-        [Fact]
-        public void Should_Not_Have_Offset_On_Bounds_When_Content_Larger_Than_Max_Window_Size()
-        {
-            // Issue #3784.
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var windowImpl = MockWindowingPlatform.CreateWindowMock();
-                var clientSize = new Size(200, 200);
-                var maxClientSize = new Size(480, 480);
-
-                windowImpl.Setup(x => x.Resize(It.IsAny<Size>())).Callback<Size>(size =>
-                {
-                    clientSize = size.Constrain(maxClientSize);
-                    windowImpl.Object.Resized?.Invoke(clientSize);
-                });
-
-                windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
-
-                var child = new Canvas
-                {
-                    Width = 400,
-                    Height = 800,
-                };
-                var target = new Window(windowImpl.Object)
-                {
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    Content = child
-                };
-
-                target.Show();
-
-                Assert.Equal(new Size(400, 480), target.Bounds.Size);
-
-                // Issue #3784 causes this to be (0, 160) which makes no sense as Window has no
-                // parent control to be offset against.
-                Assert.Equal(new Point(0, 0), target.Bounds.Position);
-            }
-        }
-
-        [Fact]
-        public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_WidthAndHeight()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var child = new Canvas
-                {
-                    Width = 400,
-                    Height = 800,
-                };
-
-                var target = new Window()
-                {
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    Content = child
-                };
-
-                target.Show();
-
-                Assert.Equal(400, target.Width);
-                Assert.Equal(800, target.Height);
-            }
-        }
-
-        [Fact]
-        public void SizeToContent_Should_Not_Be_Lost_On_Show()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var child = new Canvas
-                {
-                    Width = 400,
-                    Height = 800,
-                };
-
-                var target = new Window()
-                {
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    Content = child
-                };
-
-                target.Show();
-
-                Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
-            }
-        }
-
-        [Fact]
-        public void Width_Height_Should_Be_Updated_When_SizeToContent_Is_WidthAndHeight()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var child = new Canvas
-                {
-                    Width = 400,
-                    Height = 800,
-                };
-
-                var target = new Window()
-                {
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    Content = child
-                };
-
-                target.Show();
-
-                Assert.Equal(400, target.Width);
-                Assert.Equal(800, target.Height);
-
-                child.Width = 410;
-                target.LayoutManager.ExecuteLayoutPass();
-
-                Assert.Equal(410, target.Width);
-                Assert.Equal(800, target.Height);
-                Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
-            }
-        }
-
-        [Fact]
-        public void Setting_Width_Should_Resize_WindowImpl()
-        {
-            // Issue #3796
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var target = new Window()
-                {
-                    Width = 400,
-                    Height = 800,
-                };
-
-                target.Show();
-
-                Assert.Equal(400, target.Width);
-                Assert.Equal(800, target.Height);
-
-                target.Width = 410;
-                target.LayoutManager.ExecuteLayoutPass();
-
-                var windowImpl = Mock.Get(target.PlatformImpl);
-                windowImpl.Verify(x => x.Resize(new Size(410, 800)));
-                Assert.Equal(410, target.Width);
+                var owner = new Window();
+                window.ShowDialog(owner);
             }
         }
 
         private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
         {
             return Mock.Of<IWindowImpl>(x =>
-                x.Scaling == 1 &&
+                x.RenderScaling == 1 &&
                 x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
         }
 

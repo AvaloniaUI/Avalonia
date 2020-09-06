@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 using Avalonia.Controls.UnitTests;
 using Avalonia.Platform;
-using Avalonia.UnitTests;
+using Xunit;
 
 [assembly: ExportAvaloniaModule("DefaultModule", typeof(AppBuilderTests.DefaultModule))]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
@@ -16,11 +11,25 @@ using Avalonia.UnitTests;
 
 namespace Avalonia.Controls.UnitTests
 {
+    using AppBuilder = Avalonia.UnitTests.AppBuilder;
 
     public class AppBuilderTests
     {
         class App : Application
         {
+        }
+
+        public class AppWithDependencies : Application
+        {
+            public AppWithDependencies(object dependencyA, object dependencyB)
+            {
+                DependencyA = dependencyA;
+                DependencyB = dependencyB;
+            }
+
+            public object DependencyA { get; }
+
+            public object DependencyB { get; }
         }
 
         public class DefaultModule
@@ -58,7 +67,30 @@ namespace Avalonia.Controls.UnitTests
                 IsLoaded = true;
             }
         }
-        
+
+        [Fact]
+        public void UseAppFactory()
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                ResetModuleLoadStates();
+
+                Func<AppWithDependencies> appFactory = () => new AppWithDependencies(dependencyA: new object(), dependencyB: new object());
+
+                var builder = AppBuilder.Configure<AppWithDependencies>(appFactory)
+                    .UseWindowingSubsystem(() => { })
+                    .UseRenderingSubsystem(() => { })
+                    .UseAvaloniaModules()
+                    .SetupWithoutStarting();
+
+                AppWithDependencies app = (AppWithDependencies)builder.Instance;
+                Assert.NotNull(app.DependencyA);
+                Assert.NotNull(app.DependencyB);
+
+                Assert.True(DefaultModule.IsLoaded);
+            }
+        }
+
         [Fact]
         public void LoadsDefaultModule()
         {

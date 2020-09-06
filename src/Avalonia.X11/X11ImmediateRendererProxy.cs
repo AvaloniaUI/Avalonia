@@ -57,6 +57,11 @@ namespace Avalonia.X11
             return _renderer.HitTest(p, root, filter);
         }
 
+        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
+        {
+            return _renderer.HitTestFirst(p, root, filter);
+        }
+
         public void RecalculateChildren(IVisual visual)
         {
             _renderer.RecalculateChildren(visual);

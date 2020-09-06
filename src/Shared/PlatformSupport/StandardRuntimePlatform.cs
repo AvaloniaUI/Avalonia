@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -89,11 +86,15 @@ namespace Avalonia.Shared.PlatformSupport
 #if DEBUG
                 if (Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId)
                 {
-                    lock(_lock)
+                    lock (_lock)
+                    {
                         if (!IsDisposed)
+                        {
                             Console.Error.WriteLine("Native blob disposal from finalizer thread\nBacktrace: "
-                                                    + Environment.StackTrace
-                                                    + "\n\nBlob created by " + _backtrace);
+                                                 + Environment.StackTrace
+                                                 + "\n\nBlob created by " + _backtrace);
+                        }
+                    }
                 }
 #endif
                 DoDispose();

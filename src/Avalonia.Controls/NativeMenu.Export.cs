@@ -52,13 +52,13 @@ namespace Avalonia.Controls
         }
 
         public static readonly AttachedProperty<NativeMenu> MenuProperty
-            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu>("Menu", validate:
+            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu>("Menu"/*, validate:
                 (o, v) =>
                 {
                     if(!(o is Application || o is TopLevel))
                         throw new InvalidOperationException("NativeMenu.Menu property isn't valid on "+o.GetType());
                     return v;
-                });
+                }*/);
 
         public static void SetMenu(AvaloniaObject o, NativeMenu menu) => o.SetValue(MenuProperty, menu);
         public static NativeMenu GetMenu(AvaloniaObject o) => o.GetValue(MenuProperty);

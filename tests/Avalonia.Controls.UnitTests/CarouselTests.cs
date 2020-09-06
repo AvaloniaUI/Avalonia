@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls.Presenters;
@@ -51,10 +48,9 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Single(target.GetLogicalChildren());
 
-            var child = target.GetLogicalChildren().Single();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().Single());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
         }
 
         [Fact]
@@ -98,20 +94,18 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(3, target.GetLogicalChildren().Count());
 
-            var child = target.GetLogicalChildren().First();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
 
             var newItems = items.ToList();
             newItems.RemoveAt(0);
 
             target.Items = newItems;
 
-            child = target.GetLogicalChildren().First();
+            child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Bar", ((TextBlock)child).Text);
+            Assert.Equal("Bar", child.Text);
         }
 
         [Fact]
@@ -136,20 +130,18 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Single(target.GetLogicalChildren());
 
-            var child = target.GetLogicalChildren().Single();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().Single());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
 
             var newItems = items.ToList();
             newItems.RemoveAt(0);
 
             target.Items = newItems;
 
-            child = target.GetLogicalChildren().Single();
+            child = GetContainerTextBlock(target.GetLogicalChildren().Single());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Bar", ((TextBlock)child).Text);
+            Assert.Equal("Bar", child.Text);
         }
 
         [Fact]
@@ -176,7 +168,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Selected_Index_Changes_To_When_Items_Assigned_Null()
+        public void Selected_Index_Changes_To_None_When_Items_Assigned_Null()
         {
             var items = new ObservableCollection<string>
             {
@@ -197,10 +189,9 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(3, target.GetLogicalChildren().Count());
 
-            var child = target.GetLogicalChildren().First();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
 
             target.Items = null;
 
@@ -233,7 +224,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("FooBar", target.SelectedItem);
 
-            var child = target.GetVisualDescendants().LastOrDefault();
+            var child = GetContainerTextBlock(target.GetVisualDescendants().LastOrDefault());
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("FooBar", ((TextBlock)child).Text);
@@ -261,21 +252,20 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(3, target.GetLogicalChildren().Count());
 
-            var child = target.GetLogicalChildren().First();
+            var child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
-            Assert.IsType<TextBlock>(child);
-            Assert.Equal("Foo", ((TextBlock)child).Text);
+            Assert.Equal("Foo", child.Text);
 
             items.RemoveAt(0);
 
-            child = target.GetLogicalChildren().First();
+            child = GetContainerTextBlock(target.GetLogicalChildren().First());
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Bar", ((TextBlock)child).Text);
         }
 
         [Fact]
-        public void Selected_Item_Changes_To_NextAvailable_Item_If_SelectedItem_Is_Removed_From_Middle()
+        public void Selected_Item_Changes_To_First_Item_If_SelectedItem_Is_Removed_From_Middle()
         {
             var items = new ObservableCollection<string>
             {
@@ -298,8 +288,8 @@ namespace Avalonia.Controls.UnitTests
 
             items.RemoveAt(1);
 
-            Assert.Equal(1, target.SelectedIndex);
-            Assert.Equal("FooBar", target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Foo", target.SelectedItem);
         }
 
         private Control CreateTemplate(Carousel control, INameScope scope)
@@ -313,6 +303,13 @@ namespace Avalonia.Controls.UnitTests
                 [~CarouselPresenter.SelectedIndexProperty] = control[~Carousel.SelectedIndexProperty],
                 [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
             }.RegisterInNameScope(scope);
+        }
+
+        private static TextBlock GetContainerTextBlock(object control)
+        {
+            var contentPresenter = Assert.IsType<ContentPresenter>(control);
+            contentPresenter.UpdateChild();
+            return Assert.IsType<TextBlock>(contentPresenter.Child);
         }
     }
 }

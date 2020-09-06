@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Logging
 {
     /// <summary>
@@ -9,11 +6,12 @@ namespace Avalonia.Logging
     public interface ILogSink
     {
         /// <summary>
-        /// Checks if given log level is enabled.
+        /// Checks if given log level and area is enabled.
         /// </summary>
         /// <param name="level">The log event level.</param>
+        /// <param name="area">The log area.</param>
         /// <returns><see langword="true"/> if given log level is enabled.</returns>
-        bool IsEnabled(LogEventLevel level);
+        bool IsEnabled(LogEventLevel level, string area);
 
         /// <summary>
         /// Logs an event.

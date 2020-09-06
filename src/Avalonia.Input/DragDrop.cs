@@ -23,7 +23,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<DragEventArgs> DropEvent = RoutedEvent.Register<DragEventArgs>("Drop", RoutingStrategies.Bubble, typeof(DragDrop));
 
-        public static readonly AvaloniaProperty<bool> AllowDropProperty = AvaloniaProperty.RegisterAttached<Interactive, bool>("AllowDrop", typeof(DragDrop), inherits: true);
+        public static readonly AttachedProperty<bool> AllowDropProperty = AvaloniaProperty.RegisterAttached<Interactive, bool>("AllowDrop", typeof(DragDrop), inherits: true);
 
         /// <summary>
         /// Gets a value indicating whether the given element can be used as the target of a drag-and-drop operation. 

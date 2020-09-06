@@ -81,14 +81,44 @@ namespace ControlCatalog.Pages
                 new DecoratedWindow().ShowDialog(GetWindow());
             };
             this.FindControl<Button>("Dialog").Click += delegate
-                {
-                    var window = new Window();
-                    window.Height = 200;
-                    window.Width = 200;
-                    window.Content = new TextBlock { Text = "Hello world!" };
-                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    window.ShowDialog(GetWindow());
-                };
+            {
+                var window = CreateSampleWindow();
+                window.Height = 200;
+                window.ShowDialog(GetWindow());
+            };
+            this.FindControl<Button>("DialogNoTaskbar").Click += delegate
+            {
+                var window = CreateSampleWindow();
+                window.Height = 200;
+                window.ShowInTaskbar = false;
+                window.ShowDialog(GetWindow());
+            };
+            this.FindControl<Button>("OwnedWindow").Click += delegate
+            {
+                var window = CreateSampleWindow();
+
+                window.Show(GetWindow());
+            };
+
+            this.FindControl<Button>("OwnedWindowNoTaskbar").Click += delegate
+            {
+                var window = CreateSampleWindow();
+
+                window.ShowInTaskbar = false;
+
+                window.Show(GetWindow());
+            };
+        }
+
+        private Window CreateSampleWindow()
+        {
+            var window = new Window();
+            window.Height = 200;
+            window.Width = 200;
+            window.Content = new TextBlock { Text = "Hello world!" };
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            return window;
         }
 
         Window GetWindow() => (Window)this.VisualRoot;

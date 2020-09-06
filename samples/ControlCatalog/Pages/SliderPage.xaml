@@ -6,15 +6,28 @@
     <TextBlock Classes="h2">A control that lets the user select from a range of values by moving a Thumb control along a Track.</TextBlock>
 
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="16">
-      <Slider Value="0"
-              Minimum="0"
-              Maximum="100"
-              Width="300"/>
+      <StackPanel Orientation="Vertical"
+                  HorizontalAlignment="Center">
+        <Slider Value="0"
+                Minimum="0"
+                Maximum="100"
+                TickFrequency="10"
+                Width="300" />
+        <Slider Name="CustomTickedSlider"
+                Value="0"
+                Minimum="0"
+                Maximum="100"
+                TickPlacement="BottomRight"
+                IsSnapToTickEnabled="True"
+                Ticks="0,20,25,40,75,100"
+                Width="300" />
+      </StackPanel>
       <Slider Value="0"
               Minimum="0"
               Maximum="100"
               Orientation="Vertical"
               IsSnapToTickEnabled="True"
+              TickPlacement="Outside"
               TickFrequency="10"
               Height="300"/>
     </StackPanel>

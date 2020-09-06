@@ -110,7 +110,7 @@
         if(_renderbuffer != 0)
             glDeleteRenderbuffers(1, &_renderbuffer);
     }
-    IOSurfaceDecrementUseCount(surface);
+    CFRelease(surface);
 }
 @end
 

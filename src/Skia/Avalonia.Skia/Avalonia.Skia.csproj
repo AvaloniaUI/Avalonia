@@ -8,9 +8,13 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Assets\NoiseAsset_256X256_PNG.png" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
   </ItemGroup>
   
   <Import Project="..\..\..\build\SkiaSharp.props" />
-  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
+  <Import Project="..\..\..\build\HarfBuzzSharp.props" />
+  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />  
 </Project>

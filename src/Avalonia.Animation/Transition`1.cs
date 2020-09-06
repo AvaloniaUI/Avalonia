@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
@@ -16,9 +13,14 @@ namespace Avalonia.Animation
         private AvaloniaProperty _prop;
 
         /// <summary>
-        /// Gets the duration of the animation.
+        /// Gets or sets the duration of the transition.
         /// </summary> 
         public TimeSpan Duration { get; set; }
+
+        /// <summary>
+        /// Gets or sets delay before starting the transition.
+        /// </summary> 
+        public TimeSpan Delay { get; set; } = TimeSpan.Zero;
 
         /// <summary>
         /// Gets the easing class to be used.
@@ -50,7 +52,7 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public virtual IDisposable Apply(Animatable control, IClock clock, object oldValue, object newValue)
         {
-            var transition = DoTransition(new TransitionInstance(clock, Duration), (T)oldValue, (T)newValue);
+            var transition = DoTransition(new TransitionInstance(clock, Delay, Duration), (T)oldValue, (T)newValue);
             return control.Bind<T>((AvaloniaProperty<T>)Property, transition, Data.BindingPriority.Animation);
         }
     }

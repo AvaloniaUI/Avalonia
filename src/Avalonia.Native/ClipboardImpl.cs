@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -84,6 +81,38 @@ namespace Avalonia.Native
         {
             using (var strings = _native.GetStrings(NSFilenamesPboardType))
                 return strings.ToStringArray();
+        }
+
+        public unsafe Task SetDataObjectAsync(IDataObject data)
+        {
+            _native.Clear();
+            foreach (var fmt in data.GetDataFormats())
+            {
+                var o = data.Get(fmt);
+                if(o is string s)
+                    using (var b = new Utf8Buffer(s))
+                        _native.SetText(fmt, b.DangerousGetHandle());
+                else if(o is byte[] bytes)
+                    fixed (byte* pbytes = bytes)
+                        _native.SetBytes(fmt, new IntPtr(pbytes), bytes.Length);
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task<string[]> GetFormatsAsync()
+        {
+            using (var n = _native.ObtainFormats())
+                return Task.FromResult(n.ToStringArray());
+        }
+
+        public async Task<object> GetDataAsync(string format)
+        {
+            if (format == DataFormats.Text)
+                return await GetTextAsync();
+            if (format == DataFormats.FileNames)
+                return GetFileNames();
+            using (var n = _native.GetBytes(format))
+                return n.Bytes;
         }
     }
     

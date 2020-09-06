@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Platform;
 
@@ -16,9 +13,10 @@ namespace Avalonia.Media
         private IFormattedTextImpl _platformImpl;
         private IReadOnlyList<FormattedTextStyleSpan> _spans;
         private Typeface _typeface;
+        private double _fontSize;
         private string _text;
         private TextAlignment _textAlignment;
-        private TextWrapping _wrapping;
+        private TextWrapping _textWrapping;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FormattedText"/> class.
@@ -35,6 +33,31 @@ namespace Avalonia.Media
         public FormattedText(IPlatformRenderInterface platform)
         {
             _platform = platform;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="typeface"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="textAlignment"></param>
+        /// <param name="textWrapping"></param>
+        /// <param name="constraint"></param>
+        public FormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
+            TextWrapping textWrapping, Size constraint)
+        {
+            _text = text;
+
+            _typeface = typeface;
+
+            _fontSize = fontSize;
+
+            _textAlignment = textAlignment;
+
+            _textWrapping = textWrapping;
+
+            _constraint = constraint;
         }
 
         /// <summary>
@@ -59,6 +82,16 @@ namespace Avalonia.Media
         {
             get => _typeface;
             set => Set(ref _typeface, value);
+        }
+
+
+        /// <summary>
+        /// Gets or sets the font size.
+        /// </summary>
+        public double FontSize
+        {
+            get => _fontSize;
+            set => Set(ref _fontSize, value);
         }
 
         /// <summary>
@@ -92,10 +125,10 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the text wrapping.
         /// </summary>
-        public TextWrapping Wrapping
+        public TextWrapping TextWrapping
         {
-            get => _wrapping;
-            set => Set(ref _wrapping, value);
+            get => _textWrapping;
+            set => Set(ref _textWrapping, value);
         }
 
         /// <summary>
@@ -110,8 +143,9 @@ namespace Avalonia.Media
                     _platformImpl = _platform.CreateFormattedText(
                         _text,
                         _typeface,
+                        _fontSize,
                         _textAlignment,
-                        _wrapping,
+                        _textWrapping,
                         _constraint,
                         _spans);
                 }
@@ -166,7 +200,13 @@ namespace Avalonia.Media
 
         private void Set<T>(ref T field, T value)
         {
+            if (field != null && field.Equals(value))
+            {
+                return;
+            }
+
             field = value;
+
             _platformImpl = null;
         }
     }

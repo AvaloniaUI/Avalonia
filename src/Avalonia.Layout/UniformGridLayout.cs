@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Data;
+using Avalonia.Logging;
 
 namespace Avalonia.Layout
 {
@@ -378,8 +380,14 @@ namespace Avalonia.Layout
                         ref extent,
                         _orientation.MajorEnd(lastRealizedLayoutBounds) - _orientation.MajorStart(extent) + (remainingItems / itemsPerLine) * lineSize);
                 }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Estimating extent with no realized elements", LayoutId);
+                }
             }
 
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Extent is ({Size}). Based on lineSize {LineSize} and items per line {ItemsPerLine}",
+                LayoutId, extent.Size, lineSize, itemsPerLine);
             return extent;
         }
 
@@ -391,7 +399,7 @@ namespace Avalonia.Layout
         {
         }
 
-        protected override void InitializeForContextCore(VirtualizingLayoutContext context)
+        protected internal override void InitializeForContextCore(VirtualizingLayoutContext context)
         {
             var state = context.LayoutState;
             var gridState = state as UniformGridLayoutState;
@@ -411,13 +419,13 @@ namespace Avalonia.Layout
             gridState.InitializeForContext(context, this);
         }
 
-        protected override void UninitializeForContextCore(VirtualizingLayoutContext context)
+        protected internal override void UninitializeForContextCore(VirtualizingLayoutContext context)
         {
             var gridState = (UniformGridLayoutState)context.LayoutState;
             gridState.UninitializeForContext(context);
         }
 
-        protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
+        protected internal override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {
             // Set the width and height on the grid state. If the user already set them then use the preset. 
             // If not, we have to measure the first element and get back a size which we're going to be using for the rest of the items.
@@ -432,6 +440,7 @@ namespace Avalonia.Layout
                 LineSpacing,
                 _maximumRowsOrColumns,
                 _orientation.ScrollOrientation,
+                false,
                 LayoutId);
 
             // If after Measure the first item is in the realization rect, then we revoke grid state's ownership,
@@ -441,7 +450,7 @@ namespace Avalonia.Layout
             return new Size(desiredSize.Width, desiredSize.Height);
         }
 
-        protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
+        protected internal override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
         {
             var value = GetFlowAlgorithm(context).Arrange(
                finalSize,
@@ -462,44 +471,48 @@ namespace Avalonia.Layout
             gridState.ClearElementOnDataSourceChange(context, args);
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (args.Property == OrientationProperty)
+            if (change.Property == OrientationProperty)
             {
-                var orientation = (Orientation)args.NewValue;
+                var orientation = change.NewValue.GetValueOrDefault<Orientation>();
 
                 //Note: For UniformGridLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
                 //i.e. the properties are the inverse of each other.
                 var scrollOrientation = (orientation == Orientation.Horizontal) ? ScrollOrientation.Vertical : ScrollOrientation.Horizontal;
                 _orientation.ScrollOrientation = scrollOrientation;
             }
-            else if (args.Property == MinColumnSpacingProperty)
+            else if (change.Property == MinColumnSpacingProperty)
             {
-                _minColumnSpacing = (double)args.NewValue;
+                _minColumnSpacing = change.NewValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MinRowSpacingProperty)
+            else if (change.Property == MinRowSpacingProperty)
             {
-                _minRowSpacing = (double)args.NewValue;
+                _minRowSpacing = change.NewValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == ItemsJustificationProperty)
+            else if (change.Property == ItemsJustificationProperty)
             {
-                _itemsJustification = (UniformGridLayoutItemsJustification)args.NewValue;
+                _itemsJustification = change.NewValue.GetValueOrDefault<UniformGridLayoutItemsJustification>();
             }
-            else if (args.Property == ItemsStretchProperty)
+            else if (change.Property == ItemsStretchProperty)
             {
-                _itemsStretch = (UniformGridLayoutItemsStretch)args.NewValue;
+                _itemsStretch = change.NewValue.GetValueOrDefault<UniformGridLayoutItemsStretch>();
             }
-            else if (args.Property == MinItemWidthProperty)
+            else if (change.Property == MinItemWidthProperty)
             {
-                _minItemWidth = (double)args.NewValue;
+                _minItemWidth = change.NewValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MinItemHeightProperty)
+            else if (change.Property == MinItemHeightProperty)
             {
-                _minItemHeight = (double)args.NewValue;
+                _minItemHeight = change.NewValue.GetValueOrDefault<double>();
             }
-            else if (args.Property == MaximumRowsOrColumnsProperty)
+            else if (change.Property == MaximumRowsOrColumnsProperty)
             {
-                _maximumRowsOrColumns = (int)args.NewValue;
+                _maximumRowsOrColumns = change.NewValue.GetValueOrDefault<int>();
+            }
+            else if (change.Property == MaximumRowsOrColumnsProperty)
+            {
+                _maximumRowsOrColumns = change.NewValue.GetValueOrDefault<int>();
             }
 
             InvalidateLayout();

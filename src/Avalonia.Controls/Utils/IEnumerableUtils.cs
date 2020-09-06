@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Avalonia.Controls.Utils
@@ -18,11 +16,13 @@ namespace Avalonia.Controls.Utils
         {
             if (items != null)
             {
-                var collection = items as ICollection;
-
-                if (collection != null)
+                if (items is ICollection collection)
                 {
                     return collection.Count;
+                }
+                else if (items is IReadOnlyCollection<object> readOnly)
+                {
+                    return readOnly.Count;
                 }
                 else
                 {

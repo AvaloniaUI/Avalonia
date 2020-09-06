@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -327,6 +324,8 @@ namespace Avalonia.Collections
                     }
                     else
                     {
+                        EnsureCapacity(_inner.Count + list.Count);
+
                         using (IEnumerator<T> en = items.GetEnumerator())
                         {
                             int insertIndex = index;
@@ -549,6 +548,24 @@ namespace Avalonia.Collections
 
         /// <inheritdoc/>
         Delegate[] INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
+
+        private void EnsureCapacity(int capacity)
+        {
+            // Adapted from List<T> implementation.
+            var currentCapacity = _inner.Capacity;
+
+            if (currentCapacity < capacity)
+            {
+                var newCapacity = currentCapacity == 0 ? 4 : currentCapacity * 2;
+
+                if (newCapacity < capacity)
+                {
+                    newCapacity = capacity;
+                }
+
+                _inner.Capacity = newCapacity;
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="CollectionChanged"/> event with an add action.

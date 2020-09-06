@@ -9,8 +9,7 @@ namespace Avalonia
         IStyleable,
         IStyleHost,
         ILogical,
-        IResourceProvider,
-        IResourceNode,
+        IResourceHost,
         IDataContextProvider
     {
         /// <summary>

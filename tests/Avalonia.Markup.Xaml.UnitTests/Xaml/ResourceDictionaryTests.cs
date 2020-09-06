@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -25,27 +22,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   <Color x:Key='Red'>Red</Color>
   <SolidColorBrush x:Key='RedBrush' Color='{StaticResource Red}'/>
 </ResourceDictionary>";
-                var loader = new AvaloniaXamlLoader();
-                var resources = (ResourceDictionary)loader.Load(xaml);
-                var brush = (SolidColorBrush)resources["RedBrush"];
-
-                Assert.Equal(Colors.Red, brush.Color);
-            }
-        }
-
-        [Fact]
-        public void DynamicResource_Works_In_ResourceDictionary()
-        {
-            using (StyledWindow())
-            {
-                var xaml = @"
-<ResourceDictionary xmlns='https://github.com/avaloniaui'
-                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-  <Color x:Key='Red'>Red</Color>
-  <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
-</ResourceDictionary>";
-                var loader = new AvaloniaXamlLoader();
-                var resources = (ResourceDictionary)loader.Load(xaml);
+                var resources = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var brush = (SolidColorBrush)resources["RedBrush"];
 
                 Assert.Equal(Colors.Red, brush.Color);
@@ -77,8 +54,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button' Background='{DynamicResource RedBrush}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
 
                 var brush = Assert.IsType<SolidColorBrush>(button.Background);

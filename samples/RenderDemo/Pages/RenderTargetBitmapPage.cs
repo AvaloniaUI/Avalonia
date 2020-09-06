@@ -39,7 +39,7 @@ namespace RenderDemo.Pages
                 ctx.FillRectangle(Brushes.Fuchsia, new Rect(50, 50, 100, 100));
             }
 
-            context.DrawImage(_bitmap, 1, 
+            context.DrawImage(_bitmap,
                 new Rect(0, 0, 200, 200), 
                 new Rect(0, 0, 200, 200));
             Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);

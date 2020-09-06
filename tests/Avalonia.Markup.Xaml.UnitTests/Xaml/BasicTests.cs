@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -29,7 +26,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             var xaml = @"<ContentControl xmlns='https://github.com/avaloniaui' Content='Foo'/>";
 
-            var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+            var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
             Assert.NotNull(target);
             Assert.Equal("Foo", target.Content);
@@ -40,7 +37,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             var xaml = @"<ContentControl xmlns='https://github.com/avaloniaui'>Foo</ContentControl>";
 
-            var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+            var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
             Assert.NotNull(target);
             Assert.Equal("Foo", target.Content);
@@ -52,7 +49,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var xaml =
         @"<ContentControl xmlns='https://github.com/avaloniaui' TextBlock.FontSize='21'/>";
 
-            var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+            var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
             Assert.NotNull(target);
             Assert.Equal(21.0, TextBlock.GetFontSize(target));
@@ -68,7 +65,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   <local:TestControl Grid.Column='2' />
 </UserControl>";
 
-            var target = AvaloniaXamlLoader.Parse<UserControl>(xaml);
+            var target = AvaloniaRuntimeXamlLoader.Parse<UserControl>(xaml);
 
             Assert.Equal(2, Grid.GetColumn((TestControl)target.Content));
         }
@@ -81,7 +78,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                     xmlns:test='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
                     test:BasicTestsAttachedPropertyHolder.Foo='Bar'/>";
 
-            var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+            var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
             Assert.NotNull(target);
             Assert.Equal("Bar", BasicTestsAttachedPropertyHolder.GetFoo(target));
@@ -95,7 +92,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml =
             @"<Window xmlns='https://github.com/avaloniaui' TextBlock.FontSize='{Binding}'/>";
 
-                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+                var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
                 target.DataContext = 21.0;
 
@@ -111,7 +108,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ToolTip.Tip>Foo</ToolTip.Tip>
 </Panel>";
 
-            var target = AvaloniaXamlLoader.Parse<Panel>(xaml);
+            var target = AvaloniaRuntimeXamlLoader.Parse<Panel>(xaml);
 
             Assert.Empty(target.Children);
 
@@ -124,7 +121,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var xaml =
         @"<ContentControl xmlns='https://github.com/avaloniaui' DoesntExist='foo'/>";
 
-            XamlTestHelpers.AssertThrowsXamlException(() => AvaloniaXamlLoader.Parse<ContentControl>(xaml));
+            XamlTestHelpers.AssertThrowsXamlException(() => AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml));
         }
 
         [Fact]
@@ -139,7 +136,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </ContentControl.ContentTemplate>
 </ContentControl>";
 
-            var contentControl = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+            var contentControl = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
             var target = contentControl.ContentTemplate;
 
             Assert.NotNull(target);
@@ -157,7 +154,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button'>Foo</Button>
 </UserControl>";
 
-            var control = AvaloniaXamlLoader.Parse<UserControl>(xaml);
+            var control = AvaloniaRuntimeXamlLoader.Parse<UserControl>(xaml);
             var button = control.FindControl<Button>("button");
 
             Assert.Equal("Foo", button.Content);
@@ -176,7 +173,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
       </ItemsControl>
 </Window>";
 
-                var control = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var control = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
 
                 var itemsControl = control.FindControl<ItemsControl>("items");
 
@@ -200,7 +197,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Panel>
 </UserControl>";
 
-            var control = AvaloniaXamlLoader.Parse<UserControl>(xaml);
+            var control = AvaloniaRuntimeXamlLoader.Parse<UserControl>(xaml);
 
             var panel = control.FindControl<Panel>("panel");
 
@@ -232,7 +229,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Grid.RowDefinitions>
 </Grid>";
 
-            var grid = AvaloniaXamlLoader.Parse<Grid>(xaml);
+            var grid = AvaloniaRuntimeXamlLoader.Parse<Grid>(xaml);
 
             Assert.Equal(4, grid.ColumnDefinitions.Count);
             Assert.Equal(4, grid.RowDefinitions.Count);
@@ -262,7 +259,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         RowDefinitions='100,Auto,*,100*'>
 </Grid>";
 
-            var grid = AvaloniaXamlLoader.Parse<Grid>(xaml);
+            var grid = AvaloniaRuntimeXamlLoader.Parse<Grid>(xaml);
 
 
             Assert.Equal(4, grid.ColumnDefinitions.Count);
@@ -294,7 +291,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </ContentControl>
 </ControlTemplate>
 ";
-            var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
+            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
 
             var parent = (ContentControl)template.Build(new ContentControl()).Control;
 
@@ -317,7 +314,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ContentPresenter Content='{TemplateBinding Content}' />
 </ControlTemplate>
 ";
-            var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
+            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
 
             Assert.Equal(typeof(ContentControl), template.TargetType);
 
@@ -335,7 +332,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Panel>
 </ControlTemplate>
 ";
-            var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
+            var template = AvaloniaRuntimeXamlLoader.Parse<ControlTemplate>(xaml);
 
             var panel = (Panel)template.Build(new ContentControl()).Control;
 
@@ -357,7 +354,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button x:Name='button'>Foo</Button>
 </UserControl>";
 
-            var control = AvaloniaXamlLoader.Parse<UserControl>(xaml);
+            var control = AvaloniaRuntimeXamlLoader.Parse<UserControl>(xaml);
             var button = control.FindControl<Button>("button");
 
             Assert.Equal("Foo", button.Content);
@@ -368,7 +365,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             var xaml = @"<UserControl xmlns='https://github.com/avaloniaui' Width='200.5' />";
 
-            var control = AvaloniaXamlLoader.Parse<UserControl>(xaml);
+            var control = AvaloniaRuntimeXamlLoader.Parse<UserControl>(xaml);
             Assert.Equal(200.5, control.Width);
         }
 
@@ -377,7 +374,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             var xaml = @"<UserControl xmlns='https://github.com/avaloniaui' Background='White' />";
 
-            var control = AvaloniaXamlLoader.Parse<UserControl>(xaml);
+            var control = AvaloniaRuntimeXamlLoader.Parse<UserControl>(xaml);
             var bk = control.Background;
             Assert.IsType<ImmutableSolidColorBrush>(bk);
             Assert.Equal(Colors.White, (bk as ISolidColorBrush).Color);
@@ -395,7 +392,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Style>
 </Styles>";
 
-            var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
+            var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
 
             Assert.Single(styles);
 
@@ -423,7 +420,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Style>
 </Styles>";
 
-            var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
+            var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
 
             Assert.Single(styles);
 
@@ -477,7 +474,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   </Style>
 </Styles>
 ";
-                var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
+                var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
 
                 Assert.Single(styles);
 
@@ -508,7 +505,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Style.Resources>
 </Style>";
 
-            var style = AvaloniaXamlLoader.Parse<Style>(xaml);
+            var style = AvaloniaRuntimeXamlLoader.Parse<Style>(xaml);
 
             Assert.True(style.Resources.Count > 0);
 
@@ -534,7 +531,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <StyleInclude Source='resm:Avalonia.Themes.Default.ContextMenu.xaml?assembly=Avalonia.Themes.Default'/>
 </Styles>";
 
-                var styles = AvaloniaXamlLoader.Parse<Styles>(xaml);
+                var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
 
                 Assert.True(styles.Count == 1);
 
@@ -557,7 +554,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml =
 @"<Window xmlns='https://github.com/avaloniaui' Content='{Binding}'/>";
 
-                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+                var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
                 Assert.Null(target.Content);
 
@@ -576,7 +573,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var xaml =
 @"<Window xmlns='https://github.com/avaloniaui' Width='{Binding}'/>";
 
-                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+                var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
                 Assert.Null(target.Content);
 
@@ -599,7 +596,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>
 ";
 
-                var target = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var target = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
 
                 Assert.NotNull(target.Content);
 
@@ -625,7 +622,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
      <Binding Path='Bar' />
 </MultiBinding>";
 
-            var target = AvaloniaXamlLoader.Parse<MultiBinding>(xaml);
+            var target = AvaloniaRuntimeXamlLoader.Parse<MultiBinding>(xaml);
 
             Assert.Equal(2, target.Bindings.Count);
 
@@ -654,7 +651,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Window.Template>
 </Window>";
 
-                var target = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+                var target = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
 
                 Assert.NotNull(target.Template);
 
@@ -684,7 +681,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   </Setter>
 </Style> ";
 
-            var style = AvaloniaXamlLoader.Parse<Style>(xaml);
+            var style = AvaloniaRuntimeXamlLoader.Parse<Style>(xaml);
 
             Assert.Single(style.Setters);
 
@@ -714,7 +711,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button'>Foo</Button>
 </Window>";
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
                 var button = window.FindControl<Button>("button");
 
                 Assert.Equal("Foo", button.Content);
@@ -733,7 +730,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <local:InitializationOrderTracker Width='100'/>
 </Window>";
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
                 var tracker = (InitializationOrderTracker)window.Content;
 
                 var attached = tracker.Order.IndexOf("AttachedToLogicalTree");
@@ -757,7 +754,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <local:InitializationOrderTracker Width='100'/>
 </Window>";
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
                 var tracker = (InitializationOrderTracker)window.Content;
 
                 var attached = tracker.Order.IndexOf("AttachedToLogicalTree");
@@ -783,7 +780,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>";
 
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
                 var tracker = (InitializationOrderTracker)window.Content;
 
                 //ensure binding is set and operational first
@@ -805,7 +802,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <local:InitializationOrderTracker />
 </Window>";
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
                 var tracker = (InitializationOrderTracker)window.Content;
 
                 Assert.Equal(0, tracker.InitState);
@@ -826,7 +823,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </ContentControl.ContentTemplate>
 </ContentControl>";
 
-            var contentControl = AvaloniaXamlLoader.Parse<ContentControl>(xaml);
+            var contentControl = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
             var template = contentControl.ContentTemplate;
 
             Assert.NotNull(template);
@@ -846,7 +843,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <ListBox Items='{Binding Items}' SelectedItems='{Binding SelectedItems}'/>
 </Window>";
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
                 var listBox = (ListBox)window.Content;
 
                 var vm = new SelectedItemsViewModel()
@@ -874,7 +871,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </TextBlock>
 </Window>";
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
                 var textBlock = (TextBlock)window.Content;
 
                 Assert.Equal("Hello World!", textBlock.Text);
@@ -899,8 +896,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>";
                 foreach (var designMode in new[] {true, false})
                 {
-                    var loader = new AvaloniaXamlLoader {IsDesignMode = designMode};
-                    var obj = (Window)loader.Load(xaml);
+                    var obj = (Window)AvaloniaRuntimeXamlLoader.Load(xaml, designMode: designMode);
                     var context = Design.GetDataContext(obj);
                     var width = Design.GetWidth(obj);
                     var height = Design.GetHeight(obj);
@@ -930,7 +926,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Slider Width='400' Value='500' Minimum='0' Maximum='1000'/>
 </Window>";
 
-                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var window = AvaloniaRuntimeXamlLoader.Parse<Window>(xaml);
                 var slider = (Slider)window.Content;
 
                 Assert.Equal(0, slider.Minimum);

@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class DataGridFrozenGrid : Grid
     {
-        public static readonly AvaloniaProperty<bool> IsFrozenProperty =
+        public static readonly StyledProperty<bool> IsFrozenProperty =
             AvaloniaProperty.RegisterAttached<DataGridFrozenGrid, Control, bool>("IsFrozen");
 
         /// <summary>

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Utilities
@@ -81,6 +78,26 @@ namespace Avalonia.Utilities
             _s = _s.Slice(len);
             Position += len;
             return span;
+        }
+
+        public ReadOnlySpan<char> TryPeek(int count)
+        {
+            if (_s.Length < count)
+                return ReadOnlySpan<char>.Empty;
+            return _s.Slice(0, count);
+        }
+
+        public ReadOnlySpan<char> PeekWhitespace()
+        {
+            var trimmed = _s.TrimStart();
+            return _s.Slice(0, _s.Length - trimmed.Length);
+        }
+
+        public void Skip(int count)
+        {
+            if (_s.Length < count)
+                throw new IndexOutOfRangeException();
+            _s = _s.Slice(count);
         }
     }
 }

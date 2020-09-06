@@ -35,7 +35,7 @@ namespace Avalonia.Input.UnitTests
             target.SetFocusedElement(
                 focused.Object,
                 NavigationMethod.Unspecified,
-                InputModifiers.None);
+                KeyModifiers.None);
 
             target.ProcessRawEvent(
                 new RawKeyEventArgs(
@@ -75,7 +75,7 @@ namespace Avalonia.Input.UnitTests
             target.SetFocusedElement(
                 focused.Object,
                 NavigationMethod.Unspecified,
-                InputModifiers.None);
+                KeyModifiers.None);
 
             target.ProcessRawEvent(
                 new RawTextInputEventArgs(

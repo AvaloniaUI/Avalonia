@@ -37,11 +37,33 @@ namespace Avalonia.Controls
                 control.PointerLeave += ControlPointerLeave;
                 control.DetachedFromVisualTree += ControlDetaching;
             }
+
+            if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
+            {
+                var tip = control.GetValue(ToolTip.ToolTipProperty);
+
+                tip.Content = e.NewValue;
+            }
+        }
+
+        internal void TipOpenChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var control = (Control)e.Sender;
+
+            if (e.OldValue is false && e.NewValue is true)
+            {
+                control.DetachedFromVisualTree += ControlDetaching;
+            }
+            else if(e.OldValue is true && e.NewValue is false)
+            {
+                control.DetachedFromVisualTree -= ControlDetaching;
+            }
         }
         
         private void ControlDetaching(object sender, VisualTreeAttachmentEventArgs e)
         {
             var control = (Control)sender;
+            control.DetachedFromVisualTree -= ControlDetaching;
             Close(control);
         }
 

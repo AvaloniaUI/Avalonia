@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Moq;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -169,7 +166,7 @@ namespace Avalonia.Controls.UnitTests
 
         private IBitmap CreateBitmap(int width, int height)
         {
-            return Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(width, height));
+            return Mock.Of<IBitmap>(x => x.Size == new Size(width, height));
         }
     }
 }

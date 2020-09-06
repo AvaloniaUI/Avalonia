@@ -1,0 +1,104 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="0" Background="White">
+      <NotificationCard Content="Testing" />
+    </Border>
+  </Design.PreviewWith>
+  <Style Selector="NotificationCard">
+    <Setter Property="UseLayoutRounding" Value="True"/>
+    <Setter Property="Width" Value="350"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource NotificationCardBackgroundBrush}" />    
+    <Setter Property="Template">
+      <ControlTemplate>
+        <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
+          <Border CornerRadius="{DynamicResource ControlCornerRadius}" BoxShadow="0 6 8 0 #4F000000" Margin="5 5 5 10">
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{DynamicResource ControlCornerRadius}" ClipToBounds="True">
+              <DockPanel>
+                <Panel x:Name="PART_HeaderBar" Height="4" DockPanel.Dock="Top" />
+                <ContentControl Name="PART_Content" Content="{TemplateBinding Content}" />
+              </DockPanel>
+            </Border>
+          </Border>
+        </LayoutTransformControl>
+      </ControlTemplate>
+    </Setter>
+
+    <Style.Animations>
+      <Animation Duration="0:0:0.45" Easing="QuadraticEaseIn" FillMode="Forward">
+        <KeyFrame Cue="0%">
+          <Setter Property="Opacity" Value="0"/>
+          <Setter Property="TranslateTransform.Y" Value="20"/>
+          <Setter Property="ScaleTransform.ScaleX" Value="0.85"/>
+          <Setter Property="ScaleTransform.ScaleY" Value="0.85"/>
+        </KeyFrame>
+        <KeyFrame Cue="30%">
+          <Setter Property="TranslateTransform.Y" Value="-20"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Opacity" Value="1"/>
+          <Setter Property="TranslateTransform.Y" Value="0"/>
+          <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+          <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <Style Selector="NotificationCard/template/ ContentControl#PART_Content">
+    <Setter Property="MinHeight" Value="64" />
+  </Style>
+
+  <Style Selector="NotificationCard[IsClosing=true] /template/ LayoutTransformControl#PART_LayoutTransformControl">
+    <Setter Property="RenderTransformOrigin" Value="50%,0%"/>
+    <Style.Animations>
+      <Animation Duration="0:0:0.75" Easing="QuadraticEaseOut" FillMode="Forward">
+        <KeyFrame Cue="0%">
+          <Setter Property="TranslateTransform.X" Value="0"/>
+          <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+        </KeyFrame>
+        <KeyFrame Cue="70%">
+          <Setter Property="TranslateTransform.X" Value="800"/>
+          <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="ScaleTransform.ScaleY" Value="0"/>
+          <Setter Property="TranslateTransform.X" Value="800"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <Style Selector="NotificationCard[IsClosing=true]">
+    <Style.Animations>
+      <Animation Duration="0:0:1.25" Easing="QuadraticEaseOut" FillMode="Forward">
+        <KeyFrame Cue="100%">
+          <Setter Property="IsClosed" Value="True"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <Style Selector="NotificationCard /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardProgressBackgroundBrush}"/>
+  </Style>
+  <Style Selector="NotificationCard:information /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardInformationBackgroundBrush}"/>
+  </Style>
+  <Style Selector="NotificationCard:success /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardSuccessBackgroundBrush}"/>
+  </Style>
+  <Style Selector="NotificationCard:warning /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardWarningBackgroundBrush}"/>
+  </Style>
+  <Style Selector="NotificationCard:error /template/ Panel#PART_HeaderBar">
+    <Setter Property="Background" Value="{DynamicResource NotificationCardErrorBackgroundBrush}"/>
+  </Style>
+</Styles>

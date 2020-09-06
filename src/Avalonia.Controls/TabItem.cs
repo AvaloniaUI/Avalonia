@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 
@@ -29,6 +26,7 @@ namespace Avalonia.Controls
         static TabItem()
         {
             SelectableMixin.Attach<TabItem>(IsSelectedProperty);
+            PressedMixin.Attach<TabItem>();
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
         }

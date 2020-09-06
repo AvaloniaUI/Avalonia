@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -84,8 +81,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             private void InitializeComponent()
             {
-                var loader = new AvaloniaXamlLoader();
-                loader.Load(@"
+                AvaloniaRuntimeXamlLoader.Load(@"
 <Window xmlns='https://github.com/avaloniaui'>
     <Border/>
 </Window>", null, this);
@@ -103,8 +99,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             private void InitializeComponent()
             {
-                var loader = new AvaloniaXamlLoader();
-                loader.Load(@"
+                AvaloniaRuntimeXamlLoader.Load(@"
 <UserControl xmlns='https://github.com/avaloniaui'>
     <Border/>
 </UserControl>", null, this);

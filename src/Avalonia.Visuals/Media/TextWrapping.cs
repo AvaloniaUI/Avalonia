@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Media
 {
     /// <summary>
@@ -16,6 +13,13 @@ namespace Avalonia.Media
         /// <summary>
         /// Text can wrap.
         /// </summary>
-        Wrap
+        Wrap, 
+        
+        /// <summary>
+        /// Line-breaking occurs if the line overflows the available block width.
+        /// However, a line may overflow the block width if the line breaking algorithm
+        /// cannot determine a break opportunity, as in the case of a very long word.
+        /// </summary>
+        WrapWithOverflow
     }
 }

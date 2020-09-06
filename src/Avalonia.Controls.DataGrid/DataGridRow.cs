@@ -536,10 +536,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Builds the visual tree for the column header when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             RootElement = e.NameScope.Find<Panel>(DATAGRIDROW_elementRoot);
             if (RootElement != null)
             {
@@ -626,17 +624,17 @@ namespace Avalonia.Controls
         {
             if (_headerElement != null && OwningGrid.AreRowHeadersVisible)
             {
-                _headerElement.ApplyOwnerStatus();
+                _headerElement.UpdatePseudoClasses();
             }
         }
 
-        //TODO Implement
         internal void UpdatePseudoClasses()
         {
-            PseudoClasses.Set(":selected", IsSelected);
-            PseudoClasses.Set(":editing", IsEditing);
             if (RootElement != null && OwningGrid != null && IsVisible)
             {
+                PseudoClasses.Set(":selected", IsSelected);
+                PseudoClasses.Set(":editing", IsEditing);
+                PseudoClasses.Set(":invalid", !IsValid);
                 ApplyHeaderStatus();
             } 
         }
@@ -769,6 +767,11 @@ namespace Avalonia.Controls
             }
         }
 
+        internal void InvalidateDesiredHeight()
+        {
+            _cellsElement?.InvalidateDesiredHeight();
+        }
+
         internal void ResetGridLine()
         {
             _bottomGridLine = null;
@@ -786,7 +789,7 @@ namespace Avalonia.Controls
 
         private void DataGridRow_PointerPressed(PointerPressedEventArgs e)
         {
-            if(e.MouseButton != MouseButton.Left)
+            if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 return;
             }
@@ -881,7 +884,7 @@ namespace Avalonia.Controls
                 && (double.IsNaN(_detailsContent.Height))
                 && (AreDetailsVisible)
                 && (!double.IsNaN(_detailsDesiredHeight))
-                && !DoubleUtil.AreClose(_detailsContent.Bounds.Inflate(_detailsContent.Margin).Height, _detailsDesiredHeight)
+                && !MathUtilities.AreClose(_detailsContent.Bounds.Inflate(_detailsContent.Margin).Height, _detailsDesiredHeight)
                 && Slot != -1)
             {
                 _detailsDesiredHeight = _detailsContent.Bounds.Inflate(_detailsContent.Margin).Height;
@@ -914,23 +917,23 @@ namespace Avalonia.Controls
 
         //TODO Cleanup
         double? _previousDetailsHeight = null;
-
+        
         //TODO Animation 
-        private void DetailsContent_SizeChanged(Rect newValue)
+        private void DetailsContent_HeightChanged(double newValue)
         {
             if (_previousDetailsHeight.HasValue)
             {
                 var oldValue = _previousDetailsHeight.Value;
-                _previousDetailsHeight = newValue.Height;
-                if (newValue.Height != oldValue && newValue.Height != _detailsDesiredHeight)
+                _previousDetailsHeight = newValue;
+                if (newValue != oldValue && newValue != _detailsDesiredHeight)
                 {
 
                     if (AreDetailsVisible && _appliedDetailsTemplate != null)
                     {
                         // Update the new desired height for RowDetails
-                        _detailsDesiredHeight = newValue.Height;
+                        _detailsDesiredHeight = newValue;
 
-                        _detailsElement.ContentHeight = newValue.Height;
+                        _detailsElement.ContentHeight = newValue;
 
                         // Calling this when details are not visible invalidates during layout when we have no work 
                         // to do.  In certain scenarios, this could cause a layout cycle
@@ -940,18 +943,28 @@ namespace Avalonia.Controls
             }
             else
             {
-                _previousDetailsHeight = newValue.Height;
+                _previousDetailsHeight = newValue;
             }
         }
-        private void DetailsContent_BoundsChanged(Rect newValue)
+
+        private void DetailsContent_SizeChanged(Rect newValue)
         {
-            if(_detailsContent != null)
-                DetailsContent_SizeChanged(newValue.Inflate(_detailsContent.Margin));
+            DetailsContent_HeightChanged(newValue.Height);
         }
         private void DetailsContent_MarginChanged(Thickness newValue)
         {
             if (_detailsContent != null)
                 DetailsContent_SizeChanged(_detailsContent.Bounds.Inflate(newValue));
+        }
+        private void DetailsContent_LayoutUpdated(object sender, EventArgs e)
+        {
+            if (_detailsContent != null)
+            {
+                var margin = _detailsContent.Margin;
+                var height = _detailsContent.DesiredSize.Height + margin.Top + margin.Bottom;
+
+                DetailsContent_HeightChanged(height);
+            }
         }
 
         //TODO Animation
@@ -1032,12 +1045,26 @@ namespace Avalonia.Controls
 
                     if (_detailsContent != null)
                     {
-                        _detailsContentSizeSubscription =
-                            System.Reactive.Disposables.StableCompositeDisposable.Create(
-                                _detailsContent.GetObservable(BoundsProperty)
-                                               .Subscribe(DetailsContent_BoundsChanged),
+                        if (_detailsContent is Layout.Layoutable layoutableContent)
+                        {
+                            layoutableContent.LayoutUpdated += DetailsContent_LayoutUpdated;
+
+                            _detailsContentSizeSubscription =
+                                System.Reactive.Disposables.StableCompositeDisposable.Create(
+                                    System.Reactive.Disposables.Disposable.Create(() => layoutableContent.LayoutUpdated -= DetailsContent_LayoutUpdated),
+                                    _detailsContent.GetObservable(MarginProperty)
+                                                   .Subscribe(DetailsContent_MarginChanged));
+
+
+                        }
+                        else
+                        {
+                            _detailsContentSizeSubscription =
                                 _detailsContent.GetObservable(MarginProperty)
-                                               .Subscribe(DetailsContent_MarginChanged));
+                                               .Subscribe(DetailsContent_MarginChanged);
+
+                        }
+                        
                         _detailsElement.Children.Add(_detailsContent);
                     }
                 }

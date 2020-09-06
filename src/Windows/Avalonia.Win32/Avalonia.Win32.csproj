@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2019013001" />
   </ItemGroup>
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />    
 </Project>

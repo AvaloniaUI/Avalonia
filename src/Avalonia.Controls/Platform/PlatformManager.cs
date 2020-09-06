@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Platform
             return s_designerMode ? (IWindowImpl)platform.CreateEmbeddableWindow() : platform.CreateWindow();
         }
 
-        public static IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public static IWindowImpl CreateEmbeddableWindow()
         {
             var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
             if (platform == null)

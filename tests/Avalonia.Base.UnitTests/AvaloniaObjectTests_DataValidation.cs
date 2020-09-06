@@ -11,59 +11,31 @@ namespace Avalonia.Base.UnitTests
     public class AvaloniaObjectTests_DataValidation
     {
         [Fact]
-        public void Setting_Non_Validated_Property_Does_Not_Call_UpdateDataValidation()
+        public void Binding_Non_Validated_Styled_Property_Does_Not_Call_UpdateDataValidation()
         {
             var target = new Class1();
+            var source = new Subject<BindingValue<int>>();
 
-            target.SetValue(Class1.NonValidatedDirectProperty, 6);
+            target.Bind(Class1.NonValidatedProperty, source);
+            source.OnNext(6);
+            source.OnNext(BindingValue<int>.BindingError(new Exception()));
+            source.OnNext(BindingValue<int>.DataValidationError(new Exception()));
+            source.OnNext(6);
 
             Assert.Empty(target.Notifications);
         }
 
         [Fact]
-        public void Setting_Non_Validated_Direct_Property_Does_Not_Call_UpdateDataValidation()
+        public void Binding_Non_Validated_Direct_Property_Does_Not_Call_UpdateDataValidation()
         {
             var target = new Class1();
+            var source = new Subject<BindingValue<int>>();
 
-            target.SetValue(Class1.NonValidatedDirectProperty, 6);
-
-            Assert.Empty(target.Notifications);
-        }
-
-        [Fact]
-        public void Setting_Validated_Direct_Property_Calls_UpdateDataValidation()
-        {
-            var target = new Class1();
-
-            target.SetValue(Class1.ValidatedDirectIntProperty, new BindingNotification(6));
-            target.SetValue(Class1.ValidatedDirectIntProperty, new BindingNotification(new Exception(), BindingErrorType.Error));
-            target.SetValue(Class1.ValidatedDirectIntProperty, new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
-            target.SetValue(Class1.ValidatedDirectIntProperty, new BindingNotification(7));
-
-            Assert.Equal(
-                new[]
-                {
-                    new BindingNotification(6),
-                    new BindingNotification(new Exception(), BindingErrorType.Error),
-                    new BindingNotification(new Exception(), BindingErrorType.DataValidationError),
-                    new BindingNotification(7),
-                },
-                target.Notifications.AsEnumerable());
-        }
-
-        [Fact]
-        public void Binding_Non_Validated_Property_Does_Not_Call_UpdateDataValidation()
-        {
-            var source = new Subject<object>();
-            var target = new Class1
-            {
-                [!Class1.NonValidatedProperty] = source.ToBinding(),
-            };
-
-            source.OnNext(new BindingNotification(6));
-            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
-            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
-            source.OnNext(new BindingNotification(7));
+            target.Bind(Class1.NonValidatedDirectProperty, source);
+            source.OnNext(6);
+            source.OnNext(BindingValue<int>.BindingError(new Exception()));
+            source.OnNext(BindingValue<int>.DataValidationError(new Exception()));
+            source.OnNext(6);
 
             Assert.Empty(target.Notifications);
         }
@@ -71,26 +43,37 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Binding_Validated_Direct_Property_Calls_UpdateDataValidation()
         {
-            var source = new Subject<object>();
-            var target = new Class1
-            {
-                [!Class1.ValidatedDirectIntProperty] = source.ToBinding(),
-            };
+            var target = new Class1();
+            var source = new Subject<BindingValue<int>>();
 
-            source.OnNext(new BindingNotification(6));
-            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.Error));
-            source.OnNext(new BindingNotification(new Exception(), BindingErrorType.DataValidationError));
-            source.OnNext(new BindingNotification(7));
+            target.Bind(Class1.ValidatedDirectIntProperty, source);
+            source.OnNext(6);
+            source.OnNext(BindingValue<int>.BindingError(new Exception()));
+            source.OnNext(BindingValue<int>.DataValidationError(new Exception()));
+            source.OnNext(7);
 
-            Assert.Equal(
-                new[]
-                {
-                    new BindingNotification(6),
-                    new BindingNotification(new Exception(), BindingErrorType.Error),
-                    new BindingNotification(new Exception(), BindingErrorType.DataValidationError),
-                    new BindingNotification(7),
-                },
-                target.Notifications.AsEnumerable());
+            var result = target.Notifications.Cast<BindingValue<int>>().ToList();
+            Assert.Equal(4, result.Count);
+            Assert.Equal(BindingValueType.Value, result[0].Type);
+            Assert.Equal(6, result[0].Value);
+            Assert.Equal(BindingValueType.BindingError, result[1].Type);
+            Assert.Equal(BindingValueType.DataValidationError, result[2].Type);
+            Assert.Equal(BindingValueType.Value, result[3].Type);
+            Assert.Equal(7, result[3].Value);
+        }
+
+        [Fact]
+        public void Binding_Overridden_Validated_Direct_Property_Calls_UpdateDataValidation()
+        {
+            var target = new Class2();
+            var source = new Subject<BindingValue<int>>();
+
+            // Class2 overrides `NonValidatedDirectProperty`'s metadata to enable data validation.
+            target.Bind(Class1.NonValidatedDirectProperty, source);
+            source.OnNext(1);
+
+            var result = target.Notifications.Cast<BindingValue<int>>().ToList();
+            Assert.Equal(1, result.Count);
         }
 
         [Fact]
@@ -171,11 +154,22 @@ namespace Avalonia.Base.UnitTests
                 set { SetAndRaise(ValidatedDirectStringProperty, ref _directString, value); }
             }
 
-            public IList<BindingNotification> Notifications { get; } = new List<BindingNotification>();
+            public IList<object> Notifications { get; } = new List<object>();
 
-            protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification notification)
+            protected override void UpdateDataValidation<T>(
+                AvaloniaProperty<T> property,
+                BindingValue<T> value)
             {
-                Notifications.Add(notification);
+                Notifications.Add(value);
+            }
+        }
+
+        private class Class2 : Class1
+        {
+            static Class2()
+            {
+                NonValidatedDirectProperty.OverrideMetadata<Class2>(
+                    new DirectPropertyMetadata<int>(enableDataValidation: true));
             }
         }
 

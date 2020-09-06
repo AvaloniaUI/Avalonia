@@ -1,14 +1,14 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -95,7 +95,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Removal_Should_Set_Next_Tab()
+        public void Removal_Should_Set_First_Tab()
         {
             var collection = new ObservableCollection<TabItem>()
             {
@@ -126,10 +126,8 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedItem = collection[1];
             collection.RemoveAt(1);
 
-            // compare with former [2] now [1] == "3rd"
-            Assert.Same(collection[1], target.SelectedItem);
+            Assert.Same(collection[0], target.SelectedItem);
         }
-
 
         [Fact]
         public void TabItem_Templates_Should_Be_Set_Before_TabItem_ApplyTemplate()
@@ -163,7 +161,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new Style(x => x.OfType<TabItem>())
                         {
-                            Setters = new[]
+                            Setters =
                             {
                                 new Setter(TemplatedControl.TemplateProperty, template)
                             }
@@ -328,6 +326,27 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
 
             Assert.NotEqual(dataContext, tabItem.Content);
+        }
+
+        [Fact]
+        public void Can_Have_Empty_Tab_Control()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TabControl Name='tabs' Items='{Binding Tabs}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var tabControl = window.FindControl<TabControl>("tabs");
+
+                tabControl.DataContext = new { Tabs = new List<string>() };
+                window.ApplyTemplate();
+
+                Assert.Equal(0, tabControl.Items.Count());
+            }
         }
 
         private IControlTemplate TabControlTemplate()

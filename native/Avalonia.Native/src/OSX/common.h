@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #ifndef common_h
 #define common_h
 #include "comimpl.h"
@@ -24,11 +21,12 @@ extern NSString* GetAvnCustomDataType();
 extern AvnDragDropEffects ConvertDragDropEffects(NSDragOperation nsop);
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlDisplay* GetGlDisplay();
-extern IAvnAppMenu* CreateAppMenu();
-extern IAvnAppMenuItem* CreateAppMenuItem();
-extern IAvnAppMenuItem* CreateAppMenuItemSeperator();
-extern void SetAppMenu (NSString* appName, IAvnAppMenu* appMenu);
-extern IAvnAppMenu* GetAppMenu ();
+extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);
+extern IAvnMenuItem* CreateAppMenuItem();
+extern IAvnMenuItem* CreateAppMenuItemSeperator();
+extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
+extern void SetAppMenu (NSString* appName, IAvnMenu* appMenu);
+extern IAvnMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
 
 extern void InitializeAvnApp();
@@ -56,5 +54,13 @@ template<typename T> inline T* objc_cast(id from) {
 - (ActionCallback*) initWithCallback: (IAvnActionCallback*) callback;
 - (void) action;
 @end
+
+class AvnInsidePotentialDeadlock
+{
+public:
+    static bool IsInside();
+    AvnInsidePotentialDeadlock();
+    ~AvnInsidePotentialDeadlock();
+};
 
 #endif

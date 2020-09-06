@@ -1,5 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
+using System;
+
+#nullable enable
 
 namespace Avalonia.Controls.Templates
 {
@@ -8,12 +9,6 @@ namespace Avalonia.Controls.Templates
     /// </summary>
     public interface IDataTemplate : ITemplate<object, IControl>
     {
-        /// <summary>
-        /// Gets a value indicating whether the data template supports recycling of the generated
-        /// control.
-        /// </summary>
-        bool SupportsRecycling { get; }
-
         /// <summary>
         /// Checks to see if this data template matches the specified data.
         /// </summary>

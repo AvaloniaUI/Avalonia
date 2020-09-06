@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -73,7 +70,6 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            e.Device.Capture(this);
             e.Handled = true;
             _lastPoint = e.GetPosition(this);
 
@@ -92,7 +88,6 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastPoint.HasValue)
             {
-                e.Device.Capture(null);
                 e.Handled = true;
                 _lastPoint = null;
 

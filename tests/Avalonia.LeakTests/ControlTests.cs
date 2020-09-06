@@ -1,11 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
@@ -46,7 +44,7 @@ namespace Avalonia.LeakTests
                     window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
-                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass();
                     Assert.IsType<Canvas>(window.Presenter.Child);
 
                     // Clear the content and ensure the Canvas is removed.
@@ -84,7 +82,7 @@ namespace Avalonia.LeakTests
                     window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
-                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass();
                     Assert.IsType<Canvas>(window.Find<Canvas>("foo"));
                     Assert.IsType<Canvas>(window.Presenter.Child);
 
@@ -124,7 +122,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that ScrollViewer gets added to visual tree and its 
                     // template applied.
-                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass();
                     Assert.IsType<ScrollViewer>(window.Presenter.Child);
                     Assert.IsType<Canvas>(((ScrollViewer)window.Presenter.Child).Presenter.Child);
 
@@ -161,7 +159,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // template applied.
-                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass();
                     Assert.IsType<TextBox>(window.Presenter.Child);
                     Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
 
@@ -205,7 +203,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // Text property set.
-                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass();
                     Assert.IsType<TextBox>(window.Presenter.Child);
                     Assert.Equal("foo", ((TextBox)window.Presenter.Child).Text);
 
@@ -243,7 +241,7 @@ namespace Avalonia.LeakTests
 
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // template applied.
-                window.LayoutManager.ExecuteInitialLayoutPass(window);
+                window.LayoutManager.ExecuteInitialLayoutPass();
                 Assert.Same(textBox, window.Presenter.Child);
 
                 // Get the border from the TextBox template.
@@ -297,7 +295,7 @@ namespace Avalonia.LeakTests
                     window.Show();
 
                     // Do a layout and make sure that TreeViewItems get realized.
-                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass();
                     Assert.Single(target.ItemContainerGenerator.Containers);
 
                     // Clear the content and ensure the TreeView is removed.
@@ -331,7 +329,7 @@ namespace Avalonia.LeakTests
                     window.Show();
 
                     // Do a layout and make sure that Slider gets added to visual tree.
-                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass();
                     Assert.IsType<Slider>(window.Presenter.Child);
 
                     // Clear the content and ensure the Slider is removed.
@@ -357,7 +355,7 @@ namespace Avalonia.LeakTests
                 var renderer = new Mock<IRenderer>();
                 renderer.Setup(x => x.Dispose());
                 var impl = new Mock<IWindowImpl>();
-                impl.SetupGet(x => x.Scaling).Returns(1);
+                impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
                 impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
@@ -405,7 +403,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that Canvas gets added to visual tree with
                     // its render transform.
-                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass();
                     var canvas = Assert.IsType<Canvas>(window.Presenter.Child);
                     Assert.IsType<RotateTransform>(canvas.RenderTransform);
 
@@ -451,12 +449,22 @@ namespace Avalonia.LeakTests
 
                 Assert.Same(window, FocusManager.Instance.Current);
 
+                // Context menu in resources means the baseline may not be 0.
+                var initialMenuCount = 0;
+                var initialMenuItemCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
+                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
+                });
+                
                 AttachShowAndDetachContextMenu(window);
 
+                Mock.Get(window.PlatformImpl).ResetCalls();
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
             }
         }
 
@@ -485,13 +493,62 @@ namespace Avalonia.LeakTests
 
                 Assert.Same(window, FocusManager.Instance.Current);
 
+                // Context menu in resources means the baseline may not be 0.
+                var initialMenuCount = 0;
+                var initialMenuItemCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
+                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
+                });
+                
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
+                Mock.Get(window.PlatformImpl).ResetCalls();
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void Path_Is_Freed()
+        {
+            using (Start())
+            {
+                var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
+
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new Path
+                        {
+                            Data = geometry
+                        }
+                    };
+
+                    window.Show();
+
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<Path>(window.Presenter.Child);
+
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Path>()).ObjectsCount));
+
+                // We are keeping geometry alive to simulate a resource that outlives the control.
+                GC.KeepAlive(geometry);
             }
         }
 
@@ -524,6 +581,8 @@ namespace Avalonia.LeakTests
             }
 
             public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
+
+            public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter) => null;
 
             public void Paint(Rect rect)
             {

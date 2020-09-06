@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -47,7 +44,7 @@ namespace Avalonia.Win32.Input
 
         public void WindowActivated(Window window)
         {
-            SetFocusedElement(window, NavigationMethod.Unspecified, InputModifiers.None);
+            SetFocusedElement(window, NavigationMethod.Unspecified, KeyModifiers.None);
         }
 
         public string StringFromVirtualKey(uint virtualKey)

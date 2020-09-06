@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 
@@ -32,8 +29,8 @@ namespace Avalonia.Interactivity
         /// </remarks>
         public void Register(Type type, RoutedEvent @event)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(@event != null);
+            type = type ?? throw new ArgumentNullException(nameof(type));
+            @event = @event ?? throw new ArgumentNullException(nameof(@event));
 
             if (!_registeredRoutedEvents.TryGetValue(type, out var list))
             {
@@ -66,7 +63,7 @@ namespace Avalonia.Interactivity
         /// <returns>All routed events registered with the provided type.</returns>
         public IReadOnlyList<RoutedEvent> GetRegistered(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type = type ?? throw new ArgumentNullException(nameof(type));
 
             if (_registeredRoutedEvents.TryGetValue(type, out var events))
             {

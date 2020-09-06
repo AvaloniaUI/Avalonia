@@ -1,13 +1,13 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {
-    internal static class ArgumentListParser
+#if !BUILDTASK
+    public
+#endif
+    static class ArgumentListParser
     {
         public static IList<string> ParseArguments(this ref CharacterReader r, char open, char close, char delimiter = ',')
         {

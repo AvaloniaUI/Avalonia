@@ -1,33 +1,42 @@
 ﻿using System;
+using Avalonia.Styling;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Represents an object that can be queried for resources.
+    /// Represents an object that can be queried for resources but does not appear in the logical tree.
     /// </summary>
-    public interface IResourceProvider
+    /// <remarks>
+    /// This interface is implemented by <see cref="ResourceDictionary"/>, <see cref="Style"/> and
+    /// <see cref="Styles"/>
+    /// </remarks>
+    public interface IResourceProvider : IResourceNode
     {
         /// <summary>
-        /// Raised when resources in the provider are changed.
+        /// Gets the owner of the resource provider.
         /// </summary>
-        event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        /// <remarks>
+        /// If multiple owners are added, returns the first.
+        /// </remarks>
+        IResourceHost? Owner { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the element has resources.
+        /// Raised when the <see cref="Owner"/> of the resource provider changes.
         /// </summary>
-        bool HasResources { get; }
+        event EventHandler OwnerChanged;
 
         /// <summary>
-        /// Tries to find a resource within the provider.
+        /// Adds an owner to the resource provider.
         /// </summary>
-        /// <param name="key">The resource key.</param>
-        /// <param name="value">
-        /// When this method returns, contains the value associated with the specified key,
-        /// if the key is found; otherwise, null.
-        /// </param>
-        /// <returns>
-        /// True if the resource if found, otherwise false.
-        /// </returns>
-        bool TryGetResource(object key, out object value);
+        /// <param name="owner">The owner.</param>
+        void AddOwner(IResourceHost owner);
+
+        /// <summary>
+        /// Removes a resource provider owner.
+        /// </summary>
+        /// <param name="owner">The owner.</param>
+        void RemoveOwner(IResourceHost owner);
     }
 }

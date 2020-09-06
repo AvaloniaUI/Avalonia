@@ -1,9 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
-using System.Reactive.Subjects;
-using Avalonia.Data;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -11,30 +5,12 @@ namespace Avalonia.Base.UnitTests
     public class DirectPropertyTests
     {
         [Fact]
-        public void Initialized_Observable_Fired()
-        {
-            bool invoked = false;
-
-            Class1.FooProperty.Initialized.Subscribe(x =>
-            {
-                Assert.Equal(AvaloniaProperty.UnsetValue, x.OldValue);
-                Assert.Equal("foo", x.NewValue);
-                Assert.Equal(BindingPriority.Unset, x.Priority);
-                invoked = true;
-            });
-
-            var target = new Class1();
-
-            Assert.True(invoked);
-        }
-
-        [Fact]
         public void IsDirect_Property_Returns_True()
         {
             var target = new DirectProperty<Class1, string>(
                 "test", 
                 o => null, 
-                null, 
+                null,
                 new DirectPropertyMetadata<string>());
 
             Assert.True(target.IsDirect);
@@ -68,18 +44,6 @@ namespace Avalonia.Base.UnitTests
             var p2 = p1.AddOwner<Class2>(o => null, (o, v) => { });
 
             Assert.Same(p1.Changed, p2.Changed);
-            Assert.Same(p1.Initialized, p2.Initialized);
-        }
-
-        [Fact]
-        public void IsAnimating_On_DirectProperty_With_Binding_Returns_False()
-        {
-            var target = new Class1();
-            var source = new BehaviorSubject<string>("foo");
-
-            target.Bind(Class1.FooProperty, source, BindingPriority.Animation);
-
-            Assert.False(target.IsAnimating(Class1.FooProperty));
         }
 
         private class Class1 : AvaloniaObject

@@ -29,6 +29,9 @@
       <TabItem Header="Animations">
         <pages:AnimationsPage/>
       </TabItem>
+      <TabItem Header="Transitions">
+        <pages:TransitionsPage/>
+      </TabItem>
       <TabItem Header="Clipping">
         <pages:ClippingPage/>
       </TabItem>
@@ -40,6 +43,15 @@
       </TabItem>
       <TabItem Header="RenderTargetBitmap">
         <pages:RenderTargetBitmapPage/>
+      </TabItem>
+      <TabItem Header="WriteableBitmap">
+        <pages:WriteableBitmapPage/>
+      </TabItem>
+      <TabItem Header="GlyphRun">
+        <pages:GlyphRunPage/>
+      </TabItem>
+      <TabItem Header="LineBounds">
+        <pages:LineBoundsPage />
       </TabItem>
     </TabControl>
   </DockPanel>

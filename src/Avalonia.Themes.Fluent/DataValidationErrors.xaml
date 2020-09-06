@@ -1,0 +1,48 @@
+<Style xmlns="https://github.com/avaloniaui" 
+       Selector="DataValidationErrors"
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Design.PreviewWith>
+    <Border Padding="20"> 
+      <TextBox Text="Sample">
+        <DataValidationErrors.Error>
+          <sys:Exception/> 
+        </DataValidationErrors.Error>
+      </TextBox>
+    </Border>
+  </Design.PreviewWith>
+    
+  <Setter Property="Template">
+    <ControlTemplate>
+      <DockPanel LastChildFill="True">
+        <ContentControl DockPanel.Dock="Right"
+                        ContentTemplate="{TemplateBinding ErrorTemplate}"
+                        DataContext="{TemplateBinding Owner}"
+                        Content="{Binding (DataValidationErrors.Errors)}"
+                        IsVisible="{Binding (DataValidationErrors.HasErrors)}"/>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Content="{TemplateBinding Content}"
+                          Padding="{TemplateBinding Padding}"/>
+      </DockPanel>
+    </ControlTemplate>
+  </Setter>
+  <Setter Property="ErrorTemplate">
+    <DataTemplate>
+      <Canvas Width="14" Height="14" Margin="4 0 1 0" 
+              Background="Transparent">
+        <Canvas.Styles>
+          <Style Selector="ToolTip">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
+          </Style>
+        </Canvas.Styles>
+        <ToolTip.Tip>
+          <ItemsControl Items="{Binding}"/>
+        </ToolTip.Tip>
+        <Path Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2" Stroke="{DynamicResource SystemControlErrorTextForegroundBrush}" StrokeThickness="2"/>
+      </Canvas>
+    </DataTemplate>
+  </Setter>
+</Style>

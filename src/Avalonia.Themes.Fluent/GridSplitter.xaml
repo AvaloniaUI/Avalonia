@@ -1,0 +1,23 @@
+<Styles xmlns="https://github.com/avaloniaui">
+
+  <Style Selector="GridSplitter">
+    <Setter Property="Focusable" Value="True" />
+    <Setter Property="MinWidth" Value="6" />
+    <Setter Property="MinHeight" Value="6" />
+    <Setter Property="Background" Value="{DynamicResource SystemAltMediumLowColor}" />
+    <Setter Property="PreviewContent">
+      <Template>
+        <Rectangle Fill="{DynamicResource SystemAccentColor}" />
+      </Template>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border 
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          Background="{TemplateBinding Background}"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+</Styles>

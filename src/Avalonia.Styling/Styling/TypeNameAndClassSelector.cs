@@ -1,13 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Reflection;
 using System.Text;
-using Avalonia.Collections;
-using Avalonia.Reactive;
+using Avalonia.Styling.Activators;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
@@ -17,13 +13,12 @@ namespace Avalonia.Styling
     /// </summary>
     internal class TypeNameAndClassSelector : Selector
     {
-        private readonly Selector _previous;
+        private readonly Selector? _previous;
         private readonly Lazy<List<string>> _classes = new Lazy<List<string>>(() => new List<string>());
-        private Type _targetType;
-        
-        private string _selectorString;
+        private Type? _targetType;
+        private string? _selectorString;
 
-        public static TypeNameAndClassSelector OfType(Selector previous, Type targetType)
+        public static TypeNameAndClassSelector OfType(Selector? previous, Type targetType)
         {
             var result = new TypeNameAndClassSelector(previous);
             result._targetType = targetType;
@@ -32,7 +27,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        public static TypeNameAndClassSelector Is(Selector previous, Type targetType)
+        public static TypeNameAndClassSelector Is(Selector? previous, Type targetType)
         {
             var result = new TypeNameAndClassSelector(previous);
             result._targetType = targetType;
@@ -41,7 +36,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        public static TypeNameAndClassSelector ForName(Selector previous, string name)
+        public static TypeNameAndClassSelector ForName(Selector? previous, string name)
         {
             var result = new TypeNameAndClassSelector(previous);
             result.Name = name;
@@ -49,7 +44,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        public static TypeNameAndClassSelector ForClass(Selector previous, string className)
+        public static TypeNameAndClassSelector ForClass(Selector? previous, string className)
         {
             var result = new TypeNameAndClassSelector(previous);
             result.Classes.Add(className);
@@ -57,7 +52,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        protected TypeNameAndClassSelector(Selector previous)
+        protected TypeNameAndClassSelector(Selector? previous)
         {
             _previous = previous;
         }
@@ -68,10 +63,10 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the name of the control to match.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <inheritdoc/>
-        public override Type TargetType => _targetType ?? _previous?.TargetType;
+        public override Type? TargetType => _targetType ?? _previous?.TargetType;
 
         /// <inheritdoc/>
         public override bool IsCombinator => false;
@@ -114,7 +109,7 @@ namespace Avalonia.Styling
                 }
                 else
                 {
-                    if (!TargetType.GetTypeInfo().IsAssignableFrom(controlType.GetTypeInfo()))
+                    if (!TargetType.IsAssignableFrom(controlType))
                     {
                         return SelectorMatch.NeverThisType;
                     }
@@ -130,12 +125,12 @@ namespace Avalonia.Styling
             {
                 if (subscribe)
                 {
-                    var observable = new ClassObserver(control.Classes, _classes.Value);
+                    var observable = new StyleClassActivator(control.Classes, _classes.Value);
 
                     return new SelectorMatch(observable);
                 }
 
-                if (!AreClassesMatching(control.Classes, Classes))
+                if (!StyleClassActivator.AreClassesMatching(control.Classes, Classes))
                 {
                     return SelectorMatch.NeverThisInstance;
                 }
@@ -144,7 +139,7 @@ namespace Avalonia.Styling
             return Name == null ? SelectorMatch.AlwaysThisType : SelectorMatch.AlwaysThisInstance;
         }
 
-        protected override Selector MovePrevious() => _previous;
+        protected override Selector? MovePrevious() => _previous;
 
         private string BuildSelectorString()
         {
@@ -189,81 +184,6 @@ namespace Avalonia.Styling
             }
 
             return builder.ToString();
-        }
-
-        private static bool AreClassesMatching(IReadOnlyList<string> classes, IList<string> toMatch)
-        {
-            int remainingMatches = toMatch.Count;
-            int classesCount = classes.Count;
-
-            // Early bail out - we can't match if control does not have enough classes.
-            if (classesCount < remainingMatches)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < classesCount; i++)
-            {
-                var c = classes[i];
-
-                if (toMatch.Contains(c))
-                {
-                    --remainingMatches;
-
-                    // Already matched so we can skip checking other classes.
-                    if (remainingMatches == 0)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return remainingMatches == 0;
-        }
-
-        private sealed class ClassObserver : LightweightObservableBase<bool>
-        {
-            private readonly IList<string> _match;
-            private readonly IAvaloniaReadOnlyList<string> _classes;
-            private bool _hasMatch;
-
-            public ClassObserver(IAvaloniaReadOnlyList<string> classes, IList<string> match)
-            {
-                _classes = classes;
-                _match = match;
-            }
-
-            protected override void Deinitialize() => _classes.CollectionChanged -= ClassesChanged;
-
-            protected override void Initialize()
-            {
-                _hasMatch = IsMatching();
-                _classes.CollectionChanged += ClassesChanged;
-            }
-
-            protected override void Subscribed(IObserver<bool> observer, bool first)
-            {
-                observer.OnNext(_hasMatch);
-            }
-
-            private void ClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
-            {
-                if (e.Action != NotifyCollectionChangedAction.Move)
-                {
-                    var hasMatch = IsMatching();
-
-                    if (hasMatch != _hasMatch)
-                    {
-                        PublishNext(hasMatch);
-                        _hasMatch = hasMatch;
-                    }
-                }
-            }
-
-            private bool IsMatching()
-            {
-                return AreClassesMatching(_classes, _match);
-            }
         }
     }
 }

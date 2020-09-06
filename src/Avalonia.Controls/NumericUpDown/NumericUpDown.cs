@@ -58,7 +58,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Increment"/> property.
         /// </summary>
         public static readonly StyledProperty<double> IncrementProperty =
-            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Increment), 1.0d, validate: OnCoerceIncrement);
+            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Increment), 1.0d, coerce: OnCoerceIncrement);
 
         /// <summary>
         /// Defines the <see cref="IsReadOnly"/> property.
@@ -70,13 +70,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Maximum"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaximumProperty =
-            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Maximum), double.MaxValue, validate: OnCoerceMaximum);
+            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Maximum), double.MaxValue, coerce: OnCoerceMaximum);
 
         /// <summary>
         /// Defines the <see cref="Minimum"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinimumProperty =
-            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Minimum), double.MinValue, validate: OnCoerceMinimum);
+            AvaloniaProperty.Register<NumericUpDown, double>(nameof(Minimum), double.MinValue, coerce: OnCoerceMinimum);
 
         /// <summary>
         /// Defines the <see cref="ParsingNumberStyle"/> property.
@@ -295,7 +295,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             if (TextBox != null)
             {
@@ -738,19 +738,34 @@ namespace Avalonia.Controls
             }
         }
 
-        private static double OnCoerceMaximum(NumericUpDown upDown, double value)
+        private static double OnCoerceMaximum(IAvaloniaObject instance, double value)
         {
-            return upDown.OnCoerceMaximum(value);
+            if (instance is NumericUpDown upDown)
+            {
+                return upDown.OnCoerceMaximum(value);
+            }
+
+            return value;
         }
 
-        private static double OnCoerceMinimum(NumericUpDown upDown, double value)
+        private static double OnCoerceMinimum(IAvaloniaObject instance, double value)
         {
-            return upDown.OnCoerceMinimum(value);
+            if (instance is NumericUpDown upDown)
+            {
+                return upDown.OnCoerceMinimum(value);
+            }
+
+            return value;
         }
 
-        private static double OnCoerceIncrement(NumericUpDown upDown, double value)
+        private static double OnCoerceIncrement(IAvaloniaObject instance, double value)
         {
-            return upDown.OnCoerceIncrement(value);
+            if (instance is NumericUpDown upDown)
+            {
+                return upDown.OnCoerceIncrement(value);
+            }
+
+            return value;
         }
 
         private void TextBoxOnTextChanged()
@@ -804,9 +819,9 @@ namespace Avalonia.Controls
 
         private void TextBoxOnPointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (e.Device.Captured != Spinner)
+            if (e.Pointer.Captured != Spinner)
             {
-                Dispatcher.UIThread.InvokeAsync(() => { e.Device.Capture(Spinner); }, DispatcherPriority.Input);
+                Dispatcher.UIThread.InvokeAsync(() => { e.Pointer.Capture(Spinner); }, DispatcherPriority.Input);
             }
         }
 

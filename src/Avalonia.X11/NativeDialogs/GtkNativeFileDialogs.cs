@@ -76,7 +76,7 @@ namespace Avalonia.X11.NativeDialogs
                         }
                         g_slist_free(gs);
                         result = resultList.ToArray();
-
+                        
                         // GTK doesn't auto-append the extension, so we need to do that manually
                         if (action == GtkFileChooserAction.Save)
                         {
@@ -135,26 +135,32 @@ namespace Avalonia.X11.NativeDialogs
 
             return path;
         }
-        
-        public async Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
+
+        public async Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
         {
             await EnsureInitialized();
+
+            var platformImpl = parent?.PlatformImpl;
+
             return await await RunOnGlibThread(
-                () => ShowDialog(dialog.Title, parent,
+                () => ShowDialog(dialog.Title, platformImpl,
                     dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
                     (dialog as OpenFileDialog)?.AllowMultiple ?? false,
-                    Path.Combine(string.IsNullOrEmpty(dialog.InitialDirectory) ? "" : dialog.InitialDirectory,
+                    Path.Combine(string.IsNullOrEmpty(dialog.Directory) ? "" : dialog.Directory,
                         string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName), dialog.Filters,
                     (dialog as SaveFileDialog)?.DefaultExtension));
         }
 
-        public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
         {
             await EnsureInitialized();
+
+            var platformImpl = parent?.PlatformImpl;
+
             return await await RunOnGlibThread(async () =>
             {
-                var res = await ShowDialog(dialog.Title, parent,
-                    GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory, null, null);
+                var res = await ShowDialog(dialog.Title, platformImpl,
+                    GtkFileChooserAction.SelectFolder, false, dialog.Directory, null, null);
                 return res?.FirstOrDefault();
             });
         }

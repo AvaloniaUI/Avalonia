@@ -1,11 +1,11 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -16,6 +16,8 @@ namespace Avalonia.Controls
     {
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
+
+        private LightDismissOverlayLayer? _overlay;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Menu"/> class.

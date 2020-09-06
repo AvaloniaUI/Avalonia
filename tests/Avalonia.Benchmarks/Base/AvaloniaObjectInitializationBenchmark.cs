@@ -6,7 +6,7 @@ namespace Avalonia.Benchmarks.Base
     [MemoryDiagnoser]
     public class AvaloniaObjectInitializationBenchmark
     {
-        [Benchmark(OperationsPerInvoke = 1000)]
+        [Benchmark]
         public Button InitializeButton()
         {
             return new Button();

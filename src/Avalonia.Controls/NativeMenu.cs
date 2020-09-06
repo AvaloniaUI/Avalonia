@@ -3,13 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
-using Avalonia.Data;
-using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
-    public partial class NativeMenu : AvaloniaObject, IEnumerable<NativeMenuItemBase>
+    public partial class NativeMenu : AvaloniaObject, IEnumerable<NativeMenuItemBase>, INativeMenuExporterEventsImplBridge
     {
         private readonly AvaloniaList<NativeMenuItemBase> _items =
             new AvaloniaList<NativeMenuItemBase> { ResetBehavior = ResetBehavior.Remove };
@@ -17,10 +15,20 @@ namespace Avalonia.Controls
         [Content]
         public IList<NativeMenuItemBase> Items => _items;
 
+        /// <summary>
+        /// Raised when the user clicks the menu and before its opened. Use this event to update the menu dynamically.
+        /// </summary>
+        public event EventHandler<EventArgs> Opening;
+
         public NativeMenu()
         {
             _items.Validate = Validator;
             _items.CollectionChanged += ItemsChanged;
+        }
+
+        void INativeMenuExporterEventsImplBridge.RaiseNeedsUpdate()
+        {
+            Opening?.Invoke(this, EventArgs.Empty);
         }
 
         private void Validator(NativeMenuItemBase obj)
@@ -31,10 +39,10 @@ namespace Avalonia.Controls
 
         private void ItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if(e.OldItems!=null)
+            if (e.OldItems != null)
                 foreach (NativeMenuItemBase i in e.OldItems)
                     i.Parent = null;
-            if(e.NewItems!=null)
+            if (e.NewItems != null)
                 foreach (NativeMenuItemBase i in e.NewItems)
                     i.Parent = this;
         }
@@ -49,7 +57,7 @@ namespace Avalonia.Controls
         }
 
         public void Add(NativeMenuItemBase item) => _items.Add(item);
-        
+
         public IEnumerator<NativeMenuItemBase> GetEnumerator() => _items.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()

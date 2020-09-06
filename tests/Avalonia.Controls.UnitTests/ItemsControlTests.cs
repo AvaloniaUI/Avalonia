@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
@@ -66,7 +63,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Container_Child_Should_Have_LogicalParent_Set_To_Container()
+        public void Container_Should_Have_LogicalParent_Set_To_ItemsControl()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -87,7 +84,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var container = (ContentPresenter)target.Presenter.Panel.Children[0];
 
-                Assert.Equal(container, container.Child.Parent);
+                Assert.Equal(target, container.Parent);
             }
         }
 
@@ -190,7 +187,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_String_Item_Should_Make_TextBlock_Appear_In_LogicalChildren()
+        public void Adding_String_Item_Should_Make_ContentPresenter_Appear_In_LogicalChildren()
         {
             var target = new ItemsControl();
             var child = new Control();
@@ -202,7 +199,7 @@ namespace Avalonia.Controls.UnitTests
 
             var logical = (ILogical)target;
             Assert.Equal(1, logical.LogicalChildren.Count);
-            Assert.IsType<TextBlock>(logical.LogicalChildren[0]);
+            Assert.IsType<ContentPresenter>(logical.LogicalChildren[0]);
         }
 
         [Fact]
@@ -573,6 +570,30 @@ namespace Avalonia.Controls.UnitTests
             {
                 new Canvas()
             };
+        }
+
+        [Fact]
+        public void Detaching_Then_Reattaching_To_Logical_Tree_Twice_Does_Not_Throw()
+        {
+            // # Issue 3487
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                Items = new[] { "foo", "bar" },
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+            };
+
+            var root = new TestRoot(target);
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            root.Child = null;
+            root.Child = target;
+
+            target.Measure(Size.Infinity);
+
+            root.Child = null;
+            root.Child = target;
         }
 
         private class Item

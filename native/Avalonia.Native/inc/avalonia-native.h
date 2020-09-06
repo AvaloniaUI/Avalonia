@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 #include "com.h"
 #include "key.h"
+#include "stddef.h"
 
 #define AVNCOM(name, id) COMINTERFACE(name, 2e2cda0a, 9ae5, 4f1b, 8e, 20, 08, 1a, 04, 27, 9f, id)
 
@@ -22,11 +20,19 @@ struct IAvnGlContext;
 struct IAvnGlDisplay;
 struct IAvnGlSurfaceRenderTarget;
 struct IAvnGlSurfaceRenderingSession;
-struct IAvnAppMenu;
-struct IAvnAppMenuItem;
+struct IAvnMenu;
+struct IAvnMenuItem;
 struct IAvnStringArray;
 struct IAvnDndResultCallback;
 struct IAvnGCHandleDeallocatorCallback;
+struct IAvnMenuEvents;
+struct IAvnNativeControlHost;
+struct IAvnNativeControlHostTopLevelAttachment;
+enum SystemDecorations {
+    SystemDecorationsNone = 0,
+    SystemDecorationsBorderOnly = 1,
+    SystemDecorationsFull = 2,
+};
 
 struct AvnSize
 {
@@ -95,9 +101,17 @@ enum AvnRawMouseEventType
     RightButtonUp,
     MiddleButtonDown,
     MiddleButtonUp,
+    XButton1Down,
+    XButton1Up,
+    XButton2Down,
+    XButton2Up,
     Move,
     Wheel,
-    NonClientLeftButtonDown
+    NonClientLeftButtonDown,
+    TouchBegin,
+    TouchUpdate,
+    TouchEnd,
+    TouchCancel
 };
 
 enum AvnRawKeyEventType
@@ -115,7 +129,9 @@ enum AvnInputModifiers
     Windows = 8,
     LeftMouseButton = 16,
     RightMouseButton = 32,
-    MiddleMouseButton = 64
+    MiddleMouseButton = 64,
+    XButton1MouseButton = 128,
+    XButton2MouseButton = 256
 };
 
 enum class AvnDragDropEffects
@@ -139,6 +155,7 @@ enum AvnWindowState
     Normal,
     Minimized,
     Maximized,
+    FullScreen,
 };
 
 enum AvnStandardCursorType
@@ -181,6 +198,22 @@ enum AvnWindowEdge
     WindowEdgeSouthEast
 };
 
+enum AvnMenuItemToggleType
+{
+    None,
+    CheckMark,
+    Radio
+};
+
+enum AvnExtendClientAreaChromeHints
+{
+    AvnNoChrome = 0,
+    AvnSystemChrome = 0x01,
+    AvnPreferSystemChrome = 0x02,
+    AvnOSXThickTitleBar = 0x08,
+    AvnDefaultChrome = AvnSystemChrome,
+};
+
 AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 {
 public:
@@ -195,11 +228,10 @@ public:
     virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) = 0;
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
     virtual HRESULT ObtainGlDisplay(IAvnGlDisplay** ppv) = 0;
-    virtual HRESULT ObtainAppMenu(IAvnAppMenu** retOut) = 0;
-    virtual HRESULT SetAppMenu(IAvnAppMenu* menu) = 0;
-    virtual HRESULT CreateMenu (IAvnAppMenu** ppv) = 0;
-    virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) = 0;
-    virtual HRESULT CreateMenuItemSeperator (IAvnAppMenuItem** ppv) = 0;
+    virtual HRESULT SetAppMenu(IAvnMenu* menu) = 0;
+    virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) = 0;
+    virtual HRESULT CreateMenuItem (IAvnMenuItem** ppv) = 0;
+    virtual HRESULT CreateMenuItemSeperator (IAvnMenuItem** ppv) = 0;
 };
 
 AVNCOM(IAvnString, 17) : IUnknown
@@ -229,14 +261,15 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT SetTopMost (bool value) = 0;
     virtual HRESULT SetCursor(IAvnCursor* cursor) = 0;
     virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ret) = 0;
-    virtual HRESULT SetMainMenu(IAvnAppMenu* menu) = 0;
-    virtual HRESULT ObtainMainMenu(IAvnAppMenu** retOut) = 0;
+    virtual HRESULT SetMainMenu(IAvnMenu* menu) = 0;
     virtual HRESULT ObtainNSWindowHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSWindowHandleRetained(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandle(void** retOut) = 0;
     virtual HRESULT ObtainNSViewHandleRetained(void** retOut) = 0;
+    virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) = 0;
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, void* sourceHandle) = 0;
+    virtual HRESULT SetBlurEnabled (bool enable) = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
@@ -246,13 +279,19 @@ AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
 
 AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
-    virtual HRESULT ShowDialog (IAvnWindow* parent) = 0;
+    virtual HRESULT SetEnabled (bool enable) = 0;
+    virtual HRESULT SetParent (IAvnWindow* parent) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
-    virtual HRESULT SetHasDecorations(bool value) = 0;
+    virtual HRESULT SetDecorations(SystemDecorations value) = 0;
     virtual HRESULT SetTitle (void* utf8Title) = 0;
     virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
     virtual HRESULT GetWindowState(AvnWindowState*ret) = 0;
+    virtual HRESULT TakeFocusFromChildren() = 0;
+    virtual HRESULT SetExtendClientArea (bool enable) = 0;
+    virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints) = 0;
+    virtual HRESULT GetExtendTitleBarHeight (double*ret) = 0;
+    virtual HRESULT SetExtendTitleBarHeight (double value) = 0;
 };
 
 AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
@@ -272,6 +311,7 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
     virtual bool RawTextInputEvent (unsigned int timeStamp, const char* text) = 0;
     virtual void ScalingChanged(double scaling) = 0;
     virtual void RunRenderPriorityJobs() = 0;
+    virtual void LostFocus() = 0;
     virtual AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
                                          IAvnClipboard* clipboard, void* dataObjectHandle) = 0;
@@ -288,6 +328,8 @@ AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
     virtual bool Closing () = 0;
     
     virtual void WindowStateChanged (AvnWindowState state) = 0;
+    
+    virtual void GotInputWhenDisabled () = 0;
 };
 
 AVNCOM(IAvnMacOptions, 07) : IUnknown
@@ -362,6 +404,9 @@ AVNCOM(IAvnClipboard, 0f) : IUnknown
     virtual HRESULT SetText (char* type, void* utf8Text) = 0;
     virtual HRESULT ObtainFormats(IAvnStringArray**ppv) = 0;
     virtual HRESULT GetStrings(char* type, IAvnStringArray**ppv) = 0;
+    virtual HRESULT SetBytes(char* type, void* utf8Text, int len) = 0;
+    virtual HRESULT GetBytes(char* type, IAvnString**ppv) = 0;
+    
     virtual HRESULT Clear() = 0;
 };
 
@@ -402,10 +447,10 @@ AVNCOM(IAvnGlSurfaceRenderingSession, 16) : IUnknown
     virtual HRESULT GetScaling(double* ret) = 0;
 };
 
-AVNCOM(IAvnAppMenu, 17) : IUnknown
+AVNCOM(IAvnMenu, 17) : IUnknown
 {
-    virtual HRESULT AddItem (IAvnAppMenuItem* item) = 0;
-    virtual HRESULT RemoveItem (IAvnAppMenuItem* item) = 0;
+    virtual HRESULT InsertItem (int index, IAvnMenuItem* item) = 0;
+    virtual HRESULT RemoveItem (IAvnMenuItem* item) = 0;
     virtual HRESULT SetTitle (void* utf8String) = 0;
     virtual HRESULT Clear () = 0;
 };
@@ -415,12 +460,23 @@ AVNCOM(IAvnPredicateCallback, 18) : IUnknown
     virtual bool Evaluate() = 0;
 };
 
-AVNCOM(IAvnAppMenuItem, 19) : IUnknown
+AVNCOM(IAvnMenuItem, 19) : IUnknown
 {
-    virtual HRESULT SetSubMenu (IAvnAppMenu* menu) = 0;
+    virtual HRESULT SetSubMenu (IAvnMenu* menu) = 0;
     virtual HRESULT SetTitle (void* utf8String) = 0;
     virtual HRESULT SetGesture (void* utf8String, AvnInputModifiers modifiers) = 0;
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) = 0;
+    virtual HRESULT SetIsChecked (bool isChecked) = 0;
+    virtual HRESULT SetToggleType (AvnMenuItemToggleType toggleType) = 0;
+    virtual HRESULT SetIcon (void* data, size_t length) = 0;
+};
+
+AVNCOM(IAvnMenuEvents, 1A) : IUnknown
+{
+    /**
+     * NeedsUpdate
+     */
+    virtual void NeedsUpdate () = 0;
 };
 
 AVNCOM(IAvnStringArray, 20) : IUnknown
@@ -438,5 +494,23 @@ AVNCOM(IAvnGCHandleDeallocatorCallback, 22) : IUnknown
 {
     virtual void FreeGCHandle(void* handle) = 0;
 };
+
+AVNCOM(IAvnNativeControlHost, 20) : IUnknown
+{
+    virtual HRESULT CreateDefaultChild(void* parent, void** retOut) = 0;
+    virtual IAvnNativeControlHostTopLevelAttachment* CreateAttachment() = 0;
+    virtual void DestroyDefaultChild(void* child) = 0;
+};
+
+AVNCOM(IAvnNativeControlHostTopLevelAttachment, 21) : IUnknown
+{
+    virtual void* GetParentHandle() = 0;
+    virtual HRESULT InitializeWithChildHandle(void* child) = 0;
+    virtual HRESULT AttachTo(IAvnNativeControlHost* host) = 0;
+    virtual void ShowInBounds(float x, float y, float width, float height) = 0;
+    virtual void HideWithSize(float width, float height) = 0;
+    virtual void ReleaseChild() = 0;
+};
+
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

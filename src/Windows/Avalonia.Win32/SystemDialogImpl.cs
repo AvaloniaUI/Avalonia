@@ -5,27 +5,25 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-
     class SystemDialogImpl : ISystemDialogImpl
     {
         private const UnmanagedMethods.FOS DefaultDialogOptions = UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE |
             UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT;
 
-        public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
+        public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
         {
-            var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
+            var hWnd = parent?.PlatformImpl?.Handle?.Handle ?? IntPtr.Zero;
             return Task.Factory.StartNew(() =>
             {
                 var result = Array.Empty<string>();
 
                 Guid clsid = dialog is OpenFileDialog ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
                 Guid iid = UnmanagedMethods.ShellIds.IFileDialog;
-                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out var unk);
+                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out object unk);
                 var frm = (UnmanagedMethods.IFileDialog)unk;
 
                 var openDialog = dialog as OpenFileDialog;
@@ -57,11 +55,11 @@ namespace Avalonia.Win32
                 frm.SetFileTypes((uint)filters.Count, filters.ToArray());
                 frm.SetFileTypeIndex(0);
 
-                if (dialog.InitialDirectory != null)
+                if (dialog.Directory != null)
                 {
                     UnmanagedMethods.IShellItem directoryShellItem;
                     Guid riid = UnmanagedMethods.ShellIds.IShellItem;
-                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.InitialDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.Directory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
                         frm.SetFolder(directoryShellItem);
                         frm.SetDefaultFolder(directoryShellItem);
@@ -98,38 +96,39 @@ namespace Avalonia.Win32
             });
         }
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
         {
             return Task.Factory.StartNew(() =>
             {
                 string result = string.Empty;
 
-                var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
+                var hWnd = parent?.PlatformImpl?.Handle?.Handle ?? IntPtr.Zero;
                 Guid clsid = UnmanagedMethods.ShellIds.OpenFileDialog;
-                Guid iid  = UnmanagedMethods.ShellIds.IFileDialog;
+                Guid iid = UnmanagedMethods.ShellIds.IFileDialog;
 
-                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out var unk);
+                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out object unk);
                 var frm = (UnmanagedMethods.IFileDialog)unk;
                 uint options;
                 frm.GetOptions(out options);
                 options |= (uint)(UnmanagedMethods.FOS.FOS_PICKFOLDERS | DefaultDialogOptions);
                 frm.SetOptions(options);
+                frm.SetTitle(dialog.Title ?? "");
 
-                if (dialog.InitialDirectory != null)
+                if (dialog.Directory != null)
                 {
                     UnmanagedMethods.IShellItem directoryShellItem;
                     Guid riid = UnmanagedMethods.ShellIds.IShellItem;
-                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.InitialDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.Directory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
                         frm.SetFolder(directoryShellItem);
                     }
                 }
 
-                if (dialog.DefaultDirectory != null)
+                if (dialog.Directory != null)
                 {
                     UnmanagedMethods.IShellItem directoryShellItem;
                     Guid riid = UnmanagedMethods.ShellIds.IShellItem;
-                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.DefaultDirectory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
+                    if (UnmanagedMethods.SHCreateItemFromParsingName(dialog.Directory, IntPtr.Zero, ref riid, out directoryShellItem) == (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
                         frm.SetDefaultFolder(directoryShellItem);
                     }

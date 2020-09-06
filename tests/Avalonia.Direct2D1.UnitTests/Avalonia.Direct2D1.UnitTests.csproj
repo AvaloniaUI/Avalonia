@@ -8,6 +8,9 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <ItemGroup>
+    <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.ttf" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />

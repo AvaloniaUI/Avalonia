@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 
@@ -14,8 +11,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Source"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBitmap> SourceProperty =
-            AvaloniaProperty.Register<Image, IBitmap>(nameof(Source));
+        public static readonly StyledProperty<IImage> SourceProperty =
+            AvaloniaProperty.Register<Image, IImage>(nameof(Source));
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
@@ -38,9 +35,9 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the bitmap image that will be displayed.
+        /// Gets or sets the image that will be displayed.
         /// </summary>
-        public IBitmap Source
+        public IImage Source
         {
             get { return GetValue(SourceProperty); }
             set { SetValue(SourceProperty, value); }
@@ -72,10 +69,11 @@ namespace Avalonia.Controls
         {
             var source = Source;
 
-            if (source != null)
+            if (source != null && Bounds.Width > 0 && Bounds.Height > 0)
             {
                 Rect viewPort = new Rect(Bounds.Size);
-                Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
+                Size sourceSize = source.Size;
+
                 Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize, StretchDirection);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
@@ -86,7 +84,7 @@ namespace Avalonia.Controls
 
                 var interpolationMode = RenderOptions.GetBitmapInterpolationMode(this);
 
-                context.DrawImage(source, 1, sourceRect, destRect, interpolationMode);
+                context.DrawImage(source, sourceRect, destRect, interpolationMode);
             }
         }
 
@@ -102,8 +100,7 @@ namespace Avalonia.Controls
 
             if (source != null)
             {
-                var sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
-                result = Stretch.CalculateSize(availableSize, sourceSize, StretchDirection);
+                result = Stretch.CalculateSize(availableSize, source.Size, StretchDirection);
             }
 
             return result;
@@ -116,7 +113,7 @@ namespace Avalonia.Controls
 
             if (source != null)
             {
-                var sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
+                var sourceSize = source.Size;
                 var result = Stretch.CalculateSize(finalSize, sourceSize);
                 return result;
             }

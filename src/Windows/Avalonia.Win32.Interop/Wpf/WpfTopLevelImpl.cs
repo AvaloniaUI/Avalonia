@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -17,11 +18,11 @@ using MouseButton = System.Windows.Input.MouseButton;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
-    class WpfTopLevelImpl : FrameworkElement, IEmbeddableWindowImpl
+    class WpfTopLevelImpl : FrameworkElement, ITopLevelImpl
     {
         private HwndSource _currentHwndSource;
         private readonly HwndSourceHook _hook;
-        private readonly IEmbeddableWindowImpl _ttl;
+        private readonly ITopLevelImpl _ttl;
         private IInputRoot _inputRoot;
         private readonly IEnumerable<object> _surfaces;
         private readonly IMouseDevice _mouse;
@@ -74,7 +75,7 @@ namespace Avalonia.Win32.Interop.Wpf
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
         {
             if (msg == (int)UnmanagedMethods.WindowsMessage.WM_DPICHANGED)
-                _ttl.ScalingChanged?.Invoke(_ttl.Scaling);
+                _ttl.ScalingChanged?.Invoke(_ttl.RenderScaling);
             return IntPtr.Zero;
         }
 
@@ -83,7 +84,7 @@ namespace Avalonia.Win32.Interop.Wpf
             _currentHwndSource?.RemoveHook(_hook);
             _currentHwndSource = e.NewSource as HwndSource;
             _currentHwndSource?.AddHook(_hook);
-            _ttl.ScalingChanged?.Invoke(_ttl.Scaling);
+            _ttl.ScalingChanged?.Invoke(_ttl.RenderScaling);
         }
 
         public IRenderer CreateRenderer(IRenderRoot root)
@@ -101,7 +102,7 @@ namespace Avalonia.Win32.Interop.Wpf
         Size ITopLevelImpl.ClientSize => _finalSize;
         IMouseDevice ITopLevelImpl.MouseDevice => _mouse;
 
-        double ITopLevelImpl.Scaling => PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1;
+        double ITopLevelImpl.RenderScaling => PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1;
 
         IEnumerable<object> ITopLevelImpl.Surfaces => _surfaces;
 
@@ -236,8 +237,11 @@ namespace Avalonia.Win32.Interop.Wpf
         Action<Rect> ITopLevelImpl.Paint { get; set; }
         Action<Size> ITopLevelImpl.Resized { get; set; }
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
+
+        Action<WindowTransparencyLevel> ITopLevelImpl.TransparencyLevelChanged { get; set; }
+
         Action ITopLevelImpl.Closed { get; set; }
-        public new event Action LostFocus;
+        public new Action LostFocus { get; set; }
 
         internal Vector GetScaling()
         {
@@ -248,5 +252,11 @@ namespace Avalonia.Win32.Interop.Wpf
         }
 
         public IPopupImpl CreatePopup() => null;
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 }

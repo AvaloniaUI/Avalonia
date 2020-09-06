@@ -1,9 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -69,7 +67,7 @@ namespace Avalonia.Controls.Primitives
 
             if (underscore != -1 && ShowAccessKey)
             {
-                var rect = FormattedText.HitTestTextPosition(underscore);
+                var rect = HitTestTextPosition(underscore);
                 var offset = new Vector(0, -0.5);
                 context.DrawLine(
                     new Pen(Foreground, 1),
@@ -78,21 +76,84 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <inheritdoc/>
-        protected override FormattedText CreateFormattedText(Size constraint, string text)
+        /// <summary>
+        /// Get the pixel location relative to the top-left of the layout box given the text position.
+        /// </summary>
+        /// <param name="textPosition">The text position.</param>
+        /// <returns></returns>
+        private Rect HitTestTextPosition(int textPosition)
         {
-            return base.CreateFormattedText(constraint, StripAccessKey(text));
+            if (TextLayout == null)
+            {
+                return new Rect();
+            }
+
+            if (TextLayout.TextLines.Count == 0)
+            {
+                return new Rect();
+            }
+
+            if (textPosition < 0 || textPosition >= Text.Length)
+            {
+                var lastLine = TextLayout.TextLines[TextLayout.TextLines.Count - 1];
+
+                var lineX = lastLine.LineMetrics.Size.Width;
+
+                var lineY = Bounds.Height - lastLine.LineMetrics.Size.Height;
+
+                return new Rect(lineX, lineY, 0, lastLine.LineMetrics.Size.Height);
+            }
+
+            var currentY = 0.0;
+
+            foreach (var textLine in TextLayout.TextLines)
+            {
+                if (textLine.TextRange.End < textPosition)
+                {
+                    currentY += textLine.LineMetrics.Size.Height;
+
+                    continue;
+                }
+
+                var currentX = 0.0;
+
+                foreach (var textRun in textLine.TextRuns)
+                {
+                    if (!(textRun is ShapedTextCharacters shapedTextCharacters))
+                    {
+                        continue;
+                    }
+
+                    if (shapedTextCharacters.GlyphRun.Characters.End < textPosition)
+                    {
+                        currentX += shapedTextCharacters.GlyphRun.Bounds.Width;
+
+                        continue;
+                    }
+
+                    var characterHit =
+                        shapedTextCharacters.GlyphRun.FindNearestCharacterHit(textPosition, out var width);
+
+                    var distance = shapedTextCharacters.GlyphRun.GetDistanceFromCharacterHit(characterHit);
+
+                    currentX += distance - width;
+
+                    if (characterHit.TrailingLength == 0)
+                    {
+                        width = 0.0;
+                    }
+
+                    return new Rect(currentX, currentY, width, shapedTextCharacters.GlyphRun.Bounds.Height);
+                }
+            }
+
+            return new Rect();
         }
 
-        /// <summary>
-        /// Measures the control.
-        /// </summary>
-        /// <param name="availableSize">The available size for the control.</param>
-        /// <returns>The desired size.</returns>
-        protected override Size MeasureOverride(Size availableSize)
+        /// <inheritdoc/>
+        protected override TextLayout CreateTextLayout(Size constraint, string text)
         {
-            var result = base.MeasureOverride(availableSize);
-            return result.WithHeight(result.Height + 1);
+            return base.CreateTextLayout(constraint, StripAccessKey(text));
         }
 
         /// <inheritdoc/>

@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -13,6 +10,7 @@ namespace Avalonia.Native
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly GlPlatformFeature _glFeature;
+        private readonly IWindowBaseImpl _parent;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
             AvaloniaNativePlatformOptions opts,
@@ -22,11 +20,13 @@ namespace Avalonia.Native
             _factory = factory;
             _opts = opts;
             _glFeature = glFeature;
+            _parent = parent;
             using (var e = new PopupEvents(this))
             {
-                Init(factory.CreatePopup(e, _opts.UseGpu ? glFeature?.DeferredContext.Context : null), factory.CreateScreens());
+                var context = _opts.UseGpu ? glFeature?.DeferredContext : null;
+                Init(factory.CreatePopup(e, context?.Context), factory.CreateScreens(), context);
             }
-            PopupPositioner = new ManagedPopupPositioner(new OsxManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+            PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
 
         private void MoveResize(PixelPoint position, Size size, double scaling)
@@ -45,6 +45,11 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
+            public void GotInputWhenDisabled()
+            {
+                // NOP on Popup
+            }
+
             bool IAvnWindowEvents.Closing()
             {
                 return true;
@@ -55,7 +60,22 @@ namespace Avalonia.Native
             }
         }
 
+        public override void Show()
+        {
+            var parent = _parent;
+            while (parent is PopupImpl p) 
+                parent = p._parent;
+            if (parent is WindowImpl w)
+                w.Native.TakeFocusFromChildren();
+            base.Show();
+        }
+
         public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, _glFeature, this);
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
     }
 }

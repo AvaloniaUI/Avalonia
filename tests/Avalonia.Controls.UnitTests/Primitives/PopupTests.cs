@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -17,6 +14,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 using Avalonia.Input;
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
@@ -223,7 +221,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        
+        [Fact]
+        public void Popup_Close_On_Closed_Popup_Should_Not_Raise_Closed_Event()
+        {
+            using (CreateServices())
+            {
+                var window = PreparedWindow();
+                var target = new Popup() { PlacementMode = PlacementMode.Pointer };
+
+                window.Content = target;
+                window.ApplyTemplate();
+                
+                int closedCount = 0;
+
+                target.Closed += (sender, args) =>
+                {
+                    closedCount++;
+                };
+
+                target.Close();
+                target.Close();
+                target.Close();
+                target.Close();
+
+                Assert.Equal(0, closedCount);
+            }
+        }
+
         [Fact]
         public void Templated_Control_With_Popup_In_Template_Should_Set_TemplatedParent()
         {
@@ -252,6 +276,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(
                     new[]
                     {
+                        "Panel",
+                        "Border",
                         "VisualLayerManager",
                         "ContentPresenter",
                         "ContentPresenter",
@@ -268,18 +294,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         popupRoot,
                         popupRoot,
+                        popupRoot,
+                        popupRoot,
                         target,
                         null,
                     },
                     templatedParents);
             }
-        }
-
-        Window PreparedWindow(object content = null)
-        {
-            var w = new Window {Content = content};
-            w.ApplyTemplate();
-            return w;
         }
 
         [Fact]
@@ -328,6 +349,52 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void OverlayDismissEventPassThrough_Should_Pass_Event_To_Window_Contents()
+        {
+            using (CreateServices())
+            {
+                var renderer = new Mock<IRenderer>();
+                var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+                var windowImpl = Mock.Get(platform.CreateWindow());
+                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+
+                var window = new Window(windowImpl.Object);
+                window.ApplyTemplate();
+
+                var target = new Popup() 
+                { 
+                    PlacementTarget = window ,
+                    IsLightDismissEnabled = true,
+                    OverlayDismissEventPassThrough = true,
+                };
+
+                var raised = 0;
+                var border = new Border();
+                window.Content = border;
+
+                renderer.Setup(x =>
+                    x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<IVisual, bool>>()))
+                    .Returns(border);
+
+                border.PointerPressed += (s, e) =>
+                {
+                    Assert.Same(border, e.Source);
+                    ++raised;
+                };
+
+                target.Open();
+                Assert.True(target.IsOpen);
+
+                var e = CreatePointerPressedEventArgs(window, new Point(10, 15));
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                overlay.RaiseEvent(e);
+
+                Assert.Equal(1, raised);
+                Assert.False(target.IsOpen);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
@@ -338,6 +405,26 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             return null;
                         return MockWindowingPlatform.CreatePopupMock(x).Object;
                     })));
+        }
+
+        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            return new PointerPressedEventArgs(
+                source,
+                pointer,
+                source,
+                p,
+                0,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None);
+        }
+
+        private Window PreparedWindow(object content = null)
+        {
+            var w = new Window { Content = content };
+            w.ApplyTemplate();
+            return w;
         }
 
         private static IControl PopupContentControlTemplate(PopupContentControl control, INameScope scope)
