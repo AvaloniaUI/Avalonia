@@ -128,7 +128,7 @@ namespace Avalonia.Input
             _obsoleteClickCount = obsoleteClickCount;
         }
 
-        
+        [Obsolete("Use DoubleTapped event or Gestures.DoubleRightTapped attached event")]
         public int ClickCount => _obsoleteClickCount;
 
         [Obsolete("Use PointerPressedEventArgs.GetCurrentPoint(this).Properties")]
