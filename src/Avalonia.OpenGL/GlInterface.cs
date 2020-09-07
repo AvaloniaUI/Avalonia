@@ -86,18 +86,6 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glFinish")]
         public Action Finish { get; }
 
-        public delegate IntPtr GlGetString(int v);
-        [GlEntryPoint("glGetString")]
-        new public GlGetString GetStringNative { get; }
-
-        new public string GetString(int v)
-        {
-            var ptr = GetStringNative(v);
-            if (ptr != IntPtr.Zero)
-                return Marshal.PtrToStringAnsi(ptr);
-            return null;
-        }
-
         public delegate void GlGetIntegerv(int name, out int rv);
         [GlEntryPoint("glGetIntegerv")]
         new public GlGetIntegerv GetIntegerv { get; }
