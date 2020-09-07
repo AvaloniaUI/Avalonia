@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -10,6 +11,65 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     public class TextLineTests
     {
+        private static readonly string s_multiLineText = "012345678\r\r0123456789";
+
+        [Fact]
+        public void Should_Get_First_CharacterHit()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(s_multiLineText, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var currentIndex = 0;
+
+                while (currentIndex < s_multiLineText.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, currentIndex, double.PositiveInfinity,
+                            new GenericTextParagraphProperties(defaultProperties));
+
+                    var firstCharacterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(int.MinValue));
+
+                    Assert.Equal(textLine.TextRange.Start, firstCharacterHit.FirstCharacterIndex);
+
+                    currentIndex += textLine.TextRange.Length;
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_Last_CharacterHit()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(s_multiLineText, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var currentIndex = 0;
+
+                while (currentIndex < s_multiLineText.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, currentIndex, double.PositiveInfinity,
+                            new GenericTextParagraphProperties(defaultProperties));
+
+                    var lastCharacterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(int.MaxValue));
+
+                    Assert.Equal(textLine.TextRange.Start + textLine.TextRange.Length,
+                        lastCharacterHit.FirstCharacterIndex + lastCharacterHit.TrailingLength);
+
+                    currentIndex += textLine.TextRange.Length;
+                }
+            }
+        }
+
         [InlineData("𐐷𐐷𐐷𐐷𐐷")]
         [InlineData("𐐷1234")]
         [Theory]
@@ -270,6 +330,30 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     Assert.Equal(expected[i], trimmedText[i]);
                 }
+            }
+        }
+
+        [Fact]
+        public void Should_Ignore_Invisible_Characters()
+        {
+            using (Start())
+            {
+                var defaultTextRunProperties =
+                    new GenericTextRunProperties(Typeface.Default);
+
+                const string text = "01234567🎉\n";
+
+                var source = new SingleBufferTextSource(text, defaultTextRunProperties);
+
+                var textParagraphProperties = new GenericTextParagraphProperties(defaultTextRunProperties);
+
+                var formatter = TextFormatter.Current;
+
+                var textLine = formatter.FormatLine(source, 0, double.PositiveInfinity, textParagraphProperties);
+
+                var nextCharacterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(8, 2));
+
+                Assert.Equal(new CharacterHit(8, 2), nextCharacterHit);
             }
         }
 

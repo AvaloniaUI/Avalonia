@@ -455,7 +455,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Called when the control is added to a visual tree.
+        /// Called when the control is added to a rooted visual tree.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -463,7 +463,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Called when the control is removed from a visual tree.
+        /// Called when the control is removed from a rooted visual tree.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
