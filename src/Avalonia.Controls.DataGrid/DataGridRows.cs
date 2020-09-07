@@ -1912,7 +1912,7 @@ namespace Avalonia.Controls
             {
                 // Assume it's a RowGroupHeader
                 DataGridRowGroupHeader groupHeader = element as DataGridRowGroupHeader;
-                groupHeader.ApplyState(useTransitions: true);
+                groupHeader.UpdatePseudoClasses();
             }
         }
 

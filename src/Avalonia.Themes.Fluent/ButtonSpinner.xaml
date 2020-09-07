@@ -8,7 +8,11 @@
       <StackPanel Spacing="20">
         <ButtonSpinner ButtonSpinnerLocation="Right"
                        Content="Right disabled inline spinner"
-                       AllowSpin="False" />
+                       AllowSpin="False">
+          <DataValidationErrors.Error>
+            <sys:Exception />
+          </DataValidationErrors.Error>
+        </ButtonSpinner>
         <ButtonSpinner ButtonSpinnerLocation="Left"
                        Content="Left spinner" />
         <ButtonSpinner ShowButtonSpinner="False"
@@ -55,8 +59,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
-    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -134,7 +137,7 @@
 
   <!--  Error state  -->
   <Style Selector="ButtonSpinner:error">
-    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemErrorTextColor}" />
   </Style>
 
 </Styles>

@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO; 
-using System.Security.Cryptography;
 using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
@@ -24,6 +22,8 @@ namespace Avalonia.Skia
 
         public PlatformRenderInterface(ISkiaGpu skiaGpu, long? maxResourceBytes = null)
         {
+            DefaultPixelFormat = SKImageInfo.PlatformColorType.ToPixelFormat();
+
             if (skiaGpu != null)
             {
                 _skiaGpu = skiaGpu;
@@ -76,9 +76,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            return new ImmutableBitmap(size, dpi, stride, format, data);
+            return new ImmutableBitmap(size, dpi, stride, format, alphaFormat, data);
         }
 
         /// <inheritdoc />
@@ -152,17 +152,17 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat)
         {
-            return new WriteableBitmapImpl(size, dpi, format);
+            return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
-        private static readonly SKPaint s_paint = new SKPaint
+        private static readonly SKFont s_font = new SKFont
         {
-            TextEncoding = SKTextEncoding.GlyphId,
-            IsAntialias = true,
-            IsStroke = false,
-            SubpixelText = true
+            Subpixel = true,
+            Edging = SKFontEdging.Antialias,
+            Hinting = SKFontHinting.Full,
+            LinearMetrics = true
         };
 
         private static readonly SKTextBlobBuilder s_textBlobBuilder = new SKTextBlobBuilder();
@@ -176,8 +176,8 @@ namespace Avalonia.Skia
 
             var typeface = glyphTypeface.Typeface;
 
-            s_paint.TextSize = (float)glyphRun.FontRenderingEmSize;
-            s_paint.Typeface = typeface;
+            s_font.Size = (float)glyphRun.FontRenderingEmSize;
+            s_font.Typeface = typeface;
 
 
             SKTextBlob textBlob;
@@ -190,7 +190,7 @@ namespace Avalonia.Skia
             {
                 if (glyphTypeface.IsFixedPitch)
                 {
-                    s_textBlobBuilder.AddRun(s_paint, 0, 0, glyphRun.GlyphIndices.Buffer.Span);
+                    s_textBlobBuilder.AddRun(glyphRun.GlyphIndices.Buffer.Span, s_font);
 
                     textBlob = s_textBlobBuilder.Build();
 
@@ -198,7 +198,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    var buffer = s_textBlobBuilder.AllocateHorizontalRun(s_paint, count, 0);
+                    var buffer = s_textBlobBuilder.AllocateHorizontalRun(s_font, count, 0);
 
                     var positions = buffer.GetPositionSpan();
 
@@ -223,7 +223,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                var buffer = s_textBlobBuilder.AllocatePositionedRun(s_paint, count);
+                var buffer = s_textBlobBuilder.AllocatePositionedRun(s_font, count);
 
                 var glyphPositions = buffer.GetPositionSpan();
 
@@ -267,5 +267,9 @@ namespace Avalonia.Skia
         }
 
         public bool SupportsIndividualRoundRects => true;
+
+        public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
+
+        public PixelFormat DefaultPixelFormat { get; }
     }
 }

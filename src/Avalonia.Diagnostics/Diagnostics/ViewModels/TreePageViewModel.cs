@@ -1,48 +1,40 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class TreePageViewModel : ViewModelBase, IDisposable
+    internal class TreePageViewModel : ViewModelBase, IDisposable, INotifyDataErrorInfo
     {
+        private readonly Dictionary<string, string> _errors = new Dictionary<string, string>();
         private TreeNode _selectedNode;
         private ControlDetailsViewModel _details;
-        private string _propertyFilter;
+        private string _propertyFilter = string.Empty;
+        private bool _useRegexFilter;
 
-        public TreePageViewModel(TreeNode[] nodes)
+        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
         {
+            MainView = mainView;
             Nodes = nodes;
-            Selection = new SelectionModel
-            { 
-                SingleSelect = true,
-                Source = Nodes 
-            };
+        }
 
-            Selection.SelectionChanged += (s, e) =>
-            {
-                SelectedNode = (TreeNode)Selection.SelectedItem;
-            };
-       }
+        public MainViewModel MainView { get; }
 
         public TreeNode[] Nodes { get; protected set; }
-
-        public SelectionModel Selection { get; }
 
         public TreeNode SelectedNode
         {
             get => _selectedNode;
             private set
             {
-                if (Details != null)
-                {
-                    _propertyFilter = Details.PropertyFilter;
-                }
-
                 if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
                     Details = value != null ?
-                        new ControlDetailsViewModel(value.Visual, _propertyFilter) :
+                        new ControlDetailsViewModel(this, value.Visual) :
                         null;
                 }
             }
@@ -62,7 +54,72 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void Dispose() => _details?.Dispose();
+        public Regex FilterRegex { get; set; }
+
+        private void UpdateFilterRegex()
+        {
+            void ClearError()
+            {
+                if (_errors.Remove(nameof(PropertyFilter)))
+                {
+                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(PropertyFilter)));
+                }
+            }
+
+            if (UseRegexFilter)
+            {
+                try
+                {
+                    FilterRegex = new Regex(PropertyFilter, RegexOptions.Compiled);
+                    ClearError();
+                }
+                catch (Exception exception)
+                {
+                    _errors[nameof(PropertyFilter)] = exception.Message;
+                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(PropertyFilter)));
+                }
+            }
+            else
+            {
+                ClearError();
+            }
+        }
+
+        public string PropertyFilter
+        {
+            get => _propertyFilter;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _propertyFilter, value))
+                {
+                    UpdateFilterRegex();
+                    Details.PropertiesView.Refresh();
+                }
+            }
+        }
+
+        public bool UseRegexFilter
+        {
+            get => _useRegexFilter;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _useRegexFilter, value))
+                {
+                    UpdateFilterRegex();
+                    Details.PropertiesView.Refresh();
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var node in Nodes)
+            {
+                node.Dispose();
+            }
+
+            _details?.Dispose();
+        }
 
         public TreeNode FindNode(IControl control)
         {
@@ -95,8 +152,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (node != null)
             {
+                SelectedNode = node;
                 ExpandNode(node.Parent);
-                Selection.SelectedIndex = node.Index;
             }
         }
 
@@ -130,5 +187,17 @@ namespace Avalonia.Diagnostics.ViewModels
 
             return null;
         }
+
+        public IEnumerable GetErrors(string propertyName)
+        {
+            if (_errors.TryGetValue(propertyName, out var error))
+            {
+                yield return error;
+            }
+        }
+
+        public bool HasErrors => _errors.Count > 0;
+
+        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
     }
 }

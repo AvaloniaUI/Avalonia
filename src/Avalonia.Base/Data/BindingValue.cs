@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Utilities;
 
 #nullable enable
@@ -81,14 +82,14 @@ namespace Avalonia.Data
     /// </remarks>
     public readonly struct BindingValue<T>
     {
-        private readonly T _value;
+        [AllowNull] private readonly T _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingValue{T}"/> struct with a type of
         /// <see cref="BindingValueType.Value"/>
         /// </summary>
         /// <param name="value">The value.</param>
-        public BindingValue(T value)
+        public BindingValue([AllowNull] T value)
         {
             ValidateValue(value);
             _value = value;
@@ -96,7 +97,7 @@ namespace Avalonia.Data
             Error = null;
         }
 
-        private BindingValue(BindingValueType type, T value, Exception? error)
+        private BindingValue(BindingValueType type, [AllowNull] T value, Exception? error)
         {
             _value = value;
             Type = type;
@@ -154,7 +155,7 @@ namespace Avalonia.Data
                 BindingValueType.UnsetValue => AvaloniaProperty.UnsetValue,
                 BindingValueType.DoNothing => BindingOperations.DoNothing,
                 BindingValueType.Value => _value,
-                BindingValueType.BindingError => 
+                BindingValueType.BindingError =>
                     new BindingNotification(Error, BindingErrorType.Error),
                 BindingValueType.BindingErrorWithFallback =>
                     new BindingNotification(Error, BindingErrorType.Error, Value),
@@ -175,7 +176,7 @@ namespace Avalonia.Data
         /// The binding type is <see cref="BindingValueType.UnsetValue"/> or
         /// <see cref="BindingValueType.DoNothing"/>.
         /// </exception>
-        public BindingValue<T> WithValue(T value)
+        public BindingValue<T> WithValue([AllowNull] T value)
         {
             if (Type == BindingValueType.DoNothing)
             {
@@ -190,6 +191,7 @@ namespace Avalonia.Data
         /// Gets the value of the binding value if present, otherwise the default value.
         /// </summary>
         /// <returns>The value.</returns>
+        [return: MaybeNull]
         public T GetValueOrDefault() => HasValue ? _value : default;
 
         /// <summary>
@@ -206,6 +208,7 @@ namespace Avalonia.Data
         /// The value if present and of the correct type, `default(TResult)` if the value is
         /// not present or of an incorrect type.
         /// </returns>
+        [return: MaybeNull]
         public TResult GetValueOrDefault<TResult>()
         {
             return HasValue ?
@@ -222,7 +225,8 @@ namespace Avalonia.Data
         /// present but not of the correct type or null, or <paramref name="defaultValue"/> if the
         /// value is not present.
         /// </returns>
-        public TResult GetValueOrDefault<TResult>(TResult defaultValue)
+        [return: MaybeNull]
+        public TResult GetValueOrDefault<TResult>([AllowNull] TResult defaultValue)
         {
             return HasValue ?
                 _value is TResult result ? result : default
@@ -242,7 +246,7 @@ namespace Avalonia.Data
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => (T)value
+                _ => new BindingValue<T>((T)value)
             };
         }
 
@@ -250,7 +254,7 @@ namespace Avalonia.Data
         /// Creates a binding value from an instance of the underlying value type.
         /// </summary>
         /// <param name="value">The value.</param>
-        public static implicit operator BindingValue<T>(T value) => new BindingValue<T>(value);
+        public static implicit operator BindingValue<T>([AllowNull] T value) => new BindingValue<T>(value);
 
         /// <summary>
         /// Creates a binding value from an <see cref="Optional{T}"/>.
@@ -278,7 +282,7 @@ namespace Avalonia.Data
         /// <param name="e">The binding error.</param>
         public static BindingValue<T> BindingError(Exception e)
         {
-            e = e ?? throw new ArgumentNullException("e");
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             return new BindingValue<T>(BindingValueType.BindingError, default, e);
         }
@@ -290,7 +294,7 @@ namespace Avalonia.Data
         /// <param name="fallbackValue">The fallback value.</param>
         public static BindingValue<T> BindingError(Exception e, T fallbackValue)
         {
-            e = e ?? throw new ArgumentNullException("e");
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             return new BindingValue<T>(BindingValueType.BindingErrorWithFallback, fallbackValue, e);
         }
@@ -303,7 +307,7 @@ namespace Avalonia.Data
         /// <param name="fallbackValue">The fallback value.</param>
         public static BindingValue<T> BindingError(Exception e, Optional<T> fallbackValue)
         {
-            e = e ?? throw new ArgumentNullException("e");
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             return new BindingValue<T>(
                 fallbackValue.HasValue ?
@@ -319,7 +323,7 @@ namespace Avalonia.Data
         /// <param name="e">The data validation error.</param>
         public static BindingValue<T> DataValidationError(Exception e)
         {
-            e = e ?? throw new ArgumentNullException("e");
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             return new BindingValue<T>(BindingValueType.DataValidationError, default, e);
         }
@@ -331,7 +335,7 @@ namespace Avalonia.Data
         /// <param name="fallbackValue">The fallback value.</param>
         public static BindingValue<T> DataValidationError(Exception e, T fallbackValue)
         {
-            e = e ?? throw new ArgumentNullException("e");
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             return new BindingValue<T>(BindingValueType.DataValidationErrorWithFallback, fallbackValue, e);
         }
@@ -344,7 +348,7 @@ namespace Avalonia.Data
         /// <param name="fallbackValue">The fallback value.</param>
         public static BindingValue<T> DataValidationError(Exception e, Optional<T> fallbackValue)
         {
-            e = e ?? throw new ArgumentNullException("e");
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             return new BindingValue<T>(
                 fallbackValue.HasValue ?
@@ -354,7 +358,7 @@ namespace Avalonia.Data
                 e);
         }
 
-        private static void ValidateValue(T value)
+        private static void ValidateValue([AllowNull] T value)
         {
             if (value is UnsetValueType)
             {

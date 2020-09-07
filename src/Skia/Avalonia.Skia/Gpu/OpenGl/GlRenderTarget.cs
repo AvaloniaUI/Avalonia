@@ -31,7 +31,7 @@ namespace Avalonia.Skia
 
             public GlGpuSession(GRContext grContext,
                 GRBackendRenderTarget backendRenderTarget,
-                SKSurface surface, 
+                SKSurface surface,
                 IGlPlatformSurfaceRenderingSession glSession)
             {
                 GrContext = grContext;
@@ -49,7 +49,7 @@ namespace Avalonia.Skia
             }
 
             public GRContext GrContext { get; }
-            public SKCanvas Canvas => _surface.Canvas;
+            public SKSurface SkSurface => _surface;
             public double ScaleFactor => _glSession.Scaling;
         }
 
@@ -82,10 +82,10 @@ namespace Avalonia.Skia
 
                     var renderTarget =
                         new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
-                            new GRGlFramebufferInfo((uint)fb, GRPixelConfig.Rgba8888.ToGlSizedFormat()));
+                            new GRGlFramebufferInfo((uint)fb, SKColorType.Rgba8888.ToGlSizedFormat()));
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
-                        GRPixelConfig.Rgba8888.ToColorType());
+                        SKColorType.Rgba8888);
 
                     success = true;
                     return new GlGpuSession(_grContext, renderTarget, surface, glSession);
@@ -93,7 +93,7 @@ namespace Avalonia.Skia
             }
             finally
             {
-                if(!success)
+                if (!success)
                     glSession.Dispose();
             }
         }

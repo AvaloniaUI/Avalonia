@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform;
@@ -132,6 +133,44 @@ namespace Avalonia.Controls.UnitTests
                 popupImpl.Verify(x => x.Show(), Times.Exactly(2));
             }
         }
+        
+        [Fact]
+        public void Context_Menu_Can_Be_Shared_Between_Controls_Even_After_A_Control_Is_Removed_From_Visual_Tree()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target1 = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var target2 = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var sp = new StackPanel { Children = { target1, target2 } };
+                var window = new Window { Content = sp };
+                
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                _mouse.Click(target1, MouseButton.Right);
+
+                Assert.True(sut.IsOpen);
+
+                _mouse.Click(target2, MouseButton.Left);
+                
+                Assert.False(sut.IsOpen);
+                
+                sp.Children.Remove(target1);
+                
+                _mouse.Click(target2, MouseButton.Right);
+                
+                Assert.True(sut.IsOpen);
+            }
+        }
 
         [Fact]
         public void Cancelling_Opening_Does_Not_Show_ContextMenu()
@@ -191,8 +230,7 @@ namespace Avalonia.Controls.UnitTests
     </StackPanel>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var target1 = window.Find<TextBlock>("target1");
                 var target2 = window.Find<TextBlock>("target2");
                 var mouse = new MouseTestHelper();
@@ -235,8 +273,7 @@ namespace Avalonia.Controls.UnitTests
     </StackPanel>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var target1 = window.Find<TextBlock>("target1");
                 var target2 = window.Find<TextBlock>("target2");
                 var mouse = new MouseTestHelper();
@@ -298,7 +335,7 @@ namespace Avalonia.Controls.UnitTests
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
-            popupImpl.SetupGet(x => x.Scaling).Returns(1);
+            popupImpl.SetupGet(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.CreatePopup()).Returns(popupImpl.Object);
 
             windowImpl.Setup(x => x.Screen).Returns(screenImpl.Object);

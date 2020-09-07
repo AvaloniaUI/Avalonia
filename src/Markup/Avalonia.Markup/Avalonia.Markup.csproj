@@ -4,10 +4,17 @@
     <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Markup\Parsers\Nodes\ExpressionGrammer" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Markup\Parsers\BindingExpressionGrammar.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\System.Memory.props" />
+  <Import Project="..\..\..\build\ApiDiff.props" />
 </Project>

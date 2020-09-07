@@ -86,10 +86,10 @@
   <Style Selector="Expander /template/ ToggleButton#PART_toggle">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border BorderThickness="1">
+        <Border BorderThickness="1" Background="Transparent">
           <Grid ColumnDefinitions="Auto,Auto">
             <Border Grid.Column="0" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <Path Fill="{DynamicResource ThemeForegroundBrush}"
+              <Path Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"
                       HorizontalAlignment="Center"
                       VerticalAlignment="Center"
                       Data="M 0 2 L 4 6 L 0 10 Z" />
@@ -108,7 +108,7 @@
     </Setter>
   </Style>
   <Style Selector="Expander /template/ ToggleButton#PART_toggle:pointerover /template/ Border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlTransientBorderBrush}" />
   </Style>
   <Style Selector="Expander:down:expanded /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">

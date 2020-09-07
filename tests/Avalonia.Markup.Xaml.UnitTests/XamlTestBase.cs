@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using Avalonia.Data;
 
@@ -11,6 +13,15 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             // Ensure necessary assemblies are loaded.
             var _ = typeof(TemplateBinding);
+            if (AvaloniaLocator.Current.GetService<AvaloniaXamlLoader.IRuntimeXamlLoader>() == null)
+                AvaloniaLocator.CurrentMutable.Bind<AvaloniaXamlLoader.IRuntimeXamlLoader>()
+                    .ToConstant(new TestXamlLoaderShim());
+        }
+        
+        class TestXamlLoaderShim : AvaloniaXamlLoader.IRuntimeXamlLoader
+        {
+            public object Load(Stream stream, Assembly localAsm, object o, Uri baseUri, bool designMode) 
+                => AvaloniaRuntimeXamlLoader.Load(stream, localAsm, o, baseUri, designMode);
         }
     }
 }

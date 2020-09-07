@@ -9,59 +9,81 @@ namespace ControlCatalog
 {
     public class App : Application
     {
+        private static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        {
+            Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml")
+        };
+
+        private static readonly StyleInclude DataGridDefault = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
+        {
+            Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Default.xaml")
+        };
+
         public static Styles FluentDark = new Styles
         {
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseDark.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentDark.xaml")
             },
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("resm:Avalonia.Themes.Fluent.Accents.FluentDark.xaml?assembly=Avalonia.Themes.Fluent")
-            },
+            DataGridFluent
         };
 
         public static Styles FluentLight = new Styles
         {
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentLight.xaml")
             },
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("resm:Avalonia.Themes.Fluent.Accents.FluentLight.xaml?assembly=Avalonia.Themes.Fluent")
-            },
+            DataGridFluent
         };
 
         public static Styles DefaultLight = new Styles
         {
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
             },
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml")
             },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
+            },
+            DataGridDefault
         };
 
         public static Styles DefaultDark = new Styles
         {
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.Accents.BaseDark.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
             },
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
-                Source = new Uri("resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseDark.xaml")
             },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseDark.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
+            },
+            DataGridDefault
         };
 
         public override void Initialize()
         {
-            AvaloniaXamlLoader.Load(this);
-
             Styles.Insert(0, FluentDark);
+
+            AvaloniaXamlLoader.Load(this);
         }
 
         public override void OnFrameworkInitializationCompleted()

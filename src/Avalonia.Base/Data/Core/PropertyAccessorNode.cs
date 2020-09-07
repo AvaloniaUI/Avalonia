@@ -7,12 +7,20 @@ namespace Avalonia.Data.Core
     public class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
+        private IPropertyAccessorPlugin _customPlugin;
         private IPropertyAccessor _accessor;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
             PropertyName = propertyName;
             _enableValidation = enableValidation;
+        }
+
+        public PropertyAccessorNode(string propertyName, bool enableValidation, IPropertyAccessorPlugin customPlugin)
+        {
+            PropertyName = propertyName;
+            _enableValidation = enableValidation;
+            _customPlugin = customPlugin;
         }
 
         public override string Description => PropertyName;
@@ -37,17 +45,7 @@ namespace Avalonia.Data.Core
         {
             reference.TryGetTarget(out object target);
 
-            IPropertyAccessorPlugin plugin = null;
-
-            foreach (IPropertyAccessorPlugin x in ExpressionObserver.PropertyAccessors)
-            {
-                if (x.Match(target, PropertyName))
-                {
-                    plugin = x;
-                    break;
-                }
-            }
-
+            var plugin = _customPlugin ?? GetPropertyAccessorPluginForObject(target);
             var accessor = plugin?.Start(reference, PropertyName);
 
             // We need to handle accessor fallback before handling validation. Validators do not support null accessors.
@@ -80,6 +78,18 @@ namespace Avalonia.Data.Core
 
             _accessor = accessor;
             accessor.Subscribe(ValueChanged);
+        }
+
+        private IPropertyAccessorPlugin GetPropertyAccessorPluginForObject(object target)
+        {
+            foreach (IPropertyAccessorPlugin x in ExpressionObserver.PropertyAccessors)
+            {
+                if (x.Match(target, PropertyName))
+                {
+                    return x;
+                }
+            }
+            return null;
         }
 
         protected override void StopListeningCore()

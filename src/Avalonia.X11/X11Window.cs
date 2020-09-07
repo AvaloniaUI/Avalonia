@@ -163,7 +163,7 @@ namespace Avalonia.X11
             var surfaces = new List<object>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
-                   depth, () => Scaling)
+                   depth, () => RenderScaling)
             };
             
             if (egl != null)
@@ -217,7 +217,7 @@ namespace Avalonia.X11
                 }
             }
 
-            public double Scaling => _window.Scaling;
+            public double Scaling => _window.RenderScaling;
         }
 
         void UpdateMotifHints()
@@ -284,9 +284,9 @@ namespace Avalonia.X11
             XSetWMNormalHints(_x11.Display, _handle, ref hints);
         }
 
-        public Size ClientSize => new Size(_realSize.Width / Scaling, _realSize.Height / Scaling);
+        public Size ClientSize => new Size(_realSize.Width / RenderScaling, _realSize.Height / RenderScaling);
 
-        public double Scaling
+        public double RenderScaling
         {
             get
             {
@@ -296,6 +296,8 @@ namespace Avalonia.X11
             }
             private set => _scaling = value;
         }
+        
+        public double DesktopScaling => RenderScaling;
 
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
@@ -312,7 +314,15 @@ namespace Avalonia.X11
         {
             get => _transparencyHelper.TransparencyLevelChanged;
             set => _transparencyHelper.TransparencyLevelChanged = value;
-        }
+        }        
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
+        public bool IsClientAreaExtendedToDecorations { get; }
 
         public Action Closed { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
@@ -321,6 +331,11 @@ namespace Avalonia.X11
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+
+            if (customRendererFactory != null)
+                return customRendererFactory.Create(root, loop);
+            
             return _platform.Options.UseDeferredRendering ?
                 new DeferredRenderer(root, loop) :
                 (IRenderer)new X11ImmediateRendererProxy(root, loop);
@@ -530,14 +545,14 @@ namespace Avalonia.X11
                 {
                     var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
                         .FirstOrDefault(m => m.Bounds.Contains(Position));
-                    newScaling = monitor?.PixelDensity ?? Scaling;
+                    newScaling = monitor?.PixelDensity ?? RenderScaling;
                 }
 
-                if (Scaling != newScaling)
+                if (RenderScaling != newScaling)
                 {
                     var oldScaledSize = ClientSize;
-                    Scaling = newScaling;
-                    ScalingChanged?.Invoke(Scaling);
+                    RenderScaling = newScaling;
+                    ScalingChanged?.Invoke(RenderScaling);
                     SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
                     if(!skipResize)
                         Resize(oldScaledSize, true);
@@ -699,9 +714,9 @@ namespace Avalonia.X11
         private void ScheduleInput(RawInputEventArgs args)
         {
             if (args is RawPointerEventArgs mouse)
-                mouse.Position = mouse.Position / Scaling;
+                mouse.Position = mouse.Position / RenderScaling;
             if (args is RawDragEvent drag)
-                drag.Location = drag.Location / Scaling;
+                drag.Location = drag.Location / RenderScaling;
             
             _lastEvent = new InputEventContainer() {Event = args};
             _inputQueue.Enqueue(_lastEvent);
@@ -752,11 +767,7 @@ namespace Avalonia.X11
 
         public void Dispose()
         {
-            if (_handle != IntPtr.Zero)
-            {
-                XDestroyWindow(_x11.Display, _handle);
-                Cleanup();
-            }
+            Cleanup();            
         }
 
         void Cleanup()
@@ -779,8 +790,7 @@ namespace Avalonia.X11
             }
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
-            {
-                XDestroyWindow(_x11.Display, _renderHandle);
+            {                
                 _renderHandle = IntPtr.Zero;
             }
         }
@@ -813,11 +823,11 @@ namespace Avalonia.X11
 
         public void Hide() => XUnmapWindow(_x11.Display, _handle);
         
-        public Point PointToClient(PixelPoint point) => new Point((point.X - Position.X) / Scaling, (point.Y - Position.Y) / Scaling);
+        public Point PointToClient(PixelPoint point) => new Point((point.X - Position.X) / RenderScaling, (point.Y - Position.Y) / RenderScaling);
 
         public PixelPoint PointToScreen(Point point) => new PixelPoint(
-            (int)(point.X * Scaling + Position.X),
-            (int)(point.Y * Scaling + Position.Y));
+            (int)(point.X * RenderScaling + Position.X),
+            (int)(point.Y * RenderScaling + Position.Y));
         
         public void SetSystemDecorations(SystemDecorations enabled)
         {
@@ -837,7 +847,7 @@ namespace Avalonia.X11
             Resize(size, true);
         }
 
-        PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * Scaling), (int)(size.Height * Scaling));
+        PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
         
         void Resize(Size clientSize, bool force)
         {
@@ -1017,13 +1027,13 @@ namespace Avalonia.X11
         {
             _scaledMinMaxSize = (minSize, maxSize);
             var min = new PixelSize(
-                (int)(minSize.Width < 1 ? 1 : minSize.Width * Scaling),
-                (int)(minSize.Height < 1 ? 1 : minSize.Height * Scaling));
+                (int)(minSize.Width < 1 ? 1 : minSize.Width * RenderScaling),
+                (int)(minSize.Height < 1 ? 1 : minSize.Height * RenderScaling));
 
             const int maxDim = MaxWindowDimension;
             var max = new PixelSize(
-                (int)(maxSize.Width > maxDim ? maxDim : Math.Max(min.Width, maxSize.Width * Scaling)),
-                (int)(maxSize.Height > maxDim ? maxDim : Math.Max(min.Height, maxSize.Height * Scaling)));
+                (int)(maxSize.Width > maxDim ? maxDim : Math.Max(min.Width, maxSize.Width * RenderScaling)),
+                (int)(maxSize.Height > maxDim ? maxDim : Math.Max(min.Height, maxSize.Height * RenderScaling)));
             
             _minMaxSize = (min, max);
             UpdateSizeHints(null);
@@ -1037,6 +1047,18 @@ namespace Avalonia.X11
         public void SetEnabled(bool enable)
         {
             _disabled = !enable;
+        }
+
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
         }
 
         public Action GotInputWhenDisabled { get; set; }
@@ -1107,5 +1129,9 @@ namespace Avalonia.X11
         }
 
         public WindowTransparencyLevel TransparencyLevel => _transparencyHelper.CurrentLevel;
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
+
+        public bool NeedsManagedDecorations => false;
     }
 }

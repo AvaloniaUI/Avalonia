@@ -9,18 +9,19 @@
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Spacing="16">
-            <Border Background="{DynamicResource ThemeAccentBrush}"
+            <Border Background="{DynamicResource SystemAccentColor}"
                     Margin="16"
                     Padding="48,48,48,48">
                 <Border.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Standard _Menu Item"/>
+                        <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
+                        <MenuItem Header="_Disabled Menu Item" IsEnabled="False" InputGesture="Ctrl+D" />
                         <Separator/>
                         <MenuItem Header="Menu with _Submenu">
                             <MenuItem Header="Submenu _1"/>
                             <MenuItem Header="Submenu _2"/>
                         </MenuItem>
-                        <MenuItem Header="Menu Item with _Icon">
+                        <MenuItem Header="Menu Item with _Icon" InputGesture="Ctrl+Shift+B">
                             <MenuItem.Icon>
                                 <Image Source="/Assets/github_icon.png"/>
                             </MenuItem.Icon>
@@ -34,7 +35,7 @@
                 </Border.ContextMenu>
                 <TextBlock Text="Defined in XAML"/>
             </Border>
-            <Border Background="{DynamicResource ThemeAccentBrush}"
+            <Border Background="{DynamicResource SystemAccentColor}"
                     Margin="16"
                     Padding="48,48,48,48">
                 <Border.ContextMenu>

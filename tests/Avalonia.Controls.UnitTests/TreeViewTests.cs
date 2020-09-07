@@ -255,12 +255,12 @@ namespace Avalonia.Controls.UnitTests
                 ClickContainer(item2Container, KeyModifiers.Control);
                 Assert.True(item2Container.IsSelected);
 
-                Assert.Equal(new[] { item1, item2 }, target.Selection.SelectedItems.OfType<Node>());
+                Assert.Equal(new[] { item1, item2 }, target.SelectedItems.OfType<Node>());
 
                 ClickContainer(item1Container, KeyModifiers.Control);
                 Assert.False(item1Container.IsSelected);
 
-                Assert.DoesNotContain(item1, target.Selection.SelectedItems.OfType<Node>());
+                Assert.DoesNotContain(item1, target.SelectedItems.OfType<Node>());
             }
         }
 
@@ -785,11 +785,11 @@ namespace Avalonia.Controls.UnitTests
             target.SelectAll();
 
             AssertChildrenSelected(target, tree[0]);
-            Assert.Equal(5, target.Selection.SelectedItems.Count);
+            Assert.Equal(5, target.SelectedItems.Count);
 
             _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Right);
 
-            Assert.Equal(5, target.Selection.SelectedItems.Count);
+            Assert.Equal(5, target.SelectedItems.Count);
         }
 
         [Fact]
@@ -823,11 +823,11 @@ namespace Avalonia.Controls.UnitTests
                 ClickContainer(fromContainer, KeyModifiers.None);
                 ClickContainer(toContainer, KeyModifiers.Shift);
 
-                Assert.Equal(2, target.Selection.SelectedItems.Count);
+                Assert.Equal(2, target.SelectedItems.Count);
 
                 _mouse.Click(thenContainer, MouseButton.Right);
 
-                Assert.Equal(1, target.Selection.SelectedItems.Count);
+                Assert.Equal(1, target.SelectedItems.Count);
             }
         }
 
@@ -860,7 +860,7 @@ namespace Avalonia.Controls.UnitTests
                 _mouse.Click(fromContainer);
                 _mouse.Click(toContainer, MouseButton.Right, modifiers: KeyModifiers.Shift);
 
-                Assert.Equal(1, target.Selection.SelectedItems.Count);
+                Assert.Equal(1, target.SelectedItems.Count);
             }
         }
 
@@ -893,7 +893,7 @@ namespace Avalonia.Controls.UnitTests
                 _mouse.Click(fromContainer);
                 _mouse.Click(toContainer, MouseButton.Right, modifiers: KeyModifiers.Control);
 
-                Assert.Equal(1, target.Selection.SelectedItems.Count);
+                Assert.Equal(1, target.SelectedItems.Count);
             }
         }
 
@@ -1272,8 +1272,6 @@ namespace Avalonia.Controls.UnitTests
                 var node = (Node)param;
                 return new TextBlock { Text = node.Value };
             }
-
-            public bool SupportsRecycling => false;
 
             public InstancedBinding ItemsSelector(object item)
             {

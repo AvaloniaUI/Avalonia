@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
 {
-    public class ResourceIncludeTests
+    public class ResourceIncludeTests : XamlTestBase
     {
         public class StaticResourceExtensionTests : XamlTestBase
         {
@@ -36,8 +36,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
     <Border Name='border' Background='{StaticResource brush}'/>
 </UserControl>";
 
-                    var loader = new AvaloniaXamlLoader();
-                    var userControl = (UserControl)loader.Load(xaml);
+                    var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                     var border = userControl.FindControl<Border>("border");
 
                     var brush = (SolidColorBrush)border.Background;
@@ -68,12 +67,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
     </Application.Resources>
 </Application>";
 
-                    var loader = new AvaloniaXamlLoader();
                     var app = Application.Current;
 
                     try
                     {
-                        loader.Load(xaml, null, app);
+                        AvaloniaRuntimeXamlLoader.Load(xaml, null, app);
                     }
                     catch (KeyNotFoundException)
                     {

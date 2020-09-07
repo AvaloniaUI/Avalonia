@@ -140,6 +140,11 @@ namespace Avalonia.Native.Interop
             }
             else
             {
+                if (key >= Key.D0 && key <= Key.D9)
+                {
+                    return key.ToString().Replace("D", "");
+                }
+                
                 return key.ToString().ToLower();
             }
         }

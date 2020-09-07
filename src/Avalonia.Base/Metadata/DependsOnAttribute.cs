@@ -5,7 +5,7 @@ namespace Avalonia.Metadata
     /// <summary>
     /// Indicates that the property depends on the value of another property in markup.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
     public class DependsOnAttribute : Attribute
     {
         /// <summary>

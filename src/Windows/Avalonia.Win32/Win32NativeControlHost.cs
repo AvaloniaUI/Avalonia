@@ -168,21 +168,25 @@ namespace Avalonia.Win32
 
             public bool IsCompatibleWith(INativeControlHostImpl host) => host is Win32NativeControlHost;
 
-            public void Hide()
+            public void HideWithSize(Size size)
             {
                 UnmanagedMethods.SetWindowPos(_holder.Handle, IntPtr.Zero,
                     -100, -100, 1, 1,
                     UnmanagedMethods.SetWindowPosFlags.SWP_HIDEWINDOW |
                     UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+                if (_attachedTo == null || _child == null)
+                    return;
+                size *= _attachedTo.Window.RenderScaling;
+                UnmanagedMethods.MoveWindow(_child.Handle, 0, 0,
+                    Math.Max(1, (int)size.Width), Math.Max(1, (int)size.Height), false);
             }
             
-            public unsafe void ShowInBounds(TransformedBounds transformedBounds)
+            public unsafe void ShowInBounds(Rect bounds)
             {
                 CheckDisposed();
                 if (_attachedTo == null)
                     throw new InvalidOperationException("The control isn't currently attached to a toplevel");
-                var bounds = transformedBounds.Bounds.TransformToAABB(transformedBounds.Transform) *
-                             new Vector(_attachedTo.Window.Scaling, _attachedTo.Window.Scaling);
+                bounds *= _attachedTo.Window.RenderScaling;
                 var pixelRect = new PixelRect((int)bounds.X, (int)bounds.Y, Math.Max(1, (int)bounds.Width),
                     Math.Max(1, (int)bounds.Height));
                 

@@ -93,6 +93,7 @@ namespace Avalonia.Win32
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
+                .Bind<AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider>().ToConstant(new NonPumpingWaitProvider())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
 
             if (options.AllowEglInitialization)

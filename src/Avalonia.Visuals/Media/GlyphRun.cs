@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -205,13 +205,16 @@ namespace Avalonia.Media
 
             var glyphIndex = FindGlyphIndex(characterHit.FirstCharacterIndex);
 
-            var currentCluster = _glyphClusters[glyphIndex];
-
-            if (characterHit.TrailingLength > 0)
+            if (!GlyphClusters.IsEmpty)
             {
-                while (glyphIndex < _glyphClusters.Length && _glyphClusters[glyphIndex] == currentCluster)
+                var currentCluster = GlyphClusters[glyphIndex];
+
+                if (characterHit.TrailingLength > 0)
                 {
-                    glyphIndex++;
+                    while (glyphIndex < GlyphClusters.Length && GlyphClusters[glyphIndex] == currentCluster)
+                    {
+                        glyphIndex++;
+                    }
                 }
             }
 
@@ -302,7 +305,7 @@ namespace Avalonia.Media
                 }
             }
 
-            var characterHit = FindNearestCharacterHit(GlyphClusters[index], out var width);
+            var characterHit = FindNearestCharacterHit(GlyphClusters.IsEmpty ? index : GlyphClusters[index], out var width);
 
             var offset = GetDistanceFromCharacterHit(new CharacterHit(characterHit.FirstCharacterIndex));
 
@@ -370,26 +373,31 @@ namespace Avalonia.Media
         /// </returns>
         public int FindGlyphIndex(int characterIndex)
         {
+            if (GlyphClusters.IsEmpty)
+            {
+                return characterIndex;
+            }
+
             if (IsLeftToRight)
             {
-                if (characterIndex < _glyphClusters[0])
+                if (characterIndex < GlyphClusters[0])
                 {
                     return 0;
                 }
 
-                if (characterIndex > _glyphClusters[_glyphClusters.Length - 1])
+                if (characterIndex > GlyphClusters[GlyphClusters.Length - 1])
                 {
                     return _glyphClusters.End;
                 }
             }
             else
             {
-                if (characterIndex < _glyphClusters[_glyphClusters.Length - 1])
+                if (characterIndex < GlyphClusters[GlyphClusters.Length - 1])
                 {
                     return _glyphClusters.End;
                 }
 
-                if (characterIndex > _glyphClusters[0])
+                if (characterIndex > GlyphClusters[0])
                 {
                     return 0;
                 }
@@ -397,7 +405,7 @@ namespace Avalonia.Media
 
             var comparer = IsLeftToRight ? s_ascendingComparer : s_descendingComparer;
 
-            var clusters = _glyphClusters.Buffer.Span;
+            var clusters = GlyphClusters.Buffer.Span;
 
             // Find the start of the cluster at the character index.
             var start = clusters.BinarySearch((ushort)characterIndex, comparer);
@@ -418,9 +426,19 @@ namespace Avalonia.Media
                 }
             }
 
-            while (start > 0 && clusters[start - 1] == clusters[start])
+            if (IsLeftToRight)
             {
-                start--;
+                while (start > 0 && clusters[start - 1] == clusters[start])
+                {
+                    start--;
+                }
+            }
+            else
+            {
+                while (start + 1 < clusters.Length && clusters[start + 1] == clusters[start])
+                {
+                    start++;
+                }
             }
 
             return start;
@@ -440,34 +458,74 @@ namespace Avalonia.Media
 
             var start = FindGlyphIndex(index);
 
-            var currentCluster = _glyphClusters[start];
-
-            var trailingLength = 0;
-
-            while (start < _glyphClusters.Length && _glyphClusters[start] == currentCluster)
+            if (GlyphClusters.IsEmpty)
             {
-                if (GlyphAdvances.IsEmpty)
-                {
-                    var glyph = GlyphIndices[start];
+                width = GetGlyphWidth(index);
 
-                    width += GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+                return new CharacterHit(start, 1);
+            }
+
+            var cluster = GlyphClusters[start];
+
+            var nextCluster = cluster;
+
+            var currentIndex = start;
+
+            while (nextCluster == cluster)
+            {
+                width += GetGlyphWidth(currentIndex);
+
+                if (IsLeftToRight)
+                {
+                    currentIndex++;
+
+                    if (currentIndex == GlyphClusters.Length)
+                    {
+                        break;
+                    }
                 }
                 else
                 {
-                    width += GlyphAdvances[start];
+                    currentIndex--;
+
+                    if (currentIndex < 0)
+                    {
+                        break;
+                    }
                 }
 
-                trailingLength++;
-                start++;
+                nextCluster = GlyphClusters[currentIndex];
             }
 
-            if (start == _glyphClusters.Length &&
-                currentCluster + trailingLength != Characters.Start + Characters.Length)
+            int trailingLength;
+
+            if (nextCluster == cluster)
             {
-                trailingLength = Characters.Start + Characters.Length - currentCluster;
+                trailingLength = Characters.Start + Characters.Length - cluster;
+            }
+            else
+            {
+                trailingLength = nextCluster - cluster;
             }
 
-            return new CharacterHit(currentCluster, trailingLength);
+            return new CharacterHit(cluster, trailingLength);
+        }
+
+        /// <summary>
+        /// Gets a glyph's width.
+        /// </summary>
+        /// <param name="index">The glyph index.</param>
+        /// <returns>The glyph's width.</returns>
+        private double GetGlyphWidth(int index)
+        {
+            if (GlyphAdvances.IsEmpty)
+            {
+                var glyph = GlyphIndices[index];
+
+                return GlyphTypeface.GetGlyphAdvance(glyph) * Scale;
+            }
+
+            return GlyphAdvances[index];
         }
 
         /// <summary>
@@ -497,7 +555,7 @@ namespace Avalonia.Media
                 }
             }
 
-            return new Rect(0, 0, width, height);
+            return new Rect(0, GlyphTypeface.Ascent * Scale, width, height);
         }
 
         private void Set<T>(ref T field, T value)
@@ -537,8 +595,6 @@ namespace Avalonia.Media
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this, out var width);
 
             var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
-
-            _bounds = new Rect(0, 0, width, height);
         }
 
         void IDisposable.Dispose()

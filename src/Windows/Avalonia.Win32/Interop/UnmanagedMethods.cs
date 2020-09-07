@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -989,6 +990,12 @@ namespace Avalonia.Win32.Interop
             }
         }
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+
+        [DllImport("user32.dll")]
+        public static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
@@ -1053,9 +1060,21 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool SetFocus(IntPtr hWnd);
         [DllImport("user32.dll")]
+        public static extern IntPtr GetFocus();
+        [DllImport("user32.dll")]
         public static extern bool SetParent(IntPtr hWnd, IntPtr hWndNewParent);
         [DllImport("user32.dll")]
         public static extern IntPtr GetParent(IntPtr hWnd);
+
+        public enum GetAncestorFlags
+        {
+            GA_PARENT = 1,
+            GA_ROOT = 2,
+            GA_ROOTOWNER = 3
+        }
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetAncestor(IntPtr hwnd, GetAncestorFlags gaFlags);
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
 
@@ -1318,6 +1337,9 @@ namespace Avalonia.Win32.Interop
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
         [DllImport("dwmapi.dll")]
+        public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
+        
+        [DllImport("dwmapi.dll")]
         public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
 
         [Flags]
@@ -1372,6 +1394,22 @@ namespace Avalonia.Win32.Interop
             {
                 throw new Exception("RtlGetVersion failed!");
             }
+        }
+        
+        [DllImport("kernel32", EntryPoint="WaitForMultipleObjectsEx", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern int IntWaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable);
+
+        public const int WAIT_FAILED = unchecked((int)0xFFFFFFFF);
+
+        internal static int WaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable)
+        {
+            int result = IntWaitForMultipleObjectsEx(nCount, pHandles, bWaitAll, dwMilliseconds, bAlertable);
+            if(result ==  WAIT_FAILED)
+            {
+                throw new Win32Exception();
+            }
+
+            return result;
         }
 
         [DllImport("user32.dll")]

@@ -25,8 +25,7 @@
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
-    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
-    <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+    <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
     <Setter Property="Template">
@@ -44,7 +43,7 @@
           <TextBox Name="PART_TextBox"
                    Background="Transparent"
                    BorderBrush="Transparent"
-                   Margin="-2"
+                   Margin="-1"
                    Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
