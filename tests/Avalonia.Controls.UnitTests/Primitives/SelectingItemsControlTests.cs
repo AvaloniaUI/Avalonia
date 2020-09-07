@@ -926,29 +926,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Removing_SelectedItem_Should_Clear_TabOnceActiveElement()
-        {
-            var items = new ObservableCollection<string>(new[] { "Foo", "Bar", "Baz " });
-
-            var target = new ListBox
-            {
-                Template = Template(),
-                Items = items,
-            };
-
-            Prepare(target);
-
-            var selected = target.Presenter.RealizedElements.ElementAt(1);
-            _helper.Down(selected);
-
-            items.RemoveAt(1);
-
-            var presenter = (InputElement)target.Presenter;
-
-            Assert.Null(KeyboardNavigation.GetTabOnceActiveElement(presenter));
-        }
-
-        [Fact]
         public void Resetting_Items_Collection_Should_Retain_Selection()
         {
             var itemsMock = new Mock<List<string>>();

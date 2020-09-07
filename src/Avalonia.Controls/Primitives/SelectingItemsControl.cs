@@ -351,19 +351,6 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnContainerClearing(e);
             MarkContainerSelected(e.Element, false);
-
-            if (Presenter is InputElement inputElement)
-            {
-                if (e.Element.IsFocused)
-                {
-                    this.Focus();
-                }
-
-                if (KeyboardNavigation.GetTabOnceActiveElement(inputElement) == e.Element)
-                {
-                    KeyboardNavigation.SetTabOnceActiveElement(inputElement, null);
-                }
-            }
         }
 
         protected override void OnContainerIndexChanged(ElementIndexChangedEventArgs e)
@@ -475,7 +462,6 @@ namespace Avalonia.Controls.Primitives
 
                 if (c is object)
                 {
-                    System.Diagnostics.Debug.WriteLine(c.DataContext);
                     FocusManager.Instance?.Focus(c, direction.ToNavigationMethod());
                 }
             }
