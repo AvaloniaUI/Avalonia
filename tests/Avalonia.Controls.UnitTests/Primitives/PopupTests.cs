@@ -395,6 +395,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Focusable_Controls_In_Popup_Should_Get_Focus()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var tb = new TextBox();
+                var b = new Button();
+                var p = new Popup
+                {
+                    PlacementTarget = PreparedWindow(),
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            tb,
+                            b
+                        }
+                    }
+                };
+                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+
+                p.Open();
+                tb.Focus();
+
+                Assert.True(FocusManager.Instance?.Current == tb);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
@@ -407,6 +435,21 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     })));
         }
 
+        private IDisposable CreateServicesWithFocus()
+        {
+            return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
+                new MockWindowingPlatform(null,
+                    x =>
+                    {
+                        if (UsePopupHost)
+                            return null;
+                        return MockWindowingPlatform.CreatePopupMock(x).Object;
+                    }), 
+                    focusManager: new FocusManager(),
+                    keyboardDevice: () => new KeyboardDevice()));
+        }
+
+       
         private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
