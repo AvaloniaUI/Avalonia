@@ -557,8 +557,6 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
-                var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-
                 Func<Window> run = () =>
                 {
                     var window = new Window
@@ -582,9 +580,6 @@ namespace Avalonia.LeakTests
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
-
-                // We are keeping geometry alive to simulate a resource that outlives the control.
-                GC.KeepAlive(geometry);
             }
         }
 

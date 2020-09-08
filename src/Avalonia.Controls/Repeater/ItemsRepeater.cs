@@ -684,11 +684,11 @@ namespace Avalonia.Controls
 
                 WeakEventHandlerManager.Unsubscribe<EventArgs, ItemsRepeater>(
                     oldValue,
-                    nameof(newValue.MeasureInvalidated),
+                    nameof(AttachedLayout.MeasureInvalidated),
                     InvalidateMeasureForLayout);
                 WeakEventHandlerManager.Unsubscribe<EventArgs, ItemsRepeater>(
                     oldValue,
-                    nameof(newValue.ArrangeInvalidated),
+                    nameof(AttachedLayout.ArrangeInvalidated),
                     InvalidateArrangeForLayout);
 
                 // Walk through all the elements and make sure they are cleared
@@ -709,11 +709,11 @@ namespace Avalonia.Controls
 
                 WeakEventHandlerManager.Subscribe<AttachedLayout, EventArgs, ItemsRepeater>(
                     newValue,
-                    nameof(newValue.MeasureInvalidated),
+                    nameof(AttachedLayout.MeasureInvalidated),
                     InvalidateMeasureForLayout);
                 WeakEventHandlerManager.Subscribe<AttachedLayout, EventArgs, ItemsRepeater>(
                     newValue,
-                    nameof(newValue.ArrangeInvalidated),
+                    nameof(AttachedLayout.ArrangeInvalidated),
                     InvalidateArrangeForLayout);
             }
 
