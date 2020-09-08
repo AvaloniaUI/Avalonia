@@ -186,6 +186,9 @@ namespace Avalonia.OpenGL
         public const int EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE = 0x3206;
         public const int EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE = 0x320A;
         public const int EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE = 0x345E;
+
+        public const int EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE = 0x320D;
+        public const int EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE = 0x320E;
         
         //EGL_ANGLE_platform_angle_d3d
         public const int EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE = 0x3209;
