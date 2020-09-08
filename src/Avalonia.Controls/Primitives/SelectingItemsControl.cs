@@ -344,7 +344,15 @@ namespace Avalonia.Controls.Primitives
         protected override void OnContainerPrepared(ElementPreparedEventArgs e)
         {
             base.OnContainerPrepared(e);
+
             MarkContainerSelected(e.Element, _selection?.IsSelected(e.Index) ?? false);
+
+            if (Selection.AnchorIndex == e.Index)
+            {
+                KeyboardNavigation.SetTabOnceActiveElement(
+                    (InputElement)Presenter!,
+                    e.Element);
+            }
         }
 
         protected override void OnContainerClearing(ElementClearingEventArgs e)
@@ -544,14 +552,6 @@ namespace Avalonia.Controls.Primitives
                 Selection.Clear();
                 Selection.Select(index);
             }
-
-            if (Presenter != null)
-            {
-                var container = TryGetContainer(index);
-                KeyboardNavigation.SetTabOnceActiveElement(
-                    (InputElement)Presenter,
-                    container);
-            }
         }
 
         /// <summary>
@@ -616,11 +616,19 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void OnSelectionModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ISelectionModel.AnchorIndex) && AutoScrollToSelectedItem)
+            if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
-                if (Selection.AnchorIndex > 0)
+                if (Selection.AnchorIndex > 0 && Presenter is object)
                 {
-                    ScrollIntoView(Selection.AnchorIndex);
+                    if (AutoScrollToSelectedItem)
+                    {
+                        ScrollIntoView(Selection.AnchorIndex);
+                    }
+
+                    var container = TryGetContainer(Selection.AnchorIndex);
+                    KeyboardNavigation.SetTabOnceActiveElement(
+                        (InputElement)Presenter,
+                        container);
                 }
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex))
