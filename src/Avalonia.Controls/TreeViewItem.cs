@@ -123,7 +123,7 @@ namespace Avalonia.Controls
         {
             base.OnContainerClearing(e);
 
-            ItemContainerGenerator.Index.Remove(e.Element);
+            ItemContainerGenerator.Index?.Remove(e.Element);
             TreeView?.RaiseTreeContainerClearing(e);
 
             if (e.Element is TreeViewItem item)
@@ -162,7 +162,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromLogicalTree(e);
 
-            ItemContainerGenerator.UpdateIndex();
+            UpdateIndex();
 
             var (_, owner) = FindOwner();
 
@@ -246,8 +246,23 @@ namespace Avalonia.Controls
                 // If we're not attached to the logical tree, then OnDetachedFromLogicalTree isn't going to be
                 // called when the item is removed. This results in the item not being removed from the index,
                 // causing #3551. In this case, update the index when Parent is changed to null.
-                ItemContainerGenerator.UpdateIndex();
+                UpdateIndex();
                 TreeView = null;
+            }
+        }
+
+        private void UpdateIndex()
+        {
+            var index = ItemContainerGenerator.Index;
+            
+            ItemContainerGenerator.UpdateIndex();
+
+            if (ItemContainerGenerator.Index != index)
+            {
+                foreach (var c in Presenter.RealizedElements)
+                {
+                    index.Remove(c);
+                }
             }
         }
     }

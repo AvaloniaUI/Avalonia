@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.LogicalTree;
@@ -72,6 +73,7 @@ namespace Avalonia.Controls.Generators
                 }
             }
         }
+
         protected override IControl CreateContainer(ElementFactoryGetArgs args)
         {
             if (args.Data is T c)
@@ -80,8 +82,16 @@ namespace Avalonia.Controls.Generators
             }
 
             var result = new T();
-            var template = GetTreeDataTemplate(args.Data, Owner.ItemTemplate);
-            var itemsSelector = template.ItemsSelector(args.Data);
+            var dataCapture = args.Data;
+            var itemsSelector = result.GetObservable(Control.DataContextProperty)
+                .Select(x =>
+                {
+                    var template = GetTreeDataTemplate(x, Owner.ItemTemplate);
+                    var itemsSelector = template.ItemsSelector(dataCapture);
+                    return itemsSelector?.Observable ??
+                        Observable.Never<object?>().StartWith(itemsSelector?.Value);
+                })
+                .Switch();
 
             result.Bind(
                 HeaderProperty,
@@ -94,7 +104,7 @@ namespace Avalonia.Controls.Generators
 
             if (itemsSelector != null)
             {
-                BindingOperations.Apply(result, ItemsProperty, itemsSelector, null);
+                result.Bind(ItemsProperty, itemsSelector);
             }
 
             return result;
@@ -102,7 +112,7 @@ namespace Avalonia.Controls.Generators
 
         protected override bool DataIsContainer(object data) => data is T;
 
-        private ITreeDataTemplate GetTreeDataTemplate(object item, IDataTemplate? primary)
+        private ITreeDataTemplate GetTreeDataTemplate(object? item, IDataTemplate? primary)
         {
             var template = Owner.FindDataTemplate(item, primary) ?? FuncDataTemplate.Default;
             var treeTemplate = template as ITreeDataTemplate ?? new WrapperTreeDataTemplate(template);
