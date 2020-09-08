@@ -452,7 +452,7 @@ namespace Avalonia.Controls
 
             return new TextLayout(
                 text ?? string.Empty,
-                FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                new Typeface(FontFamily, FontStyle, FontWeight),
                 FontSize,
                 Foreground,
                 TextAlignment,

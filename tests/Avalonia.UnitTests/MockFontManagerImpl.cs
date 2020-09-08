@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 
 namespace Avalonia.UnitTests
@@ -26,9 +25,9 @@ namespace Avalonia.UnitTests
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily,
-            CultureInfo culture, out FontKey fontKey)
+            CultureInfo culture, out Typeface fontKey)
         {
-            fontKey = default;
+            fontKey = new Typeface(_defaultFamilyName);
 
             return false;
         }

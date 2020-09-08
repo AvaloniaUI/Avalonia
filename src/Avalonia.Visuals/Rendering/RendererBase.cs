@@ -20,7 +20,7 @@ namespace Avalonia.Rendering
             _useManualFpsCounting = useManualFpsCounting;
             _fpsText = new FormattedText
             {
-                Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily.Default),
+                Typeface = new Typeface(FontFamily.Default),
                 FontSize = s_fontSize
             };
         }
