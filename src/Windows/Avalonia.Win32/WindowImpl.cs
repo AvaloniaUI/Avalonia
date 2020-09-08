@@ -1007,10 +1007,12 @@ namespace Avalonia.Win32
                 if (newProperties.IsResizable)
                 {
                     style |= WindowStyles.WS_SIZEFRAME;
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
                 }
                 else
                 {
                     style &= ~WindowStyles.WS_SIZEFRAME;
+                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
                 SetStyle(style);
