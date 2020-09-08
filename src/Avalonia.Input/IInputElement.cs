@@ -78,7 +78,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets the associated mouse cursor.
         /// </summary>
-        Cursor Cursor { get; }
+        Cursor? Cursor { get; }
 
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are enabled.
