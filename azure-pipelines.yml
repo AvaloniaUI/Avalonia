@@ -57,13 +57,6 @@ jobs:
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
-    displayName: 'Install CastXML'
-    inputs:
-      script: |
-        brew update
-        brew extract castxml https://raw.githubusercontent.com/Homebrew/homebrew-core/8a004a91a7fcd3f6620d5b01b6541ff0a640ffba/Formula/castxml.rb
-
-  - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
