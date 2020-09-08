@@ -377,15 +377,8 @@ namespace Avalonia.Controls
                 _itemsView?.Dispose();
             }
 
-            if (_items is object)
-            {
-                _itemsView = new ItemsSourceView(_items);
-                _itemsView.AddListener(this);
-            }
-            else
-            {
-                _itemsView = ItemsSourceView.Empty;
-            }
+            _itemsView = ItemsSourceView.GetOrCreateOrEmpty(_items)!;
+            _itemsView.AddListener(this);
 
             ItemsViewChanged(oldView, _itemsView);
             RaisePropertyChanged(ItemsViewProperty, oldView, _itemsView);
