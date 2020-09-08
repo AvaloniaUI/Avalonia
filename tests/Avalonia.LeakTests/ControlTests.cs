@@ -552,6 +552,42 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void ItemsRepeater_Is_Freed()
+        {
+            using (Start())
+            {
+                var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
+
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new ItemsRepeater(),
+                    };
+
+                    window.Show();
+
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<ItemsRepeater>(window.Presenter.Child);
+
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
+
+                // We are keeping geometry alive to simulate a resource that outlives the control.
+                GC.KeepAlive(geometry);
+            }
+        }
+
         private IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
