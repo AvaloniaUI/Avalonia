@@ -51,7 +51,7 @@ namespace Avalonia.Skia
         {
             var imageInfo = MakeImageInfo(width, height, format);
             if (gpu != null)
-                return SKSurface.Create(gpu, true, imageInfo);
+                return SKSurface.Create(gpu, false, imageInfo);
             return SKSurface.Create(imageInfo);
         }
 
