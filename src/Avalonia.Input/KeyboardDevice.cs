@@ -8,9 +8,9 @@ namespace Avalonia.Input
 {
     public class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
-        private IInputElement _focusedElement;
+        private IInputElement? _focusedElement;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public static IKeyboardDevice Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
 
@@ -18,7 +18,7 @@ namespace Avalonia.Input
 
         public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
 
-        public IInputElement FocusedElement
+        public IInputElement? FocusedElement
         {
             get
             {
@@ -33,7 +33,7 @@ namespace Avalonia.Input
         }
 
         public void SetFocusedElement(
-            IInputElement element, 
+            IInputElement? element, 
             NavigationMethod method,
             KeyModifiers keyModifiers)
         {

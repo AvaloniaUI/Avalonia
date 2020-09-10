@@ -37,8 +37,8 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets associated mouse cursor.
         /// </summary>
-        public static readonly StyledProperty<Cursor> CursorProperty =
-            AvaloniaProperty.Register<InputElement, Cursor>(nameof(Cursor), null, true);
+        public static readonly StyledProperty<Cursor?> CursorProperty =
+            AvaloniaProperty.Register<InputElement, Cursor?>(nameof(Cursor), null, true);
 
         /// <summary>
         /// Defines the <see cref="IsFocused"/> property.
@@ -160,7 +160,7 @@ namespace Avalonia.Input
         private bool _isFocused;
         private bool _isFocusVisible;
         private bool _isPointerOver;
-        private GestureRecognizerCollection _gestureRecognizers;
+        private GestureRecognizerCollection? _gestureRecognizers;
 
         /// <summary>
         /// Initializes static members of the <see cref="InputElement"/> class.
@@ -336,7 +336,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets associated mouse cursor.
         /// </summary>
-        public Cursor Cursor
+        public Cursor? Cursor
         {
             get { return GetValue(CursorProperty); }
             set { SetValue(CursorProperty, value); }
