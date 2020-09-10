@@ -13,7 +13,7 @@ namespace Avalonia.Input
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot _owner;
+        private IInputRoot? _owner;
 
         /// <summary>
         /// Sets the owner of the keyboard navigation handler.
@@ -24,15 +24,12 @@ namespace Avalonia.Input
         /// </remarks>
         public void SetOwner(IInputRoot owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
-
             if (_owner != null)
             {
                 throw new InvalidOperationException("AccessKeyHandler owner has already been set.");
             }
 
-            _owner = owner;
-
+            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
             _owner.AddHandler(InputElement.KeyDownEvent, OnKeyDown);
         }
 
@@ -45,11 +42,11 @@ namespace Avalonia.Input
         /// The next element in the specified direction, or null if <paramref name="element"/>
         /// was the last in the requested direction.
         /// </returns>
-        public static IInputElement GetNext(
+        public static IInputElement? GetNext(
             IInputElement element,
             NavigationDirection direction)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            element = element ?? throw new ArgumentNullException(nameof(element));
 
             var customHandler = element.GetSelfAndVisualAncestors()
                 .OfType<ICustomKeyboardNavigation>()
@@ -97,7 +94,7 @@ namespace Avalonia.Input
             NavigationDirection direction,
             KeyModifiers keyModifiers = KeyModifiers.None)
         {
-            Contract.Requires<ArgumentNullException>(element != null);
+            element = element ?? throw new ArgumentNullException(nameof(element));
 
             var next = GetNext(element, direction);
 
