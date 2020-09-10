@@ -8,11 +8,10 @@
     <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUnchecked}" />
     <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
-    <Setter Property="Padding" Value="8,5,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-    <Setter Property="VerticalContentAlignment" Value="Top" />    
+    <Setter Property="VerticalContentAlignment" Value="Center" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="MinWidth" Value="120" />
     <Setter Property="MinHeight" Value="32" />
