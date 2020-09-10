@@ -17,21 +17,19 @@ namespace Avalonia.OpenGL.Angle
 
         static Func<string, IntPtr> LoadAngle()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                throw new PlatformNotSupportedException();
-            }
-            else
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var disp = eglGetProcAddress("eglGetPlatformDisplayEXT");
-                
+
                 if (disp == IntPtr.Zero)
                 {
                     throw new OpenGlException("libegl.dll doesn't have eglGetPlatformDisplayEXT entry point");
                 }
-                
+
                 return eglGetProcAddress;
             }
+            
+            throw new PlatformNotSupportedException();
         }
 
     }
