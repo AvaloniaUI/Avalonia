@@ -416,8 +416,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
 
+                p.Opened += (s, e) =>
+                {
+                    tb.Focus();
+                };
+
                 p.Open();
-                tb.Focus();
 
                 Assert.True(FocusManager.Instance?.Current == tb);
             }
