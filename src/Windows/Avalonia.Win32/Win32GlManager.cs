@@ -1,4 +1,5 @@
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Angle;
 
 namespace Avalonia.Win32
 {
@@ -15,7 +16,7 @@ namespace Avalonia.Win32
             {
                 if (!s_attemptedToInitialize)
                 {
-                    EglFeature = EglGlPlatformFeature.TryCreate();
+                    EglFeature = EglGlPlatformFeature.TryCreate(() => new AngleWin32EglDisplay());
                     s_attemptedToInitialize = true;
                 }
 

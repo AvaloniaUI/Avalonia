@@ -20,12 +20,13 @@ namespace Avalonia.OpenGL
             if (feature != null)
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToConstant(feature);
         }
-        
-        public static EglGlPlatformFeature TryCreate()
+
+        public static EglGlPlatformFeature TryCreate() => TryCreate(() => new EglDisplay());
+        public static EglGlPlatformFeature TryCreate(Func<EglDisplay> displayFactory)
         {
             try
             {
-                var disp = new EglDisplay();
+                var disp = displayFactory();
                 return new EglGlPlatformFeature
                 {
                     _display = disp,
