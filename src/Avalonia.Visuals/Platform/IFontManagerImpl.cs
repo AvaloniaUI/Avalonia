@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 
 namespace Avalonia.Platform
 {
@@ -26,13 +25,13 @@ namespace Avalonia.Platform
         /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontFamily">The font family. This is optional and used for fallback lookup.</param>
         /// <param name="culture">The culture.</param>
-        /// <param name="fontKey">The matching font key.</param>
+        /// <param name="typeface">The matching typeface.</param>
         /// <returns>
         ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
         bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight,
-            FontFamily fontFamily, CultureInfo culture, out FontKey fontKey);
+            FontFamily fontFamily, CultureInfo culture, out Typeface typeface);
 
         /// <summary>
         ///     Creates a glyph typeface.

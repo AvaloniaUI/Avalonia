@@ -2,31 +2,28 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
     internal class SKTypefaceCollection
     {
-        private readonly ConcurrentDictionary<FontKey, SKTypeface> _typefaces =
-            new ConcurrentDictionary<FontKey, SKTypeface>();
+        private readonly ConcurrentDictionary<Typeface, SKTypeface> _typefaces =
+            new ConcurrentDictionary<Typeface, SKTypeface>();
 
-        public void AddTypeface(FontKey key, SKTypeface typeface)
+        public void AddTypeface(Typeface key, SKTypeface typeface)
         {
             _typefaces.TryAdd(key, typeface);
         }
 
         public SKTypeface Get(Typeface typeface)
         {
-            var key = new FontKey(typeface.FontFamily.Name, typeface.Style, typeface.Weight);
-
-            return GetNearestMatch(_typefaces, key);
+            return GetNearestMatch(_typefaces, typeface);
         }
 
-        private static SKTypeface GetNearestMatch(IDictionary<FontKey, SKTypeface> typefaces, FontKey key)
+        private static SKTypeface GetNearestMatch(IDictionary<Typeface, SKTypeface> typefaces, Typeface key)
         {
-            if (typefaces.TryGetValue(new FontKey(key.FamilyName, key.Style, key.Weight), out var typeface))
+            if (typefaces.TryGetValue(key, out var typeface))
             {
                 return typeface;
             }
@@ -42,7 +39,7 @@ namespace Avalonia.Skia
                 {
                     if (weight - j >= 100)
                     {
-                        if (typefaces.TryGetValue(new FontKey(key.FamilyName, (FontStyle)i, (FontWeight)(weight - j)), out typeface))
+                        if (typefaces.TryGetValue(new Typeface(key.FontFamily, (FontStyle)i, (FontWeight)(weight - j)), out typeface))
                         {
                             return typeface;
                         }
@@ -53,7 +50,7 @@ namespace Avalonia.Skia
                         continue;
                     }
 
-                    if (typefaces.TryGetValue(new FontKey(key.FamilyName, (FontStyle)i, (FontWeight)(weight + j)), out typeface))
+                    if (typefaces.TryGetValue(new Typeface(key.FontFamily, (FontStyle)i, (FontWeight)(weight + j)), out typeface))
                     {
                         return typeface;
                     }
