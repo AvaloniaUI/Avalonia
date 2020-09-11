@@ -209,5 +209,7 @@ namespace Avalonia.OpenGL
 
         public const int EGL_TEXTURE_OFFSET_X_ANGLE = 0x3490;
         public const int EGL_TEXTURE_OFFSET_Y_ANGLE = 0x3491;
+
+        public const int EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE = 0x33A6;
     }
 }

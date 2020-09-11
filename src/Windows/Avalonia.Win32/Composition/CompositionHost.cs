@@ -87,14 +87,14 @@ namespace Avalonia.Win32
                 if (lastSize.X != _info.Size.Width || lastSize.Y != _info.Size.Height)
                 {
                     lastSize = new POINT { X = _info.Size.Width, Y = _info.Size.Height };
-                   // _surfaceInterop.Resize(lastSize);
+                    _surfaceInterop.Resize(lastSize);
                 }                
                 _surfaceInterop.BeginDraw(
                     ref updateRect,
                     ref iid,
                     out IntPtr texture, ref offset);
 
-                var surface = (_display as AngleWin32EglDisplay).WrapDirect3D11Texture(texture, offset.X, offset.Y);
+                var surface = (_display as AngleWin32EglDisplay).WrapDirect3D11Texture(texture, offset.X, offset.Y, _info.Size.Width, _info.Size.Height);
 
                 return base.BeginDraw(surface, _info, () => { _surfaceInterop.EndDraw(); Marshal.Release(texture); surface.Dispose();  }, true);
             }
