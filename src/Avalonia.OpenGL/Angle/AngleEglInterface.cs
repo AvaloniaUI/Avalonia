@@ -7,8 +7,8 @@ namespace Avalonia.OpenGL.Angle
 {
     public class AngleEglInterface : EglInterface
     {
-        [DllImport("libglesv2.dll", CharSet = CharSet.Ansi)]
-        static extern IntPtr EGL_GetProcAddress(string proc);
+        [DllImport("libegl.dll", CharSet = CharSet.Ansi)]
+        static extern IntPtr eglGetProcAddress(string proc);
 
         public AngleEglInterface() : base(LoadAngle())
         {
@@ -20,10 +20,10 @@ namespace Avalonia.OpenGL.Angle
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 throw new PlatformNotSupportedException();
             {
-                var disp = EGL_GetProcAddress("eglGetPlatformDisplayEXT");
+                var disp = eglGetProcAddress("eglGetPlatformDisplayEXT");
                 if (disp == IntPtr.Zero)
                     throw new OpenGlException("libegl.dll doesn't have eglGetPlatformDisplayEXT entry point");
-                return EGL_GetProcAddress;
+                return eglGetProcAddress;
             }
         }
 
