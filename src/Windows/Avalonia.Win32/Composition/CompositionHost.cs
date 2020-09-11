@@ -64,18 +64,7 @@ namespace Avalonia.Win32
 
                     using (var target = windowSurface.CreateGlRenderTarget())
                     {
-                        using (var session = target.BeginDraw())
-                        {
-                            using (session.Context.MakeCurrent())
-                            {
-                                var gl = _context.GlInterface;
-                                gl.Viewport(0, 0, _info.Size.Width, _info.Size.Height);
-                                gl.ClearStencil(0);
-                                gl.ClearColor(0, 0, 0, 0);
-                                gl.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_DEPTH_BUFFER_BIT);
-                                gl.Flush();                                
-                            }
-                        }
+                        target.BeginDraw().Dispose();                 
                     }
                 }
 
@@ -83,12 +72,7 @@ namespace Avalonia.Win32
                 var iid = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
                 var updateRect = new RECT { right = _info.Size.Width, bottom = _info.Size.Height };
                 var offset = new POINT();
-
-                if (lastSize.X != _info.Size.Width || lastSize.Y != _info.Size.Height)
-                {
-                    lastSize = new POINT { X = _info.Size.Width, Y = _info.Size.Height };
-                    _surfaceInterop.Resize(lastSize);
-                }                
+           
                 _surfaceInterop.BeginDraw(
                     ref updateRect,
                     ref iid,
