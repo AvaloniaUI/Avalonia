@@ -72,10 +72,6 @@ namespace Avalonia.Skia
                         $"Can't create drawing context for surface with {size} size and {scaling} scaling");
                 }
 
-                gl.Viewport(0, 0, size.Width, size.Height);
-                gl.ClearStencil(0);
-                gl.ClearColor(0, 0, 0, 0);
-                gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 lock (_grContext)
                 {
                     _grContext.ResetContext();
@@ -88,6 +84,7 @@ namespace Avalonia.Skia
                         SKColorType.Rgba8888);
 
                     success = true;
+
                     return new GlGpuSession(_grContext, renderTarget, surface, glSession);
                 }
             }
