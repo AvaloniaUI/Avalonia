@@ -1,0 +1,15 @@
+Compat issues with assembly Avalonia.Visuals:
+MembersMustExist : Member 'public Avalonia.Media.Typeface Avalonia.Media.FontManager.GetOrAddTypeface(Avalonia.Media.FontFamily, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Media.Typeface Avalonia.Media.FontManager.MatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontFamily, System.Globalization.CultureInfo)' does not exist in the implementation but it does exist in the contract.
+CannotSealType : Type 'Avalonia.Media.Typeface' is actually (has the sealed modifier) sealed in the implementation but not sealed in the contract.
+TypeCannotChangeClassification : Type 'Avalonia.Media.Typeface' is a 'struct' in the implementation but is a 'class' in the contract.
+CannotMakeMemberNonVirtual : Member 'public System.Boolean Avalonia.Media.Typeface.Equals(System.Object)' is non-virtual in the implementation but is virtual in the contract.
+CannotMakeMemberNonVirtual : Member 'public System.Int32 Avalonia.Media.Typeface.GetHashCode()' is non-virtual in the implementation but is virtual in the contract.
+TypesMustExist : Type 'Avalonia.Media.Fonts.FontKey' does not exist in the implementation but it does exist in the contract.
+CannotAddAbstractMembers : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.TextLineBreak' is abstract in the implementation but is missing in the contract.
+MembersMustExist : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.LineBreak.get()' does not exist in the implementation but it does exist in the contract.
+CannotAddAbstractMembers : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.TextLineBreak.get()' is abstract in the implementation but is missing in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IFontManagerImpl.TryMatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontFamily, System.Globalization.CultureInfo, Avalonia.Media.Fonts.FontKey)' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public System.Boolean Avalonia.Platform.IFontManagerImpl.TryMatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontFamily, System.Globalization.CultureInfo, Avalonia.Media.Fonts.FontKey)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IFontManagerImpl.TryMatchCharacter(System.Int32, Avalonia.Media.FontStyle, Avalonia.Media.FontWeight, Avalonia.Media.FontFamily, System.Globalization.CultureInfo, Avalonia.Media.Typeface)' is present in the implementation but not in the contract.
+Total Issues: 13

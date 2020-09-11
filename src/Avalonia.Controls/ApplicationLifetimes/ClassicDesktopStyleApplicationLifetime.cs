@@ -47,6 +47,11 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeExitEventArgs> Exit;
 
+        /// <summary>
+        /// Gets the arguments passed to the AppBuilder Start method.
+        /// </summary>
+        public string[] Args { get; set; }
+        
         /// <inheritdoc/>
         public ShutdownMode ShutdownMode { get; set; }
         
@@ -68,9 +73,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
             else if (ShutdownMode == ShutdownMode.OnMainWindowClose && window == MainWindow)
                 Shutdown();
         }
-        
-        
-
 
         public void Shutdown(int exitCode = 0)
         {
@@ -123,7 +125,11 @@ namespace Avalonia
             this T builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
             where T : AppBuilderBase<T>, new()
         {
-            var lifetime = new ClassicDesktopStyleApplicationLifetime() {ShutdownMode = shutdownMode};
+            var lifetime = new ClassicDesktopStyleApplicationLifetime()
+            {
+                Args = args,
+                ShutdownMode = shutdownMode
+            };
             builder.SetupWithLifetime(lifetime);
             return lifetime.Start(args);
         }

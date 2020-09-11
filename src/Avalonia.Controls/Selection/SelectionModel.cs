@@ -436,6 +436,29 @@ namespace Avalonia.Controls.Selection
             }
         }
 
+        private protected override bool IsValidCollectionChange(NotifyCollectionChangedEventArgs e)
+        {
+            if (!base.IsValidCollectionChange(e))
+            {
+                return false;
+            }
+
+            if (ItemsView is object && e.Action == NotifyCollectionChangedAction.Add)
+            {
+                if (e.NewStartingIndex <= _selectedIndex)
+                {
+                    return _selectedIndex + e.NewItems.Count < ItemsView.Count;
+                }
+
+                if (e.NewStartingIndex <= _anchorIndex)
+                {
+                    return _anchorIndex + e.NewItems.Count < ItemsView.Count;
+                }
+            }
+
+            return true;
+        }
+
         protected override void OnSourceCollectionChangeFinished()
         {
             if (_operation is object)
