@@ -53,22 +53,9 @@ namespace Avalonia.Win32
 
             public override bool IsCorrupted => _initialSize != _info.Size;
 
-            bool _firstRun = true;
             POINT lastSize;
             public override IGlPlatformSurfaceRenderingSession BeginDraw()
             {
-                if (_firstRun)
-                {
-                    _firstRun = false;
-                    var windowSurface = new EglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, _info);
-
-                    using (var target = windowSurface.CreateGlRenderTarget())
-                    {
-                        target.BeginDraw().Dispose();                 
-                    }
-                }
-
-
                 var iid = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
                 var updateRect = new RECT { right = _info.Size.Width, bottom = _info.Size.Height };
                 var offset = new POINT();

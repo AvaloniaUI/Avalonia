@@ -626,7 +626,7 @@ namespace Avalonia.Win32
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(
-                0,
+                (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP, // TODO this is only when using Win UI Comp.
                 atom,
                 null,
                 (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int) WindowStyles.WS_CLIPCHILDREN,
