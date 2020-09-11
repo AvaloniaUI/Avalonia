@@ -1594,6 +1594,31 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "foo" }, target.SelectedItems);
         }
 
+        [Fact]
+        public void Preserves_Initial_SelectedItems_When_Bound()
+        {
+            // Issue #4272 (there are two issues there, this addresses the second one).
+            var vm = new SelectionViewModel
+            {
+                Items = { "foo", "bar", "baz" },
+                SelectedItems = { "bar" },
+            };
+
+            var target = new ListBox
+            {
+                [!ListBox.ItemsProperty] = new Binding("Items"),
+                [!ListBox.SelectedItemsProperty] = new Binding("SelectedItems"),
+                DataContext = vm,
+            };
+
+            Prepare(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal(new[] { 1 }, target.Selection.SelectedIndexes);
+            Assert.Equal("bar", target.SelectedItem);
+            Assert.Equal(new[] { "bar" }, target.SelectedItems);
+        }
+
         private static void Prepare(SelectingItemsControl target)
         {
             var root = new TestRoot
@@ -1663,6 +1688,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public SelectionViewModel()
             {
                 Items = new ObservableCollection<string>();
+                SelectedItems = new ObservableCollection<string>();
             }
 
             public int SelectedIndex
@@ -1676,6 +1702,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
 
             public ObservableCollection<string> Items { get; }
+            public ObservableCollection<string> SelectedItems { get; }
         }
 
         private class RootWithItems : TestRoot
