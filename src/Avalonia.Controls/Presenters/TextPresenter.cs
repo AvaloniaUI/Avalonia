@@ -82,7 +82,7 @@ namespace Avalonia.Controls.Presenters
                 TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
                 TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
 
-            Observable.Merge(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
+            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
                 TextBlock.FontSizeProperty.Changed, TextBlock.FontStyleProperty.Changed, 
                 TextBlock.FontWeightProperty.Changed, TextBlock.FontFamilyProperty.Changed,

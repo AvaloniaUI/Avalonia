@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Mixins
         {
             Contract.Requires<ArgumentNullException>(isSelected != null);
 
-            isSelected.Changed.Subscribe(x =>
+            isSelected.Changed.Subscribe((AvaloniaPropertyChangedEventArgs x) =>
             {
                 var sender = x.Sender as TControl;
 

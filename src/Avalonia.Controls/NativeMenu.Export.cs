@@ -73,7 +73,7 @@ namespace Avalonia.Controls
                     throw new InvalidOperationException("IsNativeMenuExported property is read-only");
                 info.ChangingIsExported = false;
             });
-            MenuProperty.Changed.Subscribe(args =>
+            MenuProperty.Changed.Subscribe((AvaloniaPropertyChangedEventArgs args) =>
             {
                 if (args.Sender is TopLevel tl)
                 {

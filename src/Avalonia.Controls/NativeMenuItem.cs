@@ -20,7 +20,7 @@ namespace Avalonia.Controls
 
         static NativeMenuItem()
         {
-            MenuProperty.Changed.Subscribe(args =>
+            MenuProperty.Changed.Subscribe((AvaloniaPropertyChangedEventArgs args) =>
             {
                 var item = (NativeMenuItem)args.Sender;
                 var value = (NativeMenu)args.NewValue;
