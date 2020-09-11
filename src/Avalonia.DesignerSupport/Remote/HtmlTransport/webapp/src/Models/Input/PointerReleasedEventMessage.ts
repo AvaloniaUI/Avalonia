@@ -1,7 +1,7 @@
 ﻿import * as React from "react";
-import {PointerEventMessageBase} from "src/Models/Input/PointerEventMessageBase";
-import {MouseButton} from "src/Models/Input/MouseButton";
-import {getMouseButton} from "src/Models/Input/MouseEventHelpers";
+import {PointerEventMessageBase} from "./PointerEventMessageBase";
+import {MouseButton} from "./MouseButton";
+import {getMouseButton} from "./MouseEventHelpers";
 
 export class PointerReleasedEventMessage extends PointerEventMessageBase {
     public readonly button: MouseButton

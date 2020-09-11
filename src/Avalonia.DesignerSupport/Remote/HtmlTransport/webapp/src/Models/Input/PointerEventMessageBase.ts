@@ -1,5 +1,5 @@
 ﻿import * as React from "react";
-import {InputEventMessageBase} from "src/Models/Input/InputEventMessageBase";
+import {InputEventMessageBase} from "./InputEventMessageBase";
 
 export abstract class PointerEventMessageBase extends InputEventMessageBase {
     public readonly x: number;

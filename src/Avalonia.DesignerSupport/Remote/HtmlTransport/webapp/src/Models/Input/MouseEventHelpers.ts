@@ -1,6 +1,6 @@
 ﻿import * as React from "react";
-import {InputModifiers} from "src/Models/Input/InputModifiers";
-import {MouseButton} from "src/Models/Input/MouseButton";
+import {InputModifiers} from "./InputModifiers";
+import {MouseButton} from "./MouseButton";
 
 export function getModifiers(e: React.MouseEvent): Array<InputModifiers> {
 
@@ -14,12 +14,14 @@ export function getModifiers(e: React.MouseEvent): Array<InputModifiers> {
         modifiers.push(InputModifiers.Shift);
     if (e.metaKey)
         modifiers.push(InputModifiers.Windows);
-    if ((e.buttons & 1) != 0)
-        modifiers.push(InputModifiers.LeftMouseButton);
-    if ((e.buttons & 2) != 0)
-        modifiers.push(InputModifiers.RightMouseButton);
-    if ((e.buttons & 4) != 0)
-        modifiers.push(InputModifiers.MiddleMouseButton);
+    if (e.buttons != 0) {
+        if ((e.buttons & 1) != 0)
+            modifiers.push(InputModifiers.LeftMouseButton);
+        if ((e.buttons & 2) != 0)
+            modifiers.push(InputModifiers.RightMouseButton);
+        if ((e.buttons & 4) != 0)
+            modifiers.push(InputModifiers.MiddleMouseButton);
+    }
 
     return modifiers;
 }

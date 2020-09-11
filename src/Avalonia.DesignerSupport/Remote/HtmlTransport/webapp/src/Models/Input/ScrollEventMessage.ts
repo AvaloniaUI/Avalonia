@@ -1,5 +1,5 @@
 import * as React from "react";
-import {PointerEventMessageBase} from "src/Models/Input/PointerEventMessageBase";
+import {PointerEventMessageBase} from "./PointerEventMessageBase";
 
 export class ScrollEventMessage extends PointerEventMessageBase {
     public readonly deltaX: number;

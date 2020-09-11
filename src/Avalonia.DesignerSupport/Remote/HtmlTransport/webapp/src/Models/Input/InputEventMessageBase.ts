@@ -1,6 +1,6 @@
 ﻿import * as React from "react";
-import {InputModifiers} from "src/Models/Input/InputModifiers";
-import {getModifiers} from "src/Models/Input/MouseEventHelpers";
+import {InputModifiers} from "./InputModifiers";
+import {getModifiers} from "./MouseEventHelpers";
 
 export abstract class InputEventMessageBase {
     public readonly modifiers : Array<InputModifiers>;
