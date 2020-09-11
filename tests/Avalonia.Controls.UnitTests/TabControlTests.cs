@@ -175,6 +175,36 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Removal_Should_Set_New_Item0_When_Item0_Selected_With_DataTemplate()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var collection = new ObservableCollection<Item>()
+            {
+                new Item("first"),
+                new Item("second"),
+                new Item("3rd"),
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items = collection,
+            };
+
+            Prepare(target);
+            target.SelectedItem = collection[0];
+
+            Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0], target.SelectedContent);
+
+            collection.RemoveAt(0);
+
+            Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0], target.SelectedContent);
+        }
+
+        [Fact]
         public void TabItem_Templates_Should_Be_Set_Before_TabItem_ApplyTemplate()
         {
             var collection = new[]
@@ -393,8 +423,6 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, tabControl.Items.Count());
             }
         }
-
-
 
         private IControlTemplate TabControlTemplate()
         {
