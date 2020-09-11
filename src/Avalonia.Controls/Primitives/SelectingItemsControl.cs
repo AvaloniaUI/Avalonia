@@ -613,7 +613,7 @@ namespace Avalonia.Controls.Primitives
                 RaisePropertyChanged(SelectedIndexProperty, _oldSelectedIndex, SelectedIndex);
                 _oldSelectedIndex = SelectedIndex;
             }
-            else if (e.PropertyName == nameof(ISelectionModel.SelectedItem))
+            else if (e.PropertyName == nameof(ISelectionModel.SelectedItem) && _oldSelectedItem != SelectedItem)
             {
                 RaisePropertyChanged(SelectedItemProperty, _oldSelectedItem, SelectedItem);
                 _oldSelectedItem = SelectedItem;

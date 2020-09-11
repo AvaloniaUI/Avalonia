@@ -345,7 +345,9 @@ namespace Avalonia.Controls.Selection
                 LostSelection(this, EventArgs.Empty);
             }
 
-            CommitOperation(update.Operation);
+            // Don't raise PropertyChanged events here as the OnSourceCollectionChanged event that
+            // let to this method being called will raise them if necessary.
+            CommitOperation(update.Operation, raisePropertyChanged: false);
         }
 
         private protected override CollectionChangeState OnItemsAdded(int index, IList items)
@@ -428,6 +430,11 @@ namespace Avalonia.Controls.Selection
             if (oldSelectedIndex != _selectedIndex)
             {
                 RaisePropertyChanged(nameof(SelectedIndex));
+            }
+
+            if (e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex)
+            {
+                RaisePropertyChanged(nameof(SelectedItem));
             }
 
             if (oldAnchorIndex != _anchorIndex)
@@ -611,7 +618,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private void CommitOperation(Operation operation)
+        private void CommitOperation(Operation operation, bool raisePropertyChanged = true)
         {
             try
             {
@@ -679,23 +686,26 @@ namespace Avalonia.Controls.Selection
                     }
                 }
 
-                if (oldSelectedIndex != _selectedIndex)
+                if (raisePropertyChanged)
                 {
-                    indexesChanged = true;
-                    RaisePropertyChanged(nameof(SelectedIndex));
-                    RaisePropertyChanged(nameof(SelectedItem));
-                }
+                    if (oldSelectedIndex != _selectedIndex)
+                    {
+                        indexesChanged = true;
+                        RaisePropertyChanged(nameof(SelectedIndex));
+                        RaisePropertyChanged(nameof(SelectedItem));
+                    }
 
-                if (oldAnchorIndex != _anchorIndex)
-                {
-                    indexesChanged = true;
-                    RaisePropertyChanged(nameof(AnchorIndex));
-                }
+                    if (oldAnchorIndex != _anchorIndex)
+                    {
+                        indexesChanged = true;
+                        RaisePropertyChanged(nameof(AnchorIndex));
+                    }
 
-                if (indexesChanged)
-                {
-                    RaisePropertyChanged(nameof(SelectedIndexes));
-                    RaisePropertyChanged(nameof(SelectedItems));
+                    if (indexesChanged)
+                    {
+                        RaisePropertyChanged(nameof(SelectedIndexes));
+                        RaisePropertyChanged(nameof(SelectedItems));
+                    }
                 }
             }
             finally
