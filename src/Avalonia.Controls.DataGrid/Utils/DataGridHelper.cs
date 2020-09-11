@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Controls
 {
-    public static class DataGridHelper
+    internal static class DataGridHelper
     {
         internal static void SyncColumnProperty<T>(AvaloniaObject column, AvaloniaObject content, AvaloniaProperty<T> property)
         {
