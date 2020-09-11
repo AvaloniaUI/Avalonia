@@ -555,6 +555,44 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Removing_Selected_Item_Should_Update_Selection_With_AlwaysSelected()
+        {
+            var item0 = new Item();
+            var item1 = new Item();
+            var items = new AvaloniaList<Item>
+            {
+                item0,
+                item1,
+            };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            SelectionChangedEventArgs receivedArgs = null;
+
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            items.RemoveAt(1);
+
+            Assert.Same(item0, target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Equal(new[] { item0 }, receivedArgs.AddedItems);
+            Assert.Equal(new[] { item1 }, receivedArgs.RemovedItems);
+            Assert.True(items.Single().IsSelected);
+        }
+
+        [Fact]
         public void Removing_Selected_Item_Should_Clear_Selection_With_BeginInit()
         {
             var items = new AvaloniaList<Item>
@@ -769,6 +807,186 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedIndex = -1;
 
             Assert.True(called);
+        }
+
+        [Fact]
+        public void Setting_SelectedIndex_Should_Raise_PropertyChanged_Events()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    Assert.Equal(-1, e.OldValue);
+                    Assert.Equal(1, e.NewValue);
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    Assert.Null(e.OldValue);
+                    Assert.Equal("bar", e.NewValue);
+                    ++selectedItemRaised;
+                }
+            };
+
+            target.SelectedIndex = 1;
+
+            Assert.Equal(1, selectedIndexRaised);
+            Assert.Equal(1, selectedItemRaised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item_Should_Raise_PropertyChanged_Events()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+            target.SelectedIndex = 1;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    Assert.Equal(1, e.OldValue);
+                    Assert.Equal(-1, e.NewValue);
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    Assert.Equal("bar", e.OldValue);
+                    Assert.Null(e.NewValue);
+                }
+            };
+
+            items.RemoveAt(1);
+
+            Assert.Equal(1, selectedIndexRaised);
+            Assert.Equal(0, selectedItemRaised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item0_Should_Raise_PropertyChanged_Events_With_AlwaysSelected()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+            target.SelectedIndex = 0;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    Assert.Equal("foo", e.OldValue);
+                    Assert.Equal("bar", e.NewValue);
+                    ++selectedItemRaised;
+                }
+            };
+
+            items.RemoveAt(0);
+
+            Assert.Equal(0, selectedIndexRaised);
+            Assert.Equal(1, selectedItemRaised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item1_Should_Raise_PropertyChanged_Events_With_AlwaysSelected()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+            target.SelectedIndex = 1;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    Assert.Equal(1, e.OldValue);
+                    Assert.Equal(0, e.NewValue);
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    Assert.Equal("bar", e.OldValue);
+                    Assert.Equal("foo", e.NewValue);
+                }
+            };
+
+            items.RemoveAt(1);
+
+            Assert.Equal(1, selectedIndexRaised);
+            Assert.Equal(0, selectedItemRaised);
+        }
+
+        [Fact]
+        public void Removing_Item_Before_Selection_Should_Raise_PropertyChanged_Events()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+            target.SelectedIndex = 1;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    Assert.Equal(1, e.OldValue);
+                    Assert.Equal(0, e.NewValue);
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    ++selectedItemRaised;
+                }
+            };
+
+            items.RemoveAt(0);
+
+            Assert.Equal(1, selectedIndexRaised);
+            Assert.Equal(0, selectedItemRaised);
         }
 
         [Fact]
