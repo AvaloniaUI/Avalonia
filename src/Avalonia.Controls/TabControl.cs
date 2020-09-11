@@ -149,6 +149,12 @@ namespace Avalonia.Controls
             UpdateSelectedContent();
         }
 
+        protected override void OnContainersRecycled(ItemContainerEventArgs e)
+        {
+            base.OnContainersRecycled(e);
+            UpdateSelectedContent();
+        }
+
         private void UpdateSelectedContent()
         {
             if (SelectedIndex == -1)
