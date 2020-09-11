@@ -13,6 +13,7 @@
     <Setter Property="Background" Value="{DynamicResource RadioButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrush}" />
+    <Setter Property="Padding" Value="8,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
