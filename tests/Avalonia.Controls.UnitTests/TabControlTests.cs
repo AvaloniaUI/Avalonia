@@ -122,11 +122,56 @@ namespace Avalonia.Controls.UnitTests
                 Items = collection,
             };
 
-            target.ApplyTemplate();
+            Prepare(target);
             target.SelectedItem = collection[1];
+
+            Assert.Same(collection[1], target.SelectedItem);
+            Assert.Equal(collection[1].Content, target.SelectedContent);
+
             collection.RemoveAt(1);
 
             Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0].Content, target.SelectedContent);
+        }
+
+        [Fact]
+        public void Removal_Should_Set_New_Item0_When_Item0_Selected()
+        {
+            var collection = new ObservableCollection<TabItem>()
+            {
+                new TabItem
+                {
+                    Name = "first",
+                    Content = "foo",
+                },
+                new TabItem
+                {
+                    Name = "second",
+                    Content = "bar",
+                },
+                new TabItem
+                {
+                    Name = "3rd",
+                    Content = "barf",
+                },
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items = collection,
+            };
+
+            Prepare(target);
+            target.SelectedItem = collection[0];
+
+            Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0].Content, target.SelectedContent);
+
+            collection.RemoveAt(0);
+
+            Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0].Content, target.SelectedContent);
         }
 
         [Fact]
@@ -349,6 +394,8 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+
+
         private IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
@@ -381,6 +428,13 @@ namespace Avalonia.Controls.UnitTests
                     [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
                     [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]
                 }.RegisterInNameScope(scope));
+        }
+
+        private void Prepare(TabControl target)
+        {
+            ApplyTemplate(target);
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
         }
 
         private void ApplyTemplate(TabControl target)
