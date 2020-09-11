@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -66,7 +67,7 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
-            SelectedIndexProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent(e));
+            SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
         }
 
         /// <summary>
@@ -145,55 +146,21 @@ namespace Avalonia.Controls
         protected override void OnContainersMaterialized(ItemContainerEventArgs e)
         {
             base.OnContainersMaterialized(e);
-
-            if (SelectedContent != null || SelectedIndex == -1)
-            {
-                return;
-            }
-
-            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(SelectedIndex);
-
-            if (container == null)
-            {
-                return;
-            }
-
-            UpdateSelectedContent(container);
+            UpdateSelectedContent();
         }
 
-        private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
+        private void UpdateSelectedContent()
         {
-            var index = (int)e.NewValue;
-
-            if (index == -1)
+            if (SelectedIndex == -1)
             {
-                SelectedContentTemplate = null;
-
-                SelectedContent = null;
-
-                return;
+                SelectedContent = SelectedContentTemplate = null;
             }
-
-            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(index);
-
-            if (container == null)
+            else
             {
-                return;
-            }
-
-            UpdateSelectedContent(container);
-        }
-
-        private void UpdateSelectedContent(IContentControl item)
-        {
-            if (SelectedContentTemplate != item.ContentTemplate)
-            {
-                SelectedContentTemplate = item.ContentTemplate;
-            }
-
-            if (SelectedContent != item.Content)
-            {
-                SelectedContent = item.Content;
+                var container = SelectedItem as IContentControl ??
+                    ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
+                SelectedContentTemplate = container?.ContentTemplate;
+                SelectedContent = container?.Content;
             }
         }
 
