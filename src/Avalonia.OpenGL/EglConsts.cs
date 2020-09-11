@@ -205,5 +205,9 @@ namespace Avalonia.OpenGL
 
         public const int EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE = 0x3200;
         public const int EGL_D3D_TEXTURE_ANGLE = 0x33A3;
+
+
+        public const int EGL_TEXTURE_OFFSET_X_ANGLE = 0x3490;
+        public const int EGL_TEXTURE_OFFSET_Y_ANGLE = 0x3491;
     }
 }

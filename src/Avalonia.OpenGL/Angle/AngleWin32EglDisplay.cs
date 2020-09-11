@@ -78,11 +78,11 @@ namespace Avalonia.OpenGL.Angle
             return d3dDeviceHandle;
         }
 
-        public EglSurface WrapDirect3D11Texture(IntPtr handle)
+        public EglSurface WrapDirect3D11Texture(IntPtr handle, int offsetX, int offsetY)
         {
             if (PlatformApi != AngleOptions.PlatformApi.DirectX11)
                 throw new InvalidOperationException("Current platform API is " + PlatformApi);
-            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, new[] { EGL_NONE, EGL_NONE });
+            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, new[] { EGL_TEXTURE_OFFSET_X_ANGLE, offsetX, EGL_TEXTURE_OFFSET_Y_ANGLE, offsetY, EGL_NONE, EGL_NONE });
         }
     }
 }

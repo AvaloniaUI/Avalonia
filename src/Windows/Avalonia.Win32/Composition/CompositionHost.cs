@@ -94,7 +94,7 @@ namespace Avalonia.Win32
                     ref iid,
                     out IntPtr texture, ref offset);
 
-                var surface = (_display as AngleWin32EglDisplay).WrapDirect3D11Texture(texture);
+                var surface = (_display as AngleWin32EglDisplay).WrapDirect3D11Texture(texture, offset.X, offset.Y);
 
                 return base.BeginDraw(surface, _info, () => { _surfaceInterop.EndDraw(); Marshal.Release(texture); surface.Dispose();  }, true);
             }
