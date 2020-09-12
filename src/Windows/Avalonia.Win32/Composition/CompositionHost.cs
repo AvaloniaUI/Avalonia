@@ -39,6 +39,7 @@ namespace Avalonia.Win32
             private readonly IEglWindowGlPlatformSurfaceInfo _info;
             private PixelSize _initialSize;
             private readonly ICompositionDrawingSurfaceInterop _surfaceInterop;
+            private static Guid s_Iid = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
 
             public CompositionRenderTarget(EglDisplay display, EglContext context, ICompositionDrawingSurfaceInterop interopSurface, IEglWindowGlPlatformSurfaceInfo info) : base(display, context)
             {
@@ -56,13 +57,11 @@ namespace Avalonia.Win32
             POINT lastSize;
             public override IGlPlatformSurfaceRenderingSession BeginDraw()
             {
-                var iid = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
-                var updateRect = new RECT { right = _info.Size.Width, bottom = _info.Size.Height };
                 var offset = new POINT();
            
                 _surfaceInterop.BeginDraw(
-                    ref updateRect,
-                    ref iid,
+                    IntPtr.Zero,
+                    ref s_Iid,
                     out IntPtr texture, ref offset);
 
                 var surface = (_display as AngleWin32EglDisplay).WrapDirect3D11Texture(texture, offset.X, offset.Y, _info.Size.Width, _info.Size.Height);

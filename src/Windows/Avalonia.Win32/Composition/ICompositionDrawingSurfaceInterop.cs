@@ -25,7 +25,7 @@ namespace Windows.UI.Composition.Interop
     [Guid("FD04E6E3-FE0C-4C3C-AB19-A07601A576EE")]
     public interface ICompositionDrawingSurfaceInterop
     {
-        void BeginDraw(ref RECT updateRect, ref Guid iid, out IntPtr updateObject, ref POINT point);
+        void BeginDraw(IntPtr updateRect, ref Guid iid, out IntPtr updateObject, ref POINT point);
 
         void EndDraw();
 
@@ -51,9 +51,9 @@ namespace ABI.Windows.UI.Composition.Interop
 
     {
         [Guid("FD04E6E3-FE0C-4C3C-AB19-A07601A576EE")]
-        public struct Vftbl
+        public unsafe struct Vftbl
         {
-            public delegate int _BeginDraw(IntPtr ThisPtr, ref RECT updateRect, ref Guid iid, out IntPtr updateObject, ref POINT updateOffset);
+            public delegate int _BeginDraw(IntPtr ThisPtr, IntPtr updateRect, ref Guid iid, out IntPtr updateObject, ref POINT updateOffset);
             public delegate int _EndDraw(IntPtr ThisPtr);
             public delegate int _Resize(IntPtr ThisPtr, POINT sizePixels);
             public delegate int _ResumeDraw(IntPtr ThisPtr);
@@ -87,7 +87,7 @@ namespace ABI.Windows.UI.Composition.Interop
                 Marshal.StructureToPtr(AbiToProjectionVftable, AbiToProjectionVftablePtr, false);
             }
 
-            private static int Do_Abi_BeginDraw(IntPtr ThisPtr, ref RECT updateRect, ref Guid iid, out IntPtr updateObject, ref POINT updateOffset)
+            private static int Do_Abi_BeginDraw(IntPtr ThisPtr, IntPtr updateRect, ref Guid iid, out IntPtr updateObject, ref POINT updateOffset)
             {
                 updateObject = IntPtr.Zero;
                 return 0;
@@ -118,9 +118,9 @@ namespace ABI.Windows.UI.Composition.Interop
             _obj = obj;
         }
 
-        public void BeginDraw(ref RECT updateRect, ref Guid iid, out IntPtr updateObject, ref POINT point)
+        public void BeginDraw(IntPtr updateRect, ref Guid iid, out IntPtr updateObject, ref POINT point)
         {
-            Marshal.ThrowExceptionForHR(_obj.Vftbl.BeginDraw(ThisPtr, ref updateRect, ref iid, out updateObject, ref point));
+            Marshal.ThrowExceptionForHR(_obj.Vftbl.BeginDraw(ThisPtr, updateRect, ref iid, out updateObject, ref point));
         }
 
         public void EndDraw()
