@@ -39,21 +39,9 @@ partial class Build : NukeBuild
 
     static Lazy<string> MsBuildExe = new Lazy<string>(() =>
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            return null;
-
-        var msBuildDirectory = VSWhere("-latest -nologo -property installationPath -format value -prerelease").FirstOrDefault().Text;
-
-        if (!string.IsNullOrWhiteSpace(msBuildDirectory))
-        {
-            string msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\Current\Bin\MSBuild.exe");
-            if (!System.IO.File.Exists(msBuildExe))
-                msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\15.0\Bin\MSBuild.exe");
-
-            return msBuildExe;
-        }
-
-        return null;
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? RootDirectory / ".tmp" / "dotnet-win" / "sdk" / "3.1.401" / "MSBuild.dll"
+            : null;
     }, false);
 
     BuildParameters Parameters { get; set; }
