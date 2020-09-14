@@ -45,6 +45,7 @@ namespace Avalonia.Win32
         private Thickness _extendedMargins;
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
+        private bool _isUsingComposition;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -110,6 +111,7 @@ namespace Avalonia.Win32
                     var cgl = new CompositionEglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
                     cgl.AttachToCompositionTree(_hwnd);
                     _gl = cgl;
+                    _isUsingComposition = true;
                 }
                 else
                 {
@@ -626,7 +628,7 @@ namespace Avalonia.Win32
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(
-                (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP, // TODO this is only when using Win UI Comp.
+                _isUsingComposition ? (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0,
                 atom,
                 null,
                 (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int) WindowStyles.WS_CLIPCHILDREN,
