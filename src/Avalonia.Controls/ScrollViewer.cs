@@ -201,6 +201,7 @@ namespace Avalonia.Controls
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
         private bool _isExpanded;
         private IDisposable _scrollBarExpandSubscription;
+        private PointerWheelScrollMode _pointerWheelScrollMode = PointerWheelScrollMode.SmallChange;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollViewer"/> class.
@@ -712,6 +713,45 @@ namespace Avalonia.Controls
                 _oldOffset = Offset;
                 _oldViewport = Viewport;
             }
+        }
+
+        /// <summary>
+        /// Defines the PointerWheelScrollMode property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollViewer, PointerWheelScrollMode> PointerWheelScrollModeProperty =
+            AvaloniaProperty.RegisterDirect<ScrollViewer, PointerWheelScrollMode>(
+                nameof(PointerWheelScrollMode),
+                o => o.PointerWheelScrollMode,
+                (o, v) => o.PointerWheelScrollMode = v);
+
+        /// <summary>
+        /// Gets or sets the pointer wheel scroll mode scrollbar value.
+        /// </summary>
+        public PointerWheelScrollMode PointerWheelScrollMode
+        {
+            get { return _pointerWheelScrollMode; }
+            set
+            {
+                if (_pointerWheelScrollMode != value)
+                {
+                    var old = _pointerWheelScrollMode;
+                    _pointerWheelScrollMode = value;
+                    RaisePropertyChanged(PointerWheelScrollModeProperty, old, value);
+                }
+            }
+        }
+
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+            base.OnPointerWheelChanged(e);
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
+            var changeSize = PointerWheelScrollMode switch
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
+            {
+                PointerWheelScrollMode.SmallChange => SmallChange,
+                PointerWheelScrollMode.LargeChange => LargeChange,                
+            };
+            Offset += new Vector(changeSize.Height * e.Delta.Y, changeSize.Width * e.Delta.X);
         }
     }
 }
