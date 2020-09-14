@@ -7,6 +7,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Angle;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
@@ -106,11 +107,15 @@ namespace Avalonia.Win32
 
             if (Win32GlManager.EglFeature != null)
             {
-                if (Win32Platform.WindowsVersion.Major >= 10)
+                if (Win32Platform.WindowsVersion.Major >= 10 &&
+                    Win32GlManager.EglFeature.Display is AngleWin32EglDisplay angleDisplay &&
+                    angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11)
                 {
                     var cgl = new CompositionEglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
                     cgl.AttachToCompositionTree(_hwnd);
+
                     _gl = cgl;
+
                     _isUsingComposition = true;
                 }
                 else
