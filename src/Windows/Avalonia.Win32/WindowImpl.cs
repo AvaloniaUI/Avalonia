@@ -101,7 +101,7 @@ namespace Avalonia.Win32
             };
             _rendererLock = new ManagedDeferredRendererLock();
 
-            _isUsingComposition = Win32Platform.WindowsVersion.Major >= 10 && Win32Platform.WindowsVersion.Build >= 14393 &&
+            _isUsingComposition = Win32Platform.WindowsVersion.Major >= 10 && Win32Platform.WindowsVersion.Build >= 16299 &&
                     Win32GlManager.EglFeature.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
