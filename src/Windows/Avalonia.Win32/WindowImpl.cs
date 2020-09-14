@@ -101,15 +101,16 @@ namespace Avalonia.Win32
             };
             _rendererLock = new ManagedDeferredRendererLock();
 
+            _isUsingComposition = Win32Platform.WindowsVersion.Major >= 10 && Win32Platform.WindowsVersion.Build >= 14393 &&
+                    Win32GlManager.EglFeature.Display is AngleWin32EglDisplay angleDisplay &&
+                    angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
 
             if (Win32GlManager.EglFeature != null)
             {
-                if (Win32Platform.WindowsVersion.Major >= 10 &&
-                    Win32GlManager.EglFeature.Display is AngleWin32EglDisplay angleDisplay &&
-                    angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11)
+                if (_isUsingComposition)
                 {
                     var cgl = new CompositionEglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
                     cgl.AttachToCompositionTree(_hwnd);
