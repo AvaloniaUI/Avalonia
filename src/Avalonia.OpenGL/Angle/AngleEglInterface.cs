@@ -24,7 +24,7 @@ namespace Avalonia.OpenGL.Angle
                     throw new OpenGlException("libegl.dll doesn't have eglGetPlatformDisplayEXT entry point");
                 }
 
-                return eglGetProcAddress;
+                return EGL_GetProcAddress;
             }
             
             throw new PlatformNotSupportedException();
