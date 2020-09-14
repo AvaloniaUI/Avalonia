@@ -282,7 +282,7 @@ namespace Avalonia.Controls.Presenters
             return new FormattedText
             {
                 Constraint = constraint,
-                Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
                 FontSize = FontSize,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
@@ -499,7 +499,7 @@ namespace Avalonia.Controls.Presenters
                 return new FormattedText
                 {
                     Text = "X",
-                    Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                    Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
                     FontSize = FontSize,
                     TextAlignment = TextAlignment,
                     Constraint = availableSize,
