@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interop;
@@ -8,71 +7,6 @@ using WinRT;
 
 namespace Avalonia.Win32
 {
-    public class CompositionEglGlPlatformSurface : EglGlPlatformSurfaceBase
-    {
-        private readonly EglDisplay _display;
-        private readonly EglContext _context;
-        private readonly IEglWindowGlPlatformSurfaceInfo _info;
-        private ICompositionDrawingSurfaceInterop _surfaceInterop;
-
-        public CompositionEglGlPlatformSurface(EglContext context, IEglWindowGlPlatformSurfaceInfo info) : base()
-        {
-            _display = context.Display;
-            _context = context;
-            _info = info;
-        }
-
-        public void AttachToCompositionTree(IntPtr hwnd)
-        {
-            _surfaceInterop = CompositionHost.Instance.InitialiseWindowCompositionTree(hwnd);
-        }
-
-        public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
-        {
-            return new CompositionRenderTarget(_display, _context, _surfaceInterop, _info);
-        }
-
-        class CompositionRenderTarget : EglPlatformSurfaceRenderTargetBase
-        {
-            private readonly EglDisplay _display;
-            private readonly EglContext _context;
-            private readonly IEglWindowGlPlatformSurfaceInfo _info;
-            private PixelSize _initialSize;
-            private readonly ICompositionDrawingSurfaceInterop _surfaceInterop;
-            private static Guid s_Iid = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
-
-            public CompositionRenderTarget(EglDisplay display, EglContext context, ICompositionDrawingSurfaceInterop interopSurface, IEglWindowGlPlatformSurfaceInfo info) : base(display, context)
-            {
-                _display = display;
-                _context = context;
-                _surfaceInterop = interopSurface;
-                _info = info;
-                _initialSize = info.Size;
-                lastSize = new POINT { X = _info.Size.Width, Y = _info.Size.Height };
-                _surfaceInterop.Resize(lastSize);
-            }
-
-            public override bool IsCorrupted => _initialSize != _info.Size;
-
-            POINT lastSize;
-            public override IGlPlatformSurfaceRenderingSession BeginDraw()
-            {
-                var offset = new POINT();
-           
-                _surfaceInterop.BeginDraw(
-                    IntPtr.Zero,
-                    ref s_Iid,
-                    out IntPtr texture, ref offset);
-
-                var surface = (_display as AngleWin32EglDisplay).WrapDirect3D11Texture(texture, offset.X, offset.Y, _info.Size.Width, _info.Size.Height);
-
-                return base.BeginDraw(surface, _info, () => { _surfaceInterop.EndDraw(); Marshal.Release(texture); surface.Dispose();  }, true);
-            }
-        }
-    }
-
-
-
     class CompositionHost
     {
         internal enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE
@@ -155,7 +89,7 @@ namespace Avalonia.Win32
             _graphicsDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
         }
 
-        public ICompositionDrawingSurfaceInterop InitialiseWindowCompositionTree(IntPtr hwnd)
+        public ICompositionDrawingSurfaceInterop InitialiseWindowCompositionTree(IntPtr hwnd, out Windows.UI.Composition.Visual surfaceVisual)
         {
             var target = CreateDesktopWindowTarget(hwnd);            
 
@@ -163,21 +97,22 @@ namespace Avalonia.Win32
                 Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
 
-            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();
+            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();          
 
             var brush = _compositor.CreateSurfaceBrush(surface);
-
             var visual = _compositor.CreateSpriteVisual();
-
-            visual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
+            
             visual.Brush = brush;
-            //_target.Root = visual;
-
+            visual.Offset = new System.Numerics.Vector3(0, 0, 0);            
             target.Root = CreateBlur();
 
             var visuals = target.Root.As<ContainerVisual>().Children;
 
             visuals.InsertAtTop(visual);
+
+            visual.CompositeMode = CompositionCompositeMode.SourceOver;
+
+            surfaceVisual = visual;
 
             return surfaceInterop;
         }
@@ -204,7 +139,7 @@ namespace Avalonia.Win32
         {
             var interop = _compositor.As<global::Windows.UI.Composition.Desktop.ICompositorDesktopInterop>();
 
-            interop.CreateDesktopWindowTarget(window, false, out var windowTarget);
+            interop.CreateDesktopWindowTarget(window, true, out var windowTarget);
             return Windows.UI.Composition.Desktop.DesktopWindowTarget.FromAbi(windowTarget);
         }
 
