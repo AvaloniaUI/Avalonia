@@ -104,17 +104,17 @@ namespace Avalonia.Win32
             _framebuffer = new FramebufferManager(_hwnd);
 
             if (Win32GlManager.EglFeature != null)
-            {                
-                _gl = new CompositionEglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
-            }
-
-            if (_gl is CompositionEglGlPlatformSurface cgl)
             {
-                cgl.AttachToCompositionTree(_hwnd);
-            }
-            else
-            {
-                CompositionHost.Instance.InitialiseWindowCompositionTree(_hwnd);
+                if (Win32Platform.WindowsVersion.Major >= 10)
+                {
+                    var cgl = new CompositionEglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+                    cgl.AttachToCompositionTree(_hwnd);
+                    _gl = cgl;
+                }
+                else
+                {
+                    _gl = new EglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+                }
             }
 
             Screen = new ScreenImpl();
