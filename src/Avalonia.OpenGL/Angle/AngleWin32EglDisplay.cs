@@ -78,6 +78,13 @@ namespace Avalonia.OpenGL.Angle
             return d3dDeviceHandle;
         }
 
+        public EglSurface WrapDirect3D11Texture(IntPtr handle)
+        {
+            if (PlatformApi != AngleOptions.PlatformApi.DirectX11)
+                throw new InvalidOperationException("Current platform API is " + PlatformApi);
+            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, new[] { EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE, EGL_TRUE, EGL_NONE });
+        }
+
         public EglSurface WrapDirect3D11Texture(IntPtr handle, int offsetX, int offsetY, int width, int height)
         {
             if (PlatformApi != AngleOptions.PlatformApi.DirectX11)
