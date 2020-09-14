@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -63,6 +65,22 @@ namespace Avalonia.Controls
             var window = new TWindow();
             window.Show();
             app.Run(window);
+        }
+
+        /// <summary>
+        /// Gets list of windows on desktop-style platforms.
+        /// </summary>
+        /// <param name="app">The application.</param>
+        /// <returns></returns>
+        public static IEnumerable<Window> GetWindows(this Application app)
+        {
+           if(app?.ApplicationLifetime is ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                foreach (var window in desktop.Windows)
+                {
+                    yield return window;
+                }
+            }
         }
     }
 }
