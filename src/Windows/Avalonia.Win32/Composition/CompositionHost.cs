@@ -48,41 +48,13 @@ namespace Avalonia.Win32
             Initialize();
         }
 
-        public void AddElement(CompositionTarget target, float size, float x, float y)
-        {
-            if (target.Root != null)
-            {
-                var visuals = target.Root.As<ContainerVisual>().Children;
-
-                var visual = _compositor.CreateSpriteVisual();
-
-                var element = _compositor.CreateSpriteVisual();
-                var rand = new Random();
-
-                element.Brush = _compositor.CreateColorBrush(new Windows.UI.Color { A = 255, R = (byte)(rand.NextDouble() * 255), G = (byte)(rand.NextDouble() * 255), B = (byte)(rand.NextDouble() * 255) });
-                element.Size = new System.Numerics.Vector2(size, size);
-                element.Offset = new System.Numerics.Vector3(x, y, 0.0f);
-
-                var animation = _compositor.CreateVector3KeyFrameAnimation();
-                var bottom = (float)600 - element.Size.Y;
-                animation.InsertKeyFrame(1, new System.Numerics.Vector3(element.Offset.X, bottom, 0));
-
-                animation.Duration = TimeSpan.FromSeconds(2);
-                animation.DelayTime = TimeSpan.FromSeconds(3);
-                element.StartAnimation("Offset", animation);
-                visuals.InsertAtTop(element);
-
-                visuals.InsertAtTop(visual);
-            }
-        }
-
         private void Initialize()
         {
             EnsureDispatcherQueue();
             if (_dispatcherQueueController != null)
-                _compositor = new Windows.UI.Composition.Compositor();
+                _compositor = new Compositor();
 
-            var interop = _compositor.As<Windows.UI.Composition.Interop.ICompositorInterop>();
+            var interop = _compositor.As<ICompositorInterop>();
 
             var display = Win32GlManager.EglFeature.Display as AngleWin32EglDisplay;
 
@@ -91,19 +63,19 @@ namespace Avalonia.Win32
 
         public ICompositionDrawingSurfaceInterop InitialiseWindowCompositionTree(IntPtr hwnd, out Windows.UI.Composition.Visual surfaceVisual)
         {
-            var target = CreateDesktopWindowTarget(hwnd);            
+            var target = CreateDesktopWindowTarget(hwnd);
 
             var surface = _graphicsDevice.CreateDrawingSurface(new Windows.Foundation.Size(0, 0),
                 Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
 
-            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();          
+            var surfaceInterop = surface.As<ICompositionDrawingSurfaceInterop>();
 
             var brush = _compositor.CreateSurfaceBrush(surface);
             var visual = _compositor.CreateSpriteVisual();
-            
+
             visual.Brush = brush;
-            visual.Offset = new System.Numerics.Vector3(0, 0, 0);            
+            visual.Offset = new System.Numerics.Vector3(0, 0, 0);
             target.Root = CreateBlur();
 
             var visuals = target.Root.As<ContainerVisual>().Children;
@@ -139,7 +111,7 @@ namespace Avalonia.Win32
         {
             var interop = _compositor.As<global::Windows.UI.Composition.Desktop.ICompositorDesktopInterop>();
 
-            interop.CreateDesktopWindowTarget(window, true, out var windowTarget);
+            interop.CreateDesktopWindowTarget(window, false, out var windowTarget);
             return Windows.UI.Composition.Desktop.DesktopWindowTarget.FromAbi(windowTarget);
         }
 
