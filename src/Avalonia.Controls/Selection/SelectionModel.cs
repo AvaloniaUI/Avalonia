@@ -692,6 +692,10 @@ namespace Avalonia.Controls.Selection
                     {
                         indexesChanged = true;
                         RaisePropertyChanged(nameof(SelectedIndex));
+                    }
+
+                    if (oldSelectedIndex != _selectedIndex || operation.IsSourceUpdate)
+                    {
                         RaisePropertyChanged(nameof(SelectedItem));
                     }
 
@@ -704,6 +708,10 @@ namespace Avalonia.Controls.Selection
                     if (indexesChanged)
                     {
                         RaisePropertyChanged(nameof(SelectedIndexes));
+                    }
+
+                    if (indexesChanged || operation.IsSourceUpdate)
+                    {
                         RaisePropertyChanged(nameof(SelectedItems));
                     }
                 }
