@@ -175,6 +175,33 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
 
             [Fact]
+            public void Initializing_Source_Raises_SelectedItems_PropertyChanged()
+            {
+                var target = CreateTarget(false);
+                var selectedItemRaised = 0;
+                var selectedItemsRaised = 0;
+
+                target.Select(1);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                    else if (e.PropertyName == nameof(target.SelectedItems))
+                    {
+                        ++selectedItemsRaised;
+                    }
+                };
+
+                target.Source = new[] { "foo", "bar", "baz" };
+
+                Assert.Equal(1, selectedItemRaised);
+                Assert.Equal(1, selectedItemsRaised);
+            }
+
+            [Fact]
             public void Changing_Source_To_Null_Doesnt_Clear_Selection()
             {
                 var target = CreateTarget();
@@ -194,7 +221,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
 
             [Fact]
-            public void Changing_Source_To_NonNUll_First_Clears_Old_Selection()
+            public void Changing_Source_To_NonNull_First_Clears_Old_Selection()
             {
                 var target = CreateTarget();
                 var raised = 0;
@@ -217,6 +244,33 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Null(target.SelectedItem);
                 Assert.Empty(target.SelectedItems);
                 Assert.Equal(1, raised);
+            }
+
+            [Fact]
+            public void Changing_Source_To_Null_Raises_SelectedItems_PropertyChanged()
+            {
+                var target = CreateTarget();
+                var selectedItemRaised = 0;
+                var selectedItemsRaised = 0;
+
+                target.Select(1);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                    else if (e.PropertyName == nameof(target.SelectedItems))
+                    {
+                        ++selectedItemsRaised;
+                    }
+                };
+
+                target.Source = null;
+
+                Assert.Equal(1, selectedItemRaised);
+                Assert.Equal(1, selectedItemsRaised);
             }
 
             [Fact]
