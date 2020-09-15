@@ -57,10 +57,15 @@ namespace Avalonia.Skia
             var imageInfo = MakeImageInfo(width, height, format);
             if (skiaGpu != null)
             {
-                s_lastControlledSurface?.Dispose();
-
-                s_lastControlledSurface = 
-                 skiaGpu.CreateControlledSurface(new PixelSize(width, height));
+                if (s_lastControlledSurface == null)
+                {
+                    s_lastControlledSurface =
+                        skiaGpu.CreateControlledSurface(new PixelSize(width, height));
+                }
+                else
+                {
+                    s_lastControlledSurface.Resize(new PixelSize(width, height));
+                }
 
                 return s_lastControlledSurface.Surface;
             }

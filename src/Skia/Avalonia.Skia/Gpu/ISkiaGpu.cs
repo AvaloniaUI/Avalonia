@@ -8,6 +8,8 @@ namespace Avalonia.Skia
     public interface IControlledSurface : IDisposable
     {
         public SKSurface Surface { get; }
+
+        public void Resize(PixelSize size);
     }
 
     /// <summary>

@@ -54,13 +54,17 @@ namespace Avalonia.Skia
 
         class GlSkiaGpuControlledSurface : IControlledSurface
         {
+            private GRContext _context;
             private SKSurface _surface;
             private GRBackendTexture _texture;
             private IDisposable _disposable;
             private int _textureId;
+            private IWindowingPlatformGlFeature _glFeature;
 
             public GlSkiaGpuControlledSurface(GRContext context, IWindowingPlatformGlFeature glFeature, PixelSize size)
             {
+                _context = context;
+                _glFeature = glFeature;
                 var gl = glFeature.MainContext.GlInterface;
 
                 var oneArr = new int[1];
@@ -97,6 +101,29 @@ namespace Avalonia.Skia
                 _surface.Dispose();
                 _texture.Dispose();
                 _disposable.Dispose();
+            }
+
+            public void Resize(PixelSize size)
+            {
+                _surface.Dispose();
+                _texture.Dispose();
+
+                var gl = _glFeature.MainContext.GlInterface;
+
+                gl.BindTexture(GL_TEXTURE_2D, _textureId);
+                gl.TexImage2D(GL_TEXTURE_2D, 0,
+                    _glFeature.MainContext.Version.Type == GlProfileType.OpenGLES ? GL_RGBA : GL_RGBA8,
+                    size.Width, size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+                gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+                _texture = new GRBackendTexture(size.Width, size.Height, false,
+                    new GRGlTextureInfo(
+                        GL_TEXTURE_2D, (uint)_textureId,
+                        (uint)GL_RGBA8));
+
+                _surface = SKSurface.Create(_context, _texture, GRSurfaceOrigin.TopLeft,
+                    SKColorType.Rgba8888);
             }
         }
     }
