@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reactive.Disposables;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
@@ -51,7 +52,14 @@ namespace Avalonia.Skia
         {
             var imageInfo = MakeImageInfo(width, height, format);
             if (gpu != null)
-                return SKSurface.Create(gpu, false, imageInfo);
+            {
+                if (!(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() is ISkiaGpu
+                skiaGpu))
+                    throw new PlatformNotSupportedException("Rendering platform does not support OpenGL integration");
+
+                return skiaGpu.CreateControlledSurface(new PixelSize(width, height)).Surface;
+            }
+
             return SKSurface.Create(imageInfo);
         }
 
