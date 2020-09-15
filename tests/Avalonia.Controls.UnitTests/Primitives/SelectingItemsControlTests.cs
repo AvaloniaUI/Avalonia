@@ -1619,6 +1619,27 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "bar" }, target.SelectedItems);
         }
 
+        [Fact]
+        public void Preserves_SelectedItem_When_Items_Changed()
+        {
+            // Issue #4048
+            var target = new SelectingItemsControl
+            {
+                Items = new[] { "foo", "bar", "baz"},
+                SelectedItem = "bar",
+            };
+
+            Prepare(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal("bar", target.SelectedItem);
+
+            target.Items = new[] { "qux", "foo", "bar" };
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal("bar", target.SelectedItem);
+        }
+
         private static void Prepare(SelectingItemsControl target)
         {
             var root = new TestRoot

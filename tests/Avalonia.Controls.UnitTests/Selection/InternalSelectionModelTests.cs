@@ -205,6 +205,17 @@ namespace Avalonia.Controls.UnitTests.Selection
             Assert.Equal(2, target.SelectedIndex);
         }
 
+        [Fact]
+        public void Preserves_Selection_On_Source_Changed()
+        {
+            var target = CreateTarget();
+
+            target.SelectedIndex = 1;
+            target.Source = new[] { "baz", "foo", "bar" };
+
+            Assert.Equal(2, target.SelectedIndex);
+        }
+
         private static InternalSelectionModel CreateTarget(
             bool singleSelect = false,
             IList source = null,
