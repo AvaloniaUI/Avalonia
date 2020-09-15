@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -60,6 +61,14 @@ namespace Avalonia.Controls.Selection
 
         private protected override void SetSource(IEnumerable? value)
         {
+            object?[]? oldSelection = null;
+
+            if (Source is object && value is object)
+            {
+                oldSelection = new object?[SelectedItems.Count];
+                SelectedItems.CopyTo(oldSelection, 0);
+            }
+
             try
             {
                 _ignoreSelectedItemsChanges = true;
@@ -70,7 +79,18 @@ namespace Avalonia.Controls.Selection
                 _ignoreSelectedItemsChanges = false;
             }
 
-            SyncToSelectedItems();
+            if (oldSelection is null)
+            {
+                SyncToSelectedItems();
+            }
+            else
+            {
+                foreach (var i in oldSelection)
+                {
+                    var index = ItemsView!.IndexOf(i);
+                    Select(index);
+                }
+            }
         }
 
         private void SyncToSelectedItems()
