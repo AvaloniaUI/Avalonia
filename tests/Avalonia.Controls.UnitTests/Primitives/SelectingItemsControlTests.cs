@@ -1640,6 +1640,62 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("bar", target.SelectedItem);
         }
 
+        [Fact]
+        public void Setting_SelectedItems_Raises_PropertyChanged()
+        {
+            var target = new TestSelector
+            {
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var raised = 0;
+            var newValue = new AvaloniaList<object>();
+
+            Prepare(target);
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == ListBox.SelectedItemsProperty)
+                {
+                    Assert.Null(e.OldValue);
+                    Assert.Same(newValue, e.NewValue);
+                    ++raised;
+                }
+            };
+
+            target.SelectedItems = newValue;
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Setting_Selection_Raises_SelectedItems_PropertyChanged()
+        {
+            var target = new TestSelector
+            {
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var raised = 0;
+            var oldValue = target.SelectedItems;
+
+            Prepare(target);
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == ListBox.SelectedItemsProperty)
+                {
+                    Assert.Same(oldValue, e.OldValue);
+                    Assert.Null(e.NewValue);
+                    ++raised;
+                }
+            };
+
+            target.Selection = new SelectionModel<int>();
+
+            Assert.Equal(1, raised);
+        }
+
         private static void Prepare(SelectingItemsControl target)
         {
             var root = new TestRoot
@@ -1748,6 +1804,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 get => base.Selection;
                 set => base.Selection = value;
+            }
+
+            public new IList SelectedItems
+            {
+                get => base.SelectedItems;
+                set => base.SelectedItems = value;
             }
 
             public new SelectionMode SelectionMode
