@@ -41,6 +41,8 @@ namespace Avalonia.Skia
             }
         }
 
+
+        private static IControlledSurface s_lastControlledSurface;
         /// <summary>
         /// Create backing Skia surface.
         /// </summary>
@@ -51,10 +53,16 @@ namespace Avalonia.Skia
         /// <returns></returns>
         private static SKSurface CreateSurface(ISkiaGpu skiaGpu, int width, int height, PixelFormat? format)
         {
+
             var imageInfo = MakeImageInfo(width, height, format);
             if (skiaGpu != null)
             {
-                return skiaGpu.CreateControlledSurface(new PixelSize(width, height)).Surface;
+                s_lastControlledSurface?.Dispose();
+
+                s_lastControlledSurface = 
+                 skiaGpu.CreateControlledSurface(new PixelSize(width, height));
+
+                return s_lastControlledSurface.Surface;
             }
 
             return SKSurface.Create(imageInfo);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using SkiaSharp;
@@ -55,6 +56,8 @@ namespace Avalonia.Skia
         {
             private SKSurface _surface;
             private GRBackendTexture _texture;
+            private IDisposable _disposable;
+            private int _textureId;
 
             public GlSkiaGpuControlledSurface(GRContext context, IWindowingPlatformGlFeature glFeature, PixelSize size)
             {
@@ -63,9 +66,9 @@ namespace Avalonia.Skia
                 var oneArr = new int[1];
                 gl.GenTextures(1, oneArr);
 
-                var backendTexture = oneArr[0];
+                _textureId = oneArr[0];
 
-                gl.BindTexture(GL_TEXTURE_2D, backendTexture);
+                gl.BindTexture(GL_TEXTURE_2D, _textureId);
                 gl.TexImage2D(GL_TEXTURE_2D, 0,
                     glFeature.MainContext.Version.Type == GlProfileType.OpenGLES ? GL_RGBA : GL_RGBA8,
                     size.Width, size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
@@ -74,11 +77,16 @@ namespace Avalonia.Skia
 
                 _texture = new GRBackendTexture(size.Width, size.Height, false,
                     new GRGlTextureInfo(
-                        GL_TEXTURE_2D, (uint)backendTexture,
+                        GL_TEXTURE_2D, (uint)_textureId,
                         (uint)GL_RGBA8));
 
                 _surface = SKSurface.Create(context, _texture, GRSurfaceOrigin.TopLeft,
                     SKColorType.Rgba8888);
+
+                _disposable = Disposable.Create(() =>
+                {
+                    gl.DeleteTextures(1, new[] { _textureId });
+                });
 
             }
 
@@ -88,6 +96,7 @@ namespace Avalonia.Skia
             {
                 _surface.Dispose();
                 _texture.Dispose();
+                _disposable.Dispose();
             }
         }
     }
