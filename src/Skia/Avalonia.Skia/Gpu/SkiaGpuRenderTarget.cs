@@ -9,9 +9,11 @@ namespace Avalonia.Skia
     internal class SkiaGpuRenderTarget : IRenderTargetWithCorruptionInfo
     {
         private readonly ISkiaGpuRenderTarget _renderTarget;
+        ISkiaGpu _gpu;
 
-        public SkiaGpuRenderTarget(ISkiaGpuRenderTarget renderTarget)
+        public SkiaGpuRenderTarget(ISkiaGpu gpu, ISkiaGpuRenderTarget renderTarget)
         {
+            _gpu = gpu;
             _renderTarget = renderTarget;
         }
 
@@ -33,7 +35,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = true
             };
 
-            return new DrawingContextImpl(nfo, session);
+            return new DrawingContextImpl(_gpu, nfo, session);
         }
 
         public bool IsCorrupted => _renderTarget.IsCorrupted;

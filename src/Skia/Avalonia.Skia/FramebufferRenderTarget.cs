@@ -58,7 +58,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = true
             };
 
-            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
+            return new DrawingContextImpl(null, createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
 
         /// <summary>

@@ -35,6 +35,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
         private static SKShader s_acrylicNoiseShader;
+        private ISkiaGpu _gpu;
 
         /// <summary>
         /// Context create info.
@@ -72,8 +73,9 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="createInfo">Create info.</param>
         /// <param name="disposables">Array of elements to dispose after drawing has finished.</param>
-        public DrawingContextImpl(CreateInfo createInfo, params IDisposable[] disposables)
+        public DrawingContextImpl(ISkiaGpu gpu, CreateInfo createInfo, params IDisposable[] disposables)
         {
+            _gpu = gpu;
             _dpi = createInfo.Dpi;
             _visualBrushRenderer = createInfo.VisualBrushRenderer;
             _disposables = disposables;
@@ -917,6 +919,7 @@ namespace Avalonia.Skia
         /// <returns></returns>
         private SurfaceRenderTarget CreateRenderTarget(Size size, PixelFormat? format = null)
         {
+            
             var pixelSize = PixelSize.FromSizeWithDpi(size, _dpi);
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
@@ -928,7 +931,7 @@ namespace Avalonia.Skia
                 GrContext = _grContext
             };
 
-            return new SurfaceRenderTarget(createInfo);
+            return new SurfaceRenderTarget(_gpu, createInfo);
         }        
 
         /// <summary>

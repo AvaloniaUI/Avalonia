@@ -127,7 +127,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = false
             };
 
-            return new SurfaceRenderTarget(createInfo);
+            return new SurfaceRenderTarget(_skiaGpu, createInfo);
         }
 
         /// <inheritdoc />
@@ -138,7 +138,7 @@ namespace Avalonia.Skia
             var gpuRenderTarget = _skiaGpu?.TryCreateRenderTarget(surfaces);
             if (gpuRenderTarget != null)
             {
-                return new SkiaGpuRenderTarget(gpuRenderTarget);
+                return new SkiaGpuRenderTarget(_skiaGpu, gpuRenderTarget);
             }
 
             foreach (var surface in surfaces)

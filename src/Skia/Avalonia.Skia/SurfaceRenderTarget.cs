@@ -18,19 +18,20 @@ namespace Avalonia.Skia
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
         private readonly GRContext _grContext;
-        
+        private ISkiaGpu _gpu;
         /// <summary>
         /// Create new surface render target.
         /// </summary>
         /// <param name="createInfo">Create info.</param>
-        public SurfaceRenderTarget(CreateInfo createInfo)
+        public SurfaceRenderTarget(ISkiaGpu gpu, CreateInfo createInfo)
         {
+            _gpu = gpu;
             PixelSize = new PixelSize(createInfo.Width, createInfo.Height);
             Dpi = createInfo.Dpi;
 
             _disableLcdRendering = createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
-            _surface = CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height, createInfo.Format);
+            _surface = CreateSurface(gpu, PixelSize.Width, PixelSize.Height, createInfo.Format);
 
             _canvas = _surface?.Canvas;
 
@@ -48,15 +49,11 @@ namespace Avalonia.Skia
         /// <param name="height">Height.</param>
         /// <param name="format">Format.</param>
         /// <returns></returns>
-        private static SKSurface CreateSurface(GRContext gpu, int width, int height, PixelFormat? format)
+        private static SKSurface CreateSurface(ISkiaGpu skiaGpu, int width, int height, PixelFormat? format)
         {
             var imageInfo = MakeImageInfo(width, height, format);
-            if (gpu != null)
+            if (skiaGpu != null)
             {
-                if (!(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() is ISkiaGpu
-                skiaGpu))
-                    throw new PlatformNotSupportedException("Rendering platform does not support OpenGL integration");
-
                 return skiaGpu.CreateControlledSurface(new PixelSize(width, height)).Surface;
             }
 
@@ -85,7 +82,7 @@ namespace Avalonia.Skia
                 GrContext = _grContext
             };
 
-            return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
+            return new DrawingContextImpl(_gpu, createInfo, Disposable.Create(() => Version++));
         }
 
         /// <inheritdoc />
