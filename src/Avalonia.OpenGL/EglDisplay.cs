@@ -68,13 +68,37 @@ namespace Avalonia.OpenGL
                     Attributes = new[]
                     {
                         EGL_CONTEXT_MAJOR_VERSION, 3,
+                        EGL_CONTEXT_MINOR_VERSION, 1,
+                        EGL_NONE
+                    },
+                    Api = EGL_OPENGL_ES_API,
+                    RenderableTypeBit = EGL_OPENGL_ES3_BIT,
+                    Version = new GlVersion(GlProfileType.OpenGLES, 3, 1)
+                },
+                new
+                {
+                    Attributes = new[]
+                    {
+                        EGL_CONTEXT_MAJOR_VERSION, 3,
                         EGL_CONTEXT_MINOR_VERSION, 0,
                         EGL_NONE
                     },
                     Api = EGL_OPENGL_ES_API,
                     RenderableTypeBit = EGL_OPENGL_ES3_BIT,
                     Version = new GlVersion(GlProfileType.OpenGLES, 3, 0)
-                }
+                },
+                new
+                {
+                    Attributes = new[]
+                    {
+                        EGL_CONTEXT_MAJOR_VERSION, 2,
+                        EGL_CONTEXT_MINOR_VERSION, 0,
+                        EGL_NONE
+                    },
+                    Api = EGL_OPENGL_ES_API,
+                    RenderableTypeBit = EGL_OPENGL_ES2_BIT,
+                    Version = new GlVersion(GlProfileType.OpenGLES, 2, 0)
+                },
             })
             {
                 if (!_egl.BindApi(cfg.Api))
