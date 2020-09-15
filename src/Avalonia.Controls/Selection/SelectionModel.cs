@@ -20,8 +20,7 @@ namespace Avalonia.Controls.Selection
         private SelectedItems<T>? _selectedItems;
         private SelectedItems<T>.Untyped? _selectedItemsUntyped;
         private EventHandler<SelectionModelSelectionChangedEventArgs>? _untypedSelectionChanged;
-        [AllowNull] private T _initSelectedItem = default;
-        private bool _hasInitSelectedItem;
+        private IList? _initSelectedItems;
 
         public SelectionModel()
         {
@@ -82,7 +81,19 @@ namespace Avalonia.Controls.Selection
         [MaybeNull, AllowNull]
         public T SelectedItem
         {
-            get => ItemsView is object ? GetItemAt(_selectedIndex) : _initSelectedItem;
+            get
+            {
+                if (ItemsView is object)
+                {
+                    return GetItemAt(_selectedIndex);
+                }
+                else if (_initSelectedItems is object && _initSelectedItems.Count > 0)
+                {
+                    return (T)_initSelectedItems[0];
+                }
+
+                return default;
+            }
             set
             {
                 if (ItemsView is object)
@@ -92,8 +103,9 @@ namespace Avalonia.Controls.Selection
                 else
                 {
                     Clear();
-                    _initSelectedItem = value;
-                    _hasInitSelectedItem = true;
+#pragma warning disable CS8601
+                    SetInitSelectedItems(new T[] { value });
+#pragma warning restore CS8601
                 }
             }
         }
@@ -102,9 +114,10 @@ namespace Avalonia.Controls.Selection
         {
             get
             {
-                if (ItemsView is null && _hasInitSelectedItem)
+                if (ItemsView is null && _initSelectedItems is object)
                 {
-                    return new[] { _initSelectedItem };
+                    return _initSelectedItems is IReadOnlyList<T> i ?
+                        i : _initSelectedItems.Cast<T>().ToList();
                 }
 
                 return _selectedItems ??= new SelectedItems<T>(this);
@@ -258,8 +271,7 @@ namespace Avalonia.Controls.Selection
                 o.SelectedIndex = -1;
             }
 
-            _initSelectedItem = default;
-            _hasInitSelectedItem = false;
+            _initSelectedItems = null;
         }
 
         public void SelectAll() => SelectRange(0, int.MaxValue);
@@ -270,7 +282,7 @@ namespace Avalonia.Controls.Selection
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void SetSource(IEnumerable? value)
+        private protected virtual void SetSource(IEnumerable? value)
         {
             if (base.Source != value)
             {
@@ -292,11 +304,14 @@ namespace Avalonia.Controls.Selection
                 {
                     update.Operation.IsSourceUpdate = true;
 
-                    if (_hasInitSelectedItem)
+                    if (_initSelectedItems is object && ItemsView is object)
                     {
-                        SelectedItem = _initSelectedItem;
-                        _initSelectedItem = default;
-                        _hasInitSelectedItem = false;
+                        foreach (T i in _initSelectedItems)
+                        {
+                            Select(ItemsView.IndexOf(i));
+                        }
+
+                        _initSelectedItems = null;
                     }
                     else
                     {
@@ -466,6 +481,16 @@ namespace Avalonia.Controls.Selection
             return true;
         }
 
+        private protected void SetInitSelectedItems(IList items)
+        {
+            if (Source is object)
+            {
+                throw new InvalidOperationException("Cannot set init selected items when Source is set.");
+            }
+
+            _initSelectedItems = items;
+        }
+
         protected override void OnSourceCollectionChangeFinished()
         {
             if (_operation is object)
@@ -539,8 +564,7 @@ namespace Avalonia.Controls.Selection
                 o.SelectedIndex = o.AnchorIndex = start;
             }
 
-            _initSelectedItem = default;
-            _hasInitSelectedItem = false;
+            _initSelectedItems = null;
         }
 
         [return: MaybeNull]
