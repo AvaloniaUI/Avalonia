@@ -38,9 +38,11 @@ namespace ControlCatalog.ViewModels
 
             RemoveItemCommand = ReactiveCommand.Create(() =>
             {
-                while (Selection.Count > 0)
+                var items = Selection.SelectedItems.ToList();
+
+                foreach (var item in items)
                 {
-                    Items.Remove(Selection.SelectedItems.First());
+                    Items.Remove(item);
                 }
             });
 
