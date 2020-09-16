@@ -226,6 +226,52 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
+    /// Represents the selector used by the
+    /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control to
+    /// determine how the specified text should be modified with an item.
+    /// </summary>
+    /// <returns>
+    /// Modified text that will be used by the
+    /// <see cref="T:Avalonia.Controls.AutoCompleteBox" />.
+    /// </returns>
+    /// <param name="search">The string used as the basis for filtering.</param>
+    /// <param name="item">
+    /// The selected item that should be combined with the
+    /// <paramref name="search" /> parameter.
+    /// </param>
+    /// <typeparam name="T">
+    /// The type used for filtering the
+    /// <see cref="T:Avalonia.Controls.AutoCompleteBox" />.
+    /// At the moment this type known only as a string.
+    /// </typeparam>
+    public delegate string AutoCompleteSelector<T>(string search, T item);
+
+    /// <summary>
+    /// Specifies how the selected autocomplete result should be treated.
+    /// </summary>
+    public enum AutoCompleteMode
+    {
+        /// <summary>
+        /// Specifies that the text will be replaced
+        /// with the selected autocomplete result.
+        /// </summary>
+        Replace = 0,
+
+        /// <summary>
+        /// Specifies that the selected autocomplete result
+        /// will be appended to the text.
+        /// </summary>
+        Append = 1,
+
+        /// <summary>
+        /// Specifies that a custom selector is used. This mode is used when
+        /// the <see cref="P:Avalonia.Controls.AutoCompleteBox.TextSelector"/>
+        /// property is set.
+        /// </summary>
+        Custom = 2
+    }
+
+    /// <summary>
     /// Represents a control that provides a text box for user input and a
     /// drop-down that contains possible matches based on the input in the text
     /// box.
@@ -361,6 +407,8 @@ namespace Avalonia.Controls
 
         private AutoCompleteFilterPredicate<object> _itemFilter;
         private AutoCompleteFilterPredicate<string> _textFilter = AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith);
+
+        private AutoCompleteSelector<string> _textSelector = AutoCompleteSelection.GetSelector(AutoCompleteMode.Replace);
 
         public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
             RoutedEvent.Register<SelectionChangedEventArgs>(nameof(SelectionChanged), RoutingStrategies.Bubble, typeof(AutoCompleteBox));
@@ -500,6 +548,17 @@ namespace Avalonia.Controls
                 validate: IsValidFilterMode);
 
         /// <summary>
+        /// Gets the identifier for the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.AutoCompleteMode" />
+        /// dependency property.
+        /// </summary>
+        public static readonly StyledProperty<AutoCompleteMode> AutoCompleteModeProperty =
+            AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteMode>(
+                nameof(AutoCompleteMode),
+                defaultValue: AutoCompleteMode.Replace,
+                validate: IsValidAutoCompleteMode);
+
+        /// <summary>
         /// Identifies the
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemFilter" />
         /// dependency property.
@@ -527,6 +586,21 @@ namespace Avalonia.Controls
                 o => o.TextFilter,
                 (o, v) => o.TextFilter = v,
                 unsetValue: AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith));
+
+        /// <summary>
+        /// Identifies the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextSelector" />
+        /// dependency property.
+        /// </summary>
+        /// <value>The identifier for the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextSelector" />
+        /// dependency property.</value>
+        public static readonly DirectProperty<AutoCompleteBox, AutoCompleteSelector<string>> TextSelectorProperty =
+            AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteSelector<string>>(
+                nameof(TextSelector),
+                o => o.TextSelector,
+                (o, v) => o.TextSelector = v,
+                unsetValue: AutoCompleteSelection.GetSelector(AutoCompleteMode.Replace));
 
         /// <summary>
         /// Identifies the
@@ -572,6 +646,19 @@ namespace Avalonia.Controls
                 case AutoCompleteFilterMode.EqualsOrdinal:
                 case AutoCompleteFilterMode.EqualsOrdinalCaseSensitive:
                 case AutoCompleteFilterMode.Custom:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsValidAutoCompleteMode(AutoCompleteMode mode)
+        {
+            switch (mode)
+            {
+                case AutoCompleteMode.Replace:
+                case AutoCompleteMode.Append:
+                case AutoCompleteMode.Custom:
                     return true;
                 default:
                     return false;
@@ -729,6 +816,19 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// AutoCompleteModeProperty property changed handler.
+        /// </summary>
+        /// <param name="e">Event arguments.</param>
+        private void OnAutoCompleteModePropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            AutoCompleteMode mode = (AutoCompleteMode)e.NewValue;
+
+            // Sets the text selector for the new value
+            if (mode != AutoCompleteMode.Custom)
+                TextSelector = AutoCompleteSelection.GetSelector(mode);
+        }
+
+        /// <summary>
         /// ItemFilterProperty property changed handler.
         /// </summary>
         /// <param name="e">Event arguments.</param>
@@ -745,6 +845,25 @@ namespace Avalonia.Controls
             {
                 FilterMode = AutoCompleteFilterMode.Custom;
                 TextFilter = null;
+            }
+        }
+
+        /// <summary>
+        /// TextSelectorProperty property changed handler.
+        /// </summary>
+        /// <param name="e">Event arguments.</param>
+        private void OnTextSelectorPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            AutoCompleteSelector<string> value = e.NewValue as AutoCompleteSelector<string>;
+
+            // If null, revert to the "Replace" predicate
+            if (value == null)
+            {
+                AutoCompleteMode = AutoCompleteMode.Replace;
+            }
+            else if (value.Method.DeclaringType != typeof(AutoCompleteSelection))
+            {
+                AutoCompleteMode = AutoCompleteMode.Custom;
             }
         }
 
@@ -793,6 +912,8 @@ namespace Avalonia.Controls
             SearchTextProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnSearchTextPropertyChanged(e));
             FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnFilterModePropertyChanged(e));
             ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemFilterPropertyChanged(e));
+            AutoCompleteModeProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnAutoCompleteModePropertyChanged(e));
+            TextSelectorProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnTextSelectorPropertyChanged(e));
             ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsPropertyChanged(e));
             IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnControlIsEnabledChanged(e));
         }
@@ -1015,6 +1136,31 @@ namespace Avalonia.Controls
             set { SetValue(FilterModeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets how the text in the text box will be modified
+        /// with the selected autocomplete item.
+        /// </summary>
+        /// <value>
+        /// One of the <see cref="T:Avalonia.Controls.AutoCompleteMode" />
+        /// values. The default is
+        /// <see cref="F:Avalonia.Controls.AutoCompleteMode.Replace" />.</value>
+        /// <exception cref="T:System.ArgumentException">
+        /// The specified value is not a valid
+        /// <see cref="T:Avalonia.Controls.AutoCompleteMode" />.
+        /// </exception>
+        /// <remarks>
+        /// Use the AutoCompleteMode property to specify the way the text will
+        /// be modified with the selected autocomplete item. For example, text
+        /// can be modified in a predefined or custom way. The autocomplete
+        /// mode is automatically set to Custom if you set the TextSelector
+        /// property.
+        /// </remarks>
+        public AutoCompleteMode AutoCompleteMode
+        {
+            get { return GetValue(AutoCompleteModeProperty); }
+            set { SetValue(AutoCompleteModeProperty, value); }
+        }
+
         public string Watermark
         {
             get { return GetValue(WatermarkProperty); }
@@ -1059,6 +1205,26 @@ namespace Avalonia.Controls
         {
             get { return _textFilter; }
             set { SetAndRaise(TextFilterProperty, ref _textFilter, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the custom method that combines the user-entered
+        /// text to and one of the items specified by the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />.
+        /// </summary>
+        /// <value>
+        /// The custom method that combines the user-entered
+        /// text to and one of the items specified by the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />.
+        /// </value>
+        /// <remarks>
+        /// The AutoCompleteMode is automatically set to Custom if you set
+        /// the TextSelector property.
+        /// </remarks>
+        public AutoCompleteSelector<string> TextSelector
+        {
+            get { return _textSelector; }
+            set { SetAndRaise(TextSelectorProperty, ref _textSelector, value); }
         }
 
         public Func<string, CancellationToken, Task<IEnumerable<object>>> AsyncPopulator
@@ -2331,7 +2497,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                text = FormatValue(newItem, true);
+                text = TextSelector(SearchText, FormatValue(newItem, true));
             }
 
             // Update the Text property and the TextBox values
@@ -2587,6 +2753,60 @@ namespace Avalonia.Controls
             public static bool EqualsOrdinalCaseSensitive(string text, string value)
             {
                 return value.Equals(text, StringComparison.Ordinal);
+            }
+        }
+
+        /// <summary>
+        /// A predefined set of selector functions for the known, built-in
+        /// AutoCompleteMode enumeration values.
+        /// </summary>
+        private static class AutoCompleteSelection
+        {
+            /// <summary>
+            /// Index function that retrieves the selector for the provided
+            /// AutoCompleteMode.
+            /// </summary>
+            /// <param name="completeMode">The built-in autocomplete mode.</param>
+            /// <returns>Returns the string-based selector function.</returns>
+            public static AutoCompleteSelector<string> GetSelector(AutoCompleteMode completeMode)
+            {
+                switch (completeMode)
+                {
+                    case AutoCompleteMode.Replace:
+                        return Replace;
+                    case AutoCompleteMode.Append:
+                        return Append;
+                    case AutoCompleteMode.Custom:
+                    default:
+                        return null;
+                }
+            }
+
+            /// <summary>
+            /// Implements AutoCompleteMode.Replace.
+            /// </summary>
+            /// <param name="text">The AutoCompleteBox prefix text.</param>
+            /// <param name="value">The item's string value.</param>
+            /// <returns>
+            /// Return the <paramref name="value"/> and ignores the
+            /// <paramref name="text"/>.
+            /// </returns>
+            private static string Replace(string text, string value)
+            {
+                return value ?? String.Empty;
+            }
+
+            /// <summary>
+            /// Implements AutoCompleteMode.Append.
+            /// </summary>
+            /// <param name="text">The AutoCompleteBox prefix text.</param>
+            /// <param name="value">The item's string value.</param>
+            /// <returns>
+            /// Returns the concatenated string.
+            /// </returns>
+            private static string Append(string text, string value)
+            {
+                return text + value;
             }
         }
 
