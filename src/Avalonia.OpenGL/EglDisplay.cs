@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform.Interop;
 using static Avalonia.OpenGL.EglConsts;
@@ -61,20 +62,43 @@ namespace Avalonia.OpenGL
             if (!_egl.Initialize(_display, out var major, out var minor))
                 throw OpenGlException.GetFormattedException("eglInitialize", _egl);
 
-            foreach (var cfg in new[]
+            var glProfiles = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
+                                    ?? new[]
+                                    {
+                                        new GlVersion(GlProfileType.OpenGLES, 3, 0),
+                                        new GlVersion(GlProfileType.OpenGLES, 2, 0)
+                                    };
+
+            var cfgs = glProfiles.Select(x =>
             {
-                new
+                var typeBit = EGL_OPENGL_ES3_BIT;
+
+                switch (x.Major)
+                {
+                    case 2:
+                        typeBit = EGL_OPENGL_ES2_BIT;
+                        break;
+
+                    case 1:
+                        typeBit = EGL_OPENGL_ES_BIT;
+                        break;
+                }
+
+                return new
                 {
                     Attributes = new[]
                     {
-                        EGL_CONTEXT_CLIENT_VERSION, 2,
+                        EGL_CONTEXT_MAJOR_VERSION, x.Major,
+                        EGL_CONTEXT_MINOR_VERSION, x.Minor,
                         EGL_NONE
                     },
                     Api = EGL_OPENGL_ES_API,
-                    RenderableTypeBit = EGL_OPENGL_ES2_BIT,
-                    Version = new GlVersion(GlProfileType.OpenGLES, 2, 0)
-                }
-            })
+                    RenderableTypeBit = typeBit,
+                    Version = x
+                };
+            });
+
+            foreach (var cfg in cfgs)
             {
                 if (!_egl.BindApi(cfg.Api))
                     continue;
