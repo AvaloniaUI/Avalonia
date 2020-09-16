@@ -162,8 +162,11 @@ namespace Avalonia.X11
 
             var surfaces = new List<object>
             {
-                new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
-                   depth, () => RenderScaling)
+                _x11.ShmManager != null ?
+                    (object)new XShmSwapChain(_x11.ShmManager, _renderHandle, visualInfo ?? _x11.TransparentVisualInfo,
+                        2, () => RenderScaling) :
+                    new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle,
+                        depth, () => RenderScaling)
             };
             
             if (egl != null)

@@ -540,6 +540,20 @@ namespace Avalonia.X11 {
         }
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct XShmCompletionEvent
+    {
+        int type; /* of event */
+        IntPtr serial; /* # of last request processed */
+        bool send_event; /* true if came from a SendEvent request */
+        IntPtr display; /* Display the event was read from */
+        IntPtr drawable; /* drawable of request */
+        int major_code; /* ShmReqCode */
+        int minor_code; /* X_ShmPutImage */
+        public IntPtr shmseg; /* the ShmSeg used in the request */
+        public IntPtr offset; /* the offset into ShmSeg used */
+    }
+
     [StructLayout(LayoutKind.Explicit)]
 	internal struct XEvent {
 		[ FieldOffset(0) ] internal XEventName type;
@@ -575,6 +589,7 @@ namespace Avalonia.X11 {
 		[ FieldOffset(0) ] internal XErrorEvent ErrorEvent;
 		[ FieldOffset(0) ] internal XKeymapEvent KeymapEvent;
 		[ FieldOffset(0) ] internal XGenericEventCookie GenericEventCookie;
+		[ FieldOffset(0) ] internal XShmCompletionEvent ShmCompletionEvent;
 
 		//[MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValArray, SizeConst=24)]
 		//[ FieldOffset(0) ] internal int[] pad;
@@ -1763,7 +1778,17 @@ namespace Avalonia.X11 {
         public ulong blue_mask;
         private fixed byte funcs[128];
     }
-    
+
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct XShmSegmentInfo
+    {
+        public IntPtr shmseg; /* resource id */
+        public int shmid; /* kernel id */
+        public IntPtr shmaddr; /* address in client */
+        public int readOnly; /* how the server should attach it */
+    }
+
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct XVisualInfo
     {

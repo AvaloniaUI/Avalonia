@@ -431,6 +431,9 @@ namespace Avalonia.X11
         
         [DllImport(libX11)]
         public static extern int XDestroyImage(ref XImage image);
+        
+        [DllImport(libX11)]
+        public static extern int XDestroyImage(XImage* image);
 
         [DllImport(libX11)]
         public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, ref XImage image,
@@ -480,6 +483,28 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern bool XQueryExtension(IntPtr display, [MarshalAs(UnmanagedType.LPStr)] string name,
             out int majorOpcode, out int firstEvent, out int firstError);
+
+        [DllImport(libX11Ext)]
+        public static extern unsafe bool XShmQueryExtension(IntPtr display);
+        
+        [DllImport(libX11Ext)]
+        public static extern unsafe int XShmGetEventBase(IntPtr display);
+        
+        [DllImport(libX11Ext)]
+        public static extern unsafe XImage* XShmCreateImage(
+            IntPtr dpy, IntPtr visual, uint depth, int format,
+            IntPtr data, XShmSegmentInfo* shminfo,
+            uint width, uint height);
+
+        [DllImport(libX11Ext)]
+        public static extern unsafe bool XShmAttach(IntPtr dpy, XShmSegmentInfo* shminfo);
+        
+        [DllImport(libX11Ext)]
+        public static extern unsafe bool XShmDetach(IntPtr dpy, XShmSegmentInfo* shminfo);
+        
+        [DllImport(libX11Ext)]
+        public static extern unsafe Status XShmPutImage (IntPtr display, IntPtr d, IntPtr gc, XImage *image, int src_x, int src_y, int dest_x, int dest_y,
+            uint width, uint height, bool send_event);
 
         [DllImport(libX11)]
         public static extern bool XGetEventData(IntPtr display, void* cookie);

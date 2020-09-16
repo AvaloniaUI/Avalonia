@@ -39,7 +39,7 @@ namespace Avalonia.X11
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
             XError.Init();
-            Info = new X11Info(Display, DeferredDisplay);
+            Info = new X11Info(Display, DeferredDisplay, XOpenDisplay(IntPtr.Zero));
             Globals = new X11Globals(this);
             //TODO: log
             if (options.UseDBusMenu)

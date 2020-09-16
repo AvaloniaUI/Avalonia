@@ -11,6 +11,7 @@ namespace Avalonia.X11
     {
         public IntPtr Display { get; }
         public IntPtr DeferredDisplay { get; }
+        public IntPtr ShmDisplay { get; }
         public int DefaultScreen { get; }
         public IntPtr BlackPixel { get; }
         public IntPtr RootWindow { get; }
@@ -18,6 +19,9 @@ namespace Avalonia.X11
         public IntPtr DefaultCursor { get; }
         public X11Atoms Atoms { get; }
         public IntPtr Xim { get; }
+        
+        public XShmManager ShmManager { get; }
+        public int ShmEventBase { get; }
         
         public int RandrEventBase { get; }
         public int RandrErrorBase { get; }
@@ -33,10 +37,11 @@ namespace Avalonia.X11
         public IntPtr LastActivityTimestamp { get; set; }
         public XVisualInfo? TransparentVisualInfo { get; set; }
         
-        public unsafe X11Info(IntPtr display, IntPtr deferredDisplay)
+        public unsafe X11Info(IntPtr display, IntPtr deferredDisplay, IntPtr shmDisplay)
         {
             Display = display;
             DeferredDisplay = deferredDisplay;
+            ShmDisplay = shmDisplay;
             DefaultScreen = XDefaultScreen(display);
             BlackPixel = XBlackPixel(display, DefaultScreen);
             RootWindow = XRootWindow(display, DefaultScreen);
@@ -63,6 +68,22 @@ namespace Avalonia.X11
             catch
             {
                 //Ignore, randr is not supported
+            }
+
+            try
+            {
+                //if(false)
+                if (XShmQueryExtension(shmDisplay))
+                {
+                    ShmEventBase = XShmGetEventBase(shmDisplay);
+
+                    if (ShmEventBase != 0)
+                        ShmManager = new XShmManager(this);
+                }
+            }
+            catch
+            {
+                // Ignore, MIT-SHM is not supported
             }
             
             try
