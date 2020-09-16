@@ -113,6 +113,7 @@ namespace Avalonia.Controls.Primitives
         private ISelectionModel? _selection;
         private int _oldSelectedIndex;
         private object? _oldSelectedItem;
+        private IList? _oldSelectedItems;
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
 
@@ -149,6 +150,10 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
+                // When a Begin/EndInit/DataContext update is in place we return the value to be
+                // updated here, even though it's not yet active and the property changed notification
+                // has not yet been raised. If we don't do this then the old value will be written back
+                // to the source when two-way bound, and the update value will be lost.
                 return _updateState?.SelectedIndex.HasValue == true ?
                     _updateState.SelectedIndex.Value :
                     Selection.SelectedIndex;
@@ -173,6 +178,7 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
+                // See SelectedIndex setter for more information.
                 return _updateState?.SelectedItem.HasValue == true ?
                     _updateState.SelectedItem.Value :
                     Selection.SelectedItem;
@@ -202,9 +208,19 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
-                return _updateState?.SelectedItems.HasValue == true ?
-                    _updateState.SelectedItems.Value :
-                    (Selection as InternalSelectionModel)?.SelectedItems;
+                // See SelectedIndex setter for more information.
+                if (_updateState?.SelectedItems.HasValue == true)
+                {
+                    return _updateState.SelectedItems.Value;
+                }
+                else if (Selection is InternalSelectionModel ism)
+                {
+                    var result = ism.WritableSelectedItems;
+                    _oldSelectedItems = result;
+                    return result;
+                }
+
+                return null;
             }
             set
             {
@@ -214,7 +230,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else if (Selection is InternalSelectionModel i)
                 {
-                    i.SelectedItems = value;
+                    i.WritableSelectedItems = value;
                 }
                 else
                 {
@@ -275,6 +291,15 @@ namespace Avalonia.Controls.Primitives
                     }
 
                     InitializeSelectionModel(_selection);
+
+                    if (_oldSelectedItems != SelectedItems)
+                    {
+                        RaisePropertyChanged(
+                            SelectedItemsProperty,
+                            new Optional<IList?>(_oldSelectedItems),
+                            new BindingValue<IList?>(SelectedItems));
+                        _oldSelectedItems = SelectedItems;
+                    }
                 }
             }
         }
@@ -651,7 +676,7 @@ namespace Avalonia.Controls.Primitives
                     ScrollIntoView(Selection.AnchorIndex);
                 }
             }
-            else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex))
+            else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
             {
                 RaisePropertyChanged(SelectedIndexProperty, _oldSelectedIndex, SelectedIndex);
                 _oldSelectedIndex = SelectedIndex;
@@ -660,6 +685,15 @@ namespace Avalonia.Controls.Primitives
             {
                 RaisePropertyChanged(SelectedItemProperty, _oldSelectedItem, SelectedItem);
                 _oldSelectedItem = SelectedItem;
+            }
+            else if (e.PropertyName == nameof(InternalSelectionModel.WritableSelectedItems) &&
+                _oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
+            {
+                RaisePropertyChanged(
+                    SelectedItemsProperty,
+                    new Optional<IList?>(_oldSelectedItems),
+                    new BindingValue<IList?>(SelectedItems));
+                _oldSelectedItems = SelectedItems;
             }
         }
 

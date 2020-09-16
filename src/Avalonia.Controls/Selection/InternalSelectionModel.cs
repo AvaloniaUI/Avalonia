@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Selection
 {
     internal class InternalSelectionModel : SelectionModel<object?>
     {
-        private IList? _selectedItems;
+        private IList? _writableSelectedItems;
         private bool _ignoreModelChanges;
         private bool _ignoreSelectedItemsChanges;
 
@@ -23,17 +23,17 @@ namespace Avalonia.Controls.Selection
         }
 
         [AllowNull]
-        public new IList SelectedItems
+        public IList WritableSelectedItems
         {
             get
             {
-                if (_selectedItems is null)
+                if (_writableSelectedItems is null)
                 {
-                    _selectedItems = new AvaloniaList<object?>();
+                    _writableSelectedItems = new AvaloniaList<object?>();
                     SubscribeToSelectedItems();
                 }
 
-                return _selectedItems;
+                return _writableSelectedItems;
             }
             set
             {
@@ -44,10 +44,10 @@ namespace Avalonia.Controls.Selection
                     throw new NotSupportedException("Cannot assign fixed size selection to SelectedItems.");
                 }
 
-                if (_selectedItems != value)
+                if (_writableSelectedItems != value)
                 {
                     UnsubscribeFromSelectedItems();
-                    _selectedItems = value;
+                    _writableSelectedItems = value;
                     SyncFromSelectedItems();
                     SubscribeToSelectedItems();
                     
@@ -55,6 +55,8 @@ namespace Avalonia.Controls.Selection
                     {
                         SetInitSelectedItems(value);
                     }
+
+                    RaisePropertyChanged(nameof(WritableSelectedItems));
                 }
             }
         }
@@ -65,8 +67,8 @@ namespace Avalonia.Controls.Selection
 
             if (Source is object && value is object)
             {
-                oldSelection = new object?[SelectedItems.Count];
-                SelectedItems.CopyTo(oldSelection, 0);
+                oldSelection = new object?[WritableSelectedItems.Count];
+                WritableSelectedItems.CopyTo(oldSelection, 0);
             }
 
             try
@@ -95,16 +97,16 @@ namespace Avalonia.Controls.Selection
 
         private void SyncToSelectedItems()
         {
-            if (_selectedItems is object)
+            if (_writableSelectedItems is object)
             {
                 try
                 {
                     _ignoreSelectedItemsChanges = true;
-                    _selectedItems.Clear();
+                    _writableSelectedItems.Clear();
 
                     foreach (var i in base.SelectedItems)
                     {
-                        _selectedItems.Add(i);
+                        _writableSelectedItems.Add(i);
                     }
                 }
                 finally
@@ -116,7 +118,7 @@ namespace Avalonia.Controls.Selection
 
         private void SyncFromSelectedItems()
         {
-            if (Source is null || _selectedItems is null)
+            if (Source is null || _writableSelectedItems is null)
             {
                 return;
             }
@@ -128,7 +130,7 @@ namespace Avalonia.Controls.Selection
                 using (BatchUpdate())
                 {
                     Clear();
-                    Add(_selectedItems);
+                    Add(_writableSelectedItems);
                 }
             }
             finally
@@ -139,7 +141,7 @@ namespace Avalonia.Controls.Selection
 
         private void SubscribeToSelectedItems()
         {
-            if (_selectedItems is INotifyCollectionChanged incc)
+            if (_writableSelectedItems is INotifyCollectionChanged incc)
             {
                 incc.CollectionChanged += OnSelectedItemsCollectionChanged;
             }
@@ -147,7 +149,7 @@ namespace Avalonia.Controls.Selection
 
         private void UnsubscribeFromSelectedItems()
         {
-            if (_selectedItems is INotifyCollectionChanged incc)
+            if (_writableSelectedItems is INotifyCollectionChanged incc)
             {
                 incc.CollectionChanged += OnSelectedItemsCollectionChanged;
             }
@@ -162,7 +164,7 @@ namespace Avalonia.Controls.Selection
 
             try
             {
-                var items = SelectedItems;
+                var items = WritableSelectedItems;
                 var deselected = e.DeselectedItems.ToList();
                 var selected = e.SelectedItems.ToList();
 
@@ -193,7 +195,7 @@ namespace Avalonia.Controls.Selection
                 return;
             }
 
-            if (_selectedItems == null)
+            if (_writableSelectedItems == null)
             {
                 throw new AvaloniaInternalException("CollectionChanged raised but we don't have items.");
             }
@@ -231,7 +233,7 @@ namespace Avalonia.Controls.Selection
                         break;
                     case NotifyCollectionChangedAction.Reset:
                         Clear();
-                        Add(_selectedItems);
+                        Add(_writableSelectedItems);
                         break;
                 }
             }

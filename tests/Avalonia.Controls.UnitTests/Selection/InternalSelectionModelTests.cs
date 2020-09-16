@@ -11,23 +11,23 @@ namespace Avalonia.Controls.UnitTests.Selection
     public class InternalSelectionModelTests
     {
         [Fact]
-        public void Selecting_Item_Adds_To_SelectedItems()
+        public void Selecting_Item_Adds_To_WritableSelectedItems()
         {
             var target = CreateTarget();
 
             target.Select(0);
 
-            Assert.Equal(new[] { "foo" }, target.SelectedItems);
+            Assert.Equal(new[] { "foo" }, target.WritableSelectedItems);
         }
 
         [Fact]
-        public void Selecting_Duplicate_On_Model_Adds_To_SelectedItems()
+        public void Selecting_Duplicate_On_Model_Adds_To_WritableSelectedItems()
         {
             var target = CreateTarget(source: new[] { "foo", "bar", "baz", "foo", "bar", "baz" });
 
             target.SelectRange(1, 4);
 
-            Assert.Equal(new[] { "bar", "baz", "foo", "bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "bar", "baz", "foo", "bar" }, target.WritableSelectedItems);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             target.SelectRange(1, 2);
             target.Deselect(1);
 
-            Assert.Equal(new[] { "baz" }, target.SelectedItems);
+            Assert.Equal(new[] { "baz" }, target.WritableSelectedItems);
         }
 
         [Fact]
@@ -50,31 +50,31 @@ namespace Avalonia.Controls.UnitTests.Selection
             target.Select(4);
             target.Deselect(4);
 
-            Assert.Equal(new[] { "baz", "bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "baz", "bar" }, target.WritableSelectedItems);
         }
 
         [Fact]
-        public void Adding_To_SelectedItems_Selects_On_Model()
+        public void Adding_To_WritableSelectedItems_Selects_On_Model()
         {
             var target = CreateTarget();
 
             target.SelectRange(1, 2);
-            target.SelectedItems.Add("foo");
+            target.WritableSelectedItems.Add("foo");
 
             Assert.Equal(new[] { 0, 1, 2 }, target.SelectedIndexes);
-            Assert.Equal(new[] { "bar", "baz", "foo" }, target.SelectedItems);
+            Assert.Equal(new[] { "bar", "baz", "foo" }, target.WritableSelectedItems);
         }
 
         [Fact]
-        public void Removing_From_SelectedItems_Deselects_On_Model()
+        public void Removing_From_WritableSelectedItems_Deselects_On_Model()
         {
             var target = CreateTarget();
 
             target.SelectRange(1, 2);
-            target.SelectedItems.Remove("baz");
+            target.WritableSelectedItems.Remove("baz");
 
             Assert.Equal(new[] { 1 }, target.SelectedIndexes);
-            Assert.Equal(new[] { "bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "bar" }, target.WritableSelectedItems);
         }
 
         [Fact]
@@ -83,34 +83,34 @@ namespace Avalonia.Controls.UnitTests.Selection
             var target = CreateTarget();
 
             target.SelectRange(1, 2);
-            target.SelectedItems[0] = "foo";
+            target.WritableSelectedItems[0] = "foo";
 
             Assert.Equal(new[] { 0, 2 }, target.SelectedIndexes);
-            Assert.Equal(new[] { "foo", "baz" }, target.SelectedItems);
+            Assert.Equal(new[] { "foo", "baz" }, target.WritableSelectedItems);
         }
 
         [Fact]
-        public void Clearing_SelectedItems_Updates_Model()
+        public void Clearing_WritableSelectedItems_Updates_Model()
         {
             var target = CreateTarget();
 
-            target.SelectedItems.Clear();
+            target.WritableSelectedItems.Clear();
 
             Assert.Empty(target.SelectedIndexes);
         }
 
         [Fact]
-        public void Setting_SelectedItems_Updates_Model()
+        public void Setting_WritableSelectedItems_Updates_Model()
         {
             var target = CreateTarget();
-            var oldItems = target.SelectedItems;
+            var oldItems = target.WritableSelectedItems;
 
             var newItems = new AvaloniaList<string> { "foo", "baz" };
-            target.SelectedItems = newItems;
+            target.WritableSelectedItems = newItems;
 
             Assert.Equal(new[] { 0, 2 }, target.SelectedIndexes);
-            Assert.Same(newItems, target.SelectedItems);
-            Assert.NotSame(oldItems, target.SelectedItems);
+            Assert.Same(newItems, target.WritableSelectedItems);
+            Assert.NotSame(oldItems, target.WritableSelectedItems);
             Assert.Equal(new[] { "foo", "baz" }, newItems);
         }
 
@@ -120,7 +120,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             var target = CreateTarget();
 
             target.SelectRange(1, 2);
-            target.SelectedItems = null;
+            target.WritableSelectedItems = null;
 
             Assert.Empty(target.SelectedIndexes);
         }
@@ -129,56 +129,56 @@ namespace Avalonia.Controls.UnitTests.Selection
         public void Setting_Items_To_Null_Creates_Empty_Items()
         {
             var target = CreateTarget();
-            var oldItems = target.SelectedItems;
+            var oldItems = target.WritableSelectedItems;
 
-            target.SelectedItems = null;
+            target.WritableSelectedItems = null;
 
-            Assert.NotNull(target.SelectedItems);
-            Assert.NotSame(oldItems, target.SelectedItems);
-            Assert.IsType<AvaloniaList<object>>(target.SelectedItems);
+            Assert.NotNull(target.WritableSelectedItems);
+            Assert.NotSame(oldItems, target.WritableSelectedItems);
+            Assert.IsType<AvaloniaList<object>>(target.WritableSelectedItems);
         }
 
         [Fact]
-        public void Adds_Null_SelectedItems_When_Source_Is_Null()
+        public void Adds_Null_WritableSelectedItems_When_Source_Is_Null()
         {
             var target = CreateTarget(nullSource: true);
 
             target.SelectRange(1, 2);
-            Assert.Equal(new object[] { null, null }, target.SelectedItems);
+            Assert.Equal(new object[] { null, null }, target.WritableSelectedItems);
         }
 
         [Fact]
-        public void Updates_SelectedItems_When_Source_Changes_From_Null()
+        public void Updates_WritableSelectedItems_When_Source_Changes_From_Null()
         {
             var target = CreateTarget(nullSource: true);
 
             target.SelectRange(1, 2);
-            Assert.Equal(new object[] { null, null }, target.SelectedItems);
+            Assert.Equal(new object[] { null, null }, target.WritableSelectedItems);
 
             target.Source = new[] { "foo", "bar", "baz" };
-            Assert.Equal(new[] { "bar", "baz" }, target.SelectedItems);
+            Assert.Equal(new[] { "bar", "baz" }, target.WritableSelectedItems);
         }
 
         [Fact]
-        public void Updates_SelectedItems_When_Source_Changes_To_Null()
+        public void Updates_WritableSelectedItems_When_Source_Changes_To_Null()
         {
             var target = CreateTarget();
 
             target.SelectRange(1, 2);
-            Assert.Equal(new[] { "bar", "baz" }, target.SelectedItems);
+            Assert.Equal(new[] { "bar", "baz" }, target.WritableSelectedItems);
 
             target.Source = null;
-            Assert.Equal(new object[] { null, null }, target.SelectedItems);
+            Assert.Equal(new object[] { null, null }, target.WritableSelectedItems);
         }
 
         [Fact]
-        public void SelectedItems_Can_Be_Set_Before_Source()
+        public void WritableSelectedItems_Can_Be_Set_Before_Source()
         {
             var target = CreateTarget(nullSource: true);
             var items = new AvaloniaList<string> { "foo", "bar", "baz" };
-            var selectedItems = new AvaloniaList<string> { "bar" };
+            var WritableSelectedItems = new AvaloniaList<string> { "bar" };
 
-            target.SelectedItems = selectedItems;
+            target.WritableSelectedItems = WritableSelectedItems;
             target.Source = items;
 
             Assert.Equal(1, target.SelectedIndex);
@@ -190,7 +190,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             var target = CreateTarget();
 
             Assert.Throws<NotSupportedException>(() =>
-                target.SelectedItems = new[] { "foo", "bar", "baz" });
+                target.WritableSelectedItems = new[] { "foo", "bar", "baz" });
         }
 
         [Fact]
