@@ -849,14 +849,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void MarkContainersUnselected()
-        {
-            foreach (var container in ItemContainerGenerator.Containers)
-            {
-                MarkContainerSelected(container.ContainerControl, false);
-            }
-        }
-
         /// <summary>
         /// Sets an item container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
         /// </summary>
@@ -870,23 +862,6 @@ namespace Avalonia.Controls.Primitives
             {
                 MarkContainerSelected(container, selected);
             }
-        }
-
-        /// <summary>
-        /// Sets an item container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="selected">Whether the item should be selected or deselected.</param>
-        private int MarkItemSelected(object item, bool selected)
-        {
-            var index = IndexOf(Items, item);
-
-            if (index != -1)
-            {
-                MarkItemSelected(index, selected);
-            }
-
-            return index;
         }
 
         private void UpdateContainerSelection()
