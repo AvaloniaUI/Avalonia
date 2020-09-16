@@ -39,6 +39,15 @@ namespace Avalonia
         public bool AllowEglInitialization { get; set; } = true;
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
+
+        /// <summary>
+        /// Render Avalonia to a Texture inside the Windows.UI.Composition tree.
+        /// </summary>
+        /// <remarks>
+        /// Supported on Windows 10 build 16299 and above. Ignored on other versions.
+        /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
+        /// </remarks>
+        public bool UseWindowsUIComposition { get; set; }
     }
 }
 
