@@ -99,7 +99,14 @@ namespace Avalonia.Rendering
                 {
                     bool needsUpdate = false;
 
-                    foreach (IRenderLoopTask item in _items)
+                    lock (_items)
+                    {
+                        _itemsCopy.Clear();
+                        foreach (var i in _items)
+                            _itemsCopy.Add(i);
+                    }
+                    
+                    foreach (IRenderLoopTask item in _itemsCopy)
                     {
                         if (item.NeedsUpdate)
                         {
@@ -135,18 +142,9 @@ namespace Avalonia.Rendering
                         }, DispatcherPriority.Render);
                     }
 
-                    lock (_items)
-                    {
-                        _itemsCopy.Clear();
-                        foreach (var i in _items)
-                            _itemsCopy.Add(i);
-                    }
+                    foreach (var t in _itemsCopy)
+                        t.Render();
 
-                    for (int i = 0; i < _itemsCopy.Count; i++)
-                    {
-                        _itemsCopy[i].Render();
-                    }
-                    
                     _itemsCopy.Clear();
 
                 }
