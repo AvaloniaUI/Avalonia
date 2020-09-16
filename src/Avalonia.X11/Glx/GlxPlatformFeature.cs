@@ -12,7 +12,7 @@ namespace Avalonia.X11.Glx
         public GlxContext DeferredContext { get; private set; }
         public IGlContext MainContext => DeferredContext;
 
-        public static bool TryInitialize(X11Info x11, List<GlVersion> glProfiles)
+        public static bool TryInitialize(X11Info x11, IList<GlVersion> glProfiles)
         {
             var feature = TryCreate(x11, glProfiles);
             if (feature != null)
@@ -24,7 +24,7 @@ namespace Avalonia.X11.Glx
             return false;
         }
         
-        public static GlxGlPlatformFeature TryCreate(X11Info x11, List<GlVersion> glProfiles)
+        public static GlxGlPlatformFeature TryCreate(X11Info x11, IList<GlVersion> glProfiles)
         {
             try
             {
