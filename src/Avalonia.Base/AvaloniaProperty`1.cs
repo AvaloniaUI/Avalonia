@@ -31,18 +31,33 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
+        /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
+        /// </summary>
+        /// <param name="source">The property to copy.</param>
+        /// <param name="ownerType">The new owner type.</param>
+        /// <param name="metadata">Optional overridden metadata.</param>
+        [Obsolete("Use constructor with AvaloniaProperty<TValue> instead.", true)]
+        protected AvaloniaProperty(
+            AvaloniaProperty source,
+            Type ownerType,
+            PropertyMetadata metadata)
+            : this(source as AvaloniaProperty<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
         /// </summary>
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
         protected AvaloniaProperty(
-            AvaloniaProperty source, 
-            Type ownerType, 
+            AvaloniaProperty<TValue> source,
+            Type ownerType,
             PropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
-            _changed = source is AvaloniaProperty<TValue> p ? p._changed : new Subject<AvaloniaPropertyChangedEventArgs<TValue>>();
+            _changed = source._changed;
         }
 
         /// <summary>
