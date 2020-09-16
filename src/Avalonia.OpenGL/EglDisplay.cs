@@ -65,8 +65,6 @@ namespace Avalonia.OpenGL
             var glProfiles = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
                                     ?? new[]
                                     {
-                                        new GlVersion(GlProfileType.OpenGLES, 3, 2),
-                                        new GlVersion(GlProfileType.OpenGLES, 3, 1),
                                         new GlVersion(GlProfileType.OpenGLES, 3, 0),
                                         new GlVersion(GlProfileType.OpenGLES, 2, 0)
                                     };

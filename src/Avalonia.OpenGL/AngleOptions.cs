@@ -12,8 +12,6 @@ namespace Avalonia.OpenGL
 
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
-            new GlVersion(GlProfileType.OpenGLES, 3, 2),
-            new GlVersion(GlProfileType.OpenGLES, 3, 1),
             new GlVersion(GlProfileType.OpenGLES, 3, 0),
             new GlVersion(GlProfileType.OpenGLES, 2, 0)
         };
