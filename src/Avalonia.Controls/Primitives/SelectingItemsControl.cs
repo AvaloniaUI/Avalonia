@@ -116,6 +116,7 @@ namespace Avalonia.Controls.Primitives
         private IList? _oldSelectedItems;
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
+        private bool _hasScrolledToSelectedItem;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -381,6 +382,28 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            AutoScrollToSelectedItemIfNecessary();
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+
+            void ExecuteScrollWhenLayoutUpdated(object sender, EventArgs e)
+            {
+                LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
+                AutoScrollToSelectedItemIfNecessary();
+            }
+
+            if (AutoScrollToSelectedItem)
+            {
+                LayoutUpdated += ExecuteScrollWhenLayoutUpdated;
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnContainersMaterialized(ItemContainerEventArgs e)
         {
@@ -481,6 +504,10 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPropertyChanged(change);
 
+            if (change.Property == AutoScrollToSelectedItemProperty)
+            {
+                AutoScrollToSelectedItemIfNecessary();
+            }
             if (change.Property == ItemsProperty && _updateState is null && _selection is object)
             {
                 var newValue = change.NewValue.GetValueOrDefault<IEnumerable>();
@@ -669,12 +696,10 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void OnSelectionModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ISelectionModel.AnchorIndex) && AutoScrollToSelectedItem)
+            if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
-                if (Selection.AnchorIndex > 0)
-                {
-                    ScrollIntoView(Selection.AnchorIndex);
-                }
+                _hasScrolledToSelectedItem = false;
+                AutoScrollToSelectedItemIfNecessary();
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
             {
@@ -748,6 +773,19 @@ namespace Avalonia.Controls.Primitives
             if (AlwaysSelected && Items is object)
             {
                 SelectedIndex = 0;
+            }
+        }
+
+        private void AutoScrollToSelectedItemIfNecessary()
+        {
+            if (AutoScrollToSelectedItem &&
+                !_hasScrolledToSelectedItem &&
+                Presenter is object &&
+                Selection.AnchorIndex > 0 &&
+                ((IVisual)this).IsAttachedToVisualTree)
+            {
+                ScrollIntoView(Selection.AnchorIndex);
+                _hasScrolledToSelectedItem = true;
             }
         }
 

@@ -1402,12 +1402,36 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = items,
             };
 
+            var raised = false;
+
             Prepare(target);
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+            target.SelectedIndex = 2;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Causes_Scroll_To_Initial_SelectedItem()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+            };
 
             var raised = false;
-            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
 
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
+            Prepare(target);
 
             Assert.True(raised);
         }
@@ -1449,6 +1473,99 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.Equal(0, target.SelectedIndex);
                 Assert.Equal(1, target.Presenter.Panel.Children.Count);
             }
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Scrolls_When_Reattached_To_Visual_Tree_If_Selection_Changed_While_Detached_From_Visual_Tree()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectedIndex = 2,
+            };
+
+            var raised = false;
+
+            Prepare(target);
+
+            var root = (TestRoot)target.Parent;
+
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+
+            root.Child = null;
+            target.SelectedIndex = 1;
+            root.Child = target;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Doesnt_Scroll_If_Reattached_To_Visual_Tree_With_No_Selection_Change()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectedIndex = 2,
+            };
+
+            var raised = false;
+
+            Prepare(target);
+
+            var root = (TestRoot)target.Parent;
+
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+
+            root.Child = null;
+            root.Child = target;
+
+            Assert.False(raised);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Causes_Scroll_When_Turned_On()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                AutoScrollToSelectedItem = false,
+            };
+
+            Prepare(target);
+
+            var raised = false;
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+            target.SelectedIndex = 2;
+
+            Assert.False(raised);
+
+            target.AutoScrollToSelectedItem = true;
+
+            Assert.True(raised);
         }
 
         [Fact]
