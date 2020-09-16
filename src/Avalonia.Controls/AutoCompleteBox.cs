@@ -258,17 +258,11 @@ namespace Avalonia.Controls
         Replace = 0,
 
         /// <summary>
-        /// Specifies that the selected autocomplete result
-        /// will be appended to the text.
-        /// </summary>
-        Append = 1,
-
-        /// <summary>
         /// Specifies that a custom selector is used. This mode is used when
         /// the <see cref="P:Avalonia.Controls.AutoCompleteBox.TextSelector"/>
         /// property is set.
         /// </summary>
-        Custom = 2
+        Custom = 1
     }
 
     /// <summary>
@@ -657,7 +651,6 @@ namespace Avalonia.Controls
             switch (mode)
             {
                 case AutoCompleteMode.Replace:
-                case AutoCompleteMode.Append:
                 case AutoCompleteMode.Custom:
                     return true;
                 default:
@@ -2774,8 +2767,6 @@ namespace Avalonia.Controls
                 {
                     case AutoCompleteMode.Replace:
                         return Replace;
-                    case AutoCompleteMode.Append:
-                        return Append;
                     case AutoCompleteMode.Custom:
                     default:
                         return null;
@@ -2794,19 +2785,6 @@ namespace Avalonia.Controls
             private static string Replace(string text, string value)
             {
                 return value ?? String.Empty;
-            }
-
-            /// <summary>
-            /// Implements AutoCompleteMode.Append.
-            /// </summary>
-            /// <param name="text">The AutoCompleteBox prefix text.</param>
-            /// <param name="value">The item's string value.</param>
-            /// <returns>
-            /// Returns the concatenated string.
-            /// </returns>
-            private static string Append(string text, string value)
-            {
-                return text + value;
             }
         }
 
