@@ -105,6 +105,7 @@ namespace Avalonia.X11
                     XShmPutImage(_display, xid, gc, _image, 0, 0, 0, 0,
                         (uint)_image->width, (uint)_image->height, true);
                     XFreeGC(_display, gc);
+                    XFlush(_display);
                     XUnlockDisplay(_display);
 
                 });
