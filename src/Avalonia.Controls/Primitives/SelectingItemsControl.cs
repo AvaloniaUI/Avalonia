@@ -781,7 +781,7 @@ namespace Avalonia.Controls.Primitives
             if (AutoScrollToSelectedItem &&
                 !_hasScrolledToSelectedItem &&
                 Presenter is object &&
-                Selection.AnchorIndex > 0 &&
+                Selection.AnchorIndex >= 0 &&
                 ((IVisual)this).IsAttachedToVisualTree)
             {
                 ScrollIntoView(Selection.AnchorIndex);
