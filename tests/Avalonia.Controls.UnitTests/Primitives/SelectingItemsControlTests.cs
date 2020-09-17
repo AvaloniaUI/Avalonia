@@ -1504,6 +1504,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedIndex = 1;
             root.Child = target;
 
+            Layout(target);
+
             Assert.True(raised);
         }
 

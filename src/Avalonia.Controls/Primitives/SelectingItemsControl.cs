@@ -430,23 +430,13 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            AutoScrollToSelectedItemIfNecessary();
+            AutoScrollToSelectedItemOnLayoutUpdated();
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-
-            void ExecuteScrollWhenLayoutUpdated(object sender, EventArgs e)
-            {
-                LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
-                AutoScrollToSelectedItemIfNecessary();
-            }
-
-            if (AutoScrollToSelectedItem)
-            {
-                LayoutUpdated += ExecuteScrollWhenLayoutUpdated;
-            }
+            AutoScrollToSelectedItemOnLayoutUpdated();
         }
 
         /// <inheritdoc/>
@@ -456,7 +446,7 @@ namespace Avalonia.Controls.Primitives
 
             MarkContainerSelected(e.Element, _selection?.IsSelected(e.Index) ?? false);
 
-            if (Selection.AnchorIndex == e.Index)
+            if (_selection?.AnchorIndex == e.Index)
             {
                 KeyboardNavigation.SetTabOnceActiveElement(
                     (InputElement)Presenter!,
@@ -715,6 +705,14 @@ namespace Avalonia.Controls.Primitives
             {
                 _hasScrolledToSelectedItem = false;
                 AutoScrollToSelectedItemIfNecessary();
+
+                if (Presenter is object)
+                {
+                    var container = TryGetContainer(Selection.AnchorIndex);
+                    KeyboardNavigation.SetTabOnceActiveElement(
+                        (InputElement)Presenter,
+                        container);
+                }
             }
             else if (e.PropertyName == nameof(ISelectionModel.SelectedIndex) && _oldSelectedIndex != SelectedIndex)
             {
@@ -801,6 +799,20 @@ namespace Avalonia.Controls.Primitives
             {
                 ScrollIntoView(Selection.AnchorIndex);
                 _hasScrolledToSelectedItem = true;
+            }
+        }
+
+        private void AutoScrollToSelectedItemOnLayoutUpdated()
+        {
+            void ExecuteScrollWhenLayoutUpdated(object sender, EventArgs e)
+            {
+                LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
+                AutoScrollToSelectedItemIfNecessary();
+            }
+
+            if (AutoScrollToSelectedItem)
+            {
+                LayoutUpdated += ExecuteScrollWhenLayoutUpdated;
             }
         }
 

@@ -25,8 +25,8 @@ namespace Avalonia.Input
         /// attached property set to <see cref="KeyboardNavigationMode.Once"/>, this property
         /// defines to which child the focus should move.
         /// </remarks>
-        public static readonly AttachedProperty<IInputElement> TabOnceActiveElementProperty =
-            AvaloniaProperty.RegisterAttached<InputElement, IInputElement>(
+        public static readonly AttachedProperty<IInputElement?> TabOnceActiveElementProperty =
+            AvaloniaProperty.RegisterAttached<InputElement, IInputElement?>(
                 "TabOnceActiveElement",
                 typeof(KeyboardNavigation));
 
@@ -68,7 +68,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="element">The container.</param>
         /// <returns>The active element for the container.</returns>
-        public static IInputElement GetTabOnceActiveElement(InputElement element)
+        public static IInputElement? GetTabOnceActiveElement(InputElement element)
         {
             return element.GetValue(TabOnceActiveElementProperty);
         }
@@ -78,7 +78,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="element">The container.</param>
         /// <param name="value">The active element for the container.</param>
-        public static void SetTabOnceActiveElement(InputElement element, IInputElement value)
+        public static void SetTabOnceActiveElement(InputElement element, IInputElement? value)
         {
             element.SetValue(TabOnceActiveElementProperty, value);
         }
