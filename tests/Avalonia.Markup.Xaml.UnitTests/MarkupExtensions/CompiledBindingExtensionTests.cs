@@ -422,9 +422,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.DataContext = dataContext;
 
-                window.ApplyTemplate();
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                window.LayoutManager.ExecuteInitialLayoutPass();
 
                 var presenter = (ContentPresenter)target.Presenter.RealizedElements.First();
                 Assert.Equal(dataContext.ListProperty[0], presenter.Content);

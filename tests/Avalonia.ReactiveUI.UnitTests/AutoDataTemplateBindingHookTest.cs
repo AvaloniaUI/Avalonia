@@ -12,6 +12,7 @@ using Avalonia.Controls.Presenters;
 using Splat;
 using System.Threading.Tasks;
 using System;
+using Avalonia.Layout;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
@@ -68,7 +69,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             view.List.Template = GetTemplate();
             view.List.ApplyTemplate();
-            view.List.Presenter.ApplyTemplate();
+            Layout(view.List.Presenter);
 
             var child = view.List.Presenter.RealizedElements.First();
             var container = (ContentPresenter) child;
@@ -85,7 +86,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             view.List.Template = GetTemplate();
             view.List.ApplyTemplate();
-            view.List.Presenter.ApplyTemplate();
+            Layout(view.List.Presenter);
 
             var child = view.List.Presenter.RealizedElements.First();
             var container = (ContentPresenter) child;
@@ -114,6 +115,8 @@ namespace Avalonia.ReactiveUI.UnitTests
             var view = new ExampleView(control => control.ItemTemplate = GetItemTemplate());
             view.ViewModel.Items.Add(new NestedViewModel());
 
+            Layout(view.List.Presenter);
+
             var child = view.List.Presenter.RealizedElements.ElementAt(0);
             var container = (ContentPresenter) child;
             container.UpdateChild();
@@ -127,11 +130,19 @@ namespace Avalonia.ReactiveUI.UnitTests
             var view = new ExampleView(control => control.DataTemplates.Add(GetItemTemplate()));
             view.ViewModel.Items.Add(new NestedViewModel());
 
+            Layout(view.List.Presenter);
+
             var child = view.List.Presenter.RealizedElements.ElementAt(0);
             var container = (ContentPresenter) child;
             container.UpdateChild();
 
             Assert.IsType<TextBlock>(container.Child);
+        }
+
+        private static void Layout(ILayoutable target)
+        {
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
         }
 
         private static FuncDataTemplate GetItemTemplate()
