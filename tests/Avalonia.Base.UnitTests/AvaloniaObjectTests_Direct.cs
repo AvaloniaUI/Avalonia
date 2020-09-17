@@ -92,10 +92,10 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             bool raised = false;
 
-            Class1.FooProperty.Changed.Subscribe((AvaloniaPropertyChangedEventArgs e) =>
+            Class1.FooProperty.Changed.Subscribe(e =>
                 raised = e.Property == Class1.FooProperty &&
-                         (string)e.OldValue == "initial" &&
-                         (string)e.NewValue == "newvalue" &&
+                         e.OldValue.GetValueOrDefault() == "initial" &&
+                         e.NewValue.GetValueOrDefault() == "newvalue" &&
                          e.Priority == BindingPriority.LocalValue);
 
             target.SetValue(Class1.FooProperty, "newvalue");

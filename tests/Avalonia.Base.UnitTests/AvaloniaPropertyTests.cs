@@ -83,7 +83,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             string value = null;
 
-            Class1.FooProperty.Changed.Subscribe((AvaloniaPropertyChangedEventArgs x) => value = (string)x.NewValue);
+            Class1.FooProperty.Changed.Subscribe(x => value = x.NewValue.GetValueOrDefault());
             target.SetValue(Class1.FooProperty, "newvalue");
 
             Assert.Equal("newvalue", value);
@@ -95,7 +95,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var result = new List<string>();
 
-            Class1.FooProperty.Changed.Subscribe((AvaloniaPropertyChangedEventArgs x) => result.Add((string)x.NewValue));
+            Class1.FooProperty.Changed.Subscribe(x => result.Add(x.NewValue.GetValueOrDefault()));
             target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
             target.SetValue(Class1.FooProperty, "local");
 

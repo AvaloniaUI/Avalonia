@@ -20,10 +20,10 @@ namespace Avalonia.Controls
 
         static NativeMenuItem()
         {
-            MenuProperty.Changed.Subscribe((AvaloniaPropertyChangedEventArgs args) =>
+            MenuProperty.Changed.Subscribe(args =>
             {
                 var item = (NativeMenuItem)args.Sender;
-                var value = (NativeMenu)args.NewValue;
+                var value = args.NewValue.GetValueOrDefault();
                 if (value.Parent != null && value.Parent != item)
                     throw new InvalidOperationException("NativeMenu already has a parent");
                 value.Parent = item;

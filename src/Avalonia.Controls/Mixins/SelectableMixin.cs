@@ -42,13 +42,13 @@ namespace Avalonia.Controls.Mixins
         {
             Contract.Requires<ArgumentNullException>(isSelected != null);
 
-            isSelected.Changed.Subscribe((AvaloniaPropertyChangedEventArgs x) =>
+            isSelected.Changed.Subscribe(x =>
             {
                 var sender = x.Sender as TControl;
 
                 if (sender != null)
                 {
-                    ((IPseudoClasses)sender.Classes).Set(":selected", (bool)x.NewValue);
+                    ((IPseudoClasses)sender.Classes).Set(":selected", x.NewValue.GetValueOrDefault());
 
                     sender.RaiseEvent(new RoutedEventArgs
                     {
