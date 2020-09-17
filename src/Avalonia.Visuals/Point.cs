@@ -278,5 +278,13 @@ namespace Avalonia
             x = this._x;
             y = this._y;
         }
+
+        /// <summary>
+        /// Gets a value indicating that point coordinates are zero
+        /// </summary>
+        public bool IsDefault
+        {
+            get { return (_x == 0) && (_y == 0); }
+        }
     }
 }

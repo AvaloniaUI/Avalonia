@@ -285,8 +285,15 @@ namespace Avalonia
             left = this._left;
             top = this._top;
             right = this._right;
-            bottom = this._bottom;
-           
+            bottom = this._bottom;        
+        }
+
+        /// <summary>
+        /// Gets a value indicating that thickness are zero
+        /// </summary>
+        public bool IsDefault
+        {
+            get { return (_left == 0) && (_top == 0) && (_right == 0) && (_bottom == 0); }
         }
     }
 }
