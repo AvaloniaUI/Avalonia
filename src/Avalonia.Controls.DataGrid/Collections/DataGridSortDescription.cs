@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using Avalonia.Controls;
 using Avalonia.Controls.Utils;
-using Avalonia.Utilities;
 
 namespace Avalonia.Collections
 {
     public abstract class DataGridSortDescription
     {
         public virtual string PropertyPath => null;
-        public virtual bool Descending => false;
+
+        [Obsolete("Use Direction property to read or override sorting direction.")]
+        public virtual bool Descending => Direction == ListSortDirection.Descending;
+
+        public virtual ListSortDirection Direction => ListSortDirection.Ascending;
         public bool HasPropertyPath => !String.IsNullOrEmpty(PropertyPath);
         public abstract IComparer<object> Comparer { get; }
 
@@ -105,7 +107,7 @@ namespace Avalonia.Collections
 
         private class DataGridPathSortDescription : DataGridSortDescription
         {
-            private readonly bool _descending;
+            private readonly ListSortDirection _direction;
             private readonly string _propertyPath;
             private readonly Lazy<CultureSensitiveComparer> _cultureSensitiveComparer;
             private readonly Lazy<IComparer<object>> _comparer;
@@ -130,19 +132,19 @@ namespace Avalonia.Collections
 
             public override string PropertyPath => _propertyPath;
             public override IComparer<object> Comparer => _comparer.Value;
-            public override bool Descending => _descending;
+            public override ListSortDirection Direction => _direction;
 
-            public DataGridPathSortDescription(string propertyPath, bool descending, CultureInfo culture)
+            public DataGridPathSortDescription(string propertyPath, ListSortDirection direction, CultureInfo culture)
             {
                 _propertyPath = propertyPath;
-                _descending = descending;
+                _direction = direction;
                 _cultureSensitiveComparer = new Lazy<CultureSensitiveComparer>(() => new CultureSensitiveComparer(culture ?? CultureInfo.CurrentCulture));
                 _comparer = new Lazy<IComparer<object>>(() => Comparer<object>.Create((x, y) => Compare(x, y)));
             }
-            private DataGridPathSortDescription(DataGridPathSortDescription inner, bool descending)
+            private DataGridPathSortDescription(DataGridPathSortDescription inner, ListSortDirection direction)
             {
                 _propertyPath = inner._propertyPath;
-                _descending = descending;
+                _direction = direction;
                 _propertyType = inner._propertyType;
                 _cultureSensitiveComparer = inner._cultureSensitiveComparer;
                 _internalComparer = inner._internalComparer;
@@ -201,7 +203,7 @@ namespace Avalonia.Collections
 
                 result = _internalComparer?.Compare(v1, v2) ?? 0;
 
-                if (_descending)
+                if (Direction == ListSortDirection.Descending)
                     return -result;
                 else
                     return result;
@@ -218,7 +220,7 @@ namespace Avalonia.Collections
             }
             public override IOrderedEnumerable<object> OrderBy(IEnumerable<object> seq)
             {
-                if(_descending)
+                if (Direction == ListSortDirection.Descending)
                 {
                     return seq.OrderByDescending(o => GetValue(o), InternalComparer);
                 }
@@ -229,7 +231,7 @@ namespace Avalonia.Collections
             }
             public override IOrderedEnumerable<object> ThenBy(IOrderedEnumerable<object> seq)
             {
-                if (_descending)
+                if (Direction == ListSortDirection.Descending)
                 {
                     return seq.ThenByDescending(o => GetValue(o), InternalComparer);
                 }
@@ -241,13 +243,21 @@ namespace Avalonia.Collections
 
             internal override DataGridSortDescription SwitchSortDirection()
             {
-                return new DataGridPathSortDescription(this, !_descending);
+                var newDirection = _direction == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+                return new DataGridPathSortDescription(this, newDirection);
             }
         }
 
-        public static DataGridSortDescription FromPath(string propertyPath, bool descending = false, CultureInfo culture = null)
+        public static DataGridSortDescription FromPath(string propertyPath, ListSortDirection direction = ListSortDirection.Ascending, CultureInfo culture = null)
         {
-            return new DataGridPathSortDescription(propertyPath, descending, culture);
+            return new DataGridPathSortDescription(propertyPath, direction, culture);
+        }
+
+
+        [Obsolete("Use overload taking a ListSortDirection.")]
+        public static DataGridSortDescription FromPath(string propertyPath, bool descending, CultureInfo culture = null)
+        {
+            return new DataGridPathSortDescription(propertyPath, descending ? ListSortDirection.Descending : ListSortDirection.Ascending, culture);
         }
     }
 
