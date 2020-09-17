@@ -1813,6 +1813,88 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(1, raised);
         }
 
+        [Fact]
+        public void Handles_Removing_Last_Item_In_Two_Controls_With_Bound_SelectedIndex()
+        {
+            var items = new ObservableCollection<string> { "foo" };
+
+            // Simulates problem with TabStrip and Carousel with bound SelectedIndex.
+            var tabStrip = new TestSelector 
+            { 
+                Items = items, 
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var carousel = new TestSelector
+            {
+                Items = items,
+                [!Carousel.SelectedIndexProperty] = tabStrip[!TabStrip.SelectedIndexProperty],
+            };
+
+            var tabStripRaised = 0;
+            var carouselRaised = 0;
+
+            tabStrip.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo" }, e.RemovedItems);
+                Assert.Empty(e.AddedItems);
+                ++tabStripRaised;
+            };
+
+            carousel.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo" }, e.RemovedItems);
+                Assert.Empty(e.AddedItems);
+                ++carouselRaised;
+            };
+
+            items.RemoveAt(0);
+
+            Assert.Equal(1, tabStripRaised);
+            Assert.Equal(1, carouselRaised);
+        }
+
+        [Fact]
+        public void Handles_Removing_Last_Item_In_Controls_With_Bound_SelectedItem()
+        {
+            var items = new ObservableCollection<string> { "foo" };
+
+            // Simulates problem with TabStrip and Carousel with bound SelectedItem.
+            var tabStrip = new TestSelector
+            {
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var carousel = new TestSelector
+            {
+                Items = items,
+                [!Carousel.SelectedItemProperty] = tabStrip[!TabStrip.SelectedItemProperty],
+            };
+
+            var tabStripRaised = 0;
+            var carouselRaised = 0;
+
+            tabStrip.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo" }, e.RemovedItems);
+                Assert.Empty(e.AddedItems);
+                ++tabStripRaised;
+            };
+
+            carousel.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo" }, e.RemovedItems);
+                Assert.Empty(e.AddedItems);
+                ++carouselRaised;
+            };
+
+            items.RemoveAt(0);
+
+            Assert.Equal(1, tabStripRaised);
+            Assert.Equal(1, carouselRaised);
+        }
+
         private static void Prepare(SelectingItemsControl target)
         {
             var root = new TestRoot
