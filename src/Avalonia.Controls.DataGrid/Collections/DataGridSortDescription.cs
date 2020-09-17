@@ -120,7 +120,7 @@ namespace Avalonia.Collections
                 {
                     if (_internalComparerTyped == null && _internalComparer != null)
                     {
-                        if (_internalComparerTyped is IComparer<object> c)
+                        if (_internalComparer is IComparer<object> c)
                             _internalComparerTyped = c;
                         else
                             _internalComparerTyped = Comparer<object>.Create((x, y) => _internalComparer.Compare(x, y));
@@ -134,11 +134,12 @@ namespace Avalonia.Collections
             public override IComparer<object> Comparer => _comparer.Value;
             public override ListSortDirection Direction => _direction;
 
-            public DataGridPathSortDescription(string propertyPath, ListSortDirection direction, CultureInfo culture)
+            public DataGridPathSortDescription(string propertyPath, ListSortDirection direction, IComparer internalComparer, CultureInfo culture)
             {
                 _propertyPath = propertyPath;
                 _direction = direction;
                 _cultureSensitiveComparer = new Lazy<CultureSensitiveComparer>(() => new CultureSensitiveComparer(culture ?? CultureInfo.CurrentCulture));
+                _internalComparer = internalComparer;
                 _comparer = new Lazy<IComparer<object>>(() => Comparer<object>.Create((x, y) => Compare(x, y)));
             }
             private DataGridPathSortDescription(DataGridPathSortDescription inner, ListSortDirection direction)
@@ -250,14 +251,19 @@ namespace Avalonia.Collections
 
         public static DataGridSortDescription FromPath(string propertyPath, ListSortDirection direction = ListSortDirection.Ascending, CultureInfo culture = null)
         {
-            return new DataGridPathSortDescription(propertyPath, direction, culture);
+            return new DataGridPathSortDescription(propertyPath, direction, null, culture);
         }
 
 
         [Obsolete("Use overload taking a ListSortDirection.")]
         public static DataGridSortDescription FromPath(string propertyPath, bool descending, CultureInfo culture = null)
         {
-            return new DataGridPathSortDescription(propertyPath, descending ? ListSortDirection.Descending : ListSortDirection.Ascending, culture);
+            return new DataGridPathSortDescription(propertyPath, descending ? ListSortDirection.Descending : ListSortDirection.Ascending, null, culture);
+        }
+
+        public static DataGridSortDescription FromPath(string propertyPath, ListSortDirection direction = ListSortDirection.Ascending, IComparer internalComparer = null)
+        {
+            return new DataGridPathSortDescription(propertyPath, direction, internalComparer, null);
         }
     }
 
