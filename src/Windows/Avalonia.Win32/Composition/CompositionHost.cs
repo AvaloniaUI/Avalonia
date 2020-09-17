@@ -76,7 +76,15 @@ namespace Avalonia.Win32
 
             visual.Brush = brush;
             visual.Offset = new System.Numerics.Vector3(0, 0, 0);
-            target.Root = CreateBlur();
+
+            var container = _compositor.CreateContainerVisual();
+            container.RelativeSizeAdjustment = new System.Numerics.Vector2(1, 1);
+
+            target.Root = container;
+
+            var blur = CreateBlur();
+
+            container.Children.InsertAtTop(blur);
 
             var visuals = target.Root.As<ContainerVisual>().Children;
 
