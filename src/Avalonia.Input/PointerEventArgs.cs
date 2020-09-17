@@ -86,14 +86,14 @@ namespace Avalonia.Input
         }
 
         [Obsolete("Use GetCurrentPoint")]
-        public PointerPoint GetPointerPoint(IVisual relativeTo) => GetCurrentPoint(relativeTo);
+        public PointerPoint GetPointerPoint(IVisual? relativeTo) => GetCurrentPoint(relativeTo);
         
         /// <summary>
         /// Returns the PointerPoint associated with the current event
         /// </summary>
         /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns></returns>
-        public PointerPoint GetCurrentPoint(IVisual relativeTo)
+        public PointerPoint GetCurrentPoint(IVisual? relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
 
         /// <summary>
