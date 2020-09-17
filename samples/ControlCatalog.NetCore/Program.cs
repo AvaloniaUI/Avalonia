@@ -13,6 +13,7 @@ using Avalonia.Skia;
 using Avalonia.ReactiveUI;
 using Avalonia.Threading;
 using Avalonia.Dialogs;
+using Avalonia.OpenGL;
 
 namespace ControlCatalog.NetCore
 {
@@ -116,7 +117,8 @@ namespace ControlCatalog.NetCore
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
-                    AllowEglInitialization = true
+                    AllowEglInitialization = true,
+                    UseWindowsUIComposition = true
                 })
                 .UseSkia()
                 .UseReactiveUI()

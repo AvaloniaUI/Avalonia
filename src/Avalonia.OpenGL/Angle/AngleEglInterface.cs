@@ -5,7 +5,7 @@ namespace Avalonia.OpenGL.Angle
 {
     public class AngleEglInterface : EglInterface
     {
-        [DllImport("avangle.dll", CharSet = CharSet.Ansi)]
+        [DllImport("av_libGLESv2.dll", CharSet = CharSet.Ansi)]
         static extern IntPtr EGL_GetProcAddress(string proc);
 
         public AngleEglInterface() : base(LoadAngle())
