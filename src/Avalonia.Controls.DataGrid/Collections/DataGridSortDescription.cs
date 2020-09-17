@@ -28,7 +28,7 @@ namespace Avalonia.Collections
             return seq.ThenBy(o => o, Comparer);
         }
 
-        internal virtual DataGridSortDescription SwitchSortDirection()
+        public virtual DataGridSortDescription SwitchSortDirection()
         {
             return this;
         }
@@ -242,7 +242,7 @@ namespace Avalonia.Collections
                 }
             }
 
-            internal override DataGridSortDescription SwitchSortDirection()
+            public override DataGridSortDescription SwitchSortDirection()
             {
                 var newDirection = _direction == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
                 return new DataGridPathSortDescription(this, newDirection);
