@@ -18,7 +18,7 @@ namespace ControlCatalog.Pages
 
             var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Country.Region), ListSortDirection.Ascending, new ReversedStringComparer());
             var collectionView1 = new DataGridCollectionView(Countries.All);
-            colelctionView1.SortDescriptions.Add(dataGridSortDescription);
+            collectionView1.SortDescriptions.Add(dataGridSortDescription);
             var dg1 = this.FindControl<DataGrid>("dataGrid1");
             dg1.IsReadOnly = true;
             dg1.LoadingRow += Dg1_LoadingRow;
@@ -26,12 +26,12 @@ namespace ControlCatalog.Pages
             {
                 var property = ((a.Column as DataGridBoundColumn)?.Binding as Binding).Path;
                 if (property == dataGridSortDescription.PropertyPath
-                    && !colelctionView1.SortDescriptions.Contains(dataGridSortDescription))
+                    && !collectionView1.SortDescriptions.Contains(dataGridSortDescription))
                 {
-                    colelctionView1.SortDescriptions.Add(dataGridSortDescription);
+                    collectionView1.SortDescriptions.Add(dataGridSortDescription);
                 }
             };
-            dg1.Items = colelctionView1;
+            dg1.Items = collectionView1;
 
             var dg2 = this.FindControl<DataGrid>("dataGridGrouping");
             dg2.IsReadOnly = true;
