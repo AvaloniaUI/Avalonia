@@ -333,5 +333,16 @@ namespace Avalonia
         /// </summary>
         public static Vector UnitY
             => new Vector(0, 1);
+
+        /// <summary>
+        /// Deconstructor for decomposition Vector
+        /// </summary>
+        /// <param name="x">The X component.</param>
+        /// <param name="y">The Y poscomponentition.</param>
+        public void Deconstruct(out double x, out double y)
+        {
+            x = this._x;
+            y = this._y;
+        }
     }
 }

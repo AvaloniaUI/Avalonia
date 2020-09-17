@@ -110,28 +110,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Add a 2-tuple of double
-        /// </summary>
-        /// <param name="a">The point.</param>
-        /// <param name="b">2-tuple of double</param>
-        /// <returns>A point that is the result of the addition.</returns>
-        public static Point operator +(Point a, (double x, double y) b)
-        {
-            return new Point(a._x + b.x, a._y + b.y);
-        }
-
-        /// <summary>
-        /// Add a double number to both coordinates
-        /// </summary>
-        /// <param name="a">The point.</param>
-        /// <param name="b">double number</param>
-        /// <returns>A point that is the result of the addition.</returns>
-        public static Point operator +(Point a, double b)
-        {
-            return new Point(a._x + b, a._y + b);
-        }
-
-        /// <summary>
         /// Subtracts two points.
         /// </summary>
         /// <param name="a">The first point.</param>
@@ -154,28 +132,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Subtracts a 2-tuple of double
-        /// </summary>
-        /// <param name="a">The point.</param>
-        /// <param name="b">2-tuple of double</param>
-        /// <returns>A point that is the result of the subtraction.</returns>
-        public static Point operator -(Point a, (double x, double y) b)
-        {
-            return new Point(a._x - b.x, a._y - b.y);
-        }
-
-        /// <summary>
-        /// Subtracts a double number to both coordinates
-        /// </summary>
-        /// <param name="a">The point.</param>
-        /// <param name="b">double number</param>
-        /// <returns>A point that is the result of the subtraction.</returns>
-        public static Point operator -(Point a, double b)
-        {
-            return new Point(a._x - b, a._y - b);
-        }
-
-        /// <summary>
         /// Multiplies a point by a factor coordinate-wise
         /// </summary>
         /// <param name="p">Point to multiply</param>
@@ -192,34 +148,12 @@ namespace Avalonia
         public static Point operator *(double k, Point p) => new Point(p.X * k, p.Y * k);
 
         /// <summary>
-        /// Multiplies a 2-tuple of double
-        /// </summary>
-        /// <param name="a">The point.</param>
-        /// <param name="b">2-tuple of double</param>
-        /// <returns>Points having its coordinates multiplied.</returns>
-        public static Point operator *(Point a, (double x, double y) b)
-        {
-            return new Point(a._x * b.x, a._y * b.y);
-        }
-
-        /// <summary>
         /// Divides a point by a factor coordinate-wise
         /// </summary>
         /// <param name="p">Point to divide by</param>
         /// <param name="k">Factor</param>
         /// <returns>Points having its coordinates divided</returns>
         public static Point operator /(Point p, double k) => new Point(p.X / k, p.Y / k);
-
-        /// <summary>
-        /// Divides a point by a 2-tuple of doubles
-        /// </summary>
-        /// <param name="a">The point.</param>
-        /// <param name="b">2-tuple of double</param>
-        /// <returns>Points having its coordinates divided</returns>
-        public static Point operator /(Point a, (double x, double y) b)
-        {
-            return new Point(a._x / b.x, a._y / b.y);
-        }
 
         /// <summary>
         /// Applies a matrix to a point.
@@ -343,27 +277,6 @@ namespace Avalonia
         {
             x = this._x;
             y = this._y;
-        }
-
-        /// <summary>
-        /// Returns a boolean indicating whether the point coordinates are equal to 2-tuple of double
-        /// </summary>
-        /// <param name="other">2-tuple of double</param>
-        /// <returns>
-        /// True if <paramref name="other"/> is 2-tuple of double equals coordinates current point.
-        /// </returns>
-        public bool Equals((double x, double y) other)
-        {
-            return _x == other.x &&
-               _y == other.y;
-        }
-
-        /// <summary>
-        /// Gets a value indicating that point coordinates are zero
-        /// </summary>
-        public bool IsDefault
-        {
-            get { return (_x == 0) && (_y == 0); }
         }
     }
 }

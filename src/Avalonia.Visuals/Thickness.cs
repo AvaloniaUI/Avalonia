@@ -272,5 +272,21 @@ namespace Avalonia
         {
             return $"{_left},{_top},{_right},{_bottom}";
         }
+
+        /// <summary>
+        /// Deconstructor for decomposition Thickness
+        /// </summary>
+        /// <param name="left">The thickness on the left.</param>
+        /// <param name="top">The thickness on the top.</param>
+        /// <param name="right">The thickness on the right.</param>
+        /// <param name="bottom">The thickness on the bottom.</param>
+        public void Deconstruct(out double left, out double top, out double right, out double bottom)
+        {
+            left = this._left;
+            top = this._top;
+            right = this._right;
+            bottom = this._bottom;
+           
+        }
     }
 }
