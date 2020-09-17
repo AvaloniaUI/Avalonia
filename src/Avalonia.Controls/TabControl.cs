@@ -145,14 +145,19 @@ namespace Avalonia.Controls
         {
             base.OnContainerPrepared(e);
 
-            if (SelectedContent is object || SelectedIndex == -1)
+            if (e.Index == SelectedIndex)
             {
-                return;
+                UpdateSelectedContent(e.Element as IContentControl);
             }
+        }
 
-            if (e.Element is IContentControl c)
+        protected override void OnContainerIndexChanged(ElementIndexChangedEventArgs e)
+        {
+            base.OnContainerIndexChanged(e);
+
+            if (e.NewIndex == SelectedIndex)
             {
-                UpdateSelectedContent(c);
+                UpdateSelectedContent(e.Element as IContentControl);
             }
         }
 
@@ -162,34 +167,19 @@ namespace Avalonia.Controls
 
             if (change.Property == SelectedIndexProperty)
             {
-                var newIndex = change.NewValue.GetValueOrDefault<int>(-1);
-
-                if (newIndex == -1)
-                {
-                    SelectedContentTemplate = null;
-                    SelectedContent = null;
-                    return; 
-                }
-
-                var container = TryGetContainer(newIndex);
-
-                if (container is IContentControl c)
-                {
-                    UpdateSelectedContent(c);
-                }
+                var container = TryGetContainer(SelectedIndex) as IContentControl;
+                UpdateSelectedContent(container);
             }
         }
 
-        private void UpdateSelectedContent(IContentControl item)
+        private void UpdateSelectedContent(IContentControl? container)
         {
-            if (SelectedContentTemplate != item.ContentTemplate)
+            if (container is null)
             {
-                SelectedContentTemplate = item.ContentTemplate;
+                SelectedContent = SelectedContentTemplate = null;
             }
             else
             {
-                var container = SelectedItem as IContentControl ??
-                    ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
                 SelectedContentTemplate = container?.ContentTemplate;
                 SelectedContent = container?.Content;
             }

@@ -428,7 +428,10 @@ namespace Avalonia.Controls
             {
                 foreach (ILogical l in items)
                 {
-                    LogicalChildren.Add(l);
+                    if (!LogicalChildren.Contains(l))
+                    {
+                        LogicalChildren.Add(l);
+                    }
                 }
             }
 
