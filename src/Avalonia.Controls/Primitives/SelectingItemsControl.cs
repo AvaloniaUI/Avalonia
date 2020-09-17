@@ -490,26 +490,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-
-            if (!e.Handled)
-            {
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-                bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
-
-                if (ItemCount > 0 &&
-                    Match(keymap.SelectAll) &&
-                    (((SelectionMode & SelectionMode.Multiple) != 0) ||
-                      (SelectionMode & SelectionMode.Toggle) != 0))
-                {
-                    Selection.SelectAll();
-                    e.Handled = true;
-                }
-            }
-        }
-
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
