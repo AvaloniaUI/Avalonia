@@ -261,9 +261,9 @@ namespace Avalonia.Collections
             return new DataGridPathSortDescription(propertyPath, descending ? ListSortDirection.Descending : ListSortDirection.Ascending, null, culture);
         }
 
-        public static DataGridSortDescription FromPath(string propertyPath, ListSortDirection direction = ListSortDirection.Ascending, IComparer internalComparer = null)
+        public static DataGridSortDescription FromPath(string propertyPath, ListSortDirection direction, IComparer comparer)
         {
-            return new DataGridPathSortDescription(propertyPath, direction, internalComparer, null);
+            return new DataGridPathSortDescription(propertyPath, direction, comparer, null);
         }
     }
 
