@@ -12,6 +12,9 @@ using Xunit;
 using Splat;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using Avalonia.Data;
+using System.Reflection;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
@@ -111,6 +114,10 @@ namespace Avalonia.ReactiveUI.UnitTests
             Locator.CurrentMutable.RegisterConstant(
                 new AvaloniaActivationForViewFetcher(), 
                 typeof(IActivationForViewFetcher));
+
+            // Ensure needed assemblies are loaded.
+            Assembly.Load(typeof(XamlLoadException).Assembly.GetName());
+            Assembly.Load(typeof(RelativeSource).Assembly.GetName());
         }
 
         [Fact]
