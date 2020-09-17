@@ -23,17 +23,17 @@ namespace Avalonia.Input
         /// Returns the dragged text if the DataObject contains any text.
         /// <seealso cref="DataFormats.Text"/>
         /// </summary>
-        string GetText();
+        string? GetText();
 
         /// <summary>
         /// Returns a list of filenames if the DataObject contains filenames.
         /// <seealso cref="DataFormats.FileNames"/>
         /// </summary>
-        IEnumerable<string> GetFileNames();
+        IEnumerable<string>? GetFileNames();
         
         /// <summary>
         /// Tries to get the data of the given DataFormat.
         /// </summary>
-        object Get(string dataFormat);
+        object? Get(string dataFormat);
     }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -185,10 +186,12 @@ namespace Avalonia.Controls
             {
                 SelectedContentTemplate = item.ContentTemplate;
             }
-
-            if (SelectedContent != item.Content)
+            else
             {
-                SelectedContent = item.Content;
+                var container = SelectedItem as IContentControl ??
+                    ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
+                SelectedContentTemplate = container?.ContentTemplate;
+                SelectedContent = container?.Content;
             }
         }
 
