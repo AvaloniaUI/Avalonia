@@ -17,7 +17,7 @@ namespace ControlCatalog.Pages
             this.InitializeComponent();
 
             var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Country.Region), ListSortDirection.Ascending, new ReversedStringComparer());
-            var colelctionView1 = new DataGridCollectionView(Countries.All);
+            var collectionView1 = new DataGridCollectionView(Countries.All);
             colelctionView1.SortDescriptions.Add(dataGridSortDescription);
             var dg1 = this.FindControl<DataGrid>("dataGrid1");
             dg1.IsReadOnly = true;
