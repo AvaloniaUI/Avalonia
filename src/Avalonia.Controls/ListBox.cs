@@ -27,7 +27,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
+        public static readonly new DirectProperty<SelectingItemsControl, IList?> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
@@ -43,7 +43,6 @@ namespace Avalonia.Controls
             SelectingItemsControl.SelectionModeProperty;
 
         private IScrollable? _scroll;
-        private bool _rangeSelecting;
 
         static ListBox()
         {
@@ -60,7 +59,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public new IList SelectedItems
+        public new IList? SelectedItems
         {
             get => base.SelectedItems;
             set => base.SelectedItems = value;
@@ -114,17 +113,9 @@ namespace Avalonia.Controls
 
                 if (direction.HasValue && (!ctrl || shift))
                 {
-                    try
-                    {
-                        _rangeSelecting = shift;
-                        e.Handled = MoveSelection(
-                            direction.Value,
-                            shift);
-                    }
-                    finally
-                    {
-                        _rangeSelecting = false;
-                    }
+                    e.Handled = MoveSelection(
+                        direction.Value,
+                        shift);
                 }
             }
 
