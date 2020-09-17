@@ -63,6 +63,11 @@ namespace Avalonia.Controls.Selection
 
         private protected override void SetSource(IEnumerable? value)
         {
+            if (Source == value)
+            {
+                return;
+            }
+
             object?[]? oldSelection = null;
 
             if (Source is object && value is object)
