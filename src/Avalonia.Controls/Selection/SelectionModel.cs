@@ -242,12 +242,7 @@ namespace Avalonia.Controls.Selection
         {
             using var update = BatchUpdate();
             var o = update.Operation;
-            var range = CoerceRange(start, end);
-
-            if (range.Begin == -1)
-            {
-                return;
-            }
+            var range = new IndexRange(start, end);
 
             if (RangesEnabled)
             {
