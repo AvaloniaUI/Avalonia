@@ -1025,6 +1025,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "Bar", "Baz" }, target.SelectedItems);
 
             items.RemoveAt(0);
+            Layout(target);
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
