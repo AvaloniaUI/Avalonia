@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -10,16 +12,29 @@ namespace ControlCatalog.ViewModels
 {
     public class ListBoxPageViewModel : ReactiveObject
     {
+        private IList _items;
         private bool _multiple;
         private bool _toggle;
         private bool _alwaysSelected;
         private bool _autoScrollToSelectedItem = true;
+        private ItemTypes _itemType;
         private int _counter;
         private ObservableAsPropertyHelper<SelectionMode> _selectionMode;
 
         public ListBoxPageViewModel()
         {
-            Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
+            this.WhenAnyValue(x => x.ItemType)
+                .Subscribe(x =>
+                {
+                    Items = x switch
+                    {
+                        ItemTypes.FromDataTemplate => new ObservableCollection<string>(
+                            Enumerable.Range(0, 10000).Select(i => GenerateContent())),
+                        ItemTypes.ListBoxItems => new ObservableCollection<ListBoxItem>(
+                            Enumerable.Range(0, 200).Select(i => GenerateItem())),
+                        _ => throw new NotSupportedException(),
+                    };
+                });
             
             Selection = new SelectionModel<string>();
             Selection.Select(1);
@@ -34,7 +49,17 @@ namespace ControlCatalog.ViewModels
                     (a ? SelectionMode.AlwaysSelected : 0))
                 .ToProperty(this, x => x.SelectionMode);
 
-            AddItemCommand = ReactiveCommand.Create(() => Items.Add(GenerateItem()));
+            AddItemCommand = ReactiveCommand.Create(() =>
+            {
+                if (ItemType == ItemTypes.FromDataTemplate)
+                {
+                    Items.Add(GenerateContent());
+                }
+                else
+                {
+                    Items.Add(GenerateItem());
+                }
+            });
 
             RemoveItemCommand = ReactiveCommand.Create(() =>
             {
@@ -50,15 +75,23 @@ namespace ControlCatalog.ViewModels
             {
                 var random = new Random();
 
-                using (Selection.BatchUpdate())
+                if (Items.Count > 0)
                 {
-                    Selection.Clear();
-                    Selection.Select(random.Next(Items.Count - 1));
+                    using (Selection.BatchUpdate())
+                    {
+                        Selection.Clear();
+                        Selection.Select(random.Next(Items.Count - 1));
+                    }
                 }
             });
         }
 
-        public ObservableCollection<string> Items { get; }
+        public IList Items 
+        {
+            get => _items;
+            private set => this.RaiseAndSetIfChanged(ref _items, value);
+        }
+
         public SelectionModel<string> Selection { get; }
         public SelectionMode SelectionMode => _selectionMode.Value;
 
@@ -86,10 +119,26 @@ namespace ControlCatalog.ViewModels
             set => this.RaiseAndSetIfChanged(ref _autoScrollToSelectedItem, value);
         }
 
+        public ItemTypes ItemType
+        {
+            get => _itemType;
+            set => this.RaiseAndSetIfChanged(ref _itemType, value);
+        }
+
         public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
         public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
         public ReactiveCommand<Unit, Unit> SelectRandomItemCommand { get; }
 
-        private string GenerateItem() => $"Item {_counter++.ToString()}";
+        private string GenerateContent() => $"Item {_counter++.ToString()}";
+        private ListBoxItem GenerateItem() => new ListBoxItem 
+        { 
+            Content = "ListBoxItem " + GenerateContent() 
+        };
+
+        public enum ItemTypes
+        {
+            FromDataTemplate,
+            ListBoxItems,
+        }
     }
 }
