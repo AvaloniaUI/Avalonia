@@ -47,6 +47,7 @@ namespace Avalonia.Win32
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
         private bool _isUsingComposition;
+        private IBlurHost _blurHost;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -114,7 +115,7 @@ namespace Avalonia.Win32
                 if (_isUsingComposition)
                 {
                     var cgl = new CompositionEglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
-                    cgl.AttachToCompositionTree(_hwnd);
+                    _blurHost = cgl.AttachToCompositionTree(_hwnd);
 
                     _gl = cgl;
 
@@ -341,54 +342,63 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel Win10EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
-
-            var accent = new AccentPolicy();
-            var accentStructSize = Marshal.SizeOf(accent);
-
-            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            if (_isUsingComposition)
             {
-                transparencyLevel = WindowTransparencyLevel.Blur;
-            }
+                _blurHost?.SetBlur(transparencyLevel >= WindowTransparencyLevel.Blur);
 
-            switch (transparencyLevel)
+                return transparencyLevel;
+            }
+            else
             {
-                default:
-                case WindowTransparencyLevel.None:
-                    accent.AccentState = AccentState.ACCENT_DISABLED;
-                    break;
+                bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
-                case WindowTransparencyLevel.Transparent:
-                    accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
-                    break;
+                var accent = new AccentPolicy();
+                var accentStructSize = Marshal.SizeOf(accent);
 
-                case WindowTransparencyLevel.Blur:
-                    accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
-                    break;
+                if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+                {
+                    transparencyLevel = WindowTransparencyLevel.Blur;
+                }
 
-                case WindowTransparencyLevel.AcrylicBlur:
-                case (WindowTransparencyLevel.AcrylicBlur + 1): // hack-force acrylic.
-                    accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
-                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
-                    break;
+                switch (transparencyLevel)
+                {
+                    default:
+                    case WindowTransparencyLevel.None:
+                        accent.AccentState = AccentState.ACCENT_DISABLED;
+                        break;
+
+                    case WindowTransparencyLevel.Transparent:
+                        accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
+                        break;
+
+                    case WindowTransparencyLevel.Blur:
+                        accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+                        break;
+
+                    case WindowTransparencyLevel.AcrylicBlur:
+                    case (WindowTransparencyLevel.AcrylicBlur + 1): // hack-force acrylic.
+                        accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+                        transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                        break;
+                }
+
+                accent.AccentFlags = 2;
+                accent.GradientColor = 0x01000000;
+
+                var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+                Marshal.StructureToPtr(accent, accentPtr, false);
+
+                var data = new WindowCompositionAttributeData();
+                data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+                data.SizeOfData = accentStructSize;
+                data.Data = accentPtr;
+
+                SetWindowCompositionAttribute(_hwnd, ref data);
+
+                Marshal.FreeHGlobal(accentPtr);
+
+                return transparencyLevel;
             }
-
-            accent.AccentFlags = 2;
-            accent.GradientColor = 0x01000000;
-
-            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
-            Marshal.StructureToPtr(accent, accentPtr, false);
-
-            var data = new WindowCompositionAttributeData();
-            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
-            data.SizeOfData = accentStructSize;
-            data.Data = accentPtr;
-
-            SetWindowCompositionAttribute(_hwnd, ref data);
-
-            Marshal.FreeHGlobal(accentPtr);
-
-            return transparencyLevel;
         }
 
         public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };

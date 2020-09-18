@@ -7,6 +7,26 @@ using WinRT;
 
 namespace Avalonia.Win32
 {
+    internal interface IBlurHost
+    {
+        void SetBlur(bool enabled);
+    }
+
+    internal class CompositionBlurHost : IBlurHost
+    {
+        Windows.UI.Composition.Visual _blurVisual;
+
+        public CompositionBlurHost(Windows.UI.Composition.Visual blurVisual)
+        {
+            _blurVisual = blurVisual;
+        }
+
+        public void SetBlur(bool enabled)
+        {
+            _blurVisual.IsVisible = enabled;
+        }
+    }
+
     class CompositionHost
     {
         internal enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE
@@ -61,7 +81,7 @@ namespace Avalonia.Win32
             _graphicsDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
         }
 
-        public ICompositionDrawingSurfaceInterop InitialiseWindowCompositionTree(IntPtr hwnd, out Windows.UI.Composition.Visual surfaceVisual)
+        public ICompositionDrawingSurfaceInterop InitialiseWindowCompositionTree(IntPtr hwnd, out Windows.UI.Composition.Visual surfaceVisual, out IBlurHost blurHost)
         {
             var target = CreateDesktopWindowTarget(hwnd);
 
@@ -83,6 +103,8 @@ namespace Avalonia.Win32
             target.Root = container;
 
             var blur = CreateBlur();
+
+            blurHost = new CompositionBlurHost(blur);
 
             container.Children.InsertAtTop(blur);
 

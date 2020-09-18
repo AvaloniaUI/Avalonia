@@ -6,7 +6,7 @@ using Windows.UI.Composition.Interop;
 
 namespace Avalonia.Win32
 {
-    public class CompositionEglGlPlatformSurface : EglGlPlatformSurfaceBase
+    internal class CompositionEglGlPlatformSurface : EglGlPlatformSurfaceBase
     {
         private readonly EglDisplay _display;
         private readonly EglContext _context;
@@ -21,9 +21,11 @@ namespace Avalonia.Win32
             _info = info;
         }
 
-        public void AttachToCompositionTree(IntPtr hwnd)
+        public IBlurHost AttachToCompositionTree(IntPtr hwnd)
         {
-            _surfaceInterop = CompositionHost.Instance.InitialiseWindowCompositionTree(hwnd, out _surface);
+            _surfaceInterop = CompositionHost.Instance.InitialiseWindowCompositionTree(hwnd, out _surface, out var blurHost);
+
+            return blurHost;
         }
 
         public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
