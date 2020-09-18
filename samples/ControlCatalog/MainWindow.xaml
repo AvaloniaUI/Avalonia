@@ -7,8 +7,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
         xmlns:v="clr-namespace:ControlCatalog.Views"
-        TransparencyLevelHint="Transparent"
-        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}" Background="{x:Null}">
+        ExtendClientAreaToDecorationsHint="{Binding ExtendClientAreaEnabled}"
+        ExtendClientAreaChromeHints="{Binding ChromeHints}"
+        ExtendClientAreaTitleBarHeightHint="{Binding TitleBarHeight}"
+        TransparencyLevelHint="{Binding TransparencyLevel}"        
+        x:Name="MainWindow"
+        x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}">
   <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="File">
