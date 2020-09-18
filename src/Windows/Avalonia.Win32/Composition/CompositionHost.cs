@@ -121,18 +121,28 @@ namespace Avalonia.Win32
 
         public SpriteVisual CreateBlur()
         {
-            var effect = new GaussianBlurEffect();
-            var effectFactory = _compositor.CreateEffectFactory(effect);
-            var blurBrush = effectFactory.CreateBrush();
+            var blurEffect = new GaussianBlurEffect(new CompositionEffectSourceParameter ("backdrop"));
+            var blurEffectFactory = _compositor.CreateEffectFactory(blurEffect);
 
+            var blurBrush = blurEffectFactory.CreateBrush();
             var backDropBrush = _compositor.CreateBackdropBrush();
 
             blurBrush.SetSourceParameter("backdrop", backDropBrush);
 
+
+            var saturateEffect = new SaturationEffect(blurEffect);
+            var satEffectFactory = _compositor.CreateEffectFactory(saturateEffect);
+
+
+            var satBrush = satEffectFactory.CreateBrush();
+            satBrush.SetSourceParameter("backdrop", backDropBrush);
+
+            
+
             var visual = _compositor.CreateSpriteVisual();
 
             visual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
-            visual.Brush = blurBrush;
+            visual.Brush = satBrush;
 
             return visual;
         }
