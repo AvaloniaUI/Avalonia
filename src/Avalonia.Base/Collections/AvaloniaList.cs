@@ -543,7 +543,73 @@ namespace Avalonia.Collections
         /// <inheritdoc/>
         void ICollection.CopyTo(Array array, int index)
         {
-            _inner.CopyTo((T[])array, index);
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
+            if (array.Rank != 1)
+            {
+                throw new ArgumentException("Multi-dimensional arrays are not supported.");
+            }
+
+            if (array.GetLowerBound(0) != 0)
+            {
+                throw new ArgumentException("Non-zero lower bounds are not supported.");
+            }
+
+            if (index < 0)
+            {
+                throw new ArgumentException("Invalid index.");
+            }
+
+            if (array.Length - index < Count)
+            {
+                throw new ArgumentException("The target array is too small.");
+            }
+
+            if (array is T[] tArray)
+            {
+                _inner.CopyTo(tArray, index);
+            }
+            else
+            {
+                //
+                // Catch the obvious case assignment will fail.
+                // We can't find all possible problems by doing the check though.
+                // For example, if the element type of the Array is derived from T,
+                // we can't figure out if we can successfully copy the element beforehand.
+                //
+                Type targetType = array.GetType().GetElementType()!;
+                Type sourceType = typeof(T);
+                if (!(targetType.IsAssignableFrom(sourceType) || sourceType.IsAssignableFrom(targetType)))
+                {
+                    throw new ArgumentException("Invalid array type");
+                }
+
+                //
+                // We can't cast array of value type to object[], so we don't support
+                // widening of primitive types here.
+                //
+                object[] objects = array as object[];
+                if (objects == null)
+                {
+                    throw new ArgumentException("Invalid array type");
+                }
+
+                int count = _inner.Count;
+                try
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        objects[index++] = _inner[i];
+                    }
+                }
+                catch (ArrayTypeMismatchException)
+                {
+                    throw new ArgumentException("Invalid array type");
+                }
+            }
         }
 
         /// <inheritdoc/>
