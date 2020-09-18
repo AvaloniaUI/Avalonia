@@ -339,7 +339,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_PAINT:
                     {
-                        using (_rendererLock.Lock())
+                        using (s_rendererLock.Lock())
                         {
                             if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                             {
@@ -356,7 +356,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_SIZE:
                     {
-                        using (_rendererLock.Lock())
+                        using (s_rendererLock.Lock())
                         {
                             // Do nothing here, just block until the pending frame render is completed on the render thread
                         }
@@ -464,7 +464,7 @@ namespace Avalonia.Win32
                 }
             }
 
-            using (_rendererLock.Lock())
+            using (s_rendererLock.Lock())
             {
                 return DefWindowProc(hWnd, msg, wParam, lParam);
             }
