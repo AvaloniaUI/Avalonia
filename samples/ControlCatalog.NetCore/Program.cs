@@ -117,8 +117,7 @@ namespace ControlCatalog.NetCore
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
-                    AllowEglInitialization = true,
-                    UseWindowsUIComposition = true
+                    AllowEglInitialization = true
                 })
                 .UseSkia()
                 .UseReactiveUI()

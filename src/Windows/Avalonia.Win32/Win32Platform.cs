@@ -47,7 +47,7 @@ namespace Avalonia
         /// Supported on Windows 10 build 16299 and above. Ignored on other versions.
         /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
         /// </remarks>
-        public bool UseWindowsUIComposition { get; set; }
+        public bool UseWindowsUIComposition { get; set; } = true;
     }
 }
 
