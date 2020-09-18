@@ -30,7 +30,6 @@ namespace Avalonia.Input
                 "TabOnceActiveElement",
                 typeof(KeyboardNavigation));
 
-
         /// <summary>
         /// Defines the IsTabStop attached property.
         /// </summary>
