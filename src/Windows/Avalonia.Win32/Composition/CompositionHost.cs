@@ -126,17 +126,14 @@ namespace Avalonia.Win32
 
             blurBrush.SetSourceParameter("backdrop", backDropBrush);
 
-
             var saturateEffect = new SaturationEffect(blurEffect);
             var satEffectFactory = _compositor.CreateEffectFactory(saturateEffect);
-
 
             var satBrush = satEffectFactory.CreateBrush();
             satBrush.SetSourceParameter("backdrop", backDropBrush);
 
-            
-
             var visual = _compositor.CreateSpriteVisual();
+            visual.IsVisible = false;
 
             visual.RelativeSizeAdjustment = new System.Numerics.Vector2(1.0f, 1.0f);
             visual.Brush = satBrush;
