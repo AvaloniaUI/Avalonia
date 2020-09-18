@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using System;
 
@@ -12,6 +13,7 @@ namespace Avalonia.Controls.Primitives
     /// Represents a button on a
     /// <see cref="T:Avalonia.Controls.Calendar" />.
     /// </summary>
+    [PseudoClasses(":selected", ":inactive", ":btnfocused")]
     public sealed class CalendarButton : Button
     {
         /// <summary>
