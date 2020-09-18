@@ -1230,6 +1230,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Occurs when the <see cref="DataGridColumn"/> sorting request is triggered.
+        /// </summary>
+        public event EventHandler<DataGridColumnEventArgs> Sorting;
+
+        /// <summary>
         /// Occurs when a <see cref="T:Avalonia.Controls.DataGridRow" /> 
         /// object becomes available for reuse.
         /// </summary>
