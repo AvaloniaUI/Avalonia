@@ -95,11 +95,10 @@ namespace Avalonia.Win32
             var visual = _compositor.CreateSpriteVisual();
 
             visual.Brush = brush;
-            visual.Offset = new System.Numerics.Vector3(0, 0, 0);
+            visual.RelativeSizeAdjustment = new System.Numerics.Vector2(1, 1);
 
             var container = _compositor.CreateContainerVisual();
-            container.RelativeSizeAdjustment = new System.Numerics.Vector2(1, 1);
-
+            
             target.Root = container;
 
             var blur = CreateBlur();
@@ -108,13 +107,11 @@ namespace Avalonia.Win32
 
             container.Children.InsertAtTop(blur);
 
-            var visuals = target.Root.As<ContainerVisual>().Children;
-
-            visuals.InsertAtTop(visual);
+            container.Children.InsertAtTop(visual);
 
             visual.CompositeMode = CompositionCompositeMode.SourceOver;
 
-            surfaceVisual = visual;
+            surfaceVisual = container;
 
             return surfaceInterop;
         }

@@ -58,7 +58,8 @@ namespace Avalonia.Win32
                 _compositionVisual.Size = new System.Numerics.Vector2(_info.Size.Width, _info.Size.Height);
             }
 
-            public override bool IsCorrupted => false;
+            public override bool IsCorrupted => _info.Size != _initialSize;
+
             public override IGlPlatformSurfaceRenderingSession BeginDraw()
             {
                 var offset = new POINT();
