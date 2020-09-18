@@ -717,7 +717,7 @@ namespace Avalonia.Win32
                 {
                     _scaling = dpix / 96.0;
                 }
-            }                  
+            }
         }
 
         private void CreateDropTarget()
