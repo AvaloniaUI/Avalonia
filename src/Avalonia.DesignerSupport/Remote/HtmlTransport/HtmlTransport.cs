@@ -267,11 +267,11 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         {
             var parts = message.Split(':');
             var key = parts[0];
-            if (key.Equals("frame-received", StringComparison.InvariantCultureIgnoreCase))
+            if (key.Equals("frame-received", StringComparison.OrdinalIgnoreCase))
             {
                 return new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) };
             }
-            else if (key.Equals("pointer-released", StringComparison.InvariantCultureIgnoreCase))
+            else if (key.Equals("pointer-released", StringComparison.OrdinalIgnoreCase))
             {
                 return new InputProtocol.PointerReleasedEventMessage
                 {
@@ -281,7 +281,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     Button = ParseMouseButton(parts[4]),
                 };
             }
-            else if (key.Equals("pointer-pressed", StringComparison.InvariantCultureIgnoreCase))
+            else if (key.Equals("pointer-pressed", StringComparison.OrdinalIgnoreCase))
             {
                 return new InputProtocol.PointerPressedEventMessage
                 {
@@ -291,7 +291,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     Button = ParseMouseButton(parts[4]),
                 };
             }
-            else if (key.Equals("pointer-moved", StringComparison.InvariantCultureIgnoreCase))
+            else if (key.Equals("pointer-moved", StringComparison.OrdinalIgnoreCase))
             {
                 return new InputProtocol.PointerMovedEventMessage
                 {
@@ -300,7 +300,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     Y = ParseDouble(parts[3]),
                 };
             }
-            else if (key.Equals("scroll", StringComparison.InvariantCultureIgnoreCase))
+            else if (key.Equals("scroll", StringComparison.OrdinalIgnoreCase))
             {
                 return new InputProtocol.ScrollEventMessage
                 {
@@ -316,7 +316,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         }
 
         private static InputProtocol.InputModifiers[] ParseInputModifiers(string modifiersText) =>
-            string.IsNullOrEmpty(modifiersText)
+            string.IsNullOrWhiteSpace(modifiersText)
             ? null
             : modifiersText
                 .Split(',')
