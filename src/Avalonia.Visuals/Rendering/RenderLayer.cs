@@ -35,7 +35,7 @@ namespace Avalonia.Rendering
 
                 using (var context = resized.Item.CreateDrawingContext(null))
                 {
-                    context.Clear(Colors.Transparent);
+                    context.Clear(default);
                     
                     Bitmap = resized;
                     Scaling = scaling;
