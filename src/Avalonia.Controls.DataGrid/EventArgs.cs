@@ -289,7 +289,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Provides data for <see cref="T:Avalonia.Controls.DataGrid" /> column-related events.
     /// </summary>
-    public class DataGridColumnEventArgs : EventArgs
+    public class DataGridColumnEventArgs : HandledEventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridColumnEventArgs" /> class.

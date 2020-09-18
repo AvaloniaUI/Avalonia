@@ -40,11 +40,13 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         public HtmlWebSocketTransport(IAvaloniaRemoteTransportConnection signalTransport, Uri listenUri)
         {
             if (listenUri.Scheme != "http")
-                throw new ArgumentException("listenUri");
+                throw new ArgumentException("URI scheme is not HTTP.", nameof(listenUri));
 
             var resourcePrefix = "Avalonia.DesignerSupport.Remote.HtmlTransport.webapp.build.";
             _resources = typeof(HtmlWebSocketTransport).Assembly.GetManifestResourceNames()
-                .Where(r => r.StartsWith(resourcePrefix) && r.EndsWith(".gz")).ToDictionary(
+                .Where(r => r.StartsWith(resourcePrefix, StringComparison.OrdinalIgnoreCase)
+                         && r.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(
                     r => r.Substring(resourcePrefix.Length).Substring(0,r.Length-resourcePrefix.Length-3),
                     r =>
                     {
