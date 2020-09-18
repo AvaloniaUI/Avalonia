@@ -325,7 +325,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 .ToArray();
 
         private static InputProtocol.MouseButton ParseMouseButton(string buttonText) =>
-            string.IsNullOrEmpty(buttonText)
+            string.IsNullOrWhiteSpace(buttonText)
             ? InputProtocol.MouseButton.None
             : (InputProtocol.MouseButton)Enum.Parse(
                 typeof(InputProtocol.MouseButton), buttonText, true);
