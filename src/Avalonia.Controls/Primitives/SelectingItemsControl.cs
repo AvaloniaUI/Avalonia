@@ -491,8 +491,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (ItemCount > 0 &&
                     Match(keymap.SelectAll) &&
-                    (((SelectionMode & SelectionMode.Multiple) != 0) ||
-                      (SelectionMode & SelectionMode.Toggle) != 0))
+                    SelectionMode.HasFlag(SelectionMode.Multiple))
                 {
                     Selection.SelectAll();
                     e.Handled = true;
