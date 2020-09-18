@@ -7,8 +7,13 @@ using Avalonia.Data;
 namespace Avalonia.Controls.Generators
 {
     /// <summary>
-    /// Creates containers for items and maintains a list of created containers.
+    /// Creates containers for items in an <see cref="ItemsControl"/>.
     /// </summary>
+    /// <remarks>
+    /// As implemented in <see cref="ItemContainerGenerator"/>, creates a
+    /// <see cref="ContentPresenter"/> as a container. To create a different type of container use
+    /// <see cref="ItemContainerGenerator{T}"/>.
+    /// </remarks>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
         private static readonly AttachedProperty<bool> PreventRecycleProperty =
@@ -22,7 +27,6 @@ namespace Avalonia.Controls.Generators
         }
 
         public ItemsControl Owner { get; }
-        public bool SupportsRecycling => false;
 
         public bool Match(object data) => true;
 
