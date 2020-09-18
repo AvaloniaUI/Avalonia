@@ -30,11 +30,11 @@ namespace Avalonia.Rendering
         {
             if (Size != size || Scaling != scaling)
             {
-                Bitmap.Dispose();
                 var resized = RefCountable.Create(drawingContext.CreateLayer(size));
 
                 using (var context = resized.Item.CreateDrawingContext(null))
                 {
+                    Bitmap.Dispose();
                     context.Clear(default);
                     
                     Bitmap = resized;
