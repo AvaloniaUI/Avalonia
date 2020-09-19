@@ -449,6 +449,38 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Scrolls the content upward by one page.
+        /// </summary>
+        public void PageUp()
+        {
+            VerticalScrollBarValue = Math.Max(_offset.Y - _viewport.Height, 0);
+        }
+
+        /// <summary>
+        /// Scrolls the content downward by one page.
+        /// </summary>
+        public void PageDown()
+        {
+            VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
+        }
+
+        /// <summary>
+        /// Scrolls the content left by one page.
+        /// </summary>
+        public void PageLeft()
+        {
+            HorizontalScrollBarValue = Math.Max(_offset.X - _viewport.Width, 0);
+        }
+
+        /// <summary>
+        /// Scrolls the content tight by one page.
+        /// </summary>
+        public void PageRight()
+        {
+            HorizontalScrollBarValue = Math.Min(_offset.X + _viewport.Width, HorizontalScrollBarMaximum);
+        }
+
+        /// <summary>
         /// Scrolls to the top-left corner of the content.
         /// </summary>
         public void ScrollToHome()
@@ -623,12 +655,12 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.PageUp)
             {
-                VerticalScrollBarValue = Math.Max(_offset.Y - _viewport.Height, 0);
+                PageUp();
                 e.Handled = true;
             }
             else if (e.Key == Key.PageDown)
             {
-                VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
+                PageDown();
                 e.Handled = true;
             }
         }
