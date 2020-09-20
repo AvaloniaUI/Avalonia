@@ -379,6 +379,23 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(control.Text, control.TextSelector(input, selectedItem.ToString()));
             });
         }
+        
+        [Fact]
+        public void Custom_ItemSelector()
+        {
+            RunTest((control, textbox) =>
+            {
+                object selectedItem = control.Items.Cast<object>().First();
+                string input = "42";
+
+                control.ItemSelector = (text, item) => text + item;
+                Assert.Equal(control.ItemSelector("4", 2), "42");
+
+                control.Text = input;
+                control.SelectedItem = selectedItem;
+                Assert.Equal(control.Text, control.ItemSelector(input, selectedItem));
+            });
+        }
 
         /// <summary>
         /// Retrieves a defined predicate filter through a new AutoCompleteBox 
