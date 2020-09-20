@@ -45,7 +45,10 @@
         <pages:ItemsRepeaterPage/>
       </TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
-      <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
+      <TabItem Header="ListBox"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ListBoxPage/>
+      </TabItem>
       <TabItem Header="Menu"><pages:MenuPage/></TabItem>
       <TabItem Header="Notifications"><pages:NotificationsPage/></TabItem>
 	    <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>

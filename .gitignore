@@ -117,6 +117,7 @@ ClientBin/
 *.[Pp]ublish.xml
 *.pfx
 *.publishsettings
+Events_Avalonia.cs
 
 # RIA/Silverlight projects
 Generated_Code/
