@@ -364,30 +364,6 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
-        public void Test_Selectors()
-        {
-            Assert.Equal(GetSelector(AutoCompleteMode.Replace)("Never", "gonna"), "gonna");
-            Assert.Equal(GetSelector(AutoCompleteMode.Replace)("give", "you"), "you");
-            Assert.NotEqual(GetSelector(AutoCompleteMode.Replace)("up", "!"), "42");
-        }
-
-        [Fact]
-        public void AutoCompleteMode_Changes_To_Custom_And_Back()
-        {
-            RunTest((control, textbox) =>
-            {
-                Assert.Equal(control.AutoCompleteMode, AutoCompleteMode.Replace);
-
-                control.TextSelector = (text, item) => text + item;
-                Assert.Equal(control.AutoCompleteMode, AutoCompleteMode.Custom);
-
-                control.AutoCompleteMode = AutoCompleteMode.Replace;
-                Assert.Equal(control.AutoCompleteMode, AutoCompleteMode.Replace);
-                Assert.Equal(control.TextSelector, GetSelector(AutoCompleteMode.Replace));
-            });
-        }
-
-        [Fact]
         public void Custom_TextSelector()
         {
             RunTest((control, textbox) =>
@@ -414,17 +390,6 @@ namespace Avalonia.Controls.UnitTests
         {
             return new AutoCompleteBox { FilterMode = mode }
                 .TextFilter;
-        }
-
-        /// <summary>
-        /// Retrieves a defined selector through a new AutoCompleteBox 
-        /// control instance.
-        /// </summary>
-        /// <param name="mode">The AutoCompleteMode of interest.</param>
-        /// <returns>Returns the selector instance.</returns>
-        private static AutoCompleteSelector<string> GetSelector(AutoCompleteMode mode)
-        {
-            return new AutoCompleteBox { AutoCompleteMode = mode }.TextSelector;
         }
 
         /// <summary>
