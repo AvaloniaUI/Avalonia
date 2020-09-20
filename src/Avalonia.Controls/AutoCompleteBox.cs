@@ -242,7 +242,7 @@ namespace Avalonia.Controls
     /// <typeparam name="T">
     /// The type used for filtering the
     /// <see cref="T:Avalonia.Controls.AutoCompleteBox" />.
-    /// At the moment this type known only as a string.
+    /// This type can be either a string or an object.
     /// </typeparam>
     public delegate string AutoCompleteSelector<T>(string search, T item);
 
@@ -383,6 +383,7 @@ namespace Avalonia.Controls
         private AutoCompleteFilterPredicate<object> _itemFilter;
         private AutoCompleteFilterPredicate<string> _textFilter = AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith);
 
+        private AutoCompleteSelector<object> _itemSelector;
         private AutoCompleteSelector<string> _textSelector;
 
         public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
@@ -550,6 +551,20 @@ namespace Avalonia.Controls
                 o => o.TextFilter,
                 (o, v) => o.TextFilter = v,
                 unsetValue: AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith));
+
+        /// <summary>
+        /// Identifies the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemSelector" />
+        /// dependency property.
+        /// </summary>
+        /// <value>The identifier for the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemSelector" />
+        /// dependency property.</value>
+        public static readonly DirectProperty<AutoCompleteBox, AutoCompleteSelector<object>> ItemSelectorProperty =
+            AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteSelector<object>>(
+                nameof(ItemSelector),
+                o => o.ItemSelector,
+                (o, v) => o.ItemSelector = v);
 
         /// <summary>
         /// Identifies the
@@ -1100,18 +1115,32 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom method that combines the user-entered
-        /// text to and one of the items specified by the
+        /// text and one of the items specified by the
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />.
         /// </summary>
         /// <value>
         /// The custom method that combines the user-entered
-        /// text to and one of the items specified by the
+        /// text and one of the items specified by the
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />.
         /// </value>
-        /// <remarks>
-        /// The AutoCompleteMode is automatically set to Custom if you set
-        /// the TextSelector property.
-        /// </remarks>
+        public AutoCompleteSelector<object> ItemSelector
+        {
+            get { return _itemSelector; }
+            set { SetAndRaise(ItemSelectorProperty, ref _itemSelector, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the custom method that combines the user-entered
+        /// text and one of the items specified by the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// in a text-based way.
+        /// </summary>
+        /// <value>
+        /// The custom method that combines the user-entered
+        /// text and one of the items specified by the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// in a text-based way.
+        /// </value>
         public AutoCompleteSelector<string> TextSelector
         {
             get { return _textSelector; }
@@ -2386,10 +2415,17 @@ namespace Avalonia.Controls
             {
                 text = SearchText;
             }
+            else if (TextSelector != null)
+            {
+                text = TextSelector(SearchText, FormatValue(newItem, true));
+            }
+            else if (ItemSelector != null)
+            {
+                text = ItemSelector(SearchText, newItem);
+            }
             else
             {
-                string formattedValue = FormatValue(newItem, true);
-                text = TextSelector == null ? formattedValue : TextSelector(SearchText, formattedValue);
+                text = FormatValue(newItem, true);
             }
 
             // Update the Text property and the TextBox values
