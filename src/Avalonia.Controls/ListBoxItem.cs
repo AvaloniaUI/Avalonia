@@ -1,3 +1,4 @@
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Input;
 
@@ -6,6 +7,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A selectable item in a <see cref="ListBox"/>.
     /// </summary>
+    [PseudoClasses(":pressed", ":selected")]
     public class ListBoxItem : ContentControl, ISelectable
     {
         /// <summary>

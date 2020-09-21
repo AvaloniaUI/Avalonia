@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -11,6 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An item in a <see cref="TreeView"/>.
     /// </summary>
+    [PseudoClasses(":pressed", ":selected")]
     public class TreeViewItem : HeaderedItemsControl, ISelectable
     {
         /// <summary>

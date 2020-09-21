@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -13,6 +14,7 @@ using System.Reactive.Linq;
 
 namespace Avalonia.Controls
 {
+    [PseudoClasses(":pressed", ":current", ":expanded")]
     public class DataGridRowGroupHeader : TemplatedControl
     {
         private const string DATAGRIDROWGROUPHEADER_expanderButton = "ExpanderButton";
