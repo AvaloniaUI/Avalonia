@@ -14,6 +14,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
@@ -30,6 +31,7 @@ namespace Avalonia.Controls
     /// <see cref="E:Avalonia.Controls.AutoCompleteBox.Populated" />
     /// event.
     /// </summary>
+    [PseudoClasses(":dropdownopen")]
     public class PopulatedEventArgs : EventArgs
     {
         /// <summary>

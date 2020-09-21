@@ -1,3 +1,4 @@
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 
@@ -6,6 +7,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An item in  a <see cref="TabStrip"/> or <see cref="TabControl"/>.
     /// </summary>
+    [PseudoClasses(":pressed", ":selected")]
     public class TabItem : HeaderedContentControl, ISelectable
     {
         /// <summary>

@@ -14,12 +14,14 @@ using Avalonia.Utilities;
 using System;
 using Avalonia.Controls.Utils;
 using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents an individual <see cref="T:Avalonia.Controls.DataGrid" /> column header.
     /// </summary>
+    [PseudoClasses(":dragIndicator", ":pressed", ":sortascending", ":sortdescending")]
     public class DataGridColumnHeader : ContentControl
     {
         private enum DragMode

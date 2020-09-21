@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
 
@@ -14,6 +15,7 @@ namespace Avalonia.Controls
     /// To add a tooltip to a control, use the <see cref="TipProperty"/> attached property,
     /// assigning the content that you want displayed.
     /// </remarks>
+    [PseudoClasses(":open")]
     public class ToolTip : ContentControl
     {
         /// <summary>
