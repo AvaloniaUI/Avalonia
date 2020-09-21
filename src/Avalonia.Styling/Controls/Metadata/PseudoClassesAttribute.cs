@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Avalonia.Controls.Metadata
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class PseudoClassesAttribute : Attribute
+    public sealed class PseudoClassesAttribute : Attribute
     {
         public PseudoClassesAttribute(params string[] pseudoClasses)
         {
