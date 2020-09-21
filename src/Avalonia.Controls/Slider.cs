@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Collections;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -39,6 +40,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that lets the user select from a range of values by moving a Thumb control along a Track.
     /// </summary>
+    [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class Slider : RangeBase
     {
         /// <summary>

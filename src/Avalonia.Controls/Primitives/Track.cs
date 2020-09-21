@@ -4,6 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -12,6 +13,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
+    [PseudoClasses(":vertical", ":horizontal")]
     public class Track : Control
     {
         public static readonly DirectProperty<Track, double> MinimumProperty =
