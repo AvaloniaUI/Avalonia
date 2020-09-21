@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -5,7 +6,9 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -335,6 +338,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Control_Items_Should_Be_Removed_From_Presenter_When_Removed_From_Items()
+        {
+            using var app = Start();
+
+            var items = new AvaloniaList<IControl> { new Canvas() };
+            var target = new ItemsControl
+            {
+                Items = items,
+            };
+
+            Prepare(target);
+
+            var presenterPanel = (IPanel)target.Presenter;
+            Assert.Equal(1, presenterPanel.Children.Count);
+
+            items.RemoveAt(0);
+            Layout(target);
+
+            Assert.Equal(0, presenterPanel.Children.Count);
+        }
+
+        [Fact]
         public void Empty_Class_Should_Initially_Be_Applied()
         {
             var target = new ItemsControl()
@@ -453,70 +478,62 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Focuses_Next_Item_On_Key_Down()
         {
-            using (UnitTestApplication.Start(TestServices.RealFocus))
+            using var app = Start();
+
+            var items = new object[]
             {
-                var items = new object[]
-                {
-                    new Button { Height = 10 },
-                    new Button { Height = 10 },
-                };
+                new Button { Height = 10 },
+                new Button { Height = 10 },
+            };
 
-                var target = new ItemsControl
-                {
-                    Template = GetTemplate(),
-                    Items = items,
-                };
+            var target = new ItemsControl
+            {
+                Items = items,
+            };
 
-                var root = new TestRoot { Child = target };
+            Prepare(target);
+            target.Presenter.RealizedElements.First().Focus();
 
-                Layout(root);
-                target.Presenter.RealizedElements.First().Focus();
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Down,
+            });
 
-                target.RaiseEvent(new KeyEventArgs
-                {
-                    RoutedEvent = InputElement.KeyDownEvent,
-                    Key = Key.Down,
-                });
-
-                Assert.Equal(
-                    target.Presenter.RealizedElements.ElementAt(1),
-                    FocusManager.Instance.Current);
-            }
+            Assert.Equal(
+                target.Presenter.RealizedElements.ElementAt(1),
+                FocusManager.Instance.Current);
         }
 
         [Fact]
         public void Does_Not_Focus_Non_Focusable_Item_On_Key_Down()
         {
-            using (UnitTestApplication.Start(TestServices.RealFocus))
+            using var app = Start();
+
+            var items = new object[]
             {
-                var items = new object[]
-                {
                     new Button { Height = 10 },
                     new Button { Height = 10, Focusable = false },
                     new Button { Height = 10 },
-                };
+            };
 
-                var target = new ItemsControl
-                {
-                    Template = GetTemplate(),
-                    Items = items,
-                };
+            var target = new ItemsControl
+            {
+                Items = items,
+            };
 
-                var root = new TestRoot { Child = target };
+            Prepare(target);
+            target.Presenter.RealizedElements.First().Focus();
 
-                Layout(root);
-                target.Presenter.RealizedElements.First().Focus();
+            target.RaiseEvent(new KeyEventArgs
+            {
+                RoutedEvent = InputElement.KeyDownEvent,
+                Key = Key.Down,
+            });
 
-                target.RaiseEvent(new KeyEventArgs
-                {
-                    RoutedEvent = InputElement.KeyDownEvent,
-                    Key = Key.Down,
-                });
-
-                Assert.Equal(
-                    target.Presenter.RealizedElements.ElementAt(2),
-                    FocusManager.Instance.Current);
-            }
+            Assert.Equal(
+                target.Presenter.RealizedElements.ElementAt(2),
+                FocusManager.Instance.Current);
         }
 
         [Fact]
@@ -543,10 +560,51 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
         }
 
+        private static IDisposable Start()
+        {
+            var services = TestServices.MockPlatformRenderInterface.With(
+                focusManager: new FocusManager(),
+                keyboardDevice: () => new KeyboardDevice(),
+                keyboardNavigation: new KeyboardNavigationHandler(),
+                inputManager: new InputManager(),
+                styler: new Styler(),
+                windowingPlatform: new MockWindowingPlatform());
+            return UnitTestApplication.Start(services);
+        }
+
+        private static void Prepare(ItemsControl target)
+        {
+            var root = new TestRoot
+            {
+                Child = target,
+                Width = 100,
+                Height = 100,
+                Styles =
+                {
+                    new Style(x => x.Is<ItemsControl>())
+                    {
+                        Setters =
+                        {
+                            new Setter(ListBox.TemplateProperty, GetTemplate()),
+                        },
+                    },
+                },
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+        }
+
         private static void Layout(IControl target)
         {
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
+            if (target.VisualRoot is ILayoutRoot root)
+            {
+                root.LayoutManager.ExecuteLayoutPass();
+            }
+            else
+            {
+                target.Measure(new Size(100, 100));
+                target.Arrange(new Rect(0, 0, 100, 100));
+            }
         }
 
         private class Item
@@ -559,7 +617,7 @@ namespace Avalonia.Controls.UnitTests
             public string Value { get; }
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ItemsControl>((parent, scope) =>
             {

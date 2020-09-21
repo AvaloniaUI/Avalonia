@@ -86,6 +86,139 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ListBoxItem_Items_Should_Be_Removed_From_Presenter_When_Items_Cleared()
+        {
+            using var app = Start();
+
+            var items = new AvaloniaList<ListBoxItem>(
+                Enumerable.Range(0, 100)
+                .Select(x => new ListBoxItem
+                {
+                    Content = "Item " + x,
+                }));
+            var target = new ListBox
+            {
+                Items = items,
+            };
+
+            Prepare(target);
+
+            var presenterPanel = (IPanel)target.Presenter;
+
+            // Some, but not all items should be realized.
+            Assert.NotEmpty(presenterPanel.Children);
+            Assert.True(presenterPanel.Children.Count < 100);
+
+            // Page to the bottom to ensure all items are realized.
+            var scroller = (ScrollViewer)target.Scroll;
+            while (scroller.Offset.Y + scroller.Viewport.Height < scroller.Extent.Height)
+            {
+                scroller.PageDown();
+                Layout(target);
+            }
+
+            // All items should now be realized.
+            Assert.Equal(100, presenterPanel.Children.Count);
+
+            // Clear items.
+            items.Clear();
+            Layout(target);
+
+            // And ensure they're all removed as children of presenter.
+            Assert.Equal(0, presenterPanel.Children.Count);
+        }
+
+        [Fact]
+        public void ListBoxItem_Items_Should_Be_Removed_From_Presenter_When_Removed_From_Items()
+        {
+            using var app = Start();
+
+            var items = new AvaloniaList<ListBoxItem>(
+                Enumerable.Range(0, 100)
+                .Select(x => new ListBoxItem
+                {
+                    Content = "Item " + x,
+                }));
+            var target = new ListBox
+            {
+                Items = items,
+            };
+
+            Prepare(target);
+
+            var presenterPanel = (IPanel)target.Presenter;
+
+            // Some, but not all items should be realized.
+            Assert.NotEmpty(presenterPanel.Children);
+            Assert.True(presenterPanel.Children.Count < 100);
+
+            // Page to the bottom to ensure all items are realized.
+            var scroller = (ScrollViewer)target.Scroll;
+            while (scroller.Offset.Y + scroller.Viewport.Height < scroller.Extent.Height)
+            {
+                scroller.PageDown();
+                Layout(target);
+            }
+
+            // All items should now be realized.
+            Assert.Equal(100, presenterPanel.Children.Count);
+
+            // Clear items.
+            while (items.Count > 0)
+            {
+                items.RemoveAt(0);
+            }
+
+            Layout(target);
+
+            // And ensure they're all removed as children of presenter.
+            Assert.Equal(0, presenterPanel.Children.Count);
+        }
+
+        [Fact]
+        public void ListBoxItem_Items_Should_Be_Removed_From_Presenter_When_Items_Reassigned()
+        {
+            using var app = Start();
+
+            var items = new AvaloniaList<ListBoxItem>(
+                Enumerable.Range(0, 100)
+                .Select(x => new ListBoxItem
+                {
+                    Content = "Item " + x,
+                }));
+            var target = new ListBox
+            {
+                Items = items,
+            };
+
+            Prepare(target);
+
+            var presenterPanel = (IPanel)target.Presenter;
+
+            // Some, but not all items should be realized.
+            Assert.NotEmpty(presenterPanel.Children);
+            Assert.True(presenterPanel.Children.Count < 100);
+
+            // Page to the bottom to ensure all items are realized.
+            var scroller = (ScrollViewer)target.Scroll;
+            while (scroller.Offset.Y + scroller.Viewport.Height < scroller.Extent.Height)
+            {
+                scroller.PageDown();
+                Layout(target);
+            }
+
+            // All items should now be realized.
+            Assert.Equal(100, presenterPanel.Children.Count);
+
+            // Clear items.
+            target.Items = null;
+            Layout(target);
+
+            // And ensure they're all removed as children of presenter.
+            Assert.Equal(0, presenterPanel.Children.Count);
+        }
+
+        [Fact]
         public void LogicalChildren_Should_Be_Set_For_DataTemplate_Generated_Items()
         {
             using var app = Start();

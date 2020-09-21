@@ -36,7 +36,7 @@ namespace ControlCatalog.ViewModels
                     };
                 });
             
-            Selection = new SelectionModel<string>();
+            Selection = new SelectionModel<object>();
             Selection.Select(1);
 
             _selectionMode = this.WhenAnyValue(
@@ -92,7 +92,7 @@ namespace ControlCatalog.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _items, value);
         }
 
-        public SelectionModel<string> Selection { get; }
+        public SelectionModel<object> Selection { get; }
         public SelectionMode SelectionMode => _selectionMode.Value;
 
         public bool Multiple

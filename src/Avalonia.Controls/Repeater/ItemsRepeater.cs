@@ -297,13 +297,20 @@ namespace Avalonia.Controls
                     desiredSize = layout.Measure(layoutContext, availableSize);
                     extent = new Rect(LayoutOrigin.X, LayoutOrigin.Y, desiredSize.Width, desiredSize.Height);
 
-                    // Clear auto recycle candidate elements that have not been kept alive by layout - i.e layout did not
-                    // call GetElementAt(index).
-                    foreach (var element in Children)
+                    // Clear elements:
+                    // - Inline elements that were marked as ToRemove due to a collection change
+                    // - Auto recycle candidate elements that have not been kept alive by layout - i.e layout did not
+                    //   call GetElementAt(index)
+                    for (var i = Children.Count -1; i >= 0; --i)
                     {
+                        var element = Children[i];
                         var virtInfo = GetVirtualizationInfo(element);
 
-                        if (virtInfo.Owner == ElementOwner.Layout &&
+                        if (virtInfo.ToRemove)
+                        {
+                            Children.RemoveAt(i);
+                        }
+                        else if (virtInfo.Owner == ElementOwner.Layout &&
                             virtInfo.AutoRecycleCandidate &&
                             !virtInfo.KeepAlive)
                         {
@@ -574,12 +581,15 @@ namespace Avalonia.Controls
                 throw new AvaloniaInternalException("Cannot set ItemsSourceView during layout.");
             }
 
+            var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+
             ItemsSourceView?.Dispose();
             ItemsSourceView = newValue;
 
             if (oldValue != null)
             {
                 oldValue.CollectionChanged -= OnItemsSourceViewChanged;
+                OnItemsSourceViewChanged(oldValue, args);
             }
 
             if (newValue != null)
@@ -589,7 +599,6 @@ namespace Avalonia.Controls
 
             if (Layout != null)
             {
-                var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 
                 try
                 {
