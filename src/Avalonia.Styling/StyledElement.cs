@@ -674,8 +674,9 @@ namespace Avalonia
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
-                var logicalChildren = LogicalChildren;
-                var logicalChildrenCount = logicalChildren.Count;
+                // Copy children into temp array, because list of children can be updated during detach.
+                var logicalChildren = LogicalChildren.ToArray();
+                var logicalChildrenCount = logicalChildren.Length;
 
                 for (var i = 0; i < logicalChildrenCount; i++)
                 {
