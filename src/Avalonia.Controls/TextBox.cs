@@ -13,9 +13,11 @@ using Avalonia.Metadata;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Utilities;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
+    [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
         public static KeyGesture CutGesture { get; } = AvaloniaLocator.Current

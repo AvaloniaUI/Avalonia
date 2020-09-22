@@ -24,12 +24,14 @@ using Avalonia.Input.Platform;
 using System.ComponentModel.DataAnnotations;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Displays data in a customizable grid.
     /// </summary>
+    [PseudoClasses(":invalid")]
     public partial class DataGrid : TemplatedControl
     {
         private const string DATAGRID_elementRowsPresenterName = "PART_RowsPresenter";

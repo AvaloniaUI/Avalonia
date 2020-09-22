@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -12,6 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents an individual <see cref="T:Avalonia.Controls.DataGrid" /> cell.
     /// </summary>
+    [PseudoClasses(":selected", ":current", ":edited", ":invalid")]
     public class DataGridCell : ContentControl
     {
         private const string DATAGRIDCELL_elementRightGridLine = "PART_RightGridLine";
