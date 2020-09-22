@@ -7,12 +7,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Rendering;
 using Avalonia.Data;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
     /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
+    [PseudoClasses(":topleft", ":topright", ":bottomleft", ":bottomright")]
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
     {
         private IList _items;

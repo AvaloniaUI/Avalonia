@@ -1,6 +1,6 @@
 using Avalonia.Animation;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 
 namespace Avalonia.Controls
 {
@@ -12,6 +12,7 @@ namespace Avalonia.Controls
         Right
     }
 
+    [PseudoClasses(":expanded", ":up", ":down", ":left", ":right")]
     public class Expander : HeaderedContentControl
     {
         public static readonly StyledProperty<IPageTransition> ContentTransitionProperty =
