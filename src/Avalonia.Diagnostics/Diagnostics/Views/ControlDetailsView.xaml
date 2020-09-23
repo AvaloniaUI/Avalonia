@@ -73,16 +73,26 @@
                Text="{Binding TreePage.PropertyFilter}"
                Watermark="Filter properties" />
 
-      <CheckBox Grid.Row="0"
-                Grid.Column="1"
-                Margin="0,0,4,0"
-                Content="Regex"
-                IsChecked="{Binding TreePage.UseRegexFilter}" />
+    <ComboBox Items="{Binding TreePage.FavoritesProperties}"              
+              SelectedItem="{Binding TreePage.FavoriteProperties}"              
+              Grid.Row="0"
+              Grid.Column="1"
+              Width="150"
+              />
+    <Button Content="Edit"
+            Command="{Binding TreePage.EditFavorites}"
+            CommandParameter="{Binding $parent[Window]}"
+            Grid.Column="2"
+            Margin="5 0 5 0"/>
+    <CheckBox Grid.Row="0" 
+              Grid.Column="3" 
+              Content="Regex" 
+              IsChecked="{Binding TreePage.UseRegexFilter}"/>
 
       <DataGrid Items="{Binding PropertiesView}"
                 Grid.Row="1"
                 Grid.Column="0"
-                Grid.ColumnSpan="2"
+                Grid.ColumnSpan="4"
                 BorderThickness="0"
                 RowBackground="Transparent"
                 SelectedItem="{Binding SelectedProperty, Mode=TwoWay}"

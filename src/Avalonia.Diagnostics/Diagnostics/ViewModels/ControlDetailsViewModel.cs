@@ -131,19 +131,28 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
+        IEnumerable<Func<PropertyViewModel, bool>> FilterPropertyRules()
+        {
+            yield return property => !(TreePage.FavoriteProperties?.Properties?.Any() == true
+                && TreePage.FavoriteProperties?.Properties?.Any(p => string.Compare(p, property.Name, true) == 0) == false);
+            yield return property => TreePage.UseRegexFilter == false
+                || TreePage.FilterRegex?.IsMatch(property.Name) == true;
+            yield return property => string.IsNullOrWhiteSpace(TreePage.PropertyFilter)
+                || property.Name.IndexOf(TreePage.PropertyFilter, StringComparison.OrdinalIgnoreCase) != -1;
+        }
+
         private bool FilterProperty(object arg)
         {
-            if (!string.IsNullOrWhiteSpace(TreePage.PropertyFilter) && arg is PropertyViewModel property)
+            var result = true;
+            if (arg is PropertyViewModel property)
             {
-                if (TreePage.UseRegexFilter)
+                var enumerator = FilterPropertyRules().GetEnumerator();
+                while (result && enumerator.MoveNext())
                 {
-                    return TreePage.FilterRegex?.IsMatch(property.Name) ?? true;
+                    result = enumerator.Current(property);
                 }
-
-                return property.Name.IndexOf(TreePage.PropertyFilter, StringComparison.OrdinalIgnoreCase) != -1;
             }
-
-            return true;
+            return result;
         }
 
         private class PropertyComparer : IComparer<PropertyViewModel>

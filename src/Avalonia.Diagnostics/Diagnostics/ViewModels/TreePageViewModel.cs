@@ -15,6 +15,9 @@ namespace Avalonia.Diagnostics.ViewModels
         private ControlDetailsViewModel _details;
         private string _propertyFilter = string.Empty;
         private bool _useRegexFilter;
+        private IEnumerable<Models.FavoriteProperties> _favoritesProperties =
+            Models.FavoriteProperties.Default;
+        private Models.FavoriteProperties _favoriteProperties;
 
         public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
         {
@@ -199,5 +202,27 @@ namespace Avalonia.Diagnostics.ViewModels
         public bool HasErrors => _errors.Count > 0;
 
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+
+        public IEnumerable<Models.FavoriteProperties> FavoritesProperties
+        {
+            get
+            {
+                return _favoritesProperties;
+            }
+        }
+
+        public Models.FavoriteProperties FavoriteProperties
+        {
+            get => _favoriteProperties;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _favoriteProperties, value))
+                {
+                    UpdateFilterRegex();
+                    Details.PropertiesView.Refresh();
+                }
+            }
+        }
+
     }
 }
