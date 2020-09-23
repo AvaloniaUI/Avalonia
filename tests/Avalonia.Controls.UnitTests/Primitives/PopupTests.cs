@@ -400,11 +400,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServicesWithFocus())
             {
+                var window = PreparedWindow();
+
                 var tb = new TextBox();
                 var b = new Button();
                 var p = new Popup
                 {
-                    PlacementTarget = PreparedWindow(),
+                    PlacementTarget = window,
                     Child = new StackPanel
                     {
                         Children =
@@ -415,15 +417,28 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     }
                 };
                 ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
-
-                p.Opened += (s, e) =>
-                {
-                    tb.Focus();
-                };
+                window.Show();
 
                 p.Open();
 
+                if(p.Host is OverlayPopupHost host)
+                {
+                    //Need to measure/arrange for visual children to show up
+                    //in OverlayPopupHost
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                tb.Focus();
+
                 Assert.True(FocusManager.Instance?.Current == tb);
+
+                //Ensure focus remains in the popup
+                var nextFocus = KeyboardNavigationHandler.GetNext(FocusManager.Instance.Current, NavigationDirection.Next);
+
+                Assert.True(nextFocus == b);
+
+                p.Close();
             }
         }
 
