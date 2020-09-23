@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
@@ -12,6 +13,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Implements input-related functionality for a control.
     /// </summary>
+    [PseudoClasses(":disabled", ":focus", ":focus-visible", ":pointerover")]
     public class InputElement : Interactive, IInputElement
     {
         /// <summary>
