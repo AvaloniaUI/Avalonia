@@ -1,4 +1,6 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
 
   <Style Selector="ScrollViewer">
     <Setter Property="Background"
@@ -64,6 +66,66 @@
 
   <Style Selector="ScrollViewer[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
     <Setter Property="Opacity" Value="1" />
+  </Style>
+
+  <Style Selector="ScrollViewer.menuscroller">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DockPanel>
+          <RepeatButton DockPanel.Dock="Top"
+                        BorderThickness="0"
+                        Background="Transparent"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        RenderTransform="{x:Null}"
+                        Command="{Binding LineUp, RelativeSource={RelativeSource TemplatedParent}}">
+            <RepeatButton.IsVisible>
+              <MultiBinding Converter="{x:Static converters:MenuScrollingVisibilityConverter.Instance}"
+                            ConverterParameter="0">
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="VerticalScrollBarVisibility"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Offset.Y"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Extent.Height"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Viewport.Height"/>
+              </MultiBinding>
+            </RepeatButton.IsVisible>
+            <Path Data="M 0 4 L 8 4 L 4 0 Z"/>
+          </RepeatButton>
+          <RepeatButton DockPanel.Dock="Bottom"
+                        BorderThickness="0"
+                        Background="Transparent"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        RenderTransform="{x:Null}"
+                        Command="{Binding LineDown, RelativeSource={RelativeSource TemplatedParent}}">
+            <RepeatButton.IsVisible>
+              <MultiBinding Converter="{x:Static converters:MenuScrollingVisibilityConverter.Instance}"
+                            ConverterParameter="100">
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="VerticalScrollBarVisibility"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Offset.Y"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Extent.Height"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Viewport.Height"/>
+              </MultiBinding>
+            </RepeatButton.IsVisible>
+            <Path Data="M 0 0 L 4 4 L 8 0 Z"/>
+          </RepeatButton>
+          <ScrollContentPresenter Name="PART_ContentPresenter"
+                                  CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
+                                  CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
+                                  Content="{TemplateBinding Content}"
+                                  Extent="{TemplateBinding Extent, Mode=TwoWay}"
+                                  Margin="{TemplateBinding Padding}"
+                                  Offset="{TemplateBinding Offset, Mode=TwoWay}"
+                                  Viewport="{TemplateBinding Viewport, Mode=TwoWay}"/>
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ScrollViewer.menuscroller /template/ RepeatButton > Path">
+    <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForeground}" />
+  </Style>
+
+  <Style Selector="ScrollViewer.menuscroller /template/ RepeatButton:pointerover > Path">
+    <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForegroundPointerOver}" />
   </Style>
 
 </Styles>

@@ -49,7 +49,7 @@
               MinHeight="{TemplateBinding MinHeight}"
               HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
               CornerRadius="{DynamicResource OverlayCornerRadius}">
-        <ScrollViewer>
+        <ScrollViewer Classes="menuscroller">
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"
