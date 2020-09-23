@@ -15,8 +15,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private ControlDetailsViewModel _details;
         private string _propertyFilter = string.Empty;
         private bool _useRegexFilter;
-        private IEnumerable<Models.FavoriteProperties> _favoritesProperties =
-            Models.FavoriteProperties.Default;
+        private IEnumerable<Models.FavoriteProperties> _favoritesProperties = null;
         private Models.FavoriteProperties _favoriteProperties;
 
         public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
@@ -207,7 +206,37 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get
             {
+                if (_favoritesProperties == null)
+                {
+                    var favoritePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                        , nameof(FavoritesProperties) + ".json");
+                    if (System.IO.File.Exists(favoritePath))
+                    {
+                        try
+                        {
+                            using (var file = System.IO.File.OpenText(favoritePath))
+                            {
+                                var serializer = new Newtonsoft.Json.JsonSerializer();
+                                _favoritesProperties = (IEnumerable<Models.FavoriteProperties>)serializer.Deserialize(file, typeof(Models.FavoriteProperties[]));
+                            }
+
+                        }
+                        catch (Exception)
+                        {
+                            _favoritesProperties = Models.FavoriteProperties.Default;
+                        }
+
+                    }
+                    else
+                    {
+                        _favoritesProperties = Models.FavoriteProperties.Default;
+                    }
+                }
                 return _favoritesProperties;
+            }
+            private set
+            {
+                RaiseAndSetIfChanged(ref _favoritesProperties, value);
             }
         }
 
@@ -222,6 +251,40 @@ namespace Avalonia.Diagnostics.ViewModels
                     Details.PropertiesView.Refresh();
                 }
             }
+        }
+
+        void EditFavorites(object parameter)
+        {
+            Window owner = parameter as Window;
+            var dialog = new Views.EditFavoritesPropertiesDialog(FavoritesProperties);
+
+            dialog.ShowDialog<Models.FavoriteProperties[]>(owner)
+                .ContinueWith(task =>
+                {
+                    var result = task.Result;
+                    if (result != null)
+                    {
+                        FavoritesProperties = result;
+
+                        var favoritePath = System.IO.Path
+                            .Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                            , nameof(FavoritesProperties) + ".json");
+                        try
+                        {
+                            using (var file = System.IO.File.CreateText(favoritePath))
+                            {
+                                var serializer = new Newtonsoft.Json.JsonSerializer();
+                                serializer.Serialize(file, FavoritesProperties);
+                            }
+
+                        }
+                        catch (Exception)
+                        {
+                            _favoritesProperties = Models.FavoriteProperties.Default;
+                        }
+
+                    }
+                });
         }
 
     }

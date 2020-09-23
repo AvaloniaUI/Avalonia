@@ -1,0 +1,41 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Avalonia.Diagnostics.Views.EditFavoritesPropertiesDialog"
+        xmlns:diag="clr-namespace:Avalonia.Diagnostics"
+        xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
+        xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+        Title="Edit Favorite Properties"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Width="400"
+        Height="250"
+        >
+
+
+    <Window.Styles>
+        <StyleInclude Source="resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default"/>
+        <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
+        <StyleInclude Source="resm:Avalonia.Controls.DataGrid.Themes.Default.xaml?assembly=Avalonia.Controls.DataGrid"/>
+        <Style Selector="TextBlock">
+          <Setter Property="Foreground" Value="Black"/>
+        </Style>
+        <Style Selector="Button">
+          <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="TextBox">
+          <Setter Property="Foreground" Value="Black"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+          <Setter Property="Foreground" Value="Black"/>
+        </Style>
+    </Window.Styles>
+  
+  <Window.DataContext>
+    <vm:EditFavoritesPropertiesViewModel/>
+  </Window.DataContext>  
+  <views:EditFavoritesPropertiesView/>
+</Window>

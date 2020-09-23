@@ -25,9 +25,44 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Diagnostics\Views\EditFavoritesPropertiesDialog.xaml.cs">
+      <DependentUpon>EditFavoritesPropertiesDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Diagnostics\Views\EditFavoritesPropertiesView.xaml.cs">
+      <DependentUpon>EditFavoritesPropertiesView.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\ApiDiff.props" />
+  <ItemGroup>
+    <AvaloniaResource Remove="Assets\Styles\EvernoteTagControl.xaml" />
+    <AvaloniaResource Remove="Assets\Styles\EvernoteTagItem.xaml" />
+    <AvaloniaResource Remove="Diagnostics\Controls\EvernoteTagControl.xaml" />
+    <AvaloniaResource Remove="Diagnostics\Views\EditFavoritesPropertiesDialog.xaml" />
+    <AvaloniaResource Remove="Diagnostics\Views\EditFavoritesPropertiesView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\Styles\EvernoteTagControl.xaml" />
+    <None Remove="Assets\Styles\EvernoteTagItem.xaml" />
+    <None Remove="Diagnostics\Controls\EvernoteTagControl.xaml" />
+    <None Remove="Diagnostics\Views\EditFavoritesPropertiesDialog.xaml" />
+    <None Remove="Diagnostics\Views\EditFavoritesPropertiesView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Include="Diagnostics\Views\EditFavoritesPropertiesDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Diagnostics\Views\EditFavoritesPropertiesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets\Icons\" />
+    <Folder Include="Assets\Styles\" />
+  </ItemGroup>
 </Project>

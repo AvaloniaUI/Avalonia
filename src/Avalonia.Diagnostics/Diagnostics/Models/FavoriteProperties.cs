@@ -8,6 +8,7 @@ namespace Avalonia.Diagnostics.Models
     class FavoriteProperties
     {
         public string Name { get; set; }
+        [Newtonsoft.Json.JsonProperty]
         public string[] Properties { get; internal set; }
 
         public override string ToString()

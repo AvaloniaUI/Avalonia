@@ -1,0 +1,61 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:Avalonia.Diagnostics.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Avalonia.Diagnostics.Views.EditFavoritesPropertiesView">
+  <UserControl.Resources>
+    <converters:StringArrayConveter x:Key="ac"
+                                    Separator=";"/>
+  </UserControl.Resources>
+  <DockPanel>
+    <UniformGrid DockPanel.Dock="Bottom" Columns="3"
+                 HorizontalAlignment="Right">
+      <Button Content="Restore"
+              IsCancel="True"
+              Command="{Binding Restore}"
+              CommandParameter="{Binding $parent[Window]}"/>      
+      <Button Content="Cancel"
+              IsCancel="True"
+              Command="{Binding Cancel}"
+              CommandParameter="{Binding $parent[Window]}"/>
+      <Button Content="Accept"
+              Command="{Binding Accept}"
+              CommandParameter="{Binding $parent[Window]}"/>
+    </UniformGrid>
+    <StackPanel DockPanel.Dock="Bottom" IsEnabled="{Binding IsSelected}">
+      <TextBlock Text="Dettails" FontWeight="Bold"/>
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+        <TextBlock Text="Name"
+                   VerticalAlignment="Center"/>
+        <TextBox Text="{Binding SelectedFavorite.Name}"
+                 VerticalAlignment="Center"
+                 Grid.Column="1"/>
+        <TextBlock Text="Properties"
+                   VerticalAlignment="Center"
+                   Grid.Row="1"/>
+        <TextBox Text="{Binding SelectedFavorite.Properies, Converter={StaticResource ac}}"
+                 Grid.Row="1"
+                 Grid.Column="1">
+        </TextBox>
+      </Grid>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Right">
+      <Button Content="Add"
+              Command="{Binding Add}"/>
+      <Button Content="Remove"
+              Command="{Binding Remove}"
+              CommandParameter="{Binding SelectedFavorite}"/>
+    </StackPanel>
+    <ListBox Items="{Binding Favorities}"
+       SelectedItem="{Binding SelectedFavorite}">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Name}"/>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+
+    </ListBox>
+  </DockPanel>
+</UserControl>
