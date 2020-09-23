@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -15,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost, IFocusScope
+    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
         private readonly TopLevel _parent;
         private PopupPositionerParameters _positionerParameters;        

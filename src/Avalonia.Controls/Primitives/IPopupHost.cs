@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// (<see cref="PopupRoot"/>) or an <see cref="OverlayPopupHost"/> which is created
     /// on an <see cref="OverlayLayer"/>.
     /// </remarks>
-    public interface IPopupHost : IDisposable
+    public interface IPopupHost : IDisposable, IFocusScope
     {
         /// <summary>
         /// Sets the control to display in the popup.
