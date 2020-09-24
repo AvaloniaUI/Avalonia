@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Input;
 using Avalonia.Controls.Utils;
+using Avalonia.Data.Core;
 using Avalonia.Input;
 
 namespace Avalonia.Controls
@@ -12,14 +13,14 @@ namespace Avalonia.Controls
 
         class HotkeyCommandWrapper : ICommand
         {
-            public HotkeyCommandWrapper(IControl control)
+            public HotkeyCommandWrapper(ICommandSource control)
             {
-                Control = control;
+                CommandSource = control;
             }
 
-            public readonly IControl Control;
+            public readonly ICommandSource CommandSource;
 
-            private ICommand GetCommand() => Control.GetValue(Button.CommandProperty);
+            private ICommand GetCommand() => CommandSource.Command;
 
             public bool CanExecute(object parameter) => GetCommand()?.CanExecute(parameter) ?? false;
 
@@ -37,6 +38,7 @@ namespace Avalonia.Controls
             private TopLevel _root;
             private IDisposable _parentSub;
             private IDisposable _hotkeySub;
+            private IDisposable _commandParameterChangedSubscriber;
             private KeyGesture _hotkey;
             private readonly HotkeyCommandWrapper _wrapper;
             private KeyBinding _binding;
@@ -44,7 +46,7 @@ namespace Avalonia.Controls
             public Manager(IControl control)
             {
                 _control = control;
-                _wrapper = new HotkeyCommandWrapper(_control);
+                _wrapper = new HotkeyCommandWrapper(_control as ICommandSource);
             }
 
             public void Init()
@@ -77,6 +79,7 @@ namespace Avalonia.Controls
             {
                 if (_root != null && _binding != null)
                     _root.KeyBindings.Remove(_binding);
+                _commandParameterChangedSubscriber?.Dispose();
                 _binding = null;
             }
 
@@ -85,6 +88,8 @@ namespace Avalonia.Controls
                 if (_root != null && _hotkey != null)
                 {
                     _binding = new KeyBinding() {Gesture = _hotkey, Command = _wrapper};
+                    _commandParameterChangedSubscriber = _binding.Bind(KeyBinding.CommandParameterProperty
+                        , ExpressionObserver.Create(((ICommandSource)_control), o => o.CommandParameter));
                     _root.KeyBindings.Add(_binding);
                 }
             }
@@ -102,7 +107,7 @@ namespace Avalonia.Controls
             HotKeyProperty.Changed.Subscribe(args =>
             {
                 var control = args.Sender as IControl;
-                if (args.OldValue != null|| control == null)
+                if (args.OldValue != null || control == null || !(control is ICommandSource)) 
                     return;
                 new Manager(control).Init();
             });
