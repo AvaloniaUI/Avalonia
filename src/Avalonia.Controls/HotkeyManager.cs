@@ -22,7 +22,7 @@ namespace Avalonia.Controls
 
             private ICommand GetCommand() => CommandSource.Command;
 
-            public bool CanExecute(object parameter) => GetCommand()?.CanExecute(parameter) ?? false;
+            public bool CanExecute(object parameter) => CommandSource.IsEffectivelyEnabled;
 
             public void Execute(object parameter) => GetCommand()?.Execute(parameter);
 
