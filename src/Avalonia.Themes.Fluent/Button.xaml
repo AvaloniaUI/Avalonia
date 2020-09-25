@@ -77,7 +77,7 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundPressed}" />
   </Style>
 
-  <Style Selector="Button">
+  <Style Selector="Button, RepeatButton, ToggleButton">
     <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Transitions">
       <Transitions>
@@ -86,7 +86,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="Button:pressed">
+  <Style Selector="Button:pressed, RepeatButton:pressed, ToggleButton:pressed">
     <Setter Property="RenderTransform" Value="scale(0.98)" />    
   </Style>
 

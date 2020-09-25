@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -21,6 +22,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A scrollbar control.
     /// </summary>
+    [PseudoClasses(":vertical", ":horizontal")]
     public class ScrollBar : RangeBase
     {
         /// <summary>

@@ -3,6 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Media;
 using System.Diagnostics;
@@ -12,6 +13,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Represents an individual <see cref="T:Avalonia.Controls.DataGrid" /> row header. 
     /// </summary>
+    [PseudoClasses(":invalid", ":selected", ":editing", ":current")]
     public class DataGridRowHeader : ContentControl
     {
         private const string DATAGRIDROWHEADER_elementRootName = "PART_Root";
