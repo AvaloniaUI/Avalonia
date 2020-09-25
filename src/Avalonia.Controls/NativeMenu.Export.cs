@@ -77,7 +77,7 @@ namespace Avalonia.Controls
             {
                 if (args.Sender is TopLevel tl)
                 {
-                    GetInfo(tl).Exporter?.SetNativeMenu((NativeMenu)args.NewValue);
+                    GetInfo(tl).Exporter?.SetNativeMenu(args.NewValue.GetValueOrDefault());
                 }
             });
         }
