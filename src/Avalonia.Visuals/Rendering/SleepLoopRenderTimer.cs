@@ -45,14 +45,13 @@ namespace Avalonia.Rendering
 
         void LoopProc()
         {
-            var now = _st.Elapsed;
-            var lastTick = now;
-
+            var lastTick = _st.Elapsed;
             while (true)
             {
+                var now = _st.Elapsed;
                 var timeTillNextTick = lastTick + _timeBetweenTicks - now;
                 if (timeTillNextTick.TotalMilliseconds > 1) Thread.Sleep(timeTillNextTick);
-
+                lastTick = now;
                 lock (_lock)
                 {
                     if (_count == 0)
@@ -63,7 +62,7 @@ namespace Avalonia.Rendering
                 }
 
                 _tick?.Invoke(now);
-                now = _st.Elapsed;
+                
             }
         }
 

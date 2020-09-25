@@ -211,7 +211,7 @@ namespace Avalonia.Layout
                             anchorPosition = new Point(anchorBounds.X, anchorBounds.Y);
                         }
                     }
-                    else
+                    else if (anchorIndex >= 0)
                     {
                         // It is possible to end up in a situation during a collection change where GetAnchorForTargetElement returns an index
                         // which is not in the realized range. Eg. insert one item at index 0 for a grid layout. 
