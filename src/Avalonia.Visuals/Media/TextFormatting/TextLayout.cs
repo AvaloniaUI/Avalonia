@@ -126,15 +126,12 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textLine in TextLines)
             {
-                using (context.PushPostTransform(Matrix.CreateTranslation(0, currentY)))
-                {
-                    var offsetX = TextLine.GetParagraphOffsetX(textLine.LineMetrics.Size.Width, Size.Width,
-                        _paragraphProperties.TextAlignment);
+                var offsetX = TextLine.GetParagraphOffsetX(textLine.LineMetrics.Size.Width, Size.Width,
+                    _paragraphProperties.TextAlignment);
 
-                    using (context.PushPostTransform(Matrix.CreateTranslation(offsetX, 0)))
-                    {
-                        textLine.Draw(context);
-                    }
+                using (context.PushPostTransform(Matrix.CreateTranslation(offsetX, currentY)))
+                {
+                    textLine.Draw(context);
                 }
 
                 currentY += textLine.LineMetrics.Size.Height;
