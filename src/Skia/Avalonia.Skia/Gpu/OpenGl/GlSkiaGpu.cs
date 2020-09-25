@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
+using Avalonia.OpenGL.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -8,10 +9,12 @@ namespace Avalonia.Skia
     class GlSkiaGpu : IOpenGlAwareSkiaGpu
     {
         private GRContext _grContext;
+        private IGlContext _glContext;
 
-        public GlSkiaGpu(IWindowingPlatformGlFeature gl, long? maxResourceBytes)
+        public GlSkiaGpu(IPlatformOpenGlInterface openGl, long? maxResourceBytes)
         {
-            var context = gl.MainContext;
+            var context = openGl.PrimaryContext;
+            _glContext = context;
             using (context.MakeCurrent())
             {
                 using (var iface = context.Version.Type == GlProfileType.OpenGL ?
@@ -40,6 +43,6 @@ namespace Avalonia.Skia
             return null;
         }
 
-        public IOpenGlTextureBitmapImpl CreateOpenGlTextureBitmap() => new OpenGlTextureBitmapImpl();
+        public IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi) => new GlOpenGlBitmapImpl(_glContext, size, dpi);
     }
 }
