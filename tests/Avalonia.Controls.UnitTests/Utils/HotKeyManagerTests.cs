@@ -101,6 +101,49 @@ namespace Avalonia.Controls.UnitTests.Utils
             }
         }
 
+
+        [Theory]
+        [MemberData(nameof(ElementsFactory))]
+        public void HotKeyManager_Should_Do_Not_Executed_When_IsEnabled_False(string factoryName, Factory factory)
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                var styler = new Mock<Styler>();
+                var target = new KeyboardDevice();
+                var isExecuted = false;
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
+                    .Bind<IStyler>().ToConstant(styler.Object);
+
+                var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                var action = new Action<object>(parameter =>
+                {
+                    isExecuted = true;
+                });
+
+                var root = new Window();
+                var element = factory(0, action, root) as InputElement;
+
+                element.IsEnabled = false;
+
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter.ApplyTemplate();
+
+                HotKeyManager.SetHotKey(element, gesture);
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                Assert.True(isExecuted == false, $"{factoryName} Execution raised when IsEnabled is false.");
+            }
+        }
+
         public static TheoryData<string, Factory> ElementsFactory =>
             new TheoryData<string, Factory>()
             {
