@@ -395,6 +395,53 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Focusable_Controls_In_Popup_Should_Get_Focus()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+
+                var tb = new TextBox();
+                var b = new Button();
+                var p = new Popup
+                {
+                    PlacementTarget = window,
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            tb,
+                            b
+                        }
+                    }
+                };
+                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+                window.Show();
+
+                p.Open();
+
+                if(p.Host is OverlayPopupHost host)
+                {
+                    //Need to measure/arrange for visual children to show up
+                    //in OverlayPopupHost
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                tb.Focus();
+
+                Assert.True(FocusManager.Instance?.Current == tb);
+
+                //Ensure focus remains in the popup
+                var nextFocus = KeyboardNavigationHandler.GetNext(FocusManager.Instance.Current, NavigationDirection.Next);
+
+                Assert.True(nextFocus == b);
+
+                p.Close();
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
@@ -407,6 +454,21 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     })));
         }
 
+        private IDisposable CreateServicesWithFocus()
+        {
+            return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
+                new MockWindowingPlatform(null,
+                    x =>
+                    {
+                        if (UsePopupHost)
+                            return null;
+                        return MockWindowingPlatform.CreatePopupMock(x).Object;
+                    }), 
+                    focusManager: new FocusManager(),
+                    keyboardDevice: () => new KeyboardDevice()));
+        }
+
+       
         private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
