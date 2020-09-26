@@ -90,12 +90,9 @@ namespace Avalonia.Skia
                 throw new OpenGlException("Unable to create FBO with stencil");
             }
 
-            ReadSurface = SKSurface.Create(_grContext, new GRBackendTexture(pixelSize.Width, pixelSize.Height, false,
-                new GRGlTextureInfo(GL_TEXTURE_2D, (uint)_texture, (uint)InternalFormat)), SKColorType.Rgba8888);
-
             var target = new GRBackendRenderTarget(pixelSize.Width, pixelSize.Height, 0, 0,
                 new GRGlFramebufferInfo((uint)_fbo, SKColorType.Rgba8888.ToGlSizedFormat()));
-            WriteSurface = SKSurface.Create(_grContext, target,
+            Surface = SKSurface.Create(_grContext, target,
                 GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888);
             CanBlit = gl.BlitFramebuffer != null;
         }
@@ -104,10 +101,8 @@ namespace Avalonia.Skia
         {
             using (_glContext.EnsureCurrent())
             {
-                WriteSurface?.Dispose();
-                WriteSurface = null;
-                ReadSurface?.Dispose();
-                ReadSurface = null;
+                Surface?.Dispose();
+                Surface = null;
                 var gl = _glContext.GlInterface;
                 if (_fbo != 0)
                 {
@@ -119,8 +114,7 @@ namespace Avalonia.Skia
             }
         }
 
-        public SKSurface WriteSurface { get; private set; }
-        public SKSurface ReadSurface { get; private set; }
+        public SKSurface Surface { get; private set; }
         public bool CanBlit { get; }
         public void Blit()
         {
