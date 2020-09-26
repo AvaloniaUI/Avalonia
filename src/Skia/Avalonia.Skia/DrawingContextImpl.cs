@@ -583,13 +583,13 @@ namespace Avalonia.Skia
                     var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
                     var radius = (float)(radialGradient.Radius * targetSize.Width);
 
-                    // TODO: There is no SetAlpha in SkiaSharp
-                    //paint.setAlpha(128);
+                    var origin = radialGradient.GradientOrigin.ToPixels(targetSize).ToSKPoint();
 
                     // would be nice to cache these shaders possibly?
-                    using (var shader =
-                        SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
-                    {
+                    using (var shader = SKShader.CreateCompose(
+                        SKShader.CreateColor(stopColors.Last()),
+                        SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, stopColors.Reverse().ToArray(), stopOffsets, tileMode))
+                    ) {
                         paintWrapper.Paint.Shader = shader;
                     }
 
