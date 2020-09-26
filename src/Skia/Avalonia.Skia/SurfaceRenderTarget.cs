@@ -21,20 +21,20 @@ namespace Avalonia.Skia
 
         class SkiaSurfaceWrapper : ISkiaSurface
         {
-            public SKSurface WriteSurface { get; private set; }
+            public SKSurface Surface { get; private set; }
             public SKSurface ReadSurface { get; private set; }
             public bool CanBlit => false;
             public void Blit() => throw new NotSupportedException();
 
             public SkiaSurfaceWrapper(SKSurface surface)
             {
-                WriteSurface = ReadSurface = surface;
+                Surface = ReadSurface = surface;
             }
 
             public void Dispose()
             {
-                WriteSurface?.Dispose();
-                WriteSurface = null;
+                Surface?.Dispose();
+                Surface = null;
                 ReadSurface = null;
             }
         }
@@ -57,7 +57,7 @@ namespace Avalonia.Skia
                 _surface = new SkiaSurfaceWrapper(CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height,
                     createInfo.Format));
 
-            _canvas = _surface?.WriteSurface.Canvas;
+            _canvas = _surface?.Surface.Canvas;
 
             if (_surface == null || _canvas == null)
             {
@@ -96,7 +96,7 @@ namespace Avalonia.Skia
             
             var createInfo = new DrawingContextImpl.CreateInfo
             {
-                Surface = _surface.WriteSurface,
+                Surface = _surface.Surface,
                 Dpi = Dpi,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = _disableLcdRendering,
@@ -138,12 +138,12 @@ namespace Avalonia.Skia
         {
             if (sourceRect.Left == 0 && sourceRect.Top == 0 && sourceRect.Size == destRect.Size)
             {
-                _surface.WriteSurface.Canvas.Flush();
+                _surface.Surface.Canvas.Flush();
                 if (context.Canvas.TotalMatrix.IsIdentity && _surface.CanBlit && destRect.Top == 0 &&
                     destRect.Left == 0)
                     _surface.Blit();
                 else
-                    _surface.ReadSurface.Draw(context.Canvas, destRect.Left, destRect.Top, paint);
+                    _surface.Surface.Draw(context.Canvas, destRect.Left, destRect.Top, paint);
             }
             else
                 using (var image = SnapshotImage())
@@ -158,7 +158,7 @@ namespace Avalonia.Skia
         /// <returns>Image snapshot.</returns>
         public SKImage SnapshotImage()
         {
-            return _surface.ReadSurface.Snapshot();
+            return _surface.Surface.Snapshot();
         }
 
         /// <summary>

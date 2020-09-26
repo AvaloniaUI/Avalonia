@@ -26,8 +26,7 @@ namespace Avalonia.Skia
     
     public interface ISkiaSurface : IDisposable
     {
-        SKSurface WriteSurface { get; }
-        SKSurface ReadSurface { get; }
+        SKSurface Surface { get; }
         bool CanBlit { get; }
         void Blit();
 
