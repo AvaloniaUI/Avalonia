@@ -682,17 +682,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
             }
         }
 
-        private class WithNewBar : Class1
-        {
-            private string _bar;
-            
-            public new string Bar
-            {
-                get { return _bar; }
-                set { _bar = value; }
-            }
-        }
-
         private class Class3 : Class1
         {
         }
