@@ -2,6 +2,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
 
+  <Design.PreviewWith>
+    <Grid ColumnDefinitions="*,20,*"
+          Height="300"
+          Width="200"
+          Margin="20">
+      <ScrollViewer>
+        <Border Height="1000" Background="#ccc"/>
+      </ScrollViewer>
+      <ScrollViewer Grid.Column="2" Classes="menuscroller">
+        <Border Height="1000" Background="#ccc"/>
+      </ScrollViewer>
+    </Grid>
+  </Design.PreviewWith>
+  
   <Style Selector="ScrollViewer">
     <Setter Property="Background"
             Value="Transparent" />
@@ -88,7 +102,14 @@
                 <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Viewport.Height"/>
               </MultiBinding>
             </RepeatButton.IsVisible>
-            <Path Data="M 0 4 L 8 4 L 4 0 Z"/>
+            <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
+                     Height="{DynamicResource ScrollBarButtonArrowIconFontSize}">
+              <Path VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Data="M 19.091797 14.970703 L 10 5.888672 L 0.908203 14.970703 L 0.029297 14.091797 L 10 4.111328 L 19.970703 14.091797 Z"
+                    Width="20"
+                    Height="20" />
+            </Viewbox>
           </RepeatButton>
           <RepeatButton DockPanel.Dock="Bottom"
                         BorderThickness="0"
@@ -106,7 +127,14 @@
                 <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Viewport.Height"/>
               </MultiBinding>
             </RepeatButton.IsVisible>
-            <Path Data="M 0 0 L 4 4 L 8 0 Z"/>
+            <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
+                     Height="{DynamicResource ScrollBarButtonArrowIconFontSize}">
+              <Path VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Data="M 18.935547 4.560547 L 19.814453 5.439453 L 10 15.253906 L 0.185547 5.439453 L 1.064453 4.560547 L 10 13.496094 Z"
+                    Width="20"
+                    Height="20" />
+            </Viewbox>
           </RepeatButton>
           <ScrollContentPresenter Name="PART_ContentPresenter"
                                   CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
@@ -120,11 +148,11 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="ScrollViewer.menuscroller /template/ RepeatButton > Path">
+  <Style Selector="ScrollViewer.menuscroller /template/ RepeatButton > Viewbox > Path">
     <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForeground}" />
   </Style>
 
-  <Style Selector="ScrollViewer.menuscroller /template/ RepeatButton:pointerover > Path">
+  <Style Selector="ScrollViewer.menuscroller /template/ RepeatButton:pointerover > Viewbox > Path">
     <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForegroundPointerOver}" />
   </Style>
 
