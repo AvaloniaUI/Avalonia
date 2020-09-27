@@ -38,7 +38,7 @@ namespace Avalonia.Skia
                 ReadSurface = null;
             }
         }
-        
+
         /// <summary>
         /// Create new surface render target.
         /// </summary>
@@ -93,7 +93,7 @@ namespace Avalonia.Skia
         {
             _canvas.RestoreToCount(-1);
             _canvas.ResetMatrix();
-            
+
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Surface = _surface.Surface,
@@ -136,17 +136,21 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
-            using (var image = SnapshotImage())
+            if (_surface.CanBlit)
             {
                 _surface.Surface.Canvas.Flush();
-                if (context.Canvas.TotalMatrix.IsIdentity && _surface.CanBlit && destRect.Top == 0 &&
-                    destRect.Left == 0)
+                if (true)
                     _surface.Blit();
                 else
                     _surface.Surface.Draw(context.Canvas, destRect.Left, destRect.Top, paint);
             }
+            else
+                using (var image = SnapshotImage())
+                {
+                    context.Canvas.DrawImage(image, sourceRect, destRect, paint);
+                }
         }
-        
+
         /// <summary>
         /// Create Skia image snapshot from a surface.
         /// </summary>
