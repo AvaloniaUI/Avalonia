@@ -58,7 +58,7 @@ namespace Avalonia.Win32
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
-        private static readonly ManagedDeferredRendererLock s_rendererLock = new ManagedDeferredRendererLock();
+        private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
 
@@ -102,6 +102,7 @@ namespace Avalonia.Win32
                 IsResizable = true,
                 Decorations = SystemDecorations.Full
             };
+            _rendererLock = new ManagedDeferredRendererLock();
 
             _isUsingComposition = Win32Platform.Options.UseWindowsUIComposition &&
                 Win32Platform.WindowsVersion.Major >= 10 && Win32Platform.WindowsVersion.Build >= 16299 &&
@@ -445,7 +446,7 @@ namespace Avalonia.Win32
                 return customRendererFactory.Create(root, loop);
 
             return Win32Platform.UseDeferredRendering ?
-                (IRenderer)new DeferredRenderer(root, loop, rendererLock: s_rendererLock) :
+                (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock) :
                 new ImmediateRenderer(root);
         }
 
