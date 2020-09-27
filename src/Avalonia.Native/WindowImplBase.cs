@@ -61,7 +61,7 @@ namespace Avalonia.Native
         private NativeControlHostImpl _nativeControlHost;
         private IGlContext _glContext;
 
-        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, GlPlatformFeature glFeature)
+        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, AvaloniaNativePlatformOpenGlInterface glFeature)
         {
             _gpu = opts.UseGpu && glFeature != null;
             _deferredRendering = opts.UseDeferredRendering;

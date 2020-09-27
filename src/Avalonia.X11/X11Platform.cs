@@ -7,6 +7,7 @@ using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.X11;
@@ -70,9 +71,9 @@ namespace Avalonia.X11
             if (options.UseGpu)
             {
                 if (options.UseEGL)
-                    EglGlPlatformFeature.TryInitialize();
+                    EglPlatformOpenGlInterface.TryInitialize();
                 else
-                    GlxGlPlatformFeature.TryInitialize(Info, Options.GlProfiles);
+                    GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
             }
 
             

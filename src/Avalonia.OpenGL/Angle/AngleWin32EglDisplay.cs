@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-
-using static Avalonia.OpenGL.EglConsts;
+using Avalonia.OpenGL.Egl;
+using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Angle
 {
@@ -52,7 +52,7 @@ namespace Avalonia.OpenGL.Angle
             }
         }
 
-        private AngleWin32EglDisplay(EglInterface egl, AngleInfo info) : base(egl, info.Display)
+        private AngleWin32EglDisplay(EglInterface egl, AngleInfo info) : base(egl, false, info.Display)
         {
             PlatformApi = info.PlatformApi;
         }
@@ -78,11 +78,11 @@ namespace Avalonia.OpenGL.Angle
             return d3dDeviceHandle;
         }
 
-        public EglSurface WrapDirect3D11Texture(IntPtr handle)
+        public EglSurface WrapDirect3D11Texture(EglPlatformOpenGlInterface egl, IntPtr handle)
         {
             if (PlatformApi != AngleOptions.PlatformApi.DirectX11)
                 throw new InvalidOperationException("Current platform API is " + PlatformApi);
-            return CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, new[] { EGL_NONE, EGL_NONE });
+            return  egl.CreatePBufferFromClientBuffer(EGL_D3D_TEXTURE_ANGLE, handle, new[] { EGL_NONE, EGL_NONE });
         }
     }
 }
