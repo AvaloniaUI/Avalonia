@@ -39,7 +39,6 @@ namespace Avalonia.Rendering
 
                 if (!scene.Layers.Exists(layer.LayerRoot))
                 {
-                    layer.Bitmap.Dispose();
                     _inner.RemoveAt(i);
                     _index.Remove(layer.LayerRoot);
                 }
@@ -50,11 +49,6 @@ namespace Avalonia.Rendering
 
         public void Clear()
         {
-            foreach (var layer in _index.Values)
-            {
-                layer.Bitmap.Dispose();
-            }
-
             _index.Clear();
             _inner.Clear();
         }
