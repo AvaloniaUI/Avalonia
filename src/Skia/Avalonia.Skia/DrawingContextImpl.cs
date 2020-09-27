@@ -585,12 +585,43 @@ namespace Avalonia.Skia
 
                     var origin = radialGradient.GradientOrigin.ToPixels(targetSize).ToSKPoint();
 
-                    // would be nice to cache these shaders possibly?
-                    using (var shader = SKShader.CreateCompose(
-                        SKShader.CreateColor(stopColors.Last()),
-                        SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, stopColors.Reverse().ToArray(), stopOffsets, tileMode))
-                    ) {
-                        paintWrapper.Paint.Shader = shader;
+                    if (origin.Equals(center))
+                    {
+                        // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
+                        using (var shader =
+                            SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
+                    }
+                    else
+                    {
+                        // when the origin is different to the center use a two point ConicalGradient to match the behaviour of D2D
+
+                        // reverse the order of the stops to match D2D
+                        var reversedColors = new SKColor[stopColors.Length];
+                        Array.Copy(stopColors, reversedColors, stopColors.Length);
+                        Array.Reverse(reversedColors);
+
+                        // and then reverse the reference point of the stops
+                        var reversedStops = new float[stopOffsets.Length];
+                        for (var i = 0; i < stopOffsets.Length; i++)
+                        {
+                            reversedStops[i] = stopOffsets[i];
+                            if (reversedStops[i] > 0 && reversedStops[i] < 1)
+                            {
+                                reversedStops[i] = Math.Abs(1 - stopOffsets[i]);
+                            }
+                        }
+                            
+                        // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
+                        using (var shader = SKShader.CreateCompose(
+                            SKShader.CreateColor(reversedColors[0]),
+                            SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode)
+                        ))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
                     }
 
                     break;

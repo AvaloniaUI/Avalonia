@@ -44,6 +44,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+        /// <summary>
+        /// Tests using a GradientOrigin that falls inside of the circle described by Center/Radius.
+        /// </summary>
         [Fact]
         public async Task RadialGradientBrush_RedBlue_Offset_Inside()
         {
@@ -70,6 +73,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+        /// <summary>
+        /// Tests using a GradientOrigin that falls outside of the circle described by Center/Radius.
+        /// </summary>
         [Fact]
         public async Task RadialGradientBrush_RedBlue_Offset_Outside()
         {
@@ -96,6 +102,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+        /// <summary>
+        /// Tests using a GradientOrigin that falls inside of the circle described by Center/Radius.
+        /// </summary>
         [Fact]
         public async Task RadialGradientBrush_RedGreenBlue_Offset_Inside()
         {
@@ -114,7 +123,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             new GradientStop { Color = Colors.Green, Offset = 0.5 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }
                         },
-                        GradientOrigin = new RelativePoint(0.25, 0.25, RelativeUnit.Relative)
+                        GradientOrigin = new RelativePoint(0.25, 0.25, RelativeUnit.Relative),
+                        Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
+                        Radius = 0.5                        
                     }
                 }
             };
@@ -123,6 +134,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+        /// <summary>
+        /// Tests using a GradientOrigin that falls outside of the circle described by Center/Radius.
+        /// </summary>
         [Fact]
         public async Task RadialGradientBrush_RedGreenBlue_Offset_Outside()
         {
@@ -138,10 +152,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                         GradientStops =
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
-                            new GradientStop { Color = Colors.Green, Offset = 0.5 },
+                            new GradientStop { Color = Colors.Green, Offset = 0.25 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }
                         },
-                        GradientOrigin = new RelativePoint(0.1, 0.1, RelativeUnit.Relative)
+                        GradientOrigin = new RelativePoint(0.1, 0.1, RelativeUnit.Relative),
+                        Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
+                        Radius = 0.5
                     }
                 }
             };
