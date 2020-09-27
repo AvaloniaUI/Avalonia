@@ -56,7 +56,7 @@ namespace Avalonia.Win32
 
             var interop = _compositor.As<ICompositorInterop>();
 
-            var display = Win32GlManager.EglFeature.Display as AngleWin32EglDisplay;
+            var display = Win32GlManager.EglPlatformInterface.Display as AngleWin32EglDisplay;
 
             _graphicsDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
         }

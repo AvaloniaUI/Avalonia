@@ -1,6 +1,6 @@
 ﻿// ReSharper disable UnusedMember.Global
 // ReSharper disable IdentifierTypo
-namespace Avalonia.OpenGL
+namespace Avalonia.OpenGL.Egl
 {
     public static class EglConsts
     {

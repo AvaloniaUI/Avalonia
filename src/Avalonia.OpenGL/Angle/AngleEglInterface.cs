@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Avalonia.OpenGL.Egl;
 
 namespace Avalonia.OpenGL.Angle
 {

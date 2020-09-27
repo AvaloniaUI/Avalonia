@@ -2,21 +2,20 @@
 using Avalonia.OpenGL;
 using Avalonia.Native.Interop;
 using System.Drawing;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
-    class GlPlatformFeature : IWindowingPlatformGlFeature
+    class AvaloniaNativePlatformOpenGlInterface : IPlatformOpenGlInterface
     {
         private readonly IAvnGlDisplay _display;
 
-        public GlPlatformFeature(IAvnGlDisplay display)
+        public AvaloniaNativePlatformOpenGlInterface(IAvnGlDisplay display)
         {
             _display = display;
             var immediate = display.CreateContext(null);
-            var deferred = display.CreateContext(immediate);
             
-
             int major, minor;
             GlInterface glInterface;
             using (immediate.MakeCurrent())
@@ -33,19 +32,22 @@ namespace Avalonia.Native
             }
 
             GlDisplay = new GlDisplay(display, glInterface, immediate.SampleCount, immediate.StencilSize);
-            
-            ImmediateContext = new GlContext(GlDisplay, immediate, _version);
-            DeferredContext = new GlContext(GlDisplay, deferred, _version);
+            MainContext = new GlContext(GlDisplay, null, immediate, _version);
         }
 
-        internal IGlContext ImmediateContext { get; }
-        public IGlContext MainContext => DeferredContext;
-        internal GlContext DeferredContext { get; }
+        internal GlContext MainContext { get; }
+        public IGlContext PrimaryContext => MainContext;
+        
+        public bool CanShareContexts => true;
+        public bool CanCreateContexts => true;
         internal GlDisplay GlDisplay;
         private readonly GlVersion _version;
 
+        public IGlContext CreateSharedContext() => new GlContext(GlDisplay,
+            MainContext, _display.CreateContext(MainContext.Context), _version);
+
         public IGlContext CreateContext() => new GlContext(GlDisplay,
-            _display.CreateContext(((GlContext)ImmediateContext).Context), _version);
+            null, _display.CreateContext(null), _version);
     }
 
     class GlDisplay
@@ -72,11 +74,13 @@ namespace Avalonia.Native
     class GlContext : IGlContext
     {
         private readonly GlDisplay _display;
+        private readonly GlContext _sharedWith;
         public IAvnGlContext Context { get; private set; }
 
-        public GlContext(GlDisplay display, IAvnGlContext context, GlVersion version)
+        public GlContext(GlDisplay display, GlContext sharedWith, IAvnGlContext context, GlVersion version)
         {
             _display = display;
+            _sharedWith = sharedWith;
             Context = context;
             Version = version;
         }
@@ -86,6 +90,17 @@ namespace Avalonia.Native
         public int SampleCount => _display.SampleCount;
         public int StencilSize => _display.StencilSize;
         public IDisposable MakeCurrent() => Context.MakeCurrent();
+        public IDisposable EnsureCurrent() => MakeCurrent();
+
+        public bool IsSharedWith(IGlContext context)
+        {
+            var c = (GlContext)context;
+            return c == this
+                   || c._sharedWith == this
+                   || _sharedWith == context
+                   || _sharedWith != null && _sharedWith == c._sharedWith;
+        }
+
 
         public void Dispose()
         {
@@ -108,7 +123,7 @@ namespace Avalonia.Native
 
         public IGlPlatformSurfaceRenderingSession BeginDraw()
         {
-            var feature = (GlPlatformFeature)AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
+            var feature = (AvaloniaNativePlatformOpenGlInterface)AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
             return new GlPlatformSurfaceRenderingSession(_context, _target.BeginDrawing());
         }
 

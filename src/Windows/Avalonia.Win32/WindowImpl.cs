@@ -8,6 +8,8 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
@@ -103,17 +105,18 @@ namespace Avalonia.Win32
 
             _isUsingComposition = Win32Platform.Options.UseWindowsUIComposition &&
                 Win32Platform.WindowsVersion.Major >= 10 && Win32Platform.WindowsVersion.Build >= 16299 &&
-                    Win32GlManager.EglFeature.Display is AngleWin32EglDisplay angleDisplay &&
+                    Win32GlManager.EglPlatformInterface != null &&
+                    Win32GlManager.EglPlatformInterface.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
 
-            if (Win32GlManager.EglFeature != null)
+            if (Win32GlManager.EglPlatformInterface != null)
             {
                 if (_isUsingComposition)
                 {
-                    var cgl = new CompositionEglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+                    var cgl = new CompositionEglGlPlatformSurface(Win32GlManager.EglPlatformInterface, this);
                     _blurHost = cgl.AttachToCompositionTree(_hwnd);
 
                     _gl = cgl;
@@ -122,7 +125,7 @@ namespace Avalonia.Win32
                 }
                 else
                 {
-                    _gl = new EglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+                    _gl = new EglGlPlatformSurface(Win32GlManager.EglPlatformInterface, this);
                 }
             }
 
