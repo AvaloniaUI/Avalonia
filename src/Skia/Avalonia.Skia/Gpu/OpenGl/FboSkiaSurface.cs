@@ -97,15 +97,16 @@ namespace Avalonia.Skia
                 new GRGlFramebufferInfo((uint)_fbo, SKColorType.Rgba8888.ToGlSizedFormat()));
             WriteSurface = SKSurface.Create(_grContext, target,
                 GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888);
+            CanBlit = gl.BlitFramebuffer != null;
         }
         
         public void Dispose()
         {
             using (_glContext.EnsureCurrent())
             {
-                WriteSurface.Dispose();
+                WriteSurface?.Dispose();
                 WriteSurface = null;
-                ReadSurface.Dispose();
+                ReadSurface?.Dispose();
                 ReadSurface = null;
                 var gl = _glContext.GlInterface;
                 if (_fbo != 0)
@@ -120,5 +121,15 @@ namespace Avalonia.Skia
 
         public SKSurface WriteSurface { get; private set; }
         public SKSurface ReadSurface { get; private set; }
+        public bool CanBlit { get; }
+        public void Blit()
+        {
+            var gl = _glContext.GlInterface;
+            gl.GetIntegerv(GL_READ_FRAMEBUFFER_BINDING, out var oldRead);
+            gl.BindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
+            gl.BlitFramebuffer(0, 0, _pixelSize.Width, _pixelSize.Height, 0, 0, _pixelSize.Width, _pixelSize.Height,
+                GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            gl.BindFramebuffer(GL_READ_FRAMEBUFFER, oldRead);
+        }
     }
 }
