@@ -89,10 +89,10 @@ namespace Avalonia.Rendering
         }
 
         /// <inheritdoc/>
-        public bool DrawFps { get; set; }
+        public bool DrawFps { get => false; set{} }
 
         /// <inheritdoc/>
-        public bool DrawDirtyRects { get; set; }
+        public bool DrawDirtyRects { get => false; set{} }
 
         /// <summary>
         /// Gets or sets a path to which rendered frame should be rendered for debugging.
@@ -305,13 +305,13 @@ namespace Avalonia.Rendering
             using (sceneRef)
             {
                 var scene = sceneRef.Item;
-                if (scene.Generation != _lastSceneId)
+                //if (scene.Generation != _lastSceneId)
                 {
                     EnsureDrawingContext(ref context);
 
                     Layers.Update(scene, context);
 
-                    RenderToLayers(scene);
+                    RenderToLayers(context, scene);
 
                     if (DebugFramesPath != null)
                     {
@@ -387,19 +387,19 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderToLayers(Scene scene)
+        private void RenderToLayers(IDrawingContextImpl context, Scene scene)
         {
             foreach (var layer in scene.Layers)
             {
                 var renderLayer = Layers[layer.LayerRoot];
                 if (layer.Dirty.IsEmpty && !renderLayer.IsEmpty)
                     continue;
-                var renderTarget = renderLayer.Bitmap;
+                //var renderTarget = renderLayer.Bitmap;
                 var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
                 if (node != null)
                 {
-                    using (var context = renderTarget.Item.CreateDrawingContext(this))
+                    //using (var context) = renderTarget.Item.CreateDrawingContext(this))
                     {
                         if (renderLayer.IsEmpty)
                         {
@@ -485,45 +485,10 @@ namespace Avalonia.Rendering
         {
             EnsureDrawingContext(ref context);
 
-            context.Clear(Colors.Transparent);
-
+            
             var clientRect = new Rect(scene.Size);
 
-            foreach (var layer in scene.Layers)
-            {
-                var bitmap = Layers[layer.LayerRoot].Bitmap;
-                var sourceRect = new Rect(0, 0, bitmap.Item.PixelSize.Width, bitmap.Item.PixelSize.Height);
 
-                if (layer.GeometryClip != null)
-                {
-                    context.PushGeometryClip(layer.GeometryClip);
-                }
-
-                if (layer.OpacityMask == null)
-                {
-                    context.DrawBitmap(bitmap, layer.Opacity, sourceRect, clientRect);
-                }
-                else
-                {
-                    context.DrawBitmap(bitmap, layer.OpacityMask, layer.OpacityMaskRect, sourceRect);
-                }
-
-                if (layer.GeometryClip != null)
-                {
-                    context.PopGeometryClip();
-                }
-            }
-
-            if (_overlay != null)
-            {
-                var sourceRect = new Rect(0, 0, _overlay.Item.PixelSize.Width, _overlay.Item.PixelSize.Height);
-                context.DrawBitmap(_overlay, 0.5, sourceRect, clientRect);
-            }
-
-            if (DrawFps)
-            {
-                RenderFps(context, clientRect, scene.Layers.Count);
-            }
         }
 
         private void EnsureDrawingContext(ref IDrawingContextImpl context)
@@ -650,7 +615,7 @@ namespace Avalonia.Rendering
             foreach (var layer in Layers)
             {
                 var fileName = Path.Combine(DebugFramesPath, $"frame-{id}-layer-{index++}.png");
-                layer.Bitmap.Item.Save(fileName);
+                //layer.Bitmap.Item.Save(fileName);
             }
         }
     }
