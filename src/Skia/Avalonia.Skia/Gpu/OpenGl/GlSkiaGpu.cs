@@ -43,6 +43,11 @@ namespace Avalonia.Skia
             return null;
         }
 
+        public ISkiaSurface TryCreateSurface(PixelSize size)
+        {
+            return new FboSkiaSurface(_grContext, _glContext, size);
+        }
+
         public IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi) => new GlOpenGlBitmapImpl(_glContext, size, dpi);
     }
 }
