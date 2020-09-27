@@ -23,6 +23,8 @@ namespace Avalonia.Skia
         {
             public SKSurface WriteSurface { get; private set; }
             public SKSurface ReadSurface { get; private set; }
+            public bool CanBlit => false;
+            public void Blit() => throw new NotSupportedException();
 
             public SkiaSurfaceWrapper(SKSurface surface)
             {
@@ -136,8 +138,12 @@ namespace Avalonia.Skia
         {
             if (sourceRect.Left == 0 && sourceRect.Top == 0 && sourceRect.Size == destRect.Size)
             {
-                _surface.ReadSurface.Canvas.Flush();
-                _surface.ReadSurface.Draw(context.Canvas, destRect.Left, destRect.Top, paint);
+                _surface.WriteSurface.Canvas.Flush();
+                if (context.Canvas.TotalMatrix.IsIdentity && _surface.CanBlit && destRect.Top == 0 &&
+                    destRect.Left == 0)
+                    _surface.Blit();
+                else
+                    _surface.ReadSurface.Draw(context.Canvas, destRect.Left, destRect.Top, paint);
             }
             else
                 using (var image = SnapshotImage())

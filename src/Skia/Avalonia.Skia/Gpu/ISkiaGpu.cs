@@ -28,7 +28,9 @@ namespace Avalonia.Skia
     {
         SKSurface WriteSurface { get; }
         SKSurface ReadSurface { get; }
-        
+        bool CanBlit { get; }
+        void Blit();
+
     }
 
     public interface IOpenGlAwareSkiaGpu : ISkiaGpu
