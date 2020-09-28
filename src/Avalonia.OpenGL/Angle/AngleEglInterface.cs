@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 

@@ -32,8 +32,8 @@ namespace Avalonia.LinuxFramebuffer
         void Initialize()
         {
             Threading = new InternalPlatformThreadingInterface();
-            if (_fb is IWindowingPlatformGlFeature glFeature)
-                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToConstant(glFeature);
+            if (_fb is IGlOutputBackend gl)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(gl.PlatformOpenGlInterface);
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))

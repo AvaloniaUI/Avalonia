@@ -109,10 +109,16 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
-            using (var image = SnapshotImage())
+            if (sourceRect.Left == 0 && sourceRect.Top == 0 && sourceRect.Size == destRect.Size)
             {
-                context.Canvas.DrawImage(image, sourceRect, destRect, paint);
+                _surface.Canvas.Flush();
+                _surface.Draw(context.Canvas, destRect.Left, destRect.Top, paint);
             }
+            else
+                using (var image = SnapshotImage())
+                {
+                    context.Canvas.DrawImage(image, sourceRect, destRect, paint);
+                }
         }
         
         /// <summary>
