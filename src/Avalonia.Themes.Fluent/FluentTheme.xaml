@@ -11,7 +11,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/CheckBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ComboBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ComboBoxItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/ContentControl.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/ContentControl.xaml"/>  
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/GridSplitter.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ItemsControl.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ListBox.xaml"/>
@@ -20,6 +20,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ContextMenu.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/MenuItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/OverlayPopupHost.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/PathIcon.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/PopupRoot.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ProgressBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/RadioButton.xaml"/>
