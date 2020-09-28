@@ -1,8 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reactive.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -21,6 +26,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
+        private IDisposable _selectedNodeChanged;
 
         public MainViewModel(TopLevel root)
         {
@@ -42,7 +48,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeMarginPadding;
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
         }
-        
+
         public bool ShouldVisualizeDirtyRects
         {
             get => _shouldVisualizeDirtyRects;
@@ -85,26 +91,42 @@ namespace Avalonia.Diagnostics.ViewModels
             get { return _content; }
             private set
             {
-                if (_content is TreePageViewModel oldTree &&
-                    value is TreePageViewModel newTree &&
-                    oldTree?.SelectedNode?.Visual is IControl control)
+                TreePageViewModel oldTree = _content as TreePageViewModel;
+                TreePageViewModel newTree = value as TreePageViewModel;
+                if (oldTree != null)
                 {
-                    // HACK: We want to select the currently selected control in the new tree, but
-                    // to select nested nodes in TreeView, currently the TreeView has to be able to
-                    // expand the parent nodes. Because at this point the TreeView isn't visible,
-                    // this will fail unless we schedule the selection to run after layout.
-                    DispatcherTimer.RunOnce(
-                        () =>
-                        {
-                            try
-                            {
-                                newTree.SelectControl(control);
-                            }
-                            catch { }
-                        },
-                        TimeSpan.FromMilliseconds(0),
-                        DispatcherPriority.ApplicationIdle);
+                    _selectedNodeChanged?.Dispose();
+                    _selectedNodeChanged = null;
                 }
+
+                if (newTree != null)
+                {
+                    if (oldTree != null &&
+                        oldTree?.SelectedNode?.Visual is IControl control)
+                    {
+                        // HACK: We want to select the currently selected control in the new tree, but
+                        // to select nested nodes in TreeView, currently the TreeView has to be able to
+                        // expand the parent nodes. Because at this point the TreeView isn't visible,
+                        // this will fail unless we schedule the selection to run after layout.
+                        DispatcherTimer.RunOnce(
+                            () =>
+                            {
+                                try
+                                {
+                                    newTree.SelectControl(control);
+                                }
+                                catch { }
+                            },
+                            TimeSpan.FromMilliseconds(0),
+                            DispatcherPriority.ApplicationIdle);
+                    }
+                    _selectedNodeChanged = Observable
+                        .FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+                            x => newTree.PropertyChanged += x,
+                            x => newTree.PropertyChanged -= x
+                        ).Subscribe(arg => RaisePropertyChanged(nameof(TreePageViewModel.SelectedNode)));
+                }
+
 
                 RaiseAndSetIfChanged(ref _content, value);
             }
@@ -167,6 +189,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             KeyboardDevice.Instance.PropertyChanged -= KeyboardPropertyChanged;
             _pointerOverSubscription.Dispose();
+            _selectedNodeChanged?.Dispose();
             _logicalTree.Dispose();
             _visualTree.Dispose();
             _root.Renderer.DrawDirtyRects = false;
@@ -184,6 +207,76 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 UpdateFocusedControl();
             }
+        }
+
+        [DependsOn(nameof(TreePageViewModel.SelectedNode))]
+        [DependsOn(nameof(Content))]
+        bool CanShot(object paramter)
+        {
+            return Content is TreePageViewModel tree
+                && tree.SelectedNode != null
+                && tree.SelectedNode.Visual != null
+                && tree.SelectedNode.Visual.VisualRoot != null;
+        }
+
+        void Shot(object parameter)
+        {
+            // This is a workaround because MethodToCommand does not support the asynchronous method.
+            Task.Factory.StartNew(arg =>
+                {
+                    if (arg is IControl control)
+                    {
+                        try
+                        {
+                            var folder = GetScreenShotDirectory(_root);
+                            if (System.IO.Directory.Exists(folder) == false)
+                            {
+                                System.IO.Directory.CreateDirectory(folder);
+                            }
+                            var filePath = System.IO.Path.Combine(folder
+                                , $"{DateTime.Now:yyyyMMddhhmmssfff}.png");
+
+                            var output = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
+                            Dispatcher.UIThread.Post(() =>
+                                {
+                                    control.RenderTo(output);
+                                    output.Dispose();
+                                }
+                            );
+
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine(ex.Message);
+                            //TODO: Notify error
+                        }
+
+                    }
+
+
+                }, (Content as TreePageViewModel)?.SelectedNode?.Visual);
+        }
+
+        /// <summary>
+        /// Return the path of the screenshot folder according to the rules indicated in issue <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>
+        /// </summary>
+        /// <param name="root"></param>
+        /// <returns></returns>
+        string GetScreenShotDirectory(TopLevel root)
+        {
+            var rootType = root.GetType();
+            var windowName = rootType.Name;
+            var assembly = Assembly.GetExecutingAssembly();
+            var appName = Application.Current?.Name
+                ?? assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product
+                ?? assembly.GetName().Name;
+            var appVerions = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
+                ?? assembly.GetCustomAttribute<AssemblyVersionAttribute>().Version;
+            return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures, Environment.SpecialFolderOption.Create)
+                , "ScreenShots"
+                , appName
+                , appVerions
+                , windowName);
         }
     }
 }

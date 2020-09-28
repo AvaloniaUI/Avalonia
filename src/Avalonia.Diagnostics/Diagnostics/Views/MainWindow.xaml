@@ -16,6 +16,8 @@
       <Setter Property="Foreground" Value="Black"/>
     </Style>
   </Window.Styles>
-  
+  <Window.KeyBindings>
+    <KeyBinding Gesture="F8" Command="{Binding Shot}"/>
+  </Window.KeyBindings>
   <views:MainView/>
 </Window>
