@@ -1,22 +1,21 @@
-using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
-    public class PathIcon : TemplatedControl
+    public class PathIcon : IconElement
     {
         static PathIcon()
         {
-            AffectsRender<PathIcon>(SourceProperty);
+            AffectsRender<PathIcon>(DataProperty);
         }
 
-        public static readonly StyledProperty<Geometry> SourceProperty =
-            AvaloniaProperty.Register<PathIcon, Geometry>(nameof(Source));
+        public static readonly StyledProperty<Geometry> DataProperty =
+            AvaloniaProperty.Register<PathIcon, Geometry>(nameof(Data));
 
-        public Geometry Source
+        public Geometry Data
         {
-            get { return GetValue(SourceProperty); }
-            set { SetValue(SourceProperty, value); }
+            get { return GetValue(DataProperty); }
+            set { SetValue(DataProperty, value); }
         }
     }
 }
