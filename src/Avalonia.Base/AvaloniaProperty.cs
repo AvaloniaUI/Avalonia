@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
@@ -18,7 +17,6 @@ namespace Avalonia
         public static readonly object UnsetValue = new UnsetValueType();
 
         private static int s_nextId;
-        private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadata;
         private readonly Dictionary<Type, PropertyMetadata> _metadataCache = new Dictionary<Type, PropertyMetadata>();
@@ -50,7 +48,6 @@ namespace Avalonia
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
-            _changed = new Subject<AvaloniaPropertyChangedEventArgs>();
             _metadata = new Dictionary<Type, PropertyMetadata>();
 
             Name = name;
@@ -77,7 +74,6 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(source != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
 
-            _changed = source._changed;
             _metadata = new Dictionary<Type, PropertyMetadata>();
 
             Name = source.Name;
@@ -139,7 +135,7 @@ namespace Avalonia
         /// An observable that is fired when this property changes on any
         /// <see cref="AvaloniaObject"/> instance.
         /// </value>
-        public IObservable<AvaloniaPropertyChangedEventArgs> Changed => _changed;
+        public IObservable<AvaloniaPropertyChangedEventArgs> Changed => GetChanged();
 
         /// <summary>
         /// Gets a method that gets called before and after the property starts being notified on an
@@ -475,15 +471,6 @@ namespace Avalonia
             where TData : struct;
 
         /// <summary>
-        /// Notifies the <see cref="Changed"/> observable.
-        /// </summary>
-        /// <param name="e">The observable arguments.</param>
-        internal void NotifyChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            _changed.OnNext(e);
-        }
-
-        /// <summary>
         /// Routes an untyped ClearValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
@@ -552,6 +539,8 @@ namespace Avalonia
 
             _hasMetadataOverrides = true;
         }
+
+        protected abstract IObservable<AvaloniaPropertyChangedEventArgs> GetChanged();
 
         private PropertyMetadata GetMetadataWithOverrides(Type type)
         {

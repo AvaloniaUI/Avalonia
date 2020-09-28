@@ -19,6 +19,6 @@ namespace Avalonia.Skia
 
     public interface IOpenGlAwareSkiaGpu : ISkiaGpu
     {
-        IOpenGlTextureBitmapImpl CreateOpenGlTextureBitmap();
+        IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi);
     }
 }

@@ -94,8 +94,8 @@ namespace Avalonia.Base.UnitTests
 
             Class1.FooProperty.Changed.Subscribe(e =>
                 raised = e.Property == Class1.FooProperty &&
-                         (string)e.OldValue == "initial" &&
-                         (string)e.NewValue == "newvalue" &&
+                         e.OldValue.GetValueOrDefault() == "initial" &&
+                         e.NewValue.GetValueOrDefault() == "newvalue" &&
                          e.Priority == BindingPriority.LocalValue);
 
             target.SetValue(Class1.FooProperty, "newvalue");
