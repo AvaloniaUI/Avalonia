@@ -12,6 +12,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ComboBox.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ComboBoxItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ContentControl.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/FontIcon.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/GridSplitter.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ItemsControl.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/ListBox.xaml"/>
