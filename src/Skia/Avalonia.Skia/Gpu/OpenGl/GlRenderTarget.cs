@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Disposables;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
