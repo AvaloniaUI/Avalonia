@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
-namespace Avalonia.OpenGL
+namespace Avalonia.OpenGL.Egl
 {
     public class EglInterface : GlInterfaceBase
     {

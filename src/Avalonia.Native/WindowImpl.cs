@@ -14,19 +14,19 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
-        private readonly GlPlatformFeature _glFeature;
+        private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            GlPlatformFeature glFeature) : base(opts, glFeature)
+            AvaloniaNativePlatformOpenGlInterface glFeature) : base(opts, glFeature)
         {
             _factory = factory;
             _opts = opts;
             _glFeature = glFeature;
             using (var e = new WindowEvents(this))
             {
-                var context = _opts.UseGpu ? glFeature?.DeferredContext : null;
+                var context = _opts.UseGpu ? glFeature?.MainContext : null;
                 Init(_native = factory.CreateWindow(e, context?.Context), factory.CreateScreens(), context);
             }
 
