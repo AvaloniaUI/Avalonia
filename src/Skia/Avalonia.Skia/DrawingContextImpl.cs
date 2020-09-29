@@ -42,6 +42,11 @@ namespace Avalonia.Skia
         public struct CreateInfo
         {
             /// <summary>
+            /// Canvas to draw to.
+            /// </summary>
+            public SKCanvas Canvas;
+
+            /// <summary>
             /// Surface to draw to.
             /// </summary>
             public SKSurface Surface;
@@ -82,7 +87,7 @@ namespace Avalonia.Skia
             if (_grContext != null)
                 Monitor.Enter(_grContext);
             Surface = createInfo.Surface;
-            Canvas = createInfo.Surface.Canvas;
+            Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas;
 
             if (Canvas == null)
             {
