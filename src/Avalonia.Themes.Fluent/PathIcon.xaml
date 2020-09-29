@@ -10,8 +10,8 @@
   </Design.PreviewWith>
   <Style Selector="PathIcon">
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
-    <Setter Property="Height" Value="16" />
-    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="{DynamicResource IconElementThemeHeight}" />
+    <Setter Property="Width" Value="{DynamicResource IconElementThemeWidth}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Viewbox Height="{TemplateBinding Height}"
