@@ -39,7 +39,7 @@ namespace Avalonia.Win32
         {
             private readonly EglPlatformOpenGlInterface _egl;
             private readonly IEglWindowGlPlatformSurfaceInfo _info;
-            private readonly PixelSize _initialSize;
+            private PixelSize _currentSize;
             private readonly ICompositionDrawingSurfaceInterop _surfaceInterop;
             private static Guid s_Iid = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
             private Windows.UI.Composition.Visual _compositionVisual;
@@ -53,7 +53,7 @@ namespace Avalonia.Win32
                 _egl = egl;
                 _surfaceInterop = interopSurface;
                 _info = info;
-                _initialSize = info.Size;
+                _currentSize = info.Size;
                 _compositionVisual = compositionVisual;
                 _surfaceInterop.Resize(new POINT { X = _info.Size.Width, Y = _info.Size.Height });
                 _compositionVisual.Size = new System.Numerics.Vector2(_info.Size.Width, _info.Size.Height);
@@ -61,6 +61,13 @@ namespace Avalonia.Win32
 
             public override IGlPlatformSurfaceRenderingSession BeginDraw()
             {
+                if (_info.Size != _currentSize)
+                {
+                    _surfaceInterop.Resize(new POINT { X = _info.Size.Width, Y = _info.Size.Height });
+                    _compositionVisual.Size = new System.Numerics.Vector2(_info.Size.Width, _info.Size.Height);
+                    _currentSize = _info.Size;
+                }
+
                 var offset = new POINT();
 
                 _surfaceInterop.BeginDraw(
