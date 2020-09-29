@@ -278,7 +278,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Deconstructor for decomposition Size
+        /// Deconstructs the size into it's Width and Height values.
         /// </summary>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
@@ -289,7 +289,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a value indicating that width and height are zero
+        /// Gets a value indicating whether the Width and Height values are zero.
         /// </summary>
         public bool IsDefault
         {

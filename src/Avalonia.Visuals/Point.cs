@@ -269,10 +269,10 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Deconstructor for decomposition Point
+        /// Deconstructs the point into it's X and Y coordinates.
         /// </summary>
-        /// <param name="x">The X position.</param>
-        /// <param name="y">The Y position.</param>
+        /// <param name="x">The X coordinate.</param>
+        /// <param name="y">The Y coordinate.</param>
         public void Deconstruct(out double x, out double y)
         {
             x = this._x;
@@ -280,7 +280,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a value indicating that point coordinates are zero
+        /// Gets a value indicating whether the X and Y coordinates are zero.
         /// </summary>
         public bool IsDefault
         {

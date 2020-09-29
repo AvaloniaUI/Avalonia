@@ -335,10 +335,10 @@ namespace Avalonia
             => new Vector(0, 1);
 
         /// <summary>
-        /// Deconstructor for decomposition Vector
+        /// Deconstructs the vector into it's X and Y components.
         /// </summary>
         /// <param name="x">The X component.</param>
-        /// <param name="y">The Y poscomponentition.</param>
+        /// <param name="y">The Y component.</param>
         public void Deconstruct(out double x, out double y)
         {
             x = this._x;
@@ -346,7 +346,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a value indicating that Vector components are zero
+        /// Gets a value indicating whether the X and Y components are zero.
         /// </summary>
         public bool IsDefault
         {
