@@ -34,7 +34,6 @@ namespace Avalonia.Media.Imaging
         {
         }
 
-
         public ILockedFramebuffer Lock() => ((IWriteableBitmapImpl) PlatformImpl.Item).Lock();
 
         private static IBitmapImpl CreatePlatformImpl(PixelSize size, in Vector dpi, PixelFormat? format, AlphaFormat? alphaFormat)
