@@ -16,7 +16,7 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
-        private GlPlatformFeature _glFeature;
+        private AvaloniaNativePlatformOpenGlInterface _platformGl;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -116,8 +116,8 @@ namespace Avalonia.Native
             {
                 try
                 {
-                    AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
-                        .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
+                    AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>()
+                        .ToConstant(_platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay()));
                 }
                 catch (Exception)
                 {
@@ -128,7 +128,7 @@ namespace Avalonia.Native
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options, _glFeature);
+            return new WindowImpl(_factory, _options, _platformGl);
         }
 
         public IWindowImpl CreateEmbeddableWindow()

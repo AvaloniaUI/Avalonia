@@ -51,8 +51,7 @@ namespace Avalonia.Media.TextFormatting
         /// Draws the <see cref="TextLine"/> at the given origin.
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
-        /// <param name="origin">The origin.</param>
-        public abstract void Draw(DrawingContext drawingContext, Point origin);
+        public abstract void Draw(DrawingContext drawingContext);
 
         /// <summary>
         /// Create a collapsed line based on collapsed text properties.
