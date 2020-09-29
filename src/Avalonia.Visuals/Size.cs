@@ -278,7 +278,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Deconstructs the size into it's Width and Height values.
+        /// Deconstructs the size into its Width and Height values.
         /// </summary>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>

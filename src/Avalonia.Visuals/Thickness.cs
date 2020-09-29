@@ -274,7 +274,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Deconstructor the thickness into left, top, right and bottom thickness values.
+        /// Deconstructor the thickness into its left, top, right and bottom thickness values.
         /// </summary>
         /// <param name="left">The thickness on the left.</param>
         /// <param name="top">The thickness on the top.</param>

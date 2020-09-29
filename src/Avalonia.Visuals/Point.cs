@@ -269,7 +269,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Deconstructs the point into it's X and Y coordinates.
+        /// Deconstructs the point into its X and Y coordinates.
         /// </summary>
         /// <param name="x">The X coordinate.</param>
         /// <param name="y">The Y coordinate.</param>

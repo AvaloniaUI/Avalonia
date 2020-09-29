@@ -335,7 +335,7 @@ namespace Avalonia
             => new Vector(0, 1);
 
         /// <summary>
-        /// Deconstructs the vector into it's X and Y components.
+        /// Deconstructs the vector into its X and Y components.
         /// </summary>
         /// <param name="x">The X component.</param>
         /// <param name="y">The Y component.</param>
