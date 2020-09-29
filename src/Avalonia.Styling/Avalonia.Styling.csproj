@@ -8,5 +8,8 @@
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
+  </ItemGroup>  
   <Import Project="..\..\build\ApiDiff.props" />
 </Project>
