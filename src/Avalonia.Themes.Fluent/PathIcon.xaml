@@ -17,7 +17,8 @@
         <Viewbox Height="{TemplateBinding Height}"
                  Width="{TemplateBinding Width}">
           <Path Fill="{TemplateBinding Foreground}"
-                Data="{TemplateBinding Data}" />
+                Data="{TemplateBinding Data}"
+                Stretch="Uniform" />
         </Viewbox>
       </ControlTemplate>
     </Setter>
