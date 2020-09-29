@@ -124,7 +124,8 @@ public partial class Build
             ZipRoot = ArtifactsDir / "zip";
             BinRoot = ArtifactsDir / "bin";
             TestResultsRoot = ArtifactsDir / "test-results";
-            BuildDirs = GlobDirectories(RootDirectory, "**bin").Concat(GlobDirectories(RootDirectory, "**obj")).ToList();
+            //skip nuke build folder e.g. only src/tests and samples folders will be cleaned
+            BuildDirs = new[] { "src", "samples", "tests" }.SelectMany(v => GlobDirectories(RootDirectory / v, "**/bin", "**/obj")).ToList();
             DirSuffix = Configuration;
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
