@@ -119,6 +119,56 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 0)]
+        [InlineData(new double[] { 10, 10, 10 }, new ushort[] { 0, 0, 0 }, 1)]
+        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 0, 0, 0, 3 }, 0)]
+        [InlineData(new double[] { 10, 10, 10, 10 }, new ushort[] { 3, 0, 0, 0 }, 1)]
+        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new ushort[] { 0, 1, 1, 1, 4 }, 0)]
+        [InlineData(new double[] { 10, 10, 10, 10, 10 }, new ushort[] { 4, 1, 1, 1, 0 }, 1)]
+        [Theory]
+        public void Should_Find_Glyph_Index(double[] advances, ushort[] clusters, int bidiLevel)
+        {
+            using (var glyphRun = CreateGlyphRun(advances, clusters, bidiLevel))
+            {
+                if (glyphRun.IsLeftToRight)
+                {
+                    for (var i = 0; i < clusters.Length; i++)
+                    {
+                        var cluster = clusters[i];
+
+                        var found = glyphRun.FindGlyphIndex(cluster);
+
+                        var expected = i;
+
+                        while (expected - 1 >= 0 && clusters[expected - 1] == cluster)
+                        {
+                            expected--;
+                        }
+
+                        Assert.Equal(expected, found);
+                    }
+                }
+                else
+                {
+                    for (var i = clusters.Length - 1; i > 0; i--)
+                    {
+                        var cluster = clusters[i];
+
+                        var found = glyphRun.FindGlyphIndex(cluster);
+
+                        var expected = i;
+
+                        while (expected + 1 < clusters.Length && clusters[expected + 1] == cluster)
+                        {
+                            expected++;
+                        }
+
+                        Assert.Equal(expected, found);
+                    }
+                }
+            }
+        }
+
         private static GlyphRun CreateGlyphRun(double[] glyphAdvances, ushort[] glyphClusters, int bidiLevel = 0)
         {
             var count = glyphAdvances.Length;
