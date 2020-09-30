@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using System;
@@ -9,6 +10,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a time
     /// </summary>
+    [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {
         /// <summary>
