@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -17,20 +18,17 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="transform">The transform.</param>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run to draw.</param>
-        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public GlyphRunNode(
             Matrix transform,
             IBrush foreground,
             GlyphRun glyphRun,
-            Point baselineOrigin,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(glyphRun.Bounds.Translate(baselineOrigin), transform)
+            : base(new Rect(glyphRun.Size), transform)
         {
             Transform = transform;
             Foreground = foreground?.ToImmutable();
             GlyphRun = glyphRun;
-            BaselineOrigin = baselineOrigin;
             ChildScenes = childScenes;
         }
 
@@ -49,11 +47,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public GlyphRun GlyphRun { get; }
 
-        /// <summary>
-        /// Gets the baseline origin.
-        /// </summary>
-        public Point BaselineOrigin { get; set; }
-
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
 
@@ -61,7 +54,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawGlyphRun(Foreground, GlyphRun, BaselineOrigin);
+            context.DrawGlyphRun(Foreground, GlyphRun);
         }
 
         /// <summary>
