@@ -18,8 +18,8 @@
       <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
     </StackPanel>
     <ListBox Items="{Binding Items}"
-             Selection="{Binding Selection}"
-             AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
-             SelectionMode="{Binding SelectionMode}"/>
+             SelectedItem="{Binding SelectedItem} "/>
+    <ListBox Items="{Binding Items1}"
+             SelectedItem="{Binding SelectedItem} "/>
   </DockPanel>
 </UserControl>

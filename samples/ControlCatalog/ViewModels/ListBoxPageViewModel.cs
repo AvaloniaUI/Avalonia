@@ -20,7 +20,8 @@ namespace ControlCatalog.ViewModels
         public ListBoxPageViewModel()
         {
             Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
-            
+            Items1 = new ObservableCollection<string>(Enumerable.Range(10001, 20000).Select(i => GenerateItem()));
+
             Selection = new SelectionModel<string>();
             Selection.Select(1);
 
@@ -59,8 +60,21 @@ namespace ControlCatalog.ViewModels
         }
 
         public ObservableCollection<string> Items { get; }
+        public ObservableCollection<string> Items1 { get; }
         public SelectionModel<string> Selection { get; }
         public SelectionMode SelectionMode => _selectionMode.Value;
+
+        private string _selectedItem;
+
+        public string SelectedItem
+        {
+            get { return _selectedItem; }
+            set 
+            { 
+                this.RaiseAndSetIfChanged(ref _selectedItem, value); 
+            }
+        }
+
 
         public bool Multiple
         {
