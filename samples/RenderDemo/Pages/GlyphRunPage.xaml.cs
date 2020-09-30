@@ -61,7 +61,6 @@ namespace RenderDemo.Pages
             {
                 Foreground = Brushes.Black,
                 GlyphRun = new GlyphRun(_glyphTypeface, _fontSize, _glyphIndices),
-                BaselineOrigin = new Point(0, -_glyphTypeface.Ascent * scale)
             };
 
             drawingGroup.Children.Add(glyphRunDrawing);
@@ -69,7 +68,7 @@ namespace RenderDemo.Pages
             var geometryDrawing = new GeometryDrawing
             {
                 Pen = new Pen(Brushes.Black),
-                Geometry = new RectangleGeometry { Rect = glyphRunDrawing.GlyphRun.Bounds }
+                Geometry = new RectangleGeometry { Rect = new Rect(glyphRunDrawing.GlyphRun.Size) }
             };
 
             drawingGroup.Children.Add(geometryDrawing);

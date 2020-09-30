@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
-namespace Avalonia.OpenGL
+namespace Avalonia.OpenGL.Egl
 {
     public class EglInterface : GlInterfaceBase
     {
@@ -17,25 +17,21 @@ namespace Avalonia.OpenGL
             
         }
         
+        public EglInterface(Func<string, IntPtr> getProcAddress) : base(getProcAddress)
+        {
+            
+        }
+        
         public EglInterface(string library) : base(Load(library))
         {
         }
 
-        [DllImport("libegl.dll", CharSet = CharSet.Ansi)]
-        static extern IntPtr eglGetProcAddress(string proc);
         
         static Func<string, IntPtr> Load()
         {
             var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
             if(os == OperatingSystemType.Linux || os == OperatingSystemType.Android)
                 return Load("libEGL.so.1");
-            if (os == OperatingSystemType.WinNT)
-            {
-                var disp = eglGetProcAddress("eglGetPlatformDisplayEXT");
-                if (disp == IntPtr.Zero)
-                    throw new OpenGlException("libegl.dll doesn't have eglGetPlatformDisplayEXT entry point");
-                return eglGetProcAddress;
-            }
 
             throw new PlatformNotSupportedException();
         }
@@ -147,6 +143,21 @@ namespace Avalonia.OpenGL
                 return null;
             return Marshal.PtrToStringAnsi(rv);
         }
+        
+        public delegate IntPtr EglCreatePbufferFromClientBuffer(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int[] attrib_list);
+        [GlEntryPoint("eglCreatePbufferFromClientBuffer")]
+
+        public EglCreatePbufferFromClientBuffer CreatePbufferFromClientBuffer { get; }
+        
+        public delegate bool EglQueryDisplayAttribEXT(IntPtr display, int attr, out IntPtr res);
+
+        [GlEntryPoint("eglQueryDisplayAttribEXT"), GlOptionalEntryPoint]
+        public EglQueryDisplayAttribEXT QueryDisplayAttribExt { get; }
+
+        public delegate bool EglQueryDeviceAttribEXT(IntPtr display, int attr, out IntPtr res);
+
+        [GlEntryPoint("eglQueryDeviceAttribEXT"), GlOptionalEntryPoint]
+        public EglQueryDisplayAttribEXT QueryDeviceAttribExt { get; }
 
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }

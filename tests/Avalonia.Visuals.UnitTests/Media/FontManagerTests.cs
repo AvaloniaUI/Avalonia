@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -15,9 +14,11 @@ namespace Avalonia.Visuals.UnitTests.Media
             {
                 var fontFamily = new FontFamily("MyFont");
 
-                var typeface = FontManager.Current.GetOrAddTypeface(fontFamily);
+                var typeface = new Typeface(fontFamily);
 
-                Assert.Same(typeface, FontManager.Current.GetOrAddTypeface(fontFamily));
+                var glyphTypeface = FontManager.Current.GetOrAddGlyphTypeface(typeface);
+
+                Assert.Same(glyphTypeface, FontManager.Current.GetOrAddGlyphTypeface(typeface));
             }
         }
 

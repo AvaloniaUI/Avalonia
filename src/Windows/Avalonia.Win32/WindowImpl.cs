@@ -7,6 +7,8 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
@@ -103,8 +105,8 @@ namespace Avalonia.Win32
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
 
-            if (Win32GlManager.EglFeature != null)
-                _gl = new EglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+            if (Win32GlManager.EglPlatformInterface != null)
+                _gl = new EglGlPlatformSurface(Win32GlManager.EglPlatformInterface, this);
 
             Screen = new ScreenImpl();
 
@@ -853,7 +855,7 @@ namespace Avalonia.Win32
 
         private void ShowWindow(WindowState state)
         {
-            ShowWindowCommand command;
+            ShowWindowCommand? command;
 
             var newWindowProperties = _windowProperties;
 
@@ -875,8 +877,8 @@ namespace Avalonia.Win32
 
                 case WindowState.FullScreen:
                     newWindowProperties.IsFullScreen = true;
-                    UpdateWindowProperties(newWindowProperties);
-                    return;
+                    command = IsWindowVisible(_hwnd) ? (ShowWindowCommand?)null : ShowWindowCommand.Restore;
+                    break;
 
                 default:
                     throw new ArgumentException("Invalid WindowState.");
@@ -884,7 +886,10 @@ namespace Avalonia.Win32
 
             UpdateWindowProperties(newWindowProperties);
 
-            UnmanagedMethods.ShowWindow(_hwnd, command);
+            if (command.HasValue)
+            {
+                UnmanagedMethods.ShowWindow(_hwnd, command.Value);
+            }
 
             if (state == WindowState.Maximized)
             {
@@ -1007,10 +1012,12 @@ namespace Avalonia.Win32
                 if (newProperties.IsResizable)
                 {
                     style |= WindowStyles.WS_SIZEFRAME;
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
                 }
                 else
                 {
                     style &= ~WindowStyles.WS_SIZEFRAME;
+                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
                 SetStyle(style);

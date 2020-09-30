@@ -130,7 +130,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                const string text = "1234الدولي";
+                const string text = "ABCDالدولي";
 
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 

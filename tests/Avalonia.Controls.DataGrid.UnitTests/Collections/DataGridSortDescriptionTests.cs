@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Avalonia.Controls.DataGrid.UnitTests.Collections
                 new Item("c", "c"),
             };
             var expectedResult = items.OrderBy(i => i.Prop1).ToList();
-            var sortDescription = DataGridSortDescription.FromPath(nameof(Item.Prop1), @descending: false);
+            var sortDescription = DataGridSortDescription.FromPath(nameof(Item.Prop1), ListSortDirection.Ascending);
             
             sortDescription.Initialize(typeof(Item));
             var result = sortDescription.OrderBy(items).ToList();
@@ -36,7 +37,7 @@ namespace Avalonia.Controls.DataGrid.UnitTests.Collections
                 new Item("c", "c"),
             };
             var expectedResult = items.OrderByDescending(i => i.Prop1).ToList();
-            var sortDescription = DataGridSortDescription.FromPath(nameof(Item.Prop1), @descending: true);
+            var sortDescription = DataGridSortDescription.FromPath(nameof(Item.Prop1), ListSortDirection.Descending);
             
             sortDescription.Initialize(typeof(Item));
             var result = sortDescription.OrderBy(items).ToList();
@@ -61,7 +62,7 @@ namespace Avalonia.Controls.DataGrid.UnitTests.Collections
                 new Item("a", "b"),
                 new Item("a", "c"),
             };
-            var sortDescription = DataGridSortDescription.FromPath(nameof(Item.Prop2), @descending: false);
+            var sortDescription = DataGridSortDescription.FromPath(nameof(Item.Prop2), ListSortDirection.Ascending);
             
             sortDescription.Initialize(typeof(Item));
             var result = sortDescription.ThenBy(items).ToList();
@@ -86,7 +87,7 @@ namespace Avalonia.Controls.DataGrid.UnitTests.Collections
                 new Item("a", "b"),
                 new Item("a", "a"),
             };
-            var sortDescription = DataGridSortDescription.FromPath(nameof(Item.Prop2), @descending: true);
+            var sortDescription = DataGridSortDescription.FromPath(nameof(Item.Prop2), ListSortDirection.Descending);
             
             sortDescription.Initialize(typeof(Item));
             var result = sortDescription.ThenBy(items).ToList();

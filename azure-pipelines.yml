@@ -35,16 +35,9 @@ jobs:
     vmImage: 'macOS-10.14'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.101'
+    displayName: 'Use .NET Core SDK 3.1.401'
     inputs:
-      packageType: sdk
-      version: 3.1.101
-
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core Runtime 3.1.1'
-    inputs:
-      packageType: runtime
-      version: 3.1.1
+      version: 3.1.401
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -64,13 +57,6 @@ jobs:
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
-    displayName: 'Install CastXML'
-    inputs:
-      script: |
-        brew update
-        brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/8a004a91a7fcd3f6620d5b01b6541ff0a640ffba/Formula/castxml.rb
-
-  - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
@@ -88,7 +74,7 @@ jobs:
         export PATH="$PATH:$HOME/.dotnet/tools"
         dotnet --info
         printenv
-        nuke --target CiAzureOSX --configuration Release
+        nuke --target CiAzureOSX --configuration Release --skip-previewer
 
   - task: PublishTestResults@2
     inputs:
@@ -112,6 +98,11 @@ jobs:
   pool:
     vmImage: 'windows-2019'
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.401'
+    inputs:
+      version: 3.1.401
+
   - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:

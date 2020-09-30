@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -28,6 +29,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A button control.
     /// </summary>
+    [PseudoClasses(":pressed")]
     public class Button : ContentControl
     {
         /// <summary>

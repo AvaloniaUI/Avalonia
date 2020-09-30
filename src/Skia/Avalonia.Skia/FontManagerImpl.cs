@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -31,7 +30,7 @@ namespace Avalonia.Skia
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight,
-            FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
+            FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
         {
             SKFontStyle skFontStyle;
 
@@ -81,7 +80,7 @@ namespace Avalonia.Skia
                         continue;
                     }
 
-                    fontKey = new FontKey(skTypeface.FamilyName, fontStyle, fontWeight);
+                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight);
 
                     return true;
                 }
@@ -92,7 +91,7 @@ namespace Avalonia.Skia
 
                 if (skTypeface != null)
                 {
-                    fontKey = new FontKey(skTypeface.FamilyName, fontStyle, fontWeight);
+                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight);
 
                     return true;
                 }
