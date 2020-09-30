@@ -434,7 +434,10 @@ namespace Avalonia.Controls
 
             var padding = Padding;
 
-            TextLayout.Draw(context, new Point(padding.Left + offsetX, padding.Top));
+            using (context.PushPostTransform(Matrix.CreateTranslation(padding.Left + offsetX, padding.Top)))
+            {
+                TextLayout.Draw(context);
+            }
         }
 
         /// <summary>
