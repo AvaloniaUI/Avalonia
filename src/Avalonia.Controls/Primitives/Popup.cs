@@ -128,6 +128,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
+        private bool _isOpenRequested = false;
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
@@ -361,17 +362,19 @@ namespace Avalonia.Controls.Primitives
 
             if (placementTarget == null)
             {
-                throw new InvalidOperationException("Popup has no logical parent and PlacementTarget is null");
+                _isOpenRequested = true;
+                return;
             }
             
             var topLevel = placementTarget.VisualRoot as TopLevel;
 
             if (topLevel == null)
             {
-                throw new InvalidOperationException(
-                    "Attempted to open a popup not attached to a TopLevel");
+                _isOpenRequested = true;
+                return;
             }
 
+            _isOpenRequested = false;
             var popupHost = OverlayPopupHost.CreatePopupHost(placementTarget, DependencyResolver);
 
             var handlerCleanup = new CompositeDisposable(5);
@@ -492,6 +495,17 @@ namespace Avalonia.Controls.Primitives
             return new Size();
         }
 
+
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_isOpenRequested)
+            {
+                Open();
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
@@ -552,6 +566,7 @@ namespace Avalonia.Controls.Primitives
 
         private void CloseCore()
         {
+            _isOpenRequested = false;
             if (_openState is null)
             {
                 using (BeginIgnoringIsOpen())
