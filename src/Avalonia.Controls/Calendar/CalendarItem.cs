@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -18,6 +19,7 @@ namespace Avalonia.Controls.Primitives
     /// Represents the currently displayed month or year on a
     /// <see cref="T:Avalonia.Controls.Calendar" />.
     /// </summary>
+    [PseudoClasses(":calendardisabled")]
     public sealed class CalendarItem : TemplatedControl
     {
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -73,6 +74,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control with two views: A collapsible pane and an area for content
     /// </summary>
+    [PseudoClasses(":open", ":closed")]
+    [PseudoClasses(":compactoverlay", ":compactinline", ":overlay", ":inline")]
+    [PseudoClasses(":left", ":right")]
+    [PseudoClasses(":lightdismiss")]
     public class SplitView : TemplatedControl
     {
         /*

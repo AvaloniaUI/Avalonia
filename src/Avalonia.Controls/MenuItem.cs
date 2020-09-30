@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -20,6 +21,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A menu item control.
     /// </summary>
+    [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
     public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
     {
         /// <summary>

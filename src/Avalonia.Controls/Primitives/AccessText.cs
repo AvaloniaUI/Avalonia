@@ -126,7 +126,7 @@ namespace Avalonia.Controls.Primitives
 
                     if (shapedTextCharacters.GlyphRun.Characters.End < textPosition)
                     {
-                        currentX += shapedTextCharacters.GlyphRun.Bounds.Width;
+                        currentX += shapedTextCharacters.Size.Width;
 
                         continue;
                     }
@@ -143,7 +143,7 @@ namespace Avalonia.Controls.Primitives
                         width = 0.0;
                     }
 
-                    return new Rect(currentX, currentY, width, shapedTextCharacters.GlyphRun.Bounds.Height);
+                    return new Rect(currentX, currentY, width, shapedTextCharacters.Size.Height);
                 }
             }
 

@@ -221,7 +221,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
                 if (!FitsInBounds(unconstrainedRect, PopupAnchor.Bottom))
                 {
-                    unconstrainedRect = unconstrainedRect.WithHeight(bounds.Height - unconstrainedRect.Y);
+                    unconstrainedRect = unconstrainedRect.WithHeight(bounds.Bottom - unconstrainedRect.Y);
                 }
 
                 if (IsValid(unconstrainedRect))

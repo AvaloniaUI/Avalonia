@@ -1,4 +1,4 @@
-﻿namespace Avalonia.OpenGL
+﻿namespace Avalonia.OpenGL.Egl
 {
     public enum EglErrors
     {

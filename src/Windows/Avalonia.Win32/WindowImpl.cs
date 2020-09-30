@@ -7,6 +7,8 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
@@ -103,8 +105,8 @@ namespace Avalonia.Win32
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
 
-            if (Win32GlManager.EglFeature != null)
-                _gl = new EglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+            if (Win32GlManager.EglPlatformInterface != null)
+                _gl = new EglGlPlatformSurface(Win32GlManager.EglPlatformInterface, this);
 
             Screen = new ScreenImpl();
 

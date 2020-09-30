@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 
@@ -14,6 +15,7 @@ namespace Avalonia.Controls
     /// <remarks>
     /// You will probably only want to create instances inside of control templates.
     /// </remarks>
+    [PseudoClasses(":error")]
     public class DataValidationErrors : ContentControl
     {
         /// <summary>
