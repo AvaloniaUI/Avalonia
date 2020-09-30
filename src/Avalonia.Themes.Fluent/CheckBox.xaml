@@ -5,8 +5,6 @@
     </Border>
   </Design.PreviewWith>
   <Style Selector="CheckBox">
-    <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUnchecked}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
     <Setter Property="Padding" Value="8,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -20,10 +18,12 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid x:Name="RootGrid" ColumnDefinitions="20,*">
-          <Border x:Name="PART_Border" Background="{TemplateBinding Background}"
-                       BorderBrush="{TemplateBinding BorderBrush}"
-                       BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{DynamicResource ControlCornerRadius}" />
+          <Border x:Name="PART_Border"
+                  Grid.ColumnSpan="2"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{DynamicResource ControlCornerRadius}" />
 
           <Grid VerticalAlignment="Top" Height="32">
             <Border x:Name="NormalRectangle"
@@ -58,7 +58,7 @@
     <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
   </Style>
 
-  <Style Selector="CheckBox /template/ Border#PART_Border">
+  <Style Selector="CheckBox">
     <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUnchecked}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
   </Style>
@@ -136,7 +136,7 @@
     <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundChecked}" />
   </Style>
 
-  <Style Selector="CheckBox:checked /template/ Border#PART_Border">
+  <Style Selector="CheckBox:checked">
     <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundChecked}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushChecked}" />
   </Style>
@@ -216,7 +216,7 @@
     <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminate}" />
   </Style>
 
-  <Style Selector="CheckBox:indeterminate /template/ Border#PART_Border">
+  <Style Selector="CheckBox:indeterminate">
     <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundIndeterminate}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushIndeterminate}" />
   </Style>
