@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
@@ -13,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using ReactiveUI;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -451,6 +453,43 @@ namespace Avalonia.Controls.UnitTests
 
                 target.SelectedItem = item;
                 Assert.True(called);
+            }
+        }
+
+        [Fact]
+        public void Bound_SelectedItem_Should_Not_Be_Cleared_when_Changing_Selection()
+        {
+            using (Application())
+            {
+                var dataContext = new TestDataContext();
+
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    DataContext = dataContext
+                };
+
+                target.Bind(TreeView.ItemsProperty, new Binding("Items"));
+                target.Bind(TreeView.SelectedItemProperty, new Binding("SelectedItem"));
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                var children = target.GetLogicalChildren().ToList();
+
+                var selectedValues = new List<object>();
+
+                dataContext.WhenAnyValue(x => x.SelectedItem)
+                    .Subscribe(x => selectedValues.Add(x));
+
+                _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Left);
+                _mouse.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Left);
+
+                Assert.Equal(4, selectedValues.Count);
+                Assert.Equal(new[] { null, "Item 0", "Item 2" }, selectedValues.ToArray());
             }
         }
 
@@ -1287,6 +1326,30 @@ namespace Avalonia.Controls.UnitTests
 
         private class DerivedTreeView : TreeView
         {
+        }
+
+        private class TestDataContext : ReactiveObject
+        {
+            private int _counter;
+            private string _selectedItem;
+
+            public TestDataContext()
+            {
+                Items = new ObservableCollection<string>(Enumerable.Range(1, 5).Select(i => GenerateItem()));
+            }
+
+            private string GenerateItem() => $"Item {_counter++.ToString()}";
+
+            public ObservableCollection<string> Items { get; }
+
+            public string SelectedItem
+            {
+                get { return _selectedItem; }
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _selectedItem, value);
+                }
+            }
         }
     }
 }
