@@ -52,7 +52,7 @@ namespace Avalonia.Media.TextFormatting
         {
             var glyphRun = textCharacters.GlyphRun;
 
-            if (glyphRun.Bounds.Width < availableWidth)
+            if (glyphRun.Size.Width < availableWidth)
             {
                 return glyphRun.Characters.Length;
             }
@@ -348,7 +348,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var currentRun = textRuns[runIndex];
 
-                if (currentWidth + currentRun.GlyphRun.Bounds.Width > availableWidth)
+                if (currentWidth + currentRun.Size.Width > availableWidth)
                 {
                     var measuredLength = MeasureCharacters(currentRun, paragraphWidth - currentWidth);
 
@@ -421,7 +421,7 @@ namespace Avalonia.Media.TextFormatting
                     return new TextLineImpl(splitResult.First, textLineMetrics, lineBreak);
                 }
 
-                currentWidth += currentRun.GlyphRun.Bounds.Width;
+                currentWidth += currentRun.Size.Width;
 
                 currentLength += currentRun.GlyphRun.Characters.Length;
 
