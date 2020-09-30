@@ -324,13 +324,14 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
         /// <param name="baselineOrigin"></param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Bounds.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
 
-                _renderTarget.DrawGlyphRun(baselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun, brush.PlatformBrush, MeasuringMode.Natural);
+                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun,
+                    brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
 

@@ -385,7 +385,7 @@ namespace Avalonia.Headless
                 
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
             {
                 
             }
