@@ -21,7 +21,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
     public class PopupTests
     {
         protected bool UsePopupHost;
-        
+
+        [Fact]
+        public void Popup_Open_Without_Target_Should_Attach_Itself_Later()
+        {
+            using (CreateServices())
+            {
+                int openedEvent = 0;
+                var target = new Popup();
+                target.Opened += (s, a) => openedEvent++;
+                target.IsOpen = true;
+
+                var window = PreparedWindow(target);
+                window.Show();
+                Assert.Equal(1, openedEvent);
+            }
+        }
+
+        [Fact]
+        public void Popup_Without_TopLevel_Shouldnt_Call_Open()
+        {
+            int openedEvent = 0;
+            var target = new Popup();
+            target.Opened += (s, a) => openedEvent++;
+            target.IsOpen = true;
+
+            Assert.Equal(0, openedEvent);
+        }
+
+        [Fact]
+        public void Opening_Popup_Shouldnt_Throw_When_Not_In_Visual_Tree()
+        {
+            var target = new Popup();
+            target.IsOpen = true;
+        }
+
+        [Fact]
+        public void Opening_Popup_Shouldnt_Throw_When_In_Tree_Without_TopLevel()
+        {
+            Control c = new Control();
+            var target = new Popup();
+            ((ISetLogicalParent)target).SetParent(c);
+            target.IsOpen = true;
+        }
+
         [Fact]
         public void Setting_Child_Should_Set_Child_Controls_LogicalParent()
         {
