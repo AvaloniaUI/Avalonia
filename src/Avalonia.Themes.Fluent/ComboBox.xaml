@@ -133,7 +133,8 @@
                     Padding="{DynamicResource ComboBoxDropdownBorderPadding}"
                     HorizontalAlignment="Stretch"
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
-              <ScrollViewer>
+              <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}"
                                 Margin="{DynamicResource ComboBoxDropdownContentMargin}"
