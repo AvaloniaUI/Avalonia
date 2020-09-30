@@ -1,12 +1,11 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Padding="20">
-      <CheckBox IsThreeState="True" IsChecked="True" />
+      <CheckBox IsThreeState="True" IsChecked="True" Content="Content" Foreground="Gold" />
     </Border>
   </Design.PreviewWith>
   <Style Selector="CheckBox">
     <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUnchecked}" />
-    <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
     <Setter Property="Padding" Value="8,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
@@ -55,8 +54,8 @@
   </Style>
 
   <!-- Unchecked Normal State -->
-  <Style Selector="CheckBox /template/ ContentPresenter#ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
+  <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
   </Style>
 
   <Style Selector="CheckBox /template/ Border#PART_Border">
@@ -133,8 +132,8 @@
 
 
   <!-- Checked Normal State -->
-  <Style Selector="CheckBox:checked /template/ ContentPresenter#ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource CheckBoxForegroundChecked}" />
+  <Style Selector="CheckBox:checked">
+    <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundChecked}" />
   </Style>
 
   <Style Selector="CheckBox:checked /template/ Border#PART_Border">
@@ -213,8 +212,8 @@
 
 
   <!-- Indeterminate Normal State -->
-  <Style Selector="CheckBox:indeterminate /template/ ContentPresenter#ContentPresenter">
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminate}" />
+  <Style Selector="CheckBox:indeterminate">
+    <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundIndeterminate}" />
   </Style>
 
   <Style Selector="CheckBox:indeterminate /template/ Border#PART_Border">
