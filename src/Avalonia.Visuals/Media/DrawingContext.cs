@@ -206,14 +206,13 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
             Contract.Requires<ArgumentNullException>(glyphRun != null);
 
             if (foreground != null)
             {
-                PlatformImpl.DrawGlyphRun(foreground, glyphRun, baselineOrigin);
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun);
             }
         }
 
