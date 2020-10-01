@@ -6,28 +6,28 @@ using Avalonia.Metadata;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Defines a composite transition that can be used to combine multiple transitions into one.
+    /// Defines a composite page transition that can be used to combine multiple transitions.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Instantiate the <see cref="CompositeTransition" /> in XAML and initialize the
+    /// Instantiate the <see cref="CompositePageTransition" /> in XAML and initialize the
     /// <see cref="Transitions" /> property in order to have many animations triggered at once.
     /// For example, you can combine <see cref="CrossFade"/> and <see cref="PageSlide"/>.
     /// <code>
     /// <![CDATA[
     /// <reactiveUi:RoutedViewHost Router="{Binding Router}">
     ///   <reactiveUi:RoutedViewHost.PageTransition>
-    ///     <CompositeTransition>
+    ///     <CompositePageTransition>
     ///       <PageSlide Duration="0.5" />
     ///       <CrossFade Duration="0.5" />
-    ///     </CompositeTransition>
+    ///     </CompositePageTransition>
     ///   </reactiveUi:RoutedViewHost.PageTransition>
     /// </reactiveUi:RoutedViewHost>
     /// ]]>
     /// </code>
     /// </para>
     /// </remarks>
-    public class CompositeTransition : IPageTransition
+    public class CompositePageTransition : IPageTransition
     {
         /// <summary>
         /// Gets or sets the transitions to be executed. Can be defined from XAML.
