@@ -98,7 +98,12 @@ namespace Avalonia.Controls.Selection
             {
                 if (ItemsView is object)
                 {
-                    SelectedIndex = ItemsView.IndexOf(value!);
+                    var index = ItemsView.IndexOf(value!);
+
+                    if (index >= 0)
+                    {
+                        SelectedIndex = index;
+                    }
                 }
                 else
                 {
