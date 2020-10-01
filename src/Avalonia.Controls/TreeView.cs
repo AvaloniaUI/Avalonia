@@ -219,7 +219,9 @@ namespace Avalonia.Controls
 
         private void SelectSingleItem(object item)
         {
+            _syncingSelectedItems = true;
             SelectedItems.Clear();
+            _syncingSelectedItems = false;
             SelectedItems.Add(item);
         }
 
@@ -353,7 +355,7 @@ namespace Avalonia.Controls
                 MarkItemSelected(item, true);
             }
 
-            if (SelectedItem == null && !_syncingSelectedItems)
+            if (!_syncingSelectedItems)
             {
                 SetAndRaise(SelectedItemProperty, ref _selectedItem, items[0]);
             }
