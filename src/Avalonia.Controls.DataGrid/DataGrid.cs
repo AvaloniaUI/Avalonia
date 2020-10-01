@@ -31,7 +31,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays data in a customizable grid.
     /// </summary>
-    [PseudoClasses(":invalid")]
+    [PseudoClasses(":invalid", ":empty-rows", ":empty-columns")]
     public partial class DataGrid : TemplatedControl
     {
         private const string DATAGRID_elementRowsPresenterName = "PART_RowsPresenter";
@@ -711,6 +711,7 @@ namespace Avalonia.Controls
 
             DisplayData = new DataGridDisplayData(this);
             ColumnsInternal = CreateColumnsInstance();
+            ColumnsInternal.CollectionChanged += ColumnsInternal_CollectionChanged;
 
             RowHeightEstimate = DATAGRID_defaultRowHeight;
             RowDetailsHeightEstimate = 0;
@@ -727,6 +728,8 @@ namespace Avalonia.Controls
             CurrentCellCoordinates = new DataGridCellCoordinates(-1, -1);
 
             RowGroupHeaderHeightEstimate = DATAGRID_defaultRowHeight;
+
+            UpdatePseudoClasses();
         }
 
         private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
@@ -851,7 +854,25 @@ namespace Avalonia.Controls
                 // can be set when the DataGrid is not part of the visual tree
                 _measured = false;
                 InvalidateMeasure();
+
+                UpdatePseudoClasses();
             }
+        }
+
+        private void ColumnsInternal_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add
+                || e.Action == NotifyCollectionChangedAction.Remove
+                || e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                UpdatePseudoClasses();
+            }
+        }
+
+        internal void UpdatePseudoClasses()
+        {
+            PseudoClasses.Set(":empty-columns", !ColumnsInternal.GetVisibleColumns().Any());
+            PseudoClasses.Set(":empty-rows", !DataConnection.Any());
         }
 
         private void OnSelectedIndexChanged(AvaloniaPropertyChangedEventArgs e)
@@ -1348,7 +1369,6 @@ namespace Avalonia.Controls
         internal DataGridColumnCollection ColumnsInternal
         {
             get;
-            private set;
         }
 
         internal int AnchorSlot
