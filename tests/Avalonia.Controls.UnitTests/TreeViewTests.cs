@@ -478,8 +478,6 @@ namespace Avalonia.Controls.UnitTests
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
 
-                var children = target.GetLogicalChildren().ToList();
-
                 var selectedValues = new List<object>();
 
                 dataContext.WhenAnyValue(x => x.SelectedItem)
