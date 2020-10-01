@@ -488,7 +488,7 @@ namespace Avalonia.Controls.UnitTests
                 _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Left);
                 _mouse.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Left);
 
-                Assert.Equal(4, selectedValues.Count);
+                Assert.Equal(3, selectedValues.Count);
                 Assert.Equal(new[] { null, "Item 0", "Item 2" }, selectedValues.ToArray());
             }
         }
