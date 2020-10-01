@@ -82,7 +82,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets or sets element entrance easing.
         /// </summary>
-        public Easing EntranceEasing
+        public Easing FadeInEasing
         {
             get => _fadeInAnimation.Easing;
             set => _fadeInAnimation.Easing = value;
@@ -91,7 +91,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets or sets element exit easing.
         /// </summary>
-        public Easing ExitEasing
+        public Easing FadeOutEasing
         {
             get => _fadeOutAnimation.Easing;
             set => _fadeOutAnimation.Easing = value;

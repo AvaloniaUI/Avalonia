@@ -53,12 +53,12 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets or sets element entrance easing.
         /// </summary>
-        public Easing EntranceEasing { get; set; } = new LinearEasing();
+        public Easing SlideInEasing { get; set; } = new LinearEasing();
         
         /// <summary>
         /// Gets or sets element exit easing.
         /// </summary>
-        public Easing ExitEasing { get; set; } = new LinearEasing();
+        public Easing SlideOutEasing { get; set; } = new LinearEasing();
 
         /// <summary>
         /// Starts the animation.
@@ -86,7 +86,7 @@ namespace Avalonia.Animation
             {
                 var animation = new Animation
                 {
-                    Easing = ExitEasing,
+                    Easing = SlideOutEasing,
                     Children =
                     {
                         new KeyFrame
@@ -117,7 +117,7 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 var animation = new Animation
                 {
-                    Easing = EntranceEasing,
+                    Easing = SlideInEasing,
                     Children =
                     {
                         new KeyFrame
