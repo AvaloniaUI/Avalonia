@@ -420,7 +420,7 @@ namespace Avalonia.Controls
                 _calendar.DayButtonMouseUp -= Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged -= Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged -= Calendar_SelectedDatesChanged;
-                _calendar.PointerPressed -= Calendar_PointerPressed;
+                _calendar.PointerReleased -= Calendar_PointerReleased;
                 _calendar.KeyDown -= Calendar_KeyDown;
             }
             _calendar = e.NameScope.Find<Calendar>(ElementCalendar);
@@ -435,7 +435,7 @@ namespace Avalonia.Controls
                 _calendar.DayButtonMouseUp += Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged += Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged += Calendar_SelectedDatesChanged;
-                _calendar.PointerPressed += Calendar_PointerPressed;
+                _calendar.PointerReleased += Calendar_PointerReleased;
                 _calendar.KeyDown += Calendar_KeyDown;
                 //_calendar.SizeChanged += new SizeChangedEventHandler(Calendar_SizeChanged);
                 //_calendar.IsTabStop = true;
@@ -831,9 +831,10 @@ namespace Avalonia.Controls
                 }
             }
         }
-        private void Calendar_PointerPressed(object sender, PointerPressedEventArgs e)
+        private void Calendar_PointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+             
+            if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 e.Handled = true;
             }
