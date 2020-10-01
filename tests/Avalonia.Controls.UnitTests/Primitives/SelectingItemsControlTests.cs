@@ -385,7 +385,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedItem_To_Not_Present_Item_Should_Clear_Selection()
+        public void Setting_SelectedItem_To_Not_Present_Item_Should_Be_Ignored()
         {
             var items = new[]
             {
@@ -407,8 +407,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.SelectedItem = new Item();
 
-            Assert.Null(target.SelectedItem);
-            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
         }
 
         [Fact]

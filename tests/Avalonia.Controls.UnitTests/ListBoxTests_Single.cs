@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Presenters;
@@ -9,6 +11,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using ReactiveUI;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -175,6 +178,71 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("Bar", target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
+        }
+
+        private class TestDataContext : ReactiveObject
+        {
+            private int _counter;
+            private string _selectedItem;
+
+            public TestDataContext()
+            {
+                Items1 = new ObservableCollection<string>(Enumerable.Range(1, 5).Select(i => GenerateItem()));
+                Items2 = new ObservableCollection<string>(Enumerable.Range(1, 5).Select(i => GenerateItem()));
+            }
+
+            private string GenerateItem() => $"Item {_counter++.ToString()}";
+
+            public ObservableCollection<string> Items1 { get; }
+
+            public ObservableCollection<string> Items2 { get; }
+
+            public string SelectedItem
+            {
+                get { return _selectedItem; }
+                set
+                {
+                    this.RaiseAndSetIfChanged(ref _selectedItem, value);
+                }
+            }
+        }
+
+        [Fact]
+        public void Two_ListBoxes_With_Seperate_Source_Lists_And_Bound_To_Common_Selected_Items()
+        {
+            var viewModel = new TestDataContext();
+
+            var target1 = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                DataContext = viewModel
+            };
+
+            var target2 = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                DataContext = viewModel,
+            };
+
+            ApplyTemplate(target1);
+            ApplyTemplate(target2);
+
+            target1.Bind(ListBox.ItemsProperty, new Binding("Items1"));
+            target1.Bind(ListBox.SelectedItemProperty, new Binding("SelectedItem"));
+
+            target2.Bind(ListBox.ItemsProperty, new Binding("Items2"));
+            target2.Bind(ListBox.SelectedItemProperty, new Binding("SelectedItem"));
+
+            var selectedValues = new List<object>();
+
+            viewModel.WhenAnyValue(x => x.SelectedItem)
+                .Subscribe(x => selectedValues.Add(x));
+
+            _mouse.Click(target1.Presenter.Panel.Children[0]);
+            _mouse.Click(target2.Presenter.Panel.Children[0]);
+
+            Assert.Equal(3, selectedValues.Count);
+            Assert.Equal(new[] { null, "Item 0", "Item 5" }, selectedValues.ToArray());
         }
 
         [Fact]
