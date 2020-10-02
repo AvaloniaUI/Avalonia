@@ -8,7 +8,7 @@ using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
-    public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IRenderTargetBitmapImpl, ILayerFactory
+    public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IDrawingContextLayerImpl, ILayerFactory
     {
         private readonly BitmapRenderTarget _renderTarget;
 
@@ -34,7 +34,14 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, null, () => Version++);
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public void Blit(IDrawingContextImpl context)
+        {
+            var rc = new Rect(0, 0, PixelSize.Width, PixelSize.Height);
+            context.DrawBitmap(RefCountable.CreateUnownedNotClonable(this),
+                1, rc, rc);
+        }
+
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             return CreateCompatible(_renderTarget, size);
         }

@@ -238,7 +238,7 @@ namespace Avalonia.Headless
             }
         }
 
-        class HeadlessBitmapStub : IBitmapImpl, IRenderTargetBitmapImpl, IWriteableBitmapImpl
+        class HeadlessBitmapStub : IBitmapImpl, IDrawingContextLayerImpl, IWriteableBitmapImpl
         {
             public Size Size { get; }
 
@@ -265,6 +265,11 @@ namespace Avalonia.Headless
             public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
             {
                 return new HeadlessDrawingContextStub();
+            }
+
+            public void Blit(IDrawingContextImpl context)
+            {
+                
             }
 
             public Vector Dpi { get; }
@@ -307,7 +312,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IRenderTargetBitmapImpl CreateLayer(Size size)
+            public IDrawingContextLayerImpl CreateLayer(Size size)
             {
                 return new HeadlessBitmapStub(size, new Vector(96, 96));
             }
