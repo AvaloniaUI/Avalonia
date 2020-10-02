@@ -90,7 +90,7 @@ namespace Avalonia.Skia
                 throw new OpenGlException("Unable to create FBO with stencil");
             }
 
-            var target = new GRBackendRenderTarget(pixelSize.Width, pixelSize.Height, 0, 0,
+            var target = new GRBackendRenderTarget(pixelSize.Width, pixelSize.Height, 0, 8,
                 new GRGlFramebufferInfo((uint)_fbo, SKColorType.Rgba8888.ToGlSizedFormat()));
             Surface = SKSurface.Create(_grContext, target,
                 GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888);
