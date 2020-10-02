@@ -84,8 +84,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
-        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin);
+        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
