@@ -1333,7 +1333,7 @@ namespace Avalonia.Controls.UnitTests
 
             public TestDataContext()
             {
-                Items = new ObservableCollection<string>(Enumerable.Range(1, 5).Select(i => $"Item {i}"));
+                Items = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => $"Item {i}"));
             }
 
             public ObservableCollection<string> Items { get; }
