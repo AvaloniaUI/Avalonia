@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reactive.Disposables;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
@@ -11,7 +12,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    internal class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
+    internal class SurfaceRenderTarget : IDrawingContextLayerImpl, IDrawableBitmapImpl
     {
         private readonly ISkiaSurface _surface;
         private readonly SKCanvas _canvas;
@@ -133,23 +134,33 @@ namespace Avalonia.Skia
             }
         }
 
+        public void Blit(IDrawingContextImpl contextImpl)
+        {
+            var context = (DrawingContextImpl)contextImpl;
+
+            if (_surface.CanBlit)
+            {
+                _surface.Surface.Canvas.Flush();
+                
+                // This should set the render target as the current FBO
+                context.Canvas.Clear();
+                context.Canvas.Flush();
+                _surface.Blit();
+            }
+            else
+            {
+                var oldMatrix = context.Canvas.TotalMatrix;
+                context.Canvas.ResetMatrix();
+                _surface.Surface.Draw(context.Canvas, 0, 0, null);
+                context.Canvas.SetMatrix(oldMatrix);
+            }
+        }
+        
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
-            if (sourceRect.Left == 0 && sourceRect.Top == 0 && sourceRect.Size == destRect.Size)
-            {
-                _surface.Surface.Canvas.Flush();
-                if (context.Canvas.TotalMatrix.IsIdentity && _surface.CanBlit && destRect.Top == 0 &&
-                    destRect.Left == 0)
-                    _surface.Blit();
-                else
-                    _surface.Surface.Draw(context.Canvas, destRect.Left, destRect.Top, paint);
-            }
-            else
-                using (var image = SnapshotImage())
-                {
-                    context.Canvas.DrawImage(image, sourceRect, destRect, paint);
-                }
+            using var image = SnapshotImage();
+            context.Canvas.DrawImage(image, sourceRect, destRect, paint);
         }
         
         /// <summary>

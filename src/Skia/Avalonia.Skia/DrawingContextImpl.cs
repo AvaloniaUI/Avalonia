@@ -422,7 +422,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             return CreateRenderTarget( size);
         }

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.OpenGL.Surfaces;
@@ -10,6 +12,7 @@ namespace Avalonia.Skia
     {
         private GRContext _grContext;
         private IGlContext _glContext;
+        private bool? _canCreateSurfaces;
 
         public GlSkiaGpu(IPlatformOpenGlInterface openGl, long? maxResourceBytes)
         {
@@ -45,7 +48,22 @@ namespace Avalonia.Skia
 
         public ISkiaSurface TryCreateSurface(PixelSize size)
         {
-            return new FboSkiaSurface(_grContext, _glContext, size);
+            size = new PixelSize(Math.Max(size.Width, 1), Math.Max(size.Height, 1));
+            if (_canCreateSurfaces == false)
+                return null;
+            try
+            {
+                var surface = new FboSkiaSurface(_grContext, _glContext, size);
+                _canCreateSurfaces = true;
+                return surface;
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")
+                    ?.Log(this, "Unable to create a Skia-compatible FBO manually");
+                _canCreateSurfaces ??= false;
+                return null;
+            }
         }
 
         public IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi) => new GlOpenGlBitmapImpl(_glContext, size, dpi);
