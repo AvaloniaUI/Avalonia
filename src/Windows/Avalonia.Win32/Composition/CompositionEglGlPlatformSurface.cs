@@ -25,9 +25,11 @@ namespace Avalonia.Win32
 
         public IBlurHost AttachToCompositionTree(IntPtr hwnd)
         {
-            _surfaceInterop = CompositionHost.Instance.InitialiseWindowCompositionTree(hwnd, out _surface, out var blurHost);
-
-            return blurHost;
+            using (_egl.PrimaryContext.MakeCurrent())
+            {
+                _surfaceInterop = CompositionHost.Instance.InitialiseWindowCompositionTree(hwnd, out _surface, out var blurHost);
+                return blurHost;
+            }
         }
 
         public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
@@ -55,27 +57,38 @@ namespace Avalonia.Win32
                 _info = info;
                 _currentSize = info.Size;
                 _compositionVisual = compositionVisual;
-                _surfaceInterop.Resize(new POINT { X = _info.Size.Width, Y = _info.Size.Height });
+
+                using (_egl.PrimaryContext.MakeCurrent())
+                {
+                    _surfaceInterop.Resize(new POINT { X = _info.Size.Width, Y = _info.Size.Height });
+                }
+
                 _compositionVisual.Size = new System.Numerics.Vector2(_info.Size.Width, _info.Size.Height);
             }
 
             public override IGlPlatformSurfaceRenderingSession BeginDraw()
             {
-                if (_info.Size != _currentSize)
+                IntPtr texture;
+                EglSurface surface;
+
+                using (_egl.PrimaryEglContext.EnsureCurrent())
                 {
-                    _surfaceInterop.Resize(new POINT { X = _info.Size.Width, Y = _info.Size.Height });
-                    _compositionVisual.Size = new System.Numerics.Vector2(_info.Size.Width, _info.Size.Height);
-                    _currentSize = _info.Size;
+                    if (_info.Size != _currentSize)
+                    {
+                        _surfaceInterop.Resize(new POINT { X = _info.Size.Width, Y = _info.Size.Height });
+                        _compositionVisual.Size = new System.Numerics.Vector2(_info.Size.Width, _info.Size.Height);
+                        _currentSize = _info.Size;
+                    }
+
+                    var offset = new POINT();
+
+                    _surfaceInterop.BeginDraw(
+                        IntPtr.Zero,
+                        ref s_Iid,
+                        out texture, ref offset);
+
+                    surface = (_egl.Display as AngleWin32EglDisplay).WrapDirect3D11Texture(_egl, texture, offset.X, offset.Y, _info.Size.Width, _info.Size.Height);
                 }
-
-                var offset = new POINT();
-
-                _surfaceInterop.BeginDraw(
-                    IntPtr.Zero,
-                    ref s_Iid,
-                    out IntPtr texture, ref offset);
-
-                var surface = (_egl.Display as AngleWin32EglDisplay).WrapDirect3D11Texture(_egl, texture, offset.X, offset.Y, _info.Size.Width, _info.Size.Height);
 
                 return base.BeginDraw(surface, _info, () => { _surfaceInterop.EndDraw(); Marshal.Release(texture); surface.Dispose(); }, true);
             }
