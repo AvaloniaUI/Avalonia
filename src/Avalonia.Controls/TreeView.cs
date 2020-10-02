@@ -223,7 +223,7 @@ namespace Avalonia.Controls
             SelectedItems.Add(item);
             _syncingSelectedItems = false;
 
-            this.RaisePropertyChanged(SelectedItemProperty, oldValue, item);
+            SetAndRaise(SelectedItemProperty, ref _selectedItem, item);            
         }
 
         /// <summary>
