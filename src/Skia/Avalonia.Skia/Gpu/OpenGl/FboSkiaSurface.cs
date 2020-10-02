@@ -121,7 +121,7 @@ namespace Avalonia.Skia
             var gl = _glContext.GlInterface;
             gl.GetIntegerv(GL_READ_FRAMEBUFFER_BINDING, out var oldRead);
             gl.BindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
-            gl.BlitFramebuffer(0, _pixelSize.Height, _pixelSize.Width, 0, 0, 0, _pixelSize.Width, _pixelSize.Height,
+            gl.BlitFramebuffer(0, 0, _pixelSize.Width, _pixelSize.Height, 0, 0, _pixelSize.Width, _pixelSize.Height,
                 GL_COLOR_BUFFER_BIT, GL_LINEAR);
             gl.BindFramebuffer(GL_READ_FRAMEBUFFER, oldRead);
         }
