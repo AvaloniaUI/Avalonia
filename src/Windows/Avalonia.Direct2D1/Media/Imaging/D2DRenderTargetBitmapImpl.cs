@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -34,12 +35,9 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, null, () => Version++);
         }
 
-        public void Blit(IDrawingContextImpl context)
-        {
-            var rc = new Rect(0, 0, PixelSize.Width, PixelSize.Height);
-            context.DrawBitmap(RefCountable.CreateUnownedNotClonable(this),
-                1, rc, rc);
-        }
+        public void Blit(IDrawingContextImpl context) => throw new NotSupportedException();
+
+        public bool CanBlit => false;
 
         public IDrawingContextLayerImpl CreateLayer(Size size)
         {

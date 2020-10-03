@@ -28,8 +28,7 @@ namespace Avalonia.Skia
     {
         SKSurface Surface { get; }
         bool CanBlit { get; }
-        void Blit();
-
+        void Blit(SKCanvas canvas);
     }
 
     public interface IOpenGlAwareSkiaGpu : ISkiaGpu

@@ -23,20 +23,18 @@ namespace Avalonia.Skia
         class SkiaSurfaceWrapper : ISkiaSurface
         {
             public SKSurface Surface { get; private set; }
-            public SKSurface ReadSurface { get; private set; }
             public bool CanBlit => false;
-            public void Blit() => throw new NotSupportedException();
+            public void Blit(SKCanvas canvas) => throw new NotSupportedException();
 
             public SkiaSurfaceWrapper(SKSurface surface)
             {
-                Surface = ReadSurface = surface;
+                Surface = surface;
             }
 
             public void Dispose()
             {
                 Surface?.Dispose();
                 Surface = null;
-                ReadSurface = null;
             }
         }
         
@@ -141,11 +139,7 @@ namespace Avalonia.Skia
             if (_surface.CanBlit)
             {
                 _surface.Surface.Canvas.Flush();
-                
-                // This should set the render target as the current FBO
-                context.Canvas.Clear();
-                context.Canvas.Flush();
-                _surface.Blit();
+                _surface.Blit(context.Canvas);
             }
             else
             {
@@ -155,7 +149,9 @@ namespace Avalonia.Skia
                 context.Canvas.SetMatrix(oldMatrix);
             }
         }
-        
+
+        public bool CanBlit => true;
+
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {

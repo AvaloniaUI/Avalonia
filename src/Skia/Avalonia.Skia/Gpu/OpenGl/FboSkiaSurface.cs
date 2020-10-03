@@ -116,8 +116,13 @@ namespace Avalonia.Skia
 
         public SKSurface Surface { get; private set; }
         public bool CanBlit { get; }
-        public void Blit()
+        public void Blit(SKCanvas canvas)
         {
+            // This should set the render target as the current FBO
+            // which is definitely not the best method, but it works
+            canvas.Clear();
+            canvas.Flush();
+            
             var gl = _glContext.GlInterface;
             gl.GetIntegerv(GL_READ_FRAMEBUFFER_BINDING, out var oldRead);
             gl.BindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);

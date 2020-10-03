@@ -272,6 +272,8 @@ namespace Avalonia.Headless
                 
             }
 
+            public bool CanBlit => false;
+
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
             public int Version { get; set; }

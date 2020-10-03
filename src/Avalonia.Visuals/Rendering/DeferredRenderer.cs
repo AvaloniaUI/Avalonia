@@ -502,7 +502,7 @@ namespace Avalonia.Rendering
 
                 if (layer.OpacityMask == null)
                 {
-                    if (firstLayer)
+                    if (firstLayer && bitmap.Item.CanBlit)
                         bitmap.Item.Blit(context);
                     else
                         context.DrawBitmap(bitmap, layer.Opacity, sourceRect, clientRect);

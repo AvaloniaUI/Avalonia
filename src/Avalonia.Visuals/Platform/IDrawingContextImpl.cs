@@ -164,5 +164,10 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="context"></param>
         void Blit(IDrawingContextImpl context);
+        
+        /// <summary>
+        /// Returns true if layer supports optimized blit
+        /// </summary>
+        bool CanBlit { get; }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
@@ -48,6 +49,14 @@ namespace Avalonia.Skia
 
         public ISkiaSurface TryCreateSurface(PixelSize size)
         {
+            // Only windows platform needs our FBO trickery
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return null;
+
+            // Blit feature requires glBlitFramebuffer
+            if (_glContext.GlInterface.BlitFramebuffer == null)
+                return null;
+            
             size = new PixelSize(Math.Max(size.Width, 1), Math.Max(size.Height, 1));
             if (_canCreateSurfaces == false)
                 return null;
