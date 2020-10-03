@@ -54,6 +54,23 @@ namespace Avalonia
                 return _locator;
             }
 
+            public AvaloniaLocator ToLazy<TImlp>(Func<TImlp> func) where TImlp : TService
+            {
+                var constructed = false;
+                TImlp instance = default;
+                _locator._registry[typeof (TService)] = () =>
+                {
+                    if (!constructed)
+                    {
+                        instance = func();
+                        constructed = true;
+                    }
+
+                    return instance;
+                };
+                return _locator;
+            }
+            
             public AvaloniaLocator ToSingleton<TImpl>() where TImpl : class, TService, new()
             {
                 TImpl instance = null;
