@@ -147,7 +147,7 @@ namespace Avalonia.Win32.OpenGl
                             // core profile
                             WGL_CONTEXT_PROFILE_MASK_ARB, 1, 
                             // debug 
-                            WGL_CONTEXT_FLAGS_ARB, 1,
+                            // WGL_CONTEXT_FLAGS_ARB, 1,
                             // end
                             0, 0
                         });
