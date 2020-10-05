@@ -586,6 +586,19 @@ namespace Avalonia.Controls.Primitives
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
+
+            if(PlacementTarget != null)
+            {
+                FocusManager.Instance?.Focus(PlacementTarget);
+            }
+            else
+            {
+                var anc = this.GetLogicalAncestors().OfType<IControl>().FirstOrDefault();
+                if (anc != null)
+                {
+                    FocusManager.Instance?.Focus(anc);
+                }
+            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)
