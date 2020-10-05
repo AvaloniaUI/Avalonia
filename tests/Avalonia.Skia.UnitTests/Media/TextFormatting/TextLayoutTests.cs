@@ -575,7 +575,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact(Skip = "Infinity loop issue #4806")]
+        [Fact]
         public void Should_Wrap_Min_OneCharacter_EveryLine()
         {
             using (Start())
