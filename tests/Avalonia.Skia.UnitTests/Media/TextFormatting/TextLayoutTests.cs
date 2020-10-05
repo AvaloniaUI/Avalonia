@@ -575,6 +575,24 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact(Skip = "Infinity loop issue #4806")]
+        public void Should_Wrap_Min_OneCharacter_EveryLine()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    s_singleLineText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 3);
+
+                //every character should be new line as there not enough space for even one character
+                Assert.Equal(s_singleLineText.Length, layout.TextLines.Count);
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
