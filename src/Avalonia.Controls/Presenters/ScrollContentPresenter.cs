@@ -7,6 +7,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
@@ -64,11 +66,11 @@ namespace Avalonia.Controls.Presenters
         private bool _arranging;
         private Size _extent;
         private Vector _offset;
-        private IDisposable _logicalScrollSubscription;
+        private IDisposable? _logicalScrollSubscription;
         private Size _viewport;
-        private Dictionary<int, Vector> _activeLogicalGestureScrolls;
-        private List<IControl> _anchorCandidates;
-        private (IControl control, Rect bounds) _anchor;
+        private Dictionary<int, Vector>? _activeLogicalGestureScrolls;
+        private List<IControl>? _anchorCandidates;
+        private (IControl? control, Rect bounds) _anchor;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -89,8 +91,6 @@ namespace Avalonia.Controls.Presenters
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
-
-        internal event EventHandler<VectorEventArgs> PreArrange;
 
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        IControl IScrollAnchorProvider.CurrentAnchor => _anchor.control;
+        IControl? IScrollAnchorProvider.CurrentAnchor => _anchor.control;
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
@@ -247,11 +247,6 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            PreArrange?.Invoke(this, new VectorEventArgs
-            {
-                Vector = new Vector(finalSize.Width, finalSize.Height),
-            });
-
             if (_logicalScrollSubscription != null || Child == null)
             {
                 return base.ArrangeOverride(finalSize);
@@ -350,7 +345,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         var logicalUnits = delta.Y / LogicalScrollItemSize;
                         delta = delta.WithY(delta.Y - logicalUnits * LogicalScrollItemSize);
-                        dy = logicalUnits * scrollable.ScrollSize.Height;
+                        dy = logicalUnits * scrollable!.ScrollSize.Height;
                     }
                     else
                         dy = delta.Y;
@@ -368,7 +363,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         var logicalUnits = delta.X / LogicalScrollItemSize;
                         delta = delta.WithX(delta.X - logicalUnits * LogicalScrollItemSize);
-                        dx = logicalUnits * scrollable.ScrollSize.Width;
+                        dx = logicalUnits * scrollable!.ScrollSize.Width;
                     }
                     else
                         dx = delta.X;
@@ -405,7 +400,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (Extent.Height > Viewport.Height)
                 {
-                    double height = isLogical ? scrollable.ScrollSize.Height : 50;
+                    double height = isLogical ? scrollable!.ScrollSize.Height : 50;
                     y += -e.Delta.Y * height;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
@@ -413,7 +408,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (Extent.Width > Viewport.Width)
                 {
-                    double width = isLogical ? scrollable.ScrollSize.Width : 50;
+                    double width = isLogical ? scrollable!.ScrollSize.Width : 50;
                     x += -e.Delta.X * width;
                     x = Math.Max(x, 0);
                     x = Math.Min(x, Extent.Width - Viewport.Width);
@@ -441,7 +436,7 @@ namespace Avalonia.Controls.Presenters
 
         private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateScrollableSubscription((IControl)e.NewValue);
+            UpdateScrollableSubscription((IControl?)e.NewValue);
 
             if (e.OldValue != null)
             {
@@ -449,7 +444,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void UpdateScrollableSubscription(IControl child)
+        private void UpdateScrollableSubscription(IControl? child)
         {
             var scrollable = child as ILogicalScrollable;
 
