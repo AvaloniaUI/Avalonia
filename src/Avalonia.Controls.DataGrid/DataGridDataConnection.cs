@@ -77,24 +77,7 @@ namespace Avalonia.Controls
             private set;
         }
 
-        public int Count
-        {
-            get
-            {
-                IList list = List;
-                if (list != null)
-                {
-                    return list.Count;
-                }
-
-                if(DataSource is DataGridCollectionView cv)
-                {
-                    return cv.Count;
-                }
-
-                return DataSource?.Cast<object>().Count() ?? 0;
-            }
-        }
+        public int Count => GetCount(true);
 
         public bool DataIsPrimitive
         {
@@ -208,6 +191,24 @@ namespace Avalonia.Controls
                     return null;
                 }
             }
+        }
+
+        internal bool Any()
+        {
+            return GetCount(false) > 0;
+        }
+
+        /// <param name="allowSlow">When "allowSlow" is false, method will not use Linq.Count() method and will return 0 or 1 instead.</param>
+        private int GetCount(bool allowSlow)
+        {
+            return DataSource switch
+            {
+                ICollection collection => collection.Count,
+                DataGridCollectionView cv => cv.Count,
+                IEnumerable enumerable when allowSlow => enumerable.Cast<object>().Count(),
+                IEnumerable enumerable when !allowSlow => enumerable.Cast<object>().Any() ? 1 : 0,
+                _ => 0
+            };
         }
 
         /// <summary>
@@ -675,6 +676,8 @@ namespace Avalonia.Controls
                     }
                     break;
             }
+
+            _owner.UpdatePseudoClasses();
         }
 
         private void UpdateDataProperties()
