@@ -34,11 +34,7 @@ namespace Avalonia.Controls.Primitives
         private Button _headerButton;
         private Button _nextButton;
         private Button _previousButton;
-        private Grid _monthView;
-        private Grid _yearView;
         private ITemplate<IControl> _dayTitleTemplate;
-        private CalendarButton _lastCalendarButton;
-        private CalendarDayButton _lastCalendarDayButton;
         
         private DateTime _currentMonth;
         private bool _isMouseLeftButtonDown = false;
@@ -158,38 +154,12 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the Grid that hosts the content when in month mode.
         /// </summary>
-        internal Grid MonthView
-        {
-            get { return _monthView; }
-            private set
-            {
-                if (_monthView != null)
-                    _monthView.PointerLeave -= MonthView_MouseLeave;
-
-                _monthView = value;
-
-                if (_monthView != null)
-                    _monthView.PointerLeave += MonthView_MouseLeave;
-            }
-        }
+        internal Grid MonthView { get; set; }
         /// <summary>
         /// Gets the Grid that hosts the content when in year or decade mode.
         /// </summary>
-        internal Grid YearView
-        {
-            get { return _yearView; }
-            private set
-            {
-                if (_yearView != null)
-                    _yearView.PointerLeave -= YearView_MouseLeave;
-
-                _yearView = value;
-
-                if (_yearView != null)
-                    _yearView.PointerLeave += YearView_MouseLeave;
-            }
-        }
-
+        internal Grid YearView { get; set; }
+        
         private void PopulateGrids()
         {
             if (MonthView != null)
@@ -224,7 +194,6 @@ namespace Avalonia.Controls.Primitives
                         cell.CalendarDayButtonMouseDown += Cell_MouseLeftButtonDown;
                         cell.CalendarDayButtonMouseUp += Cell_MouseLeftButtonUp;
                         cell.PointerEnter += Cell_MouseEnter;
-                        cell.PointerLeave += Cell_MouseLeave;
                         cell.Click += Cell_Click;
                         children.Add(cell);
                     }
@@ -254,7 +223,6 @@ namespace Avalonia.Controls.Primitives
                         month.CalendarLeftMouseButtonDown += Month_CalendarButtonMouseDown;
                         month.CalendarLeftMouseButtonUp += Month_CalendarButtonMouseUp;
                         month.PointerEnter += Month_MouseEnter;
-                        month.PointerLeave += Month_MouseLeave;
                         children.Add(month);
                     }
                 }
@@ -937,17 +905,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
         }
-        internal void Cell_MouseLeave(object sender, PointerEventArgs e)
-        {
-            if (_isMouseLeftButtonDown)
-            {
-                CalendarDayButton b = (CalendarDayButton)sender;
-                // The button is in Pressed state. Change the state to normal.
-                if (e.Device.Captured == b)
-                    e.Device.Capture(null);
-                _lastCalendarDayButton = b;
-            }
-        }
+        
         internal void Cell_MouseLeftButtonDown(object sender, PointerPressedEventArgs e)
         {
             if (Owner != null)
@@ -1207,35 +1165,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void Month_MouseLeave(object sender, PointerEventArgs e)
-        {
-            if (_isMouseLeftButtonDownYearView)
-            {
-                CalendarButton b = (CalendarButton)sender;
-                // The button is in Pressed state. Change the state to normal.
-                if (e.Device.Captured == b)
-                    e.Device.Capture(null);
-                //b.ReleaseMouseCapture();
-
-                _lastCalendarButton = b;
-            }
-        }
-        private void MonthView_MouseLeave(object sender, PointerEventArgs e)
-        {
-            if (_lastCalendarDayButton != null)
-            {
-                e.Device.Capture(_lastCalendarDayButton);
-            }
-        }
-
-        private void YearView_MouseLeave(object sender, PointerEventArgs e)
-        {
-            if (_lastCalendarButton != null)
-            {
-                e.Device.Capture(_lastCalendarButton);
-            }
-        }
-        
         internal void UpdateDisabled(bool isEnabled)
         {
             PseudoClasses.Set(":calendardisabled", !isEnabled);
