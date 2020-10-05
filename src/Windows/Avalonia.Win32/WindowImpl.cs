@@ -582,6 +582,10 @@ namespace Avalonia.Win32
                                 : RawPointerEventType.MiddleButtonUp,
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
+                // Mouse capture is lost
+                case WindowsMessage.WM_CANCELMODE:
+                    _mouseDevice.Capture(null);
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
                     if(ShouldIgnoreTouchEmulatedMessage())
