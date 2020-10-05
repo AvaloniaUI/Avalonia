@@ -391,6 +391,10 @@ namespace Avalonia.Media.TextFormatting
                                 measuredLength = currentBreakPosition + lineBreaker.Current.PositionWrap;
                             }
                         }
+                        else if (measuredLength == 0 && currentLength == 0)
+                        {
+                            measuredLength = 1;
+                        }
                     }
 
                     currentLength += measuredLength;
