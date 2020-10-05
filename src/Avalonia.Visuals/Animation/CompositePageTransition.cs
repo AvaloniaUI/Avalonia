@@ -33,7 +33,7 @@ namespace Avalonia.Animation
         /// Gets or sets the transitions to be executed. Can be defined from XAML.
         /// </summary>
         [Content]
-        public List<IPageTransition> Transitions { get; set; } = new List<IPageTransition>();
+        public List<IPageTransition> PageTransitions { get; set; } = new List<IPageTransition>();
 
         /// <summary>
         /// Starts the animation.
@@ -52,7 +52,7 @@ namespace Avalonia.Animation
         /// </returns>
         public Task Start(Visual from, Visual to, bool forward)
         {
-            var transitionTasks = Transitions
+            var transitionTasks = PageTransitions
                 .Select(transition => transition.Start(from, to, forward))
                 .ToList();
             return Task.WhenAll(transitionTasks);
