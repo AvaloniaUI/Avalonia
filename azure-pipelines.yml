@@ -69,8 +69,7 @@ jobs:
       script: |
         brew update
         brew cleanup
-        curl https://raw.githubusercontent.com/Homebrew/homebrew-core/8a004a91a7fcd3f6620d5b01b6541ff0a640ffba/Formula/castxml.rb -o castxml.rb
-        HOMEBREW_NO_AUTO_UPDATE=1 brew install ./castxml.rb
+        HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install ./build/castxml020.rb
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
