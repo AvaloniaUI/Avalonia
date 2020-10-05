@@ -145,8 +145,6 @@ namespace Avalonia.Skia
             {
                 if (surface is IFramebufferPlatformSurface framebufferSurface)
                     return new FramebufferRenderTarget(framebufferSurface);
-                if (surface is IExternalCanvasSurface canvas)
-                    return new ExternalCanvasRenderTarget(canvas);
             }
 
             throw new NotSupportedException(
