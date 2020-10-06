@@ -249,8 +249,8 @@ namespace Avalonia.Layout
                     realizationWindowOffsetInExtent + _orientation.MajorSize(realizationRect) >= 0 && realizationWindowOffsetInExtent <= majorSize)
                 {
                     anchorIndex = (int) (realizationWindowOffsetInExtent / averageElementSize);
-                    offset = anchorIndex* averageElementSize + _orientation.MajorStart(lastExtent);
                     anchorIndex = Math.Max(0, Math.Min(itemsCount - 1, anchorIndex));
+                    offset = anchorIndex* averageElementSize + _orientation.MajorStart(lastExtent);
                 }
         }
 
