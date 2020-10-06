@@ -200,6 +200,10 @@ namespace Avalonia.Win32
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
                     }
+                // Mouse capture is lost
+                case WindowsMessage.WM_CANCELMODE:
+                    _mouseDevice.Capture(null);
+                    break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
