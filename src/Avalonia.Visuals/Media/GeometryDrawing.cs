@@ -1,9 +1,13 @@
-﻿using Avalonia.Metadata;
+﻿using Avalonia.Media.Immutable;
+using Avalonia.Metadata;
 
 namespace Avalonia.Media
 {
     public class GeometryDrawing : Drawing
     {
+        // Adding the Pen's stroke thickness here could yield wrong results due to transforms.
+        private static readonly IPen s_boundsPen = new ImmutablePen(Colors.Black.ToUint32(), 0);
+    
         public static readonly StyledProperty<Geometry> GeometryProperty =
             AvaloniaProperty.Register<GeometryDrawing, Geometry>(nameof(Geometry));
 
@@ -42,9 +46,7 @@ namespace Avalonia.Media
 
         public override Rect GetBounds()
         {
-            // adding the Pen's stroke thickness here could yield wrong results due to transforms
-            var pen = new Pen(Brushes.Black, 0);
-            return Geometry?.GetRenderBounds(pen) ?? new Rect();
+            return Geometry?.GetRenderBounds(s_boundsPen) ?? new Rect();
         }
     }
 }
