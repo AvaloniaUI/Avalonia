@@ -81,7 +81,7 @@ namespace ControlCatalog
 
         public override void Initialize()
         {
-            Styles.Insert(0, FluentDark);
+            Styles.Insert(0, FluentLight);
 
             AvaloniaXamlLoader.Load(this);
         }
