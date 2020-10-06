@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Animation.Easings;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -74,14 +75,26 @@ namespace Avalonia.Animation
         /// </summary>
         public TimeSpan Duration
         {
-            get
-            {
-                return _fadeOutAnimation.Duration;
-            }
-            set
-            {
-                _fadeOutAnimation.Duration = _fadeInAnimation.Duration = value;
-            }
+            get => _fadeOutAnimation.Duration;
+            set => _fadeOutAnimation.Duration = _fadeInAnimation.Duration = value;
+        }
+
+        /// <summary>
+        /// Gets or sets element entrance easing.
+        /// </summary>
+        public Easing FadeInEasing
+        {
+            get => _fadeInAnimation.Easing;
+            set => _fadeInAnimation.Easing = value;
+        }
+
+        /// <summary>
+        /// Gets or sets element exit easing.
+        /// </summary>
+        public Easing FadeOutEasing
+        {
+            get => _fadeOutAnimation.Easing;
+            set => _fadeOutAnimation.Easing = value;
         }
 
         /// <summary>
