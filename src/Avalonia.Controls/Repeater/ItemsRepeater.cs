@@ -267,6 +267,11 @@ namespace Avalonia.Controls
             return result;
         }
 
+        private protected override void InvalidateMeasureOnChildrenChanged()
+        {
+            // Don't invalidate measure when children change.
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_isLayoutInProgress)
