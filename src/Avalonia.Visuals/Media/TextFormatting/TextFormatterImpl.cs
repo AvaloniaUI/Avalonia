@@ -43,18 +43,23 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Measures the number of characters that fits into available width.
+        /// Measures the number of characters that fit into available width.
         /// </summary>
         /// <param name="textCharacters">The text run.</param>
         /// <param name="availableWidth">The available width.</param>
-        /// <returns></returns>
-        internal static int MeasureCharacters(ShapedTextCharacters textCharacters, double availableWidth)
+        /// <param name="count">The count of fitting characters.</param>
+        /// <returns>
+        /// <c>true</c> if characters fit into the available width; otherwise, <c>false</c>.
+        /// </returns>
+        internal static bool TryMeasureCharacters(ShapedTextCharacters textCharacters, double availableWidth, out int count)
         {
             var glyphRun = textCharacters.GlyphRun;
 
             if (glyphRun.Size.Width < availableWidth)
             {
-                return glyphRun.Characters.Length;
+                count = glyphRun.Characters.Length;
+
+                return true;
             }
 
             var glyphCount = 0;
@@ -96,21 +101,34 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
+            if (glyphCount == 0)
+            {
+                count = 0;
+
+                return false;
+            }
+
             if (glyphCount == glyphRun.GlyphIndices.Length)
             {
-                return glyphRun.Characters.Length;
+                count = glyphRun.Characters.Length;
+
+                return true;
             }
 
             if (glyphRun.GlyphClusters.IsEmpty)
             {
-                return glyphCount;
+                count = glyphCount;
+
+                return true;
             }
 
             var firstCluster = glyphRun.GlyphClusters[0];
 
             var lastCluster = glyphRun.GlyphClusters[glyphCount];
 
-            return lastCluster - firstCluster;
+            count = lastCluster - firstCluster;
+
+            return count > 0;
         }
 
         /// <summary>
@@ -350,29 +368,38 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentWidth + currentRun.Size.Width > availableWidth)
                 {
-                    var measuredLength = MeasureCharacters(currentRun, paragraphWidth - currentWidth);
-
                     var breakFound = false;
 
                     var currentBreakPosition = 0;
 
-                    if (measuredLength < currentRun.Text.Length)
+                    if (TryMeasureCharacters(currentRun, paragraphWidth - currentWidth, out var measuredLength))
                     {
-                        var lineBreaker = new LineBreakEnumerator(currentRun.Text);
-
-                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
+                        if (measuredLength < currentRun.Text.Length)
                         {
-                            var nextBreakPosition = lineBreaker.Current.PositionWrap;
+                            var lineBreaker = new LineBreakEnumerator(currentRun.Text);
 
-                            if (nextBreakPosition == 0 || nextBreakPosition > measuredLength)
+                            while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
                             {
-                                break;
+                                var nextBreakPosition = lineBreaker.Current.PositionWrap;
+
+                                if (nextBreakPosition == 0 || nextBreakPosition > measuredLength)
+                                {
+                                    break;
+                                }
+
+                                breakFound = lineBreaker.Current.Required ||
+                                             lineBreaker.Current.PositionWrap != currentRun.Text.Length;
+
+                                currentBreakPosition = nextBreakPosition;
                             }
-
-                            breakFound = lineBreaker.Current.Required ||
-                                         lineBreaker.Current.PositionWrap != currentRun.Text.Length;
-
-                            currentBreakPosition = nextBreakPosition;
+                        }
+                    }
+                    else
+                    {
+                        // Make sure we wrap at least one character.
+                        if (currentLength == 0)
+                        {
+                            measuredLength = 1;
                         }
                     }
 
