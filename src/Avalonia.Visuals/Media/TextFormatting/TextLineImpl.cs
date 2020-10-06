@@ -75,7 +75,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentWidth > availableWidth)
                 {
-                    var measuredLength = TextFormatterImpl.MeasureCharacters(currentRun, availableWidth, runIndex);
+                    var measuredLength = TextFormatterImpl.MeasureCharacters(currentRun, availableWidth);
 
                     var currentBreakPosition = 0;
 
