@@ -358,7 +358,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            var placementTarget = PlacementTarget ?? this.GetLogicalAncestors().OfType<IVisual>().FirstOrDefault();
+            var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
 
             if (placementTarget == null)
             {
@@ -587,13 +587,13 @@ namespace Avalonia.Controls.Primitives
 
             Closed?.Invoke(this, EventArgs.Empty);
 
-            if(PlacementTarget != null)
+            if (PlacementTarget != null)
             {
                 FocusManager.Instance?.Focus(PlacementTarget);
             }
             else
             {
-                var anc = this.GetLogicalAncestors().OfType<IControl>().FirstOrDefault();
+                var anc = this.FindLogicalAncestorOfType<IControl>();
                 if (anc != null)
                 {
                     FocusManager.Instance?.Focus(anc);
