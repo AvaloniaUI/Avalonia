@@ -354,9 +354,9 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="eventSource">The control that raised the event.</param>
         /// <returns>The container or null if the event did not originate in a container.</returns>
-        protected IControl? GetContainerFromEventSource(IInteractive eventSource)
+        protected IControl? GetContainerFromEventSource(IInteractive? eventSource)
         {
-            var parent = (IVisual)eventSource;
+            var parent = eventSource as IVisual;
 
             while (parent != null)
             {
@@ -670,7 +670,7 @@ namespace Avalonia.Controls.Primitives
         /// false.
         /// </returns>
         protected bool UpdateSelectionFromEventSource(
-            IInteractive eventSource,
+            IInteractive? eventSource,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,

@@ -372,9 +372,7 @@ namespace Avalonia.Controls
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-#pragma warning disable CS8604
             e.Handled = UpdateSelectionFromEventSource(e.Source, true);
-#pragma warning restore CS8604
         }
 
         /// <inheritdoc/>
