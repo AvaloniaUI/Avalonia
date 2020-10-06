@@ -113,16 +113,8 @@ namespace Avalonia
         /// <param name="binding">The binding information.</param>
         public IBinding this[IndexerDescriptor binding]
         {
-            get
-            {
-                return new IndexerBinding(this, binding.Property, binding.Mode);
-            }
-
-            set
-            {
-                var sourceBinding = value as IBinding;
-                this.Bind(binding.Property, sourceBinding);
-            }
+            get { return new IndexerBinding(this, binding.Property, binding.Mode); }
+            set { this.Bind(binding.Property, value); }
         }
 
         public bool CheckAccess() => Dispatcher.UIThread.CheckAccess();
