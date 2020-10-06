@@ -47,8 +47,9 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="textCharacters">The text run.</param>
         /// <param name="availableWidth">The available width.</param>
+        /// <param name="textRunIndex">Index of the textCharacters parent TextRun</param>
         /// <returns></returns>
-        internal static int MeasureCharacters(ShapedTextCharacters textCharacters, double availableWidth)
+        internal static int MeasureCharacters(ShapedTextCharacters textCharacters, double availableWidth, int textRunIndex)
         {
             var glyphRun = textCharacters.GlyphRun;
 
@@ -73,6 +74,13 @@ namespace Avalonia.Media.TextFormatting
 
                     if (currentWidth + advance > availableWidth)
                     {
+                        if(glyphCount == 0 && textRunIndex == 0)
+                        {
+                            //we need to return at least one characted on the first run
+                            //or we risk to get a infinity loop when width is less than one character width
+                            //issue #4806
+                            glyphCount = 1;
+                        }
                         break;
                     }
 
@@ -350,7 +358,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentWidth + currentRun.Size.Width > availableWidth)
                 {
-                    var measuredLength = MeasureCharacters(currentRun, paragraphWidth - currentWidth);
+                    var measuredLength = MeasureCharacters(currentRun, paragraphWidth - currentWidth, runIndex);
 
                     var breakFound = false;
 
