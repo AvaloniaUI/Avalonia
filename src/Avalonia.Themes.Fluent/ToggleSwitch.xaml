@@ -31,7 +31,7 @@
           Text="The previewer Shows a preview off your code, this could slow down your system"
           TextWrapping="Wrap"/>
         <ToggleSwitch
-          Background="Green"
+          Content="Previewer"
           IsChecked="True" />
       </StackPanel>
     </StackPanel>
@@ -53,6 +53,7 @@
             Grid.Row="0"
             Content="{TemplateBinding Content}"
             ContentTemplate="{TemplateBinding ContentTemplate}"
+            Margin="{DynamicResource ToggleSwitchTopHeaderMargin}"
             VerticalAlignment="Top"/>
 
           <Grid Grid.Row="1"
@@ -126,13 +127,6 @@
         </Grid>
       </ControlTemplate>
     </Setter>
-  </Style>
-
-  <Style Selector="ToggleSwitch /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Margin" Value="{DynamicResource ToggleSwitchTopHeaderMargin}" />
-  </Style>
-  <Style Selector="ToggleSwitch /template/ ContentPresenter#PART_ContentPresenter:empty">
-    <Setter Property="Margin" Value="0" />
   </Style>
 
   <!-- NormalState -->
