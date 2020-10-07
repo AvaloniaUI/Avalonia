@@ -2,7 +2,6 @@ using System;
 using System.Windows.Input;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
-using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
@@ -46,25 +45,12 @@ namespace Avalonia.Controls
             {
                 _control = control;
                 _wrapper = new HotkeyCommandWrapper(_control);
-                _control.DetachedFromVisualTree += ControlOnDetachedFromVisualTree;
-                _control.AttachedToLogicalTree += ControlOnAttachedToLogicalTree;
             }
 
             public void Init()
             {
                 _hotkeySub = _control.GetObservable(HotKeyProperty).Subscribe(OnHotkeyChanged);
                 _parentSub = AncestorFinder.Create<TopLevel>(_control).Subscribe(OnParentChanged);
-            }
-
-            private void ControlOnAttachedToLogicalTree(object sender, LogicalTreeAttachmentEventArgs e)
-            {
-                Stop();
-                Init();
-            }
-
-            private void ControlOnDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
-            {
-                Stop();
             }
 
             private void OnParentChanged(TopLevel control)

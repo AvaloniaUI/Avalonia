@@ -80,6 +80,7 @@ namespace Avalonia.Controls
 
         private ICommand _command;
         private bool _commandCanExecute = true;
+        private KeyGesture _hotkey;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -168,11 +169,13 @@ namespace Avalonia.Controls
             private set { SetValue(IsPressedProperty, value); }
         }
 
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            if (_hotkey != null)
+                HotKey = _hotkey;
             base.OnAttachedToVisualTree(e);
 
             if (IsDefault)
@@ -182,6 +185,7 @@ namespace Avalonia.Controls
                     ListenForDefault(inputElement);
                 }
             }
+
             if (IsCancel)
             {
                 if (e.Root is IInputElement inputElement)
@@ -194,6 +198,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            _hotkey = HotKey;
+            HotKey = null;
             base.OnDetachedFromVisualTree(e);
 
             if (IsDefault)
@@ -239,6 +245,7 @@ namespace Avalonia.Controls
                 {
                     OnClick();
                 }
+
                 IsPressed = true;
                 e.Handled = true;
             }
@@ -255,6 +262,7 @@ namespace Avalonia.Controls
                 {
                     OnClick();
                 }
+
                 IsPressed = false;
                 e.Handled = true;
             }
@@ -309,7 +317,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             IsPressed = false;
