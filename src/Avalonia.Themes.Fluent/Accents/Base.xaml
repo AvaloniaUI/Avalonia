@@ -12,7 +12,7 @@
     <Color x:Key="SystemColorHotlightColor">#FF0066CC</Color>
     <Color x:Key="SystemColorWindowColor">#FFFFFFFF</Color>
     <Color x:Key="SystemColorWindowTextColor">#FF000000</Color>
-    <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Themes.Fluent/Assets#Roboto</FontFamily>
+    <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Themes.Fluent/Assets#Inter</FontFamily>
     <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
 
     <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
