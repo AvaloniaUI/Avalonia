@@ -2,6 +2,7 @@ using System;
 using System.Windows.Input;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
@@ -45,6 +46,8 @@ namespace Avalonia.Controls
             {
                 _control = control;
                 _wrapper = new HotkeyCommandWrapper(_control);
+                _control.DetachedFromVisualTree += ControlOnDetachedFromVisualTree;
+                _control.AttachedToLogicalTree += ControlOnAttachedToLogicalTree;
             }
 
             public void Init()
@@ -53,13 +56,19 @@ namespace Avalonia.Controls
                 _parentSub = AncestorFinder.Create<TopLevel>(_control).Subscribe(OnParentChanged);
             }
 
+            private void ControlOnAttachedToLogicalTree(object sender, LogicalTreeAttachmentEventArgs e)
+            {
+                Stop();
+                Init();
+            }
+
+            private void ControlOnDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+            {
+                Stop();
+            }
+
             private void OnParentChanged(TopLevel control)
             {
-                if (control == null)
-                {
-                    Stop();
-                    return;
-                }
                 Unregister();
                 _root = control;
                 Register();
@@ -89,7 +98,7 @@ namespace Avalonia.Controls
             {
                 if (_root != null && _hotkey != null)
                 {
-                    _binding = new KeyBinding() {Gesture = _hotkey, Command = _wrapper};
+                    _binding = new KeyBinding() { Gesture = _hotkey, Command = _wrapper };
                     _root.KeyBindings.Add(_binding);
                 }
             }
@@ -107,11 +116,12 @@ namespace Avalonia.Controls
             HotKeyProperty.Changed.Subscribe(args =>
             {
                 var control = args.Sender as IControl;
-                if (args.OldValue != null|| control == null)
+                if (args.OldValue != null || control == null)
                     return;
                 new Manager(control).Init();
             });
         }
+
         public static void SetHotKey(AvaloniaObject target, KeyGesture value) => target.SetValue(HotKeyProperty, value);
         public static KeyGesture GetHotKey(AvaloniaObject target) => target.GetValue(HotKeyProperty);
     }
