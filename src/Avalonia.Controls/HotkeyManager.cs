@@ -55,6 +55,11 @@ namespace Avalonia.Controls
 
             private void OnParentChanged(TopLevel control)
             {
+                if (control == null)
+                {
+                    Stop();
+                    return;
+                }
                 Unregister();
                 _root = control;
                 Register();
