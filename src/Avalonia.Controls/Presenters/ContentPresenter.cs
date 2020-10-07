@@ -1,9 +1,9 @@
 using System;
-
-using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -14,7 +14,6 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
     /// </summary>
-    [PseudoClasses(":empty")]
     public class ContentPresenter : Control, IContentPresenter
     {
         /// <summary>
@@ -101,11 +100,6 @@ namespace Avalonia.Controls.Presenters
             ContentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
             ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
             TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.TemplatedParentChanged(e));
-        }
-
-        public ContentPresenter()
-        {
-            UpdatePseudoClasses();
         }
 
         /// <summary>
@@ -430,13 +424,7 @@ namespace Avalonia.Controls.Presenters
                 _recyclingDataTemplate = null;
             }
 
-            UpdatePseudoClasses();
             InvalidateMeasure();
-        }
-
-        private void UpdatePseudoClasses()
-        {
-            PseudoClasses.Set(":empty", Content is null);
         }
 
         private double GetLayoutScale()
