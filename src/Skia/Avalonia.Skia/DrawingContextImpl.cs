@@ -31,6 +31,7 @@ namespace Avalonia.Skia
         private bool _disposed;
         private GRContext _grContext;
         public GRContext GrContext => _grContext;
+        private ISkiaGpu _gpu;
         private readonly SKPaint _strokePaint = new SKPaint();
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
@@ -65,6 +66,11 @@ namespace Avalonia.Skia
             /// GPU-accelerated context (optional)
             /// </summary>
             public GRContext GrContext;
+
+            /// <summary>
+            /// Skia GPU provider context (optional)
+            /// </summary>
+            public ISkiaGpu Gpu;
         }
 
         /// <summary>
@@ -79,6 +85,7 @@ namespace Avalonia.Skia
             _disposables = disposables;
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
+            _gpu = createInfo.Gpu;
             if (_grContext != null)
                 Monitor.Enter(_grContext);
             Surface = createInfo.Surface;
@@ -415,9 +422,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
-            return CreateRenderTarget(size);
+            return CreateRenderTarget( size);
         }
 
         /// <inheritdoc />
@@ -956,7 +963,8 @@ namespace Avalonia.Skia
                 Dpi = _dpi,
                 Format = format,
                 DisableTextLcdRendering = !_canTextUseLcdRendering,
-                GrContext = _grContext
+                GrContext = _grContext,
+                Gpu = _gpu
             };
 
             return new SurfaceRenderTarget(createInfo);

@@ -31,11 +31,15 @@
   </Setter>
   <Setter Property="ErrorTemplate">
     <DataTemplate>
-      <Canvas Width="14" Height="14" Margin="4 0 1 0" 
+      <Canvas Name="PART_ErrorTemplateCanvas"
+              Width="14" Height="14" Margin="4 0 1 0" 
               Background="Transparent">
         <Canvas.Styles>
-          <Style Selector="ToolTip">
+          <Style Selector="Canvas#PART_ErrorTemplateCanvas ToolTip">
             <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
+          </Style>
+          <Style Selector="Canvas#PART_ErrorTemplateCanvas ToolTip TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
           </Style>
         </Canvas.Styles>
         <ToolTip.Tip>
