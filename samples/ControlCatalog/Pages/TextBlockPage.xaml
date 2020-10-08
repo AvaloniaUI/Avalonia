@@ -1,6 +1,11 @@
 <UserControl x:Class="ControlCatalog.Pages.TextBlockPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--<UserControl.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+  </UserControl.Styles>-->
   <StackPanel>
     <TextBlock Classes="h2">A control that can display text</TextBlock>
     <WrapPanel MaxWidth="680"
@@ -29,8 +34,24 @@
         </StackPanel>
       </Border>
       <Border>
+        <StackPanel Width="300" Spacing="8">
+          <TextBlock Text="text update issue 4824:" />
+          <TextBlock x:Name="txtChanging" />
+          <TextPresenter x:Name="tpChanging" />
+          <Button x:Name="btn" Content="Update" />
+          <TextBlock Text="TextWrapping right/left issue- 4830:" />
+          <Panel HorizontalAlignment="Left">
+            <Border BorderBrush="Blue" BorderThickness="2">
+              <TextPresenter Text="0123456 0123456 0123456 0123456"  Width="80"
+                  TextWrapping="Wrap" TextAlignment="Right" Background="Yellow" HorizontalAlignment="Left"/>
+            </Border>
+            <Border Width="2" HorizontalAlignment="Center"  BorderBrush="Gray" Opacity="0.3" BorderThickness="1" />
+          </Panel>
+        </StackPanel>
+      </Border>
+      <Border>
         <StackPanel Spacing="8">
-          <TextBlock Text="Multiline TextBlock with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." TextWrapping="Wrap" />
+          <TextBlock Text="new line\r\n &#x0d;&#x0a;new line\r &#x0a;new line\n &#x0d;Multiline TextBlock with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." TextWrapping="Wrap" />
         </StackPanel>
       </Border>
       <Border>
@@ -55,6 +76,7 @@
       </Border>
       <Border>
         <StackPanel Spacing="8">
+          <TextBlock Text="new line\n\r &#x0a;&#x0d;new line\r\n &#x0d;&#x0a;new line\n &#x0a;new line\r &#x0d;last line"/>
           <TextBlock Text="Underline" TextDecorations="Underline" />
           <TextBlock Text="Strikethrough" TextDecorations="Strikethrough" />
           <TextBlock Text="Overline" TextDecorations="Overline" />
@@ -110,6 +132,7 @@
           <TextBlock Text="🏽 👌🏽" />
           <TextBlock Text="🏾 👌🏾" />
           <TextBlock Text="🏿 👌🏿" />
+          <TextPresenter Text="🏿 👌🏿"/>
         </StackPanel>
       </Border>
       <Border>
