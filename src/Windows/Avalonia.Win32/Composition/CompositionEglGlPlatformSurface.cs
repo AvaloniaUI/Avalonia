@@ -10,15 +10,13 @@ namespace Avalonia.Win32
 {
     internal class CompositionEglGlPlatformSurface : EglGlPlatformSurfaceBase
     {
-        private readonly EglDisplay _display;
         private EglPlatformOpenGlInterface _egl;
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
         private ICompositionDrawingSurfaceInterop _surfaceInterop;
-        private Windows.UI.Composition.Visual _surface;        
+        private Windows.UI.Composition.Visual _surface;
 
         public CompositionEglGlPlatformSurface(EglPlatformOpenGlInterface egl, IEglWindowGlPlatformSurfaceInfo info) : base()
-        {            
-            _display = egl.Display;
+        {
             _egl = egl;
             _info = info;
         }
