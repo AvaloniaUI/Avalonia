@@ -324,6 +324,34 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact(Skip= "enable when fixed 4830 textwrap not aligned properly with center/right")]
+        public void Test_Wrapping_lines_With_Space_Are_Equal_Width()
+        {
+            using (Start())
+            {
+                const string text =
+                    "foo foo foo foo";
+
+                var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
+
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black.ToImmutable(),
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 30);
+
+                var expected = layout.TextLines[0].LineMetrics.Size.Width;
+
+                foreach(var l in layout.TextLines.Skip(1))
+                {
+                    Assert.Equal(expected, l.LineMetrics.Size.Width);
+                }
+            }
+        }
+
         [Fact]
         public void Should_Apply_TextStyleSpan_To_MultiLine()
         {
