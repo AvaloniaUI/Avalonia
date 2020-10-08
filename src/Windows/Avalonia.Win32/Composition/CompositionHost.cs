@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
+using Avalonia.OpenGL.Egl;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interop;
 using WinRT;
@@ -45,18 +47,27 @@ namespace Avalonia.Win32
 
         private CompositionHost()
         {
-            Initialize();
+            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+
+            if (glPlatform is EglPlatformOpenGlInterface egl)
+            {
+                Initialize(egl);
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
+            }
         }
 
-        private void Initialize()
+        private void Initialize(EglPlatformOpenGlInterface egl)
         {
             EnsureDispatcherQueue();
             if (_dispatcherQueueController != null)
                 _compositor = new Compositor();
 
             var interop = _compositor.As<ICompositorInterop>();
-
-            var display = Win32GlManager.EglPlatformInterface.Display as AngleWin32EglDisplay;
+ 
+            var display = egl.Display as AngleWin32EglDisplay;
 
             _graphicsDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
         }

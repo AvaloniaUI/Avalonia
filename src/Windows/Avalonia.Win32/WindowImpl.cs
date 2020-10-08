@@ -14,6 +14,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.OpenGl;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -104,20 +105,22 @@ namespace Avalonia.Win32
             };
             _rendererLock = new ManagedDeferredRendererLock();
 
+            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+
             _isUsingComposition = Win32Platform.Options.UseWindowsUIComposition &&
                 Win32Platform.WindowsVersion.Major >= 10 && Win32Platform.WindowsVersion.Build >= 16299 &&
-                    Win32GlManager.EglPlatformInterface != null &&
-                    Win32GlManager.EglPlatformInterface.Display is AngleWin32EglDisplay angleDisplay &&
+                    glPlatform != null && glPlatform is EglPlatformOpenGlInterface egl &&
+                    egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
-
-            if (Win32GlManager.EglPlatformInterface != null)
+            
+            if (glPlatform != null)
             {
                 if (_isUsingComposition)
                 {
-                    var cgl = new CompositionEglGlPlatformSurface(Win32GlManager.EglPlatformInterface, this);
+                    var cgl = new CompositionEglGlPlatformSurface(glPlatform as EglPlatformOpenGlInterface, this);
                     _blurHost = cgl.AttachToCompositionTree(_hwnd);
 
                     _gl = cgl;
@@ -126,7 +129,10 @@ namespace Avalonia.Win32
                 }
                 else
                 {
-                    _gl = new EglGlPlatformSurface(Win32GlManager.EglPlatformInterface, this);
+                    if (glPlatform is EglPlatformOpenGlInterface egl2)
+                        _gl = new EglGlPlatformSurface(egl2, this);
+                    else if (glPlatform is WglPlatformOpenGlInterface wgl)
+                        _gl = new WglGlPlatformSurface(wgl.PrimaryContext, this);
                 }
             }
 

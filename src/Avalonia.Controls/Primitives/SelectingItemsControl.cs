@@ -848,21 +848,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <summary>
-        /// Sets an item container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
-        /// </summary>
-        /// <param name="index">The index of the item.</param>
-        /// <param name="selected">Whether the item should be selected or deselected.</param>
-        private void MarkItemSelected(int index, bool selected)
-        {
-            var container = ItemContainerGenerator?.ContainerFromIndex(index);
-
-            if (container != null)
-            {
-                MarkContainerSelected(container, selected);
-            }
-        }
-
         private void UpdateContainerSelection()
         {
             if (Presenter?.Panel is IPanel panel)
