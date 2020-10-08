@@ -59,7 +59,7 @@ namespace Avalonia.Controls.UnitTests.Utils
         }
 
         [Fact]
-        public void HotKeyManager_Release_Reference_When_Control_Detached()
+        public void HotKeyManager_Should_Release_Reference_When_Control_Detached()
         {
             using (AvaloniaLocator.EnterScope())
             {
@@ -94,13 +94,15 @@ namespace Avalonia.Controls.UnitTests.Utils
                 // The button should be collected since it's detached from the listbox
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
 
                 Assert.Null(reference?.Target);
             }
         }
 
         [Fact]
-        public void HotKeyManager_Release_Reference_When_Control_In_Item_Template_Detached()
+        public void HotKeyManager_Should_Release_Reference_When_Control_In_Item_Template_Detached()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -154,7 +156,8 @@ namespace Avalonia.Controls.UnitTests.Utils
                 // The button should be collected since it's detached from the listbox
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
-
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
                 
                 Assert.True(weakReferences.Count > 0);
                 foreach (var weakReference in weakReferences)
