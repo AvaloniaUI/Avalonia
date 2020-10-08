@@ -169,7 +169,7 @@ namespace Avalonia.Controls
             private set { SetValue(IsPressedProperty, value); }
         }
 
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -183,7 +183,6 @@ namespace Avalonia.Controls
                     ListenForDefault(inputElement);
                 }
             }
-
             if (IsCancel)
             {
                 if (e.Root is IInputElement inputElement)
@@ -210,6 +209,7 @@ namespace Avalonia.Controls
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             if (_hotkey != null)
+                // Control attached again, set Hotkey to create a hotkey manager for this control
                 HotKey = _hotkey;
             base.OnAttachedToLogicalTree(e);
 
@@ -223,6 +223,7 @@ namespace Avalonia.Controls
         {
             if (HotKey != null)
             {
+                // This will cause the hotkey manager to dispose the observer and the reference to this control
                 _hotkey = HotKey;
                 HotKey = null;
             }
@@ -249,7 +250,6 @@ namespace Avalonia.Controls
                 {
                     OnClick();
                 }
-
                 IsPressed = true;
                 e.Handled = true;
             }
@@ -266,7 +266,6 @@ namespace Avalonia.Controls
                 {
                     OnClick();
                 }
-
                 IsPressed = false;
                 e.Handled = true;
             }
@@ -321,7 +320,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             IsPressed = false;
