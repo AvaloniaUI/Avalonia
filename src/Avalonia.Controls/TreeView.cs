@@ -217,7 +217,6 @@ namespace Avalonia.Controls
 
         private void SelectSingleItem(object item)
         {
-            var oldValue = SelectedItem;
             _syncingSelectedItems = true;
             SelectedItems.Clear();            
             SelectedItems.Add(item);

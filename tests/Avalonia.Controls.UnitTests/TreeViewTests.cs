@@ -1328,7 +1328,6 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestDataContext : ReactiveObject
         {
-            private int _counter;
             private string _selectedItem;
 
             public TestDataContext()
