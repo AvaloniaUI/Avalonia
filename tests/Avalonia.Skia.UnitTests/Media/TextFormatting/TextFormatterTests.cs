@@ -293,6 +293,34 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Wrap_Should_Not_Produce_Empty_Lines()
+        {
+            using (Start())
+            {
+                const string text = "012345";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textSourceIndex = 0;
+
+                while (textSourceIndex < text.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, textSourceIndex, 3, paragraphProperties);
+
+                    Assert.NotEqual(0, textLine.TextRange.Length);
+
+                    textSourceIndex += textLine.TextRange.Length;
+                }
+
+                Assert.Equal(text.Length, textSourceIndex);
+            }
+        }
+
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

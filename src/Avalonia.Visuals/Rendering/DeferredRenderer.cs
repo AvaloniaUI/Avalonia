@@ -489,6 +489,7 @@ namespace Avalonia.Rendering
 
             var clientRect = new Rect(scene.Size);
 
+            var firstLayer = true;
             foreach (var layer in scene.Layers)
             {
                 var bitmap = Layers[layer.LayerRoot].Bitmap;
@@ -501,7 +502,10 @@ namespace Avalonia.Rendering
 
                 if (layer.OpacityMask == null)
                 {
-                    context.DrawBitmap(bitmap, layer.Opacity, sourceRect, clientRect);
+                    if (firstLayer && bitmap.Item.CanBlit)
+                        bitmap.Item.Blit(context);
+                    else
+                        context.DrawBitmap(bitmap, layer.Opacity, sourceRect, clientRect);
                 }
                 else
                 {
@@ -512,6 +516,8 @@ namespace Avalonia.Rendering
                 {
                     context.PopGeometryClip();
                 }
+
+                firstLayer = false;
             }
 
             if (_overlay != null)
