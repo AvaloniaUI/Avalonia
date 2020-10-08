@@ -174,8 +174,6 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            if (_hotkey != null)
-                HotKey = _hotkey;
             base.OnAttachedToVisualTree(e);
 
             if (IsDefault)
@@ -198,8 +196,6 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _hotkey = HotKey;
-            HotKey = null;
             base.OnDetachedFromVisualTree(e);
 
             if (IsDefault)
@@ -213,6 +209,8 @@ namespace Avalonia.Controls
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            if (_hotkey != null)
+                HotKey = _hotkey;
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
@@ -223,6 +221,12 @@ namespace Avalonia.Controls
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            if (HotKey != null)
+            {
+                _hotkey = HotKey;
+                HotKey = null;
+            }
+
             base.OnDetachedFromLogicalTree(e);
 
             if (Command != null)
