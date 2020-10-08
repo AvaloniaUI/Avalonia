@@ -38,7 +38,7 @@ namespace Avalonia.Direct2D1
             });
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             var renderTarget = _externalRenderTargetProvider.GetOrCreateRenderTarget();
             return D2DRenderTargetBitmapImpl.CreateCompatible(renderTarget, size);
