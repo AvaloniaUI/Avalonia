@@ -13,6 +13,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.OpenGl;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -105,8 +106,12 @@ namespace Avalonia.Win32
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
 
-            if (Win32GlManager.EglPlatformInterface != null)
-                _gl = new EglGlPlatformSurface(Win32GlManager.EglPlatformInterface, this);
+            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            
+            if(glPlatform is EglPlatformOpenGlInterface egl)
+                _gl = new EglGlPlatformSurface(egl, this);
+            else if (glPlatform is WglPlatformOpenGlInterface wgl)
+                _gl = new WglGlPlatformSurface(wgl.PrimaryContext, this);
 
             Screen = new ScreenImpl();
 

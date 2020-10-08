@@ -18,7 +18,7 @@ namespace Avalonia.Media
         private double _fontRenderingEmSize;
         private Size? _size;
         private int _biDiLevel;
-        private Point? _baselineOrigin;
+        private Point _baselineOrigin;
 
         private ReadOnlySlice<ushort> _glyphIndices;
         private ReadOnlySlice<double> _glyphAdvances;
@@ -97,9 +97,7 @@ namespace Avalonia.Media
         {
             get
             {
-                _baselineOrigin ??= CalculateBaselineOrigin();
-
-                return _baselineOrigin.Value;
+                return _baselineOrigin;
             }
             set => Set(ref _baselineOrigin, value);
         }
@@ -541,15 +539,6 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Calculates the default baseline origin of the <see cref="GlyphRun"/>.
-        /// </summary>
-        /// <returns>The baseline origin.</returns>
-        private Point CalculateBaselineOrigin()
-        {
-            return new Point(0, -GlyphTypeface.Ascent * Scale);
-        }
-
-        /// <summary>
         /// Calculates the size of the <see cref="GlyphRun"/>.
         /// </summary>
         /// <returns>
@@ -610,8 +599,6 @@ namespace Avalonia.Media
             {
                 throw new InvalidOperationException();
             }
-
-            _baselineOrigin = new Point(0, -GlyphTypeface.Ascent * Scale);
 
             var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 

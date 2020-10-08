@@ -20,7 +20,7 @@ namespace Avalonia.Rendering
             IsEmpty = true;
         }
 
-        public IRef<IRenderTargetBitmapImpl> Bitmap { get; private set; }
+        public IRef<IDrawingContextLayerImpl> Bitmap { get; private set; }
         public bool IsEmpty { get; set; }
         public double Scaling { get; private set; }
         public Size Size { get; private set; }
