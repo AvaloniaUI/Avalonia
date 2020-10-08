@@ -369,7 +369,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var glyphRun = shapedRun.GlyphRun;
 
-                var width = glyphRun.Bounds.Width;
+                var width = glyphRun.Size.Width;
 
                 var characterHit = glyphRun.GetCharacterHitFromDistance(width, out _);
 
@@ -572,6 +572,24 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         textWrapping: TextWrapping.Wrap,
                         maxWidth: 50);
                 }
+            }
+        }
+
+        [Fact]
+        public void Should_Wrap_Min_OneCharacter_EveryLine()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    s_singleLineText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 3);
+
+                //every character should be new line as there not enough space for even one character
+                Assert.Equal(s_singleLineText.Length, layout.TextLines.Count);
             }
         }
 

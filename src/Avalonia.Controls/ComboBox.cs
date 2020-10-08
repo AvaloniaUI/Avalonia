@@ -257,7 +257,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (!e.Handled)
             {
@@ -276,7 +276,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            base.OnPointerPressed(e);
+            base.OnPointerReleased(e);
         }
 
         /// <inheritdoc/>
