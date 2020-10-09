@@ -1,7 +1,6 @@
 using System;
 using System.Windows.Input;
 using Avalonia.Controls.Utils;
-using Avalonia.Data.Core;
 using Avalonia.Input;
 
 namespace Avalonia.Controls
@@ -22,9 +21,12 @@ namespace Avalonia.Controls
 
             private ICommand GetCommand() => CommandSource.Command;
 
-            public bool CanExecute(object parameter) => CommandSource.IsEffectivelyEnabled;
+            public bool CanExecute(object parameter) =>
+                CommandSource.Command?.CanExecute(CommandSource.CommandParameter) == true
+                && CommandSource.IsEffectivelyEnabled;
 
-            public void Execute(object parameter) => GetCommand()?.Execute(parameter);
+            public void Execute(object parameter) =>
+                GetCommand()?.Execute(CommandSource.CommandParameter);
 
 #pragma warning disable 67 // Event not used
             public event EventHandler CanExecuteChanged;
@@ -38,7 +40,6 @@ namespace Avalonia.Controls
             private TopLevel _root;
             private IDisposable _parentSub;
             private IDisposable _hotkeySub;
-            private IDisposable _commandParameterChangedSubscriber;
             private KeyGesture _hotkey;
             private readonly HotkeyCommandWrapper _wrapper;
             private KeyBinding _binding;
@@ -79,7 +80,6 @@ namespace Avalonia.Controls
             {
                 if (_root != null && _binding != null)
                     _root.KeyBindings.Remove(_binding);
-                _commandParameterChangedSubscriber?.Dispose();
                 _binding = null;
             }
 
@@ -87,9 +87,7 @@ namespace Avalonia.Controls
             {
                 if (_root != null && _hotkey != null)
                 {
-                    _binding = new KeyBinding() {Gesture = _hotkey, Command = _wrapper};
-                    _commandParameterChangedSubscriber = _binding.Bind(KeyBinding.CommandParameterProperty
-                        , ExpressionObserver.Create(((ICommandSource)_control), o => o.CommandParameter));
+                    _binding = new KeyBinding() { Gesture = _hotkey, Command = _wrapper };
                     _root.KeyBindings.Add(_binding);
                 }
             }
