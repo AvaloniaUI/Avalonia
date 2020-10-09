@@ -334,7 +334,7 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             if (_layerFactory != null)
             {
@@ -345,7 +345,7 @@ namespace Avalonia.Direct2D1.Media
                 var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
                 var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
                 var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
-                return platform.CreateRenderTargetBitmap(pixelSize, dpi);
+                return (IDrawingContextLayerImpl)platform.CreateRenderTargetBitmap(pixelSize, dpi);
             }
         }
 
