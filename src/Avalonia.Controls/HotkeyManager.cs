@@ -105,8 +105,13 @@ namespace Avalonia.Controls
             HotKeyProperty.Changed.Subscribe(args =>
             {
                 var control = args.Sender as IControl;
-                if (args.OldValue != null || control == null || !(control is ICommandSource)) 
+                if (args.OldValue != null || control == null || !(control is ICommandSource))
+                {
+                    Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.
+                        Log(control, $"The element {args.Sender.GetType().Name} do not support HotKey({args.NewValue}).");
                     return;
+                }
+
                 new Manager(control).Init();
             });
         }
