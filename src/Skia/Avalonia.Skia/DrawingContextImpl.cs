@@ -31,6 +31,7 @@ namespace Avalonia.Skia
         private bool _disposed;
         private GRContext _grContext;
         public GRContext GrContext => _grContext;
+        private ISkiaGpu _gpu;
         private readonly SKPaint _strokePaint = new SKPaint();
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
@@ -70,6 +71,11 @@ namespace Avalonia.Skia
             /// GPU-accelerated context (optional)
             /// </summary>
             public GRContext GrContext;
+
+            /// <summary>
+            /// Skia GPU provider context (optional)
+            /// </summary>
+            public ISkiaGpu Gpu;
         }
 
         /// <summary>
@@ -84,6 +90,7 @@ namespace Avalonia.Skia
             _disposables = disposables;
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
+            _gpu = createInfo.Gpu;
             if (_grContext != null)
                 Monitor.Enter(_grContext);
             Surface = createInfo.Surface;
@@ -420,9 +427,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
-            return CreateRenderTarget(size);
+            return CreateRenderTarget( size);
         }
 
         /// <inheritdoc />
@@ -588,14 +595,45 @@ namespace Avalonia.Skia
                     var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
                     var radius = (float)(radialGradient.Radius * targetSize.Width);
 
-                    // TODO: There is no SetAlpha in SkiaSharp
-                    //paint.setAlpha(128);
+                    var origin = radialGradient.GradientOrigin.ToPixels(targetSize).ToSKPoint();
 
-                    // would be nice to cache these shaders possibly?
-                    using (var shader =
-                        SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                    if (origin.Equals(center))
                     {
-                        paintWrapper.Paint.Shader = shader;
+                        // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
+                        using (var shader =
+                            SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
+                    }
+                    else
+                    {
+                        // when the origin is different to the center use a two point ConicalGradient to match the behaviour of D2D
+
+                        // reverse the order of the stops to match D2D
+                        var reversedColors = new SKColor[stopColors.Length];
+                        Array.Copy(stopColors, reversedColors, stopColors.Length);
+                        Array.Reverse(reversedColors);
+
+                        // and then reverse the reference point of the stops
+                        var reversedStops = new float[stopOffsets.Length];
+                        for (var i = 0; i < stopOffsets.Length; i++)
+                        {
+                            reversedStops[i] = stopOffsets[i];
+                            if (reversedStops[i] > 0 && reversedStops[i] < 1)
+                            {
+                                reversedStops[i] = Math.Abs(1 - stopOffsets[i]);
+                            }
+                        }
+                            
+                        // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
+                        using (var shader = SKShader.CreateCompose(
+                            SKShader.CreateColor(reversedColors[0]),
+                            SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode)
+                        ))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
                     }
 
                     break;
@@ -930,7 +968,8 @@ namespace Avalonia.Skia
                 Dpi = _dpi,
                 Format = format,
                 DisableTextLcdRendering = !_canTextUseLcdRendering,
-                GrContext = _grContext
+                GrContext = _grContext,
+                Gpu = _gpu
             };
 
             return new SurfaceRenderTarget(createInfo);
