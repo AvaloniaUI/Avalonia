@@ -9,6 +9,8 @@
                     Margin="16 0 0 0" 
                     MinWidth="150"
                     Spacing="4">
+          <Button x:Name="btnAdd" Content="AddAndSelect" />
+          <ListBox x:Name="lst" AutoScrollToSelectedItem="True" VerticalAlignment="Top" />
             <ComboBox Items="{Binding VirtualizationModes}"
                       SelectedItem="{Binding VirtualizationMode}"/>
             <ComboBox Items="{Binding Orientations}"
