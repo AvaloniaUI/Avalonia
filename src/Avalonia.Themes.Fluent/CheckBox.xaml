@@ -22,16 +22,14 @@
                   Grid.ColumnSpan="2"
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{DynamicResource ControlCornerRadius}" />
+                  BorderThickness="{TemplateBinding BorderThickness}" />
 
           <Grid VerticalAlignment="Top" Height="32">
             <Border x:Name="NormalRectangle"
                 BorderThickness="{DynamicResource CheckBoxBorderThemeThickness}"
                 UseLayoutRounding="False"
                 Height="20"
-                Width="20"
-                CornerRadius="{DynamicResource ControlCornerRadius}" />
+                Width="20" />
 
             <Viewbox UseLayoutRounding="False">
               <Panel>
@@ -51,6 +49,14 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+  </Style>
+  
+  <Style Selector="CheckBox /template/ Border#PART_Border">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+  </Style>
+
+  <Style Selector="CheckBox /template/ Border#NormalRectangle">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </Style>
 
   <!-- Unchecked Normal State -->
