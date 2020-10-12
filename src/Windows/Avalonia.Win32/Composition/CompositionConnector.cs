@@ -9,7 +9,7 @@ using WinRT;
 
 namespace Avalonia.Win32
 {
-    class CompositionHost
+    class CompositionConnector
     {
         internal enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE
         {
@@ -39,13 +39,13 @@ namespace Avalonia.Win32
         [DllImport("coremessaging.dll", EntryPoint = "CreateDispatcherQueueController", CharSet = CharSet.Unicode)]
         internal static extern IntPtr CreateDispatcherQueueController(DispatcherQueueOptions options, out IntPtr dispatcherQueueController);
 
-        public static CompositionHost Instance { get; } = new CompositionHost();
+        public static CompositionConnector Instance { get; } = new CompositionConnector();
 
         private Compositor _compositor;
         private Windows.System.DispatcherQueueController _dispatcherQueueController;
         private CompositionGraphicsDevice _graphicsDevice;
 
-        private CompositionHost()
+        private CompositionConnector()
         {
             var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
 

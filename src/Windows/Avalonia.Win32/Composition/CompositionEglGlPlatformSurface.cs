@@ -25,7 +25,7 @@ namespace Avalonia.Win32
         {
             using (_egl.PrimaryContext.MakeCurrent())
             {
-                _surfaceInterop = CompositionHost.Instance.InitialiseWindowCompositionTree(hwnd, out _surface, out var blurHost);
+                _surfaceInterop = CompositionConnector.Instance.InitialiseWindowCompositionTree(hwnd, out _surface, out var blurHost);
                 return blurHost;
             }
         }
