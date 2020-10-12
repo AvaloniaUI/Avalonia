@@ -126,7 +126,15 @@ namespace Avalonia.Media.TextFormatting
 
             var lastCluster = glyphRun.GlyphClusters[glyphCount];
 
-            count = lastCluster - firstCluster;
+            if (glyphRun.IsLeftToRight)
+            {
+                count = lastCluster - firstCluster;
+            }
+            else
+            {
+                count = firstCluster - lastCluster;
+            }
+           
 
             return count > 0;
         }
