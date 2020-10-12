@@ -44,21 +44,6 @@ namespace Avalonia.Win32
             ushort uCol = 1;
             bool onResizeBorder = false;
 
-            // Determine if the point is at the top or bottom of the window.
-            if (ptMouse.Y >= rcWindow.top && ptMouse.Y < rcWindow.top + borderThickness.top)
-            {
-                onResizeBorder = (ptMouse.Y < (rcWindow.top - rcFrame.top));
-
-                if (onResizeBorder)
-                {
-                    uRow = 0;
-                }
-            }
-            else if (ptMouse.Y < rcWindow.bottom && ptMouse.Y >= rcWindow.bottom - borderThickness.bottom)
-            {
-                uRow = 2;
-            }
-
             // Determine if the point is at the left or right of the window.
             if (ptMouse.X >= rcWindow.left && ptMouse.X < rcWindow.left + borderThickness.left)
             {
@@ -67,6 +52,24 @@ namespace Avalonia.Win32
             else if (ptMouse.X < rcWindow.right && ptMouse.X >= rcWindow.right - borderThickness.right)
             {
                 uCol = 2; // right side
+            }
+
+            // Determine if the point is at the top or bottom of the window.
+            if (ptMouse.Y >= rcWindow.top && ptMouse.Y < rcWindow.top + borderThickness.top)
+            {
+                onResizeBorder = (ptMouse.Y < (rcWindow.top - rcFrame.top));
+
+                // Two cases where we have a valid row 0 hit test:
+                // - window resize border (top resize border hit)
+                // - area below resize border that is actual titlebar (caption hit).
+                if (onResizeBorder || uCol == 1)
+                {
+                    uRow = 0;
+                }
+            }
+            else if (ptMouse.Y < rcWindow.bottom && ptMouse.Y >= rcWindow.bottom - borderThickness.bottom)
+            {
+                uRow = 2;
             }
 
             ReadOnlySpan<HitTestValues> hitZones = stackalloc HitTestValues[]
