@@ -611,8 +611,6 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
-            _baselineOrigin = new Point(0, -GlyphTypeface.Ascent * Scale);
-
             var platformRenderInterface = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this, out var width);

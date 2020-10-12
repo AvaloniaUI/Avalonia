@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -48,6 +49,16 @@ namespace Avalonia.Animation
         /// Gets the duration of the animation.
         /// </summary>
         public SlideAxis Orientation { get; set; }
+        
+        /// <summary>
+        /// Gets or sets element entrance easing.
+        /// </summary>
+        public Easing SlideInEasing { get; set; } = new LinearEasing();
+        
+        /// <summary>
+        /// Gets or sets element exit easing.
+        /// </summary>
+        public Easing SlideOutEasing { get; set; } = new LinearEasing();
 
         /// <summary>
         /// Starts the animation.
@@ -75,18 +86,12 @@ namespace Avalonia.Animation
             {
                 var animation = new Animation
                 {
-                    Children = 
+                    Easing = SlideOutEasing,
+                    Children =
                     {
                         new KeyFrame
                         {
-                            Setters =
-                            {
-                                new Setter
-                                {
-                                    Property = translateProperty,
-                                Value = 0d
-                                }
-                            },
+                            Setters = { new Setter { Property = translateProperty, Value = 0d } },
                             Cue = new Cue(0d)
                         },
                         new KeyFrame
@@ -100,10 +105,10 @@ namespace Avalonia.Animation
                                 }
                             },
                             Cue = new Cue(1d)
-                        }                       
-                    }
+                        }
+                    },
+                    Duration = Duration
                 };
-                animation.Duration = Duration;
                 tasks.Add(animation.RunAsync(from));
             }
 
@@ -112,9 +117,9 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 var animation = new Animation
                 {
+                    Easing = SlideInEasing,
                     Children =
                     {
-
                         new KeyFrame
                         {
                             Setters =
@@ -129,19 +134,12 @@ namespace Avalonia.Animation
                         },
                         new KeyFrame
                         {
-                            Setters =
-                            {
-                                new Setter
-                                {
-                                    Property = translateProperty,
-                                    Value = 0d
-                                }
-                            },
+                            Setters = { new Setter { Property = translateProperty, Value = 0d } },
                             Cue = new Cue(1d)
                         }
-                    }
+                    },
+                    Duration = Duration
                 };
-                animation.Duration = Duration;
                 tasks.Add(animation.RunAsync(to));
             }
 

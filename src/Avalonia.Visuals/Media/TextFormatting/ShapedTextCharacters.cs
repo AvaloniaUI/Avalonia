@@ -52,7 +52,7 @@ namespace Avalonia.Media.TextFormatting
                 return;
             }
 
-            if (Properties.Typeface == null)
+            if (Properties.Typeface == default)
             {
                 return;
             }
