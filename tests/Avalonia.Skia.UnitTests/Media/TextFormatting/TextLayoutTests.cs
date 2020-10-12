@@ -379,7 +379,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-
         [Theory]
         [InlineData("☝🏿", new ushort[] { 0 })]
         [InlineData("☝🏿 ab", new ushort[] { 0, 3, 4, 5 })]
@@ -572,6 +571,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         textWrapping: TextWrapping.Wrap,
                         maxWidth: 50);
                 }
+            }
+        }
+
+        [Fact]
+        public void Should_Process_Multiple_NewLines_Properly()
+        {
+            using (Start())
+            {
+                var text = "123\r\n\r\n456\r\n\r\n";
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black);
+
+                Assert.Equal(4, layout.TextLines.Count);
+
+                string str(TextRun run) => new string(run.Text.ToArray());
+
+                Assert.Equal("123\r\n", str(layout.TextLines[0].TextRuns[0]));
+                Assert.Equal("\r\n", str(layout.TextLines[1].TextRuns[0]));
+                Assert.Equal("456\r\n", str(layout.TextLines[2].TextRuns[0]));
+                Assert.Equal("\r\n", str(layout.TextLines[3].TextRuns[0]));
             }
         }
 
