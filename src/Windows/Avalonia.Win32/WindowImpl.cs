@@ -107,9 +107,10 @@ namespace Avalonia.Win32
 
             var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
 
-            _isUsingComposition = Win32Platform.Options.UseWindowsUIComposition &&
-                Win32Platform.WindowsVersion.Major >= 10 && Win32Platform.WindowsVersion.Build >= 16299 &&
-                    glPlatform != null && glPlatform is EglPlatformOpenGlInterface egl &&
+            var compositionConnector = AvaloniaLocator.Current.GetService<CompositionConnector>();
+
+            _isUsingComposition = compositionConnector is { } &&
+                glPlatform is EglPlatformOpenGlInterface egl &&
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
@@ -121,7 +122,7 @@ namespace Avalonia.Win32
                 if (_isUsingComposition)
                 {
                     var cgl = new CompositionEglGlPlatformSurface(glPlatform as EglPlatformOpenGlInterface, this);
-                    _blurHost = cgl.AttachToCompositionTree(_hwnd);
+                    _blurHost = cgl.AttachToCompositionTree(compositionConnector, _hwnd);
 
                     _gl = cgl;
 

@@ -39,24 +39,13 @@ namespace Avalonia.Win32
         [DllImport("coremessaging.dll", EntryPoint = "CreateDispatcherQueueController", CharSet = CharSet.Unicode)]
         internal static extern IntPtr CreateDispatcherQueueController(DispatcherQueueOptions options, out IntPtr dispatcherQueueController);
 
-        public static CompositionConnector Instance { get; } = new CompositionConnector();
-
         private Compositor _compositor;
         private Windows.System.DispatcherQueueController _dispatcherQueueController;
         private CompositionGraphicsDevice _graphicsDevice;
 
-        private CompositionConnector()
+        internal CompositionConnector(EglPlatformOpenGlInterface egl)
         {
-            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
-
-            if (glPlatform is EglPlatformOpenGlInterface egl)
-            {
-                Initialize(egl);
-            }
-            else
-            {
-                throw new PlatformNotSupportedException();
-            }
+            Initialize(egl);
         }
 
         private void Initialize(EglPlatformOpenGlInterface egl)

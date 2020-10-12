@@ -12,6 +12,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -113,7 +114,7 @@ namespace Avalonia.Win32
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
 
             Win32GlManager.Initialize();
-            
+
             _uiThread = Thread.CurrentThread;
 
             if (OleContext.Current != null)
