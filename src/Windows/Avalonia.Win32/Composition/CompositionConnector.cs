@@ -9,8 +9,12 @@ using WinRT;
 
 namespace Avalonia.Win32
 {
-    class CompositionConnector
+    internal class CompositionConnector
     {
+        private Compositor _compositor;
+        private Windows.System.DispatcherQueueController _dispatcherQueueController;
+        private CompositionGraphicsDevice _graphicsDevice;
+
         internal enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE
         {
             DQTAT_COM_NONE = 0,
@@ -39,23 +43,15 @@ namespace Avalonia.Win32
         [DllImport("coremessaging.dll", EntryPoint = "CreateDispatcherQueueController", CharSet = CharSet.Unicode)]
         internal static extern IntPtr CreateDispatcherQueueController(DispatcherQueueOptions options, out IntPtr dispatcherQueueController);
 
-        private Compositor _compositor;
-        private Windows.System.DispatcherQueueController _dispatcherQueueController;
-        private CompositionGraphicsDevice _graphicsDevice;
-
-        internal CompositionConnector(EglPlatformOpenGlInterface egl)
-        {
-            Initialize(egl);
-        }
-
-        private void Initialize(EglPlatformOpenGlInterface egl)
+        public CompositionConnector(EglPlatformOpenGlInterface egl)
         {
             EnsureDispatcherQueue();
+
             if (_dispatcherQueueController != null)
                 _compositor = new Compositor();
 
             var interop = _compositor.As<ICompositorInterop>();
- 
+
             var display = egl.Display as AngleWin32EglDisplay;
 
             _graphicsDevice = interop.CreateGraphicsDevice(display.GetDirect3DDevice());
@@ -78,7 +74,7 @@ namespace Avalonia.Win32
             visual.RelativeSizeAdjustment = new System.Numerics.Vector2(1, 1);
 
             var container = _compositor.CreateContainerVisual();
-            
+
             target.Root = container;
 
             var blur = CreateBlur();
@@ -96,9 +92,9 @@ namespace Avalonia.Win32
             return surfaceInterop;
         }
 
-        public SpriteVisual CreateBlur()
+        private SpriteVisual CreateBlur()
         {
-            var blurEffect = new GaussianBlurEffect(new CompositionEffectSourceParameter ("backdrop"));
+            var blurEffect = new GaussianBlurEffect(new CompositionEffectSourceParameter("backdrop"));
             var blurEffectFactory = _compositor.CreateEffectFactory(blurEffect);
 
             var blurBrush = blurEffectFactory.CreateBrush();
@@ -121,7 +117,7 @@ namespace Avalonia.Win32
             return visual;
         }
 
-        CompositionTarget CreateDesktopWindowTarget(IntPtr window)
+        private CompositionTarget CreateDesktopWindowTarget(IntPtr window)
         {
             var interop = _compositor.As<global::Windows.UI.Composition.Desktop.ICompositorDesktopInterop>();
 
@@ -129,7 +125,7 @@ namespace Avalonia.Win32
             return Windows.UI.Composition.Desktop.DesktopWindowTarget.FromAbi(windowTarget);
         }
 
-        void EnsureDispatcherQueue()
+        private void EnsureDispatcherQueue()
         {
             if (_dispatcherQueueController == null)
             {
