@@ -64,7 +64,8 @@ namespace Avalonia.Skia
                     new ReadOnlySlice<double>(glyphAdvances),
                     new ReadOnlySlice<Vector>(glyphOffsets),
                     text,
-                    new ReadOnlySlice<ushort>(clusters));
+                    new ReadOnlySlice<ushort>(clusters),
+                    buffer.Direction == Direction.LeftToRight ? 0 : 1);
             }
         }
 
