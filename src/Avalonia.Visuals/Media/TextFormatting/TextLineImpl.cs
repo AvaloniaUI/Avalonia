@@ -39,7 +39,7 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in _textRuns)
             {
-                var offsetY = LineMetrics.TextBaseline;
+                var offsetY = LineMetrics.TextBaseline - textRun.GlyphRun.BaselineOrigin.Y;
 
                 using (drawingContext.PushPostTransform(Matrix.CreateTranslation(currentX, offsetY)))
                 {
