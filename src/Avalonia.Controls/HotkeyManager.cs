@@ -108,7 +108,7 @@ namespace Avalonia.Controls
                 if (args.OldValue != null || control == null || !(control is ICommandSource))
                 {
                     Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.
-                        Log(control, $"The element {args.Sender.GetType().Name} do not support HotKey({args.NewValue}).");
+                        Log(control, $"The element {args.Sender.GetType().Name} does not support binding a HotKey ({args.NewValue}).");
                     return;
                 }
 
