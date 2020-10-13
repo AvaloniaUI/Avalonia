@@ -809,6 +809,23 @@ namespace Avalonia.Base.UnitTests
             subscription.Dispose();
         }
 
+        [Fact(Skip="TODO: report analyze witha valonia")]
+        public void Bind2times_ShouldWork()
+        {
+            var target = new Class1();
+            var vm = new TestValueViewModel();
+            var vm1 = new TestValueViewModel();
+
+            var s1 = target.Bind(Class1.DoubleValueProperty, new Binding("Value") { Source = vm, Mode = BindingMode.TwoWay });
+            var s2 = target.Bind(Class1.DoubleValueProperty, new Binding("Value") { Source = vm1, Mode = BindingMode.TwoWay });
+
+            target.DoubleValue = 1;
+
+            Assert.Equal(1, target.DoubleValue);  //failing with avalonia 0.10 value still 0
+            Assert.Equal(1, vm.Value); //failing with avalonia 0.10 value still 0
+            Assert.Equal(1, vm1.Value); //failing with avalonia 0.10 value still 0
+        }
+
         /// <summary>
         /// Returns an observable that returns a single value but does not complete.
         /// </summary>
@@ -924,5 +941,26 @@ namespace Avalonia.Base.UnitTests
 
             public bool SetterCalled { get; private set; }
         }
+
+        private class TestValueViewModel : INotifyPropertyChanged
+        {
+            private double _value;
+
+            public double Value
+            {
+                get => _value;
+                set
+                {
+                    if (_value != value)
+                    {
+                        _value = value;
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+                    }
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+        }
+
     }
 }
