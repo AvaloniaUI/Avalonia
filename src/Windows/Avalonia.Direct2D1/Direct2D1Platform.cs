@@ -238,11 +238,13 @@ namespace Avalonia.Direct2D1
 
             width = 0;
 
+            var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
+
             if (glyphRun.GlyphAdvances.IsEmpty)
             {
                 for (var i = 0; i < glyphCount; i++)
                 {
-                    var advance = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]);
+                    var advance = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
 
                     run.Advances[i] = advance;
 
