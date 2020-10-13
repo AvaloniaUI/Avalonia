@@ -399,14 +399,14 @@ namespace Avalonia.Media
 
                 if (characterIndex > GlyphClusters[GlyphClusters.Length - 1])
                 {
-                    return _glyphClusters.End;
+                    return _glyphClusters.Length - 1;
                 }
             }
             else
             {
                 if (characterIndex < GlyphClusters[GlyphClusters.Length - 1])
                 {
-                    return _glyphClusters.End;
+                    return _glyphClusters.Length - 1;
                 }
 
                 if (characterIndex > GlyphClusters[0])
