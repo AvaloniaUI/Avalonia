@@ -62,7 +62,6 @@ namespace Avalonia.Controls.Shapes
         private Matrix _transform = Matrix.Identity;
         private Geometry? _definingGeometry;
         private Geometry? _renderedGeometry;
-        private bool _calculateTransformOnArrange;
 
         static Shape()
         {
@@ -270,7 +269,7 @@ namespace Avalonia.Controls.Shapes
                     _renderedGeometry = null;
                 }
 
-                return size;
+                return finalSize;
             }
 
             return Size.Empty;

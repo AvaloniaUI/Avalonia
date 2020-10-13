@@ -120,6 +120,26 @@ namespace Avalonia.Controls.UnitTests.Shapes
         }
 
         [Fact]
+        public void Arrange_Reserves_All_Of_Arrange_Rect()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            RectangleGeometry geometry;
+            var target = new Path
+            {
+                Data = geometry = new RectangleGeometry { Rect = new Rect(0, 0, 100, 200) },
+                Stretch = Stretch.Uniform,
+            };
+
+            target.Measure(new Size(400, 400));
+            target.Arrange(new Rect(0, 0, 400, 400));
+
+            Assert.Equal(new Rect(0, 0, 100, 200), geometry.Rect);
+            Assert.Equal(Matrix.CreateScale(2, 2), target.RenderedGeometry.Transform.Value);
+            Assert.Equal(new Rect(0, 0, 400, 400), target.Bounds);
+        }
+
+        [Fact]
         public void Measure_Without_Arrange_Does_Not_Clear_RenderedGeometry_Transform()
         {
             using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
