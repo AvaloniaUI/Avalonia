@@ -9,7 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class MainViewModel : ViewModelBase, IDisposable
     {
-        private readonly IControl _root;
+        private readonly TopLevel _root;
         private readonly TreePageViewModel _logicalTree;
         private readonly TreePageViewModel _visualTree;
         private readonly EventsPageViewModel _events;
@@ -18,12 +18,15 @@ namespace Avalonia.Diagnostics.ViewModels
         private int _selectedTab;
         private string _focusedControl;
         private string _pointerOverElement;
+        private bool _shouldVisualizeMarginPadding = true;
+        private bool _shouldVisualizeDirtyRects;
+        private bool _showFpsOverlay;
 
-        public MainViewModel(IControl root)
+        public MainViewModel(TopLevel root)
         {
             _root = root;
-            _logicalTree = new TreePageViewModel(LogicalTreeNode.Create(root));
-            _visualTree = new TreePageViewModel(VisualTreeNode.Create(root));
+            _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
+            _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root));
             _events = new EventsPageViewModel(root);
 
             UpdateFocusedControl();
@@ -32,6 +35,47 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription = root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
             Console = new ConsoleViewModel(UpdateConsoleContext);
+        }
+
+        public bool ShouldVisualizeMarginPadding
+        {
+            get => _shouldVisualizeMarginPadding;
+            set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
+        }
+        
+        public bool ShouldVisualizeDirtyRects
+        {
+            get => _shouldVisualizeDirtyRects;
+            set
+            {
+                _root.Renderer.DrawDirtyRects = value;
+                RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
+            }
+        }
+
+        public void ToggleVisualizeDirtyRects()
+        {
+            ShouldVisualizeDirtyRects = !ShouldVisualizeDirtyRects;
+        }
+
+        public void ToggleVisualizeMarginPadding()
+        {
+            ShouldVisualizeMarginPadding = !ShouldVisualizeMarginPadding;
+        }
+
+        public bool ShowFpsOverlay
+        {
+            get => _showFpsOverlay;
+            set
+            {
+                _root.Renderer.DrawFps = value;
+                RaiseAndSetIfChanged(ref _showFpsOverlay, value);
+            }
+        }
+
+        public void ToggleFpsOverlay()
+        {
+            ShowFpsOverlay = !ShowFpsOverlay;
         }
 
         public ConsoleViewModel Console { get; }
@@ -116,10 +160,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             var tree = Content as TreePageViewModel;
 
-            if (tree != null)
-            {
-                tree.SelectControl(control);
-            }
+            tree?.SelectControl(control);
         }
 
         public void Dispose()
@@ -128,6 +169,8 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription.Dispose();
             _logicalTree.Dispose();
             _visualTree.Dispose();
+            _root.Renderer.DrawDirtyRects = false;
+            _root.Renderer.DrawFps = false;
         }
 
         private void UpdateFocusedControl()

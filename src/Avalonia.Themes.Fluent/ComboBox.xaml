@@ -61,7 +61,6 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{DynamicResource ControlCornerRadius}"
                   MinWidth="{DynamicResource ComboBoxThemeMinWidth}" />
 
           <Border x:Name="HighlightBackground"
@@ -70,8 +69,7 @@
                   Grid.ColumnSpan="2"
                   Background="{DynamicResource ComboBoxBackgroundUnfocused}"
                   BorderBrush="{DynamicResource ComboBoxBackgroundBorderBrushUnfocused}"
-                  BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{DynamicResource ControlCornerRadius}" />
+                  BorderThickness="{TemplateBinding BorderThickness}" />
           <TextBlock x:Name="PlaceholderTextBlock"
                      Grid.Row="1"
                      Grid.Column="0"
@@ -124,7 +122,7 @@
                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
                  PlacementTarget="{TemplateBinding}"
-                 StaysOpen="False">
+                 IsLightDismissEnabled="True">
             <Border x:Name="PopupBorder"
                     Background="{DynamicResource ComboBoxDropDownBackground}"
                     BorderBrush="{DynamicResource ComboBoxDropDownBorderBrush}"
@@ -133,7 +131,8 @@
                     Padding="{DynamicResource ComboBoxDropdownBorderPadding}"
                     HorizontalAlignment="Stretch"
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
-              <ScrollViewer>
+              <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}"
                                 Margin="{DynamicResource ComboBoxDropdownContentMargin}"
@@ -224,5 +223,13 @@
 
   <Style Selector="ComboBox:focused:pressed /template/ Path#DropDownGlyph">
     <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocusedPressed}" />
+  </Style>
+  
+  <Style Selector="ComboBox /template/ Border#Background">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+  </Style>
+  
+  <Style Selector="ComboBox /template/ Border#HighlightBackground">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </Style>
 </Styles>

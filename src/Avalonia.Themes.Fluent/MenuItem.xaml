@@ -8,6 +8,8 @@
             Height="200">
       <Menu VerticalAlignment="Top">
         <MenuItem Header="File">
+          <MenuItem Header="Disabled"
+                    IsEnabled="False" />
           <MenuItem Header="New"
                     InputGesture="Ctrl+N">
             <MenuItem Header="XML" />
@@ -83,7 +85,6 @@
                                 Content="{TemplateBinding Header}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
-                                TextBlock.Foreground="{TemplateBinding Foreground}"
                                 Grid.Column="1">
                 <ContentPresenter.DataTemplates>
                   <DataTemplate DataType="sys:String">
@@ -112,7 +113,7 @@
                  WindowManagerAddShadowHint="True"
                  PlacementMode="Right"
                  HorizontalOffset="{StaticResource MenuFlyoutSubItemPopupHorizontalOffset}"
-                 StaysOpen="True"
+                 IsLightDismissEnabled="True"
                  IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
             <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                     BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
@@ -122,7 +123,7 @@
                     MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
                     HorizontalAlignment="Stretch"
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
-              <ScrollViewer>
+              <ScrollViewer Classes="menuscroller">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -159,8 +160,9 @@
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                   IsLightDismissEnabled="True"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
-                   StaysOpen="True">
+                   OverlayInputPassThroughElement="{Binding $parent[Menu]}">
               <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                       BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
                       BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
@@ -169,7 +171,7 @@
                       MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
                       HorizontalAlignment="Stretch"
                       CornerRadius="{DynamicResource OverlayCornerRadius}">
-                <ScrollViewer>
+                <ScrollViewer Classes="menuscroller">
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   Items="{TemplateBinding Items}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -212,6 +214,9 @@
   <Style Selector="MenuItem:selected /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPointerOver}" />
   </Style>
+  <Style Selector="MenuItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPointerOver}" />
+  </Style>
   <Style Selector="MenuItem:selected /template/ TextBlock#PART_InputGestureText">
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
   </Style>
@@ -223,6 +228,9 @@
   <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundPressed}" />
   </Style>
+  <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover ContentPresenter#PART_HeaderPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundPressed}" />
+  </Style>
   <Style Selector="MenuItem:pressed /template/ Border#PART_LayoutRoot:pointerover TextBlock#PART_InputGestureText">
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
   </Style>
@@ -230,8 +238,11 @@
     <Setter Property="Fill" Value="{DynamicResource MenuFlyoutSubItemChevronPressed}" />
   </Style>
 
-  <Style Selector="MenuItem:disabled">
+  <Style Selector="MenuItem:disabled /template/ Border#PART_LayoutRoot">
     <Setter Property="Background" Value="{DynamicResource MenuFlyoutItemBackgroundDisabled}" />
+  </Style>
+  <Style Selector="MenuItem:disabled /template/ ContentPresenter#PART_HeaderPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource MenuFlyoutItemForegroundDisabled}" />
   </Style>
   <Style Selector="MenuItem:disabled /template/ TextBlock#PART_InputGestureText">
     <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />

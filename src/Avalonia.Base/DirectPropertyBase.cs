@@ -23,47 +23,47 @@ namespace Avalonia
         /// <param name="name">The name of the property.</param>
         /// <param name="ownerType">The type of the class that registers the property.</param>
         /// <param name="metadata">The property metadata.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
         protected DirectPropertyBase(
             string name,
             Type ownerType,
-            PropertyMetadata metadata,
-            bool enableDataValidation)
+            PropertyMetadata metadata)
             : base(name, ownerType, metadata)
         {
-            IsDataValidationEnabled = enableDataValidation;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
+        /// Initializes a new instance of the <see cref="DirectPropertyBase{TValue}"/> class.
         /// </summary>
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
-        /// <param name="enableDataValidation">
-        /// Whether the property is interested in data validation.
-        /// </param>
+        [Obsolete("Use constructor with DirectPropertyBase<TValue> instead.", true)]
         protected DirectPropertyBase(
             AvaloniaProperty source,
             Type ownerType,
-            PropertyMetadata metadata,
-            bool enableDataValidation)
+            PropertyMetadata metadata)
+            : this(source as DirectPropertyBase<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DirectPropertyBase{TValue}"/> class.
+        /// </summary>
+        /// <param name="source">The property to copy.</param>
+        /// <param name="ownerType">The new owner type.</param>
+        /// <param name="metadata">Optional overridden metadata.</param>
+        protected DirectPropertyBase(
+            DirectPropertyBase<TValue> source,
+            Type ownerType,
+            PropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
-            IsDataValidationEnabled = enableDataValidation;
         }
 
         /// <summary>
         /// Gets the type that registered the property.
         /// </summary>
         public abstract Type Owner { get; }
-
-        /// <summary>
-        /// Gets a value that indicates whether data validation is enabled for the property.
-        /// </summary>
-        public bool IsDataValidationEnabled { get; }
 
         /// <summary>
         /// Gets the value of the property on the instance.
@@ -100,6 +100,26 @@ namespace Avalonia
         public new DirectPropertyMetadata<TValue> GetMetadata(Type type)
         {
             return (DirectPropertyMetadata<TValue>)base.GetMetadata(type);
+        }
+
+        /// <summary>
+        /// Overrides the metadata for the property on the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="metadata">The metadata.</param>
+        public void OverrideMetadata<T>(DirectPropertyMetadata<TValue> metadata) where T : IAvaloniaObject
+        {
+            base.OverrideMetadata(typeof(T), metadata);
+        }
+
+        /// <summary>
+        /// Overrides the metadata for the property on the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="metadata">The metadata.</param>
+        public void OverrideMetadata(Type type, DirectPropertyMetadata<TValue> metadata)
+        {
+            base.OverrideMetadata(type, metadata);
         }
 
         /// <inheritdoc/>

@@ -138,7 +138,7 @@ namespace Avalonia.Controls
                 FontStyleProperty, TextWrappingProperty, FontFamilyProperty,
                 TextTrimmingProperty, TextProperty, PaddingProperty, LineHeightProperty, MaxLinesProperty);
 
-            Observable.Merge(TextProperty.Changed, ForegroundProperty.Changed,
+            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
                 TextTrimmingProperty.Changed, FontSizeProperty.Changed,
                 FontStyleProperty.Changed, FontWeightProperty.Changed,
@@ -434,7 +434,10 @@ namespace Avalonia.Controls
 
             var padding = Padding;
 
-            TextLayout.Draw(context, new Point(padding.Left + offsetX, padding.Top));
+            using (context.PushPostTransform(Matrix.CreateTranslation(padding.Left + offsetX, padding.Top)))
+            {
+                TextLayout.Draw(context);
+            }
         }
 
         /// <summary>
@@ -452,7 +455,7 @@ namespace Avalonia.Controls
 
             return new TextLayout(
                 text ?? string.Empty,
-                FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                new Typeface(FontFamily, FontStyle, FontWeight),
                 FontSize,
                 Foreground,
                 TextAlignment,

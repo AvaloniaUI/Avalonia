@@ -1,25 +1,29 @@
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Angle;
+using Avalonia.OpenGL.Egl;
+using Avalonia.Win32.OpenGl;
 
 namespace Avalonia.Win32
 {
     static class Win32GlManager
     {
-        /// <summary>This property is initialized if drawing platform requests OpenGL support</summary>
-        public static EglGlPlatformFeature EglFeature { get; private set; }
-
         private static bool s_attemptedToInitialize;
 
         public static void Initialize()
         {
-            AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToFunc(() =>
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToLazy<IPlatformOpenGlInterface>(() =>
             {
-                if (!s_attemptedToInitialize)
+                var opts = AvaloniaLocator.Current.GetService<Win32PlatformOptions>();
+                if (opts?.UseWgl == true)
                 {
-                    EglFeature = EglGlPlatformFeature.TryCreate();
-                    s_attemptedToInitialize = true;
+                    var wgl = WglPlatformOpenGlInterface.TryCreate();
+                    return wgl;
                 }
+                
+                if (opts?.AllowEglInitialization == true)
+                    return EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
 
-                return EglFeature;
+                return null;
             });
         }
     }

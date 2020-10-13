@@ -6,7 +6,7 @@
     <TreeView Name="tree"
               BorderThickness="0"
               Items="{Binding Nodes}"
-              Selection="{Binding Selection}">
+              SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">

@@ -21,7 +21,11 @@ namespace Avalonia.Headless
 
         public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
 
-        public bool SupportsIndividualRoundRects => throw new NotImplementedException();
+        public bool SupportsIndividualRoundRects => false;
+
+        public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
+
+        public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
 
         public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment, TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
         {
@@ -51,7 +55,7 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(size, dpi);
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat)
         {
             return new HeadlessBitmapStub(size, dpi);
         }
@@ -66,7 +70,7 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
         }
 
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
         }        
@@ -234,7 +238,7 @@ namespace Avalonia.Headless
             }
         }
 
-        class HeadlessBitmapStub : IBitmapImpl, IRenderTargetBitmapImpl, IWriteableBitmapImpl
+        class HeadlessBitmapStub : IBitmapImpl, IDrawingContextLayerImpl, IWriteableBitmapImpl
         {
             public Size Size { get; }
 
@@ -262,6 +266,13 @@ namespace Avalonia.Headless
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public void Blit(IDrawingContextImpl context)
+            {
+                
+            }
+
+            public bool CanBlit => false;
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
@@ -303,7 +314,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IRenderTargetBitmapImpl CreateLayer(Size size)
+            public IDrawingContextLayerImpl CreateLayer(Size size)
             {
                 return new HeadlessBitmapStub(size, new Vector(96, 96));
             }
@@ -381,7 +392,7 @@ namespace Avalonia.Headless
                 
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
             {
                 
             }

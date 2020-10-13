@@ -420,7 +420,7 @@ namespace Avalonia.Controls
                 _calendar.DayButtonMouseUp -= Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged -= Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged -= Calendar_SelectedDatesChanged;
-                _calendar.PointerPressed -= Calendar_PointerPressed;
+                _calendar.PointerReleased -= Calendar_PointerReleased;
                 _calendar.KeyDown -= Calendar_KeyDown;
             }
             _calendar = e.NameScope.Find<Calendar>(ElementCalendar);
@@ -435,7 +435,7 @@ namespace Avalonia.Controls
                 _calendar.DayButtonMouseUp += Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged += Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged += Calendar_SelectedDatesChanged;
-                _calendar.PointerPressed += Calendar_PointerPressed;
+                _calendar.PointerReleased += Calendar_PointerReleased;
                 _calendar.KeyDown += Calendar_KeyDown;
                 //_calendar.SizeChanged += new SizeChangedEventHandler(Calendar_SizeChanged);
                 //_calendar.IsTabStop = true;
@@ -831,9 +831,10 @@ namespace Avalonia.Controls
                 }
             }
         }
-        private void Calendar_PointerPressed(object sender, PointerPressedEventArgs e)
+        private void Calendar_PointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+             
+            if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 e.Handled = true;
             }
@@ -889,17 +890,12 @@ namespace Avalonia.Controls
                 _ignoreButtonClick = false;
             }
         }
-        private void PopUp_Closed(object sender, PopupClosedEventArgs e)
+        private void PopUp_Closed(object sender, EventArgs e)
         {
             IsDropDownOpen = false;
 
             if(!_isPopupClosing)
             {
-                if (e.CloseEvent is PointerEventArgs pointerEvent)
-                {
-                    pointerEvent.Handled = true;
-                }
-
                 _isPopupClosing = true;
                 Threading.Dispatcher.UIThread.InvokeAsync(() => _isPopupClosing = false);
             }

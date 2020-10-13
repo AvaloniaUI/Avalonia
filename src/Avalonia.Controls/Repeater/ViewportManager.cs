@@ -240,9 +240,14 @@ namespace Avalonia.Controls
             }
         }
 
-        public void OnElementPrepared(IControl element)
+        public void OnElementPrepared(IControl element, VirtualizationInfo virtInfo)
         {
-            _scroller?.RegisterAnchorCandidate(element);
+            // WinUI registers the element as an anchor candidate here, but I feel that's in error:
+            // at this point the element has not yet been positioned by the arrange pass so it will
+            // have its previous position, meaning that when the arrange pass moves it into its new
+            // position, an incorrect scroll anchoring will occur. Instead signal that it's not yet
+            // registered as a scroll anchor candidate.
+            virtInfo.IsRegisteredAsAnchorCandidate = false;
         }
 
         public void OnElementCleared(IControl element)
@@ -350,11 +355,14 @@ namespace Avalonia.Controls
                 }
 
                 // Make sure that only the target child can be the anchor during the bring into view operation.
-                foreach (var child in _owner.Children)
+                if (_scroller is object)
                 {
-                    if (child != targetChild)
+                    foreach (var child in _owner.Children)
                     {
-                        _scroller.UnregisterAnchorCandidate(child);
+                        if (child != targetChild)
+                        {
+                            _scroller.UnregisterAnchorCandidate(child);
+                        }
                     }
                 }
 
@@ -368,6 +376,11 @@ namespace Avalonia.Controls
                     Dispatcher.UIThread.Post(OnCompositionTargetRendering, DispatcherPriority.Loaded);
                 }
             }
+        }
+
+        public void RegisterScrollAnchorCandidate(IControl element)
+        {
+            _scroller?.RegisterAnchorCandidate(element);
         }
 
         private IControl GetImmediateChildOfRepeater(IControl descendant)
@@ -469,13 +482,7 @@ namespace Avalonia.Controls
                     parent = parent.VisualParent;
                 }
 
-                if (_scroller == null)
-                {
-                    // We usually update the viewport in the post arrange handler. But, since we don't have
-                    // a scroller, let's do it now.
-                    UpdateViewport(Rect.Empty);
-                }
-                else if (!_managingViewportDisabled)
+                if (!_managingViewportDisabled)
                 {
                     _owner.EffectiveViewportChanged += OnEffectiveViewportChanged;
                     _effectiveViewportChangedSubscribed = true;

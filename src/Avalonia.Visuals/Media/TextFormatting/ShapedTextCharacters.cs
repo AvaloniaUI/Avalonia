@@ -26,7 +26,7 @@ namespace Avalonia.Media.TextFormatting
         public override int TextSourceLength { get; }
 
         /// <inheritdoc/>
-        public override Rect Bounds => GlyphRun.Bounds;
+        public override Size Size => GlyphRun.Size;
 
         /// <summary>
         /// Gets the font metrics.
@@ -45,14 +45,14 @@ namespace Avalonia.Media.TextFormatting
         public GlyphRun GlyphRun { get; }
 
         /// <inheritdoc/>
-        public override void Draw(DrawingContext drawingContext, Point origin)
+        public override void Draw(DrawingContext drawingContext)
         {
             if (GlyphRun.GlyphIndices.Length == 0)
             {
                 return;
             }
 
-            if (Properties.Typeface == null)
+            if (Properties.Typeface == default)
             {
                 return;
             }
@@ -64,11 +64,10 @@ namespace Avalonia.Media.TextFormatting
 
             if (Properties.BackgroundBrush != null)
             {
-                drawingContext.DrawRectangle(Properties.BackgroundBrush, null,
-                new Rect(origin.X, origin.Y + FontMetrics.Ascent, Bounds.Width, Bounds.Height));
+                drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
             }
 
-            drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun, origin);
+            drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
 
             if (Properties.TextDecorations == null)
             {
@@ -77,7 +76,7 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textDecoration in Properties.TextDecorations)
             {
-                textDecoration.Draw(drawingContext, this, origin);
+                textDecoration.Draw(drawingContext, this);
             }
         }
 

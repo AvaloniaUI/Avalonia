@@ -6,12 +6,14 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Media;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.OpenGl;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -104,8 +106,12 @@ namespace Avalonia.Win32
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
 
-            if (Win32GlManager.EglFeature != null)
-                _gl = new EglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            
+            if(glPlatform is EglPlatformOpenGlInterface egl)
+                _gl = new EglGlPlatformSurface(egl, this);
+            else if (glPlatform is WglPlatformOpenGlInterface wgl)
+                _gl = new WglGlPlatformSurface(wgl.PrimaryContext, this);
 
             Screen = new ScreenImpl();
 
@@ -230,28 +236,104 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            bool canUseTransparency = false;
-            bool canUseAcrylic = false;
-
-            if (Win32Platform.WindowsVersion.Major >= 10)
+            if (Win32Platform.WindowsVersion.Major >= 6)
             {
-                canUseTransparency = true;
-
-                if (Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628)
+                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
                 {
-                    canUseAcrylic = true;
+                    return WindowTransparencyLevel.None;
+                }
+                else if (Win32Platform.WindowsVersion.Major >= 10)
+                {
+                    return Win10EnableBlur(transparencyLevel);
+                }
+                else if (Win32Platform.WindowsVersion.Minor >= 2)
+                {
+                    return Win8xEnableBlur(transparencyLevel);
+                }
+                else
+                {
+                    return Win7EnableBlur(transparencyLevel);
                 }
             }
-
-            if (!canUseTransparency || DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+            else
             {
                 return WindowTransparencyLevel.None;
             }
+        }
+
+        private WindowTransparencyLevel Win7EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+            var blurInfo = new DWM_BLURBEHIND(false);
+            
+            if (transparencyLevel == WindowTransparencyLevel.Blur)
+            {
+                blurInfo = new DWM_BLURBEHIND(true);
+            }
+            
+            DwmEnableBlurBehindWindow(_hwnd, ref blurInfo);
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                return WindowTransparencyLevel.None;
+            }
+            else
+            {
+                return transparencyLevel;
+            }
+        }
+
+        private WindowTransparencyLevel Win8xEnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            var accent = new AccentPolicy();
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur)
+            {
+                transparencyLevel = WindowTransparencyLevel.Blur;
+            }
+
+            if (transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+            }
+            else
+            {
+                accent.AccentState = AccentState.ACCENT_DISABLED;
+            }
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(_hwnd, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);
+
+            if (transparencyLevel >= WindowTransparencyLevel.Blur)
+            {
+                Win7EnableBlur(transparencyLevel);
+            }
+
+            return transparencyLevel;
+        }
+
+        private WindowTransparencyLevel Win10EnableBlur(WindowTransparencyLevel transparencyLevel)
+        {
+            bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
             var accent = new AccentPolicy();
             var accentStructSize = Marshal.SizeOf(accent);
 
-            if(transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
             {
                 transparencyLevel = WindowTransparencyLevel.Blur;
             }
@@ -291,7 +373,7 @@ namespace Avalonia.Win32
 
             SetWindowCompositionAttribute(_hwnd, ref data);
 
-            Marshal.FreeHGlobal(accentPtr);            
+            Marshal.FreeHGlobal(accentPtr);
 
             return transparencyLevel;
         }
@@ -778,7 +860,7 @@ namespace Avalonia.Win32
 
         private void ShowWindow(WindowState state)
         {
-            ShowWindowCommand command;
+            ShowWindowCommand? command;
 
             var newWindowProperties = _windowProperties;
 
@@ -800,8 +882,8 @@ namespace Avalonia.Win32
 
                 case WindowState.FullScreen:
                     newWindowProperties.IsFullScreen = true;
-                    UpdateWindowProperties(newWindowProperties);
-                    return;
+                    command = IsWindowVisible(_hwnd) ? (ShowWindowCommand?)null : ShowWindowCommand.Restore;
+                    break;
 
                 default:
                     throw new ArgumentException("Invalid WindowState.");
@@ -809,7 +891,10 @@ namespace Avalonia.Win32
 
             UpdateWindowProperties(newWindowProperties);
 
-            UnmanagedMethods.ShowWindow(_hwnd, command);
+            if (command.HasValue)
+            {
+                UnmanagedMethods.ShowWindow(_hwnd, command.Value);
+            }
 
             if (state == WindowState.Maximized)
             {
@@ -932,10 +1017,12 @@ namespace Avalonia.Win32
                 if (newProperties.IsResizable)
                 {
                     style |= WindowStyles.WS_SIZEFRAME;
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
                 }
                 else
                 {
                     style &= ~WindowStyles.WS_SIZEFRAME;
+                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
                 SetStyle(style);

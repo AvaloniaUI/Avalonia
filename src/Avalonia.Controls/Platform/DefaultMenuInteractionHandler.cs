@@ -3,7 +3,6 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -149,6 +148,7 @@ namespace Avalonia.Controls.Platform
             {
                 case Key.Up:
                 case Key.Down:
+                {
                     if (item?.IsTopLevel == true)
                     {
                         if (item.HasSubMenu && !item.IsSubMenuOpen)
@@ -162,8 +162,10 @@ namespace Avalonia.Controls.Platform
                         goto default;
                     }
                     break;
+                }
 
                 case Key.Left:
+                {
                     if (item?.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
                     {
                         parent.Close();
@@ -175,8 +177,10 @@ namespace Avalonia.Controls.Platform
                         goto default;
                     }
                     break;
+                }
 
                 case Key.Right:
+                {
                     if (item != null && !item.IsTopLevel && item.HasSubMenu)
                     {
                         Open(item, true);
@@ -187,8 +191,10 @@ namespace Avalonia.Controls.Platform
                         goto default;
                     }
                     break;
+                }
 
                 case Key.Enter:
+                {
                     if (item != null)
                     {
                         if (!item.HasSubMenu)
@@ -203,12 +209,14 @@ namespace Avalonia.Controls.Platform
                         e.Handled = true;
                     }
                     break;
+                }
 
                 case Key.Escape:
-                    if (item?.Parent != null)
+                {
+                    if (item?.Parent is IMenuElement parent)
                     {
-                        item.Parent.Close();
-                        item.Parent.Focus();
+                        parent.Close();
+                        parent.Focus();
                     }
                     else
                     {
@@ -217,8 +225,10 @@ namespace Avalonia.Controls.Platform
 
                     e.Handled = true;
                     break;
+                }
 
                 default:
+                {
                     var direction = e.Key.ToNavigationDirection();
 
                     if (direction.HasValue)
@@ -235,7 +245,9 @@ namespace Avalonia.Controls.Platform
                             // If the the parent is an IMenu which successfully moved its selection,
                             // and the current menu is open then close the current menu and open the
                             // new menu.
-                            if (item.IsSubMenuOpen && item.Parent is IMenu)
+                            if (item.IsSubMenuOpen &&
+                                item.Parent is IMenu &&
+                                item.Parent.SelectedItem is object)
                             {
                                 item.Close();
                                 Open(item.Parent.SelectedItem, true);
@@ -245,6 +257,7 @@ namespace Avalonia.Controls.Platform
                     }
 
                     break;
+                }
             }
 
             if (!e.Handled && item?.Parent is IMenuItem parentItem)
@@ -363,6 +376,11 @@ namespace Avalonia.Controls.Platform
                 }
                 else
                 {
+                    if (item.IsTopLevel && item.Parent is IMainMenu mainMenu)
+                    {
+                        mainMenu.Open();
+                    }
+
                     Open(item, false);
                 }
 
@@ -385,7 +403,7 @@ namespace Avalonia.Controls.Platform
         {
             if (e.Source == Menu)
             {
-                Menu.MoveSelection(NavigationDirection.First, true);
+                Menu?.MoveSelection(NavigationDirection.First, true);
             }
         }
 

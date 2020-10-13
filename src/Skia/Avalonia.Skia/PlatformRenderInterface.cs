@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO; 
-using System.Security.Cryptography;
 using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
@@ -24,13 +22,15 @@ namespace Avalonia.Skia
 
         public PlatformRenderInterface(ISkiaGpu skiaGpu, long? maxResourceBytes = null)
         {
+            DefaultPixelFormat = SKImageInfo.PlatformColorType.ToPixelFormat();
+
             if (skiaGpu != null)
             {
                 _skiaGpu = skiaGpu;
                 return;
             }
 
-            var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
+            var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
             if (gl != null) 
                 _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
         }
@@ -76,9 +76,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            return new ImmutableBitmap(size, dpi, stride, format, data);
+            return new ImmutableBitmap(size, dpi, stride, format, alphaFormat, data);
         }
 
         /// <inheritdoc />
@@ -138,7 +138,7 @@ namespace Avalonia.Skia
             var gpuRenderTarget = _skiaGpu?.TryCreateRenderTarget(surfaces);
             if (gpuRenderTarget != null)
             {
-                return new SkiaGpuRenderTarget(gpuRenderTarget);
+                return new SkiaGpuRenderTarget(_skiaGpu, gpuRenderTarget);
             }
 
             foreach (var surface in surfaces)
@@ -152,9 +152,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat)
         {
-            return new WriteableBitmapImpl(size, dpi, format);
+            return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
         private static readonly SKFont s_font = new SKFont
@@ -256,10 +256,10 @@ namespace Avalonia.Skia
 
         }
 
-        public IOpenGlTextureBitmapImpl CreateOpenGlTextureBitmap()
+        public IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi)
         {
             if (_skiaGpu is IOpenGlAwareSkiaGpu glAware)
-                return glAware.CreateOpenGlTextureBitmap();
+                return glAware.CreateOpenGlBitmap(size, dpi);
             if (_skiaGpu == null)
                 throw new PlatformNotSupportedException("GPU acceleration is not available");
             throw new PlatformNotSupportedException(
@@ -267,5 +267,9 @@ namespace Avalonia.Skia
         }
 
         public bool SupportsIndividualRoundRects => true;
+
+        public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
+
+        public PixelFormat DefaultPixelFormat { get; }
     }
 }

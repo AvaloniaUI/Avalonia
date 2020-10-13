@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -73,6 +74,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control with two views: A collapsible pane and an area for content
     /// </summary>
+    [PseudoClasses(":open", ":closed")]
+    [PseudoClasses(":compactoverlay", ":compactinline", ":overlay", ":inline")]
+    [PseudoClasses(":left", ":right")]
+    [PseudoClasses(":lightdismiss")]
     public class SplitView : TemplatedControl
     {
         /*
@@ -145,7 +150,7 @@ namespace Avalonia.Controls
 
         private bool _isPaneOpen;
         private Panel _pane;
-        private CompositeDisposable _pointerDisposables;
+        private IDisposable _pointerDisposable;
 
         public SplitView()
         {
@@ -320,37 +325,14 @@ namespace Avalonia.Controls
             var topLevel = this.VisualRoot;
             if (topLevel is Window window)
             {
-                //Logic adapted from Popup
-                //Basically if we're using an overlay DisplayMode, close the pane if we don't click on the pane
-                IDisposable subscribeToEventHandler<T, TEventHandler>(T target, TEventHandler handler,
-                    Action<T, TEventHandler> subscribe, Action<T, TEventHandler> unsubscribe)
-                {
-                    subscribe(target, handler);
-                    return Disposable.Create((unsubscribe, target, handler), state => state.unsubscribe(state.target, state.handler));
-                }
-
-                _pointerDisposables = new CompositeDisposable(
-                    window.AddDisposableHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel),
-                    InputManager.Instance?.Process.Subscribe(OnNonClientClick),
-                    subscribeToEventHandler<Window, EventHandler>(window, Window_Deactivated,
-                    (x, handler) => x.Deactivated += handler, (x, handler) => x.Deactivated -= handler),
-                    subscribeToEventHandler<IWindowImpl, Action>(window.PlatformImpl, OnWindowLostFocus,
-                    (x, handler) => x.LostFocus += handler, (x, handler) => x.LostFocus -= handler));
+                _pointerDisposable = window.AddDisposableHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
             }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            _pointerDisposables?.Dispose();
-        }
-
-        private void OnWindowLostFocus()
-        {
-            if (IsPaneOpen && ShouldClosePane())
-            {
-                IsPaneOpen = false;
-            }                
+            _pointerDisposable?.Dispose();
         }
 
         private void PointerPressedOutside(object sender, PointerPressedEventArgs e)
@@ -371,7 +353,12 @@ namespace Avalonia.Controls
             var src = e.Source as IVisual;
             while (src != null)
             {
-                if (src == _pane)
+                // Make assumption that if Popup is in visual tree,
+                // owning control is within pane
+                // This works because if pane is triggered to close
+                // when clicked anywhere else in Window, the pane 
+                // would close before the popup is opened
+                if (src == _pane || src is PopupRoot)
                 {
                     closePane = false;
                     break;
@@ -385,31 +372,7 @@ namespace Avalonia.Controls
                 e.Handled = true;
             }
         }
-
-        private void OnNonClientClick(RawInputEventArgs obj)
-        {
-            if (!IsPaneOpen)
-            {
-                return;
-            }              
-
-            var mouse = obj as RawPointerEventArgs;
-            if (mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
-
-            {
-                if (ShouldClosePane())
-                    IsPaneOpen = false;
-            }
-        }
-
-        private void Window_Deactivated(object sender, EventArgs e)
-        {
-            if (IsPaneOpen && ShouldClosePane())
-            {
-                IsPaneOpen = false;
-            }                
-        }
-
+                
         private bool ShouldClosePane()
         {
             return (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay);

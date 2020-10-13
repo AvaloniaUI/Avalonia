@@ -47,11 +47,7 @@ namespace Avalonia.Controls.Generators
         {
             var container = item as T;
 
-            if (item == null)
-            {
-                return null;
-            }
-            else if (container != null)
+            if (container != null)
             {
                 return container;
             }

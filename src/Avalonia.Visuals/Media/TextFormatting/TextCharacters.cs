@@ -70,10 +70,11 @@ namespace Avalonia.Media.TextFormatting
             var codepoint = Codepoint.ReadAt(text, count, out _);
 
             //ToDo: Fix FontFamily fallback
-            currentTypeface =
-                FontManager.Current.MatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight, defaultTypeface.FontFamily);
+            var matchFound =
+                FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
+                    defaultTypeface.FontFamily, defaultProperties.CultureInfo, out currentTypeface);
 
-            if (currentTypeface != null && TryGetRunProperties(text, currentTypeface, defaultTypeface, out count))
+            if (matchFound && TryGetRunProperties(text, currentTypeface, defaultTypeface, out count))
             {
                 //Fallback found
                 return new ShapeableTextCharacters(text.Take(count),

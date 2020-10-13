@@ -14,6 +14,9 @@ namespace Avalonia.Controls.Presenters
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
 
+        public static readonly StyledProperty<bool> RevealPasswordProperty =
+            AvaloniaProperty.Register<TextPresenter, bool>(nameof(RevealPassword));
+
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextPresenter, char>(nameof(PasswordChar));
 
@@ -74,17 +77,18 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(SelectionBrushProperty);
-            AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, 
+            AffectsRender<TextPresenter>(SelectionBrushProperty, TextBlock.ForegroundProperty, 
+                                         SelectionForegroundBrushProperty, CaretBrushProperty);
+            AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, RevealPasswordProperty, 
                 TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
                 TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
 
-            Observable.Merge(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
+            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
                 TextBlock.FontSizeProperty.Changed, TextBlock.FontStyleProperty.Changed, 
                 TextBlock.FontWeightProperty.Changed, TextBlock.FontFamilyProperty.Changed,
                 SelectionStartProperty.Changed, SelectionEndProperty.Changed,
-                SelectionForegroundBrushProperty.Changed, PasswordCharProperty.Changed
+                SelectionForegroundBrushProperty.Changed, PasswordCharProperty.Changed, RevealPasswordProperty.Changed
             ).AddClassHandler<TextPresenter>((x, _) => x.InvalidateFormattedText());
 
             CaretIndexProperty.Changed.AddClassHandler<TextPresenter>((x, e) => x.CaretIndexChanged((int)e.NewValue));
@@ -210,6 +214,12 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(PasswordCharProperty, value);
         }
 
+        public bool RevealPassword
+        {
+            get => GetValue(RevealPasswordProperty);
+            set => SetValue(RevealPasswordProperty, value);
+        }
+
         public IBrush SelectionBrush
         {
             get => GetValue(SelectionBrushProperty);
@@ -273,7 +283,7 @@ namespace Avalonia.Controls.Presenters
             return new FormattedText
             {
                 Constraint = constraint,
-                Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
                 FontSize = FontSize,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
@@ -426,7 +436,7 @@ namespace Avalonia.Controls.Presenters
 
             var text = Text;
 
-            if (PasswordChar != default(char))
+            if (PasswordChar != default(char) && !RevealPassword)
             {
                 result = CreateFormattedTextInternal(_constraint, new string(PasswordChar, text?.Length ?? 0));
             }
@@ -490,7 +500,7 @@ namespace Avalonia.Controls.Presenters
                 return new FormattedText
                 {
                     Text = "X",
-                    Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                    Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
                     FontSize = FontSize,
                     TextAlignment = TextAlignment,
                     Constraint = availableSize,

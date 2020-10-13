@@ -2,7 +2,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
-using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -27,6 +26,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.IsDropDownOpen);
 
             _helper.Down(target);
+            _helper.Up(target);
 
             Assert.False(target.IsDropDownOpen);
         }

@@ -12,7 +12,7 @@
     <Color x:Key="SystemColorHotlightColor">#FF0066CC</Color>
     <Color x:Key="SystemColorWindowColor">#FFFFFFFF</Color>
     <Color x:Key="SystemColorWindowTextColor">#FF000000</Color>
-    <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Themes.Fluent/Assets#Roboto</FontFamily>
+    <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Themes.Fluent/Assets#Inter</FontFamily>
     <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
 
     <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
@@ -20,5 +20,7 @@
     <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
     <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
     <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
+    <sys:Double x:Key="IconElementThemeHeight">20</sys:Double>
+    <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
   </Style.Resources>
 </Style>

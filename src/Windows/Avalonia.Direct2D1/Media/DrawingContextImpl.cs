@@ -324,17 +324,18 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
         /// <param name="baselineOrigin"></param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Bounds.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
 
-                _renderTarget.DrawGlyphRun(baselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun, brush.PlatformBrush, MeasuringMode.Natural);
+                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun,
+                    brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             if (_layerFactory != null)
             {
@@ -345,7 +346,7 @@ namespace Avalonia.Direct2D1.Media
                 var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
                 var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
                 var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
-                return platform.CreateRenderTargetBitmap(pixelSize, dpi);
+                return (IDrawingContextLayerImpl)platform.CreateRenderTargetBitmap(pixelSize, dpi);
             }
         }
 

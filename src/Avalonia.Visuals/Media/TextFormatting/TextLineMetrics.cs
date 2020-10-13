@@ -67,7 +67,7 @@ namespace Avalonia.Media.TextFormatting
                 var fontMetrics =
                     new FontMetrics(shapedRun.Properties.Typeface, shapedRun.Properties.FontRenderingEmSize);
 
-                lineWidth += shapedRun.Bounds.Width;
+                lineWidth += shapedRun.Size.Width;
 
                 if (ascent > fontMetrics.Ascent)
                 {

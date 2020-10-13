@@ -12,14 +12,14 @@
     <SolidColorBrush x:Key="ToggleSwitchContentForegroundDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
     <SolidColorBrush x:Key="ToggleSwitchHeaderForeground" Color="{DynamicResource ThemeForegroundColor}" />
     <SolidColorBrush x:Key="ToggleSwitchHeaderForegroundDisabled" Color="{DynamicResource ThemeForegroundLowColor}" />
-    <SolidColorBrush x:Key="ToggleSwitchContainerBackground" Color="{DynamicResource ThemeControlTransparentColor}" />
-    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundPointerOver" Color="{DynamicResource ThemeControlTransparentColor}" />
-    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundPressed" Color="{DynamicResource ThemeControlTransparentColor}" />
-    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundDisabled" Color="{DynamicResource ThemeControlTransparentColor}" />
-    <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="{DynamicResource ThemeControlTransparentColor}" />
-    <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchContainerBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundPointerOver" Color="Transparent" />
+    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundPressed" Color="Transparent" />
+    <SolidColorBrush x:Key="ToggleSwitchContainerBackgroundDisabled" Color="Transparent" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="Transparent" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="Transparent" />
     <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="{DynamicResource ThemeControlMidHighColor}" />
-    <SolidColorBrush x:Key="ToggleSwitchFillOffDisabled" Color="{DynamicResource ThemeControlTransparentColor}" />
+    <SolidColorBrush x:Key="ToggleSwitchFillOffDisabled" Color="Transparent" />
     <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="{DynamicResource ThemeBorderMidColor}" />
     <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="{DynamicResource ThemeBorderHighColor}" />
     <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="{DynamicResource ThemeBorderHighColor}" />
@@ -87,7 +87,6 @@
             Grid.Row="0"
             Content="{TemplateBinding Content}"
             ContentTemplate="{TemplateBinding ContentTemplate}"
-            Margin="{DynamicResource ToggleSwitchTopHeaderMargin}"
             VerticalAlignment="Top"/>
 
           <Grid Grid.Row="1"
@@ -161,6 +160,13 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="ToggleSwitch /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Margin" Value="{DynamicResource ToggleSwitchTopHeaderMargin}" />
+  </Style>
+  <Style Selector="ToggleSwitch /template/ ContentPresenter#PART_ContentPresenter:empty">
+    <Setter Property="Margin" Value="0" />
   </Style>
 
   <!-- NormalState -->

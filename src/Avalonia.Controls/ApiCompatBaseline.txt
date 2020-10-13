@@ -1,0 +1,20 @@
+Compat issues with assembly Avalonia.Controls:
+TypesMustExist : Type 'Avalonia.Controls.IndexPath' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Controls.ISelectedItemInfo' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Controls.ISelectionModel' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.DirectProperty<Avalonia.Controls.Primitives.SelectingItemsControl, Avalonia.Controls.ISelectionModel> Avalonia.DirectProperty<Avalonia.Controls.Primitives.SelectingItemsControl, Avalonia.Controls.ISelectionModel> Avalonia.Controls.ListBox.SelectionProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Controls.ISelectionModel Avalonia.Controls.ListBox.Selection.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.ListBox.Selection.set(Avalonia.Controls.ISelectionModel)' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Controls.SelectionModel' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Controls.SelectionModelChildrenRequestedEventArgs' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Controls.SelectionModelSelectionChangedEventArgs' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.DirectProperty<Avalonia.Controls.TreeView, Avalonia.Controls.ISelectionModel> Avalonia.DirectProperty<Avalonia.Controls.TreeView, Avalonia.Controls.ISelectionModel> Avalonia.Controls.TreeView.SelectionProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Interactivity.RoutedEvent<Avalonia.Controls.SelectionChangedEventArgs> Avalonia.Interactivity.RoutedEvent<Avalonia.Controls.SelectionChangedEventArgs> Avalonia.Controls.TreeView.SelectionChangedEvent' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Controls.ISelectionModel Avalonia.Controls.TreeView.Selection.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.TreeView.Selection.set(Avalonia.Controls.ISelectionModel)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.String[] Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.Args' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.String[] Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.Args.get()' is present in the implementation but not in the contract.
+MembersMustExist : Member 'public Avalonia.DirectProperty<Avalonia.Controls.Primitives.SelectingItemsControl, Avalonia.Controls.ISelectionModel> Avalonia.DirectProperty<Avalonia.Controls.Primitives.SelectingItemsControl, Avalonia.Controls.ISelectionModel> Avalonia.Controls.Primitives.SelectingItemsControl.SelectionProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected Avalonia.Controls.ISelectionModel Avalonia.Controls.Primitives.SelectingItemsControl.Selection.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Controls.Primitives.SelectingItemsControl.Selection.set(Avalonia.Controls.ISelectionModel)' does not exist in the implementation but it does exist in the contract.
+Total Issues: 18

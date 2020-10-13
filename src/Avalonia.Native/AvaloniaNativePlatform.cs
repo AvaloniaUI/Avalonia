@@ -16,7 +16,7 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
-        private GlPlatformFeature _glFeature;
+        private AvaloniaNativePlatformOpenGlInterface _platformGl;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -110,16 +110,25 @@ namespace Avalonia.Native
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
-                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
-                ;
+                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory));
+
             if (_options.UseGpu)
-                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
-                    .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
+            {
+                try
+                {
+                    AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>()
+                        .ToConstant(_platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay()));
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
         }
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options, _glFeature);
+            return new WindowImpl(_factory, _options, _platformGl);
         }
 
         public IWindowImpl CreateEmbeddableWindow()

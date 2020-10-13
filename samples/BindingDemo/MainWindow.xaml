@@ -116,6 +116,7 @@
         <RadioButton Content="Radio Button" IsChecked="{Binding !!BooleanFlag, Mode=OneWay}" Command="{Binding StringValueCommand}" CommandParameter="RadioButton"/>
         <TextBox Text="{Binding Path=StringValue}"/>
         <Button Content="Nested View Model Button" Name="NestedTest" Command="{Binding NestedModel.Command}" />
+        <Button Content="Command Method Do" Command="{Binding Do}" x:Name="ToDo"/>
       </StackPanel>
     </TabItem>
   </TabControl>

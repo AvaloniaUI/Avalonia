@@ -18,7 +18,7 @@ namespace Avalonia.X11.Glx
         public XVisualInfo* VisualInfo => _visual;
         public GlxContext DeferredContext { get; }
         public GlxInterface Glx { get; } = new GlxInterface();
-        public GlxDisplay(X11Info x11, List<GlVersion> probeProfiles) 
+        public GlxDisplay(X11Info x11, IList<GlVersion> probeProfiles) 
         {
             _x11 = x11;
             _probeProfiles = probeProfiles.ToList();
@@ -113,9 +113,9 @@ namespace Avalonia.X11.Glx
         }
 
 
-        public GlxContext CreateContext() => CreateContext(DeferredContext);
-
-        GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share,
+        public GlxContext CreateContext() => CreateContext();
+        
+        public GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share,
             share.SampleCount, share.StencilSize, true);
         
         GlxContext CreateContext(IntPtr defaultXid, IGlContext share,
@@ -144,7 +144,7 @@ namespace Avalonia.X11.Glx
                     if (handle != IntPtr.Zero)
                     {
                         _version = profile;
-                        return new GlxContext(new GlxInterface(), handle, this, profile,
+                        return new GlxContext(new GlxInterface(), handle, this, (GlxContext)share, profile,
                             sampleCount, stencilSize, _x11, defaultXid, ownsPBuffer);
                         
                     }

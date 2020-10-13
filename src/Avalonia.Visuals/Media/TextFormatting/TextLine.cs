@@ -35,9 +35,9 @@ namespace Avalonia.Media.TextFormatting
         /// Gets the state of the line when broken by line breaking process.
         /// </summary>
         /// <returns>
-        /// A <see cref="LineBreak"/> value that represents the line break.
+        /// A <see cref="TextLineBreak"/> value that represents the line break.
         /// </returns>
-        public abstract TextLineBreak LineBreak { get; }
+        public abstract TextLineBreak TextLineBreak { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the line is collapsed.
@@ -51,8 +51,7 @@ namespace Avalonia.Media.TextFormatting
         /// Draws the <see cref="TextLine"/> at the given origin.
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
-        /// <param name="origin">The origin.</param>
-        public abstract void Draw(DrawingContext drawingContext, Point origin);
+        public abstract void Draw(DrawingContext drawingContext);
 
         /// <summary>
         /// Create a collapsed line based on collapsed text properties.
