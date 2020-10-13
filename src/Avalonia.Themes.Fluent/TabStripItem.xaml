@@ -38,7 +38,6 @@
                               TextBlock.FontSize="{TemplateBinding FontSize}"
                               TextBlock.FontWeight="{TemplateBinding FontWeight}" />
             <Border Name="PART_SelectedPipe"
-                    CornerRadius="{DynamicResource ControlCornerRadius}"
                     Background="{DynamicResource TabItemHeaderSelectedPipeFill}" />
           </Panel>
         </Border>
@@ -46,6 +45,9 @@
     </Setter>
   </Style>
 
+  <Style Selector="TabStripItem /template/ Border#PART_SelectedPipe">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+  </Style>
 
   <!--  Nornal state  -->
   <Style Selector="TabStripItem /template/ Border#PART_LayoutRoot">
