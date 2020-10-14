@@ -407,6 +407,53 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, raised);
         }
 
+        [Fact]
+        public void Adding_And_Selecting_Item_With_AutoScrollToSelectedItem_Should_NotHide_FirstItem()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new AvaloniaList<string>();
+
+                var wnd = new Window() { Width = 100, Height = 100, IsVisible = true };
+
+                var target = new ListBox()
+                {
+                    VerticalAlignment = Layout.VerticalAlignment.Top,
+                    AutoScrollToSelectedItem = true,
+                    Width = 50,
+                    VirtualizationMode = ItemVirtualizationMode.Simple,
+                    ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
+                    Items = items,
+                };
+                wnd.Content = target;
+
+                var lm = wnd.LayoutManager;
+
+                lm.ExecuteInitialLayoutPass();
+
+                var panel = target.Presenter.Panel;
+
+                items.Add("Item 1");
+                target.Selection.Select(0);
+                lm.ExecuteLayoutPass();
+
+                Assert.Equal(1, panel.Children.Count);
+
+                items.Add("Item 2");
+                target.Selection.Select(1);
+                lm.ExecuteLayoutPass();
+
+                Assert.Equal(2, panel.Children.Count);
+
+                //make sure we have enough space to show all items
+                Assert.True(panel.Bounds.Height >= panel.Children.Sum(c => c.Bounds.Height));
+
+                //make sure we show items and they completelly visible, not only partially
+                Assert.True(panel.Children[0].Bounds.Top >= 0 && panel.Children[0].Bounds.Bottom <= panel.Bounds.Height, "first item is not completelly visible!");
+                Assert.True(panel.Children[1].Bounds.Top >= 0 && panel.Children[1].Bounds.Bottom <= panel.Bounds.Height, "second item is not completelly visible!");
+            }
+        }
+
         private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>

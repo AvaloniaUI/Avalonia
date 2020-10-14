@@ -238,22 +238,46 @@ namespace Avalonia.Direct2D1
 
             width = 0;
 
-            for (var i = 0; i < glyphCount; i++)
+            var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
+
+            if (glyphRun.GlyphAdvances.IsEmpty)
             {
-                run.Advances[i] = (float)glyphRun.GlyphAdvances[i];
-                width += run.Advances[i];
+                for (var i = 0; i < glyphCount; i++)
+                {
+                    var advance = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
+
+                    run.Advances[i] = advance;
+
+                    width += advance;
+                }
+            }
+            else
+            {
+                for (var i = 0; i < glyphCount; i++)
+                {
+                    var advance = (float)glyphRun.GlyphAdvances[i];
+
+                    run.Advances[i] = advance;
+
+                    width += advance;
+                }
+            }
+
+            if (glyphRun.GlyphOffsets.IsEmpty)
+            {
+                return new GlyphRunImpl(run);
             }
 
             run.Offsets = new GlyphOffset[glyphCount];
 
             for (var i = 0; i < glyphCount; i++)
             {
-                var offset = glyphRun.GlyphOffsets[i];
+                var (x, y) = glyphRun.GlyphOffsets[i];
 
                 run.Offsets[i] = new GlyphOffset
                 {
-                    AdvanceOffset = (float)offset.X,
-                    AscenderOffset = (float)offset.Y
+                    AdvanceOffset = (float)x,
+                    AscenderOffset = (float)y
                 };
             }
 
