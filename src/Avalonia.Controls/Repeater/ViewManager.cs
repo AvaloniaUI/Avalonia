@@ -661,7 +661,7 @@ namespace Avalonia.Controls
                 children.Add(element);
             }
 
-            repeater.OnElementPrepared(element, index);
+            repeater.OnElementPrepared(element, virtInfo);
 
             // Update realized indices
             _firstRealizedElementIndexHeldByLayout = Math.Min(_firstRealizedElementIndexHeldByLayout, index);
