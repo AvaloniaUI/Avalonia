@@ -27,26 +27,28 @@ namespace Avalonia.Skia
 
             var metrics = Typeface.ToFont().Metrics;
 
-            Ascent = (int)(metrics.Ascent / 12.0 * Typeface.UnitsPerEm);
+            const double defaultFontRenderingEmSize = 12.0;
 
-            Descent = (int)(metrics.Descent / 12.0 * Typeface.UnitsPerEm);
+            Ascent = (int)(metrics.Ascent / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
 
-            LineGap = (int)(metrics.Leading / 12.0 * Typeface.UnitsPerEm);
+            Descent = (int)(metrics.Descent / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
+
+            LineGap = (int)(metrics.Leading / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
 
             UnderlinePosition = metrics.UnderlinePosition != null ?
-                (int)(metrics.UnderlinePosition / 12.0 * Typeface.UnitsPerEm) :
+                (int)(metrics.UnderlinePosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
                 0;
 
             UnderlineThickness = metrics.UnderlineThickness != null ?
-                (int)(metrics.UnderlineThickness / 12.0 * Typeface.UnitsPerEm) :
+                (int)(metrics.UnderlineThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
                 0;
 
             StrikethroughPosition = metrics.StrikeoutPosition != null ?
-                (int)(metrics.StrikeoutPosition / 12.0 * Typeface.UnitsPerEm) :
+                (int)(metrics.StrikeoutPosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
                 0;
 
             StrikethroughThickness = metrics.StrikeoutThickness != null ?
-                (int)(metrics.StrikeoutThickness / 12.0 * Typeface.UnitsPerEm) :
+                (int)(metrics.StrikeoutThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
                 0;
 
             IsFixedPitch = Typeface.IsFixedPitch;
