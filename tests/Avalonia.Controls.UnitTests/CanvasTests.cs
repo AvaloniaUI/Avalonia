@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls.Shapes;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -9,6 +10,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Left_Property_Should_Work()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             Rectangle rect;
             var target = new Canvas
             {
@@ -34,6 +37,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Top_Property_Should_Work()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             Rectangle rect;
             var target = new Canvas
             {
@@ -59,6 +64,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Right_Property_Should_Work()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             Rectangle rect;
             var target = new Canvas
             {
@@ -84,6 +91,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Bottom_Property_Should_Work()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             Rectangle rect;
             var target = new Canvas
             {
