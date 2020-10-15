@@ -144,7 +144,10 @@ namespace Avalonia.Input
             return s.ToString();
         }
 
-        public bool Matches(KeyEventArgs keyEvent) => ResolveNumPadOperationKey(keyEvent.Key) == Key && keyEvent.KeyModifiers == KeyModifiers;
+        public bool Matches(KeyEventArgs keyEvent) =>
+            keyEvent != null &&
+            keyEvent.KeyModifiers == KeyModifiers &&
+            ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(Key);
 
         // TODO: Move that to external key parser
         private static Key ParseKey(string key)
