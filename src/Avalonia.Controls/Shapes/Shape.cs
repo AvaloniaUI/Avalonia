@@ -261,7 +261,7 @@ namespace Avalonia.Controls.Shapes
             {
                 // This should probably use GetRenderBounds(strokeThickness) but then the calculations
                 // will multiply the stroke thickness as well, which isn't correct.
-                var (size, transform) = CalculateSizeAndTransform(finalSize, DefiningGeometry.Bounds, Stretch);
+                var (_, transform) = CalculateSizeAndTransform(finalSize, DefiningGeometry.Bounds, Stretch);
 
                 if (_transform != transform)
                 {
