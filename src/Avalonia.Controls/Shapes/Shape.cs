@@ -252,7 +252,7 @@ namespace Avalonia.Controls.Shapes
                 return default;
             }
 
-            return CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch).Item1;
+            return CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch).size;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -275,7 +275,7 @@ namespace Avalonia.Controls.Shapes
             return Size.Empty;
         }
 
-        internal static (Size, Matrix) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)
+        internal static (Size size, Matrix transform) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)
         {
             Size shapeSize = new Size(shapeBounds.Right, shapeBounds.Bottom);
             Matrix translate = Matrix.Identity;
