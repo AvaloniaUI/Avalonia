@@ -794,18 +794,13 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event.</param>
         private void ContainerSelectionChanged(RoutedEventArgs e)
         {
-            if (!_ignoreContainerSelectionChanged)
+            if (!_ignoreContainerSelectionChanged &&
+                e.Source is IControl control &&
+                e.Source is ISelectable selectable &&
+                control.LogicalParent == this &&
+                ItemContainerGenerator?.IndexFromContainer(control) != -1)
             {
-                var control = e.Source as IControl;
-                var selectable = e.Source as ISelectable;
-
-                if (control != null &&
-                    selectable != null &&
-                    control.LogicalParent == this &&
-                    ItemContainerGenerator?.IndexFromContainer(control) != -1)
-                {
-                    UpdateSelection(control, selectable.IsSelected);
-                }
+                UpdateSelection(control, selectable.IsSelected);
             }
 
             if (e.Source != this)
@@ -824,12 +819,11 @@ namespace Avalonia.Controls.Primitives
         {
             try
             {
-                var selectable = container as ISelectable;
                 bool result;
 
                 _ignoreContainerSelectionChanged = true;
 
-                if (selectable != null)
+                if (container is ISelectable selectable)
                 {
                     result = selectable.IsSelected;
                     selectable.IsSelected = selected;
