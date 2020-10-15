@@ -39,7 +39,9 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in _textRuns)
             {
-                using (drawingContext.PushPostTransform(Matrix.CreateTranslation(currentX, 0)))
+                var offsetY = LineMetrics.TextBaseline - textRun.GlyphRun.BaselineOrigin.Y;
+
+                using (drawingContext.PushPostTransform(Matrix.CreateTranslation(currentX, offsetY)))
                 {
                     textRun.Draw(drawingContext);
                 }
@@ -75,35 +77,33 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentWidth > availableWidth)
                 {
-                    var measuredLength = TextFormatterImpl.MeasureCharacters(currentRun, availableWidth);
-
-                    var currentBreakPosition = 0;
-
-                    if (measuredLength < textRange.End)
+                    if (TextFormatterImpl.TryMeasureCharacters(currentRun, availableWidth, out var measuredLength))
                     {
-                        var lineBreaker = new LineBreakEnumerator(currentRun.Text);
-
-                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
+                        if (collapsingProperties.Style == TextCollapsingStyle.TrailingWord && measuredLength < textRange.End)
                         {
-                            var nextBreakPosition = lineBreaker.Current.PositionWrap;
+                            var currentBreakPosition = 0;
 
-                            if (nextBreakPosition == 0)
+                            var lineBreaker = new LineBreakEnumerator(currentRun.Text);
+
+                            while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
                             {
-                                break;
+                                var nextBreakPosition = lineBreaker.Current.PositionWrap;
+
+                                if (nextBreakPosition == 0)
+                                {
+                                    break;
+                                }
+
+                                if (nextBreakPosition > measuredLength)
+                                {
+                                    break;
+                                }
+
+                                currentBreakPosition = nextBreakPosition;
                             }
 
-                            if (nextBreakPosition > measuredLength)
-                            {
-                                break;
-                            }
-
-                            currentBreakPosition = nextBreakPosition;
+                            measuredLength = currentBreakPosition;
                         }
-                    }
-
-                    if (collapsingProperties.Style == TextCollapsingStyle.TrailingWord)
-                    {
-                        measuredLength = currentBreakPosition;
                     }
 
                     collapsedLength += measuredLength;

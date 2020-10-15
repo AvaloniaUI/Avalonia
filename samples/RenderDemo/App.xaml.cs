@@ -18,6 +18,10 @@ namespace RenderDemo
         // App configuration, used by the entry point and previewer
         static AppBuilder BuildAvaloniaApp()
            => AppBuilder.Configure<App>()
+               .With(new Win32PlatformOptions
+               {
+                   OverlayPopups = true,
+               })
                 .UsePlatformDetect()
                 .UseReactiveUI()
                 .LogToDebug();
