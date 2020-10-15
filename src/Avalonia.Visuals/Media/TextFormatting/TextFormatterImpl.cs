@@ -339,14 +339,6 @@ namespace Avalonia.Media.TextFormatting
                     return true;
                 }
 
-                //The line breaker isn't treating \n\r as a pair so we have to fix that here.
-                if (textRun.Text[lineBreak.PositionMeasure] == '\n'
-                    && textRun.Text[lineBreak.PositionWrap] == '\r')
-                {
-                    lineBreak = new LineBreak(lineBreak.PositionMeasure, lineBreak.PositionWrap + 1,
-                        lineBreak.Required);
-                }
-
                 return true;
             }
 
