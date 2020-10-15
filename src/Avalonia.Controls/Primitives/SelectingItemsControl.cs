@@ -356,17 +356,13 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The container or null if the event did not originate in a container.</returns>
         protected IControl? GetContainerFromEventSource(IInteractive eventSource)
         {
-            var parent = (IVisual)eventSource;
-
-            while (parent != null)
+            for (var current = eventSource as IVisual; current != null; current = current.VisualParent)
             {
-                if (parent is IControl control && control.LogicalParent == this
-                                               && ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                if (current is IControl control && control.LogicalParent == this &&
+                    ItemContainerGenerator?.IndexFromContainer(control) != -1)
                 {
                     return control;
                 }
-
-                parent = parent.VisualParent;
             }
 
             return null;
