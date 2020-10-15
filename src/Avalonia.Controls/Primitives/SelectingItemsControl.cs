@@ -321,7 +321,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets a value indicating whether <see cref="SelectionMode.AlwaysSelected"/> is set.
         /// </summary>
-        protected bool AlwaysSelected => (SelectionMode & SelectionMode.AlwaysSelected) != 0;
+        protected bool AlwaysSelected => SelectionMode.HasFlag(SelectionMode.AlwaysSelected);
 
         /// <inheritdoc/>
         public override void BeginInit()
@@ -581,8 +581,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             var mode = SelectionMode;
-            var multi = (mode & SelectionMode.Multiple) != 0;
-            var toggle = (toggleModifier || (mode & SelectionMode.Toggle) != 0);
+            var multi = mode.HasFlag(SelectionMode.Multiple);
+            var toggle = toggleModifier || mode.HasFlag(SelectionMode.Toggle);
             var range = multi && rangeModifier;
 
             if (!select)
