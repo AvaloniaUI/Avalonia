@@ -206,6 +206,33 @@ namespace Avalonia.Controls.UnitTests.Selection
         }
 
         [Fact]
+        public void Raises_Selection_Changed_On_Items_Reset()
+        {
+            var items = new ResettingCollection(new[] { "foo", "bar", "baz" });
+            var target = CreateTarget(source: items);
+
+            target.SelectedIndex = 1;
+
+            var changed = new List<string>();
+
+            target.PropertyChanged += (s, e) => changed.Add(e.PropertyName);
+
+            var oldSelectedIndex = target.SelectedIndex;
+            var oldSelectedItem = target.SelectedItem;
+
+            items.Reset(new string[0]);
+
+            Assert.NotEqual(oldSelectedIndex, target.SelectedIndex);
+            Assert.NotEqual(oldSelectedItem, target.SelectedItem);
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Equal(null, target.SelectedItem);
+
+            Assert.Contains(nameof(target.SelectedIndex), changed);
+            Assert.Contains(nameof(target.SelectedItem), changed);
+        }
+
+        [Fact]
         public void Preserves_Selection_On_Source_Changed()
         {
             var target = CreateTarget();
@@ -222,7 +249,7 @@ namespace Avalonia.Controls.UnitTests.Selection
             bool nullSource = false)
         {
             source ??= !nullSource ? new[] { "foo", "bar", "baz" } : null;
-            
+
             var result = new InternalSelectionModel
             {
                 SingleSelect = singleSelect,
