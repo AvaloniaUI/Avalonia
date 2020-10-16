@@ -37,7 +37,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
 
         public HtmlWebSocketTransport(IAvaloniaRemoteTransportConnection signalTransport, Uri listenUri)
         {
-            if (listenUri.Scheme != "http")
+            if (listenUri != null && listenUri.Scheme != "http")
                 throw new ArgumentException("URI scheme is not HTTP.", nameof(listenUri));
 
             var resourcePrefix = "Avalonia.DesignerSupport.Remote.HtmlTransport.webapp.build.";
@@ -60,13 +60,25 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     });
             
             _signalTransport = signalTransport;
-            var address = IPAddress.Parse(listenUri.Host);
+
+            string transportUri;
+            if (listenUri != null)
+            {
+                var address = IPAddress.Parse(listenUri.Host);
+                _simpleServer = new SimpleWebSocketHttpServer();
+                _simpleServer.Listen(address, listenUri.Port);
+                transportUri = "http://" + address + ":" + listenUri.Port + "/";
+            }
+            else
+            {
+                _simpleServer = new SimpleWebSocketHttpServer();
+                var ep = (IPEndPoint)_simpleServer.Listen();
+                transportUri = "http://" + ep.Address + ":" + ep.Port + "/";
+            }
             
-            _simpleServer = new SimpleWebSocketHttpServer(address, listenUri.Port);
-            _simpleServer.Listen();
             Task.Run(AcceptWorker);
             Task.Run(SocketWorker);
-            _signalTransport.Send(new HtmlTransportStartedMessage { Uri = "http://" + address + ":" + listenUri.Port + "/" });
+            _signalTransport.Send(new HtmlTransportStartedMessage { Uri = transportUri });
         }
 
         async void AcceptWorker()

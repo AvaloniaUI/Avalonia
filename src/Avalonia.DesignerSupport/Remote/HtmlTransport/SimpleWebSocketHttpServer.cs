@@ -13,8 +13,6 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
 {
     public class SimpleWebSocketHttpServer : IDisposable
     {
-        private readonly IPAddress _address;
-        private readonly int _port;
         private TcpListener _listener;
 
         public async Task<SimpleWebSocketHttpRequest> AcceptAsync()
@@ -95,19 +93,21 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             
         }
 
-        public void Listen()
+        public void Listen(IPAddress address, int port)
         {
-            var listener = new TcpListener(_address, _port);
+            var listener = new TcpListener(address, port);
             listener.Start();
             _listener = listener;
         }
-        
-        public SimpleWebSocketHttpServer(IPAddress address, int port)
-        {
-            _address = address;
-            _port = port;
-        }
 
+        public EndPoint Listen()
+        {
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            _listener = listener;
+            return listener.LocalEndpoint;
+        }
+        
         public void Dispose()
         {
             _listener?.Stop();

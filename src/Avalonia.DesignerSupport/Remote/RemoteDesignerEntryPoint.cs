@@ -144,7 +144,7 @@ namespace Avalonia.DesignerSupport.Remote
                 if (args.Method == Methods.Html)
                 {
                     transport = new HtmlWebSocketTransport(transport,
-                        args.HtmlMethodListenUri ?? new Uri("http://localhost:5000"));
+                        args.HtmlMethodListenUri);
                     builder.UseWindowingSubsystem(() =>
                         PreviewerWindowingPlatform.Initialize(transport));
                 }
