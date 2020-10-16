@@ -126,7 +126,15 @@ namespace Avalonia.Media.TextFormatting
 
             var lastCluster = glyphRun.GlyphClusters[glyphCount];
 
-            count = lastCluster - firstCluster;
+            if (glyphRun.IsLeftToRight)
+            {
+                count = lastCluster - firstCluster;
+            }
+            else
+            {
+                count = firstCluster - lastCluster;
+            }
+           
 
             return count > 0;
         }
@@ -329,14 +337,6 @@ namespace Avalonia.Media.TextFormatting
                 if (lineBreak.PositionWrap >= textRun.Text.Length)
                 {
                     return true;
-                }
-
-                //The line breaker isn't treating \n\r as a pair so we have to fix that here.
-                if (textRun.Text[lineBreak.PositionMeasure] == '\n'
-                    && textRun.Text[lineBreak.PositionWrap] == '\r')
-                {
-                    lineBreak = new LineBreak(lineBreak.PositionMeasure, lineBreak.PositionWrap + 1,
-                        lineBreak.Required);
                 }
 
                 return true;
