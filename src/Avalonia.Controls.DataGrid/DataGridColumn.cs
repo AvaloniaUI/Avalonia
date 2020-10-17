@@ -665,6 +665,7 @@ namespace Avalonia.Controls
         /// <param name="dataItem">
         /// The data item represented by the row that contains the intended cell.
         /// </param>
+        /// <param name="binding">When the method returns, contains the applied binding.</param>
         /// <returns>
         /// A new editing element that is bound to the column's <see cref="P:Avalonia.Controls.DataGridBoundColumn.Binding" /> property value.
         /// </returns>
