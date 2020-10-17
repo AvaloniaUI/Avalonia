@@ -1,6 +1,8 @@
 using System;
 using Avalonia.Platform;
 
+#nullable enable
+
 namespace Avalonia.Input
 {
     /*
