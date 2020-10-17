@@ -443,7 +443,7 @@ namespace Avalonia.Styling.UnitTests
             var resources = new Mock<IResourceDictionary>();
             target.Resources = resources.Object;
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             ((IResourceProvider)target).AddOwner(host.Object);
             resources.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
