@@ -335,6 +335,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="e">The event args.</param>
         [Obsolete("Use OnApplyTemplate")]
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
         }
