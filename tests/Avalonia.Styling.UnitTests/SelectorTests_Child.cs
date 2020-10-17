@@ -1,12 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Xunit;
 
@@ -84,76 +79,6 @@ namespace Avalonia.Styling.UnitTests
             {
                 get => Parent;
                 set => ((ISetLogicalParent)this).SetParent(value);
-            }
-
-            public void ClearValue(AvaloniaProperty property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ClearValue<T>(AvaloniaProperty<T> property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void AddInheritanceChild(IAvaloniaObject child)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void RemoveInheritanceChild(IAvaloniaObject child)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void InheritanceParentChanged<T>(StyledPropertyBase<T> property, IAvaloniaObject oldParent, IAvaloniaObject newParent)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void InheritedPropertyChanged<T>(AvaloniaProperty<T> property, Optional<T> oldValue, Optional<T> newValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ClearValue<T>(StyledPropertyBase<T> property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ClearValue<T>(DirectPropertyBase<T> property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public T GetValue<T>(StyledPropertyBase<T> property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public T GetValue<T>(DirectPropertyBase<T> property)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetValue<T>(DirectPropertyBase<T> property, T value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable Bind<T>(StyledPropertyBase<T> property, IObservable<BindingValue<T>> source, BindingPriority priority = BindingPriority.LocalValue)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable Bind<T>(DirectPropertyBase<T> property, IObservable<BindingValue<T>> source)
-            {
-                throw new NotImplementedException();
             }
         }
 
