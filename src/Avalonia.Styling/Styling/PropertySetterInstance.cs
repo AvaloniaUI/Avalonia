@@ -1,7 +1,7 @@
 ﻿using System;
 using Avalonia.Data;
 using Avalonia.Reactive;
-
+using System.Diagnostics.CodeAnalysis;
 #nullable enable
 
 namespace Avalonia.Styling
@@ -16,14 +16,14 @@ namespace Avalonia.Styling
         private readonly IStyleable _target;
         private readonly StyledPropertyBase<T>? _styledProperty;
         private readonly DirectPropertyBase<T>? _directProperty;
-        private readonly T _value;
+        [AllowNull] private readonly T _value;
         private IDisposable? _subscription;
         private bool _isActive;
 
         public PropertySetterInstance(
             IStyleable target,
             StyledPropertyBase<T> property,
-            T value)
+           [AllowNull] T value)
         {
             _target = target;
             _styledProperty = property;
@@ -33,7 +33,7 @@ namespace Avalonia.Styling
         public PropertySetterInstance(
             IStyleable target,
             DirectPropertyBase<T> property,
-            T value)
+            [AllowNull] T value)
         {
             _target = target;
             _directProperty = property;

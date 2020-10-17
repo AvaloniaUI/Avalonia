@@ -54,17 +54,17 @@ namespace Avalonia.Controls.Selection
 
         public IEnumerator<int> GetEnumerator()
         {
-            IEnumerator<int> SingleSelect()
+            static IEnumerator<int> SingleSelect(SelectionModel<T> owner)
             {
-                if (_owner.SelectedIndex >= 0)
+                if (owner.SelectedIndex >= 0)
                 {
-                    yield return _owner.SelectedIndex;
+                    yield return owner.SelectedIndex;
                 }
             }
 
             if (_owner?.SingleSelect == true)
             {
-                return SingleSelect();
+                return SingleSelect(_owner);
             }
             else
             {
