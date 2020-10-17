@@ -189,6 +189,11 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object obj)
                 => obj is PropertySyntax other
                    && other.Name == Name;
+
+            public override int GetHashCode()
+            {
+                return 539060726 + EqualityComparer<string>.Default.GetHashCode(Name);
+            }
         }
         
         public class TypeQualifiedPropertySyntax : ISyntax
@@ -202,12 +207,26 @@ namespace Avalonia.Markup.Parsers
                    && other.Name == Name
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
+
+            public override int GetHashCode()
+            {
+                int hashCode = 30698940;
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeName);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeNamespace);
+                return hashCode;
+            }
         }
         
         public class ChildTraversalSyntax : ISyntax
         {
             public static ChildTraversalSyntax Instance { get;  } = new ChildTraversalSyntax();
             public override bool Equals(object obj) => obj is ChildTraversalSyntax;
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
         }
         
         public class EnsureTypeSyntax : ISyntax
@@ -218,6 +237,14 @@ namespace Avalonia.Markup.Parsers
                 => obj is EnsureTypeSyntax other
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
+
+            public override int GetHashCode()
+            {
+                int hashCode = 127780694;
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeName);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeNamespace);
+                return hashCode;
+            }
         }
         
         public class CastTypeSyntax : ISyntax
@@ -228,6 +255,14 @@ namespace Avalonia.Markup.Parsers
                 => obj is CastTypeSyntax other
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
+
+            public override int GetHashCode()
+            {
+                int hashCode = 127780694;
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeName);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeNamespace);
+                return hashCode;
+            }
         }
     }
 }
