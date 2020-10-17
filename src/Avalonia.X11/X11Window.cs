@@ -64,6 +64,7 @@ namespace Avalonia.X11
         {
             _platform = platform;
             _popup = popupParent != null;
+            _popupParent = popupParent;
             _x11 = platform.Info;
             _mouse = new MouseDevice();
             _touch = new TouchDevice();
