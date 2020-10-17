@@ -10,6 +10,11 @@ namespace Avalonia.LinuxFramebuffer
         {
             return new PlatformHandle(IntPtr.Zero, null);
         }
+
+        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        {
+            return new PlatformHandle(IntPtr.Zero, null);
+        }
     }
     internal class PlatformSettings : IPlatformSettings
     {

@@ -1032,6 +1032,9 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
         [DllImport("user32.dll")]
+        public static extern IntPtr CreateIconIndirect([In] ref ICONINFO iconInfo);
+
+        [DllImport("user32.dll")]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
 
         [DllImport("user32")]
@@ -1742,6 +1745,16 @@ namespace Avalonia.Win32.Interop
             public int CxContact;
             public int CyContact;
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct ICONINFO
+        {
+            public bool IsIcon;
+            public int xHotspot;
+            public int yHotspot;
+            public IntPtr MaskBitmap;
+            public IntPtr ColorBitmap;
+        };
 
         [Flags]
         public enum TouchInputFlags

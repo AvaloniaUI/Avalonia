@@ -10,5 +10,10 @@ namespace Avalonia.Controls.UnitTests
         {
             return new PlatformHandle(IntPtr.Zero, cursorType.ToString());
         }
+
+        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        {
+            return new PlatformHandle(IntPtr.Zero, "Custom");
+        }
     }
 }

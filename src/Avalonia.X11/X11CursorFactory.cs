@@ -67,6 +67,11 @@ namespace Avalonia.X11
             return new PlatformHandle(handle, "XCURSOR");
         }
 
+        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        {
+            throw new NotImplementedException();
+        }
+
         private static IntPtr GetNullCursor(IntPtr display)
         {
             XColor color = new XColor();

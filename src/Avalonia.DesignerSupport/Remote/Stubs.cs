@@ -195,6 +195,7 @@ namespace Avalonia.DesignerSupport.Remote
     class CursorFactoryStub : IStandardCursorFactory
     {
         public IPlatformHandle GetCursor(StandardCursorType cursorType) => new PlatformHandle(IntPtr.Zero, "STUB");
+        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new PlatformHandle(IntPtr.Zero, "STUB");
     }
 
     class IconLoaderStub : IPlatformIconLoader

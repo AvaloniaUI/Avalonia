@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 #nullable enable
@@ -58,7 +59,12 @@ namespace Avalonia.Input
         }
 
         public Cursor(StandardCursorType cursorType)
-            : this(GetCursor(cursorType))
+            : this(GetCursorFactory().GetCursor(cursorType))
+        {
+        }
+
+        public Cursor(IBitmap cursor, PixelPoint hotSpot)
+            : this(GetCursorFactory().CreateCursor(cursor.PlatformImpl.Item, hotSpot))
         {
         }
 
@@ -71,16 +77,10 @@ namespace Avalonia.Input
                 throw new ArgumentException($"Unrecognized cursor type '{s}'.");
         }
 
-        private static IPlatformHandle GetCursor(StandardCursorType type)
+        private static IStandardCursorFactory GetCursorFactory()
         {
-            var platform = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
-
-            if (platform == null)
-            {
-                throw new Exception("Could not create Cursor: IStandardCursorFactory not registered.");
-            }
-
-            return platform.GetCursor(type);
+            return AvaloniaLocator.Current.GetService<IStandardCursorFactory>() ??
+                throw new Exception("Could not create Cursor: ICursorFactory not registered.");
         }
     }
 }

@@ -38,5 +38,10 @@ namespace Avalonia.Native
             var cursor = _native.GetCursor((AvnStandardCursorType)cursorType);
             return new AvaloniaNativeCursor( cursor );
         }
+
+        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
