@@ -324,7 +324,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 }
 
                 var endOfMessage = true;
-                header.Mask = (byte) (((endOfMessage ? 1u : 0u) << 7) | ((byte) (type) & 0xf));
+                header.Mask = (byte) (((endOfMessage ? 1 : 0) << 7) | ((byte) (type) & 0xf));
                 unsafe
                 {
                     Marshal.Copy(new IntPtr(&header), _sendHeaderBuffer, 0, headerLength);
