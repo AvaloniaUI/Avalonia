@@ -59,7 +59,9 @@ namespace Avalonia.DesignerSupport.Remote
             remove { _onMessage -= value; }
         }
 
+#pragma warning disable CS0067
         public event Action<IAvaloniaRemoteTransportConnection, Exception> OnException;
+#pragma warning restore CS0067
         public void Start()
         {
             UpdaterThread();
