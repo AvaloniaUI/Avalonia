@@ -356,17 +356,13 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The container or null if the event did not originate in a container.</returns>
         protected IControl? GetContainerFromEventSource(IInteractive? eventSource)
         {
-            var parent = eventSource as IVisual;
-
-            while (parent != null)
+            for (var current = eventSource as IVisual; current != null; current = current.VisualParent)
             {
-                if (parent is IControl control && control.LogicalParent == this
-                                               && ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                if (current is IControl control && control.LogicalParent == this &&
+                    ItemContainerGenerator?.IndexFromContainer(control) != -1)
                 {
                     return control;
                 }
-
-                parent = parent.VisualParent;
             }
 
             return null;
@@ -794,18 +790,13 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event.</param>
         private void ContainerSelectionChanged(RoutedEventArgs e)
         {
-            if (!_ignoreContainerSelectionChanged)
+            if (!_ignoreContainerSelectionChanged &&
+                e.Source is IControl control &&
+                e.Source is ISelectable selectable &&
+                control.LogicalParent == this &&
+                ItemContainerGenerator?.IndexFromContainer(control) != -1)
             {
-                var control = e.Source as IControl;
-                var selectable = e.Source as ISelectable;
-
-                if (control != null &&
-                    selectable != null &&
-                    control.LogicalParent == this &&
-                    ItemContainerGenerator?.IndexFromContainer(control) != -1)
-                {
-                    UpdateSelection(control, selectable.IsSelected);
-                }
+                UpdateSelection(control, selectable.IsSelected);
             }
 
             if (e.Source != this)
@@ -824,12 +815,11 @@ namespace Avalonia.Controls.Primitives
         {
             try
             {
-                var selectable = container as ISelectable;
                 bool result;
 
                 _ignoreContainerSelectionChanged = true;
 
-                if (selectable != null)
+                if (container is ISelectable selectable)
                 {
                     result = selectable.IsSelected;
                     selectable.IsSelected = selected;
