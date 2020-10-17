@@ -411,7 +411,9 @@ namespace Avalonia.X11
                     return;
                 if (ev.ButtonEvent.button < 4 || ev.ButtonEvent.button == 8 || ev.ButtonEvent.button == 9)
                     MouseEvent(
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                         ev.ButtonEvent.button switch
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                         {
                             1 => RawPointerEventType.LeftButtonDown,
                             2 => RawPointerEventType.MiddleButtonDown,
@@ -439,7 +441,9 @@ namespace Avalonia.X11
             {
                 if (ev.ButtonEvent.button < 4 || ev.ButtonEvent.button == 8 || ev.ButtonEvent.button == 9)
                     MouseEvent(
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                         ev.ButtonEvent.button switch
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                         {
                             1 => RawPointerEventType.LeftButtonUp,
                             2 => RawPointerEventType.MiddleButtonUp,

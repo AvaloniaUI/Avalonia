@@ -163,7 +163,9 @@ namespace Avalonia.Win32
                             _mouseDevice,
                             timestamp,
                             _owner,
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                             (WindowsMessage)msg switch
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                             {
                                 WindowsMessage.WM_LBUTTONDOWN => RawPointerEventType.LeftButtonDown,
                                 WindowsMessage.WM_RBUTTONDOWN => RawPointerEventType.RightButtonDown,
@@ -192,7 +194,9 @@ namespace Avalonia.Win32
                             _mouseDevice,
                             timestamp,
                             _owner,
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                             (WindowsMessage)msg switch
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                             {
                                 WindowsMessage.WM_LBUTTONUP => RawPointerEventType.LeftButtonUp,
                                 WindowsMessage.WM_RBUTTONUP => RawPointerEventType.RightButtonUp,
@@ -283,7 +287,9 @@ namespace Avalonia.Win32
                             _mouseDevice,
                             timestamp,
                             _owner,
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                             (WindowsMessage)msg switch
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                             {
                                 WindowsMessage.WM_NCLBUTTONDOWN => RawPointerEventType
                                     .NonClientLeftButtonDown,
