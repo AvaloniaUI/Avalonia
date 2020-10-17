@@ -63,7 +63,7 @@ namespace Avalonia.OpenGL.Egl
         
         public delegate IntPtr EglGetProcAddress(Utf8Buffer proc);
         [GlEntryPoint("eglGetProcAddress")]
-        public EglGetProcAddress GetProcAddress { get; }
+        new public EglGetProcAddress GetProcAddress { get; }
 
         public delegate bool EglBindApi(int api);
         [GlEntryPoint("eglBindAPI")]
