@@ -69,7 +69,7 @@ namespace Avalonia.Platform
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
         void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
-            BoxShadows boxShadow = default);
+            BoxShadows boxShadows = default);
 
         /// <summary>
         /// Draws text.

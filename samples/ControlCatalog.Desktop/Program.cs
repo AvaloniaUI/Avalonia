@@ -10,12 +10,8 @@ namespace ControlCatalog
     internal class Program
     {
         [STAThread]
-        static void Main(string[] args)
-        {
-            // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
-            // again.
-            BuildAvaloniaApp().Start<MainWindow>();
-        }
+        public static int Main(string[] args)
+            => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 
         /// <summary>
         /// This method is needed for IDE previewer infrastructure

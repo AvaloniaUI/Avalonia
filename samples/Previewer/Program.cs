@@ -1,13 +1,14 @@
-﻿using System;
-using Avalonia;
+﻿using Avalonia;
 
 namespace Previewer
 {
     class Program
     {
-        static void Main(string[] args)
-        {
-            AppBuilder.Configure<App>().UsePlatformDetect().Start<MainWindow>();
-        }
+        public static AppBuilder BuildAvaloniaApp()
+          => AppBuilder.Configure<App>()
+                .UsePlatformDetect();
+
+        public static int Main(string[] args)
+          => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 }
