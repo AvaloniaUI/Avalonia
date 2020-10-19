@@ -203,9 +203,7 @@ namespace Avalonia.Headless
 
         public ILockedFramebuffer Lock()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling);
-#pragma warning restore CS0618 // Type or member is obsolete
+            var bmp = new WriteableBitmap(PixelSize.FromSize(ClientSize, RenderScaling), new Vector(96, 96) * RenderScaling, alphaFormat: AlphaFormat.Premul);
             var fb = bmp.Lock();
             return new FramebufferProxy(fb, () =>
             {
