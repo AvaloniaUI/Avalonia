@@ -19,6 +19,7 @@ namespace Avalonia.X11
         const string libX11Randr = "libXrandr.so.2";
         const string libX11Ext = "libXext.so.6";
         const string libXInput = "libXi.so.6";
+        const string libXCursor = "libXcursor.so.1";
 
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
@@ -511,6 +512,12 @@ namespace Avalonia.X11
 
         [DllImport(libXInput)]
         public static extern void XIFreeDeviceInfo(XIDeviceInfo* info);
+
+        [DllImport(libXCursor)]
+        public static extern IntPtr XcursorImageLoadCursor(IntPtr display, IntPtr image);
+
+        [DllImport(libXCursor)]
+        public static extern IntPtr XcursorImageDestroy(IntPtr image);
 
         public static void XISetMask(ref int mask, XiEventType ev)
         {
