@@ -542,7 +542,9 @@ namespace Avalonia.Controls
             return text;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async void Cut()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             var text = GetSelection();
             if (text is null) return;
