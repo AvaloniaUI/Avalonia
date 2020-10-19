@@ -345,6 +345,20 @@ namespace Avalonia.Build.Tasks
                     }
                     res.Remove();
                 }
+                
+                
+                // Technically that's a hack, but it fixes corert incompatibility caused by deterministic builds
+                int dupeCounter = 1;
+                foreach (var grp in typeDef.NestedTypes.GroupBy(x => x.Name))
+                {
+                    if (grp.Count() > 1)
+                    {
+                        foreach (var dupe in grp)
+                            dupe.Name += "_dup" + dupeCounter++;
+                    }
+                }
+                
+                
                 return true;
             }
             
