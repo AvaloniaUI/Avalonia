@@ -118,8 +118,13 @@ namespace Avalonia.Win32
         {
             var dest = new SdBitmap(source.Width, source.Height, SdPixelFormat.Format1bppIndexed);
 
-            if (source.PixelFormat != SdPixelFormat.Format32bppArgb &&
-                source.PixelFormat != SdPixelFormat.Format32bppPArgb)
+            if (source.PixelFormat == SdPixelFormat.Format32bppPArgb)
+            {
+                throw new NotSupportedException(
+                    "Images with premultiplied alpha not yet supported as cursor images.");
+            }
+
+            if (source.PixelFormat != SdPixelFormat.Format32bppArgb)
             {
                 return dest;
             }
