@@ -460,7 +460,7 @@ namespace Avalonia.LeakTests
                 
                 AttachShowAndDetachContextMenu(window);
 
-                Mock.Get(window.PlatformImpl).ResetCalls();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -505,7 +505,7 @@ namespace Avalonia.LeakTests
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
-                Mock.Get(window.PlatformImpl).ResetCalls();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -601,8 +601,9 @@ namespace Avalonia.LeakTests
         {
             public bool DrawFps { get; set; }
             public bool DrawDirtyRects { get; set; }
+#pragma warning disable CS0067
             public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
-
+#pragma warning restore CS0067
             public void AddDirty(IVisual visual)
             {
             }

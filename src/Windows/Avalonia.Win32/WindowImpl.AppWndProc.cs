@@ -200,6 +200,10 @@ namespace Avalonia.Win32
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
                     }
+                // Mouse capture is lost
+                case WindowsMessage.WM_CANCELMODE:
+                    _mouseDevice.Capture(null);
+                    break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
@@ -338,21 +342,21 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_PAINT:
+                {
+                    using (_rendererLock.Lock())
                     {
-                        using (_rendererLock.Lock())
+                        if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                         {
-                            if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
-                            {
-                                var f = RenderScaling;
-                                var r = ps.rcPaint;
-                                Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
-                                    (r.bottom - r.top) / f));
-                                EndPaint(_hwnd, ref ps);
-                            }
+                            var f = RenderScaling;
+                            var r = ps.rcPaint;
+                            Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
+                                (r.bottom - r.top) / f));
+                            EndPaint(_hwnd, ref ps);
                         }
-
-                        return IntPtr.Zero;
                     }
+
+                    return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_SIZE:
                     {
