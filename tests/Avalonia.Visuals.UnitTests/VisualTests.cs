@@ -173,7 +173,7 @@ namespace Avalonia.Visuals.UnitTests
             };
 
             root.Child = child;
-            renderer.ResetCalls();
+            renderer.Invocations.Clear();
             root.Child = null;
 
             renderer.Verify(x => x.AddDirty(child));

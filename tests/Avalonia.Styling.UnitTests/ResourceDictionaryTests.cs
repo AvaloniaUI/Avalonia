@@ -108,7 +108,7 @@ namespace Avalonia.Styling.UnitTests
             var target = new ResourceDictionary { { "foo", "bar" } };
 
             ((IResourceProvider)target).AddOwner(host.Object);
-            host.ResetCalls();
+            host.Invocations.Clear();
             ((IResourceProvider)target).RemoveOwner(host.Object);
 
             host.Verify(x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()));
@@ -120,7 +120,7 @@ namespace Avalonia.Styling.UnitTests
             var host = new Mock<IResourceHost>();
             var target = new ResourceDictionary(host.Object);
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             target.Add("foo", "bar");
 
             host.Verify(x => x.NotifyHostedResourcesChanged(It.IsAny<ResourcesChangedEventArgs>()));
@@ -132,7 +132,7 @@ namespace Avalonia.Styling.UnitTests
             var host = new Mock<IResourceHost>();
             var target = new ResourceDictionary(host.Object);
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             target.MergedDictionaries.Add(new ResourceDictionary
             {
                 { "foo", "bar" },
@@ -149,7 +149,7 @@ namespace Avalonia.Styling.UnitTests
             var host = new Mock<IResourceHost>();
             var target = new ResourceDictionary(host.Object);
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             target.MergedDictionaries.Add(new ResourceDictionary());
 
             host.Verify(
@@ -169,7 +169,7 @@ namespace Avalonia.Styling.UnitTests
                 }
             };
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             target.MergedDictionaries.RemoveAt(0);
 
             host.Verify(
@@ -189,7 +189,7 @@ namespace Avalonia.Styling.UnitTests
                 }
             };
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             ((IResourceDictionary)target.MergedDictionaries[0]).Add("foo", "bar");
 
             host.Verify(

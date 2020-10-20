@@ -59,7 +59,7 @@
       </Compile>
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\**\obj\**\*.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
-      <PackageReference Include="Avalonia.Unofficial.Cecil" Version="20190417.2.0" PrivateAssets="All" />
+      <PackageReference Include="Mono.Cecil" Version="0.11.2" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
     </ItemGroup>
 </Project>
