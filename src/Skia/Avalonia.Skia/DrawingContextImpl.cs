@@ -36,7 +36,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
         private static SKShader s_acrylicNoiseShader;
-        private readonly GRSurfaceOrigin _surfaceOrigin; 
+        private readonly ISkiaGpuRenderSession _session; 
 
         /// <summary>
         /// Context create info.
@@ -99,7 +99,7 @@ namespace Avalonia.Skia
             Surface = createInfo.Surface;
             Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas;
 
-            _surfaceOrigin = createInfo.CurrentSession?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft;
+            _session = createInfo.CurrentSession;
 
             if (Canvas == null)
             {
@@ -977,7 +977,7 @@ namespace Avalonia.Skia
                 Gpu = _gpu
             };
 
-            return new SurfaceRenderTarget(createInfo, _surfaceOrigin);
+            return new SurfaceRenderTarget(createInfo, _session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft);
         }        
 
         /// <summary>
