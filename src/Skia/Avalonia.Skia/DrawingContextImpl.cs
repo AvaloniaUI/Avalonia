@@ -974,10 +974,11 @@ namespace Avalonia.Skia
                 Format = format,
                 DisableTextLcdRendering = !_canTextUseLcdRendering,
                 GrContext = _grContext,
-                Gpu = _gpu
+                Gpu = _gpu,
+                SurfaceOrigin = _session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft
             };
 
-            return new SurfaceRenderTarget(createInfo, _session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft);
+            return new SurfaceRenderTarget(createInfo);
         }        
 
         /// <summary>

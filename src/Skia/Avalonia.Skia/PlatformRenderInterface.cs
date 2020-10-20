@@ -127,7 +127,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = false
             };
 
-            return new SurfaceRenderTarget(createInfo, GRSurfaceOrigin.TopLeft);
+            return new SurfaceRenderTarget(createInfo);
         }
 
         /// <inheritdoc />
