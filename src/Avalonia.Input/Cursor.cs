@@ -6,13 +6,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.Input
 {
-    /*
-    =========================================================================================
-        NOTE: Cursors are NOT disposable and are cached in platform implementation.
-        To support loading custom cursors some measures about that should be taken beforehand
-    =========================================================================================
-    */
-
     public enum StandardCursorType
     {
         Arrow,
@@ -49,7 +42,7 @@ namespace Avalonia.Input
         // SizeNorthEastSouthWest,
     }
 
-    public class Cursor
+    public class Cursor : IDisposable
     {
         public static readonly Cursor Default = new Cursor(StandardCursorType.Arrow);
 
@@ -69,6 +62,8 @@ namespace Avalonia.Input
         }
 
         public ICursorImpl PlatformImpl { get; }
+
+        public void Dispose() => PlatformImpl.Dispose();
 
         public static Cursor Parse(string s)
         {
