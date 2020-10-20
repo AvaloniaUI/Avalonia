@@ -21,7 +21,7 @@ namespace Avalonia.Skia
         /// Creates an offscreen render target surface
         /// </summary>
         /// <param name="size">size in pixels</param>
-        ISkiaSurface TryCreateSurface(PixelSize size);
+        ISkiaSurface TryCreateSurface(PixelSize size, GRSurfaceOrigin surfaceOrigin);
     }
     
     public interface ISkiaSurface : IDisposable

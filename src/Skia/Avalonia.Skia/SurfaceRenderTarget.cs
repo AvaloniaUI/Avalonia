@@ -42,7 +42,7 @@ namespace Avalonia.Skia
         /// Create new surface render target.
         /// </summary>
         /// <param name="createInfo">Create info.</param>
-        public SurfaceRenderTarget(CreateInfo createInfo)
+        public SurfaceRenderTarget(CreateInfo createInfo, GRSurfaceOrigin surfaceOrigin)
         {
             PixelSize = new PixelSize(createInfo.Width, createInfo.Height);
             Dpi = createInfo.Dpi;
@@ -51,7 +51,7 @@ namespace Avalonia.Skia
             _grContext = createInfo.GrContext;
             _gpu = createInfo.Gpu;
 
-            _surface = _gpu?.TryCreateSurface(PixelSize);
+            _surface = _gpu?.TryCreateSurface(PixelSize, surfaceOrigin);
             if (_surface == null)
                 _surface = new SkiaSurfaceWrapper(CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height,
                     createInfo.Format));
@@ -100,7 +100,7 @@ namespace Avalonia.Skia
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = _disableLcdRendering,
                 GrContext = _grContext,
-                Gpu = _gpu
+                Gpu = _gpu,
             };
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));

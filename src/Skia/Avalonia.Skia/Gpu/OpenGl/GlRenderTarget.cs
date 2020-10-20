@@ -39,6 +39,8 @@ namespace Avalonia.Skia
                 _backendRenderTarget = backendRenderTarget;
                 _surface = surface;
                 _glSession = glSession;
+                
+                SurfaceOrigin = glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
             }
             public void Dispose()
             {
@@ -48,6 +50,8 @@ namespace Avalonia.Skia
                 GrContext.Flush();
                 _glSession.Dispose();
             }
+            
+            public GRSurfaceOrigin SurfaceOrigin { get; }
 
             public GRContext GrContext { get; }
             public SKSurface SkSurface => _surface;
