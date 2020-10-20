@@ -66,7 +66,7 @@ else
         "$DOTNET_INSTALL_FILE" --install-dir "$DOTNET_DIRECTORY" --version "$DOTNET_VERSION" --no-path
     fi
 fi
-
+export SolutionDir=$(PWD)
 export PATH=$DOTNET_DIRECTORY:$PATH
 
 echo "Microsoft (R) .NET Core SDK version $("$DOTNET_EXE" --version)"
