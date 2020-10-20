@@ -389,7 +389,7 @@ namespace Avalonia.Native
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             if (_native == null)
             {

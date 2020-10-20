@@ -6,7 +6,7 @@ namespace Avalonia.Platform
 {
     public interface ICursorFactory
     {
-        IPlatformHandle GetCursor(StandardCursorType cursorType);
-        IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot);
+        ICursorImpl GetCursor(StandardCursorType cursorType);
+        ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot);
     }
 }

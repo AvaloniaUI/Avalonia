@@ -54,14 +54,12 @@ namespace Avalonia.Headless
 
     class HeadlessCursorFactoryStub : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
-        {
-            return new PlatformHandle(new IntPtr((int)cursorType), "STUB");
-        }
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
 
-        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        private class CursorStub : ICursorImpl
         {
-            return new PlatformHandle(IntPtr.Zero, "STUB");
+            public void Dispose() { }
         }
     }
 

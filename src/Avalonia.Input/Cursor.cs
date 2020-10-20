@@ -53,9 +53,9 @@ namespace Avalonia.Input
     {
         public static readonly Cursor Default = new Cursor(StandardCursorType.Arrow);
 
-        internal Cursor(IPlatformHandle platformCursor)
+        internal Cursor(ICursorImpl platformImpl)
         {
-            PlatformCursor = platformCursor;
+            PlatformImpl = platformImpl;
         }
 
         public Cursor(StandardCursorType cursorType)
@@ -68,7 +68,7 @@ namespace Avalonia.Input
         {
         }
 
-        public IPlatformHandle PlatformCursor { get; }
+        public ICursorImpl PlatformImpl { get; }
 
         public static Cursor Parse(string s)
         {

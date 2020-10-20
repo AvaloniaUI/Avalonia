@@ -73,7 +73,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
         }
 
@@ -194,8 +194,13 @@ namespace Avalonia.DesignerSupport.Remote
 
     class CursorFactoryStub : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType) => new PlatformHandle(IntPtr.Zero, "STUB");
-        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new PlatformHandle(IntPtr.Zero, "STUB");
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
+
+        private class CursorStub : ICursorImpl
+        {
+            public void Dispose() { }
+        }
     }
 
     class IconLoaderStub : IPlatformIconLoader

@@ -56,7 +56,7 @@ namespace Avalonia.X11
                 .ToDictionary(id => id, id => XLib.XCreateFontCursor(_display, id));
         }
 
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
+        public ICursorImpl GetCursor(StandardCursorType cursorType)
         {
             IntPtr handle;
             if (cursorType == StandardCursorType.None)
@@ -69,10 +69,10 @@ namespace Avalonia.X11
                 ? _cursors[shape]
                 : _cursors[CursorFontShape.XC_top_left_arrow];
             }
-            return new PlatformHandle(handle, "XCURSOR");
+            return new CursorImpl(handle);
         }
 
-        public unsafe IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public unsafe ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
         {
             return new XImageCursor(_display, cursor, hotSpot);
         }
@@ -85,7 +85,7 @@ namespace Avalonia.X11
             return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);
         }
 
-        private unsafe class XImageCursor : IFramebufferPlatformSurface, IPlatformHandle, IDisposable
+        private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface, IPlatformHandle
         {
             private readonly PixelSize _pixelSize;
             private readonly IUnmanagedBlob _blob;
@@ -117,10 +117,9 @@ namespace Avalonia.X11
                 Handle = XLib.XcursorImageLoadCursor(display, _blob.Address);
             }
 
-            public IntPtr Handle { get; }
             public string HandleDescriptor => "XCURSOR";
 
-            public void Dispose()
+            public override void Dispose()
             {
                 XLib.XcursorImageDestroy(Handle);
                 _blob.Dispose();
@@ -134,5 +133,13 @@ namespace Avalonia.X11
                     new Vector(96, 96), PixelFormat.Bgra8888, null);
             }
         }
+    }
+
+    class CursorImpl : ICursorImpl
+    {
+        public CursorImpl() { }
+        public CursorImpl(IntPtr handle) => Handle = handle;
+        public IntPtr Handle { get; protected set; }
+        public virtual void Dispose() { }
     }
 }

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
 using Avalonia.Input;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using SdBitmap = System.Drawing.Bitmap;
@@ -36,8 +34,7 @@ namespace Avalonia.Win32
                 IntPtr cursor = UnmanagedMethods.LoadCursor(mh, new IntPtr(id));
                 if (cursor != IntPtr.Zero)
                 {
-                    PlatformHandle phCursor = new PlatformHandle(cursor, PlatformConstants.CursorHandleType);
-                    Cache.Add(cursorType, phCursor);
+                    Cache.Add(cursorType, new CursorImpl(cursor, false));
                 }
             }
         }
@@ -77,25 +74,23 @@ namespace Avalonia.Win32
             {StandardCursorType.DragLink, 32516},
         };
 
-        private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =
-            new Dictionary<StandardCursorType, IPlatformHandle>();
+        private static readonly Dictionary<StandardCursorType, CursorImpl> Cache =
+            new Dictionary<StandardCursorType, CursorImpl>();
 
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
+        public ICursorImpl GetCursor(StandardCursorType cursorType)
         {
-            IPlatformHandle rv;
-            if (!Cache.TryGetValue(cursorType, out rv))
+            if (!Cache.TryGetValue(cursorType, out var rv))
             {
-                Cache[cursorType] =
-                    rv =
-                        new PlatformHandle(
-                            UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(CursorTypeMapping[cursorType])),
-                            PlatformConstants.CursorHandleType);
+                rv = new CursorImpl(
+                    UnmanagedMethods.LoadCursor(IntPtr.Zero, new IntPtr(CursorTypeMapping[cursorType])),
+                    false);
+                Cache.Add(cursorType, rv);
             }
 
             return rv;
         }
 
-        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
         {
             using var source = LoadSystemDrawingBitmap(cursor);
             using var mask = AlphaToMask(source);
@@ -109,9 +104,7 @@ namespace Avalonia.Win32
                 ColorBitmap = source.GetHbitmap(),
             };
 
-            return new PlatformHandle(
-                UnmanagedMethods.CreateIconIndirect(ref info),
-                PlatformConstants.CursorHandleType);
+            return new CursorImpl(UnmanagedMethods.CreateIconIndirect(ref info), true);
         }
 
         private SdBitmap LoadSystemDrawingBitmap(IBitmapImpl bitmap)
@@ -165,6 +158,29 @@ namespace Avalonia.Win32
             {
                 source.UnlockBits(sourceData);
                 dest.UnlockBits(destData);
+            }
+        }
+    }
+
+    internal class CursorImpl : ICursorImpl, IPlatformHandle
+    {
+        private readonly bool _isCustom;
+
+        public CursorImpl(IntPtr handle, bool isCustom)
+        {
+            Handle = handle;
+            _isCustom = isCustom;
+        }
+
+        public IntPtr Handle { get; private set; }
+        public string HandleDescriptor => PlatformConstants.CursorHandleType;
+
+        public void Dispose()
+        {
+            if (_isCustom && Handle != IntPtr.Zero)
+            {
+                UnmanagedMethods.DestroyIcon(Handle);
+                Handle = IntPtr.Zero;
             }
         }
     }

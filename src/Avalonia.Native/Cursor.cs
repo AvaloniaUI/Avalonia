@@ -5,7 +5,7 @@ using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativeCursor : IPlatformHandle, IDisposable
+    class AvaloniaNativeCursor : ICursorImpl, IDisposable
     {
         public IAvnCursor Cursor { get; private set; }
         public IntPtr Handle => IntPtr.Zero;
@@ -33,13 +33,13 @@ namespace Avalonia.Native
             _native = native;
         }
 
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
+        public ICursorImpl GetCursor(StandardCursorType cursorType)
         {
             var cursor = _native.GetCursor((AvnStandardCursorType)cursorType);
             return new AvaloniaNativeCursor( cursor );
         }
 
-        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
         {
             throw new NotImplementedException();
         }

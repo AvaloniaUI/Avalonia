@@ -6,14 +6,12 @@ namespace Avalonia.LinuxFramebuffer
 {
     internal class CursorFactoryStub : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
-        {
-            return new PlatformHandle(IntPtr.Zero, null);
-        }
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
 
-        public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        private class CursorStub : ICursorImpl
         {
-            return new PlatformHandle(IntPtr.Zero, null);
+            public void Dispose() { }
         }
     }
     internal class PlatformSettings : IPlatformSettings

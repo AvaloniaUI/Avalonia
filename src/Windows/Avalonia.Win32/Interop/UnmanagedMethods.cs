@@ -1035,6 +1035,9 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr CreateIconIndirect([In] ref ICONINFO iconInfo);
 
         [DllImport("user32.dll")]
+        public static extern bool DestroyIcon(IntPtr hIcon);
+
+        [DllImport("user32.dll")]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
 
         [DllImport("user32")]
