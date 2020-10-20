@@ -77,9 +77,9 @@ namespace Avalonia.Input
                 throw new ArgumentException($"Unrecognized cursor type '{s}'.");
         }
 
-        private static IStandardCursorFactory GetCursorFactory()
+        private static ICursorFactory GetCursorFactory()
         {
-            return AvaloniaLocator.Current.GetService<IStandardCursorFactory>() ??
+            return AvaloniaLocator.Current.GetService<ICursorFactory>() ??
                 throw new Exception("Could not create Cursor: ICursorFactory not registered.");
         }
     }

@@ -4,7 +4,7 @@ using Avalonia.Input;
 
 namespace Avalonia.Platform
 {
-    public interface IStandardCursorFactory
+    public interface ICursorFactory
     {
         IPlatformHandle GetCursor(StandardCursorType cursorType);
         IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot);

@@ -52,7 +52,7 @@ namespace Avalonia.Headless
         }
     }
 
-    class HeadlessCursorFactoryStub : IStandardCursorFactory
+    class HeadlessCursorFactoryStub : ICursorFactory
     {
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {

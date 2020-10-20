@@ -11,7 +11,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.X11
 {
-    class X11CursorFactory : IStandardCursorFactory
+    class X11CursorFactory : ICursorFactory
     {
         private static readonly byte[] NullCursorData = new byte[] { 0 };
 

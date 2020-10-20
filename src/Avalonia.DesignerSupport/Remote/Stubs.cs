@@ -192,7 +192,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
 
-    class CursorFactoryStub : IStandardCursorFactory
+    class CursorFactoryStub : ICursorFactory
     {
         public IPlatformHandle GetCursor(StandardCursorType cursorType) => new PlatformHandle(IntPtr.Zero, "STUB");
         public IPlatformHandle CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new PlatformHandle(IntPtr.Zero, "STUB");

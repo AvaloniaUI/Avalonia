@@ -4,7 +4,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    internal class CursorFactoryStub : IStandardCursorFactory
+    internal class CursorFactoryStub : ICursorFactory
     {
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {

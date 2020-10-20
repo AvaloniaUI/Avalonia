@@ -24,7 +24,7 @@ namespace Avalonia.Native
         }
     }
 
-    class CursorFactory : IStandardCursorFactory
+    class CursorFactory : ICursorFactory
     {
         IAvnCursorFactory _native;
 

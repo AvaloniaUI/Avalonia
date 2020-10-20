@@ -4,7 +4,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class CursorFactoryMock : IStandardCursorFactory
+    public class CursorFactoryMock : ICursorFactory
     {
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {

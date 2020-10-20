@@ -38,7 +38,7 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
+                .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())

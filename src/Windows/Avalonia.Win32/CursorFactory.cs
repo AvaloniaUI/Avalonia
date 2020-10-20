@@ -13,7 +13,7 @@ using SdPixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace Avalonia.Win32
 {
-    internal class CursorFactory : IStandardCursorFactory
+    internal class CursorFactory : ICursorFactory
     {
         public static CursorFactory Instance { get; } = new CursorFactory();
 
