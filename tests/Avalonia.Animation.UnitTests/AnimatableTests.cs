@@ -113,7 +113,7 @@ namespace Avalonia.Animation.UnitTests
                 It.IsAny<IClock>(),
                 1.0,
                 0.5));
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             control.SetValue(Visual.OpacityProperty, 0.8, BindingPriority.StyleTrigger);
 
@@ -135,7 +135,7 @@ namespace Avalonia.Animation.UnitTests
             target.Setup(x => x.Apply(control, It.IsAny<IClock>(), 1.0, 0.5)).Returns(sub.Object);
 
             control.Opacity = 0.5;
-            sub.ResetCalls();
+            sub.Invocations.Clear();
             control.Opacity = 0.4;
 
             sub.Verify(x => x.Dispose());
@@ -158,7 +158,7 @@ namespace Avalonia.Animation.UnitTests
             control.Opacity = 0.5;
 
             Assert.Equal(0.9, control.Opacity);
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             control.Opacity = 0.4;
 
@@ -182,7 +182,7 @@ namespace Avalonia.Animation.UnitTests
                 It.IsAny<IClock>(),
                 1.0,
                 0.5));
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             var root = (TestRoot)control.Parent;
             root.Child = null;

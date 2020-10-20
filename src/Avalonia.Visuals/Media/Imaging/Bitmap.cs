@@ -99,7 +99,6 @@ namespace Avalonia.Media.Imaging
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
         /// <param name="format">The pixel format.</param>
-        /// <param name="alphaFormat">The alpha format.</param>
         /// <param name="data">The pointer to the source bytes.</param>
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
