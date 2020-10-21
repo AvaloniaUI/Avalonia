@@ -6,6 +6,7 @@
     <PackageId>Avalonia.Skia</PackageId>
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SignAssembly>True</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\NoiseAsset_256X256_PNG.png" />

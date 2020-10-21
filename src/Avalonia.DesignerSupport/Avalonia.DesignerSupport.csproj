@@ -10,6 +10,7 @@
     <NoWarn>CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NugetPackageName>Avalonia</NugetPackageName>
+    <SignAssembly>True</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Remote\HtmlTransport\webapp\build\**\*.gz" />

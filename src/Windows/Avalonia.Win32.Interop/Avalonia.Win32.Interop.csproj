@@ -6,6 +6,7 @@
     <ExtrasEnableImplicitWinFormsReferences>true</ExtrasEnableImplicitWinFormsReferences>
     <UseDirect3D9>true</UseDirect3D9>
     <PackageId>Avalonia.Win32.Interoperability</PackageId>
+    <SignAssembly>True</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />

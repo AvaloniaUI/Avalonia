@@ -3,7 +3,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Avalonia.Base</AssemblyName>
     <RootNamespace>Avalonia</RootNamespace>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>    
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <SignAssembly>True</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"/>
