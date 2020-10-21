@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls.Templates
 {
@@ -30,6 +31,31 @@ namespace Avalonia.Controls.Templates
                 },
                 true);
 
+        /// <summary>
+        /// The default data template used in the case where no matching data template is found
+        /// but <see cref="AccessText"/> should be used.
+        /// </summary>
+        public static readonly FuncDataTemplate Access =
+            new FuncDataTemplate<object>(
+                (data, s) =>
+                {
+                    if (data != null)
+                    {
+                        var result = new AccessText();
+                        result.Bind(TextBlock.TextProperty,
+                            result.GetObservable(Control.DataContextProperty).Select(x => x?.ToString()));
+                        return result;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                },
+                true);
+
+        /// <summary>
+        /// The implementation of the <see cref="Match"/> method.
+        /// </summary>
         private readonly Func<object, bool> _match;
         private readonly bool _supportsRecycling;
 
@@ -42,7 +68,7 @@ namespace Avalonia.Controls.Templates
         /// </param>
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
-            Type type, 
+            Type type,
             Func<object, INameScope, IControl> build,
             bool supportsRecycling = false)
             : this(o => IsInstance(o, type), build, supportsRecycling)
