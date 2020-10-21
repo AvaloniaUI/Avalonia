@@ -162,7 +162,9 @@ namespace Avalonia.X11
                    | XEventMask.Button4MotionMask
                    | XEventMask.Button5MotionMask
                    | XEventMask.ButtonPressMask
-                   | XEventMask.ButtonReleaseMask;
+                   | XEventMask.ButtonReleaseMask
+                   | XEventMask.LeaveWindowMask
+                   | XEventMask.EnterWindowMask;
         }
 
         public void OnWindowDestroyed(IntPtr xid) => _clients.Remove(xid);
@@ -201,6 +203,12 @@ namespace Avalonia.X11
                 return;
             }
 
+            if (ev.Type == XiEventType.XI_Leave)
+            {
+                client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
+                    RawPointerEventType.LeaveWindow, ev.Position, ev.Modifiers));
+            }
+            
             if (_multitouch && ev.Emulated)
                 return;
             
