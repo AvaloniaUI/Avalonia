@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -14,7 +16,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
-using ReactiveUI;
+using JetBrains.Annotations;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -480,8 +482,12 @@ namespace Avalonia.Controls.UnitTests
 
                 var selectedValues = new List<object>();
 
-                dataContext.WhenAnyValue(x => x.SelectedItem)
-                    .Subscribe(x => selectedValues.Add(x));
+                dataContext.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName == nameof(TestDataContext.SelectedItem))
+                        selectedValues.Add(dataContext.SelectedItem);
+                };
+                selectedValues.Add(dataContext.SelectedItem);
 
                 _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Left);
                 _mouse.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Left);
@@ -1326,7 +1332,7 @@ namespace Avalonia.Controls.UnitTests
         {
         }
 
-        private class TestDataContext : ReactiveObject
+        private class TestDataContext : INotifyPropertyChanged
         {
             private string _selectedItem;
 
@@ -1342,9 +1348,13 @@ namespace Avalonia.Controls.UnitTests
                 get { return _selectedItem; }
                 set
                 {
-                    this.RaiseAndSetIfChanged(ref _selectedItem, value);
+                    _selectedItem = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItem)));
                 }
             }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+            
         }
     }
 }

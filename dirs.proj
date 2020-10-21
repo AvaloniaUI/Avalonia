@@ -21,6 +21,7 @@
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildRuntimeType)' != 'Full'">
     <ProjectReference Remove="src/Windows/Avalonia.Win32.Interop/Avalonia.Win32.Interop.csproj" />
     <ProjectReference Remove="samples/interop/**/*.*proj" />
+    <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
   </ItemGroup>
 
   <ItemGroup>
