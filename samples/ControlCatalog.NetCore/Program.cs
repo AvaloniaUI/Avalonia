@@ -120,7 +120,7 @@ namespace ControlCatalog.NetCore
                 .UseSkia()
                 .UseReactiveUI()
                 .UseManagedSystemDialogs()
-                .LogToDebug();
+                .LogToTrace();
 
         static void SilenceConsole()
         {
