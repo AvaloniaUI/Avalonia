@@ -2,6 +2,15 @@
 
 namespace Avalonia.Metadata
 {
+    /// <summary>
+    /// Use to predefine the prefix associated to an xml namespace in a xaml file
+    /// </summary>
+    /// <remarks>
+    /// example:
+    /// [assembly: XmlnsPrefix("https://github.com/avaloniaui", "av")]
+    /// xaml:
+    /// xmlns:av="https://github.com/avaloniaui"
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public sealed class XmlnsPrefixAttribute : Attribute
     {
