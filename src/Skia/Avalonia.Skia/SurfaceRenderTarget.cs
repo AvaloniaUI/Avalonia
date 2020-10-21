@@ -51,7 +51,7 @@ namespace Avalonia.Skia
             _grContext = createInfo.GrContext;
             _gpu = createInfo.Gpu;
 
-            _surface = _gpu?.TryCreateSurface(PixelSize, createInfo.SurfaceOrigin);
+            _surface = _gpu?.TryCreateSurface(PixelSize, createInfo.Session);
             if (_surface == null)
                 _surface = new SkiaSurfaceWrapper(CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height,
                     createInfo.Format));
@@ -219,7 +219,7 @@ namespace Avalonia.Skia
 
             public ISkiaGpu Gpu;
 
-            public GRSurfaceOrigin SurfaceOrigin;
+            public ISkiaGpuRenderSession Session;
         }
     }
 }

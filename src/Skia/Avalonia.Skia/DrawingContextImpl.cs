@@ -975,7 +975,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = !_canTextUseLcdRendering,
                 GrContext = _grContext,
                 Gpu = _gpu,
-                SurfaceOrigin = _session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft
+                Session = _session
             };
 
             return new SurfaceRenderTarget(createInfo);
