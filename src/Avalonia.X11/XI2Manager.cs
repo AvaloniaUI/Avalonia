@@ -14,7 +14,9 @@ namespace Avalonia.X11
             XiEventType.XI_Motion,
             XiEventType.XI_ButtonPress,
             XiEventType.XI_ButtonRelease,
-            XiEventType.XI_Leave
+            XiEventType.XI_Leave,
+            XiEventType.XI_Enter,
+            
         };
 
         private static readonly XiEventType[] MultiTouchEventTypes = new XiEventType[]
@@ -180,12 +182,36 @@ namespace Avalonia.X11
 
 
             if ((xev->evtype >= XiEventType.XI_ButtonPress && xev->evtype <= XiEventType.XI_Motion)
-                || (xev->evtype >= XiEventType.XI_TouchBegin && xev->evtype <= XiEventType.XI_TouchEnd)
-                || xev->evtype == XiEventType.XI_Leave)
+                || (xev->evtype >= XiEventType.XI_TouchBegin && xev->evtype <= XiEventType.XI_TouchEnd))
             {
                 var dev = (XIDeviceEvent*)xev;
                 if (_clients.TryGetValue(dev->EventWindow, out var client))
                     OnDeviceEvent(client, new ParsedDeviceEvent(dev));
+            }
+
+            if (xev->evtype == XiEventType.XI_Leave || xev->evtype == XiEventType.XI_Enter)
+            {
+                var rev = (XIEnterLeaveEvent*)xev;
+                if (_clients.TryGetValue(rev->EventWindow, out var client))
+                    OnEnterLeaveEvent(client, ref *rev);
+            }
+        }
+
+        void OnEnterLeaveEvent(IXI2Client client, ref XIEnterLeaveEvent ev)
+        {
+            if (ev.evtype == XiEventType.XI_Leave)
+            {
+                var buttons = ParsedDeviceEvent.ParseButtonState(ev.buttons.MaskLen, ev.buttons.Mask);
+                var detail = ev.detail;
+                if ((detail == XiEnterLeaveDetail.XINotifyNonlinearVirtual ||
+                     detail == XiEnterLeaveDetail.XINotifyNonlinear ||
+                     detail == XiEnterLeaveDetail.XINotifyVirtual)
+                    && buttons == default)
+                {
+                    client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, (ulong)ev.time.ToInt64(),
+                        client.InputRoot,
+                        RawPointerEventType.LeaveWindow, new Point(ev.event_x, ev.event_y), buttons));
+                }
             }
         }
 
@@ -205,12 +231,6 @@ namespace Avalonia.X11
                 return;
             }
 
-            if (ev.Type == XiEventType.XI_Leave)
-            {
-                client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, ev.Timestamp, client.InputRoot,
-                    RawPointerEventType.LeaveWindow, ev.Position, ev.Modifiers));
-            }
-            
             if (_multitouch && ev.Emulated)
                 return;
             
@@ -294,6 +314,29 @@ namespace Avalonia.X11
         public int Detail { get; set; }
         public bool Emulated { get; set; }
         public Dictionary<int, double> Valuators { get; }
+
+        public static RawInputModifiers ParseButtonState(int len, byte* buttons)
+        {
+            RawInputModifiers rv = default;
+            if (len > 0)
+            {
+                if (XIMaskIsSet(buttons, 1))
+                    rv |= RawInputModifiers.LeftMouseButton;
+                if (XIMaskIsSet(buttons, 2))
+                    rv |= RawInputModifiers.MiddleMouseButton;
+                if (XIMaskIsSet(buttons, 3))
+                    rv |= RawInputModifiers.RightMouseButton;
+                if (len > 1)
+                {
+                    if (XIMaskIsSet(buttons, 8))
+                        rv |= RawInputModifiers.XButton1MouseButton;
+                    if (XIMaskIsSet(buttons, 9))
+                        rv |= RawInputModifiers.XButton2MouseButton;
+                }
+            }
+            return rv;
+        }
+        
         public ParsedDeviceEvent(XIDeviceEvent* ev)
         {
             Type = ev->evtype;
@@ -308,20 +351,7 @@ namespace Avalonia.X11
             if (state.HasFlag(XModifierMask.Mod4Mask))
                 Modifiers |= RawInputModifiers.Meta;
 
-            if (ev->buttons.MaskLen > 1 && Type != XiEventType.XI_Leave)
-            {
-                var buttons = ev->buttons.Mask;
-                if (XIMaskIsSet(buttons, 1))
-                    Modifiers |= RawInputModifiers.LeftMouseButton;
-                if (XIMaskIsSet(buttons, 2))
-                    Modifiers |= RawInputModifiers.MiddleMouseButton;
-                if (XIMaskIsSet(buttons, 3))
-                    Modifiers |= RawInputModifiers.RightMouseButton;
-                if (XIMaskIsSet(buttons, 8))
-                    Modifiers |= RawInputModifiers.XButton1MouseButton;
-                if (XIMaskIsSet(buttons, 9))
-                    Modifiers |= RawInputModifiers.XButton2MouseButton;
-            }
+            Modifiers = ParseButtonState(ev->buttons.MaskLen, ev->buttons.Mask);
 
             Valuators = new Dictionary<int, double>();
             Position = new Point(ev->event_x, ev->event_y);
