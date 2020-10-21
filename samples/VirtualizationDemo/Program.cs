@@ -9,7 +9,7 @@ namespace VirtualizationDemo
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .UseReactiveUI()
-                .LogToDebug();
+                .LogToTrace();
 
         public static int Main(string[] args)
             => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
