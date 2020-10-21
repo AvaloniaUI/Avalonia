@@ -418,40 +418,33 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Bound_SelectedItem_Should_Not_Be_Cleared_when_Changing_Selection()
         {
-            using (Application())
+            using var app = Start();
+            var dataContext = new TestDataContext();
+
+            var target = new TreeView
             {
-                var dataContext = new TestDataContext();
+                DataContext = dataContext
+            };
 
-                var target = new TreeView
-                {
-                    Template = CreateTreeViewTemplate(),
-                    DataContext = dataContext
-                };
+            target.Bind(TreeView.ItemsProperty, new Binding("Items"));
+            target.Bind(TreeView.SelectedItemProperty, new Binding("SelectedItem"));
 
-                target.Bind(TreeView.ItemsProperty, new Binding("Items"));
-                target.Bind(TreeView.SelectedItemProperty, new Binding("SelectedItem"));
+            Prepare(target);
 
-                var visualRoot = new TestRoot();
-                visualRoot.Child = target;
+            var selectedValues = new List<object>();
 
-                CreateNodeDataTemplate(target);
-                ApplyTemplates(target);
+            dataContext.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(TestDataContext.SelectedItem))
+                    selectedValues.Add(dataContext.SelectedItem);
+            };
+            selectedValues.Add(dataContext.SelectedItem);
 
-                var selectedValues = new List<object>();
+            _mouse.Click(target.Presenter.RealizedElements.ElementAt(0), MouseButton.Left);
+            _mouse.Click(target.Presenter.RealizedElements.ElementAt(2), MouseButton.Left);
 
-                dataContext.PropertyChanged += (_, e) =>
-                {
-                    if (e.PropertyName == nameof(TestDataContext.SelectedItem))
-                        selectedValues.Add(dataContext.SelectedItem);
-                };
-                selectedValues.Add(dataContext.SelectedItem);
-
-                _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Left);
-                _mouse.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Left);
-
-                Assert.Equal(3, selectedValues.Count);
-                Assert.Equal(new[] { null, "Item 0", "Item 2" }, selectedValues.ToArray());
-            }
+            Assert.Equal(3, selectedValues.Count);
+            Assert.Equal(new[] { null, "Item 0", "Item 2" }, selectedValues.ToArray());
         }
 
         [Fact]
