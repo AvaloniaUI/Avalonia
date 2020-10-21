@@ -13,7 +13,8 @@ namespace Avalonia.X11
         {
             XiEventType.XI_Motion,
             XiEventType.XI_ButtonPress,
-            XiEventType.XI_ButtonRelease
+            XiEventType.XI_ButtonRelease,
+            XiEventType.XI_Leave
         };
 
         private static readonly XiEventType[] MultiTouchEventTypes = new XiEventType[]
@@ -177,9 +178,10 @@ namespace Avalonia.X11
                 _pointerDevice.Update(changed->Classes, changed->NumClasses);
             }
 
-            
+
             if ((xev->evtype >= XiEventType.XI_ButtonPress && xev->evtype <= XiEventType.XI_Motion)
-                || (xev->evtype>=XiEventType.XI_TouchBegin&&xev->evtype<=XiEventType.XI_TouchEnd))
+                || (xev->evtype >= XiEventType.XI_TouchBegin && xev->evtype <= XiEventType.XI_TouchEnd)
+                || xev->evtype == XiEventType.XI_Leave)
             {
                 var dev = (XIDeviceEvent*)xev;
                 if (_clients.TryGetValue(dev->EventWindow, out var client))
@@ -306,7 +308,7 @@ namespace Avalonia.X11
             if (state.HasFlag(XModifierMask.Mod4Mask))
                 Modifiers |= RawInputModifiers.Meta;
 
-            if (ev->buttons.MaskLen > 0)
+            if (ev->buttons.MaskLen > 1 && Type != XiEventType.XI_Leave)
             {
                 var buttons = ev->buttons.Mask;
                 if (XIMaskIsSet(buttons, 1))
@@ -324,9 +326,11 @@ namespace Avalonia.X11
             Valuators = new Dictionary<int, double>();
             Position = new Point(ev->event_x, ev->event_y);
             var values = ev->valuators.Values;
-            for (var c = 0; c < ev->valuators.MaskLen * 8; c++)
-                if (XIMaskIsSet(ev->valuators.Mask, c))
-                    Valuators[c] = *values++;
+            if(ev->valuators.Mask != null)
+                for (var c = 0; c < ev->valuators.MaskLen * 8; c++)
+                    if (XIMaskIsSet(ev->valuators.Mask, c))
+                        Valuators[c] = *values++;
+            
             if (Type == XiEventType.XI_ButtonPress || Type == XiEventType.XI_ButtonRelease)
                 Button = ev->detail;
             Detail = ev->detail;
