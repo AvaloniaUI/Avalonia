@@ -33,6 +33,6 @@ namespace RenderDemo
                })
                 .UsePlatformDetect()
                 .UseReactiveUI()
-                .LogToDebug();
+                .LogToTrace();
     }
 }

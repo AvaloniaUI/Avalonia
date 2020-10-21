@@ -67,8 +67,6 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
-                if (IsPopup)
-                    return null;
                 var rv = FindLayer<LightDismissOverlayLayer>();
                 if (rv == null)
                 {

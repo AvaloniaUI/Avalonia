@@ -18,7 +18,7 @@ namespace ControlCatalog
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
-                .LogToDebug()
+                .LogToTrace()
                 .UsePlatformDetect()
                 .UseReactiveUI();
 

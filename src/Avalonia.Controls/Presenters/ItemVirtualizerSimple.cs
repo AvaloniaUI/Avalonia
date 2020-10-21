@@ -512,6 +512,13 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var newOffset = -1.0;
 
+            //better not trigger any container generation/recycle while  or layout stuff
+            //before panel is attached/visible
+            if (!panel.IsAttachedToVisualTree)
+            {
+                return null;
+            }
+
             if (!panel.IsMeasureValid && panel.PreviousMeasure.HasValue)
             {
                 //before any kind of scrolling we need to make sure panel measure is valid
