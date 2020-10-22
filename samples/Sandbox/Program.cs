@@ -10,7 +10,7 @@ namespace Sandbox
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .UseReactiveUI()
-                .LogToDebug()
+                .LogToTrace()
                 .StartWithClassicDesktopLifetime(args);
         }
     }
