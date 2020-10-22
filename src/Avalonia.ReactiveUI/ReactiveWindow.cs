@@ -9,9 +9,10 @@ using ReactiveUI;
 namespace Avalonia.ReactiveUI
 {
     /// <summary>
-    /// A ReactiveUI Window that implements <see cref="IViewFor{TViewModel}"/> and will activate your ViewModel
-    /// automatically if it supports activation. When the DataContext property changes, this class will update the
-    /// ViewModel property with the new DataContext value, and vice versa.
+    /// A ReactiveUI <see cref="Window"/> that implements the <see cref="IViewFor{TViewModel}"/> interface and will
+    /// activate your ViewModel automatically if the view model implements <see cref="IActivatableViewModel"/>. When
+    /// the DataContext property changes, this class will update the ViewModel property with the new DataContext value,
+    /// and vice versa.
     /// </summary>
     /// <typeparam name="TViewModel">ViewModel type.</typeparam>
     public class ReactiveWindow<TViewModel> : Window, IViewFor<TViewModel> where TViewModel : class
