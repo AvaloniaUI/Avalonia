@@ -130,7 +130,7 @@ namespace Avalonia.Win32
             if (_dispatcherQueueController == null)
             {
                 DispatcherQueueOptions options = new DispatcherQueueOptions();
-                options.apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA;
+                options.apartmentType = DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_NONE;
                 options.threadType = DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT;
                 options.dwSize = Marshal.SizeOf(typeof(DispatcherQueueOptions));
 
