@@ -1,3 +1,4 @@
+using System.Reactive.Disposables;
 using Avalonia.UnitTests;
 using ReactiveUI;
 using Splat;
@@ -7,7 +8,20 @@ namespace Avalonia.ReactiveUI.UnitTests
 {
     public class ReactiveWindowTest
     {
-        public class ExampleViewModel : ReactiveObject { }
+        public class ExampleViewModel : ReactiveObject, IActivatableViewModel
+        {
+            public bool IsActive { get; private set; }
+
+            public ViewModelActivator Activator { get; } = new ViewModelActivator();
+
+            public ExampleViewModel() => this.WhenActivated(disposables =>
+            {
+                IsActive = true;
+                Disposable
+                    .Create(() => IsActive = false)
+                    .DisposeWith(disposables);
+            });
+        }
 
         public class ExampleWindow : ReactiveWindow<ExampleViewModel> { }
 
@@ -45,6 +59,52 @@ namespace Avalonia.ReactiveUI.UnitTests
                 view.ViewModel = null;
                 Assert.Null(view.ViewModel);
                 Assert.Null(view.DataContext);
+            }
+        }
+
+        [Fact]
+        public void Should_Start_With_NotNull_Activated_ViewModel()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var view = new ExampleWindow { ViewModel = new ExampleViewModel() };
+
+                Assert.False(view.ViewModel.IsActive);
+
+                view.Show();
+
+                Assert.NotNull(view.ViewModel);
+                Assert.NotNull(view.DataContext);
+                Assert.True(view.ViewModel.IsActive);
+
+                view.Close();
+
+                Assert.NotNull(view.ViewModel);
+                Assert.NotNull(view.DataContext);
+                Assert.False(view.ViewModel.IsActive);
+            }
+        }
+
+        [Fact]
+        public void Should_Start_With_NotNull_Activated_DataContext()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var view = new ExampleWindow { DataContext = new ExampleViewModel() };
+
+                Assert.False(view.ViewModel.IsActive);
+
+                view.Show();
+
+                Assert.NotNull(view.ViewModel);
+                Assert.NotNull(view.DataContext);
+                Assert.True(view.ViewModel.IsActive);
+
+                view.Close();
+
+                Assert.NotNull(view.ViewModel);
+                Assert.NotNull(view.DataContext);
+                Assert.False(view.ViewModel.IsActive);
             }
         }
     }

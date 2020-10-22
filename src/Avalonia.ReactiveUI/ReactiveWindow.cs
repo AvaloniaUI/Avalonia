@@ -1,4 +1,6 @@
 using System;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
@@ -22,10 +24,13 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public ReactiveWindow()
         {
-            this.WhenAnyValue(x => x.DataContext)
-                .Subscribe(context => ViewModel = context as TViewModel);
+            this.WhenActivated(disposables => { });
             this.WhenAnyValue(x => x.ViewModel)
+                .Skip(1)
                 .Subscribe(model => DataContext = model);
+            this.WhenAnyValue(x => x.DataContext)
+                .Skip(1)
+                .Subscribe(context => ViewModel = context as TViewModel);
         }
             
         /// <summary>
