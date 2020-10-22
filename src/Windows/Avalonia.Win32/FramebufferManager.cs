@@ -23,7 +23,7 @@ namespace Avalonia.Win32
         {
             _hwnd = hwnd;
             _lock = new object();
-            _onDisposeAction = UnlockAndDraw;
+            _onDisposeAction = DrawAndUnlock;
         }
 
         public ILockedFramebuffer Lock()
@@ -74,7 +74,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private void UnlockAndDraw()
+        private void DrawAndUnlock()
         {
             try
             {
