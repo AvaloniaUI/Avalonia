@@ -27,9 +27,9 @@
     <PackageReference Include="SharpGenTools.Sdk" Version="1.2.1" PrivateAssets="all" />
     <PackageReference Include="SharpGen.Runtime" Version="1.2.1" PrivateAssets="all" />
     <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" PrivateAssets="all" />
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.18.1" PrivateAssets="all" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="ILRepack" AfterTargets="Build">
