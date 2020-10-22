@@ -1,3 +1,4 @@
+using System;
 using Avalonia;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
@@ -20,7 +21,10 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public ReactiveWindow()
         {
-            DataContextChanged += (sender, args) => ViewModel = DataContext as TViewModel;
+            this.WhenAnyValue(x => x.DataContext)
+                .Subscribe(context => ViewModel = context as TViewModel);
+            this.WhenAnyValue(x => x.ViewModel)
+                .Subscribe(model => DataContext = model);
         }
             
         /// <summary>

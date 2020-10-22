@@ -88,12 +88,12 @@ namespace Avalonia.ReactiveUI.UnitTests
             }
         }
 
-        public AvaloniaActivationForViewFetcherTest()
-        {
-            Locator.CurrentMutable.RegisterConstant(
-                new AvaloniaActivationForViewFetcher(), 
-                typeof(IActivationForViewFetcher));
-        }
+        public AvaloniaActivationForViewFetcherTest() =>
+            Locator
+                .CurrentMutable
+                .RegisterConstant(
+                    new AvaloniaActivationForViewFetcher(),
+                    typeof(IActivationForViewFetcher));
 
         [Fact]
         public void Visual_Element_Is_Activated_And_Deactivated()
