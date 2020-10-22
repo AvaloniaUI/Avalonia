@@ -10,6 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SharpGenGenerateConsumerBindMapping>false</SharpGenGenerateConsumerBindMapping>
     <SignAssembly>True</SignAssembly>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(PackAvaloniaNative)' == 'true'">
@@ -24,9 +25,24 @@
   <ItemGroup>
     <!--<SharpGenMapping Include="Mappings.xml" />-->
     <PackageReference Include="SharpGenTools.Sdk" Version="1.2.1" PrivateAssets="all" />
-    <PackageReference Include="SharpGen.Runtime" Version="1.2.1" />
-    <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" />
+    <PackageReference Include="SharpGen.Runtime" Version="1.2.1" PrivateAssets="all" />
+    <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" PrivateAssets="all" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
+    <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="all" />
   </ItemGroup>
-</Project>
+
+  <Target Name="ILRepack" AfterTargets="Build">
+    <PropertyGroup>
+      <WorkingDirectory>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)</WorkingDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <InputAssemblies Include="SharpGen.Runtime.dll;SharpGen.Runtime.COM.dll;" />
+    </ItemGroup>
+    <Message Text="MERGING: @(InputAssemblies->'%(Filename)') into %(Target.FullPath)" Importance="High" />
+    <ILRepack OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll"
+              OutputAssembly="$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)"
+              WorkingDirectory="$(WorkingDirectory)" 
+              KeyFile="$(AssemblyOriginatorKeyFile)" DelaySign="True" />
+  </Target>
+</Project> 
