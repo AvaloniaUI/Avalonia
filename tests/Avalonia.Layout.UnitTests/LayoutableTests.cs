@@ -112,7 +112,7 @@ namespace Avalonia.Layout.UnitTests
 
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             control.InvalidateMeasure();
             control.InvalidateMeasure();
@@ -133,7 +133,7 @@ namespace Avalonia.Layout.UnitTests
 
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             control.InvalidateArrange();
             control.InvalidateArrange();
@@ -163,7 +163,7 @@ namespace Avalonia.Layout.UnitTests
             Assert.False(control.IsMeasureValid);
             Assert.True(root.IsMeasureValid);
 
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             root.Child = control;
 
