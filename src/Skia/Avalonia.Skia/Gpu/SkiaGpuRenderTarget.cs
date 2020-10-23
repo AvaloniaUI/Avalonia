@@ -33,7 +33,8 @@ namespace Avalonia.Skia
                 Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true,
-                Gpu = _skiaGpu
+                Gpu = _skiaGpu,
+                CurrentSession =  session
             };
 
             return new DrawingContextImpl(nfo, session);
