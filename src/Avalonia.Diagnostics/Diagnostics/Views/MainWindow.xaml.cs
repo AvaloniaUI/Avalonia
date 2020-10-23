@@ -77,7 +77,7 @@ namespace Avalonia.Diagnostics.Views
             {
                 var point = (Root as IInputRoot)?.MouseDevice?.GetPosition(Root) ?? default;
 
-                var control = Root.Renderer.HitTestFirst(point, Root, x => !(x is IInputElement ie && !ie.IsHitTestVisible));
+                var control = Root.Renderer.HitTestFirst(point, Root, x => !(x is IInputElement ie) || ie.IsHitTestVisible);
 
                 if (control != null)
                 {
