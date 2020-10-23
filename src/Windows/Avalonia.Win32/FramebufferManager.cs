@@ -28,9 +28,7 @@ namespace Avalonia.Win32
 
         public ILockedFramebuffer Lock()
         {
-            var lockAcquired = false;
-
-            Monitor.Enter(_lock, ref lockAcquired);
+            Monitor.Enter(_lock);
 
             LockedFramebuffer? fb = null;
 
@@ -58,7 +56,7 @@ namespace Avalonia.Win32
             {
                 // We free the lock when for whatever reason framebuffer was not created.
                 // This allows for a potential retry later.
-                if (fb is null && lockAcquired)
+                if (fb is null)
                 {
                     Monitor.Exit(_lock);
                 }
