@@ -65,6 +65,8 @@ namespace Avalonia.Win32
                             return IntPtr.Zero;
                         }
 
+                        _parent?.SetEnabled(true);
+
                         break;
                     }
 
