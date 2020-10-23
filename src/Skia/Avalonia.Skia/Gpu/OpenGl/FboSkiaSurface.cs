@@ -14,7 +14,7 @@ namespace Avalonia.Skia
         private int _texture;
 
         private static readonly bool[] TrueFalse = new[] { true, false };
-        public FboSkiaSurface(GRContext grContext, IGlContext glContext, PixelSize pixelSize)
+        public FboSkiaSurface(GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
         {
             _grContext = grContext;
             _glContext = glContext;
@@ -93,7 +93,7 @@ namespace Avalonia.Skia
             var target = new GRBackendRenderTarget(pixelSize.Width, pixelSize.Height, 0, 8,
                 new GRGlFramebufferInfo((uint)_fbo, SKColorType.Rgba8888.ToGlSizedFormat()));
             Surface = SKSurface.Create(_grContext, target,
-                GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888);
+                surfaceOrigin, SKColorType.Rgba8888);
             CanBlit = gl.BlitFramebuffer != null;
         }
         
