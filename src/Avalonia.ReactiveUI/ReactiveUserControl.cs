@@ -25,13 +25,14 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public ReactiveUserControl()
         {
+            // This WhenActivated block calls ViewModel's WhenActivated
+            // block if the ViewModel implements IActivatableViewModel.
             this.WhenActivated(disposables => { });
-            this.WhenAnyValue(x => x.ViewModel)
-                .Skip(1)
-                .Subscribe(model => DataContext = model);
-            this.WhenAnyValue(x => x.DataContext)
-                .Skip(1)
-                .Subscribe(context => ViewModel = context as TViewModel);
+
+            this.ObservableForProperty(x => x.ViewModel, false, true)
+                .Subscribe(args => DataContext = args.Value);
+            this.ObservableForProperty(x => x.DataContext, false, true)
+                .Subscribe(args => ViewModel = args.Value as TViewModel);
         }
 
         /// <summary>
