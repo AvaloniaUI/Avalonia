@@ -39,7 +39,7 @@ Examples of UIs built with Avalonia
 
 ## JetBrains Rider
 
-If you need to develop Avalonia app with JetBrains Rider, go and *vote* on [this issue](https://youtrack.jetbrains.com/issue/RIDER-39247) in their tracker. JetBrains won't do things without their users telling them that they want the feature, so only **YOU** can make it happen.
+If you need to develop Avalonia app with JetBrains Rider you can use latest Rider [preview builds](https://www.jetbrains.com/rider/nextversion/).
 
 ## Bleeding Edge Builds
 
