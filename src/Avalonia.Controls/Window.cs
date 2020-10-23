@@ -451,7 +451,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="dialogResult">The dialog result.</param>
         /// <remarks>
-        /// When the window is shown with the <see cref="ShowDialog{TResult}(IWindowImpl)"/>
+        /// When the window is shown with the <see cref="ShowDialog{TResult}(Window)"/>
         /// or <see cref="ShowDialog{TResult}(Window)"/> method, the
         /// resulting task will produce the <see cref="_dialogResult"/> value when the window
         /// is closed.
