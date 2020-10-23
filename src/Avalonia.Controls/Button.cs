@@ -208,9 +208,11 @@ namespace Avalonia.Controls
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (_hotkey != null)
-                // Control attached again, set Hotkey to create a hotkey manager for this control
+            if (_hotkey != null) // Control attached again, set Hotkey to create a hotkey manager for this control
+            {
                 HotKey = _hotkey;
+            }
+            
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
@@ -221,9 +223,9 @@ namespace Avalonia.Controls
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            // This will cause the hotkey manager to dispose the observer and the reference to this control
             if (HotKey != null)
             {
-                // This will cause the hotkey manager to dispose the observer and the reference to this control
                 _hotkey = HotKey;
                 HotKey = null;
             }
