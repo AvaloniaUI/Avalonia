@@ -1338,6 +1338,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     _parent->BaseEvents->RunRenderPriorityJobs();
+    
+    if (_parent == nullptr)
+    {
+        return;
+    }
+        
     _parent->BaseEvents->Paint();
 }
 
