@@ -438,7 +438,7 @@ namespace Avalonia.Controls
 
             _lastMousePositionHeaders = mousePositionHeaders;
             
-            if (args.Pointer.Captured != this)
+            if (args.Pointer.Captured != this && _dragMode == DragMode.Drag)
                 args.Pointer.Capture(this);
             
             SetDragCursor(mousePosition);
