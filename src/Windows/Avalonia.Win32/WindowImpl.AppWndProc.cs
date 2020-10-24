@@ -65,7 +65,17 @@ namespace Avalonia.Win32
                             return IntPtr.Zero;
                         }
 
-                        _parent?.SetEnabled(true);
+                        if (_parent != null && IsWindow(_parent._hwnd))
+                        {
+                            var wasActive = GetActiveWindow() == _hwnd;
+
+                            _parent.SetEnabled(true);
+
+                            if (wasActive)
+                            {
+                                SetActiveWindow(_parent._hwnd);
+                            }
+                        }
 
                         break;
                     }
