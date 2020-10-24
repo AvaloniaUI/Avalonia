@@ -14,6 +14,7 @@
       <TabItem Header="Acrylic"><pages:AcrylicPage/></TabItem>
       <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
       <TabItem Header="Border"><pages:BorderPage/></TabItem>
+      <TabItem Header="Label"><pages:LabelsPage/></TabItem>
       <TabItem Header="Button"><pages:ButtonPage/></TabItem>
       <TabItem Header="ButtonSpinner"><pages:ButtonSpinnerPage/></TabItem>
       <TabItem Header="Calendar"><pages:CalendarPage/></TabItem>

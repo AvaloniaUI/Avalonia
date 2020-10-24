@@ -85,10 +85,19 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<Thickness> PaddingProperty =
             Decorator.PaddingProperty.AddOwner<ContentPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="RecognizesAccessKey"/> property
+        /// </summary>
+        public static readonly DirectProperty<ContentPresenter, bool> RecognizesAccessKeyProperty =
+            AvaloniaProperty.RegisterDirect<ContentPresenter, bool>(
+                nameof(RecognizesAccessKey),
+                cp => cp.RecognizesAccessKey, (cp, value) => cp.RecognizesAccessKey = value);
+
         private IControl _child;
         private bool _createdChild;
         private IRecyclingDataTemplate _recyclingDataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
+        private bool _recognizesAccessKey;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -209,6 +218,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Determine if <see cref="ContentPresenter"/> should use <see cref="AccessText"/> in its style
+        /// </summary>
+        public bool RecognizesAccessKey
+        {
+            get => _recognizesAccessKey;
+            set => SetAndRaise(RecognizesAccessKeyProperty, ref _recognizesAccessKey, value);
+        }
+
+        /// <summary>
         /// Gets the host content control.
         /// </summary>
         internal IContentPresenterHost Host { get; private set; }
@@ -311,7 +329,12 @@ namespace Avalonia.Controls.Presenters
 
             if (content != null && newChild == null)
             {
-                var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
+                var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? 
+                    (
+                        RecognizesAccessKey 
+                            ? FuncDataTemplate.Access 
+                            : FuncDataTemplate.Default
+                    );
 
                 if (dataTemplate is IRecyclingDataTemplate rdt)
                 {
