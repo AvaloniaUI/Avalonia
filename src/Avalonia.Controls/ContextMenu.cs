@@ -63,6 +63,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
 
         /// <summary>
+        /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty  =
+            Popup.WindowManagerAddShadowHintProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
         /// Defines the <see cref="PlacementTarget"/> property.
         /// </summary>
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
@@ -156,6 +162,12 @@ namespace Avalonia.Controls
         {
             get { return GetValue(PlacementModeProperty); }
             set { SetValue(PlacementModeProperty, value); }
+        }
+
+        public bool WindowManagerAddShadowHint
+        {
+            get { return GetValue(WindowManagerAddShadowHintProperty); }
+            set { SetValue(WindowManagerAddShadowHintProperty, value); }
         }
 
         /// <summary>
@@ -267,6 +279,7 @@ namespace Avalonia.Controls
                     PlacementTarget = PlacementTarget ?? control,
                     IsLightDismissEnabled = true,
                     OverlayDismissEventPassThrough = true,
+                    WindowManagerAddShadowHint = WindowManagerAddShadowHint,
                 };
 
                 _popup.Opened += PopupOpened;

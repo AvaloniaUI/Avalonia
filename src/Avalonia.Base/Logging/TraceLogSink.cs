@@ -6,12 +6,12 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Logging
 {
-    public class DebugLogSink : ILogSink
+    public class TraceLogSink : ILogSink
     {
         private readonly LogEventLevel _level;
         private readonly IList<string> _areas;
 
-        public DebugLogSink(
+        public TraceLogSink(
             LogEventLevel minimumLevel,
             IList<string> areas = null)
         {
@@ -28,7 +28,7 @@ namespace Avalonia.Logging
         {
             if (IsEnabled(level, area))
             {
-                Debug.WriteLine(Format<object, object, object>(area, messageTemplate, source));
+                Trace.WriteLine(Format<object, object, object>(area, messageTemplate, source));
             }
         }
 
@@ -36,7 +36,7 @@ namespace Avalonia.Logging
         {
             if (IsEnabled(level, area))
             {
-                Debug.WriteLine(Format<T0, object, object>(area, messageTemplate, source, propertyValue0));
+                Trace.WriteLine(Format<T0, object, object>(area, messageTemplate, source, propertyValue0));
             }
         }
 
@@ -44,7 +44,7 @@ namespace Avalonia.Logging
         {
             if (IsEnabled(level, area))
             {
-                Debug.WriteLine(Format<T0, T1, object>(area, messageTemplate, source, propertyValue0, propertyValue1));
+                Trace.WriteLine(Format<T0, T1, object>(area, messageTemplate, source, propertyValue0, propertyValue1));
             }
         }
 
@@ -52,7 +52,7 @@ namespace Avalonia.Logging
         {
             if (IsEnabled(level, area))
             {
-                Debug.WriteLine(Format(area, messageTemplate, source, propertyValue0, propertyValue1, propertyValue2));
+                Trace.WriteLine(Format(area, messageTemplate, source, propertyValue0, propertyValue1, propertyValue2));
             }
         }
 
@@ -60,7 +60,7 @@ namespace Avalonia.Logging
         {
             if (IsEnabled(level, area))
             {
-                Debug.WriteLine(Format(area, messageTemplate, source, propertyValues));
+                Trace.WriteLine(Format(area, messageTemplate, source, propertyValues));
             }
         }
 

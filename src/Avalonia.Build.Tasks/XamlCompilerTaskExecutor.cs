@@ -42,7 +42,7 @@ namespace Avalonia.Build.Tasks
         }
         
         public static CompileResult Compile(IBuildEngine engine, string input, string[] references, string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance)
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey)
         {
             var typeSystem = new CecilTypeSystem(references.Concat(new[] {input}), input);
             var asm = typeSystem.TargetAssemblyDefinition;
@@ -345,6 +345,20 @@ namespace Avalonia.Build.Tasks
                     }
                     res.Remove();
                 }
+                
+                
+                // Technically that's a hack, but it fixes corert incompatibility caused by deterministic builds
+                int dupeCounter = 1;
+                foreach (var grp in typeDef.NestedTypes.GroupBy(x => x.Name))
+                {
+                    if (grp.Count() > 1)
+                    {
+                        foreach (var dupe in grp)
+                            dupe.Name += "_dup" + dupeCounter++;
+                    }
+                }
+                
+                
                 return true;
             }
             
@@ -361,10 +375,12 @@ namespace Avalonia.Build.Tasks
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             
-            asm.Write(output, new WriterParameters
-            {
-                WriteSymbols = asm.MainModule.HasSymbols
-            });
+            
+            var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
+            if (!string.IsNullOrWhiteSpace(strongNameKey))
+                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+
+            asm.Write(output, writerParameters);
 
             return new CompileResult(true, true);
         }
