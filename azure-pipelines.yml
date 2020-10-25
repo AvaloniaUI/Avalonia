@@ -31,6 +31,8 @@ jobs:
     condition: not(canceled())
      
 - job: macOS
+  variables:
+    SolutionDir: '$(Build.SourcesDirectory)'
   pool:
     vmImage: 'macOS-10.14'
   steps:
@@ -97,6 +99,8 @@ jobs:
 - job: Windows
   pool:
     vmImage: 'windows-2019'
+  variables:
+    SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.401'
