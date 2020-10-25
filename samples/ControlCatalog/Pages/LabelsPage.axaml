@@ -25,11 +25,11 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" 
                   HorizontalScrollBarVisibility="Hidden">
         <Grid HorizontalAlignment="Left" VerticalAlignment="Top" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnDefinitions="Auto,6,*" Width="246">
-            <Label Target="{Binding #firstNameEdit}" Grid.Row="0" Grid.Column="0">_First name</Label>
+            <Label Target="firstNameEdit" Grid.Row="0" Grid.Column="0">_First name</Label>
             <TextBox Name="firstNameEdit" Grid.Column="2" Grid.Row="0" Text="{Binding FirstName}"></TextBox>
-            <Label Target="{Binding #lastNameEdit}" Grid.Row="1" Grid.Column="0">_Last name</Label>
+            <Label Target="lastNameEdit" Grid.Row="1" Grid.Column="0">_Last name</Label>
             <TextBox Name="lastNameEdit" Grid.Column="2" Grid.Row="1" Text="{Binding LastName}"></TextBox>
-            <Label Target="{Binding #bannedCheck}" Grid.Row="2" Grid.Column="0">_Banned</Label>
+            <Label Target="bannedCheck" Grid.Row="2" Grid.Column="0">_Banned</Label>
             <CheckBox Name="bannedCheck" Grid.Column="2" Grid.Row="2" IsChecked="{Binding IsBanned}"></CheckBox>
             <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.RowSpan="3" >
             </GridSplitter>
