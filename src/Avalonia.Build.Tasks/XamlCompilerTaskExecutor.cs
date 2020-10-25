@@ -42,13 +42,13 @@ namespace Avalonia.Build.Tasks
         }
         
         public static CompileResult Compile(IBuildEngine engine, string input, string[] references, string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey)
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom)
         {
             var typeSystem = new CecilTypeSystem(references.Concat(new[] {input}), input);
             var asm = typeSystem.TargetAssemblyDefinition;
             var emres = new EmbeddedResources(asm);
             var avares = new AvaloniaResources(asm, projectDirectory);
-            if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0)
+            if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0 && !patchCom)
                 // Nothing to do
                 return new CompileResult(true);
 
@@ -374,7 +374,9 @@ namespace Avalonia.Build.Tasks
             
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-            
+
+            if (patchCom)
+                ComInteropHelper.PatchAssembly(asm, typeSystem);
             
             var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
             if (!string.IsNullOrWhiteSpace(strongNameKey))
