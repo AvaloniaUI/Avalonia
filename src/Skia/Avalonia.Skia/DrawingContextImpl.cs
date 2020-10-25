@@ -643,6 +643,23 @@ namespace Avalonia.Skia
 
                     break;
                 }
+                case IConicGradientBrush conicGradient:
+                {
+                    var center = conicGradient.Center.ToPixels(targetSize).ToSKPoint();
+
+                    // Skia's default is that angle 0 is from the right hand side of the center point
+                    // but we are matching CSS where the vertical point above the center is 0.
+                    var angle = (float)(conicGradient.Angle - 90);
+                    var rotation = SKMatrix.CreateRotationDegrees(angle, center.X, center.Y);
+
+                    using (var shader = 
+                        SKShader.CreateSweepGradient(center, stopColors, stopOffsets, rotation))
+                    {
+                        paintWrapper.Paint.Shader = shader;
+                    }
+
+                    break;
+                }
             }
         }
 
