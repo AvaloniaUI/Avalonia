@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNameReferenceGenerator", "XamlNameReferenceGenerator\XamlNameReferenceGenerator.csproj", "{684ADF3B-8DFC-4F4A-93AD-F856561FCC39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNameReferenceGenerator.Sandbox", "XamlNameReferenceGenerator.Sandbox\XamlNameReferenceGenerator.Sandbox.csproj", "{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{684ADF3B-8DFC-4F4A-93AD-F856561FCC39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{684ADF3B-8DFC-4F4A-93AD-F856561FCC39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{684ADF3B-8DFC-4F4A-93AD-F856561FCC39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{684ADF3B-8DFC-4F4A-93AD-F856561FCC39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
