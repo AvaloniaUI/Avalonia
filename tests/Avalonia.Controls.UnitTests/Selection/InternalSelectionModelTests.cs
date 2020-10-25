@@ -233,6 +233,22 @@ namespace Avalonia.Controls.UnitTests.Selection
         }
 
         [Fact]
+        public void Preserves_SelectedItem_On_Items_Reset()
+        {
+            var items = new ResettingCollection(new[] { "foo", "bar", "baz" });
+            var target = CreateTarget(source: items);
+
+            target.SelectedItem = "foo";
+
+            Assert.Equal(0, target.SelectedIndex);
+
+            items.Reset(new string[] { "baz", "foo", "bar" });
+
+            Assert.Equal("foo", target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
         public void Preserves_Selection_On_Source_Changed()
         {
             var target = CreateTarget();
