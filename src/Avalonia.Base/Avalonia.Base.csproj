@@ -4,7 +4,7 @@
     <AssemblyName>Avalonia.Base</AssemblyName>
     <RootNamespace>Avalonia</RootNamespace>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <SignAssembly>True</SignAssembly>
+    <SignAssembly>$(SignedBuild)</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"/>

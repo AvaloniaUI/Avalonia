@@ -9,7 +9,7 @@
     <CastXmlPath Condition="Exists('/usr/local/bin/castxml')">/usr/local/bin/castxml</CastXmlPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SharpGenGenerateConsumerBindMapping>false</SharpGenGenerateConsumerBindMapping>
-    <SignAssembly>True</SignAssembly>
+    <SignAssembly>$(SignedBuild)</SignAssembly>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
