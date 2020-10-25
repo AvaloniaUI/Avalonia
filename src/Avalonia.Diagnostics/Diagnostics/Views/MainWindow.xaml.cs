@@ -79,8 +79,9 @@ namespace Avalonia.Diagnostics.Views
                 
                 var control = Root.GetVisualsAt(point, x =>
                     {
-                        return !(x is AdornerLayer) && x.IsVisible &&
-                               (!(x is IInputElement ie) || ie.IsHitTestVisible);
+                        if (x is AdornerLayer || !x.IsVisible) return false;
+                        if (!(x is IInputElement ie)) return true;
+                        return ie.IsHitTestVisible;
                     })
                     .FirstOrDefault();
 
