@@ -29,6 +29,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Label focus Target
         /// </summary>
+        [ResolveByName]
         public IInputElement Target
         {
             get => _target;
