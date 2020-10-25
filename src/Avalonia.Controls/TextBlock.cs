@@ -3,6 +3,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -427,14 +428,32 @@ namespace Avalonia.Controls
                 case TextAlignment.Center:
                     offsetX = (width - TextLayout.Size.Width) / 2;
                     break;
+
                 case TextAlignment.Right:
-                    offsetX =  width - TextLayout.Size.Width;
+                    offsetX = width - TextLayout.Size.Width;
                     break;
             }
 
             var padding = Padding;
 
-            using (context.PushPostTransform(Matrix.CreateTranslation(padding.Left + offsetX, padding.Top)))
+            var top = padding.Top;
+            var textSize = TextLayout.Size;
+
+            if (Bounds.Height < textSize.Height)
+            {
+                switch (VerticalAlignment)
+                {
+                    case VerticalAlignment.Center:
+                        top += (Bounds.Height - textSize.Height) / 2;
+                        break;
+
+                    case VerticalAlignment.Bottom:
+                        top += (Bounds.Height - textSize.Height);
+                        break;
+                }
+            }
+
+            using (context.PushPostTransform(Matrix.CreateTranslation(padding.Left + offsetX, top)))
             {
                 TextLayout.Draw(context);
             }

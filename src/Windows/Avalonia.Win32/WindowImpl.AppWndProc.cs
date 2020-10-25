@@ -65,6 +65,24 @@ namespace Avalonia.Win32
                             return IntPtr.Zero;
                         }
 
+                        // Based on https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Window.cs#L4270-L4337
+                        // We need to enable parent window before destroying child window to prevent OS from activating a random window behind us.
+                        // This is described here: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enablewindow#remarks
+                        // Our window closed callback will set enabled state to a correct value after child window gets destroyed.
+                        // We need to verify if parent is still alive (perhaps it got destroyed somehow).
+                        if (_parent != null && IsWindow(_parent._hwnd))
+                        {
+                            var wasActive = GetActiveWindow() == _hwnd;
+
+                            _parent.SetEnabled(true);
+
+                            // We also need to activate our parent window since again OS might try to activate a window behind if it is not set.
+                            if (wasActive)
+                            {
+                                SetActiveWindow(_parent._hwnd);
+                            }
+                        }
+
                         break;
                     }
 
@@ -200,6 +218,10 @@ namespace Avalonia.Win32
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
                     }
+                // Mouse capture is lost
+                case WindowsMessage.WM_CANCELMODE:
+                    _mouseDevice.Capture(null);
+                    break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
@@ -338,21 +360,21 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_PAINT:
+                {
+                    using (_rendererLock.Lock())
                     {
-                        using (_rendererLock.Lock())
+                        if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                         {
-                            if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
-                            {
-                                var f = RenderScaling;
-                                var r = ps.rcPaint;
-                                Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
-                                    (r.bottom - r.top) / f));
-                                EndPaint(_hwnd, ref ps);
-                            }
+                            var f = RenderScaling;
+                            var r = ps.rcPaint;
+                            Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
+                                (r.bottom - r.top) / f));
+                            EndPaint(_hwnd, ref ps);
                         }
-
-                        return IntPtr.Zero;
                     }
+
+                    return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_SIZE:
                     {

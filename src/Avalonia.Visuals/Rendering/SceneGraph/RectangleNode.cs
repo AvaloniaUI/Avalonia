@@ -73,7 +73,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill of the other draw operation.</param>
         /// <param name="pen">The stroke of the other draw operation.</param>
         /// <param name="rect">The rectangle of the other draw operation.</param>
-        /// <param name="boxShadow">The box shadow parameters of the other draw operation</param>
+        /// <param name="boxShadows">The box shadow parameters of the other draw operation</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent

@@ -69,7 +69,7 @@ namespace Avalonia.Platform
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
         void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
-            BoxShadows boxShadow = default);
+            BoxShadows boxShadows = default);
 
         /// <summary>
         /// Draws text.
@@ -98,7 +98,7 @@ namespace Avalonia.Platform
         /// has to do a format conversion each time a standard render target bitmap is rendered,
         /// but a layer created via this method has no such overhead.
         /// </remarks>
-        IRenderTargetBitmapImpl CreateLayer(Size size);
+        IDrawingContextLayerImpl CreateLayer(Size size);
 
         /// <summary>
         /// Pushes a clip rectangle.
@@ -154,5 +154,19 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="custom">Custom draw operation</param>
         void Custom(ICustomDrawOperation custom);
+    }
+
+    public interface IDrawingContextLayerImpl : IRenderTargetBitmapImpl
+    {
+        /// <summary>
+        /// Does optimized blit with Src blend mode
+        /// </summary>
+        /// <param name="context"></param>
+        void Blit(IDrawingContextImpl context);
+        
+        /// <summary>
+        /// Returns true if layer supports optimized blit
+        /// </summary>
+        bool CanBlit { get; }
     }
 }
