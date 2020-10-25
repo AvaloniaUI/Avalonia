@@ -17,6 +17,14 @@
     <!-- Compatibility with old apps, probably need to replace with AvaloniaResource -->
     <EmbeddedResource Include="**/*.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="ListView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="ListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ApiDiff.props" />

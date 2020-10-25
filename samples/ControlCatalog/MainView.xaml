@@ -50,6 +50,9 @@
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:ListBoxPage/>
       </TabItem>
+      <TabItem Header="ListView">
+        <pages:ListViewPage/>
+      </TabItem>
       <TabItem Header="Menu"><pages:MenuPage/></TabItem>
       <TabItem Header="Notifications"><pages:NotificationsPage/></TabItem>
 	    <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
