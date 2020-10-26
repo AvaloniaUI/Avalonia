@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
@@ -68,8 +69,11 @@ namespace Avalonia.Win32
             {
                 IntPtr texture;
                 EglSurface surface;
-
-                using (_egl.PrimaryEglContext.EnsureCurrent())
+                
+                var restoreContext = _egl.PrimaryEglContext.EnsureCurrent();
+                var success = false;
+                IGlPlatformSurfaceRenderingSession result;
+                try
                 {
                     if (_info.Size != _currentSize)
                     {
@@ -86,9 +90,18 @@ namespace Avalonia.Win32
                         out texture, ref offset);
 
                     surface = (_egl.Display as AngleWin32EglDisplay).WrapDirect3D11Texture(_egl, texture, offset.X, offset.Y, _info.Size.Width, _info.Size.Height);
+
+                    result = base.BeginDraw(surface, _info, () => { _surfaceInterop.EndDraw(); Marshal.Release(texture); surface.Dispose(); restoreContext.Dispose(); }, true);
+
+                    success = true;
+                }
+                finally
+                {
+                    if (!success)
+                        restoreContext.Dispose();
                 }
 
-                return base.BeginDraw(surface, _info, () => { _surfaceInterop.EndDraw(); Marshal.Release(texture); surface.Dispose(); }, true);
+                return result;
             }
         }
     }
