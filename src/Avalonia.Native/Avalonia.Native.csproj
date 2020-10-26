@@ -9,6 +9,8 @@
     <CastXmlPath Condition="Exists('/usr/local/bin/castxml')">/usr/local/bin/castxml</CastXmlPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SharpGenGenerateConsumerBindMapping>false</SharpGenGenerateConsumerBindMapping>
+    <SignAssembly>$(SignedBuild)</SignAssembly>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(PackAvaloniaNative)' == 'true'">
@@ -19,13 +21,27 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  
   <ItemGroup>
     <!--<SharpGenMapping Include="Mappings.xml" />-->
     <PackageReference Include="SharpGenTools.Sdk" Version="1.2.1" PrivateAssets="all" />
-    <PackageReference Include="SharpGen.Runtime" Version="1.2.1" />
-    <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" />
+    <PackageReference Include="SharpGen.Runtime" Version="1.2.1" PrivateAssets="all" />
+    <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" PrivateAssets="all" />
+    <PackageReference Include="JetBrains.Build.ILRepack" Version="0.0.2" PrivateAssets="all" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
   </ItemGroup>
+
+  <Target Name="ILRepack" AfterTargets="Build">
+    <PropertyGroup>
+      <WorkingDirectory>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)</WorkingDirectory>
+      <ILRepackExec>dotnet &quot;$(ILRepackNetCore)&quot;</ILRepackExec>
+    </PropertyGroup>
+    <ItemGroup>
+      <InputAssemblies Include="SharpGen.Runtime.dll SharpGen.Runtime.COM.dll" />
+    </ItemGroup>
+    <Message Text="MERGING: @(InputAssemblies->'%(Filename)') into $(AssemblyName).dll" Importance="High" />
+    <Exec Condition="$(SignAssembly) == True" 
+          Command="$(ILRepackExec) /keyfile:&quot;$(AssemblyOriginatorKeyFile)&quot; /out:$(AssemblyName).dll $(AssemblyName).dll @(InputAssemblies)"
+          WorkingDirectory="$(WorkingDirectory)" />
+  </Target>
 </Project>

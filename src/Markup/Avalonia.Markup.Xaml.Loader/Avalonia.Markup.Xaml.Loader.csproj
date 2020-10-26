@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <PackageId>Avalonia.Markup.Xaml.Loader</PackageId>
+    <SignAssembly>$(SignedBuild)</SignAssembly>
   </PropertyGroup>
   <Import Project="IncludeXamlIlSre.props" />
   <ItemGroup>

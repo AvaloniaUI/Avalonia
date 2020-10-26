@@ -13,6 +13,6 @@
   </ItemGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\avalonia.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>False</SignAssembly>
+    <SignAssembly>$(SignedBuild)</SignAssembly>
   </PropertyGroup>
 </Project>
