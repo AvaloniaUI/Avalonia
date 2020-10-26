@@ -11,13 +11,13 @@ namespace XamlNameReferenceGenerator.Sandbox
     /// references are living in a separate partial class file. See also:
     /// https://devblogs.microsoft.com/dotnet/new-c-source-generator-samples/
     /// </summary>
-    [GenerateTypedNameReferences]
+    [GenerateTypedNameReferences(AdditionalNamespaces = new[] {"XamlNameReferenceGenerator.Sandbox.Controls"})]
     public partial class SignUpView : Window
     {
         public SignUpView()
         {
             AvaloniaXamlLoader.Load(this);
-            UserNameTextBox.Text = "Joseph";
+            UserNameTextBox.Text = "Joseph!";
             UserNameValidation.Text = "User name is valid.";
             PasswordTextBox.Text = "qwerty";
             PasswordValidation.Text = "Password is valid.";

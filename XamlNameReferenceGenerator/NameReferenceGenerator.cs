@@ -23,10 +23,6 @@ namespace XamlNameReferenceGenerator
     {
         public GenerateTypedNameReferencesAttribute() { }
 
-        public GenerateTypedNameReferencesAttribute(
-            params string[] additionalNamespaces) =>
-            AdditionalNamespaces = additionalNamespaces;
-
         public string[] AdditionalNamespaces { get; set; } = null;
     }
 }

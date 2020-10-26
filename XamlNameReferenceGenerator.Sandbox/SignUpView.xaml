@@ -1,11 +1,13 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sandbox="clr-namespace:XamlNameReferenceGenerator.Sandbox"
+        xmlns:controls="clr-namespace:XamlNameReferenceGenerator.Sandbox.Controls"
         x:Class="XamlNameReferenceGenerator.Sandbox.SignUpView">
     <StackPanel>
-        <TextBox Margin="0 10 0 0"
-                 x:Name="UserNameTextBox"
-                 Watermark="Please, enter user name..."
-                 UseFloatingWatermark="True" />
+        <controls:CustomTextBox Margin="0 10 0 0"
+                               x:Name="UserNameTextBox"
+                               Watermark="Please, enter user name..."
+                               UseFloatingWatermark="True" />
         <TextBlock x:Name="UserNameValidation"
                    Foreground="Red"
                    FontSize="12" />

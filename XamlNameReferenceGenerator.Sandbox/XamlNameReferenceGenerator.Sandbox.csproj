@@ -20,8 +20,6 @@
         <AdditionalFiles Include="**\*.xaml" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="../XamlNameReferenceGenerator/XamlNameReferenceGenerator.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false" />
+        <ProjectReference Include="../XamlNameReferenceGenerator/XamlNameReferenceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>

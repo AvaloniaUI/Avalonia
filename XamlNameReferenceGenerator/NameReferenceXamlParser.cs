@@ -17,6 +17,9 @@ namespace XamlNameReferenceGenerator
             IterateThroughAllNodes(document, node =>
             {
                 var type = node.Name;
+                if (type.Contains(":"))
+                    type = type.Split(':')[1];
+
                 var name = node.Attributes?["x:Name"]?.Value ??
                            node.Attributes?["Name"]?.Value;
                 if (!string.IsNullOrWhiteSpace(name))
