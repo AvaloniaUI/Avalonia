@@ -59,6 +59,7 @@ namespace Avalonia.Win32
         private const WindowStyles WindowStateMask = (WindowStyles.WS_MAXIMIZE | WindowStyles.WS_MINIMIZE);
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
+        private static ManagedDeferredRendererLock s_rendererLock;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
@@ -103,8 +104,7 @@ namespace Avalonia.Win32
                 IsResizable = true,
                 Decorations = SystemDecorations.Full
             };
-            _rendererLock = new ManagedDeferredRendererLock();
-
+            
             var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
 
             var compositionConnector = AvaloniaLocator.Current.GetService<CompositionConnector>();
@@ -113,6 +113,16 @@ namespace Avalonia.Win32
                 glPlatform is EglPlatformOpenGlInterface egl &&
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+
+            if (_isUsingComposition)
+            {
+                s_rendererLock = new ManagedDeferredRendererLock();
+                _rendererLock = s_rendererLock;
+            }
+            else
+            {
+                _rendererLock = new ManagedDeferredRendererLock();
+            }
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
@@ -125,8 +135,6 @@ namespace Avalonia.Win32
                     _blurHost = cgl.AttachToCompositionTree(compositionConnector, _hwnd);
 
                     _gl = cgl;
-
-                    _isUsingComposition = true;
                 }
                 else
                 {
@@ -135,7 +143,7 @@ namespace Avalonia.Win32
                     else if (glPlatform is WglPlatformOpenGlInterface wgl)
                         _gl = new WglGlPlatformSurface(wgl.PrimaryContext, this);
                 }
-            }
+            }            
 
             Screen = new ScreenImpl();
 
