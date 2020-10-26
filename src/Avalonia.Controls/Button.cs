@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Windows.Input;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -324,6 +325,8 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>());
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new ButtonAutomationPeer(this);
 
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {

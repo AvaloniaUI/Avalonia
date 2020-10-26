@@ -1,3 +1,4 @@
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -80,5 +81,7 @@ namespace Avalonia.Controls
                 }
             }          
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new TabItemAutomationPeer(this);
     }
 }

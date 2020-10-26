@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Rendering;
@@ -46,6 +48,7 @@ namespace Avalonia.Controls
 
         private DataTemplates _dataTemplates;
         private IControl _focusAdorner;
+        private Optional<AutomationPeer> _automationPeer;
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -198,6 +201,23 @@ namespace Avalonia.Controls
                 adornerLayer.Children.Remove(_focusAdorner);
                 _focusAdorner = null;
             }
+        }
+
+        protected virtual AutomationPeer OnCreateAutomationPeer() => null;
+
+        internal AutomationPeer GetOrCreateAutomationPeer()
+        {
+            VerifyAccess();
+
+            if (_automationPeer.HasValue)
+            {
+                return _automationPeer.Value;
+            }
+
+            var result = OnCreateAutomationPeer();
+            _automationPeer = result;
+            result?.CreatePlatformImpl();
+            return result;
         }
     }
 }

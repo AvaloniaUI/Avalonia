@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using System.Reflection;
 using Avalonia.Animation;
+using Avalonia.Controls.Platform;
 
 namespace Avalonia.UnitTests
 {
@@ -60,6 +61,7 @@ namespace Avalonia.UnitTests
 
         public TestServices(
             IAssetLoader assetLoader = null,
+            IPlatformAutomationInterface automationPlatform = null,
             IFocusManager focusManager = null,
             IGlobalClock globalClock = null,
             IInputManager inputManager = null,
@@ -80,6 +82,7 @@ namespace Avalonia.UnitTests
             IWindowingPlatform windowingPlatform = null)
         {
             AssetLoader = assetLoader;
+            AutomationPlatform = automationPlatform;
             FocusManager = focusManager;
             GlobalClock = globalClock;
             InputManager = inputManager;
@@ -100,6 +103,7 @@ namespace Avalonia.UnitTests
         }
 
         public IAssetLoader AssetLoader { get; }
+        public IPlatformAutomationInterface AutomationPlatform { get; }
         public IInputManager InputManager { get; }
         public IFocusManager FocusManager { get; }
         public IGlobalClock GlobalClock { get; }
@@ -120,6 +124,7 @@ namespace Avalonia.UnitTests
 
         public TestServices With(
             IAssetLoader assetLoader = null,
+            IPlatformAutomationInterface automationPlatform = null,
             IFocusManager focusManager = null,
             IGlobalClock globalClock = null,
             IInputManager inputManager = null,
@@ -141,6 +146,7 @@ namespace Avalonia.UnitTests
         {
             return new TestServices(
                 assetLoader: assetLoader ?? AssetLoader,
+                automationPlatform: automationPlatform ?? AutomationPlatform,
                 focusManager: focusManager ?? FocusManager,
                 globalClock: globalClock ?? GlobalClock,
                 inputManager: inputManager ?? InputManager,

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Media;
 using Avalonia.Metadata;
 

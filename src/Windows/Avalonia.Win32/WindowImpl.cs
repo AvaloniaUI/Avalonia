@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -12,6 +13,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl;
@@ -81,6 +83,7 @@ namespace Avalonia.Win32
         private POINT _maxTrackSize;
         private WindowImpl _parent;        
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
+        private WindowProvider _automationProvider;
 
         public WindowImpl()
         {
@@ -1199,6 +1202,17 @@ namespace Avalonia.Win32
 
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
+
+        internal WindowProvider GetOrCreateAutomationProvider()
+        {
+            if (_automationProvider is null)
+            {
+                var peer = ControlAutomationPeer.GetOrCreatePeer((Control)_owner);
+                _automationProvider = (WindowProvider)peer.PlatformImpl;
+            }
+
+            return _automationProvider;
+        }
 
         private struct SavedWindowInfo
         {

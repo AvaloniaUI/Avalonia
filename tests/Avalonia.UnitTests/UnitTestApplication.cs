@@ -10,6 +10,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
 using Avalonia.Input.Platform;
 using Avalonia.Animation;
+using Avalonia.Controls.Platform;
 
 namespace Avalonia.UnitTests
 {
@@ -49,6 +50,7 @@ namespace Avalonia.UnitTests
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
+                .Bind<IPlatformAutomationInterface>().ToConstant(Services.AutomationPlatform)
                 .Bind<IFocusManager>().ToConstant(Services.FocusManager)
                 .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
                 .BindToSelf<IGlobalStyles>(this)

@@ -4,10 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls.Chrome;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -946,5 +944,7 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new WindowAutomationPeer(this);
     }
 }

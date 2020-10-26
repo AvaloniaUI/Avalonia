@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -230,5 +231,7 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new TabControlAutomationPeer(this);
     }
 }
