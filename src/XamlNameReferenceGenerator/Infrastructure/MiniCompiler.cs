@@ -26,7 +26,6 @@ namespace XamlNameReferenceGenerator.Infrastructure
             Transformers.Add(new XamlIntrinsicsTransformer());
             Transformers.Add(new XArgumentsTransformer());
             Transformers.Add(new TypeReferenceResolver());
-            Transformers.Add(new MarkupExtensionTransformer());
             Transformers.Add(new PropertyReferenceResolver());
             Transformers.Add(new ResolvePropertyValueAddersTransformer());
             Transformers.Add(new ConstructableObjectTransformer());

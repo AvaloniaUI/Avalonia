@@ -21,6 +21,14 @@
                    Foreground="Red"
                    FontSize="12" />
 
+        <ListBox x:Name="AwesomeListView">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock x:Name="MeaningLessName" Text="{Binding}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
         <!-- x:Name directives. -->
         <TextBox Margin="0 10 0 0"
                  x:Name="ConfirmPasswordTextBox"
