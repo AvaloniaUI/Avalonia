@@ -19,14 +19,23 @@ using System;
 namespace XamlNameReferenceGenerator
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    sealed class GenerateTypedNameReferencesAttribute : Attribute { }
+    sealed class GenerateTypedNameReferencesAttribute : Attribute
+    {
+        public GenerateTypedNameReferencesAttribute() { }
+
+        public GenerateTypedNameReferencesAttribute(
+            params string[] additionalNamespaces) =>
+            AdditionalNamespaces = additionalNamespaces;
+
+        public string[] AdditionalNamespaces { get; set; } = null;
+    }
 }
 ";
         private const string DebugPath = @"C:\Users\prizr\Documents\GitHub\XamlNameReferenceGenerator\debug.txt";
         private static readonly NameReferenceXamlParser XamlParser = new NameReferenceXamlParser();
         private static readonly NameReferenceDebugger Debugger = new NameReferenceDebugger(DebugPath);
         private static readonly SymbolDisplayFormat SymbolDisplayFormat = new SymbolDisplayFormat(
-            typeQualificationStyle:SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters |
                              SymbolDisplayGenericsOptions.IncludeTypeConstraints |
                              SymbolDisplayGenericsOptions.IncludeVariance); 
@@ -43,22 +52,27 @@ namespace XamlNameReferenceGenerator
                 return;
 
             var symbols = UnpackAnnotatedTypes((CSharpCompilation) context.Compilation, receiver);
-            foreach (var typeSymbol in symbols)
+            foreach (var (typeSymbol, additionalNamespaces) in symbols)
             {
                 var relevantXamlFile = context.AdditionalFiles
                     .First(text =>
                         text.Path.EndsWith($"{typeSymbol.Name}.xaml") ||
                         text.Path.EndsWith($"{typeSymbol.Name}.axaml"));
 
-                var sourceCode = Debugger.Debug(() => GenerateSourceCode(typeSymbol, relevantXamlFile));
+                var sourceCode = Debugger.Debug(
+                    () => GenerateSourceCode(typeSymbol, relevantXamlFile, additionalNamespaces));
                 context.AddSource($"{typeSymbol.Name}.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
             }
         }
 
-        private static string GenerateSourceCode(INamedTypeSymbol classSymbol, AdditionalText xamlFile)
+        private static string GenerateSourceCode(
+            INamedTypeSymbol classSymbol,
+            AdditionalText xamlFile,
+            IList<string> additionalNamespaces)
         {
             var className = classSymbol.Name;
             var nameSpace = classSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat);
+            var namespaces = additionalNamespaces.Select(name => $"using {name};");
             var namedControls = XamlParser
                 .GetNamedControls(xamlFile)
                 .Select(info => "        " +
@@ -69,6 +83,7 @@ namespace XamlNameReferenceGenerator
 using System;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+{string.Join("\n", namespaces)}
 
 namespace {nameSpace}
 {{
@@ -80,7 +95,7 @@ namespace {nameSpace}
 ";
         }
 
-        private static IReadOnlyList<INamedTypeSymbol> UnpackAnnotatedTypes(
+        private static IReadOnlyList<(INamedTypeSymbol Type, IList<string> Namespaces)> UnpackAnnotatedTypes(
             CSharpCompilation existingCompilation,
             NameReferenceSyntaxReceiver nameReferenceSyntaxReceiver)
         {
@@ -91,20 +106,34 @@ namespace {nameSpace}
                     options));
 
             var attributeSymbol = compilation.GetTypeByMetadataName(AttributeName);
-            var typeSymbols = new List<INamedTypeSymbol>();
+            var symbols = new List<(INamedTypeSymbol Type, IList<string> Namespaces)>();
             foreach (var candidateClass in nameReferenceSyntaxReceiver.CandidateClasses)
             {
                 var model = compilation.GetSemanticModel(candidateClass.SyntaxTree);
                 var typeSymbol = (INamedTypeSymbol) model.GetDeclaredSymbol(candidateClass);
-                var containsAttribute = typeSymbol!
+                var relevantAttribute = typeSymbol!
                     .GetAttributes()
-                    .Any(attr => attr.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
+                    .FirstOrDefault(attr => attr.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
 
-                if (containsAttribute)
-                    typeSymbols.Add(typeSymbol);
+                if (relevantAttribute != null)
+                {
+                    var additionalNamespaces = new List<string>();
+                    if (relevantAttribute.NamedArguments.Any(kvp => kvp.Key == "AdditionalNamespaces"))
+                    {
+                        additionalNamespaces = relevantAttribute
+                            .NamedArguments
+                            .First(kvp => kvp.Key == "AdditionalNamespaces")
+                            .Value.Values
+                            .Where(constant => !constant.IsNull)
+                            .Select(constant => constant.Value!.ToString())
+                            .ToList();
+                    }
+                    
+                    symbols.Add((typeSymbol, additionalNamespaces));
+                }
             }
 
-            return typeSymbols;
+            return symbols;
         }
     }
 }

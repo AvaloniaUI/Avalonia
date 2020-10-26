@@ -13,9 +13,6 @@ namespace XamlNameReferenceGenerator
             var document = new XmlDocument();
             document.LoadXml(xaml);
 
-            var namespaceManager = new XmlNamespaceManager(document.NameTable);
-            namespaceManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2006/xaml");
-
             var names = new List<(string TypeName, string Name)>();
             IterateThroughAllNodes(document, node =>
             {
