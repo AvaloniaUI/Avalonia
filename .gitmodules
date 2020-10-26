@@ -1,0 +1,3 @@
+[submodule "external/XamlX"]
+	path = external/XamlX
+	url = git@github.com:kekekeks/XamlX.git

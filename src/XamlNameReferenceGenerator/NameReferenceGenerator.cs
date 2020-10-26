@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
+using XamlNameReferenceGenerator.Parsers;
 
 namespace XamlNameReferenceGenerator
 {
@@ -28,7 +29,7 @@ namespace XamlNameReferenceGenerator
 }
 ";
         private const string DebugPath = @"C:\Users\prizr\Documents\GitHub\XamlNameReferenceGenerator\debug.txt";
-        private static readonly NameReferenceXamlParser XamlParser = new NameReferenceXamlParser();
+        private static readonly INameReferenceXamlParser XamlParser = new XamlXRawNameReferenceXamlParser();
         private static readonly NameReferenceDebugger Debugger = new NameReferenceDebugger(DebugPath);
         private static readonly SymbolDisplayFormat SymbolDisplayFormat = new SymbolDisplayFormat(
             typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -70,7 +71,7 @@ namespace XamlNameReferenceGenerator
             var nameSpace = classSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat);
             var namespaces = additionalNamespaces.Select(name => $"using {name};");
             var namedControls = XamlParser
-                .GetNamedControls(xamlFile)
+                .GetNamedControls(xamlFile.GetText()!.ToString())
                 .Select(info => "        " +
                                 $"public {info.TypeName} {info.Name} => " +
                                 $"this.FindControl<{info.TypeName}>(\"{info.Name}\");");

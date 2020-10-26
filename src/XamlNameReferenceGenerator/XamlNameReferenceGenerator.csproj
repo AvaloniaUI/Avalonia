@@ -4,10 +4,11 @@
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="0.9.10" />
-        <PackageReference Include="Avalonia.Desktop" Version="0.9.10" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.10" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0-3.final" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.0.0" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Link="XamlX\filename" Include="../../external/XamlX/src/XamlX/**/*.cs" />
+        <Compile Remove="../../external/XamlX/src/XamlX/**/SreTypeSystem.cs" />
     </ItemGroup>
 </Project>

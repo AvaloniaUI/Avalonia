@@ -5,9 +5,9 @@
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="0.9.10" />
-        <PackageReference Include="Avalonia.Desktop" Version="0.9.10" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.10" />
+        <PackageReference Include="Avalonia" Version="0.10.0-preview5" />
+        <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview5" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0-preview5" />
         <PackageReference Include="Citrus.Avalonia" Version="1.2.6" />
     </ItemGroup>
     <ItemGroup>

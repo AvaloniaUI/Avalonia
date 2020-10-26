@@ -4,23 +4,24 @@
         xmlns:controls="clr-namespace:XamlNameReferenceGenerator.Sandbox.Controls"
         x:Class="XamlNameReferenceGenerator.Sandbox.SignUpView">
     <StackPanel>
+        <!-- Regular name directives. -->
         <controls:CustomTextBox Margin="0 10 0 0"
-                               x:Name="UserNameTextBox"
-                               Watermark="Please, enter user name..."
-                               UseFloatingWatermark="True" />
-        <TextBlock x:Name="UserNameValidation"
+                                Name="UserNameTextBox"
+                                Watermark="Please, enter user name..."
+                                UseFloatingWatermark="True" />
+        <TextBlock Name="UserNameValidation"
                    Foreground="Red"
                    FontSize="12" />
-
         <TextBox Margin="0 10 0 0"
-                 x:Name="PasswordTextBox"
+                 Name="PasswordTextBox"
                  Watermark="Please, enter your password..."
                  UseFloatingWatermark="True"
                  PasswordChar="*" />
-        <TextBlock x:Name="PasswordValidation"
+        <TextBlock Name="PasswordValidation"
                    Foreground="Red"
                    FontSize="12" />
 
+        <!-- x:Name directives. -->
         <TextBox Margin="0 10 0 0"
                  x:Name="ConfirmPasswordTextBox"
                  Watermark="Please, confirm the password..."
@@ -30,7 +31,6 @@
                    TextWrapping="Wrap"
                    Foreground="Red"
                    FontSize="12" />
-
         <Button Margin="0 10 0 5"
                 Content="Sign up"
                 x:Name="SignUpButton" />

@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
-using Microsoft.CodeAnalysis;
 
-namespace XamlNameReferenceGenerator
+namespace XamlNameReferenceGenerator.Parsers
 {
-    internal class NameReferenceXamlParser
+    internal class XmlDocumentNameReferenceXamlParser : INameReferenceXamlParser
     {
-        public List<(string TypeName, string Name)> GetNamedControls(AdditionalText additionalText)
+        public List<(string TypeName, string Name)> GetNamedControls(string xaml)
         {
-            var xaml = additionalText.GetText()!.ToString();
             var document = new XmlDocument();
             document.LoadXml(xaml);
 
