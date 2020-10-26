@@ -1,13 +1,14 @@
 ﻿using System;
 using System.IO;
 
-namespace XamlNameReferenceGenerator
+namespace XamlNameReferenceGenerator.Infrastructure
 {
-    internal class NameReferenceDebugger
+    internal class PhysicalFileDebugger
     {
+        private const string DefaultPath = @"C:\Users\prizr\Documents\GitHub\XamlNameReferenceGenerator\debug.txt";
         private readonly string _path;
 
-        public NameReferenceDebugger(string path) => _path = path;
+        public PhysicalFileDebugger(string path = DefaultPath) => _path = path;
 
         public string Debug(Func<string> function)
         {

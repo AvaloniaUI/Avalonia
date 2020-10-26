@@ -2,8 +2,8 @@
 
 namespace XamlNameReferenceGenerator.Parsers
 {
-    public interface INameReferenceXamlParser
+    internal interface INameReferenceXamlParser
     {
-        List<(string TypeName, string Name)> GetNamedControls(string xaml);
+        IReadOnlyList<(string TypeName, string Name)> GetNamedControls(string xaml);
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace XamlNameReferenceGenerator.Sandbox
@@ -11,7 +10,7 @@ namespace XamlNameReferenceGenerator.Sandbox
     /// references are living in a separate partial class file. See also:
     /// https://devblogs.microsoft.com/dotnet/new-c-source-generator-samples/
     /// </summary>
-    [GenerateTypedNameReferences(AdditionalNamespaces = new[] {"XamlNameReferenceGenerator.Sandbox.Controls"})]
+    [GenerateTypedNameReferences]
     public partial class SignUpView : Window
     {
         public SignUpView()

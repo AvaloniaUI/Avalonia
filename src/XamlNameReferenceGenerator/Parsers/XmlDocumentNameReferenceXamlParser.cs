@@ -6,7 +6,7 @@ namespace XamlNameReferenceGenerator.Parsers
 {
     internal class XmlDocumentNameReferenceXamlParser : INameReferenceXamlParser
     {
-        public List<(string TypeName, string Name)> GetNamedControls(string xaml)
+        public IReadOnlyList<(string TypeName, string Name)> GetNamedControls(string xaml)
         {
             var document = new XmlDocument();
             document.LoadXml(xaml);
