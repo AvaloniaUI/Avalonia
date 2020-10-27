@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using XamlX.Compiler;
 using XamlX.Emit;
 using XamlX.Transform;
@@ -9,13 +10,16 @@ namespace XamlNameReferenceGenerator.Infrastructure
 {
     internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
     {
-        public static MiniCompiler CreateDefault(RoslynTypeSystem typeSystem)
+        public static MiniCompiler CreateDefault(RoslynTypeSystem typeSystem, params string[] additionalTypes)
         {
-            var avaloniaXmlns = typeSystem.GetType("Avalonia.Metadata.XmlnsDefinitionAttribute");
+            var mappings = new XamlLanguageTypeMappings(typeSystem);
+            foreach (var additionalType in additionalTypes)
+                mappings.XmlnsAttributes.Add(typeSystem.GetType(additionalType));
+
             var configuration = new TransformerConfiguration(
                 typeSystem,
                 typeSystem.Assemblies[0],
-                new XamlLanguageTypeMappings(typeSystem) {XmlnsAttributes = {avaloniaXmlns}});
+                mappings);
             return new MiniCompiler(configuration);
         }
         

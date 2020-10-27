@@ -8,6 +8,7 @@ namespace XamlNameReferenceGenerator.Parsers
 {
     internal class XamlXNameReferenceXamlParser : INameReferenceXamlParser
     {
+        private const string AvaloniaXmlnsAttribute = "Avalonia.Metadata.XmlnsDefinitionAttribute";
         private readonly CSharpCompilation _compilation;
 
         public XamlXNameReferenceXamlParser(CSharpCompilation compilation) => _compilation = compilation;
@@ -20,7 +21,7 @@ namespace XamlNameReferenceGenerator.Parsers
             });
 
             MiniCompiler
-                .CreateDefault(new RoslynTypeSystem(_compilation))
+                .CreateDefault(new RoslynTypeSystem(_compilation), AvaloniaXmlnsAttribute)
                 .Transform(parsed);
             
             var visitor = new NamedControlCollector();

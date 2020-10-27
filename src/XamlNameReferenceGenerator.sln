@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNameReferenceGenerator"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNameReferenceGenerator.Sandbox", "XamlNameReferenceGenerator.Sandbox\XamlNameReferenceGenerator.Sandbox.csproj", "{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNameReferenceGenerator.Tests", "XamlNameReferenceGenerator.Tests\XamlNameReferenceGenerator.Tests.csproj", "{B13A0A44-85BC-49A7-970F-6C9BF8BDFD54}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B13A0A44-85BC-49A7-970F-6C9BF8BDFD54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B13A0A44-85BC-49A7-970F-6C9BF8BDFD54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B13A0A44-85BC-49A7-970F-6C9BF8BDFD54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B13A0A44-85BC-49A7-970F-6C9BF8BDFD54}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
