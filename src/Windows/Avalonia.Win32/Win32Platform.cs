@@ -38,7 +38,7 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         public bool UseDeferredRendering { get; set; } = true;
-        public bool AllowEglInitialization { get; set; } = true;
+        public bool AllowEglInitialization { get; set; };
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
         public bool UseWgl { get; set; }
@@ -55,7 +55,7 @@ namespace Avalonia
         /// Supported on Windows 10 build 16299 and above. Ignored on other versions.
         /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
         /// </remarks>
-        public bool UseWindowsUIComposition { get; set; } = true;
+        public bool UseWindowsUIComposition { get; set; };
     }
 }
 
