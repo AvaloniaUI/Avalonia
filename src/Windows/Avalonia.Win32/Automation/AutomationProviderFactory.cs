@@ -25,22 +25,15 @@ namespace Avalonia.Win32.Automation
                 return new WindowProvider(windowImpl, windowPeer);
             }
 
-            var parent = peer.GetParent()?.PlatformImpl as AutomationProvider;
-
-            if (parent is null)
-            {
-                throw new AvaloniaInternalException($"Could not find parent automation peer for {peer}.");
-            }
-
             var result = peer switch
             {
-                ButtonAutomationPeer _ => new AutomationProvider(parent, peer, UiaControlTypeId.Button, true),
-                MenuAutomationPeer _ => new AutomationProvider(parent, peer, UiaControlTypeId.Menu, false),
-                MenuItemAutomationPeer _ => new AutomationProvider(parent, peer, UiaControlTypeId.MenuItem, true),
-                TabControlAutomationPeer _ => new AutomationProvider(parent, peer, UiaControlTypeId.Tab, true),
-                TabItemAutomationPeer _ => new AutomationProvider(parent, peer, UiaControlTypeId.TabItem, true),
-                TextAutomationPeer _ => new AutomationProvider(parent, peer, UiaControlTypeId.Text, true),
-                _ => new AutomationProvider(parent, peer, UiaControlTypeId.Custom, true),
+                ButtonAutomationPeer _ => new AutomationProvider(peer, UiaControlTypeId.Button, true),
+                MenuAutomationPeer _ => new AutomationProvider(peer, UiaControlTypeId.Menu, false),
+                MenuItemAutomationPeer _ => new AutomationProvider(peer, UiaControlTypeId.MenuItem, true),
+                TabControlAutomationPeer _ => new AutomationProvider(peer, UiaControlTypeId.Tab, true),
+                TabItemAutomationPeer _ => new AutomationProvider(peer, UiaControlTypeId.TabItem, true),
+                TextAutomationPeer _ => new AutomationProvider(peer, UiaControlTypeId.Text, true),
+                _ => new AutomationProvider(peer, UiaControlTypeId.Custom, true),
             };
 
             var _ = result.Update();

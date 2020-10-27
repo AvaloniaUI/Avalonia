@@ -68,11 +68,17 @@ namespace Avalonia.Controls.Automation.Peers
 
         public Rect GetVisibleBoundingRect() => GetVisibleBoundingRectCore();
 
+        public bool IsKeyboardFocusable() => IsKeyboardFocusableCore();
+
+        public void SetFocus() => SetFocusCore();
+
         protected abstract Rect GetBoundingRectangleCore();
         protected abstract IReadOnlyList<AutomationPeer>? GetChildrenCore();
         protected abstract string GetClassNameCore();
         protected abstract string? GetNameCore();
         protected abstract AutomationPeer? GetParentCore();
+        protected abstract bool IsKeyboardFocusableCore();
+        protected abstract void SetFocusCore();
 
         protected virtual AutomationPeer? GetPeerFromPointCore(Point point)
         {

@@ -24,6 +24,8 @@ namespace Avalonia.Win32.Automation
             return peer?.PlatformImpl as IRawElementProviderFragment;
         }
 
+        public override IRawElementProviderFragmentRoot FragmentRoot => this;
+
         public IRawElementProviderFragment? GetFocus() => null;
 
         public override IRawElementProviderSimple? HostRawElementProvider

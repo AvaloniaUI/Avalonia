@@ -60,6 +60,9 @@ namespace Avalonia.Controls.Automation.Peers
             throw new InvalidOperationException("Cannot find parent automation peer.");
         }
 
+        protected override bool IsKeyboardFocusableCore() => Owner.Focusable;
+        protected override void SetFocusCore() => Owner.Focus();
+
         protected static IReadOnlyList<AutomationPeer>? GetChildren(IVisual control)
         {
             List<AutomationPeer>? children = null;

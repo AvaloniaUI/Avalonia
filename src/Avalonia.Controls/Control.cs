@@ -48,7 +48,8 @@ namespace Avalonia.Controls
 
         private DataTemplates _dataTemplates;
         private IControl _focusAdorner;
-        private Optional<AutomationPeer> _automationPeer;
+        private AutomationPeer _automationPeer;
+        private bool _automationPeerCreated;
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -209,15 +210,15 @@ namespace Avalonia.Controls
         {
             VerifyAccess();
 
-            if (_automationPeer.HasValue)
+            if (_automationPeerCreated)
             {
-                return _automationPeer.Value;
+                return _automationPeer;
             }
 
-            var result = OnCreateAutomationPeer();
-            _automationPeer = result;
-            result?.CreatePlatformImpl();
-            return result;
+            _automationPeer = OnCreateAutomationPeer();
+            _automationPeerCreated = true;
+            _automationPeer?.CreatePlatformImpl();
+            return _automationPeer;
         }
     }
 }

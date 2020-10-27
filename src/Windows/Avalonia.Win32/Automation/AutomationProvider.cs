@@ -17,31 +17,33 @@ namespace Avalonia.Win32.Automation
     internal class AutomationProvider : MarshalByRefObject,
         IAutomationPeerImpl,
         IRawElementProviderSimple,
-        IRawElementProviderFragment
+        IRawElementProviderFragment,
+        ISelectionProvider
     {
-        private readonly AutomationProvider? _parent;
+        private readonly UiaControlTypeId _controlType;
+        private readonly bool _isContentElement;
         private readonly WeakReference<AutomationPeer> _peer;
+        private AutomationProvider? _parent;
+        private IRawElementProviderFragmentRoot? _fragmentRoot;
         private Rect _boundingRect;
         private List<AutomationProvider>? _children;
         private bool _childrenValid;
         private string? _className;
-        private UiaControlTypeId _controlType;
-        private bool _isContentElement;
+        private bool _isKeyboardFocusable;
         private string? _name;
+        private SelectionMode _selectionMode;
+        private IRawElementProviderSimple[]? _selection;
 
         public AutomationProvider(
-            AutomationProvider parent,
             AutomationPeer peer,
             UiaControlTypeId controlType,
             bool isContentElement)
         {
             Dispatcher.UIThread.VerifyAccess();
 
-            _parent = parent ?? throw new ArgumentNullException(nameof(parent));
             _peer = new WeakReference<AutomationPeer>(peer ?? throw new ArgumentNullException(nameof(peer)));
             _controlType = controlType;
             _isContentElement = isContentElement;
-            FragmentRoot = parent.FragmentRoot;
         }
 
         protected AutomationProvider(AutomationPeer peer)
@@ -51,8 +53,6 @@ namespace Avalonia.Win32.Automation
             _peer = new WeakReference<AutomationPeer>(peer ?? throw new ArgumentNullException(nameof(peer)));
             _controlType = UiaControlTypeId.Window;
             _isContentElement = true;
-            FragmentRoot = this as IRawElementProviderFragmentRoot ??
-                throw new InvalidOperationException("Parent must be specified for non-root providers.");
         }
 
         public AutomationPeer Peer
@@ -81,14 +81,30 @@ namespace Avalonia.Win32.Automation
             }
         }
 
-        public IRawElementProviderFragmentRoot FragmentRoot { get; }
+        public virtual IRawElementProviderFragmentRoot FragmentRoot
+        {
+            get
+            {
+                return _fragmentRoot ??= GetParent()?.FragmentRoot ??
+                    throw new AvaloniaInternalException("Could not get FragmentRoot from parent.");
+            }
+        }
+        
         public ProviderOptions ProviderOptions => ProviderOptions.ServerSideProvider;
         public WindowImpl? Window => (FragmentRoot as WindowProvider)?.Owner;
-
         public virtual IRawElementProviderSimple? HostRawElementProvider => null;
+        bool ISelectionProvider.CanSelectMultiple => _selectionMode.HasFlagCustom(SelectionMode.Multiple);
+        bool ISelectionProvider.IsSelectionRequired => _selectionMode.HasFlagCustom(SelectionMode.AlwaysSelected);
 
         [return: MarshalAs(UnmanagedType.IUnknown)]
-        public virtual object? GetPatternProvider(int patternId) => null;
+        public virtual object? GetPatternProvider(int patternId)
+        {
+            return (UiaPatternId)patternId switch
+            {
+                UiaPatternId.Selection => Peer is ISelectingAutomationPeer ? this : null,
+                _ => null,
+            };
+        }
 
         public virtual object? GetPropertyValue(int propertyId)
         {
@@ -98,6 +114,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.ControlType => _controlType,
                 UiaPropertyId.IsContentElement => _isContentElement,
                 UiaPropertyId.IsControlElement => true,
+                UiaPropertyId.IsKeyboardFocusable => _isKeyboardFocusable,
                 UiaPropertyId.LocalizedControlType => _controlType.ToString().ToLowerInvariant(),
                 UiaPropertyId.Name => _name,
                 _ => null,
@@ -110,15 +127,15 @@ namespace Avalonia.Win32.Automation
         {
             if (direction == NavigateDirection.Parent)
             {
-                return _parent;
+                return GetParent();
             }
 
             EnsureChildren();
 
             return direction switch
             {
-                NavigateDirection.NextSibling => _parent?.GetSibling(this, 1),
-                NavigateDirection.PreviousSibling => _parent?.GetSibling(this, -1),
+                NavigateDirection.NextSibling => GetParent()?.GetSibling(this, 1),
+                NavigateDirection.PreviousSibling => GetParent()?.GetSibling(this, -1),
                 NavigateDirection.FirstChild => _children?.FirstOrDefault(),
                 NavigateDirection.LastChild => _children?.LastOrDefault(),
                 _ => null,
@@ -127,7 +144,7 @@ namespace Avalonia.Win32.Automation
 
         public void SetFocus()
         {
-            throw new NotImplementedException();
+            InvokeSync(() => Peer.SetFocus());
         }
 
         public async Task Update()
@@ -141,6 +158,7 @@ namespace Avalonia.Win32.Automation
         public override string ToString() => _className!;
 
         IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
+        IRawElementProviderSimple[] ISelectionProvider.GetSelection() => _selection ?? Array.Empty<IRawElementProviderSimple>();
 
         protected void InvokeSync(Action action)
         {
@@ -170,7 +188,29 @@ namespace Avalonia.Win32.Automation
         {
             _boundingRect = Peer.GetBoundingRectangle();
             _className = Peer.GetClassName();
+            _isKeyboardFocusable = Peer.IsKeyboardFocusable();
             _name = Peer.GetName();
+
+            if (Peer is ISelectingAutomationPeer selectionPeer)
+            {
+                var selection = selectionPeer.GetSelection();
+
+                _selectionMode = selectionPeer.GetSelectionMode();
+                _selection = selection.Count > 0 ?
+                    selection.Select(x => (IRawElementProviderSimple)x.PlatformImpl!).ToArray() :
+                    null;
+            }
+        }
+
+        private AutomationProvider? GetParent()
+        {
+            if (_parent is null && !(this is IRawElementProviderFragmentRoot))
+            {
+                _parent = InvokeSync(() => Peer.GetParent())?.PlatformImpl as AutomationProvider ??
+                    throw new AvaloniaInternalException($"Could not find parent AutomationProvider for {Peer}.");
+            }
+
+            return _parent;
         }
 
         private void EnsureChildren()
