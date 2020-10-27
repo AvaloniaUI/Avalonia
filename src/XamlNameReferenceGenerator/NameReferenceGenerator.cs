@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -47,14 +48,49 @@ namespace XamlNameReferenceGenerator
             var symbols = UnpackAnnotatedTypes(compilation, receiver);
             foreach (var typeSymbol in symbols)
             {
-                var relevantXamlFile = context.AdditionalFiles
-                    .First(text =>
-                        text.Path.EndsWith($"{typeSymbol.Name}.xaml") ||
-                        text.Path.EndsWith($"{typeSymbol.Name}.axaml"));
+                var xamlFileName = $"{typeSymbol.Name}.xaml";
+                var aXamlFileName = $"{typeSymbol.Name}.axaml";
+                var relevantXamlFile = context
+                    .AdditionalFiles
+                    .FirstOrDefault(text =>
+                        text.Path.EndsWith(xamlFileName) ||
+                        text.Path.EndsWith(aXamlFileName));
 
-                var sourceCode = Debugger.Debug(
-                    () => GenerateSourceCode(xamlParser, typeSymbol, relevantXamlFile));
-                context.AddSource($"{typeSymbol.Name}.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
+                if (relevantXamlFile is null)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            new DiagnosticDescriptor(
+                                "AXN0001",
+                                "Unable to discover the relevant Avalonia XAML file.",
+                                "Unable to discover the relevant Avalonia XAML file " +
+                                $"neither at {xamlFileName} nor at {aXamlFileName}",
+                                "Usage",
+                                DiagnosticSeverity.Error,
+                                true),
+                            Location.None));
+                    return;
+                }
+
+                try
+                {
+                    var sourceCode = Debugger.Debug(() => GenerateSourceCode(xamlParser, typeSymbol, relevantXamlFile));
+                    context.AddSource($"{typeSymbol.Name}.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
+                }
+                catch (Exception exception)
+                {
+                    context.ReportDiagnostic(
+                        Diagnostic.Create(
+                            new DiagnosticDescriptor(
+                                "AXN0002",
+                                "Unhandled exception occured while generating typed Name references.",
+                                $"Unhandled exception occured while generating typed Name references: {exception}",
+                                "Usage",
+                                DiagnosticSeverity.Error,
+                                true),
+                            Location.None));
+                    return;
+                }
             }
         }
 

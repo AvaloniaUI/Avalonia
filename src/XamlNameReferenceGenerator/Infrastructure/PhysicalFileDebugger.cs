@@ -15,19 +15,17 @@ namespace XamlNameReferenceGenerator.Infrastructure
             if (File.Exists(_path))
                 File.Delete(_path);
 
-            string sourceCode;
             try
             {
-                sourceCode = function();
+                var sourceCode = function();
                 File.WriteAllText(_path, sourceCode);
+                return sourceCode;
             }
             catch (Exception exception)
             {
                 File.WriteAllText(_path, exception.ToString());
-                sourceCode = string.Empty;
+                throw;
             }
-
-            return sourceCode;
         }
     }
 }

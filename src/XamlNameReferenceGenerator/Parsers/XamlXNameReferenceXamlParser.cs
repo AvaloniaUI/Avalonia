@@ -23,7 +23,7 @@ namespace XamlNameReferenceGenerator.Parsers
                 .CreateDefault(new RoslynTypeSystem(_compilation))
                 .Transform(parsed);
             
-            var visitor = new MiniNamedControlCollector();
+            var visitor = new NamedControlCollector();
             parsed.Root.Visit(visitor);
             parsed.Root.VisitChildren(visitor);
             return visitor.Controls;
