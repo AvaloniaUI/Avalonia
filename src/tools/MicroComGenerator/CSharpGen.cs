@@ -109,13 +109,8 @@ namespace MicroComGenerator
             return ns.AddMembers(_idl.Structs.Select(e =>
                 StructDeclaration(e.Name)
                     .WithModifiers(TokenList(Token(_visibility)))
+                    .AddAttribute("System.Runtime.InteropServices.StructLayout", "System.Runtime.InteropServices.LayoutKind.Sequential")
                     .AddModifiers(Token(SyntaxKind.UnsafeKeyword))
-                    .AddAttributeLists(AttributeList(SingletonSeparatedList(
-                        Attribute(ParseName("System.Runtime.InteropServices.StructLayout"),
-                            AttributeArgumentList(SingletonSeparatedList(
-                                AttributeArgument(
-                                    ParseExpression("System.Runtime.InteropServices.LayoutKind.Sequential"))))
-                        ))))
                     .WithMembers(new SyntaxList<MemberDeclarationSyntax>(SeparatedList(e.Select(m =>
                         DeclareField(m.Type.ToString(), m.Name, SyntaxKind.PublicKeyword)))))
             ).ToArray());

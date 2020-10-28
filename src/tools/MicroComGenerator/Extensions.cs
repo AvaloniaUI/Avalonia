@@ -81,6 +81,13 @@ namespace MicroComGenerator
             return cl.AddBaseListTypes(SimpleBaseType(SyntaxFactory.ParseTypeName(bt)));
         }
 
+        public static T AddAttribute<T>(this T member, string attribute, params string[] args) where T : MemberDeclarationSyntax
+        {
+            return (T)member.AddAttributeLists(AttributeList(SingletonSeparatedList(
+                Attribute(ParseName(attribute), AttributeArgumentList(
+                    SeparatedList(args.Select(a => AttributeArgument(ParseExpression(a)))))))));
+        }
+
         public static string StripPrefix(this string s, string prefix) => string.IsNullOrEmpty(s)
             ? s
             : s.StartsWith(prefix)

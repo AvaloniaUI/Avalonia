@@ -278,11 +278,12 @@ namespace MicroComGenerator
 
             
             // Generate VTable method
-
-            var shadowDelegate = DelegateDeclaration(ParseTypeName(returnArg.NativeType), member.Name+"Delegate")
+            var shadowDelegate = DelegateDeclaration(ParseTypeName(returnArg.NativeType), member.Name + "Delegate")
                 .AddParameterListParameters(Parameter(Identifier("@this")).WithType(ParseTypeName("IntPtr")))
                 .AddParameterListParameters(args.Select(x =>
-                    Parameter(Identifier(x.Name)).WithType(ParseTypeName(x.NativeType))).ToArray());
+                    Parameter(Identifier(x.Name)).WithType(ParseTypeName(x.NativeType))).ToArray())
+                .AddAttribute("System.Runtime.InteropServices.UnmanagedFunctionPointer",
+                    "System.Runtime.InteropServices.CallingConvention.StdCall");
 
             var shadowMethod = MethodDeclaration(shadowDelegate.ReturnType, member.Name)
                 .WithParameterList(shadowDelegate.ParameterList)
