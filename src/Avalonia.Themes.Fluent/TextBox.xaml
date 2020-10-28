@@ -36,9 +36,7 @@
     <Setter Property="ContextMenu" Value="{StaticResource DefaultTextBoxContextMenu}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <DockPanel>
-          <DataValidationErrors DockPanel.Dock="Bottom" Margin="0 10 0 0" />
-          
+        <DataValidationErrors>
           <Panel>
             <Border
               Name="PART_BorderElement"
@@ -93,7 +91,7 @@
               </Grid>
             </Border>
           </Panel>
-        </DockPanel>
+        </DataValidationErrors>
       </ControlTemplate>
     </Setter>
   </Style>

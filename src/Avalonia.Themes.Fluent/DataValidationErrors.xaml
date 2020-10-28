@@ -14,7 +14,7 @@
   <Setter Property="Template">
     <ControlTemplate>
       <DockPanel LastChildFill="True">
-        <ContentControl
+        <ContentControl Margin="0 4 0 0"
           DockPanel.Dock="Bottom"
           ContentTemplate="{TemplateBinding ErrorTemplate}"
           DataContext="{TemplateBinding Owner}"
