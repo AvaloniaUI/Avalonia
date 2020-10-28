@@ -34,9 +34,10 @@ namespace Avalonia.MicroCom
 
         public static Guid GetGuidFor(Type type) => _guids[type];
 
-        public static T CreateProxyFor<T>(void* ppv, bool ownsHandle) => (T)CreateProxyFor(typeof(T), new IntPtr(ppv), ownsHandle);
+        public static T CreateProxyFor<T>(void* pObject, bool ownsHandle) => (T)CreateProxyFor(typeof(T), new IntPtr(pObject), ownsHandle);
+        public static T CreateProxyFor<T>(IntPtr pObject, bool ownsHandle) => (T)CreateProxyFor(typeof(T), pObject, ownsHandle);
         
-        public static object CreateProxyFor(Type type, IntPtr ppv, bool ownsHandle) => _factories[type](ppv, ownsHandle);
+        public static object CreateProxyFor(Type type, IntPtr pObject, bool ownsHandle) => _factories[type](pObject, ownsHandle);
         
         public static void* GetNativePointer<T>(T obj, bool owned = false) where T : IUnknown
         {
@@ -83,6 +84,12 @@ namespace Avalonia.MicroCom
                 }
             }
 
+        }
+
+        public static T CloneReference<T>(T iface) where T : IUnknown
+        {
+            var ownedPointer = GetNativePointer(iface, true);
+            return CreateProxyFor<T>(ownedPointer, true);
         }
     }
 }

@@ -1,4 +1,4 @@
-@clr-namespace Avalonia.Native.MicroCom
+@clr-namespace Avalonia.Native.Interop
 @clr-access internal
 @cpp-preamble @@
 #include "com.h"
@@ -244,13 +244,13 @@ interface IAvnWindowBase : IUnknown
      HRESULT SetCursor(IAvnCursor* cursor);
      HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ret);
      HRESULT SetMainMenu(IAvnMenu* menu);
-     HRESULT ObtainNSWindowHandle(void** retOut);
-     HRESULT ObtainNSWindowHandleRetained(void** retOut);
-     HRESULT ObtainNSViewHandle(void** retOut);
-     HRESULT ObtainNSViewHandleRetained(void** retOut);
+     HRESULT ObtainNSWindowHandle([intptr]void** retOut);
+     HRESULT ObtainNSWindowHandleRetained([intptr]void** retOut);
+     HRESULT ObtainNSViewHandle([intptr]void** retOut);
+     HRESULT ObtainNSViewHandleRetained([intptr]void** retOut);
      HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut);
      HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
-                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb, void* sourceHandle);
+                                              IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
      HRESULT SetBlurEnabled(bool enable);
 }
 
@@ -267,7 +267,7 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT SetParent(IAvnWindow* parent);
      HRESULT SetCanResize(bool value);
      HRESULT SetDecorations(SystemDecorations value);
-     HRESULT SetTitle(void* utf8Title);
+     HRESULT SetTitle(char* utf8Title);
      HRESULT SetTitleBarColor(AvnColor color);
      HRESULT SetWindowState(AvnWindowState state);
      HRESULT GetWindowState(AvnWindowState*ret);
@@ -299,7 +299,7 @@ interface IAvnWindowBaseEvents : IUnknown
      void LostFocus();
      AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
-                                         IAvnClipboard* clipboard, void* dataObjectHandle);
+                                         IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
 }
 
 [uuid(1ae178ee-1fcc-447f-b6dd-b7bb727f934c)]
@@ -321,7 +321,7 @@ interface IAvnWindowEvents : IAvnWindowBaseEvents
 interface IAvnMacOptions : IUnknown
 {
      HRESULT SetShowInDock(int show);
-     HRESULT SetApplicationTitle(void* utf8string);
+     HRESULT SetApplicationTitle(char* utf8string);
 }
 
 [uuid(04c1b049-1f43-418a-9159-cae627ec1367)]
@@ -395,7 +395,7 @@ interface IAvnScreens : IUnknown
 interface IAvnClipboard : IUnknown
 {
      HRESULT GetText(char* type, IAvnString**ppv);
-     HRESULT SetText(char* type, void* utf8Text);
+     HRESULT SetText(char* type, char* utf8Text);
      HRESULT ObtainFormats(IAvnStringArray**ppv);
      HRESULT GetStrings(char* type, IAvnStringArray**ppv);
      HRESULT SetBytes(char* type, void* utf8Text, int len);
@@ -420,8 +420,8 @@ interface IAvnGlDisplay : IUnknown
 {
      HRESULT CreateContext(IAvnGlContext* share, IAvnGlContext**ppv);
      void LegacyClearCurrentContext();
-     HRESULT WrapContext(void* native, IAvnGlContext**ppv);
-     void* GetProcAddress(char* proc);
+     HRESULT WrapContext([intptr]void* native, IAvnGlContext**ppv);
+     [intptr]void* GetProcAddress(char* proc);
 }
 
 [uuid(78c5711e-2a98-40d2-bac4-0cc9a49dc4f3)]
@@ -431,7 +431,7 @@ interface IAvnGlContext : IUnknown
      HRESULT LegacyMakeCurrent();
      int GetSampleCount();
      int GetStencilSize();
-     void* GetNativeHandle();
+     [intptr]void* GetNativeHandle();
 }
 
 [uuid(931062d2-5bc8-4062-8588-83dd8deb99c2)]
@@ -452,7 +452,7 @@ interface IAvnMenu : IUnknown
 {
      HRESULT InsertItem(int index, IAvnMenuItem* item);
      HRESULT RemoveItem(IAvnMenuItem* item);
-     HRESULT SetTitle(void* utf8String);
+     HRESULT SetTitle(char* utf8String);
      HRESULT Clear();
 }
 
@@ -466,8 +466,8 @@ interface IAvnPredicateCallback : IUnknown
 interface IAvnMenuItem : IUnknown
 {
      HRESULT SetSubMenu(IAvnMenu* menu);
-     HRESULT SetTitle(void* utf8String);
-     HRESULT SetGesture(void* utf8String, AvnInputModifiers modifiers);
+     HRESULT SetTitle(char* utf8String);
+     HRESULT SetGesture(char* utf8String, AvnInputModifiers modifiers);
      HRESULT SetAction(IAvnPredicateCallback* predicate, IAvnActionCallback* callback);
      HRESULT SetIsChecked(bool isChecked);
      HRESULT SetToggleType(AvnMenuItemToggleType toggleType);
@@ -499,22 +499,22 @@ interface IAvnDndResultCallback : IUnknown
 [uuid(f07c608e-52e9-422d-836e-c70f6e9b80f5)]
 interface IAvnGCHandleDeallocatorCallback : IUnknown
 {
-     void FreeGCHandle(void* handle);
+     void FreeGCHandle([intptr]void* handle);
 }
 
 [uuid(91c7f677-f26b-4ff3-93cc-cf15aa966ffa)]
 interface IAvnNativeControlHost : IUnknown
 {
-     HRESULT CreateDefaultChild(void* parent, void** retOut);
+     HRESULT CreateDefaultChild([intptr]void* parent, [intptr]void** retOut);
      IAvnNativeControlHostTopLevelAttachment* CreateAttachment();
-     void DestroyDefaultChild(void* child);
+     void DestroyDefaultChild([intptr]void* child);
 }
 
 [uuid(14a9e164-1aae-4271-bb78-7b5230999b52)]
 interface IAvnNativeControlHostTopLevelAttachment : IUnknown
 {
-     void* GetParentHandle();
-     HRESULT InitializeWithChildHandle(void* child);
+     [intptr]void* GetParentHandle();
+     HRESULT InitializeWithChildHandle([intptr]void* child);
      HRESULT AttachTo(IAvnNativeControlHost* host);
      void ShowInBounds(float x, float y, float width, float height);
      void HideWithSize(float width, float height);

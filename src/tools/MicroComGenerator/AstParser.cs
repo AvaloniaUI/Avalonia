@@ -27,9 +27,9 @@ namespace MicroComGenerator
             return idl;
         }
 
-        static List<AstAttributeNode> ParseGlobalAttributes(ref TokenParser parser)
+        static AstAttributes ParseGlobalAttributes(ref TokenParser parser)
         {
-            var rv = new List<AstAttributeNode>();
+            var rv = new AstAttributes();
             while (!parser.Eof)
             {
                 parser.SkipWhitespace();
@@ -61,9 +61,9 @@ namespace MicroComGenerator
             return rv;
         }
 
-        static List<AstAttributeNode> ParseLocalAttributes(ref TokenParser parser)
+        static AstAttributes ParseLocalAttributes(ref TokenParser parser)
         {
-            var rv = new List<AstAttributeNode>();
+            var rv = new AstAttributes();
             if (parser.TryConsume("["))
             {
                 while (!parser.TryConsume("]") && !parser.Eof)
@@ -107,7 +107,7 @@ namespace MicroComGenerator
                 throw new ParseException("{ expected", ref parser);
         }
 
-        static AstEnumNode ParseEnum(List<AstAttributeNode> attrs, ref TokenParser parser)
+        static AstEnumNode ParseEnum(AstAttributes attrs, ref TokenParser parser)
         {
             var name = parser.ParseIdentifier();
             EnsureOpenBracket(ref parser);
@@ -149,13 +149,14 @@ namespace MicroComGenerator
             return t;
         }
 
-        static AstStructNode ParseStruct(List<AstAttributeNode> attrs, ref TokenParser parser)
+        static AstStructNode ParseStruct(AstAttributes attrs, ref TokenParser parser)
         {
             var name = parser.ParseIdentifier();
             EnsureOpenBracket(ref parser);
             var rv = new AstStructNode { Name = name, Attributes = attrs };
             while (!parser.TryConsume('}') && !parser.Eof)
             {
+                var memberAttrs = ParseLocalAttributes(ref parser);
                 var t = ParseType(ref parser);
                 bool parsedAtLeastOneMember = false;
                 while (!parser.TryConsume(';'))
@@ -165,7 +166,7 @@ namespace MicroComGenerator
 
                     var ident = parser.ParseIdentifier();
                     parsedAtLeastOneMember = true;
-                    rv.Add(new AstStructMemberNode { Name = ident, Type = t });
+                    rv.Add(new AstStructMemberNode { Name = ident, Type = t, Attributes = memberAttrs});
                 }
 
                 if (!parsedAtLeastOneMember)
@@ -175,7 +176,7 @@ namespace MicroComGenerator
             return rv;
         }
 
-        static AstInterfaceNode ParseInterface(List<AstAttributeNode> interfaceAttrs, ref TokenParser parser)
+        static AstInterfaceNode ParseInterface(AstAttributes interfaceAttrs, ref TokenParser parser)
         {
             var interfaceName = parser.ParseIdentifier();
             string inheritsFrom = null; 

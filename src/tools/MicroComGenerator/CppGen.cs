@@ -20,7 +20,7 @@ namespace MicroComGenerator
         public static string GenerateCpp(AstIdlNode idl)
         {
             var sb = new StringBuilder();
-            var preamble = idl.Attributes.FirstOrDefault(x => x.Name == "cpp-preamble")?.Value;
+            var preamble = idl.GetAttributeOrDefault("cpp-preamble");
             if (preamble != null)
                 sb.AppendLine(preamble);
 
@@ -60,10 +60,7 @@ namespace MicroComGenerator
 
             foreach (var i in idl.Interfaces)
             {
-                var guidString = i.Attributes.FirstOrDefault(x => x.Name == "uuid")?.Value;
-                if (guidString == null)
-                    throw new CodeGenException("Missing uuid for " + i.Name);
-
+                var guidString = i.GetAttribute("uuid");
                 var guid = Guid.Parse(guidString).ToString().Replace("-", "");
 
 

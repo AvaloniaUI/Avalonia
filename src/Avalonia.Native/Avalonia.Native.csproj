@@ -21,11 +21,30 @@
   </ItemGroup>
   
   <ItemGroup>
-    <!--<SharpGenMapping Include="Mappings.xml" />-->
-    <PackageReference Include="SharpGenTools.Sdk" Version="1.2.1" PrivateAssets="all" />
-    <PackageReference Include="SharpGen.Runtime" Version="1.2.1" />
-    <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
   </ItemGroup>
+  
+  <!-- COM Interop generation -->
+  <ItemGroup>
+    <ProjectReference Include="..\tools\MicroComGenerator\MicroComGenerator.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <ExcludeAssets>all</ExcludeAssets>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+    
+  <Target Name="GenerateAvaloniaNativeComInterop" AfterTargets="BeforeBuild" Inputs="avn.idl" Outputs="Interop.Generated.cs">
+    <Message Importance="high" Text="Generating Interop.Generated.cs" />
+    <Exec Command="dotnet ../tools/MicroComGenerator/bin/$(Configuration)/netcoreapp3.1/MicroComGenerator.dll -i avn.idl --cs Interop.Generated.cs" LogStandardErrorAsError="true" />
+    <ItemGroup>
+      <!-- Remove and re-add generated file, this is needed for the clean build -->
+      <Compile Remove="Interop.Generated.cs"/>
+      <Compile Include="Interop.Generated.cs"/>
+    </ItemGroup>
+  </Target>
+  <PropertyGroup>
+    <_AvaloniaPatchComInterop>true</_AvaloniaPatchComInterop>
+  </PropertyGroup>
+  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

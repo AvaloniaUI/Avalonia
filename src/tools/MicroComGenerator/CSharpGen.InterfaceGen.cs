@@ -167,12 +167,12 @@ namespace MicroComGenerator
 
             if (type.PointerLevel == 2)
             {
-                if (type.Name.StartsWith("I"))
+                if (IsInterface(type))
                     return new InterfaceReturnArg { Name = name, InterfaceType = type.Name, NativeType = "void**" };
             }
             else if (type.PointerLevel == 1)
             {
-                if (type.Name.StartsWith("I"))
+                if (IsInterface(type))
                     return new InterfaceArg { Name = name, InterfaceType = type.Name, NativeType = "void*" };
                 if (type.Name == "char")
                     return new StringArg { Name = name, NativeType = "byte*" };
@@ -197,8 +197,7 @@ namespace MicroComGenerator
                                                && args.Count > 0
                                                && (args.Last().Name == "ppv" || args.Last().Name == "retOut" || args.Last().Name == "ret")
                                                && ((member.Last().Type.PointerLevel > 0
-                                                    && !member.Last().Type.Name
-                                                        .StartsWith("I"))
+                                                    && !IsInterface(member.Last().Type))
                                                    || member.Last().Type.PointerLevel == 2);
 
             bool isVoidReturn = member.ReturnType.Name == "void" && member.ReturnType.PointerLevel == 0;
@@ -390,21 +389,20 @@ namespace MicroComGenerator
         void GenerateInterface(ref NamespaceDeclarationSyntax ns, ref NamespaceDeclarationSyntax implNs,
             AstInterfaceNode iface)
         {
-            var guidString = iface.Attributes.FirstOrDefault(x => x.Name == "uuid")?.Value;
-            if (guidString == null)
-                throw new CodeGenException("Missing GUID for " + iface.Name);
+            var guidString = iface.GetAttribute("uuid");
             var inheritsUnknown = iface.Inherits == null || iface.Inherits == "IUnknown";
 
             var ifaceDec = InterfaceDeclaration(iface.Name)
                 .WithBaseType(inheritsUnknown ? "Avalonia.MicroCom.IUnknown" : iface.Inherits)
-                .AddModifiers(Token(_visibility), Token(SyntaxKind.UnsafeKeyword));
+                .AddModifiers(Token(_visibility), Token(SyntaxKind.UnsafeKeyword), Token(SyntaxKind.PartialKeyword));
 
             var proxyClassName = "__MicroCom" + iface.Name + "Proxy";
             var proxy = ClassDeclaration(proxyClassName)
-                .AddModifiers(Token(SyntaxKind.UnsafeKeyword), Token(_visibility))
+                .AddModifiers(Token(SyntaxKind.UnsafeKeyword), Token(_visibility), Token(SyntaxKind.PartialKeyword))
                 .WithBaseType(inheritsUnknown ?
                     "Avalonia.MicroCom.MicroComProxyBase" :
-                    ("__MicroCom" + iface.Inherits + "Proxy"));
+                    ("__MicroCom" + iface.Inherits + "Proxy"))
+                .AddBaseListTypes(SimpleBaseType(ParseTypeName(iface.Name)));
 
 
             // Generate vtable

@@ -1,12 +1,15 @@
 using System;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Avalonia.MicroCom
 {
-    public unsafe class MicroComProxyBase : IUnknown
+    public unsafe class MicroComProxyBase : CriticalFinalizerObject, IUnknown
     {
         private IntPtr _nativePointer;
         private bool _ownsHandle;
+        private SynchronizationContext _synchronizationContext;
 
         public IntPtr NativePointer
         {
@@ -24,6 +27,9 @@ namespace Avalonia.MicroCom
         {
             _nativePointer = nativePointer;
             _ownsHandle = ownsHandle;
+            _synchronizationContext = SynchronizationContext.Current;
+            if(!_ownsHandle)
+                GC.SuppressFinalize(this);
         }
 
         protected virtual int VTableSize => 3;
@@ -56,13 +62,16 @@ namespace Avalonia.MicroCom
         }
 
         public bool IsDisposed => _nativePointer == IntPtr.Zero;
-        
-        public void Dispose()
+
+        protected virtual void Dispose(bool disposing)
         {
             if (_ownsHandle)
                 Release();
             _nativePointer = IntPtr.Zero;
+            GC.SuppressFinalize(this);
         }
+        
+        public void Dispose() => Dispose(true);
 
         public bool OwnsHandle => _ownsHandle;
         
@@ -70,9 +79,27 @@ namespace Avalonia.MicroCom
         {
             if (!_ownsHandle)
             {
+                GC.ReRegisterForFinalize(true);
                 AddRef();
                 _ownsHandle = true;
             }
+        }
+
+        private static readonly SendOrPostCallback _disposeDelegate = DisposeOnContext;
+
+        private static void DisposeOnContext(object state)
+        {
+            (state as MicroComProxyBase)?.Dispose(false);
+        }
+
+        ~MicroComProxyBase()
+        {
+            if(!_ownsHandle)
+                return;
+            if (_synchronizationContext == null)
+                Dispose();
+            else
+                _synchronizationContext.Post(_disposeDelegate, this);
         }
     }
 }

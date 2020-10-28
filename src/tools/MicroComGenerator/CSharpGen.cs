@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -20,14 +21,12 @@ namespace MicroComGenerator
 
         public CSharpGen(AstIdlNode idl)
         {
-            _idl = idl;
+            _idl = idl.Clone();
+            new AstRewriter().VisitAst(_idl);
             _extraUsings = _idl.Attributes.Where(u => u.Name == "clr-using").Select(u => u.Value).ToList();
-            _namespace = _idl.Attributes.FirstOrDefault(x => x.Name == "clr-namespace")?.Value;
-            if (_namespace == null)
-                throw new CodeGenException("Missing clr-namespace attribute");
-            var visibilityString = _idl.Attributes.FirstOrDefault(x => x.Name == "clr-access")?.Value;
-            if (visibilityString == null)
-                throw new CodeGenException("Missing clr-visibility attribute");
+            _namespace = _idl.GetAttribute("clr-namespace");
+            var visibilityString = _idl.GetAttribute("clr-access");
+
             if (visibilityString == "internal")
                 _visibility = SyntaxKind.InternalKeyword;
             else if (visibilityString == "public")
@@ -35,6 +34,45 @@ namespace MicroComGenerator
             else
                 throw new CodeGenException("Invalid clr-access attribute");
         }
+
+        class AstRewriter : AstVisitor
+        {
+            void ConvertIntPtr(AstTypeNode type)
+            {
+                if (type.Name == "void" && type.PointerLevel > 0)
+                {
+                    type.Name = "IntPtr";
+                    type.PointerLevel--;
+                }
+            }
+            
+            protected override void VisitStructMember(AstStructMemberNode member)
+            {
+                if (member.HasAttribute("intptr"))
+                    ConvertIntPtr(member.Type);
+                base.VisitStructMember(member);
+            }
+
+            protected override void VisitArgument(AstInterfaceMemberArgumentNode argument)
+            {
+                if (argument.HasAttribute("intptr"))
+                {
+                    if(argument.Name == "retOut")
+                        Console.WriteLine();
+                    ConvertIntPtr(argument.Type);
+                }
+
+                base.VisitArgument(argument);
+            }
+
+            protected override void VisitInterfaceMember(AstInterfaceMemberNode member)
+            {
+                if (member.HasAttribute("intptr"))
+                    ConvertIntPtr(member.ReturnType);
+                base.VisitInterfaceMember(member);
+            }
+        }
+        
 
         public string Generate()
         {

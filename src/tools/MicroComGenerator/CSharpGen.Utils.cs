@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MicroComGenerator.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
@@ -23,13 +24,16 @@ namespace MicroComGenerator
         string Format(CompilationUnitSyntax unit)
         {
             var cw = new AdhocWorkspace();
-            return Microsoft.CodeAnalysis.Formatting.Formatter.Format(unit.NormalizeWhitespace(), cw, cw.Options
-                .WithChangedOption(CSharpFormattingOptions.NewLineForMembersInObjectInit, true)
-                .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInObjectCollectionArrayInitializers, true)
-                .WithChangedOption(CSharpFormattingOptions.NewLineForMembersInAnonymousTypes, true)
-                .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, true)
+            return
+                "#pragma warning disable 108\n" +
+                Microsoft.CodeAnalysis.Formatting.Formatter.Format(unit.NormalizeWhitespace(), cw, cw.Options
+                    .WithChangedOption(CSharpFormattingOptions.NewLineForMembersInObjectInit, true)
+                    .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInObjectCollectionArrayInitializers,
+                        true)
+                    .WithChangedOption(CSharpFormattingOptions.NewLineForMembersInAnonymousTypes, true)
+                    .WithChangedOption(CSharpFormattingOptions.NewLinesForBracesInMethods, true)
 
-            ).ToFullString();
+                ).ToFullString();
         }
         
         
@@ -93,5 +97,14 @@ namespace MicroComGenerator
             return decl.ReplaceNodes(replace.Keys, (m, m2) => replace[m]);
         }
 
+        bool IsInterface(string name)
+        {
+            if (name == "IUnknown")
+                return true;
+            return _idl.Interfaces.Any(i => i.Name == name);
+        }
+
+        private bool IsInterface(AstTypeNode type) => IsInterface(type.Name);
+    
     }
 }

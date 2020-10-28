@@ -77,7 +77,7 @@ namespace Avalonia.MicroCom
             {
                 try
                 {
-                    Target.OnUnreferencedFromNative();
+                    Target.OnReferencedFromNative();
                 }
                 catch (Exception e)
                 {
