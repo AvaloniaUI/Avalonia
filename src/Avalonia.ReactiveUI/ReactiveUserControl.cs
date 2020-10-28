@@ -29,10 +29,29 @@ namespace Avalonia.ReactiveUI
             // block if the ViewModel implements IActivatableViewModel.
             this.WhenActivated(disposables => { });
 
-            this.ObservableForProperty(x => x.ViewModel, false, true)
-                .Subscribe(args => DataContext = args.Value);
-            this.ObservableForProperty(x => x.DataContext, false, true)
-                .Subscribe(args => ViewModel = args.Value as TViewModel);
+            this.GetObservable(DataContextProperty).Subscribe(value =>
+            {
+                if (value is TViewModel viewModel)
+                {
+                    ViewModel = viewModel;
+                }
+                else
+                {
+                    ViewModel = null;
+                }
+            });
+
+            this.GetObservable(ViewModelProperty).Subscribe(value =>
+            {
+                if (value == null)
+                {
+                    DataContext = AvaloniaProperty.UnsetValue;
+                }
+                else
+                {
+                    DataContext = value;
+                }
+            });
         }
 
         /// <summary>
