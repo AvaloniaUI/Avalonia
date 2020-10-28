@@ -37,15 +37,8 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
-
-          <!-- TODO bind Content -> Header and ContentTemplate -> HeaderTemplate -->
-          <ContentPresenter x:Name="PART_HeaderContentPresenter"
-                            DockPanel.Dock="Top"
-                            TextBlock.FontWeight="Normal"
-                            TextBlock.Foreground="{DynamicResource TextControlHeaderForeground}"
-                            IsVisible="False"
-                            Margin="{DynamicResource TextBoxTopHeaderMargin}" />
-
+          <DataValidationErrors DockPanel.Dock="Bottom" Margin="0 10 0 0" />
+          
           <Panel>
             <Border
               Name="PART_BorderElement"
@@ -66,10 +59,8 @@
                              FontSize="{TemplateBinding FontSize}"
                              Text="{TemplateBinding Watermark}"
                              DockPanel.Dock="Top" />
-
-                  <DataValidationErrors>
-                    <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                                  VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                  <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                       <Panel>
                         <TextBlock Name="PART_Watermark"
                                 Opacity="0.5"
@@ -97,7 +88,6 @@
                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/> 
                       </Panel>
                     </ScrollViewer>
-                  </DataValidationErrors>
                 </DockPanel>
                 <ContentPresenter Grid.Column="2" Grid.ColumnSpan="1" Content="{TemplateBinding InnerRightContent}"/>
               </Grid>
