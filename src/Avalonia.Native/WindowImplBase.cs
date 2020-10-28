@@ -341,8 +341,7 @@ namespace Avalonia.Native
 
         public void Invalidate(Rect rect)
         {
-            if (!_deferredRendering && _native != null)
-                _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
+            _native?.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
