@@ -47,7 +47,7 @@ namespace Avalonia.Build.Tasks
                 }
 
                 foreach (var i in initializers)
-                    staticCtor.Body.Instructions.Add(Instruction.Create(OpCodes.Call, i));
+                    staticCtor.Body.Instructions.Insert(0, Instruction.Create(OpCodes.Call, i));
             }
             
         }
