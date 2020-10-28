@@ -1,3 +1,6 @@
+using System;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
@@ -6,8 +9,10 @@ using ReactiveUI;
 namespace Avalonia.ReactiveUI
 {
     /// <summary>
-    /// A ReactiveUI UserControl that implements <see cref="IViewFor{TViewModel}"/> 
-    /// and will activate your ViewModel automatically if it supports activation.
+    /// A ReactiveUI <see cref="UserControl"/> that implements the <see cref="IViewFor{TViewModel}"/> interface and
+    /// will activate your ViewModel automatically if the view model implements <see cref="IActivatableViewModel"/>.
+    /// When the DataContext property changes, this class will update the ViewModel property with the new DataContext
+    /// value, and vice versa.
     /// </summary>
     /// <typeparam name="TViewModel">ViewModel type.</typeparam>
     public class ReactiveUserControl<TViewModel> : UserControl, IViewFor<TViewModel> where TViewModel : class
@@ -20,7 +25,14 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public ReactiveUserControl()
         {
-            DataContextChanged += (sender, args) => ViewModel = DataContext as TViewModel;
+            // This WhenActivated block calls ViewModel's WhenActivated
+            // block if the ViewModel implements IActivatableViewModel.
+            this.WhenActivated(disposables => { });
+
+            this.ObservableForProperty(x => x.ViewModel, false, true)
+                .Subscribe(args => DataContext = args.Value);
+            this.ObservableForProperty(x => x.DataContext, false, true)
+                .Subscribe(args => ViewModel = args.Value as TViewModel);
         }
 
         /// <summary>

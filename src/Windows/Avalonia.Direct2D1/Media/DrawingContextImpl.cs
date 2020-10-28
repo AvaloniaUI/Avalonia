@@ -423,6 +423,7 @@ namespace Avalonia.Direct2D1.Media
             var solidColorBrush = brush as ISolidColorBrush;
             var linearGradientBrush = brush as ILinearGradientBrush;
             var radialGradientBrush = brush as IRadialGradientBrush;
+            var conicGradientBrush = brush as IConicGradientBrush;
             var imageBrush = brush as IImageBrush;
             var visualBrush = brush as IVisualBrush;
 
@@ -437,6 +438,11 @@ namespace Avalonia.Direct2D1.Media
             else if (radialGradientBrush != null)
             {
                 return new RadialGradientBrushImpl(radialGradientBrush, _deviceContext, destinationSize);
+            }
+            else if (conicGradientBrush != null)
+            {
+                // there is no Direct2D implementation of Conic Gradients so use Radial as a stand-in
+                return new SolidColorBrushImpl(conicGradientBrush, _deviceContext);
             }
             else if (imageBrush?.Source != null)
             {

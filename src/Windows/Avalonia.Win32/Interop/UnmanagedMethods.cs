@@ -1018,6 +1018,9 @@ namespace Avalonia.Win32.Interop
         public static extern bool ValidateRect(IntPtr hWnd, IntPtr lpRect);
 
         [DllImport("user32.dll")]
+        public static extern bool IsWindow(IntPtr hWnd);
+        
+        [DllImport("user32.dll")]
         public static extern bool IsWindowEnabled(IntPtr hWnd);
 
         [DllImport("user32.dll")]
@@ -1050,6 +1053,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr GetActiveWindow();
+        
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr SetActiveWindow(IntPtr hWnd);
 
