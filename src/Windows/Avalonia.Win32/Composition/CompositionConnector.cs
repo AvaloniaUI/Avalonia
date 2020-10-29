@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
@@ -43,6 +44,37 @@ namespace Avalonia.Win32
         [DllImport("coremessaging.dll", EntryPoint = "CreateDispatcherQueueController", CharSet = CharSet.Unicode)]
         internal static extern IntPtr CreateDispatcherQueueController(DispatcherQueueOptions options, out IntPtr dispatcherQueueController);
 
+        public static CompositionConnector TryCreate(EglPlatformOpenGlInterface egl)
+        {
+            const int majorRequired = 10;
+            const int buildRequired = 16299;
+
+            var majorInstalled = Win32Platform.WindowsVersion.Major;
+            var buildInstalled = Win32Platform.WindowsVersion.Build;
+            
+            if (majorInstalled >= majorRequired &&
+                buildInstalled >= buildRequired)
+            {
+                try
+                {
+                    return new CompositionConnector(egl);
+                }
+                catch (Exception e)
+                {
+                    Logger.TryGet(LogEventLevel.Error, "WinUIComposition")?.Log(null, "Unable to initialize WinUI compositor: {0}", e);
+
+                    return null;
+                }
+            }
+
+            var osVersionNotice = $"Windows {majorRequired} Build {buildRequired} is required. Your machine has Windows {majorInstalled} Build {buildInstalled} installed.";
+
+            Logger.TryGet(LogEventLevel.Warning, "WinUIComposition")?.Log(null,
+                $"Unable to initialize WinUI compositor: {osVersionNotice}");
+
+            return null;
+        }
+        
         public CompositionConnector(EglPlatformOpenGlInterface egl)
         {
             EnsureDispatcherQueue();

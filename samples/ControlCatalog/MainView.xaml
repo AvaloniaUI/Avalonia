@@ -14,7 +14,6 @@
       <TabItem Header="Acrylic"><pages:AcrylicPage/></TabItem>
       <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
       <TabItem Header="Border"><pages:BorderPage/></TabItem>
-      <TabItem Header="Label"><pages:LabelsPage/></TabItem>
       <TabItem Header="Button"><pages:ButtonPage/></TabItem>
       <TabItem Header="ButtonSpinner"><pages:ButtonSpinnerPage/></TabItem>
       <TabItem Header="Calendar"><pages:CalendarPage/></TabItem>
@@ -45,6 +44,7 @@
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <pages:ItemsRepeaterPage/>
       </TabItem>
+      <TabItem Header="Label"><pages:LabelsPage/></TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
       <TabItem Header="ListBox"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
