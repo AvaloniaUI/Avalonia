@@ -4,13 +4,6 @@ jobs:
     vmImage: 'ubuntu-16.04'
   steps:
   - task: CmdLine@2
-    displayName: 'Install CastXML'
-    inputs:
-      script: |
-        sudo apt-get update
-        sudo apt-get install castxml
-
-  - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |

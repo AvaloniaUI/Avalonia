@@ -6,5 +6,12 @@
   <PropertyGroup>
     <_AvaloniaPatchComInterop>true</_AvaloniaPatchComInterop>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <ExcludeAssets>all</ExcludeAssets>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>
