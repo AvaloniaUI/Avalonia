@@ -437,7 +437,7 @@ namespace MicroComGenerator
                         .AddModifiers(Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.InternalKeyword))
                         .WithBody(Block(
                             ParseStatement("Avalonia.MicroCom.MicroComRuntime.Register(typeof(" +
-                                           proxyClassName + "), new Guid(\"" + guidString + "\"), (p, owns) => new " +
+                                           iface.Name + "), new Guid(\"" + guidString + "\"), (p, owns) => new " +
                                            proxyClassName + "(p, owns));")
                         )))
                 .AddMembers(ParseMemberDeclaration("public " + proxyClassName +
