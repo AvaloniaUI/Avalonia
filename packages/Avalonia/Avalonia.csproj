@@ -7,8 +7,6 @@
   <ItemGroup>
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
       <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
-      <ProjectReference Include="..\..\src\Avalonia.MicroCom\Avalonia.MicroCom.csproj" />
-
   </ItemGroup>
 
   <PropertyGroup>

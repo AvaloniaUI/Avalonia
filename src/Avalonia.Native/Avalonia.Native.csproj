@@ -34,7 +34,11 @@
     </ProjectReference>
   </ItemGroup>
     
-  <Target Name="GenerateAvaloniaNativeComInterop" AfterTargets="BeforeBuild" Inputs="avn.idl" Outputs="Interop.Generated.cs">
+  <Target Name="GenerateAvaloniaNativeComInterop" 
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="ResolveReferences"
+          Inputs="avn.idl"
+          Outputs="Interop.Generated.cs">
     <Message Importance="high" Text="Generating Interop.Generated.cs" />
     <Exec Command="dotnet ../tools/MicroComGenerator/bin/$(Configuration)/netcoreapp3.1/MicroComGenerator.dll -i avn.idl --cs Interop.Generated.cs" LogStandardErrorAsError="true" />
     <ItemGroup>
