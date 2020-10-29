@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.TextBoxPage">
+             x:Class="ControlCatalog.Pages.TextBoxPage"
+             xmlns:sys="clr-namespace:System;assembly=netstandard">
   <StackPanel Orientation="Vertical" Spacing="4">
     <Label Classes="h1">TextBox</Label>
     <Label Classes="h2">A control into which the user can input text</Label>
@@ -11,12 +12,18 @@
               Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8">
         <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
-        <TextBox Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
+        <TextBox Width="200" Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
         <TextBox Width="200" Watermark="Watermark" />
         <TextBox Width="200"
                  Watermark="Floating Watermark"
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+        
+        <TextBox Width="200" Text="Validation Error">
+          <DataValidationErrors.Error>
+            <sys:Exception /> 
+          </DataValidationErrors.Error>
+        </TextBox>
 
         <TextBox Width="200"
                  Watermark="Password Box"
