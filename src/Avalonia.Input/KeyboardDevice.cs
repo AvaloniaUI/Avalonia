@@ -52,11 +52,11 @@ namespace Avalonia.Input
             }
         }
 
-        private void SetIsFocusWithin(InputElement oldElement, InputElement newElement)
+        private void SetIsFocusWithin(IInputElement oldElement, IInputElement newElement)
         {
-            InputElement? branch = null;
+            IInputElement? branch = null;
 
-            InputElement el = newElement;
+            IInputElement el = newElement;
 
             while (el != null)
             {
@@ -66,14 +66,7 @@ namespace Avalonia.Input
                     break;
                 }
 
-                if ((el as IInputElement).VisualParent is InputElement ie)
-                {
-                    el = ie;
-                }
-                else
-                {
-                    break;
-                }
+                el = (IInputElement)el.VisualParent;
             }
 
             el = oldElement;
@@ -87,16 +80,12 @@ namespace Avalonia.Input
             
             while (el != null && el != branch)
             {
-                el.IsKeyboardFocusWithin = true;
-                
-                if ((el as IInputElement).VisualParent is InputElement ie)
+                if (el is InputElement ie)
                 {
-                    el = ie;
+                    ie.IsKeyboardFocusWithin = true;
                 }
-                else
-                {
-                    break;
-                }
+
+                el = (IInputElement)el.VisualParent;
             }    
         }
 
@@ -108,8 +97,8 @@ namespace Avalonia.Input
             if (element != FocusedElement)
             {
                 var interactive = FocusedElement as IInteractive;
-                
-                SetIsFocusWithin(FocusedElement as InputElement, element as InputElement);
+
+                SetIsFocusWithin(FocusedElement, element);
                 
                 FocusedElement = element;
 
