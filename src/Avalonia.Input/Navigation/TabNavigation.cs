@@ -110,9 +110,9 @@ namespace Avalonia.Input.Navigation
             {
                 var customNext = GetCustomNext(child, direction);
 
-                if (customNext.handled)
+                if (customNext.handled && customNext.next is {})
                 {
-                    yield return customNext.next!;
+                    yield return customNext.next;
                 }
                 else
                 {
