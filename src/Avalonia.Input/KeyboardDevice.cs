@@ -31,6 +31,74 @@ namespace Avalonia.Input
                 RaisePropertyChanged();
             }
         }
+        
+        private void ClearFocusWithin(IInputElement element, bool clearRoot)
+        {
+            foreach (IInputElement el in element.VisualChildren)
+            {
+                if (el.IsKeyboardFocusWithin)
+                {
+                    ClearFocusWithin(el, true);
+                    break;
+                }
+            }
+            
+            if(clearRoot)
+            {
+                if (element is InputElement ie)
+                {
+                    ie.IsKeyboardFocusWithin = false;
+                }
+            }
+        }
+
+        private void SetIsFocusWithin(InputElement oldElement, InputElement newElement)
+        {
+            InputElement? branch = null;
+
+            InputElement el = newElement;
+
+            while (el != null)
+            {
+                if (el.IsKeyboardFocusWithin)
+                {
+                    branch = el;
+                    break;
+                }
+
+                if ((el as IInputElement).VisualParent is InputElement ie)
+                {
+                    el = ie;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            el = oldElement;
+
+            if (el != null && branch != null)
+            {
+                ClearFocusWithin(branch, false);
+            }
+
+            el = newElement;
+            
+            while (el != null && el != branch)
+            {
+                el.IsKeyboardFocusWithin = true;
+                
+                if ((el as IInputElement).VisualParent is InputElement ie)
+                {
+                    el = ie;
+                }
+                else
+                {
+                    break;
+                }
+            }    
+        }
 
         public void SetFocusedElement(
             IInputElement? element, 
@@ -40,6 +108,9 @@ namespace Avalonia.Input
             if (element != FocusedElement)
             {
                 var interactive = FocusedElement as IInteractive;
+                
+                SetIsFocusWithin(FocusedElement as InputElement, element as InputElement);
+                
                 FocusedElement = element;
 
                 interactive?.RaiseEvent(new RoutedEventArgs
