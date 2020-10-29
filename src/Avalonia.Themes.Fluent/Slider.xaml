@@ -268,4 +268,8 @@
   <Style Selector="Slider:error /template/ Thumb.SliderThumbStyle">
     <Setter Property="Background" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
   </Style>
+  
+  <Style Selector="Slider:error">
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+  </Style>
 </Styles>
