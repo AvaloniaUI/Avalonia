@@ -83,10 +83,16 @@ namespace MicroComGenerator.Ast
     {
         public string Name { get; set; }
         public int PointerLevel { get; set; }
+        public bool IsLink { get; set; }
 
-        public string Format() => Name + new string('*', PointerLevel);
+        public string Format() => Name + new string('*', PointerLevel)
+                                       + (IsLink ? "&" : "");
         public override string ToString() => Format();
-        public AstTypeNode Clone() => new AstTypeNode() { Name = Name, PointerLevel = PointerLevel };
+        public AstTypeNode Clone() => new AstTypeNode() { 
+            Name = Name,
+            PointerLevel = PointerLevel,
+            IsLink = IsLink
+        };
     }
 
     public class AstStructMemberNode : IAstNodeWithAttributes

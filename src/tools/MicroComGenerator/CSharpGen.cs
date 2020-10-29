@@ -53,6 +53,17 @@ namespace MicroComGenerator
                 base.VisitStructMember(member);
             }
 
+            protected override void VisitType(AstTypeNode type)
+            {
+                if (type.IsLink)
+                {
+                    type.PointerLevel++;
+                    type.IsLink = false;
+                }
+                
+                base.VisitType(type);
+            }
+
             protected override void VisitArgument(AstInterfaceMemberArgumentNode argument)
             {
                 if (argument.HasAttribute("intptr"))

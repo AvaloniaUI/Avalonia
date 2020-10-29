@@ -35,7 +35,6 @@ namespace MicroComGenerator
                 sb.Append("enum ");
                 if (en.Attributes.Any(a => a.Name == "class-enum"))
                     sb.Append("class ");
-                sb.Append(en.Name).Append(" ");
                 sb.AppendLine(en.Name).AppendLine("{");
 
                 foreach (var m in en)
@@ -73,30 +72,42 @@ namespace MicroComGenerator
                     sb.Append(", ").Append(guid.Substring(16 + c * 2, 2));
                 }
 
-                sb.Append(") : ")
-                    .AppendLine(i.Inherits ?? "IUnknown")
+                sb.Append(") : ");
+                if (i.HasAttribute("cpp-virtual-inherits"))
+                    sb.Append("virtual ");
+                sb.AppendLine(i.Inherits ?? "IUnknown")
                     .AppendLine("{");
 
                 foreach (var m in i)
                 {
-                    sb.Append("    ").Append(ConvertType(m.ReturnType)).Append(" ").Append(m.Name).AppendLine(" (");
-                    for (var c = 0; c < m.Count; c++)
+                    sb.Append("    ")
+                        .Append("virtual ")
+                        .Append(ConvertType(m.ReturnType))
+                        .Append(" ").Append(m.Name).Append(" (");
+                    if (m.Count == 0)
+                        sb.AppendLine(") = 0;");
+                    else
                     {
-                        var arg = m[c];
-                        sb.Append("        ");
-                        if (arg.Attributes.Any(a => a.Name == "const"))
-                            sb.Append("const ");
-                        sb.Append(ConvertType(arg.Type))
-                            .Append(" ")
-                            .Append(arg.Name);
-                        if (c != m.Count - 1)
-                            sb.Append(", ");
                         sb.AppendLine();
-                        sb.AppendLine("    );");
+                        for (var c = 0; c < m.Count; c++)
+                        {
+                            var arg = m[c];
+                            sb.Append("        ");
+                            if (arg.Attributes.Any(a => a.Name == "const"))
+                                sb.Append("const ");
+                            sb.Append(ConvertType(arg.Type))
+                                .Append(" ")
+                                .Append(arg.Name);
+                            if (c != m.Count - 1)
+                                sb.Append(", ");
+                            sb.AppendLine();
+                        }
+
+                        sb.AppendLine("    ) = 0;");
                     }
                 }
 
-                sb.AppendLine("}");
+                sb.AppendLine("};");
             }
             
             return sb.ToString();

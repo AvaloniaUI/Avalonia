@@ -146,6 +146,8 @@ namespace MicroComGenerator
             var t = new AstTypeNode { Name = ident };
             while (parser.TryConsume('*'))
                 t.PointerLevel++;
+            if (parser.TryConsume("&"))
+                t.IsLink = true;
             return t;
         }
 

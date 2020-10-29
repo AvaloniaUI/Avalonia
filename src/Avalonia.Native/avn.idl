@@ -254,13 +254,13 @@ interface IAvnWindowBase : IUnknown
      HRESULT SetBlurEnabled(bool enable);
 }
 
-[uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91)]
+[uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
 interface IAvnPopup : IAvnWindowBase
 {
     
 }
 
-[uuid(cab661de-49d6-4ead-b59c-eac9b2b6c28d)]
+[uuid(cab661de-49d6-4ead-b59c-eac9b2b6c28d), cpp-virtual-inherits]
 interface IAvnWindow : IAvnWindowBase
 {
      HRESULT SetEnabled(bool enable);
@@ -285,7 +285,7 @@ interface IAvnWindowBaseEvents : IUnknown
      void Closed();
      void Activated();
      void Deactivated();
-     void Resized([const] AvnSize* size);
+     void Resized([const] AvnSize& size);
      void PositionChanged(AvnPoint position);
      void RawMouseEvent(AvnRawMouseEventType type,
                                 uint timeStamp,
