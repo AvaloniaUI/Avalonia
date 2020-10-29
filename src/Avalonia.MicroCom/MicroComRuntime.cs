@@ -41,6 +41,8 @@ namespace Avalonia.MicroCom
         
         public static void* GetNativePointer<T>(T obj, bool owned = false) where T : IUnknown
         {
+            if (obj == null)
+                return null;
             if (obj is MicroComProxyBase proxy)
                 return (void*)proxy.NativePointer;
             if (obj is IMicroComShadowContainer container)
@@ -55,6 +57,7 @@ namespace Avalonia.MicroCom
                         res);
                 if (owned)
                     container.Shadow.AddRef((Ccw*)ptr);
+                return ptr;
             }
             throw new ArgumentException("Unable to get a native pointer for " + obj);
         }

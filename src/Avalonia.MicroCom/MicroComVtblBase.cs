@@ -18,6 +18,7 @@ namespace Avalonia.MicroCom
         {
             AddMethod((QueryInterfaceDelegate)QueryInterface);
             AddMethod((AddRefDelegate)AddRef);
+            AddMethod((AddRefDelegate)Release);
         }
 
         protected void AddMethod(Delegate d)

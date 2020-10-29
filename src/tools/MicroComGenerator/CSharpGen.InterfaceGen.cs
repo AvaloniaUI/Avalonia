@@ -135,7 +135,7 @@ namespace MicroComGenerator
             public override void PreMarshal(List<StatementSyntax> body)
             {
                 body.Add(ParseStatement($"var {BName} = new byte[System.Text.Encoding.UTF8.GetByteCount({Name})+1];"));
-                body.Add(ParseStatement($"System.Text.Encoding.UTF8.GetBytes({Name}, 0, {Name.Length}, {BName}, 0);"));
+                body.Add(ParseStatement($"System.Text.Encoding.UTF8.GetBytes({Name}, 0, {Name}.Length, {BName}, 0);"));
             }
 
             public override StatementSyntax CreateFixed(StatementSyntax inner)
@@ -238,8 +238,11 @@ namespace MicroComGenerator
                 .AddArgumentListArguments(Argument(ParseExpression("PPV")))
                 .AddArgumentListArguments(args
                     .Select((a, i) => Argument(a.Value(isHresultLastArgumentReturn && i == args.Count - 1))).ToArray())
-                .AddArgumentListArguments(Argument(ParseExpression("PPV[base.VTableSize + " + num + "]")));
+                .AddArgumentListArguments(Argument(ParseExpression("(*PPV)[base.VTableSize + " + num + "]")));
 
+            if (!isVoidReturn)
+                callExpr = CastExpression(ParseTypeName(returnArg.NativeType), callExpr);
+            
             // Save call result if needed
             if (!isVoidReturn)
                 callExpr = AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, ParseExpression("__result"),
@@ -369,6 +372,10 @@ namespace MicroComGenerator
 
             public ExpressionSyntax GetCaller(string returnType, List<string> args)
             {
+                string ConvertType(string t) => t.EndsWith("*") ? "void*" : t;
+                returnType = ConvertType(returnType);
+                args = args.Select(ConvertType).ToList();
+                
                 var name = "CalliStdCall" + returnType.Replace("*", "_ptr");
                 var signature = returnType + "::" + name + "::" + string.Join("::", args);
                 if (_existing.Add(signature))
@@ -427,7 +434,7 @@ namespace MicroComGenerator
                     .AddModifiers(Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.InternalKeyword))
                     .WithExpressionBody(ArrowExpressionClause(
                         ParseExpression("Avalonia.MicroCom.MicroComRuntime.RegisterVTable(typeof(" +
-                                        proxyClassName + "), new " + vtbl.Identifier.Text + "().CreateVTable())")))
+                                        iface.Name + "), new " + vtbl.Identifier.Text + "().CreateVTable())")))
                     .WithSemicolonToken(Semicolon()));
                 
             

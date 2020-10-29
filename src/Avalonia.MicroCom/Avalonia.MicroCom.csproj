@@ -1,8 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    </PropertyGroup>
-
+  <PropertyGroup>
+      <TargetFramework>netstandard2.0</TargetFramework>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_AvaloniaPatchComInterop>true</_AvaloniaPatchComInterop>
+  </PropertyGroup>
+  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>
