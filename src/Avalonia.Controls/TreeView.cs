@@ -385,7 +385,7 @@ namespace Avalonia.Controls
                     return (result is {}, result); // SelectedItem may not be in the treeview.
                 }
 
-                return (true, null);
+                return (false, null);
             }
 
             return (false, null);
