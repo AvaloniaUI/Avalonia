@@ -65,8 +65,13 @@ namespace Avalonia.MicroCom
 
         protected virtual void Dispose(bool disposing)
         {
+            if(_nativePointer == null)
+                return;
             if (_ownsHandle)
+            {
                 Release();
+                _ownsHandle = false;
+            }
             _nativePointer = IntPtr.Zero;
             GC.SuppressFinalize(this);
         }
