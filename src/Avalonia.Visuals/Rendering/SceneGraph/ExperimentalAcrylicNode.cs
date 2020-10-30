@@ -13,10 +13,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Initializes a new instance of the <see cref="RectangleNode"/> class.
         /// </summary>
-        /// <param name="transform">The transform.</param>        
+        /// <param name="transform">The transform.</param>
+        /// <param name="material"></param>        
         /// <param name="rect">The rectangle to draw.</param>
-        /// <param name="boxShadow">The box shadow parameters</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public ExperimentalAcrylicNode(
             Matrix transform,
             IExperimentalAcrylicMaterial material,
@@ -44,7 +43,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// Determines if this draw operation equals another.
         /// </summary>
         /// <param name="transform">The transform of the other draw operation.</param>
-        /// <param name="brush">The fill of the other draw operation.</param>
+        /// <param name="material">The fill of the other draw operation.</param>
         /// <param name="rect">The rectangle of the other draw operation.</param>        
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>

@@ -356,7 +356,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
-        public async Task Null_Value_Should_Use_TargetNullValue()
+        public void Null_Value_Should_Use_TargetNullValue()
         {
             var data = new Class1 { StringValue = "foo" };
 

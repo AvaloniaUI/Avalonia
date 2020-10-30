@@ -265,6 +265,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the control that is used to determine the popup's position.
         /// </summary>
+        [ResolveByName]
         public Control? PlacementTarget
         {
             get { return GetValue(PlacementTargetProperty); }

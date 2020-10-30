@@ -168,10 +168,23 @@ namespace Avalonia.Markup.UnitTests.Parsers
 
         private class Test : INotifyDataErrorInfo
         {
+            private string _dataValidationError;
+
             public bool Foo { get; set; }
             public object Bar { get; set; }
 
-            public string DataValidationError { get; set; }
+            public string DataValidationError
+            {
+                get => _dataValidationError;
+                set
+                {
+                    if (value == _dataValidationError)
+                        return;
+                    _dataValidationError = value;
+                    ErrorsChanged?
+                        .Invoke(this, new DataErrorsChangedEventArgs(nameof(DataValidationError)));
+                }
+            }
             public bool HasErrors => !string.IsNullOrWhiteSpace(DataValidationError);
 
             public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;

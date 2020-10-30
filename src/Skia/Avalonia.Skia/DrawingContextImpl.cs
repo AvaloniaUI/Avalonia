@@ -36,6 +36,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
         private static SKShader s_acrylicNoiseShader;
+        private readonly ISkiaGpuRenderSession _session; 
 
         /// <summary>
         /// Context create info.
@@ -76,6 +77,8 @@ namespace Avalonia.Skia
             /// Skia GPU provider context (optional)
             /// </summary>
             public ISkiaGpu Gpu;
+
+            public ISkiaGpuRenderSession CurrentSession;
         }
 
         /// <summary>
@@ -95,6 +98,8 @@ namespace Avalonia.Skia
                 Monitor.Enter(_grContext);
             Surface = createInfo.Surface;
             Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas;
+
+            _session = createInfo.CurrentSession;
 
             if (Canvas == null)
             {
@@ -638,6 +643,23 @@ namespace Avalonia.Skia
 
                     break;
                 }
+                case IConicGradientBrush conicGradient:
+                {
+                    var center = conicGradient.Center.ToPixels(targetSize).ToSKPoint();
+
+                    // Skia's default is that angle 0 is from the right hand side of the center point
+                    // but we are matching CSS where the vertical point above the center is 0.
+                    var angle = (float)(conicGradient.Angle - 90);
+                    var rotation = SKMatrix.CreateRotationDegrees(angle, center.X, center.Y);
+
+                    using (var shader = 
+                        SKShader.CreateSweepGradient(center, stopColors, stopOffsets, rotation))
+                    {
+                        paintWrapper.Paint.Shader = shader;
+                    }
+
+                    break;
+                }
             }
         }
 
@@ -969,7 +991,8 @@ namespace Avalonia.Skia
                 Format = format,
                 DisableTextLcdRendering = !_canTextUseLcdRendering,
                 GrContext = _grContext,
-                Gpu = _gpu
+                Gpu = _gpu,
+                Session = _session
             };
 
             return new SurfaceRenderTarget(createInfo);

@@ -251,6 +251,9 @@ namespace Avalonia.Native
 
         public bool RawTextInputEvent(uint timeStamp, string text)
         {
+            if (_inputRoot is null) 
+                return false;
+            
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
             var args = new RawTextInputEventArgs(_keyboard, timeStamp, _inputRoot, text);
@@ -262,6 +265,9 @@ namespace Avalonia.Native
 
         public bool RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
         {
+            if (_inputRoot is null) 
+                return false;
+            
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
             var args = new RawKeyEventArgs(_keyboard, timeStamp, _inputRoot, (RawKeyEventType)type, (Key)key, (RawInputModifiers)modifiers);
@@ -278,6 +284,9 @@ namespace Avalonia.Native
 
         public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
         {
+            if (_inputRoot is null) 
+                return;
+            
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
             switch (type)
@@ -332,8 +341,7 @@ namespace Avalonia.Native
 
         public void Invalidate(Rect rect)
         {
-            if (!_deferredRendering && _native != null)
-                _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
+            _native?.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
