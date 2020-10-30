@@ -233,39 +233,6 @@ namespace Avalonia.Controls.UnitTests.Selection
         }
 
         [Fact]
-        public void Raises_Selection_Changed_On_Item_Move()
-        {
-            var items = new AvaloniaList<string>(new[] { "foo", "bar", "baz" });
-            var target = CreateTarget(source: items);
-
-            target.SelectedIndex = 1;
-
-            var changed = new List<string>();
-
-            target.PropertyChanged += (s, e) => changed.Add(e.PropertyName);
-
-            var oldSelectedIndex = target.SelectedIndex;
-            var oldSelectedItem = target.SelectedItem;
-
-
-            var sel = items[1];
-            var other = items[2];
-
-            items[2] = sel;
-            items[1] = other;
-
-            Assert.NotEqual(oldSelectedIndex, target.SelectedIndex);
-            Assert.NotEqual(oldSelectedItem, target.SelectedItem);
-
-            Assert.Equal(-1, target.SelectedIndex);
-            Assert.Equal(null, target.SelectedItem);
-
-            Assert.Contains(nameof(target.SelectedIndex), changed);
-            Assert.Contains(nameof(target.SelectedItem), changed);
-        }
-
-
-        [Fact]
         public void Preserves_SelectedItem_On_Items_Reset()
         {
             var items = new ResettingCollection(new[] { "foo", "bar", "baz" });
