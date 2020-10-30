@@ -110,7 +110,8 @@ namespace ControlCatalog.NetCore
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    UseDBusMenu = true
+                    UseDBusMenu = true,
+                    UseAtspi = true,
                 })
                 .With(new Win32PlatformOptions
                 {

@@ -188,6 +188,8 @@ namespace Avalonia.X11
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
             if (platform.Options.UseDBusMenu)
                 NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
+            if (platform.Options.UseAtspi)
+                Atspi = AtspiRoot.TryCreate();
             NativeControlHost = new X11NativeControlHost(_platform, this);
         }
 
@@ -1121,6 +1123,7 @@ namespace Avalonia.X11
 
         public IPopupPositioner PopupPositioner { get; }
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+        public AtspiRoot Atspi { get; }
         public INativeControlHostImpl NativeControlHost { get; }
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
             _transparencyHelper.SetTransparencyRequest(transparencyLevel);
