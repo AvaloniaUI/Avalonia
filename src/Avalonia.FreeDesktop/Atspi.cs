@@ -136,6 +136,18 @@ namespace Avalonia.FreeDesktop.Atspi
         ATSPI_ROLE_LAST_DEFINED,
     };
 
+    public readonly struct ObjectReference
+    {
+        public ObjectReference(string service, ObjectPath path)
+        {
+            Service = service;
+            Path = path;
+        }
+        
+        public string Service { get; }
+        public ObjectPath Path { get; }
+    }
+    
     [DBusInterface("org.a11y.Bus")]
     internal interface IBus : IDBusObject
     {
@@ -145,16 +157,16 @@ namespace Avalonia.FreeDesktop.Atspi
     [DBusInterface("org.a11y.atspi.Accessible")]
     internal interface IAccessible : IDBusObject
     {
-        Task<(string, ObjectPath)> GetChildAtIndexAsync(int Index);
-        Task<(string, ObjectPath)[]> GetChildrenAsync();
+        Task<ObjectReference> GetChildAtIndexAsync(int Index);
+        Task<ObjectReference[]> GetChildrenAsync();
         Task<int> GetIndexInParentAsync();
-        Task<(uint, (string, ObjectPath)[])[]> GetRelationSetAsync();
+        Task<(uint, ObjectReference[])[]> GetRelationSetAsync();
         Task<uint> GetRoleAsync();
         Task<string> GetRoleNameAsync();
         Task<string> GetLocalizedRoleNameAsync();
         Task<uint[]> GetStateAsync();
         Task<IDictionary<string, string>> GetAttributesAsync();
-        Task<(string, ObjectPath)> GetApplicationAsync();
+        Task<ObjectReference> GetApplicationAsync();
         Task<object?> GetAsync(string prop);
         Task<AccessibleProperties> GetAllAsync();
         Task SetAsync(string prop, object val);
@@ -176,8 +188,8 @@ namespace Avalonia.FreeDesktop.Atspi
     [DBusInterface("org.a11y.atspi.Socket")]
     internal interface ISocket : IDBusObject
     {
-        Task<(string socket, ObjectPath)> EmbedAsync((string, ObjectPath) Plug);
-        Task UnembedAsync((string, ObjectPath) Plug);
+        Task<ObjectReference> EmbedAsync(ObjectReference Plug);
+        Task UnembedAsync(ObjectReference Plug);
         Task<IDisposable> WatchAvailableAsync(
             Action<(string socket, ObjectPath)> handler,
             Action<Exception> onError = null);
@@ -188,7 +200,7 @@ namespace Avalonia.FreeDesktop.Atspi
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public (string, ObjectPath) Parent { get; set; }
+        public ObjectReference Parent { get; set; }
         public int ChildCount { get; set; }
         public string Locale { get; set; }
         public string AccessibleId { get; set; }

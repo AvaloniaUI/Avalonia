@@ -39,7 +39,7 @@ namespace Avalonia.FreeDesktop
         }
 
         public ObjectPath ObjectPath => RootPath;
-        public (string, ObjectPath) ApplicationPath => _accessibleProperties!.Parent;
+        public ObjectReference ApplicationPath => _accessibleProperties!.Parent;
         public IDictionary<string, string> Attributes { get; }
         
         public static AtspiRoot? RegisterRoot(Func<AutomationPeer> peerGetter)
@@ -75,7 +75,7 @@ namespace Avalonia.FreeDesktop
             
                 // Register ourselves on the a11y bus.
                 var socket = connection.CreateProxy<ISocket>("org.a11y.atspi.Registry", RootPath);
-                var plug = (connectionInfo.LocalName, RootPath);
+                var plug = new ObjectReference(connectionInfo.LocalName, RootPath);
 
                 _accessibleProperties = new AccessibleProperties
                 {
@@ -103,7 +103,7 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        async Task<(string, ObjectPath)> IAccessible.GetChildAtIndexAsync(int index)
+        async Task<ObjectReference> IAccessible.GetChildAtIndexAsync(int index)
         {
             var child = _children[index];
             var peer = child.Peer;
@@ -119,12 +119,12 @@ namespace Avalonia.FreeDesktop
             if (context is null)
                 throw new AvaloniaInternalException("AutomationPeer has no platform implementation.");
 
-            return (_localName!, context.ObjectPath);
+            return new ObjectReference(_localName!, context.ObjectPath);
         }
 
-        Task<(string, ObjectPath)[]> IAccessible.GetChildrenAsync()
+        Task<ObjectReference[]> IAccessible.GetChildrenAsync()
         {
-            var result = new List<(string, ObjectPath)>();
+            var result = new List<ObjectReference>();
             
             // foreach (var p in _automationPeers)
             // {
@@ -137,16 +137,16 @@ namespace Avalonia.FreeDesktop
 
         Task<int> IAccessible.GetIndexInParentAsync() => Task.FromResult(-1);
 
-        Task<(uint, (string, ObjectPath)[])[]> IAccessible.GetRelationSetAsync()
+        Task<(uint, ObjectReference[])[]> IAccessible.GetRelationSetAsync()
         {
-            return Task.FromResult(Array.Empty<(uint, (string, ObjectPath)[])>());            
+            return Task.FromResult(Array.Empty<(uint, ObjectReference[])>());            
         }
 
         Task<uint> IAccessible.GetRoleAsync() => Task.FromResult((uint)AtspiRole.ATSPI_ROLE_APPLICATION);
         Task<string> IAccessible.GetRoleNameAsync() => Task.FromResult("application");
         Task<string> IAccessible.GetLocalizedRoleNameAsync() => Task.FromResult("application");
         Task<uint[]> IAccessible.GetStateAsync() => Task.FromResult(new uint[] { 0, 0 });
-        Task<(string, ObjectPath)> IAccessible.GetApplicationAsync() => Task.FromResult(ApplicationPath);
+        Task<ObjectReference> IAccessible.GetApplicationAsync() => Task.FromResult(ApplicationPath);
         Task<IDictionary<string, string>> IAccessible.GetAttributesAsync() => Task.FromResult(Attributes);
 
         Task<string> IApplication.GetLocaleAsync(uint lcType) => Task.FromResult(CultureInfo.CurrentCulture.Name);

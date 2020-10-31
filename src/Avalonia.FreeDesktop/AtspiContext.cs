@@ -26,12 +26,12 @@ namespace Avalonia.FreeDesktop
         
         public ObjectPath ObjectPath { get; }
 
-        Task<(string, ObjectPath)> IAccessible.GetChildAtIndexAsync(int Index)
+        Task<ObjectReference> IAccessible.GetChildAtIndexAsync(int Index)
         {
             throw new NotImplementedException();
         }
 
-        Task<(string, ObjectPath)[]> IAccessible.GetChildrenAsync()
+        Task<ObjectReference[]> IAccessible.GetChildrenAsync()
         {
             throw new NotImplementedException();
         }
@@ -41,7 +41,7 @@ namespace Avalonia.FreeDesktop
             throw new NotImplementedException();
         }
 
-        Task<(uint, (string, ObjectPath)[])[]> IAccessible.GetRelationSetAsync()
+        Task<(uint, ObjectReference[])[]> IAccessible.GetRelationSetAsync()
         {
             throw new NotImplementedException();
         }
@@ -51,7 +51,7 @@ namespace Avalonia.FreeDesktop
         Task<string> IAccessible.GetLocalizedRoleNameAsync() => Task.FromResult(_role.ToString()); // TODO
         Task<uint[]> IAccessible.GetStateAsync() => Task.FromResult(new uint[] { 0, 0 }); // TODO
         Task<IDictionary<string, string>> IAccessible.GetAttributesAsync() => Task.FromResult(_root.Attributes);
-        Task<(string, ObjectPath)> IAccessible.GetApplicationAsync() => Task.FromResult(_root.ApplicationPath);
+        Task<ObjectReference> IAccessible.GetApplicationAsync() => Task.FromResult(_root.ApplicationPath);
 
         Task<object?> IAccessible.GetAsync(string prop)
         {
