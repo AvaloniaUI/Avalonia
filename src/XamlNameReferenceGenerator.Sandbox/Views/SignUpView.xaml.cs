@@ -1,7 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace XamlNameReferenceGenerator.Sandbox
+namespace XamlNameReferenceGenerator.Sandbox.Views
 {
     /// <summary>
     /// This is a sample view class with typed x:Name references generated at compile-time using
@@ -16,6 +16,7 @@ namespace XamlNameReferenceGenerator.Sandbox
         public SignUpView()
         {
             AvaloniaXamlLoader.Load(this);
+
             UserNameTextBox.Text = "Joseph!";
             UserNameValidation.Text = "User name is valid.";
             PasswordTextBox.Text = "qwerty";
@@ -24,6 +25,8 @@ namespace XamlNameReferenceGenerator.Sandbox
             ConfirmPasswordValidation.Text = "Password confirmation is valid.";
             SignUpButton.Content = "Sign up please!";
             CompoundValidation.Text = "Everything is okay.";
+
+            var listView = AwesomeListView;
         }
     }
 }

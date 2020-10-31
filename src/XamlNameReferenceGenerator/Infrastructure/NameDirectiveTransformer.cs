@@ -4,7 +4,7 @@ using XamlX.Transform;
 
 namespace XamlNameReferenceGenerator.Infrastructure
 {
-    public class NameDirectiveTransformer : IXamlAstTransformer
+    internal class NameDirectiveTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {

@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
-using XamlNameReferenceGenerator.Infrastructure;
 using XamlX;
 using XamlX.Parsers;
 
-namespace XamlNameReferenceGenerator.Parsers
+namespace XamlNameReferenceGenerator.Infrastructure
 {
-    internal class XamlXNameReferenceXamlParser : INameReferenceXamlParser
+    internal class NameResolver : INameResolver
     {
         private const string AvaloniaXmlnsAttribute = "Avalonia.Metadata.XmlnsDefinitionAttribute";
         private readonly CSharpCompilation _compilation;
 
-        public XamlXNameReferenceXamlParser(CSharpCompilation compilation) => _compilation = compilation;
+        public NameResolver(CSharpCompilation compilation) => _compilation = compilation;
 
-        public IReadOnlyList<(string TypeName, string Name)> GetNamedControls(string xaml)
+        public IReadOnlyList<(string TypeName, string Name)> ResolveNames(string xaml)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
             {
@@ -24,7 +23,7 @@ namespace XamlNameReferenceGenerator.Parsers
                 .CreateDefault(new RoslynTypeSystem(_compilation), AvaloniaXmlnsAttribute)
                 .Transform(parsed);
             
-            var visitor = new NamedControlCollector();
+            var visitor = new NameReceiver();
             parsed.Root.Visit(visitor);
             parsed.Root.VisitChildren(visitor);
             return visitor.Controls;

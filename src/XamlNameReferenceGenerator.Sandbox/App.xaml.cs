@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Markup.Xaml;
+using XamlNameReferenceGenerator.Sandbox.Views;
 
 namespace XamlNameReferenceGenerator.Sandbox
 {

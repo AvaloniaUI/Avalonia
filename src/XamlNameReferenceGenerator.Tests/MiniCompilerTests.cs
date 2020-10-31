@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Avalonia.Controls;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using XamlNameReferenceGenerator.Infrastructure;
@@ -11,34 +12,46 @@ namespace XamlNameReferenceGenerator.Tests
 {
     public class MiniCompilerTests
     {
+        private const string AvaloniaXaml = "<TextBlock xmlns='clr-namespace:Avalonia.Controls;assembly=Avalonia' />";
         private const string MiniClass = "namespace Example { public class Valid { public int Foo() => 21; } }";
         private const string MiniInvalidXaml = "<Invalid xmlns='clr-namespace:Example;assembly=Example' />";
         private const string MiniValidXaml = "<Valid xmlns='clr-namespace:Example;assembly=Example' />";
 
         [Fact]
-        public void Should_Resolve_Types_From_Valid_Xaml_Markup()
+        public void Should_Resolve_Types_From_Simple_Valid_Xaml_Markup()
         {
             var xaml = XDocumentXamlParser.Parse(MiniValidXaml);
-            var compilation = CreateBasicCompilation(MiniClass, "Example");
-
-            MiniCompiler
-                .CreateDefault(new RoslynTypeSystem(compilation))
-                .Transform(xaml);
+            var compilation = CreateBasicCompilation(MiniClass);
+            MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation)).Transform(xaml);
 
             Assert.NotNull(xaml.Root);
         }
 
         [Fact]
-        public void Should_Throw_When_Unable_To_Resolve_Types()
+        public void Should_Throw_When_Unable_To_Resolve_Types_From_Simple_Invalid_Markup()
         {
             var xaml = XDocumentXamlParser.Parse(MiniInvalidXaml);
-            var compilation = CreateBasicCompilation(MiniClass, "Example");
+            var compilation = CreateBasicCompilation(MiniClass);
             var compiler = MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation));
 
             Assert.Throws<XamlParseException>(() => compiler.Transform(xaml));
         }
 
-        private static CSharpCompilation CreateBasicCompilation(string source, string name) =>
+        [Fact]
+        public void Should_Resolve_Types_From_Simple_Avalonia_Markup()
+        {
+            var xaml = XDocumentXamlParser.Parse(AvaloniaXaml);
+            var compilation = CreateAvaloniaCompilation();
+            MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation)).Transform(xaml);
+
+            Assert.NotNull(xaml.Root);
+        }
+
+        private static CSharpCompilation CreateAvaloniaCompilation(string name = "AvaloniaCompilation") =>
+            CreateBasicCompilation(string.Empty, name)
+                .AddReferences(MetadataReference.CreateFromFile(typeof(TextBlock).Assembly.Location));
+
+        private static CSharpCompilation CreateBasicCompilation(string source, string name = "BasicCompilation") =>
             CSharpCompilation
                 .Create(name, options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(string).Assembly.Location))

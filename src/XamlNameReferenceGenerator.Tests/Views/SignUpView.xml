@@ -1,10 +1,7 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sandbox="clr-namespace:XamlNameReferenceGenerator.Sandbox"
-        xmlns:controls="clr-namespace:XamlNameReferenceGenerator.Sandbox.Controls"
-        x:Class="XamlNameReferenceGenerator.Sandbox.SignUpView">
+        xmlns:controls="clr-namespace:Controls">
     <StackPanel>
-        <!-- Regular name directives. -->
         <controls:CustomTextBox Margin="0 10 0 0"
                                 Name="UserNameTextBox"
                                 Watermark="Please, enter user name..."
@@ -20,7 +17,6 @@
         <TextBlock Name="PasswordValidation"
                    Foreground="Red"
                    FontSize="12" />
-
         <ListBox x:Name="AwesomeListView">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -28,8 +24,6 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-
-        <!-- x:Name directives. -->
         <TextBox Margin="0 10 0 0"
                  x:Name="ConfirmPasswordTextBox"
                  Watermark="Please, confirm the password..."

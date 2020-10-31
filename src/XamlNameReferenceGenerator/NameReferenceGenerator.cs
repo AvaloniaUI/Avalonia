@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.Text;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using XamlNameReferenceGenerator.Infrastructure;
-using XamlNameReferenceGenerator.Parsers;
 
 [assembly: InternalsVisibleTo("XamlNameReferenceGenerator.Tests")]
 
@@ -47,7 +46,7 @@ namespace XamlNameReferenceGenerator
                 return;
 
             var compilation = (CSharpCompilation) context.Compilation;
-            var xamlParser = new XamlXNameReferenceXamlParser(compilation);
+            var xamlParser = new NameResolver(compilation);
             var symbols = UnpackAnnotatedTypes(compilation, receiver);
             foreach (var typeSymbol in symbols)
             {
@@ -98,14 +97,14 @@ namespace XamlNameReferenceGenerator
         }
 
         private static string GenerateSourceCode(
-            INameReferenceXamlParser xamlParser,
+            INameResolver nameResolver,
             INamedTypeSymbol classSymbol,
             AdditionalText xamlFile)
         {
             var className = classSymbol.Name;
             var nameSpace = classSymbol.ContainingNamespace.ToDisplayString(SymbolDisplayFormat);
-            var namedControls = xamlParser
-                .GetNamedControls(xamlFile.GetText()!.ToString())
+            var namedControls = nameResolver
+                .ResolveNames(xamlFile.GetText()!.ToString())
                 .Select(info => "        " +
                                 $"public {info.TypeName} {info.Name} => " +
                                 $"this.FindControl<{info.TypeName}>(\"{info.Name}\");");

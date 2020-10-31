@@ -3,7 +3,7 @@ using XamlX.Ast;
 
 namespace XamlNameReferenceGenerator.Infrastructure
 {
-    internal sealed class NamedControlCollector : IXamlAstVisitor
+    internal sealed class NameReceiver : IXamlAstVisitor
     {
         private readonly List<(string TypeName, string Name)> _items = new List<(string TypeName, string Name)>();
 
