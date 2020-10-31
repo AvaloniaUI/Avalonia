@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Controls.Platform
 {
-    public interface IPlatformAutomationInterface
+    public interface IPlatformAutomationPeerFactory
     {
         IAutomationPeerImpl CreateAutomationPeerImpl(AutomationPeer peer);
     }

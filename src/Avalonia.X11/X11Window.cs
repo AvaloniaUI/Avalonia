@@ -25,7 +25,8 @@ namespace Avalonia.X11
 {
     unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
         ITopLevelImplWithNativeMenuExporter,
-        ITopLevelImplWithNativeControlHost
+        ITopLevelImplWithNativeControlHost,
+        IPlatformAutomationPeerFactory
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IWindowImpl _popupParent;
@@ -1131,6 +1132,13 @@ namespace Avalonia.X11
 
         public void SetWindowManagerAddShadowHint(bool enabled)
         {
+        }
+
+        public IAutomationPeerImpl CreateAutomationPeerImpl(AutomationPeer peer)
+        {
+            if (Atspi is null)
+                throw new InvalidOperationException("Cannot create automation peer: AT-SPI not available.");
+            return Atspi.CreateAutomationPeerImpl(peer);
         }
 
         public WindowTransparencyLevel TransparencyLevel => _transparencyHelper.CurrentLevel;

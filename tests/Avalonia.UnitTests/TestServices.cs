@@ -61,7 +61,7 @@ namespace Avalonia.UnitTests
 
         public TestServices(
             IAssetLoader assetLoader = null,
-            IPlatformAutomationInterface automationPlatform = null,
+            IPlatformAutomationPeerFactory automationPlatform = null,
             IFocusManager focusManager = null,
             IGlobalClock globalClock = null,
             IInputManager inputManager = null,
@@ -103,7 +103,7 @@ namespace Avalonia.UnitTests
         }
 
         public IAssetLoader AssetLoader { get; }
-        public IPlatformAutomationInterface AutomationPlatform { get; }
+        public IPlatformAutomationPeerFactory AutomationPlatform { get; }
         public IInputManager InputManager { get; }
         public IFocusManager FocusManager { get; }
         public IGlobalClock GlobalClock { get; }
@@ -124,7 +124,7 @@ namespace Avalonia.UnitTests
 
         public TestServices With(
             IAssetLoader assetLoader = null,
-            IPlatformAutomationInterface automationPlatform = null,
+            IPlatformAutomationPeerFactory automationPlatform = null,
             IFocusManager focusManager = null,
             IGlobalClock globalClock = null,
             IInputManager inputManager = null,

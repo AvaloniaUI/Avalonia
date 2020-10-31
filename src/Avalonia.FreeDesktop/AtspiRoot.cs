@@ -6,16 +6,18 @@ using System.Reactive.Disposables;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls.Automation.Peers;
+using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop.Atspi;
 using Avalonia.Logging;
+using Avalonia.Platform;
+using Avalonia.Threading;
 using Tmds.DBus;
 
 #nullable enable
 
 namespace Avalonia.FreeDesktop
 {
-
-    public class AtspiRoot : IAccessible, IApplication
+    public class AtspiRoot : IAccessible, IApplication, IPlatformAutomationPeerFactory
     {
         private const string RootPath = "/org/a11y/atspi/accessible/root";
         private const string AtspiVersion = "2.1";
@@ -26,16 +28,19 @@ namespace Avalonia.FreeDesktop
 
         private readonly List<Child> _children = new List<Child>();
         private Connection? _connection;
-        private (string, ObjectPath) _application;
+        private string? _localName;
         private AccessibleProperties? _accessibleProperties;
         private ApplicationProperties? _applicationProperties;
 
         public AtspiRoot(Connection sessionConnection)
         {
             Register(sessionConnection);
+            Attributes = new Dictionary<string, string> { { "toolkit", "Avalonia" } };
         }
 
-        ObjectPath IDBusObject.ObjectPath => RootPath;
+        public ObjectPath ObjectPath => RootPath;
+        public (string, ObjectPath) ApplicationPath => _accessibleProperties!.Parent;
+        public IDictionary<string, string> Attributes { get; }
         
         public static AtspiRoot? RegisterRoot(Func<AutomationPeer> peerGetter)
         {
@@ -47,6 +52,11 @@ namespace Avalonia.FreeDesktop
 
             _instance?._children.Add(new Child(peerGetter));
             return _instance;
+        }
+
+        public IAutomationPeerImpl CreateAutomationPeerImpl(AutomationPeer peer)
+        {
+            return AtspiContextFactory.Create(this, peer);
         }
 
         private async void Register(Connection sessionConnection)
@@ -71,7 +81,6 @@ namespace Avalonia.FreeDesktop
                 {
                     Name = Application.Current.Name ?? "Unnamed",
                     Locale = CultureInfo.CurrentCulture.Name,
-                    Parent = _application,
                     ChildCount = _children.Count,
                     AccessibleId = string.Empty,
                 };
@@ -84,7 +93,8 @@ namespace Avalonia.FreeDesktop
                     ToolkitName = "Avalonia",
                 };
                 
-                _application = await socket.EmbedAsync(plug);
+                _accessibleProperties.Parent = await socket.EmbedAsync(plug);
+                _localName = connectionInfo.LocalName;
                 _connection = connection;
             }
             catch (Exception e)
@@ -93,22 +103,33 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        Task<(string, ObjectPath)> IAccessible.GetChildAtIndexAsync(int index)
+        async Task<(string, ObjectPath)> IAccessible.GetChildAtIndexAsync(int index)
         {
             var child = _children[index];
-            var peer = child.Peer.PlatformImpl;
+            var peer = child.Peer;
+
+            if (peer is null)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() => child.CreatePeer());
+                peer = child.Peer!;
+            }
+
+            var context = (AtspiContext?)peer.PlatformImpl;
+            
+            if (context is null)
+                throw new AvaloniaInternalException("AutomationPeer has no platform implementation.");
+
+            return (_localName!, context.ObjectPath);
         }
 
         Task<(string, ObjectPath)[]> IAccessible.GetChildrenAsync()
         {
             var result = new List<(string, ObjectPath)>();
             
-            // var address = _connection!.ConnectAsync().Result.LocalName;
-            //
             // foreach (var p in _automationPeers)
             // {
             //     var peer = p();
-            //     result.Add((address, p.GetHashCode().ToString()));
+            //     result.Add((_localName, p.GetHashCode().ToString()));
             // }
 
             return Task.FromResult(result.ToArray());
@@ -125,15 +146,8 @@ namespace Avalonia.FreeDesktop
         Task<string> IAccessible.GetRoleNameAsync() => Task.FromResult("application");
         Task<string> IAccessible.GetLocalizedRoleNameAsync() => Task.FromResult("application");
         Task<uint[]> IAccessible.GetStateAsync() => Task.FromResult(new uint[] { 0, 0 });
-        Task<(string, ObjectPath)> IAccessible.GetApplicationAsync() => Task.FromResult(_application);
-
-        Task<IDictionary<string, string>> IAccessible.GetAttributesAsync()
-        {
-            return Task.FromResult<IDictionary<string, string>>(new Dictionary<string, string>
-            {
-                { "toolkit", "Avalonia" }
-            });
-        }
+        Task<(string, ObjectPath)> IAccessible.GetApplicationAsync() => Task.FromResult(ApplicationPath);
+        Task<IDictionary<string, string>> IAccessible.GetAttributesAsync() => Task.FromResult(Attributes);
 
         Task<string> IApplication.GetLocaleAsync(uint lcType) => Task.FromResult(CultureInfo.CurrentCulture.Name);
 
@@ -207,9 +221,14 @@ namespace Avalonia.FreeDesktop
         private class Child
         {
             private readonly Func<AutomationPeer> _peerGetter;
-            private AutomationPeer? _peer;
             public Child(Func<AutomationPeer> peerGetter) => _peerGetter = peerGetter;
-            public AutomationPeer Peer => _peer ??= _peerGetter();
+            public AutomationPeer? Peer  {  get;  private set;  }
+
+            public void CreatePeer()
+            {
+                Dispatcher.UIThread.VerifyAccess();
+                Peer = _peerGetter();
+            }
         }
     }
 }

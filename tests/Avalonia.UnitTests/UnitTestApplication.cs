@@ -50,7 +50,7 @@ namespace Avalonia.UnitTests
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
-                .Bind<IPlatformAutomationInterface>().ToConstant(Services.AutomationPlatform)
+                .Bind<IPlatformAutomationPeerFactory>().ToConstant(Services.AutomationPlatform)
                 .Bind<IFocusManager>().ToConstant(Services.FocusManager)
                 .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
                 .BindToSelf<IGlobalStyles>(this)

@@ -72,6 +72,14 @@ namespace Avalonia.Controls.Automation.Peers
 
         public void SetFocus() => SetFocusCore();
 
+        internal void CreatePlatformImpl()
+        {
+            if (PlatformImpl is object)
+                throw new InvalidOperationException("Automation peer platform implementation already created.");
+            PlatformImpl = CreatePlatformImplCore();
+        }
+        
+        protected abstract IAutomationPeerImpl CreatePlatformImplCore();
         protected abstract Rect GetBoundingRectangleCore();
         protected abstract IReadOnlyList<AutomationPeer>? GetChildrenCore();
         protected abstract string GetClassNameCore();
@@ -104,17 +112,5 @@ namespace Avalonia.Controls.Automation.Peers
         }
 
         protected virtual Rect GetVisibleBoundingRectCore() => GetBoundingRectangleCore();
-
-        internal void CreatePlatformImpl()
-        {
-            var ifs = AvaloniaLocator.Current.GetService<IPlatformAutomationInterface>();
-
-            if (ifs is null)
-            {
-                throw new NotSupportedException("No automation interface registered for this platform.");
-            }
-
-            PlatformImpl = ifs.CreateAutomationPeerImpl(this);
-        }
     }
 }
