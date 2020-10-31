@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Tmds.DBus;
 
+#nullable enable
+
 [assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
 
 namespace Avalonia.FreeDesktop.Atspi
@@ -153,7 +155,7 @@ namespace Avalonia.FreeDesktop.Atspi
         Task<uint[]> GetStateAsync();
         Task<IDictionary<string, string>> GetAttributesAsync();
         Task<(string, ObjectPath)> GetApplicationAsync();
-        Task<object> GetAsync(string prop);
+        Task<object?> GetAsync(string prop);
         Task<AccessibleProperties> GetAllAsync();
         Task SetAsync(string prop, object val);
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
@@ -165,7 +167,7 @@ namespace Avalonia.FreeDesktop.Atspi
         Task<string> GetLocaleAsync(uint lcType);
         Task RegisterEventListenerAsync(string Event);
         Task DeregisterEventListenerAsync(string Event);
-        Task<object> GetAsync(string prop);
+        Task<object?> GetAsync(string prop);
         Task<ApplicationProperties> GetAllAsync();
         Task SetAsync(string prop, object val);
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);

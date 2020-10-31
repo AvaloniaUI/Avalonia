@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.FreeDesktop;
@@ -189,7 +190,7 @@ namespace Avalonia.X11
             if (platform.Options.UseDBusMenu)
                 NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
             if (platform.Options.UseAtspi)
-                Atspi = AtspiRoot.TryCreate();
+                Atspi = AtspiRoot.RegisterRoot(GetAutomationPeer);
             NativeControlHost = new X11NativeControlHost(_platform, this);
         }
 
@@ -1137,5 +1138,7 @@ namespace Avalonia.X11
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;
+
+        AutomationPeer GetAutomationPeer() => ControlAutomationPeer.GetOrCreatePeer((Control)_inputRoot);
     }
 }
