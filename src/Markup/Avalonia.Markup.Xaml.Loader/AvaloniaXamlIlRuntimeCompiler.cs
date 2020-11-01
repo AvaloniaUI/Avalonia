@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             if(string.IsNullOrWhiteSpace(name))
                 return;
             var key = assemblyName.GetPublicKey();
-            if (key != null)
+            if (key != null && key.Length != 0)
                 name += ", PublicKey=" + BitConverter.ToString(key).Replace("-", "").ToUpperInvariant();
             _sreAsm.SetCustomAttribute(new CustomAttributeBuilder(
                 _ignoresAccessChecksFromAttribute.GetConstructors()[0],
