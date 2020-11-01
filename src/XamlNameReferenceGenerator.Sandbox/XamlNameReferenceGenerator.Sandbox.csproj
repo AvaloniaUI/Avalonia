@@ -3,6 +3,7 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net5</TargetFramework>
         <LangVersion>preview</LangVersion>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="0.10.0-preview5" />

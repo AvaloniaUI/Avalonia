@@ -3,6 +3,7 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net5</TargetFramework>
         <LangVersion>preview</LangVersion>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0-3.final" />

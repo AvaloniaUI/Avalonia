@@ -27,7 +27,6 @@ namespace XamlNameReferenceGenerator
     sealed class GenerateTypedNameReferencesAttribute : Attribute { }
 }
 ";
-        private static readonly PhysicalFileDebugger Debugger = new PhysicalFileDebugger();
         private static readonly SymbolDisplayFormat SymbolDisplayFormat = new SymbolDisplayFormat(
             typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters |
@@ -76,7 +75,7 @@ namespace XamlNameReferenceGenerator
 
                 try
                 {
-                    var sourceCode = Debugger.Debug(() => GenerateSourceCode(xamlParser, typeSymbol, relevantXamlFile));
+                    var sourceCode = GenerateSourceCode(xamlParser, typeSymbol, relevantXamlFile);
                     context.AddSource($"{typeSymbol.Name}.g.cs", SourceText.From(sourceCode, Encoding.UTF8));
                 }
                 catch (Exception exception)
