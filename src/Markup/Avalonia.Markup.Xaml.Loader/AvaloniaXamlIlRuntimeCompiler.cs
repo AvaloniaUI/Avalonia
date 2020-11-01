@@ -139,6 +139,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
         static void EmitIgnoresAccessCheckToAttribute(AssemblyName assemblyName)
         {
             var name = assemblyName.Name;
+            if(string.IsNullOrWhiteSpace(name))
+                return;
             var key = assemblyName.GetPublicKey();
             if (key != null)
                 name += ", PublicKey=" + BitConverter.ToString(key).Replace("-", "").ToUpperInvariant();
@@ -169,7 +171,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         {
 
             InitializeSre();
-            if (localAssembly?.FullName != null)
+            if (localAssembly?.GetName() != null)
                 EmitIgnoresAccessCheckToAttribute(localAssembly.GetName());
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
