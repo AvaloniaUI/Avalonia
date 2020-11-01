@@ -175,10 +175,13 @@ namespace XamlNameReferenceGenerator.Infrastructure
         public bool IsValueType { get; } = false;
 
         public bool IsEnum { get; } = false;
-        
-        public IReadOnlyList<IXamlType> Interfaces { get; } = new List<IXamlType>();
 
-        public bool IsInterface { get; } = false;
+        public IReadOnlyList<IXamlType> Interfaces =>
+            _symbol.AllInterfaces
+                .Select(abstraction => new RoslynType(abstraction, _assembly))
+                .ToList();
+
+        public bool IsInterface => _symbol.IsAbstract;
         
         public IXamlType GetEnumUnderlyingType() => null;
 
