@@ -16,8 +16,9 @@ namespace Avalonia.Media
         private IGlyphRunImpl _glyphRunImpl;
         private GlyphTypeface _glyphTypeface;
         private double _fontRenderingEmSize;
-        private Rect? _bounds;
+        private Size? _size;
         private int _biDiLevel;
+        private Point? _baselineOrigin;
 
         private ReadOnlySlice<ushort> _glyphIndices;
         private ReadOnlySlice<double> _glyphAdvances;
@@ -90,6 +91,20 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        ///     Gets or sets the baseline origin of the<see cref="GlyphRun"/>.
+        /// </summary>
+        public Point BaselineOrigin
+        {
+            get
+            {
+                _baselineOrigin ??= CalculateBaselineOrigin();
+
+                return _baselineOrigin.Value;
+            }
+            set => Set(ref _baselineOrigin, value);
+        }
+
+        /// <summary>
         ///     Gets or sets an array of <see cref="ushort"/> values that represent the glyph indices in the rendering physical font.
         /// </summary>
         public ReadOnlySlice<ushort> GlyphIndices
@@ -156,16 +171,13 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets or sets the conservative bounding box of the <see cref="GlyphRun"/>.
         /// </summary>
-        public Rect Bounds
+        public Size Size
         {
             get
             {
-                if (_bounds == null)
-                {
-                    _bounds = CalculateBounds();
-                }
+                _size ??= CalculateSize();
 
-                return _bounds.Value;
+                return _size.Value;
             }
         }
 
@@ -200,7 +212,7 @@ namespace Avalonia.Media
 
             if (characterHit.FirstCharacterIndex + characterHit.TrailingLength > Characters.End)
             {
-                return Bounds.Width;
+                return Size.Width;
             }
 
             var glyphIndex = FindGlyphIndex(characterHit.FirstCharacterIndex);
@@ -257,7 +269,7 @@ namespace Avalonia.Media
             }
 
             //After
-            if (distance > Bounds.Size.Width)
+            if (distance > Size.Width)
             {
                 isInside = false;
 
@@ -387,14 +399,14 @@ namespace Avalonia.Media
 
                 if (characterIndex > GlyphClusters[GlyphClusters.Length - 1])
                 {
-                    return _glyphClusters.End;
+                    return _glyphClusters.Length - 1;
                 }
             }
             else
             {
                 if (characterIndex < GlyphClusters[GlyphClusters.Length - 1])
                 {
-                    return _glyphClusters.End;
+                    return _glyphClusters.Length - 1;
                 }
 
                 if (characterIndex > GlyphClusters[0])
@@ -529,12 +541,21 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Calculates the bounds of the <see cref="GlyphRun"/>.
+        /// Calculates the default baseline origin of the <see cref="GlyphRun"/>.
+        /// </summary>
+        /// <returns>The baseline origin.</returns>
+        private Point CalculateBaselineOrigin()
+        {
+            return new Point(0, -GlyphTypeface.Ascent * Scale);
+        }
+
+        /// <summary>
+        /// Calculates the size of the <see cref="GlyphRun"/>.
         /// </summary>
         /// <returns>
         /// The calculated bounds.
         /// </returns>
-        private Rect CalculateBounds()
+        private Size CalculateSize()
         {
             var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
 
@@ -555,7 +576,7 @@ namespace Avalonia.Media
                 }
             }
 
-            return new Rect(0, GlyphTypeface.Ascent * Scale, width, height);
+            return new Size(width, height);
         }
 
         private void Set<T>(ref T field, T value)
@@ -595,6 +616,8 @@ namespace Avalonia.Media
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this, out var width);
 
             var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
+
+            _size = new Size(width, height);
         }
 
         void IDisposable.Dispose()

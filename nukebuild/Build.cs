@@ -138,9 +138,19 @@ partial class Build : NukeBuild
                 .SetWorkingDirectory(webappDir)
                 .SetCommand("dist"));
         });
-    
-    Target Compile => _ => _
+
+    Target CompileNative => _ => _
         .DependsOn(Clean)
+        .OnlyWhenStatic(() => EnvironmentInfo.IsOsx)
+        .Executes(() =>
+        {
+            var project = $"{RootDirectory}/native/Avalonia.Native/src/OSX/Avalonia.Native.OSX.xcodeproj/";
+            var args = $"-project {project} -configuration {Parameters.Configuration} CONFIGURATION_BUILD_DIR={RootDirectory}/Build/Products/Release";
+            ProcessTasks.StartProcess("xcodebuild", args).AssertZeroExitCode();
+        });
+
+    Target Compile => _ => _
+        .DependsOn(Clean, CompileNative)
         .DependsOn(CompileHtmlPreviewer)
         .Executes(async () =>
         {

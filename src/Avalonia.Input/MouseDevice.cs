@@ -19,6 +19,7 @@ namespace Avalonia.Input
 
         private readonly Pointer _pointer;
         private bool _disposed;
+        private PixelPoint? _position; 
 
         public MouseDevice(Pointer? pointer = null)
         {
@@ -39,10 +40,11 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the mouse position, in screen coordinates.
         /// </summary>
+        [Obsolete("Use events instead")]
         public PixelPoint Position
         {
-            get;
-            protected set;
+            get => _position ?? new PixelPoint(-1, -1);
+            protected set => _position = value;
         }
 
         /// <summary>
@@ -91,7 +93,16 @@ namespace Avalonia.Input
 
         public void SceneInvalidated(IInputRoot root, Rect rect)
         {
-            var clientPoint = root.PointToClient(Position);
+            // Pointer is outside of the target area
+            if (_position == null )
+            {
+                if (root.PointerOverElement != null)
+                    ClearPointerOver(this, 0, root, PointerPointProperties.None, KeyModifiers.None);
+                return;
+            }
+            
+            
+            var clientPoint = root.PointToClient(_position.Value);
 
             if (rect.Contains(clientPoint))
             {
@@ -132,7 +143,7 @@ namespace Avalonia.Input
             if(mouse._disposed)
                 return;
 
-            Position = e.Root.PointToScreen(e.Position);
+            _position = e.Root.PointToScreen(e.Position);
             var props = CreateProperties(e);
             var keyModifiers = KeyModifiersUtils.ConvertToKey(e.InputModifiers);
             switch (e.Type)
@@ -176,6 +187,7 @@ namespace Avalonia.Input
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
+            _position = null;
             ClearPointerOver(this, timestamp, root, properties, inputModifiers);
         }
 

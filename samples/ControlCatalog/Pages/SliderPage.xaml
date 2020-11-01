@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
              x:Class="ControlCatalog.Pages.SliderPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Slider</TextBlock>
@@ -21,6 +22,15 @@
                 IsSnapToTickEnabled="True"
                 Ticks="0,20,25,40,75,100"
                 Width="300" />
+        <Slider Value="0"
+                Minimum="0"
+                Maximum="100"
+                TickFrequency="10"
+                Width="300">
+          <DataValidationErrors.Error>
+            <sys:Exception /> 
+          </DataValidationErrors.Error>
+        </Slider>
       </StackPanel>
       <Slider Value="0"
               Minimum="0"

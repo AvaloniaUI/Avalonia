@@ -11,6 +11,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -39,6 +41,21 @@ namespace Avalonia
         public bool AllowEglInitialization { get; set; } = true;
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
+        public bool UseWgl { get; set; }
+        public IList<GlVersion> WglProfiles { get; set; } = new List<GlVersion>
+        {
+            new GlVersion(GlProfileType.OpenGL, 4, 0),
+            new GlVersion(GlProfileType.OpenGL, 3, 2),
+        };
+
+        /// <summary>
+        /// Render Avalonia to a Texture inside the Windows.UI.Composition tree.
+        /// </summary>
+        /// <remarks>
+        /// Supported on Windows 10 build 16299 and above. Ignored on other versions.
+        /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
+        /// </remarks>
+        public bool UseWindowsUIComposition { get; set; } = true;
     }
 }
 
@@ -96,9 +113,8 @@ namespace Avalonia.Win32
                 .Bind<AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider>().ToConstant(new NonPumpingWaitProvider())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
 
-            if (options.AllowEglInitialization)
-                Win32GlManager.Initialize();
-            
+            Win32GlManager.Initialize();
+
             _uiThread = Thread.CurrentThread;
 
             if (OleContext.Current != null)

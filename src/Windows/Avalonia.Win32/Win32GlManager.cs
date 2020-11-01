@@ -1,26 +1,41 @@
+using System;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
+using Avalonia.OpenGL.Egl;
+using Avalonia.Win32.OpenGl;
 
 namespace Avalonia.Win32
 {
     static class Win32GlManager
     {
-        /// <summary>This property is initialized if drawing platform requests OpenGL support</summary>
-        public static EglGlPlatformFeature EglFeature { get; private set; }
-
-        private static bool s_attemptedToInitialize;
-
         public static void Initialize()
         {
-            AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToFunc(() =>
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToLazy<IPlatformOpenGlInterface>(() =>
             {
-                if (!s_attemptedToInitialize)
+                var opts = AvaloniaLocator.Current.GetService<Win32PlatformOptions>();
+                if (opts?.UseWgl == true)
                 {
-                    EglFeature = EglGlPlatformFeature.TryCreate(() => new AngleWin32EglDisplay());
-                    s_attemptedToInitialize = true;
+                    var wgl = WglPlatformOpenGlInterface.TryCreate();
+                    return wgl;
                 }
 
-                return EglFeature;
+                if (opts?.AllowEglInitialization == true)
+                {
+                    var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
+
+                    if (egl is { } &&
+                        opts?.UseWindowsUIComposition == true)
+                    {
+                        var compositionConnector = CompositionConnector.TryCreate(egl);
+
+                        if (compositionConnector != null)
+                            AvaloniaLocator.CurrentMutable.BindToSelf(compositionConnector);
+                    }
+
+                    return egl;
+                }
+
+                return null;
             });
         }
     }

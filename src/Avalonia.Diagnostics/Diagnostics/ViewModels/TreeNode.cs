@@ -23,6 +23,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (visual is IControl control)
             {
+                ElementName = control.Name;
+
                 var removed = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
                     x => control.DetachedFromLogicalTree += x,
                     x => control.DetachedFromLogicalTree -= x);
@@ -59,6 +61,11 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get { return _classes; }
             private set { RaiseAndSetIfChanged(ref _classes, value); }
+        }
+
+        public string ElementName
+        {
+            get;
         }
 
         public IVisual Visual

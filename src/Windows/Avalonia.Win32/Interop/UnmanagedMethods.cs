@@ -466,6 +466,7 @@ namespace Avalonia.Win32.Interop
             WS_VSCROLL = 0x200000,
             WS_EX_DLGMODALFRAME = 0x00000001,
             WS_EX_NOPARENTNOTIFY = 0x00000004,
+            WS_EX_NOREDIRECTIONBITMAP = 0x00200000,
             WS_EX_TOPMOST = 0x00000008,
             WS_EX_ACCEPTFILES = 0x00000010,
             WS_EX_TRANSPARENT = 0x00000020,
@@ -1011,7 +1012,14 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool InvalidateRect(IntPtr hWnd, RECT* lpRect, bool bErase);
+        
+        
+        [DllImport("user32.dll")]
+        public static extern bool ValidateRect(IntPtr hWnd, IntPtr lpRect);
 
+        [DllImport("user32.dll")]
+        public static extern bool IsWindow(IntPtr hWnd);
+        
         [DllImport("user32.dll")]
         public static extern bool IsWindowEnabled(IntPtr hWnd);
 
@@ -1045,6 +1053,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr GetActiveWindow();
+        
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr SetActiveWindow(IntPtr hWnd);
 
@@ -1291,6 +1302,41 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
         [DllImport("gdi32.dll")]
         public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hObject);
+
+        [DllImport("gdi32.dll")]
+        public static extern int ChoosePixelFormat(IntPtr hdc, ref PixelFormatDescriptor pfd);
+        
+        [DllImport("gdi32.dll")]
+        public static extern int DescribePixelFormat(IntPtr hdc, ref PixelFormatDescriptor pfd);
+
+        [DllImport("gdi32.dll")]
+        public static extern int SetPixelFormat(IntPtr hdc, int iPixelFormat, ref PixelFormatDescriptor pfd);
+        
+        
+        [DllImport("gdi32.dll")]
+        public static extern int DescribePixelFormat(IntPtr hdc, int iPixelFormat, int bytes, ref PixelFormatDescriptor pfd);
+        
+        [DllImport("gdi32.dll")]
+        public static extern bool SwapBuffers(IntPtr hdc);
+
+        [DllImport("opengl32.dll")]
+        public static extern IntPtr wglCreateContext(IntPtr hdc);
+        
+        [DllImport("opengl32.dll")]
+        public static extern bool wglDeleteContext(IntPtr context);
+
+        
+        [DllImport("opengl32.dll")]
+        public static extern bool wglMakeCurrent(IntPtr hdc, IntPtr context);
+
+        [DllImport("opengl32.dll")]
+        public static extern IntPtr wglGetCurrentContext();
+
+        [DllImport("opengl32.dll")]
+        public static extern IntPtr wglGetCurrentDC();
+
+        [DllImport("opengl32.dll", CharSet = CharSet.Ansi)]
+        public static extern IntPtr wglGetProcAddress(string name);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr CreateFileMapping(IntPtr hFile,
@@ -2120,5 +2166,58 @@ namespace Avalonia.Win32.Interop
         public Int32 Y;
         public bool fNC;
         public bool fWide;
+    }
+
+    [Flags]
+    internal enum PixelFormatDescriptorFlags : uint
+    {
+        PFD_DOUBLEBUFFER = 0x00000001,
+        PFD_STEREO = 0x00000002,
+        PFD_DRAW_TO_WINDOW = 0x00000004,
+        PFD_DRAW_TO_BITMAP = 0x00000008,
+        PFD_SUPPORT_GDI = 0x00000010,
+        PFD_SUPPORT_OPENGL = 0x00000020,
+        PFD_GENERIC_FORMAT = 0x00000040,
+        PFD_NEED_PALETTE = 0x00000080,
+        PFD_NEED_SYSTEM_PALETTE = 0x00000100,
+        PFD_SWAP_EXCHANGE = 0x00000200,
+        PFD_SWAP_COPY = 0x00000400,
+        PFD_SWAP_LAYER_BUFFERS = 0x00000800,
+        PFD_GENERIC_ACCELERATED = 0x00001000,
+        PFD_SUPPORT_DIRECTDRAW = 0x00002000,
+        PFD_DEPTH_DONTCARE = 0x20000000,
+        PFD_DOUBLEBUFFER_DONTCARE = 0x40000000,
+        PFD_STEREO_DONTCARE = 0x80000000,
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct PixelFormatDescriptor
+    {
+        public ushort Size;
+        public ushort Version;
+        public PixelFormatDescriptorFlags Flags;
+        public byte PixelType;
+        public byte ColorBits;
+        public byte RedBits;
+        public byte RedShift;
+        public byte GreenBits;
+        public byte GreenShift;
+        public byte BlueBits;
+        public byte BlueShift;
+        public byte AlphaBits;
+        public byte AlphaShift;
+        public byte AccumBits;
+        public byte AccumRedBits;
+        public byte AccumGreenBits;
+        public byte AccumBlueBits;
+        public byte AccumAlphaBits;
+        public byte DepthBits;
+        public byte StencilBits;
+        public byte AuxBuffers;
+        public byte LayerType;
+        private byte Reserved;
+        public uint LayerMask;
+        public uint VisibleMask;
+        public uint DamageMask;
     }
 }

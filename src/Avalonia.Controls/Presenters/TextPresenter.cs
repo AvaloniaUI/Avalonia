@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -77,12 +78,13 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(SelectionBrushProperty);
+            AffectsRender<TextPresenter>(SelectionBrushProperty, TextBlock.ForegroundProperty, 
+                                         SelectionForegroundBrushProperty, CaretBrushProperty);
             AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, RevealPasswordProperty, 
                 TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
                 TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
 
-            Observable.Merge(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
+            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
                 TextBlock.FontSizeProperty.Changed, TextBlock.FontStyleProperty.Changed, 
                 TextBlock.FontWeightProperty.Changed, TextBlock.FontFamilyProperty.Changed,
@@ -311,7 +313,24 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            context.DrawText(Foreground, new Point(), FormattedText);
+            double top = 0;
+            var textSize = FormattedText.Bounds.Size;
+
+            if (Bounds.Height < textSize.Height)
+            {
+                switch (VerticalAlignment)
+                {
+                    case VerticalAlignment.Center:
+                        top += (Bounds.Height - textSize.Height) / 2;
+                        break;
+
+                    case VerticalAlignment.Bottom:
+                        top += (Bounds.Height - textSize.Height);
+                        break;
+                }
+            }
+
+            context.DrawText(Foreground, new Point(0, top), FormattedText);
         }
 
         public override void Render(DrawingContext context)

@@ -30,7 +30,7 @@ namespace Avalonia.Skia
                 return;
             }
 
-            var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
+            var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
             if (gl != null) 
                 _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
         }
@@ -138,7 +138,7 @@ namespace Avalonia.Skia
             var gpuRenderTarget = _skiaGpu?.TryCreateRenderTarget(surfaces);
             if (gpuRenderTarget != null)
             {
-                return new SkiaGpuRenderTarget(gpuRenderTarget);
+                return new SkiaGpuRenderTarget(_skiaGpu, gpuRenderTarget);
             }
 
             foreach (var surface in surfaces)
@@ -256,10 +256,10 @@ namespace Avalonia.Skia
 
         }
 
-        public IOpenGlTextureBitmapImpl CreateOpenGlTextureBitmap()
+        public IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi)
         {
             if (_skiaGpu is IOpenGlAwareSkiaGpu glAware)
-                return glAware.CreateOpenGlTextureBitmap();
+                return glAware.CreateOpenGlBitmap(size, dpi);
             if (_skiaGpu == null)
                 throw new PlatformNotSupportedException("GPU acceleration is not available");
             throw new PlatformNotSupportedException(

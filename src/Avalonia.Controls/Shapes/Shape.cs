@@ -62,7 +62,6 @@ namespace Avalonia.Controls.Shapes
         private Matrix _transform = Matrix.Identity;
         private Geometry? _definingGeometry;
         private Geometry? _renderedGeometry;
-        private bool _calculateTransformOnArrange;
 
         static Shape()
         {
@@ -248,52 +247,21 @@ namespace Avalonia.Controls.Shapes
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            bool deferCalculateTransform;
-            switch (Stretch)
+            if (DefiningGeometry is null)
             {
-                case Stretch.Fill:
-                case Stretch.UniformToFill:
-                    deferCalculateTransform = double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height);
-                    break;
-                case Stretch.Uniform:
-                    deferCalculateTransform = double.IsInfinity(availableSize.Width) && double.IsInfinity(availableSize.Height);
-                    break;
-                case Stretch.None:
-                default:
-                    deferCalculateTransform = false;
-                    break;
+                return default;
             }
 
-            if (deferCalculateTransform)
-            {
-                _calculateTransformOnArrange = true;
-                return DefiningGeometry?.Bounds.Size ?? Size.Empty;
-            }
-            else
-            {
-                _calculateTransformOnArrange = false;
-                return CalculateShapeSizeAndSetTransform(availableSize);
-            }
+            return CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch).size;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
-        {
-            if (_calculateTransformOnArrange)
-            {
-                _calculateTransformOnArrange = false;
-                CalculateShapeSizeAndSetTransform(finalSize);
-            }
-
-            return finalSize;
-        }
-
-        private Size CalculateShapeSizeAndSetTransform(Size availableSize)
         {
             if (DefiningGeometry != null)
             {
                 // This should probably use GetRenderBounds(strokeThickness) but then the calculations
                 // will multiply the stroke thickness as well, which isn't correct.
-                var (size, transform) = CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch);
+                var (_, transform) = CalculateSizeAndTransform(finalSize, DefiningGeometry.Bounds, Stretch);
 
                 if (_transform != transform)
                 {
@@ -301,13 +269,13 @@ namespace Avalonia.Controls.Shapes
                     _renderedGeometry = null;
                 }
 
-                return size;
+                return finalSize;
             }
 
             return Size.Empty;
         }
 
-        internal static (Size, Matrix) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)
+        internal static (Size size, Matrix transform) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)
         {
             Size shapeSize = new Size(shapeBounds.Right, shapeBounds.Bottom);
             Matrix translate = Matrix.Identity;

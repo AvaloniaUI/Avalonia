@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform.Interop;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
@@ -11,13 +13,16 @@ using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
 
 namespace Avalonia.LinuxFramebuffer.Output
 {
-    public unsafe class DrmOutput : IOutputBackend, IGlPlatformSurface, IWindowingPlatformGlFeature
+    public unsafe class DrmOutput : IGlOutputBackend, IGlPlatformSurface
     {
         private DrmCard _card;
         private readonly EglGlPlatformSurface _eglPlatformSurface;
         public PixelSize PixelSize => _mode.Resolution;
         public double Scaling { get; set; }
-        public IGlContext MainContext => _deferredContext;
+        public IGlContext PrimaryContext => _deferredContext;
+
+        private EglPlatformOpenGlInterface _platformGl;
+        public IPlatformOpenGlInterface PlatformOpenGlInterface => _platformGl;
 
         public DrmOutput(string path = null)
         {
@@ -132,22 +137,11 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(_gbmTargetSurface == null)
                 throw new InvalidOperationException("Unable to create GBM surface");
 
-            
-            
-            _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), 0x31D7, device, null);
-            _eglSurface = _eglDisplay.CreateWindowSurface(_gbmTargetSurface);
+            _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), false, 0x31D7, device, null);
+            _platformGl = new EglPlatformOpenGlInterface(_eglDisplay);
+            _eglSurface =  _platformGl.CreateWindowSurface(_gbmTargetSurface);
 
-
-            EglContext CreateContext(EglContext share)
-            {
-                var offSurf = gbm_surface_create(device, 1, 1, GbmColorFormats.GBM_FORMAT_XRGB8888,
-                    GbmBoFlags.GBM_BO_USE_RENDERING);
-                if (offSurf == null)
-                    throw new InvalidOperationException("Unable to create 1x1 sized GBM surface");
-                return _eglDisplay.CreateContext(share, _eglDisplay.CreateWindowSurface(offSurf));
-            }
-            
-            _deferredContext = CreateContext(null);
+            _deferredContext = _platformGl.PrimaryEglContext;
 
             using (_deferredContext.MakeCurrent(_eglSurface))
             {

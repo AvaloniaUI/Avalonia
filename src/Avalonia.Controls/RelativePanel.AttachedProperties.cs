@@ -55,6 +55,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to position this element above.)</param>
+        [ResolveByName]
         public static void SetAbove(AvaloniaObject obj, object value)
         {
             obj.SetValue(AboveProperty, value);
@@ -121,6 +122,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to align this element's bottom edge with.)</param>
+        [ResolveByName]
         public static void SetAlignBottomWith(AvaloniaObject obj, object value)
         {
             obj.SetValue(AlignBottomWithProperty, value);
@@ -185,6 +187,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to align this element's horizontal center with.)</param>
+        [ResolveByName]
         public static void SetAlignHorizontalCenterWith(AvaloniaObject obj, object value)
         {
             obj.SetValue(AlignHorizontalCenterWithProperty, value);
@@ -250,6 +253,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to align this element's left edge with.)</param>
+        [ResolveByName]
         public static void SetAlignLeftWith(AvaloniaObject obj, object value)
         {
             obj.SetValue(AlignLeftWithProperty, value);
@@ -315,6 +319,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to align this element's right edge with.)</param>
+        [ResolveByName]
         public static void SetAlignRightWith(AvaloniaObject obj, object value)
         {
             obj.SetValue(AlignRightWithProperty, value);
@@ -376,6 +381,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to align this element's top edge with.)</param>
+        [ResolveByName]
         public static void SetAlignTopWith(AvaloniaObject obj, object value)
         {
             obj.SetValue(AlignTopWithProperty, value);
@@ -437,7 +443,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to align this element's horizontal center with.)</param>        
-
+        [ResolveByName]
         public static void SetAlignVerticalCenterWith(AvaloniaObject obj, object value)
         {
             obj.SetValue(AlignVerticalCenterWithProperty, value);
@@ -468,7 +474,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to position this element below.)</param>
-
+        [ResolveByName]
         public static void SetBelow(AvaloniaObject obj, object value)
         {
             obj.SetValue(BelowProperty, value);
@@ -500,6 +506,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to position this element to the left of.)</param>
+        [ResolveByName]
         public static void SetLeftOf(AvaloniaObject obj, object value)
         {
             obj.SetValue(LeftOfProperty, value);
@@ -531,6 +538,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="obj">The object to which the property value is written.</param>
         /// <param name="value">The value to set. (The element to position this element to the right of.)</param>
+        [ResolveByName]
         public static void SetRightOf(AvaloniaObject obj, object value)
         {
             obj.SetValue(RightOfProperty, value);

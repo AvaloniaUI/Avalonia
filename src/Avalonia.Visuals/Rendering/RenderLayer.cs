@@ -20,7 +20,7 @@ namespace Avalonia.Rendering
             IsEmpty = true;
         }
 
-        public IRef<IRenderTargetBitmapImpl> Bitmap { get; private set; }
+        public IRef<IDrawingContextLayerImpl> Bitmap { get; private set; }
         public bool IsEmpty { get; set; }
         public double Scaling { get; private set; }
         public Size Size { get; private set; }
@@ -30,12 +30,12 @@ namespace Avalonia.Rendering
         {
             if (Size != size || Scaling != scaling)
             {
-                Bitmap.Dispose();
                 var resized = RefCountable.Create(drawingContext.CreateLayer(size));
 
                 using (var context = resized.Item.CreateDrawingContext(null))
                 {
-                    context.Clear(Colors.Transparent);
+                    Bitmap.Dispose();
+                    context.Clear(default);
                     
                     Bitmap = resized;
                     Scaling = scaling;
