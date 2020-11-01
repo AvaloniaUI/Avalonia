@@ -12,9 +12,9 @@ namespace XamlNameReferenceGenerator.Infrastructure
 
         public IXamlAstNode Visit(IXamlAstNode node)
         {
-            if (node is XamlAstConstructableObjectNode constructableObjectNode)
+            if (node is XamlAstObjectNode objectNode)
             {
-                var clrType = constructableObjectNode.Type.GetClrType();
+                var clrType = objectNode.Type.GetClrType();
                 var isAvaloniaControl = clrType
                     .Interfaces
                     .Any(abstraction => abstraction.IsInterface &&
@@ -25,7 +25,7 @@ namespace XamlNameReferenceGenerator.Infrastructure
                     return node;
                 }
 
-                foreach (var child in constructableObjectNode.Children)
+                foreach (var child in objectNode.Children)
                 {
                     if (child is XamlAstXamlPropertyValueNode propertyValueNode &&
                         propertyValueNode.Property is XamlAstNamePropertyReference namedProperty &&
