@@ -65,18 +65,18 @@ For the [`SignUpView` view class](https://github.com/worldbeater/XamlNameReferen
 
 using Avalonia.Controls;
 
-namespace XamlNameReferenceGenerator.Sandbox
+namespace Your.View.Namespace
 {
     partial class SignUpView
     {
-        internal XamlNameReferenceGenerator.Sandbox.Controls.CustomTextBox UserNameTextBox => this.FindControl<XamlNameReferenceGenerator.Sandbox.Controls.CustomTextBox>("UserNameTextBox");
-        internal Avalonia.Controls.TextBlock UserNameValidation => this.FindControl<Avalonia.Controls.TextBlock>("UserNameValidation");
-        internal Avalonia.Controls.TextBox PasswordTextBox => this.FindControl<Avalonia.Controls.TextBox>("PasswordTextBox");
-        internal Avalonia.Controls.TextBlock PasswordValidation => this.FindControl<Avalonia.Controls.TextBlock>("PasswordValidation");
-        internal Avalonia.Controls.TextBox ConfirmPasswordTextBox => this.FindControl<Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
-        internal Avalonia.Controls.TextBlock ConfirmPasswordValidation => this.FindControl<Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
-        internal Avalonia.Controls.Button SignUpButton => this.FindControl<Avalonia.Controls.Button>("SignUpButton");
-        internal Avalonia.Controls.TextBlock CompoundValidation => this.FindControl<Avalonia.Controls.TextBlock>("CompoundValidation");
+        internal global::XamlNameReferenceGenerator.Sandbox.Controls.CustomTextBox UserNameTextBox => this.FindControl<global::XamlNameReferenceGenerator.Sandbox.Controls.CustomTextBox>("UserNameTextBox");
+        internal global::Avalonia.Controls.TextBlock UserNameValidation => this.FindControl<global::Avalonia.Controls.TextBlock>("UserNameValidation");
+        internal global::Avalonia.Controls.TextBox PasswordTextBox => this.FindControl<global::Avalonia.Controls.TextBox>("PasswordTextBox");
+        internal global::Avalonia.Controls.TextBlock PasswordValidation => this.FindControl<global::Avalonia.Controls.TextBlock>("PasswordValidation");
+        internal global::Avalonia.Controls.TextBox ConfirmPasswordTextBox => this.FindControl<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
+        internal global::Avalonia.Controls.TextBlock ConfirmPasswordValidation => this.FindControl<global::Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
+        internal global::Avalonia.Controls.Button SignUpButton => this.FindControl<global::Avalonia.Controls.Button>("SignUpButton");
+        internal global::Avalonia.Controls.TextBlock CompoundValidation => this.FindControl<global::Avalonia.Controls.TextBlock>("CompoundValidation");
     }
 }
 ```
