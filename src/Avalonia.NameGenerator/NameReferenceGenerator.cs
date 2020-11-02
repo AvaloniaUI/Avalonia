@@ -5,12 +5,12 @@ using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
+using Avalonia.NameGenerator.Infrastructure;
 using Microsoft.CodeAnalysis.CSharp;
-using XamlNameReferenceGenerator.Infrastructure;
 
-[assembly: InternalsVisibleTo("XamlNameReferenceGenerator.Tests")]
+[assembly: InternalsVisibleTo("Avalonia.NameGenerator.Tests")]
 
-namespace XamlNameReferenceGenerator
+namespace Avalonia.NameGenerator
 {
     [Generator]
     public class NameReferenceGenerator : ISourceGenerator

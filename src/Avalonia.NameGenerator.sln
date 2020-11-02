@@ -1,10 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNameReferenceGenerator", "XamlNameReferenceGenerator\XamlNameReferenceGenerator.csproj", "{684ADF3B-8DFC-4F4A-93AD-F856561FCC39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.NameGenerator", "Avalonia.NameGenerator\Avalonia.NameGenerator.csproj", "{684ADF3B-8DFC-4F4A-93AD-F856561FCC39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNameReferenceGenerator.Sandbox", "XamlNameReferenceGenerator.Sandbox\XamlNameReferenceGenerator.Sandbox.csproj", "{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.NameGenerator.Sandbox", "Avalonia.NameGenerator.Sandbox\Avalonia.NameGenerator.Sandbox.csproj", "{C90BB1C6-5C33-494A-96FA-FEE7B34CA83C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlNameReferenceGenerator.Tests", "XamlNameReferenceGenerator.Tests\XamlNameReferenceGenerator.Tests.csproj", "{B13A0A44-85BC-49A7-970F-6C9BF8BDFD54}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.NameGenerator.Tests", "Avalonia.NameGenerator.Tests\Avalonia.NameGenerator.Tests.csproj", "{B13A0A44-85BC-49A7-970F-6C9BF8BDFD54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -19,6 +19,6 @@
         <EmbeddedResource Include="Views/*.xml" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="../XamlNameReferenceGenerator/XamlNameReferenceGenerator.csproj" />
+      <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj" />
     </ItemGroup>
 </Project>

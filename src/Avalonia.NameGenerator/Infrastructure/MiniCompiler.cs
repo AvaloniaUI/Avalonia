@@ -6,7 +6,7 @@ using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
-namespace XamlNameReferenceGenerator.Infrastructure
+namespace Avalonia.NameGenerator.Infrastructure
 {
     internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
     {

@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using XamlX;
 using XamlX.Parsers;
 
-namespace XamlNameReferenceGenerator.Infrastructure
+namespace Avalonia.NameGenerator.Infrastructure
 {
     internal class NameResolver : INameResolver
     {

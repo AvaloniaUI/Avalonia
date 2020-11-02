@@ -1,7 +1,6 @@
-﻿using Avalonia;
-using Avalonia.ReactiveUI;
+﻿using Avalonia.ReactiveUI;
 
-namespace XamlNameReferenceGenerator.Sandbox
+namespace Avalonia.NameGenerator.Sandbox
 {
     internal static class Program
     {

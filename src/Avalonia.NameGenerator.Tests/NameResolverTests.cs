@@ -7,10 +7,10 @@ using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using XamlNameReferenceGenerator.Infrastructure;
+using Avalonia.NameGenerator.Infrastructure;
 using Xunit;
 
-namespace XamlNameReferenceGenerator.Tests
+namespace Avalonia.NameGenerator.Tests
 {
     public class NameResolverTests
     {

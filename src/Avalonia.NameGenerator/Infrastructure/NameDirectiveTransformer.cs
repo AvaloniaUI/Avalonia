@@ -2,7 +2,7 @@
 using XamlX.Ast;
 using XamlX.Transform;
 
-namespace XamlNameReferenceGenerator.Infrastructure
+namespace Avalonia.NameGenerator.Infrastructure
 {
     internal class NameDirectiveTransformer : IXamlAstTransformer
     {

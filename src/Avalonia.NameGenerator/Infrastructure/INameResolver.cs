@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace XamlNameReferenceGenerator.Infrastructure
+namespace Avalonia.NameGenerator.Infrastructure
 {
     internal interface INameResolver
     {

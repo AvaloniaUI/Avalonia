@@ -1,8 +1,7 @@
-﻿using Avalonia;
-using Avalonia.Markup.Xaml;
-using XamlNameReferenceGenerator.Sandbox.Views;
+﻿using Avalonia.Markup.Xaml;
+using Avalonia.NameGenerator.Sandbox.Views;
 
-namespace XamlNameReferenceGenerator.Sandbox
+namespace Avalonia.NameGenerator.Sandbox
 {
     public class App : Application
     {

@@ -1,11 +1,11 @@
 <Project>
     <PropertyGroup>
-        <Product>XamlNameReferenceGenerator</Product>
+        <Product>Avalonia.NameGenerator</Product>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://github.com/worldbeater/XamlNameReferenceGenerator/</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/avaloniaui/Avalonia.NameGenerator/</PackageProjectUrl>
         <Description>Generates typed x:Name references to Avalonia controls declared in XAML.</Description>
-        <PackageReleaseNotes>https://github.com/worldbeater/XamlNameReferenceGenerator/releases</PackageReleaseNotes>
-        <RepositoryUrl>https://github.com/worldbeater/XamlNameReferenceGenerator</RepositoryUrl>
+        <PackageReleaseNotes>https://github.com/avaloniaui/Avalonia.NameGenerator/releases</PackageReleaseNotes>
+        <RepositoryUrl>https://github.com/avaloniaui/Avalonia.NameGenerator</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
     </PropertyGroup>

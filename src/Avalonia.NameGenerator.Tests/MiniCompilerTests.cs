@@ -3,12 +3,12 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using XamlNameReferenceGenerator.Infrastructure;
+using Avalonia.NameGenerator.Infrastructure;
 using XamlX;
 using XamlX.Parsers;
 using Xunit;
 
-namespace XamlNameReferenceGenerator.Tests
+namespace Avalonia.NameGenerator.Tests
 {
     public class MiniCompilerTests
     {

@@ -2,7 +2,7 @@
 using System.Linq;
 using XamlX.Ast;
 
-namespace XamlNameReferenceGenerator.Infrastructure
+namespace Avalonia.NameGenerator.Infrastructure
 {
     internal sealed class NameReceiver : IXamlAstVisitor
     {

@@ -9,7 +9,7 @@ on:
 
 env:
   configuration: Release
-  productNamespacePrefix: "XamlNameReferenceGenerator"
+  productNamespacePrefix: "Avalonia.NameGenerator"
 
 jobs:
   build:
