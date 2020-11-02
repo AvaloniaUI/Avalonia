@@ -378,10 +378,11 @@ namespace Avalonia.Controls
             {
                 if (!this.IsVisualAncestorOf(element))
                 {
-                    IControl result = _selectedItem != null ?
+                    var result = _selectedItem != null ?
                         ItemContainerGenerator.Index.ContainerFromItem(_selectedItem) :
                         ItemContainerGenerator.ContainerFromIndex(0);
-                    return (true, result);
+                    
+                    return (result != null, result); // SelectedItem may not be in the treeview.
                 }
 
                 return (true, null);
