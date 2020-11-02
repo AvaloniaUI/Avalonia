@@ -14,7 +14,7 @@ namespace Avalonia.Native
             _native = native;
         }
 
-        public int ScreenCount => _native.GetScreenCount();
+        public int ScreenCount => _native.ScreenCount;
 
         public IReadOnlyList<Screen> AllScreens
         {

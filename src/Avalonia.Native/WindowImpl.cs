@@ -10,7 +10,7 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
-    public class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
+    internal class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
@@ -69,12 +69,12 @@ namespace Avalonia.Native
 
         public void CanResize(bool value)
         {
-            _native.CanResize = value;
+            _native.SetCanResize(value);
         }
 
         public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
-            _native.Decorations = (Interop.SystemDecorations)enabled;
+            _native.SetDecorations((Interop.SystemDecorations)enabled);
         }
 
         public void SetTitleBarColor(Avalonia.Media.Color color)
@@ -82,24 +82,12 @@ namespace Avalonia.Native
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
 
-        public void SetTitle(string title)
-        {
-            using (var buffer = new Utf8Buffer(title))
-            {
-                _native.SetTitle(buffer.DangerousGetHandle());
-            }
-        }
+        public void SetTitle(string title) => _native.SetTitle(title);
 
         public WindowState WindowState
         {
-            get
-            {
-                return (WindowState)_native.GetWindowState();
-            }
-            set
-            {
-                _native.SetWindowState((AvnWindowState)value);
-            }
+            get => (WindowState)_native.WindowState;
+            set => _native.SetWindowState((AvnWindowState)value);
         }
 
         public Action<WindowState> WindowStateChanged { get; set; }        
@@ -146,7 +134,7 @@ namespace Avalonia.Native
             }
             else
             {
-                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : _extendTitleBarHeight, 0, 0) : new Thickness();
+                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.ExtendTitleBarHeight : _extendTitleBarHeight, 0, 0) : new Thickness();
             }
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
@@ -174,7 +162,7 @@ namespace Avalonia.Native
             _extendTitleBarHeight = titleBarHeight;
             _native.SetExtendTitleBarHeight(titleBarHeight);
 
-            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : titleBarHeight, 0, 0) : new Thickness();
+            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.ExtendTitleBarHeight : titleBarHeight, 0, 0) : new Thickness();
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
         }

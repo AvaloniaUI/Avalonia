@@ -5,10 +5,7 @@
     <IsPackable>$(PackAvaloniaNative)</IsPackable>
     <IsPackable Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'True'">true</IsPackable>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <CastXmlPath Condition="Exists('/usr/bin/castxml')">/usr/bin/castxml</CastXmlPath>
-    <CastXmlPath Condition="Exists('/usr/local/bin/castxml')">/usr/local/bin/castxml</CastXmlPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <SharpGenGenerateConsumerBindMapping>false</SharpGenGenerateConsumerBindMapping>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(PackAvaloniaNative)' == 'true'">
@@ -21,11 +18,38 @@
   </ItemGroup>
   
   <ItemGroup>
-    <!--<SharpGenMapping Include="Mappings.xml" />-->
-    <PackageReference Include="SharpGenTools.Sdk" Version="1.2.1" PrivateAssets="all" />
-    <PackageReference Include="SharpGen.Runtime" Version="1.2.1" />
-    <PackageReference Include="SharpGen.Runtime.COM" Version="1.2.0" />
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
   </ItemGroup>
+  
+  <!-- COM Interop generation -->
+  <ItemGroup>
+    <ProjectReference Include="..\tools\MicroComGenerator\MicroComGenerator.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <ExcludeAssets>all</ExcludeAssets>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+    
+  <Target Name="GenerateAvaloniaNativeComInterop" 
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="ResolveReferences"
+          Inputs="avn.idl;$(MSBuildThisFileDirectory)/../tools/MicroComGenerator/**/*.cs"
+          Outputs="Interop.Generated.cs">
+    <Message Importance="high" Text="Generating Interop.Generated.cs" />
+    <Exec Command="dotnet ../tools/MicroComGenerator/bin/$(Configuration)/netcoreapp3.1/MicroComGenerator.dll -i avn.idl --cs Interop.Generated.cs" LogStandardErrorAsError="true" />
+    <ItemGroup>
+      <!-- Remove and re-add generated file, this is needed for the clean build -->
+      <Compile Remove="Interop.Generated.cs"/>
+      <Compile Include="Interop.Generated.cs"/>
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
+    <UpToDateCheckInput Include="avn.idl"/>
+    <UpToDateCheckInput Include="$(MSBuildThisFileDirectory)/../tools/MicroComGenerator/**/*.cs"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <_AvaloniaPatchComInterop>true</_AvaloniaPatchComInterop>
+  </PropertyGroup>
+  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>
