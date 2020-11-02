@@ -211,7 +211,7 @@ namespace Avalonia.Input.UnitTests
         }
         
         [Fact]
-        public void Control_FocusVsisible_Pseudoclass_Should_Be_Removed_When_Removed_From_Tree()
+        public void Control_FocusWithin_Pseudoclass_Should_Be_Removed_When_Removed_From_Tree()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
@@ -252,6 +252,70 @@ namespace Avalonia.Input.UnitTests
                 Assert.False(target1.IsKeyboardFocusWithin);
                 Assert.False(root.Classes.Contains(":focus-within"));
                 Assert.False(root.IsKeyboardFocusWithin);
+            }
+        }
+        
+        [Fact]
+        public void Control_FocusWithin_Pseudoclass_Should_Be_Removed_Focus_Moves_To_Different_Root()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Decorator();
+                var target2 = new Decorator();
+                
+                var root1 = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            target1,
+                        }
+                    }
+                };
+                
+                var root2 = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            target2,
+                        }
+                    }
+                };
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+
+                FocusManager.Instance?.Focus(target1);
+                Assert.True(target1.IsFocused);
+                Assert.True(target1.Classes.Contains(":focus-within"));
+                Assert.True(target1.IsKeyboardFocusWithin);
+                Assert.True(root1.Child.Classes.Contains(":focus-within"));
+                Assert.True(root1.Child.IsKeyboardFocusWithin);
+                Assert.True(root1.Classes.Contains(":focus-within"));
+                Assert.True(root1.IsKeyboardFocusWithin);
+
+                Assert.Equal(KeyboardDevice.Instance.FocusedElement, target1);
+                
+                FocusManager.Instance?.Focus(target2);
+                
+                Assert.False(target1.IsFocused);
+                Assert.False(target1.Classes.Contains(":focus-within"));
+                Assert.False(target1.IsKeyboardFocusWithin);
+                Assert.False(root1.Child.Classes.Contains(":focus-within"));
+                Assert.False(root1.Child.IsKeyboardFocusWithin);
+                Assert.False(root1.Classes.Contains(":focus-within"));
+                Assert.False(root1.IsKeyboardFocusWithin);
+                
+                Assert.True(target2.IsFocused);
+                Assert.True(target2.Classes.Contains(":focus-within"));
+                Assert.True(target2.IsKeyboardFocusWithin);
+                Assert.True(root2.Child.Classes.Contains(":focus-within"));
+                Assert.True(root2.Child.IsKeyboardFocusWithin);
+                Assert.True(root2.Classes.Contains(":focus-within"));
+                Assert.True(root2.IsKeyboardFocusWithin);
             }
         }
     }
