@@ -147,7 +147,10 @@ namespace Avalonia.Input
             {
                 var interactive = FocusedElement as IInteractive;
 
-                if (FocusedElement != null && !FocusedElement.IsAttachedToVisualTree && _focusedRoot != null)
+                if (FocusedElement != null && 
+                    (!FocusedElement.IsAttachedToVisualTree ||
+                     _focusedRoot != element?.VisualRoot as IInputRoot) &&
+                    _focusedRoot != null)
                 {
                     ClearChildrenFocusWithin(_focusedRoot, true);
                 }
