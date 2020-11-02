@@ -28,11 +28,7 @@ namespace Avalonia.ReactiveUI
             // This WhenActivated block calls ViewModel's WhenActivated
             // block if the ViewModel implements IActivatableViewModel.
             this.WhenActivated(disposables => { });
-
-            this.ObservableForProperty(x => x.ViewModel, false, true)
-                .Subscribe(args => DataContext = args.Value);
-            this.ObservableForProperty(x => x.DataContext, false, true)
-                .Subscribe(args => ViewModel = args.Value as TViewModel);
+            this.GetObservable(ViewModelProperty).Subscribe(OnViewModelChanged);
         }
 
         /// <summary>
@@ -48,6 +44,23 @@ namespace Avalonia.ReactiveUI
         {
             get => ViewModel;
             set => ViewModel = (TViewModel)value;
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            ViewModel = DataContext as TViewModel;
+        }
+
+        private void OnViewModelChanged(object value)
+        {
+            if (value == null)
+            {
+                ClearValue(DataContextProperty);
+            }
+            else if (DataContext != value)
+            {
+                DataContext = value;
+            }
         }
     }
 }
