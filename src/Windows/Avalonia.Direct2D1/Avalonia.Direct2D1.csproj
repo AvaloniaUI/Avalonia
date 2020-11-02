@@ -4,7 +4,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageId>Avalonia.Direct2D1</PackageId>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <SignAssembly>$(SignedBuild)</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.Win32\Interop\UnmanagedMethods.cs">

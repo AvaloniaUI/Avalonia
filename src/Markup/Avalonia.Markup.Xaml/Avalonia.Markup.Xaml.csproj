@@ -7,7 +7,6 @@
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
     <NoWarn>CS1591</NoWarn>
-    <SignAssembly>$(SignedBuild)</SignAssembly>
   </PropertyGroup>
     <ItemGroup>
         <Compile Include="AvaloniaXamlLoader.cs" />

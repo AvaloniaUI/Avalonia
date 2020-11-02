@@ -3,7 +3,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Nullable>Enable</Nullable>
     <WarningsAsErrors>CS8600;CS8602;CS8603</WarningsAsErrors>
-    <SignAssembly>$(SignedBuild)</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />

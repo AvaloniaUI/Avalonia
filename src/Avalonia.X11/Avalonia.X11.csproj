@@ -3,7 +3,6 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <PackageId>Avalonia.X11</PackageId>
-        <SignAssembly>$(SignedBuild)</SignAssembly>
     </PropertyGroup>
 
     <ItemGroup>

@@ -8,7 +8,6 @@
         <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>
         <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
         <NoWarn>NU1605</NoWarn>
-        <SignAssembly>$(SignedBuild)</SignAssembly>
     </PropertyGroup>
 
     <ItemGroup>
