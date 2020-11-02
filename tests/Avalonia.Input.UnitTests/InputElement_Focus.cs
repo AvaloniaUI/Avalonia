@@ -209,5 +209,50 @@ namespace Avalonia.Input.UnitTests
                 Assert.True(panel2.IsKeyboardFocusWithin);
             }
         }
+        
+        [Fact]
+        public void Control_FocusVsisible_Pseudoclass_Should_Be_Removed_When_Removed_From_Tree()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Decorator();
+                var target2 = new Decorator();
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            target1,
+                            target2
+                        }
+                    }
+                };
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+
+                FocusManager.Instance?.Focus(target1);
+                Assert.True(target1.IsFocused);
+                Assert.True(target1.Classes.Contains(":focus-within"));
+                Assert.True(target1.IsKeyboardFocusWithin);
+                Assert.True(root.Child.Classes.Contains(":focus-within"));
+                Assert.True(root.Child.IsKeyboardFocusWithin);
+                Assert.True(root.Classes.Contains(":focus-within"));
+                Assert.True(root.IsKeyboardFocusWithin);
+
+                Assert.Equal(KeyboardDevice.Instance.FocusedElement, target1);
+                
+                root.Child = null;
+                
+                Assert.Null(KeyboardDevice.Instance.FocusedElement);
+                
+                Assert.False(target1.IsFocused);
+                Assert.False(target1.Classes.Contains(":focus-within"));
+                Assert.False(target1.IsKeyboardFocusWithin);
+                Assert.False(root.Classes.Contains(":focus-within"));
+                Assert.False(root.IsKeyboardFocusWithin);
+            }
+        }
     }
 }

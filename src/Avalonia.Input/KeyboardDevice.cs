@@ -9,6 +9,7 @@ namespace Avalonia.Input
     public class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
         private IInputElement? _focusedElement;
+        private IInputRoot? _focusedRoot;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -28,7 +29,32 @@ namespace Avalonia.Input
             private set
             {
                 _focusedElement = value;
+
+                if (_focusedElement != null && _focusedElement.IsAttachedToVisualTree)
+                {
+                    _focusedRoot = _focusedElement.VisualRoot as IInputRoot;
+                }
+                else
+                {
+                    _focusedRoot = null;
+                }
+                
                 RaisePropertyChanged();
+            }
+        }
+
+        private void ClearFocusWithinAncestors(IInputElement element)
+        {
+            IInputElement el = element;
+            
+            while (el != null)
+            {
+                if (el is InputElement ie)
+                {
+                    ie.IsKeyboardFocusWithin = false;
+                }
+
+                el = (IInputElement)el.VisualParent;
             }
         }
         
@@ -54,9 +80,15 @@ namespace Avalonia.Input
 
         private void SetIsFocusWithin(IInputElement oldElement, IInputElement newElement)
         {
+            if (newElement == null && oldElement != null)
+            {
+                ClearFocusWithinAncestors(oldElement);
+                return;
+            }
+            
             IInputElement? branch = null;
 
-            IInputElement el = newElement;
+            IInputElement? el = newElement;
 
             while (el != null)
             {
@@ -69,7 +101,7 @@ namespace Avalonia.Input
                 el = (IInputElement)el.VisualParent;
             }
 
-            el = oldElement;
+            el = oldElement!;
 
             if (el != null && branch != null)
             {
@@ -88,6 +120,22 @@ namespace Avalonia.Input
                 el = (IInputElement)el.VisualParent;
             }    
         }
+        
+        private void ClearChildrenFocusWithin(IInputElement element,bool clearRoot)
+        {
+            foreach (IInputElement el in element.VisualChildren)
+            {
+                if (el.IsKeyboardFocusWithin)
+                {
+                    ClearChildrenFocusWithin(el, true);
+                    break;
+                }
+            }
+            if(clearRoot && element is InputElement ie)
+            {
+                ie.IsKeyboardFocusWithin = false;
+            }
+        }
 
         public void SetFocusedElement(
             IInputElement? element, 
@@ -98,6 +146,11 @@ namespace Avalonia.Input
             {
                 var interactive = FocusedElement as IInteractive;
 
+                if (FocusedElement != null && !FocusedElement.IsAttachedToVisualTree && _focusedRoot != null)
+                {
+                    ClearChildrenFocusWithin(_focusedRoot, true);
+                }
+                
                 SetIsFocusWithin(FocusedElement, element);
                 
                 FocusedElement = element;
