@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.FreeDesktop.Atspi;
@@ -10,8 +11,15 @@ using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop
 {
+    /// <summary>
+    /// A node in the AT-SPI UI automation tree.
+    /// </summary>
+    /// <remarks>
+    /// This class is the platform implementation for an <see cref="AutomationPeer"/> when using AT-SPI.
+    /// </remarks>
     internal class AtspiContext : IAccessible, IAutomationPeerImpl
     {
+        private static uint _id;
         private readonly AtspiRoot _root;
         private readonly AutomationPeer _peer;
         private readonly AtspiRole _role;
@@ -21,11 +29,25 @@ namespace Avalonia.FreeDesktop
             _root = root;
             _peer = peer;
             _role = role;
-            ObjectPath = new ObjectPath("/net/avaloniaui/a11y/" + Guid.NewGuid().ToString().Replace("-", ""));
+            ObjectPath = new ObjectPath("/org/a11y/atspi/accessible/" + ++_id);
         }
         
         public ObjectPath ObjectPath { get; }
 
+        public CacheItem ToCacheItem()
+        {
+            return new CacheItem(
+                new ObjectReference(_root.LocalName, ObjectPath),
+                _root.ApplicationPath,
+                _root.ApplicationPath,
+                new ObjectReference[0],
+                new[] { "org.a11y.atspi.Accessible" },
+                string.Empty,
+                (uint)_role,
+                string.Empty,
+                new[] { 0, 0 });
+        }
+        
         Task<ObjectReference> IAccessible.GetChildAtIndexAsync(int Index)
         {
             throw new NotImplementedException();
@@ -65,12 +87,12 @@ namespace Avalonia.FreeDesktop
 
         Task IAccessible.SetAsync(string prop, object val)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Disposable.Empty);
         }
 
         Task<IDisposable> IAccessible.WatchPropertiesAsync(Action<PropertyChanges> handler)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Disposable.Empty);
         }
     }
 }

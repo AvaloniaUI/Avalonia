@@ -148,6 +148,41 @@ namespace Avalonia.FreeDesktop.Atspi
         public ObjectPath Path { get; }
     }
     
+    internal readonly struct CacheItem
+    {
+        public CacheItem(
+            ObjectReference path,
+            ObjectReference application,
+            ObjectReference parent,
+            ObjectReference[] children,
+            string[] supportedInterfaces,
+            string name,
+            uint role,
+            string description,
+            int[] state)
+        {
+            Path = path;
+            Application = application;
+            Parent = parent;
+            Children = children;
+            SupportedInterfaces = supportedInterfaces;
+            Name = name;
+            Role = role;
+            Description = description;
+            State = state;
+        }
+
+        public ObjectReference Path { get; }
+        public ObjectReference Application { get;  }
+        public ObjectReference Parent { get; }
+        public ObjectReference[] Children { get; }
+        public string[] SupportedInterfaces { get; }
+        public string Name { get; }
+        public uint Role { get; }
+        public string Description { get; }
+        public int[] State { get; }
+    };
+    
     [DBusInterface("org.a11y.Bus")]
     internal interface IBus : IDBusObject
     {
@@ -176,6 +211,7 @@ namespace Avalonia.FreeDesktop.Atspi
     [DBusInterface("org.a11y.atspi.Application")]
     internal interface IApplication : IDBusObject
     {
+        Task<string> GetApplicationBusAddressAsync();
         Task<string> GetLocaleAsync(uint lcType);
         Task RegisterEventListenerAsync(string Event);
         Task DeregisterEventListenerAsync(string Event);
@@ -185,6 +221,14 @@ namespace Avalonia.FreeDesktop.Atspi
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
     }
 
+    [DBusInterface("org.a11y.atspi.Cache")]
+    internal interface ICache : IDBusObject
+    {
+        Task<CacheItem[]> GetItemsAsync();
+        Task<IDisposable> WatchAddAccessibleAsync(Action<CacheItem> handler, Action<Exception>? onError = null);
+        Task<IDisposable> WatchRemoveAccessibleAsync(Action<CacheItem> handler, Action<Exception>? onError = null);
+    }
+    
     [DBusInterface("org.a11y.atspi.Socket")]
     internal interface ISocket : IDBusObject
     {

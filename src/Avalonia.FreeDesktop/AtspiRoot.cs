@@ -11,13 +11,21 @@ using Avalonia.FreeDesktop.Atspi;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 using Tmds.DBus;
 
 #nullable enable
 
 namespace Avalonia.FreeDesktop
 {
-    public class AtspiRoot : IAccessible, IApplication, IPlatformAutomationPeerFactory
+    /// <summary>
+    /// The root Application in the AT-SPI automation tree.
+    /// </summary>
+    /// <remarks>
+    /// When using AT-SPI there is a single AT-SPI root object for the application. Its children are the application's
+    /// open windows.
+    /// </remarks>
+    public class AtspiRoot : IAccessible, IApplication
     {
         private const string RootPath = "/org/a11y/atspi/accessible/root";
         private const string AtspiVersion = "2.1";
@@ -27,8 +35,10 @@ namespace Avalonia.FreeDesktop
         private static bool _instanceInitialized;
 
         private readonly List<Child> _children = new List<Child>();
+        private string? _applicationBusAddress;
         private Connection? _connection;
         private string? _localName;
+        private AtspiCache? _cache;
         private AccessibleProperties? _accessibleProperties;
         private ApplicationProperties? _applicationProperties;
 
@@ -39,9 +49,10 @@ namespace Avalonia.FreeDesktop
         }
 
         public ObjectPath ObjectPath => RootPath;
-        public ObjectReference ApplicationPath => _accessibleProperties!.Parent;
+        public ObjectReference ApplicationPath => new ObjectReference(LocalName, ObjectPath);
         public IDictionary<string, string> Attributes { get; }
-        
+        public string LocalName => _localName ?? throw new AvaloniaInternalException("AT-SPI not initialized.");
+
         public static AtspiRoot? RegisterRoot(Func<AutomationPeer> peerGetter)
         {
             if (!_instanceInitialized)
@@ -56,7 +67,14 @@ namespace Avalonia.FreeDesktop
 
         public IAutomationPeerImpl CreateAutomationPeerImpl(AutomationPeer peer)
         {
-            return AtspiContextFactory.Create(this, peer);
+            if (_connection is null)
+                throw new AvaloniaInternalException("AT-SPI not initialized.");
+            
+            var result = AtspiContextFactory.Create(this, peer);
+            var _ = _connection.RegisterObjectAsync(result);
+            _cache!.Add(result);
+            System.Diagnostics.Debug.WriteLine($"Created {result.ObjectPath} for {peer}");
+            return result;
         }
 
         private async void Register(Connection sessionConnection)
@@ -65,21 +83,23 @@ namespace Avalonia.FreeDesktop
             {
                 // Get the address of the a11y bus and open a connection to it.
                 var bus = sessionConnection.CreateProxy<IBus>("org.a11y.Bus", "/org/a11y/bus");
-                var address = await bus.GetAddressAsync();
-                var connection = new Connection(address);
+                _applicationBusAddress = await bus.GetAddressAsync();
+
+                var connection = new Connection(_applicationBusAddress);
                 var connectionInfo = await connection.ConnectAsync();
 
                 // Register the org.a11y.atspi.Application and org.a11y.atspi.Accessible interfaces at the well-known
-                // object path
+                // object path.
                 await connection.RegisterObjectAsync(this);
             
-                // Register ourselves on the a11y bus.
+                // Get the a11y Register object's Socket interface.
                 var socket = connection.CreateProxy<ISocket>("org.a11y.atspi.Registry", RootPath);
-                var plug = new ObjectReference(connectionInfo.LocalName, RootPath);
-
+                
+                // Set up our properties now as they can be read when we call Socket.Embed.
                 _accessibleProperties = new AccessibleProperties
                 {
                     Name = Application.Current.Name ?? "Unnamed",
+                    Description = string.Empty,
                     Locale = CultureInfo.CurrentCulture.Name,
                     ChildCount = _children.Count,
                     AccessibleId = string.Empty,
@@ -93,9 +113,22 @@ namespace Avalonia.FreeDesktop
                     ToolkitName = "Avalonia",
                 };
                 
-                _accessibleProperties.Parent = await socket.EmbedAsync(plug);
-                _localName = connectionInfo.LocalName;
+                // Store the connection object and local name as the call to Socket.Embed will result in a call
+                // to GetChildAtIndexAsync.
                 _connection = connection;
+                _localName = connectionInfo.LocalName;
+                
+                // Embed ourselves using the Socket.Embed method. We pass the local name (aka unique name) for the
+                // connection along with the root a11y path and get back an object reference to the desktop object
+                // (I think?).
+                var plug = new ObjectReference(connectionInfo.LocalName, RootPath);
+                _accessibleProperties.Parent = await socket.EmbedAsync(plug);
+                
+                // Create and register the cache.
+                _cache = new AtspiCache(this);
+                await connection.RegisterObjectAsync(_cache);
+                
+                System.Diagnostics.Debug.WriteLine($"Set up AtspiRoot on {LocalName}");
             }
             catch (Exception e)
             {
@@ -119,20 +152,19 @@ namespace Avalonia.FreeDesktop
             if (context is null)
                 throw new AvaloniaInternalException("AutomationPeer has no platform implementation.");
 
-            return new ObjectReference(_localName!, context.ObjectPath);
+            return new ObjectReference(LocalName, context.ObjectPath);
         }
 
-        Task<ObjectReference[]> IAccessible.GetChildrenAsync()
+        async Task<ObjectReference[]> IAccessible.GetChildrenAsync()
         {
-            var result = new List<ObjectReference>();
+            var result = new ObjectReference[_children.Count];
             
-            // foreach (var p in _automationPeers)
-            // {
-            //     var peer = p();
-            //     result.Add((_localName, p.GetHashCode().ToString()));
-            // }
+            for (var i = 0; i < _children.Count; ++i)
+            {
+                result[i] = await ((IAccessible)this).GetChildAtIndexAsync(i);
+            }
 
-            return Task.FromResult(result.ToArray());
+            return result;
         }
 
         Task<int> IAccessible.GetIndexInParentAsync() => Task.FromResult(-1);
@@ -149,6 +181,7 @@ namespace Avalonia.FreeDesktop
         Task<ObjectReference> IAccessible.GetApplicationAsync() => Task.FromResult(ApplicationPath);
         Task<IDictionary<string, string>> IAccessible.GetAttributesAsync() => Task.FromResult(Attributes);
 
+        Task<string> IApplication.GetApplicationBusAddressAsync() => Task.FromResult(_applicationBusAddress!);
         Task<string> IApplication.GetLocaleAsync(uint lcType) => Task.FromResult(CultureInfo.CurrentCulture.Name);
 
         Task IApplication.RegisterEventListenerAsync(string Event)
