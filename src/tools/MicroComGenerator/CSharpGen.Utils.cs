@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Formatting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
+#nullable enable
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace MicroComGenerator
 {
@@ -57,7 +57,7 @@ namespace MicroComGenerator
         FieldDeclarationSyntax DeclareField(string type, string name, params SyntaxKind[] modifiers) =>
             DeclareField(type, name, null, modifiers);
 
-        FieldDeclarationSyntax DeclareField(string type, string name, EqualsValueClauseSyntax initializer,
+        FieldDeclarationSyntax DeclareField(string type, string name, EqualsValueClauseSyntax? initializer,
             params SyntaxKind[] modifiers) =>
             FieldDeclaration(
                     VariableDeclaration(ParseTypeName(type),
