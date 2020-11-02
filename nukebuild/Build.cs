@@ -141,6 +141,7 @@ partial class Build : NukeBuild
 
     Target CompileNative => _ => _
         .DependsOn(Clean)
+        .DependsOn(GenerateCppHeaders)
         .OnlyWhenStatic(() => EnvironmentInfo.IsOsx)
         .Executes(() =>
         {
