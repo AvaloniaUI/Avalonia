@@ -382,7 +382,7 @@ namespace Avalonia.Controls
                         ItemContainerGenerator.Index.ContainerFromItem(_selectedItem) :
                         ItemContainerGenerator.ContainerFromIndex(0);
                     
-                    return (result is {}, result); // SelectedItem may not be in the treeview.
+                    return (result != null, result); // SelectedItem may not be in the treeview.
                 }
 
                 return (true, null);
