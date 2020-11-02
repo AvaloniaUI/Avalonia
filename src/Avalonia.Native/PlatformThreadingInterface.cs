@@ -4,11 +4,10 @@ using System.Threading;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using SharpGen.Runtime;
 
 namespace Avalonia.Native
 {
-    public class PlatformThreadingInterface : IPlatformThreadingInterface
+    internal class PlatformThreadingInterface : IPlatformThreadingInterface
     {
         class TimerCallback : CallbackBase, IAvnActionCallback
         {
@@ -48,7 +47,7 @@ namespace Avalonia.Native
         {
             _native = native;
             using (var cb = new SignaledCallback(this))
-                _native.SignaledCallback = cb;
+                _native.SetSignaledCallback(cb);
         }
 
         public bool CurrentThreadIsLoopThread => _native.CurrentThreadIsLoopThread;
