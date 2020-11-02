@@ -441,7 +441,7 @@ namespace Avalonia.Input
             base.OnAttachedToVisualTreeCore(e);
             UpdateIsEffectivelyEnabled();
         }
-        
+
         /// <summary>
         /// Called before the <see cref="GotFocus"/> event occurs.
         /// </summary>
