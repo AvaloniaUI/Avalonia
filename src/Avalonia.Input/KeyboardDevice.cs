@@ -98,7 +98,7 @@ namespace Avalonia.Input
                     break;
                 }
 
-                el = (IInputElement)el.VisualParent;
+                el = el.VisualParent as IInputElement;
             }
 
             el = oldElement;
@@ -117,8 +117,8 @@ namespace Avalonia.Input
                     ie.IsKeyboardFocusWithin = true;
                 }
 
-                el = (IInputElement)el.VisualParent;
-            }    
+                el = el.VisualParent as IInputElement;
+            }
         }
         
         private void ClearChildrenFocusWithin(IInputElement element, bool clearRoot)
