@@ -22,15 +22,23 @@ namespace Avalonia.Native.Interop
         }
     }
 
-    public partial class IAvnMenu
+    partial interface IAvnMenu
+    {
+        void RaiseNeedsUpdate();
+        void Deinitialise();
+    }
+}
+namespace Avalonia.Native.Interop.Impl
+{
+    partial class __MicroComIAvnMenuProxy
     {
         private MenuEvents _events;
         private AvaloniaNativeMenuExporter _exporter;
-        private List<IAvnMenuItem> _menuItems = new List<IAvnMenuItem>();
-        private Dictionary<NativeMenuItemBase, IAvnMenuItem> _menuItemLookup = new Dictionary<NativeMenuItemBase, IAvnMenuItem>();
+        private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
+        private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
 
-        internal void RaiseNeedsUpdate()
+        public void RaiseNeedsUpdate()
         {
             (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseNeedsUpdate();
 
@@ -39,11 +47,11 @@ namespace Avalonia.Native.Interop
 
         internal NativeMenu ManagedMenu { get; private set; }
 
-        public static IAvnMenu Create(IAvaloniaNativeFactory factory)
+        public static __MicroComIAvnMenuProxy Create(IAvaloniaNativeFactory factory)
         {
             var events = new MenuEvents();
 
-            var menu = factory.CreateMenu(events);
+            var menu = (__MicroComIAvnMenuProxy)factory.CreateMenu(events);
 
             events.Initialise(menu);
 
@@ -60,7 +68,7 @@ namespace Avalonia.Native.Interop
             }
         }
 
-        private void RemoveAndDispose(IAvnMenuItem item)
+        private void RemoveAndDispose(__MicroComIAvnMenuItemProxy item)
         {
             _menuItemLookup.Remove(item.ManagedMenuItem);
             _menuItems.Remove(item);
@@ -70,7 +78,7 @@ namespace Avalonia.Native.Interop
             item.Dispose();
         }
 
-        private void MoveExistingTo(int index, IAvnMenuItem item)
+        private void MoveExistingTo(int index, __MicroComIAvnMenuItemProxy item)
         {
             _menuItems.Remove(item);
             _menuItems.Insert(index, item);
@@ -79,7 +87,7 @@ namespace Avalonia.Native.Interop
             InsertItem(index, item);
         }
 
-        private IAvnMenuItem CreateNewAt(IAvaloniaNativeFactory factory, int index, NativeMenuItemBase item)
+        private __MicroComIAvnMenuItemProxy CreateNewAt(IAvaloniaNativeFactory factory, int index, NativeMenuItemBase item)
         {
             var result = CreateNew(factory, item);
 
@@ -93,9 +101,11 @@ namespace Avalonia.Native.Interop
             return result;
         }
 
-        private IAvnMenuItem CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
+        private __MicroComIAvnMenuItemProxy CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
         {
-            var nativeItem = item is NativeMenuItemSeperator ? factory.CreateMenuItemSeperator() : factory.CreateMenuItem();
+            var nativeItem = (__MicroComIAvnMenuItemProxy)(item is NativeMenuItemSeperator ?
+                factory.CreateMenuItemSeperator() :
+                factory.CreateMenuItem());
             nativeItem.ManagedMenuItem = item;
 
             return nativeItem;
@@ -108,16 +118,11 @@ namespace Avalonia.Native.Interop
 
             ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged += OnMenuItemsChanged;
 
-            if (!string.IsNullOrWhiteSpace(title))
-            {
-                using (var buffer = new Utf8Buffer(title))
-                {
-                    Title = buffer.DangerousGetHandle();
-                }
-            }
+            if (!string.IsNullOrWhiteSpace(title)) 
+                SetTitle(title);
         }
 
-        internal void Deinitialise()
+        public void Deinitialise()
         {
             ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged -= OnMenuItemsChanged;
 
@@ -137,7 +142,7 @@ namespace Avalonia.Native.Interop
 
             for (int i = 0; i < menu.Items.Count; i++)
             {
-                IAvnMenuItem nativeItem;
+                __MicroComIAvnMenuItemProxy nativeItem;
 
                 if (i >= _menuItems.Count)
                 {

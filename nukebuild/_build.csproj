@@ -39,4 +39,8 @@
     <Compile Include="Numerge/Numerge/**/*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\src\tools\MicroComGenerator\MicroComGenerator.csproj" />
+  </ItemGroup>
+
 </Project>

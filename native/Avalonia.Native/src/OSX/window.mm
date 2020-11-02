@@ -768,7 +768,7 @@ private:
         }
     }
     
-    virtual HRESULT SetTitle (void* utf8title) override
+    virtual HRESULT SetTitle (char* utf8title) override
     {
         @autoreleasepool
         {
