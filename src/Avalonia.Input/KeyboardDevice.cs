@@ -43,9 +43,9 @@ namespace Avalonia.Input
             }
         }
 
-        private void ClearFocusWithinAncestors(IInputElement element)
+        private void ClearFocusWithinAncestors(IInputElement? element)
         {
-            IInputElement el = element;
+            var el = element;
             
             while (el != null)
             {
@@ -60,16 +60,16 @@ namespace Avalonia.Input
         
         private void ClearFocusWithin(IInputElement element, bool clearRoot)
         {
-            foreach (IInputElement el in element.VisualChildren)
+            foreach (var visual in element.VisualChildren)
             {
-                if (el.IsKeyboardFocusWithin)
+                if (visual is IInputElement el && el.IsKeyboardFocusWithin)
                 {
                     ClearFocusWithin(el, true);
                     break;
                 }
             }
             
-            if(clearRoot)
+            if (clearRoot)
             {
                 if (element is InputElement ie)
                 {
@@ -78,7 +78,7 @@ namespace Avalonia.Input
             }
         }
 
-        private void SetIsFocusWithin(IInputElement oldElement, IInputElement newElement)
+        private void SetIsFocusWithin(IInputElement? oldElement, IInputElement? newElement)
         {
             if (newElement == null && oldElement != null)
             {
@@ -88,7 +88,7 @@ namespace Avalonia.Input
             
             IInputElement? branch = null;
 
-            IInputElement? el = newElement;
+            var el = newElement;
 
             while (el != null)
             {
@@ -101,7 +101,7 @@ namespace Avalonia.Input
                 el = (IInputElement)el.VisualParent;
             }
 
-            el = oldElement!;
+            el = oldElement;
 
             if (el != null && branch != null)
             {
@@ -121,17 +121,18 @@ namespace Avalonia.Input
             }    
         }
         
-        private void ClearChildrenFocusWithin(IInputElement element,bool clearRoot)
+        private void ClearChildrenFocusWithin(IInputElement element, bool clearRoot)
         {
-            foreach (IInputElement el in element.VisualChildren)
+            foreach (var visual in element.VisualChildren)
             {
-                if (el.IsKeyboardFocusWithin)
+                if (visual is IInputElement el && el.IsKeyboardFocusWithin)
                 {
                     ClearChildrenFocusWithin(el, true);
                     break;
                 }
             }
-            if(clearRoot && element is InputElement ie)
+            
+            if (clearRoot && element is InputElement ie)
             {
                 ie.IsKeyboardFocusWithin = false;
             }
