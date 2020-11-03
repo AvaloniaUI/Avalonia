@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
+using Avalonia.Remote.Protocol.Viewport;
 using Xunit;
 using Xunit.Extensions;
 
@@ -31,19 +32,38 @@ namespace Avalonia.DesignerSupport.Tests
             @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/netcoreapp3.1/",
             "Avalonia.DesignerSupport.TestApp",
             "Avalonia.DesignerSupport.TestApp.dll",
-            @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml"),
+            @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml",
+            "win32"),
          InlineData(
             @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\netcoreapp3.1\",
             "ControlCatalog.NetCore",
             "ControlCatalog.dll",
-            @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml")]
+            @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml",
+            "win32"),
+        InlineData(
+            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/netcoreapp3.1/",
+            "Avalonia.DesignerSupport.TestApp",
+            "Avalonia.DesignerSupport.TestApp.dll",
+            @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml",
+            "avalonia-remote"),
+        InlineData(
+            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\netcoreapp3.1\",
+            "ControlCatalog.NetCore",
+            "ControlCatalog.dll",
+            @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml",
+            "avalonia-remote")]
         public async Task Designer_In_Win32_Mode_Should_Provide_Valid_Hwnd(
             string outputDir,
             string executableName,
             string assemblyName,
-            string xamlFile)
+            string xamlFile,
+            string method)
         {
-            Skip.IfNot(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+            outputDir = Path.GetFullPath(outputDir.Replace('\\', Path.DirectorySeparatorChar));
+            xamlFile = Path.GetFullPath(xamlFile.Replace('\\', Path.DirectorySeparatorChar));
+            
+            if (method == "win32")
+                Skip.IfNot(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
 
             var xaml = File.ReadAllText(xamlFile);
             string buildType;
@@ -56,6 +76,8 @@ namespace Avalonia.DesignerSupport.Tests
 
             var sessionId = Guid.NewGuid();
             long handle = 0;
+            bool success = false;
+            string error = null;
 
             var resultMessageReceivedToken = new CancellationTokenSource();
 
@@ -71,6 +93,18 @@ namespace Avalonia.DesignerSupport.Tests
                     if (msg is StartDesignerSessionMessage start)
                     {
                         Assert.Equal(sessionId, Guid.Parse(start.SessionId));
+                        if (method == "avalonia-remote")
+                        {
+                            await conn.Send(new ClientSupportedPixelFormatsMessage
+                            {
+                                Formats = new[] { PixelFormat.Rgba8888 }
+                            });
+                            await conn.Send(new ClientViewportAllocatedMessage
+                            {
+                                DpiX = 96, DpiY = 96, Width = 1024, Height = 768
+                            });
+                        }
+
                         await conn.Send(new UpdateXamlMessage
                         {
                             AssemblyPath = Path.Combine(outputDir, assemblyName),
@@ -80,8 +114,14 @@ namespace Avalonia.DesignerSupport.Tests
                     else if (msg is UpdateXamlResultMessage result)
                     {
                         if (result.Error != null)
+                        {
+                            error = result.Error;
                             outputHelper.WriteLine(result.Error);
-                        handle = result.Handle != null ? long.Parse(result.Handle) : 0;
+                        }
+                        else
+                            success = true;
+                        if (method == "win32")
+                            handle = result.Handle != null ? long.Parse(result.Handle) : 0;
                         resultMessageReceivedToken.Cancel();
                         conn.Dispose();
                     }
@@ -91,7 +131,7 @@ namespace Avalonia.DesignerSupport.Tests
             var cmdline =
                 $"exec --runtimeconfig \"{outputDir}{executableName}.runtimeconfig.json\" --depsfile \"{outputDir}{executableName}.deps.json\" "
                 + $" \"{DesignerAppPath.Replace("$BUILD", buildType)}\" "
-                + $"--transport tcp-bson://127.0.0.1:{port}/ --session-id {sessionId} --method win32 \"{outputDir}{executableName}.dll\"";
+                + $"--transport tcp-bson://127.0.0.1:{port}/ --session-id {sessionId} --method {method} \"{outputDir}{executableName}.dll\"";
 
             using (var proc = new Process
             {
@@ -128,10 +168,15 @@ namespace Avalonia.DesignerSupport.Tests
                 }
 
                 proc.WaitForExit();
+                var stdout = proc.StandardOutput.ReadToEnd();
+                var stderr = proc.StandardError.ReadToEnd();
                 Assert.True(cancelled,
                     $"Message Not Received.\n" + proc.StandardOutput.ReadToEnd() + "\n" +
-                    proc.StandardError.ReadToEnd());
-                Assert.NotEqual(0, handle);
+                    stderr + "\n" + stdout);
+                Assert.True(success, error);
+                if (method == "win32")
+                    Assert.NotEqual(0, handle);
+                
 
             }
         }

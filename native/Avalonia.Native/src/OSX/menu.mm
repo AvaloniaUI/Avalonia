@@ -109,7 +109,7 @@ HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
     }
 }
 
-HRESULT AvnAppMenuItem::SetTitle (void* utf8String)
+HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
 {
     @autoreleasepool
     {
@@ -122,7 +122,7 @@ HRESULT AvnAppMenuItem::SetTitle (void* utf8String)
     }
 }
 
-HRESULT AvnAppMenuItem::SetGesture (void* key, AvnInputModifiers modifiers)
+HRESULT AvnAppMenuItem::SetGesture (char* key, AvnInputModifiers modifiers)
 {
     @autoreleasepool
     {
@@ -296,7 +296,7 @@ HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
     }
 }
 
-HRESULT AvnAppMenu::SetTitle (void* utf8String)
+HRESULT AvnAppMenu::SetTitle (char* utf8String)
 {
     @autoreleasepool
     {
