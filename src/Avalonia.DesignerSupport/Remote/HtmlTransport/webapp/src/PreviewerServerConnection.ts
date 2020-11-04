@@ -1,3 +1,5 @@
+import { InputEventMessageBase } from "src/Models/Input/InputEventMessageBase";
+
 export interface PreviewerFrame {
     data: ImageData;
     dpiX: number;
@@ -26,6 +28,10 @@ export class PreviewerServerConnection {
 
     public removeFrameListener(listener: (frame: PreviewerFrame | null) => void) {
         this.handlers.delete(listener);
+    }
+
+    public sendMouseEvent(message: InputEventMessageBase) {
+        this.conn.send(message.toString());
     }
 
     constructor(uri: string) {
