@@ -116,7 +116,8 @@ namespace Avalonia.Data
             }
 
             var culture = CultureInfo.CurrentCulture;
-            var converted = converter.Convert(values, targetType, ConverterParameter, culture);
+            var converted = converter?.Convert(values, targetType, ConverterParameter, culture)
+                ?? values.ToArray();
 
             if (converted == null)
             {
