@@ -122,7 +122,9 @@ namespace Avalonia.Data
                 converted = converter.Convert(values, targetType, ConverterParameter, culture);
             }
             else
+            {
                 converted = values.ToArray();
+            }
 
             if (converted == null)
             {
