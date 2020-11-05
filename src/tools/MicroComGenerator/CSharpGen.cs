@@ -22,7 +22,11 @@ namespace MicroComGenerator
         public CSharpGen(AstIdlNode idl)
         {
             _idl = idl.Clone();
-            new AstRewriter().VisitAst(_idl);
+            new AstRewriter(_idl.Attributes.Where(a => a.Name == "clr-map")
+                .Select(x => x.Value.Trim().Split(' '))
+                .ToDictionary(x => x[0], x => x[1])
+            ).VisitAst(_idl);
+            
             _extraUsings = _idl.Attributes.Where(u => u.Name == "clr-using").Select(u => u.Value).ToList();
             _namespace = _idl.GetAttribute("clr-namespace");
             var visibilityString = _idl.GetAttribute("clr-access");
@@ -37,6 +41,13 @@ namespace MicroComGenerator
 
         class AstRewriter : AstVisitor
         {
+            private readonly Dictionary<string, string> _typeMap = new Dictionary<string, string>();
+
+            public AstRewriter(Dictionary<string, string> typeMap)
+            {
+                _typeMap = typeMap;
+            }
+
             void ConvertIntPtr(AstTypeNode type)
             {
                 if (type.Name == "void" && type.PointerLevel > 0)
@@ -60,6 +71,9 @@ namespace MicroComGenerator
                     type.PointerLevel++;
                     type.IsLink = false;
                 }
+
+                if (_typeMap.TryGetValue(type.Name, out var mapped))
+                    type.Name = mapped;
                 
                 base.VisitType(type);
             }
@@ -80,6 +94,10 @@ namespace MicroComGenerator
             {
                 if (member.HasAttribute("intptr"))
                     ConvertIntPtr(member.ReturnType);
+                if (member.HasAttribute("propget") && !member.Name.StartsWith("Get"))
+                    member.Name = "Get" + member.Name;
+                if (member.HasAttribute("propput") && !member.Name.StartsWith("Set"))
+                    member.Name = "Set" + member.Name;
                 base.VisitInterfaceMember(member);
             }
         }

@@ -3,6 +3,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Win32.OpenGl;
+using Avalonia.Win32.WinRT.Composition;
 
 namespace Avalonia.Win32
 {
@@ -26,7 +27,7 @@ namespace Avalonia.Win32
                     if (egl is { } &&
                         opts?.UseWindowsUIComposition == true)
                     {
-                        var compositionConnector = CompositionConnector.TryCreate(egl);
+                        var compositionConnector = WinUICompositorConnection.TryCreate(egl);
 
                         if (compositionConnector != null)
                             AvaloniaLocator.CurrentMutable.BindToSelf(compositionConnector);

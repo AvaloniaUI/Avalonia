@@ -1225,6 +1225,9 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr LoadLibrary(string fileName);
+        
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr LoadLibraryEx(string fileName, IntPtr hFile, int flags);
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         public static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
@@ -1609,6 +1612,12 @@ namespace Avalonia.Win32.Interop
         }
 
         public struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+        
+        public struct SIZE
         {
             public int X;
             public int Y;

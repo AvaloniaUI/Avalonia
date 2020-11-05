@@ -15,7 +15,7 @@
           Inputs="@(AvnComIdl);$(MSBuildThisFileDirectory)/../tools/MicroComGenerator/**/*.cs"
           Outputs="%(AvnComIdl.OutputFile)">
     <Message Importance="high" Text="Generating file %(AvnComIdl.OutputFile) from @(AvnComIdl)" />
-    <Exec Command="dotnet ../tools/MicroComGenerator/bin/$(Configuration)/netcoreapp3.1/MicroComGenerator.dll -i @(AvnComIdl) --cs %(AvnComIdl.OutputFile)" LogStandardErrorAsError="true" />
+    <Exec Command="dotnet $(MSBuildThisFileDirectory)../src/tools/MicroComGenerator/bin/$(Configuration)/netcoreapp3.1/MicroComGenerator.dll -i @(AvnComIdl) --cs %(AvnComIdl.OutputFile)" LogStandardErrorAsError="true" />
     <ItemGroup>
       <!-- Remove and re-add generated file, this is needed for the clean build -->
       <Compile Remove="%(AvnComIdl.OutputFile)"/>
@@ -24,7 +24,7 @@
   </Target>
   <ItemGroup>
     <UpToDateCheckInput Include="@(AvnComIdl)"/>
-    <UpToDateCheckInput Include="$(MSBuildThisFileDirectory)/../tools/MicroComGenerator/**/*.cs"/>
+    <UpToDateCheckInput Include="$(MSBuildThisFileDirectory)/../src/tools/MicroComGenerator/**/*.cs"/>
   </ItemGroup>
   <PropertyGroup>
     <_AvaloniaPatchComInterop>true</_AvaloniaPatchComInterop>
