@@ -116,6 +116,7 @@ namespace Avalonia.Data
             }
 
             var culture = CultureInfo.CurrentCulture;
+            values = new System.Collections.ObjectModel.ReadOnlyCollection<object>(values);
             object converted;
             if (converter != null)
             {
@@ -123,7 +124,7 @@ namespace Avalonia.Data
             }
             else
             {
-                converted = values.ToArray();
+                converted = values;
             }
 
             if (converted == null)
