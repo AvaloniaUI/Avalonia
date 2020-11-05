@@ -141,6 +141,7 @@ partial class Build : NukeBuild
 
     Target CompileNative => _ => _
         .DependsOn(Clean)
+        .DependsOn(GenerateCppHeaders)
         .OnlyWhenStatic(() => EnvironmentInfo.IsOsx)
         .Executes(() =>
         {
@@ -232,6 +233,21 @@ partial class Build : NukeBuild
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
+
+    Target RunHtmlPreviewerTests => _ => _
+        .DependsOn(CompileHtmlPreviewer)
+        .OnlyWhenStatic(() => !(Parameters.SkipPreviewer || Parameters.SkipTests))
+        .Executes(() =>
+        {
+            var webappTestDir = RootDirectory / "tests" / "Avalonia.DesignerSupport.Tests" / "Remote" / "HtmlTransport" / "webapp";
+
+            NpmTasks.NpmInstall(c => c
+                .SetWorkingDirectory(webappTestDir)
+                .SetArgumentConfigurator(a => a.Add("--silent")));
+            NpmTasks.NpmRun(c => c
+                .SetWorkingDirectory(webappTestDir)
+                .SetCommand("test"));
+        });
 
     Target RunCoreLibsTests => _ => _
         .OnlyWhenStatic(() => !Parameters.SkipTests)
@@ -332,6 +348,7 @@ partial class Build : NukeBuild
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunDesignerTests)
+        .DependsOn(RunHtmlPreviewerTests)
         .DependsOn(RunLeakTests);
 
     Target Package => _ => _

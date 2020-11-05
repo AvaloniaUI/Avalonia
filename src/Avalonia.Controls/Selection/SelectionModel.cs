@@ -443,6 +443,7 @@ namespace Avalonia.Controls.Selection
             }
 
             if ((e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex) ||
+                (e.Action == NotifyCollectionChangedAction.Replace && e.OldStartingIndex == oldSelectedIndex) ||
                 e.Action == NotifyCollectionChangedAction.Reset)
             {
                 RaisePropertyChanged(nameof(SelectedItem));

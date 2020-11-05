@@ -189,11 +189,11 @@ namespace Avalonia.Media
                     break;
                 case TextDecorationLocation.Strikethrough:
                     origin += new Point(shapedTextCharacters.GlyphRun.BaselineOrigin.X,
-                        shapedTextCharacters.GlyphRun.BaselineOrigin.Y - fontMetrics.StrikethroughPosition);
+                        shapedTextCharacters.GlyphRun.BaselineOrigin.Y + fontMetrics.StrikethroughPosition);
                     break;
                 case TextDecorationLocation.Underline:
                     origin += new Point(shapedTextCharacters.GlyphRun.BaselineOrigin.X,
-                        shapedTextCharacters.GlyphRun.BaselineOrigin.Y - fontMetrics.UnderlinePosition);
+                        shapedTextCharacters.GlyphRun.BaselineOrigin.Y + fontMetrics.UnderlinePosition);
                     break;
             }
 

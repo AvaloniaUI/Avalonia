@@ -26,6 +26,12 @@
         <DataGridTextColumn Header="Type" Binding="{Binding Type}" />
         <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" />
       </DataGrid.Columns>
+
+      <DataGrid.Styles>
+        <Style Selector="DataGridRow TextBox">
+          <Setter Property="SelectionBrush" Value="LightBlue"/>
+        </Style>
+      </DataGrid.Styles>
     </DataGrid>
 
   </Grid>

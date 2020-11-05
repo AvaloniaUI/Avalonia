@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.DateTimePickerPage">
   <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Stretch">
@@ -29,6 +30,16 @@
           </TextBlock>
         </Panel>
       </StackPanel>
+      
+      
+      <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+              BorderThickness="1" Padding="15">
+        <DatePicker Header="Pick a date">
+          <DataValidationErrors.Error>
+            <sys:Exception /> 
+          </DataValidationErrors.Error>
+        </DatePicker>
+      </Border>
       
       <TextBlock FontSize="18">A DatePicker with day formatted and year hidden.</TextBlock>
       <StackPanel Orientation="Vertical">
@@ -66,6 +77,15 @@
           </TextBlock>
         </Panel>
       </StackPanel>
+      
+      <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+              BorderThickness="1" Padding="15">
+        <TimePicker Header="Pick a time">
+          <DataValidationErrors.Error>
+            <sys:Exception /> 
+          </DataValidationErrors.Error>
+        </TimePicker>
+      </Border>
 
       <TextBlock FontSize="18">A TimePicker with a header and minute increments specified.</TextBlock>
       <StackPanel Orientation="Vertical">
