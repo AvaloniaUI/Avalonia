@@ -6,7 +6,7 @@ namespace Avalonia.Win32
 {
     class SaturationEffect : EffectBase
     {
-        public SaturationEffect(IGraphicsEffect source) : base(source)
+        public SaturationEffect(IGraphicsEffectSource source) : base(source)
         {
         }
 
