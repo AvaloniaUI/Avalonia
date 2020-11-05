@@ -6,6 +6,7 @@ using Avalonia.MicroCom;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
+using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.WinRT.Composition
@@ -29,9 +30,9 @@ namespace Avalonia.Win32.WinRT.Composition
             _angle = (AngleWin32EglDisplay)_gl.Display;
             _queue = NativeWinRTMethods.CreateDispatcherQueueController(new NativeWinRTMethods.DispatcherQueueOptions
             {
-                apartmentType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_NONE,
+                apartmentType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
                 dwSize = Marshal.SizeOf<NativeWinRTMethods.DispatcherQueueOptions>(),
-                threadType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT
+                threadType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_DEDICATED
             });
             _compositor = NativeWinRTMethods.CreateInstance<ICompositor>("Windows.UI.Composition.Compositor");
             _compositor2 = _compositor.QueryInterface<ICompositor2>();
@@ -96,7 +97,6 @@ namespace Avalonia.Win32.WinRT.Composition
             spriteVisual.SetBrush(brush);
             using var visual = spriteVisual.QueryInterface<IVisual>();
             using var visual2 = spriteVisual.QueryInterface<IVisual2>();
-            //visual2.SetRelativeSizeAdjustment(new Vector2(1, 1));
             using var container = _compositor.CreateContainerVisual();
             using var containerVisual = container.QueryInterface<IVisual>();
             using var containerVisual2 = container.QueryInterface<IVisual2>();
@@ -141,7 +141,7 @@ namespace Avalonia.Win32.WinRT.Composition
             
             
             spriteVisual.SetBrush(satBrush);
-            //visual.SetIsVisible(0);
+            visual.SetIsVisible(0);
             visual2.SetRelativeSizeAdjustment(new Vector2(1.0f, 1.0f));
 
             return visual.CloneReference();

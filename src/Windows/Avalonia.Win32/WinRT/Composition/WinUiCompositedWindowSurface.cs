@@ -76,9 +76,9 @@ namespace Avalonia.Win32.WinRT.Composition
 
                     var res = base.BeginDraw(surface, _info, () =>
                     {
-                        _window.Item.EndDraw();
-                        texture?.Dispose();
                         surface?.Dispose();
+                        texture?.Dispose();
+                        _window.Item.EndDraw();
                         contextLock?.Dispose();
                     }, true);
                     success = true;
