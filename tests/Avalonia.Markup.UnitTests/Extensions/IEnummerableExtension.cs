@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Avalonia.Markup.UnitTests
 {
-    static class IEnummerableExtension
+   internal static class IEnumerableExtensions
     {
         public static object ElementAt(this IEnumerable source, int index)
         {
