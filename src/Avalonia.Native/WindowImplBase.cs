@@ -155,6 +155,7 @@ namespace Avalonia.Native
                 }
                 finally
                 {
+                    _parent._native = null;
                     n?.Dispose();
                 }
                 
