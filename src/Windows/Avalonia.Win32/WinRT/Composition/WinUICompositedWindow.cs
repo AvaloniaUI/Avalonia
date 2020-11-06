@@ -44,7 +44,7 @@ namespace Avalonia.Win32.WinRT.Composition
         {
             using (_syncContext.EnsureLocked())
             {
-                //if (_size != size)
+                if (_size != size)
                 {
                     _surfaceInterop.Resize(new UnmanagedMethods.POINT { X = size.Width, Y = size.Height });
                     _contentVisual.SetSize(new Vector2(size.Width, size.Height));
@@ -81,16 +81,7 @@ namespace Avalonia.Win32.WinRT.Composition
         public IDisposable BeginTransaction()
         {
             Monitor.Enter(_pumpLock);
-            //var batch = _compositor.CreateScopedBatch(CompositionBatchTypes.Effect);
-            
-            return Disposable.Create(() =>
-            {
-                Monitor.Exit(_pumpLock);
-                /*
-                batch?.End();
-                batch?.Dispose();
-                batch = null;*/
-            });
+            return Disposable.Create(() => Monitor.Exit(_pumpLock));
         }
         
         public void Dispose()
