@@ -61,6 +61,16 @@ namespace Avalonia.Input
             return !Equals(left, right);
         }
 
+        static public implicit operator KeyGesture ((Key key, KeyModifiers modifiers) value)
+        {
+            return new KeyGesture(value.key, value.modifiers);
+        }
+
+        static public implicit operator KeyGesture(Key key)
+        {
+            return new KeyGesture(key);
+        }
+
         public Key Key { get; }
 
         [Obsolete("Use KeyModifiers")]
