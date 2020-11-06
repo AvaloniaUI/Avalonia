@@ -62,6 +62,15 @@ namespace Avalonia
         public double Height => _height;
 
         /// <summary>
+        ///  Implicit convert from tuple of two double (double,double) to <see cref="Size"/>.
+        /// </summary>
+        /// <param name="value">tuple of two <see cref="double"/></param>
+        public static implicit operator Size((double width, double height) value)
+        {
+            return new Size(value.width, value.height);
+        }
+
+        /// <summary>
         /// Checks for equality between two <see cref="Size"/>s.
         /// </summary>
         /// <param name="left">The first size.</param>
