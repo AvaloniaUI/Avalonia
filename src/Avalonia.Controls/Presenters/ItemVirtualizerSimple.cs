@@ -200,6 +200,10 @@ namespace Avalonia.Controls.Presenters
                         break;
 
                     case NotifyCollectionChangedAction.Reset:
+                        Owner.ItemContainerGenerator.Clear();
+                        VirtualizingPanel.Children.Clear();
+                        FirstIndex = NextIndex = 0;
+
                         RecycleContainersOnRemove();
                         CreateAndRemoveContainers();
                         panel.ForceInvalidateMeasure();
