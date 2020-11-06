@@ -25,10 +25,12 @@ namespace Avalonia.Win32.WinRT.Composition
         private EglPlatformOpenGlInterface _gl;
         private ICompositorDesktopInterop _compositorDesktopInterop;
         private ICompositionBrush _blurBrush;
+        private object _pumpLock = new object();
 
-        public WinUICompositorConnection(EglPlatformOpenGlInterface gl)
+        public WinUICompositorConnection(EglPlatformOpenGlInterface gl, object pumpLock)
         {
             _gl = gl;
+            _pumpLock = pumpLock;
             _syncContext = _gl.PrimaryEglContext;
             _angle = (AngleWin32EglDisplay)_gl.Display;
             _compositor = NativeWinRTMethods.CreateInstance<ICompositor>("Windows.UI.Composition.Compositor");
@@ -46,6 +48,7 @@ namespace Avalonia.Win32.WinRT.Composition
         static WinUICompositorConnection TryCreateCore(EglPlatformOpenGlInterface angle)
         {
             var tcs = new TaskCompletionSource<WinUICompositorConnection>();
+            var pumpLock = new object();
             var th = new Thread(() =>
             {
                 try
@@ -56,11 +59,16 @@ namespace Avalonia.Win32.WinRT.Composition
                         dwSize = Marshal.SizeOf<NativeWinRTMethods.DispatcherQueueOptions>(),
                         threadType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT
                     });
-                    tcs.SetResult(new WinUICompositorConnection(angle));
+                    tcs.SetResult(new WinUICompositorConnection(angle, pumpLock));
                     while (true)
                     {
-                        while (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) != 0)
-                            UnmanagedMethods.DispatchMessage(ref msg);
+                        while (true)
+                        {
+                            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) == 0)
+                                return;
+                            lock (pumpLock)
+                                UnmanagedMethods.DispatchMessage(ref msg);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -141,7 +149,7 @@ namespace Avalonia.Win32.WinRT.Composition
             containerChildren.InsertAtTop(blur);
             containerChildren.InsertAtTop(visual);
             
-            return new WinUICompositedWindow(_syncContext, target, surfaceInterop, visual, blur);
+            return new WinUICompositedWindow(_syncContext, _compositor, _pumpLock, target, surfaceInterop, visual, blur);
         }
 
 

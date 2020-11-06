@@ -121,7 +121,8 @@ namespace MicroComGenerator
         NamespaceDeclarationSyntax GenerateEnums(NamespaceDeclarationSyntax ns)
         {
             return ns.AddMembers(_idl.Enums.Select(e =>
-                EnumDeclaration(e.Name)
+            {
+                var dec =  EnumDeclaration(e.Name)
                     .WithModifiers(TokenList(Token(_visibility)))
                     .WithMembers(SeparatedList(e.Select(m =>
                     {
@@ -129,8 +130,11 @@ namespace MicroComGenerator
                         if (m.Value != null)
                             return member.WithEqualsValue(EqualsValueClause(ParseExpression(m.Value)));
                         return member;
-                    })))
-            ).ToArray());
+                    })));
+                if (e.HasAttribute("flags"))
+                    dec = dec.AddAttribute("System.Flags");
+                return dec;
+            }).ToArray());
         }
         
         NamespaceDeclarationSyntax GenerateStructs(NamespaceDeclarationSyntax ns)

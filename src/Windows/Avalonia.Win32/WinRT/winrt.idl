@@ -328,7 +328,7 @@ interface ICompositor : IInspectable
     HRESULT CreatePropertySet([out] [retval] void** result);
     HRESULT CreateQuaternionKeyFrameAnimation([out] [retval] void** result);
     HRESULT CreateScalarKeyFrameAnimation([out] [retval] void** result);
-    HRESULT CreateScopedBatch([in] CompositionBatchTypes batchType, [out] [retval] void** result);
+    HRESULT CreateScopedBatch([in] CompositionBatchTypes batchType, [out] [retval] ICompositionScopedBatch** result);
     HRESULT CreateSpriteVisual([out] [retval] ISpriteVisual** result);
     HRESULT CreateSurfaceBrush([out] [retval] ICompositionSurfaceBrush** result);
     HRESULT CreateSurfaceBrushWithSurface([in] ICompositionSurface* surface, 
@@ -456,11 +456,41 @@ interface ICompositionDrawingSurface : IInspectable
     [propget] HRESULT GetSize([out] [retval] POINT* value);
 }
 
+enum CompositionBitmapInterpolationMode
+{
+    NearestNeighbor,
+    Linear,
+    MagLinearMinLinearMipLinear,
+    MagLinearMinLinearMipNearest,
+    MagLinearMinNearestMipLinear,
+    MagLinearMinNearestMipNearest,
+    MagNearestMinLinearMipLinear,
+    MagNearestMinLinearMipNearest,
+    MagNearestMinNearestMipLinear,
+    MagNearestMinNearestMipNearest,
+}
+
+enum CompositionStretch
+{
+    None,
+    Fill,
+    Uniform,
+    UniformToFill,
+}
 
 [uuid(AD016D79-1E4C-4C0D-9C29-83338C87C162)]
 interface ICompositionSurfaceBrush : IInspectable
 {
-    //TODO
+    [propget] HRESULT BitmapInterpolationMode([out] [retval] CompositionBitmapInterpolationMode* value);
+    [propput] HRESULT BitmapInterpolationMode([in] CompositionBitmapInterpolationMode value);
+    [propget] HRESULT HorizontalAlignmentRatio([out] [retval] FLOAT* value);
+    [propput] HRESULT HorizontalAlignmentRatio([in] FLOAT value);
+    [propget] HRESULT Stretch([out] [retval] CompositionStretch* value);
+    [propput] HRESULT Stretch([in] CompositionStretch value);
+    [propget] HRESULT Surface([out] [retval] ICompositionSurface** value);
+    [propput] HRESULT Surface([in] ICompositionSurface* value);
+    [propget] HRESULT VerticalAlignmentRatio([out] [retval] FLOAT* value);
+    [propput] HRESULT VerticalAlignmentRatio([in] FLOAT value);
 }
 
 [uuid(AB0D7608-30C0-40E9-B568-B60A6BD1FB46)]
@@ -648,4 +678,16 @@ interface ICompositionColorBrush : IInspectable
 {
     [propget] HRESULT Color([out] [retval] Color* value);
     [propput] HRESULT Color([in] Color value);
+}
+
+[uuid(0D00DAD0-FB07-46FD-8C72-6280D1A3D1DD)]
+interface ICompositionScopedBatch : IInspectable
+{
+    [propget] HRESULT IsActive([out] [retval] boolean* value);
+    [propget] HRESULT IsEnded([out] [retval] boolean* value);
+    HRESULT End();
+    HRESULT Resume();
+    HRESULT Suspend();
+    [eventadd] HRESULT AddCompleted([in] void* handler, [out] [retval] int* token);
+    [eventremove] HRESULT RemoveCompleted([in] int token);
 }

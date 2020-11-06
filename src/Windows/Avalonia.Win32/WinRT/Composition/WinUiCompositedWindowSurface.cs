@@ -60,6 +60,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 var contextLock = _egl.PrimaryEglContext.EnsureCurrent();
                 IUnknown texture = null;
                 EglSurface surface = null;
+                IDisposable transaction = null;
                 var success = false;
                 try
                 {
@@ -67,6 +68,7 @@ namespace Avalonia.Win32.WinRT.Composition
                         throw new ObjectDisposedException(GetType().FullName);
                     
                     var size = _info.Size;
+                    transaction = _window.Item.BeginTransaction();
                     _window.Item.ResizeIfNeeded(size);
                     texture = _window.Item.BeginDrawToTexture(out var offset);
 
@@ -79,6 +81,7 @@ namespace Avalonia.Win32.WinRT.Composition
                         surface?.Dispose();
                         texture?.Dispose();
                         _window.Item.EndDraw();
+                        transaction?.Dispose();
                         contextLock?.Dispose();
                     }, true);
                     success = true;
@@ -90,6 +93,7 @@ namespace Avalonia.Win32.WinRT.Composition
                     {
                         surface?.Dispose();
                         texture?.Dispose();
+                        transaction?.Dispose();
                         contextLock.Dispose();
                     }
                 }

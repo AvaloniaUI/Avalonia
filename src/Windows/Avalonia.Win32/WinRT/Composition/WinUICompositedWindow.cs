@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Numerics;
+using System.Reactive.Disposables;
+using System.Threading;
 using Avalonia.MicroCom;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
@@ -10,6 +12,7 @@ namespace Avalonia.Win32.WinRT.Composition
     public class WinUICompositedWindow : IDisposable
     {
         private EglContext _syncContext;
+        private readonly object _pumpLock;
         private readonly IVisual _blurVisual;
         private ICompositionTarget _compositionTarget;
         private IVisual _contentVisual;
@@ -17,14 +20,19 @@ namespace Avalonia.Win32.WinRT.Composition
         private PixelSize _size;
 
         private static Guid IID_ID3D11Texture2D = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
-        
+        private ICompositor _compositor;
+
 
         internal WinUICompositedWindow(EglContext syncContext,
+            ICompositor compositor,
+            object pumpLock,
             ICompositionTarget compositionTarget,
             ICompositionDrawingSurfaceInterop surfaceInterop,
             IVisual contentVisual, IVisual blurVisual)
         {
+            _compositor = compositor.CloneReference();
             _syncContext = syncContext;
+            _pumpLock = pumpLock;
             _blurVisual = blurVisual.CloneReference();
             _compositionTarget = compositionTarget.CloneReference();
             _contentVisual = contentVisual.CloneReference();
@@ -36,7 +44,7 @@ namespace Avalonia.Win32.WinRT.Composition
         {
             using (_syncContext.EnsureLocked())
             {
-                if (_size != size)
+                //if (_size != size)
                 {
                     _surfaceInterop.Resize(new UnmanagedMethods.POINT { X = size.Width, Y = size.Height });
                     _contentVisual.SetSize(new Vector2(size.Width, size.Height));
@@ -70,10 +78,26 @@ namespace Avalonia.Win32.WinRT.Composition
                 _blurVisual.SetIsVisible(enable ? 1 : 0);
         }
 
+        public IDisposable BeginTransaction()
+        {
+            Monitor.Enter(_pumpLock);
+            //var batch = _compositor.CreateScopedBatch(CompositionBatchTypes.Effect);
+            
+            return Disposable.Create(() =>
+            {
+                Monitor.Exit(_pumpLock);
+                /*
+                batch?.End();
+                batch?.Dispose();
+                batch = null;*/
+            });
+        }
+        
         public void Dispose()
         {
             if (_syncContext == null)
             {
+                _compositor.Dispose();
                 _blurVisual.Dispose();
                 _contentVisual.Dispose();
                 _surfaceInterop.Dispose();
