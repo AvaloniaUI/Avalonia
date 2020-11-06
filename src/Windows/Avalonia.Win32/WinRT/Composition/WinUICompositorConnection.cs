@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.MicroCom;
 using Avalonia.OpenGL;
@@ -11,7 +13,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.WinRT.Composition
 {
-    public class WinUICompositorConnection
+    class WinUICompositorConnection
     {
         private readonly EglContext _syncContext;
         private IntPtr _queue;
@@ -22,18 +24,13 @@ namespace Avalonia.Win32.WinRT.Composition
         private ICompositionGraphicsDevice _device;
         private EglPlatformOpenGlInterface _gl;
         private ICompositorDesktopInterop _compositorDesktopInterop;
+        private ICompositionBrush _blurBrush;
 
         public WinUICompositorConnection(EglPlatformOpenGlInterface gl)
         {
             _gl = gl;
             _syncContext = _gl.PrimaryEglContext;
             _angle = (AngleWin32EglDisplay)_gl.Display;
-            _queue = NativeWinRTMethods.CreateDispatcherQueueController(new NativeWinRTMethods.DispatcherQueueOptions
-            {
-                apartmentType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_STA,
-                dwSize = Marshal.SizeOf<NativeWinRTMethods.DispatcherQueueOptions>(),
-                threadType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_DEDICATED
-            });
             _compositor = NativeWinRTMethods.CreateInstance<ICompositor>("Windows.UI.Composition.Compositor");
             _compositor2 = _compositor.QueryInterface<ICompositor2>();
             _compositorInterop = _compositor.QueryInterface<ICompositorInterop>();
@@ -41,10 +38,44 @@ namespace Avalonia.Win32.WinRT.Composition
             using var device = MicroComRuntime.CreateProxyFor<IUnknown>(_angle.GetDirect3DDevice(), true);
             
             _device = _compositorInterop.CreateGraphicsDevice(device);
+            _blurBrush = CreateBlurBrush();
         }
 
         public EglPlatformOpenGlInterface Egl => _gl;
 
+        static WinUICompositorConnection TryCreateCore(EglPlatformOpenGlInterface angle)
+        {
+            var tcs = new TaskCompletionSource<WinUICompositorConnection>();
+            var th = new Thread(() =>
+            {
+                try
+                {
+                    NativeWinRTMethods.CreateDispatcherQueueController(new NativeWinRTMethods.DispatcherQueueOptions
+                    {
+                        apartmentType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_APARTMENTTYPE.DQTAT_COM_NONE,
+                        dwSize = Marshal.SizeOf<NativeWinRTMethods.DispatcherQueueOptions>(),
+                        threadType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT
+                    });
+                    tcs.SetResult(new WinUICompositorConnection(angle));
+                    while (true)
+                    {
+                        while (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) != 0)
+                            UnmanagedMethods.DispatchMessage(ref msg);
+                    }
+                }
+                catch (Exception e)
+                {
+                    tcs.SetException(e);
+                }
+            })
+            {
+                IsBackground = true
+            };
+            th.SetApartmentState(ApartmentState.STA);
+            th.Start();
+            return tcs.Task.Result;
+        }
+        
         public static WinUICompositorConnection TryCreate(EglPlatformOpenGlInterface angle)
         {
             const int majorRequired = 10;
@@ -58,7 +89,7 @@ namespace Avalonia.Win32.WinRT.Composition
             {
                 try
                 {
-                    return new WinUICompositorConnection(angle);
+                    return TryCreateCore(angle);
                 }
                 catch (Exception e)
                 {
@@ -105,16 +136,16 @@ namespace Avalonia.Win32.WinRT.Composition
             
             target.SetRoot(containerVisual);
 
-            using var blur = CreateBlur(); 
+            using var blur = CreateBlurVisual(); 
             
             containerChildren.InsertAtTop(blur);
             containerChildren.InsertAtTop(visual);
-            //visual.SetCompositeMode(CompositionCompositeMode.SourceOver);
             
             return new WinUICompositedWindow(_syncContext, target, surfaceInterop, visual, blur);
         }
 
-        private unsafe IVisual CreateBlur()
+
+        private unsafe ICompositionBrush CreateBlurBrush()
         {
             using var backDropParameterFactory = NativeWinRTMethods.CreateActivationFactory<ICompositionEffectSourceParameterFactory>(
                 "Windows.UI.Composition.CompositionEffectSourceParameter");
@@ -131,16 +162,18 @@ namespace Avalonia.Win32.WinRT.Composition
             var saturateEffect = new SaturationEffect(blurEffect);
             using var satEffectFactory = _compositor.CreateEffectFactory(saturateEffect);
             using var sat = satEffectFactory.CreateBrush();
-            using var satBrush = sat.QueryInterface<ICompositionBrush>();
             sat.SetSourceParameter(backdropString.Handle, backdropBrush);
-
+            return sat.QueryInterface<ICompositionBrush>();
+        }
+        
+        private unsafe IVisual CreateBlurVisual()
+        {
             using var spriteVisual = _compositor.CreateSpriteVisual();
             using var visual = spriteVisual.QueryInterface<IVisual>();
             using var visual2 = spriteVisual.QueryInterface<IVisual2>();
-
+           
             
-            
-            spriteVisual.SetBrush(satBrush);
+            spriteVisual.SetBrush(_blurBrush);
             visual.SetIsVisible(0);
             visual2.SetRelativeSizeAdjustment(new Vector2(1.0f, 1.0f));
 
