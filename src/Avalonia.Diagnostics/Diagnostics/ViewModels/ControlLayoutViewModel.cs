@@ -12,6 +12,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private Thickness _borderThickness;
         private Thickness _paddingThickness;
         private string _sizeText;
+        private bool _updatingFromControl;
 
         public Thickness MarginThickness
         {
@@ -65,8 +66,6 @@ namespace Avalonia.Diagnostics.ViewModels
 
             UpdateSize();
         }
-
-        private bool _updatingFromControl;
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
