@@ -32,6 +32,8 @@ namespace Avalonia.Diagnostics.ViewModels
             view.Filter = FilterProperty;
             PropertiesView = view;
 
+            Layout = new ControlLayoutViewModel(control);
+
             if (control is INotifyPropertyChanged inpc)
             {
                 inpc.PropertyChanged += ControlPropertyChanged;
@@ -52,6 +54,8 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _selectedProperty;
             set => RaiseAndSetIfChanged(ref _selectedProperty, value);
         }
+        
+        public ControlLayoutViewModel Layout { get; }
 
         public void Dispose()
         {
@@ -112,6 +116,8 @@ namespace Avalonia.Diagnostics.ViewModels
                     property.Update();
                 }
             }
+
+            Layout.ControlPropertyChanged(sender, e);
         }
 
         private void ControlPropertyChanged(object sender, PropertyChangedEventArgs e)
