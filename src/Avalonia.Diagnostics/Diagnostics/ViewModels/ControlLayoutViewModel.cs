@@ -11,7 +11,10 @@ namespace Avalonia.Diagnostics.ViewModels
         private Thickness _marginThickness;
         private Thickness _borderThickness;
         private Thickness _paddingThickness;
-        private string _sizeText;
+        private double _width;
+        private double _height;
+        private string _widthConstraint;
+        private string _heightConstraint;
         private bool _updatingFromControl;
 
         public Thickness MarginThickness
@@ -32,10 +35,28 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _paddingThickness, value);
         }
 
-        public string SizeText
+        public double Width
         {
-            get => _sizeText;
-            private set => RaiseAndSetIfChanged(ref _sizeText, value);
+            get => _width;
+            private set => RaiseAndSetIfChanged(ref _width, value);
+        }
+
+        public double Height
+        {
+            get => _height;
+            private set => RaiseAndSetIfChanged(ref _height, value);
+        }
+
+        public string WidthConstraint
+        {
+            get => _widthConstraint;
+            private set => RaiseAndSetIfChanged(ref _widthConstraint, value);
+        }
+
+        public string HeightConstraint
+        {
+            get => _heightConstraint;
+            private set => RaiseAndSetIfChanged(ref _heightConstraint, value);
         }
 
         public bool HasPadding { get; }
@@ -65,6 +86,29 @@ namespace Avalonia.Diagnostics.ViewModels
             }
 
             UpdateSize();
+            UpdateSizeConstraints();
+        }
+
+        private void UpdateSizeConstraints()
+        {
+            if (_control is IAvaloniaObject ao)
+            {
+                string CreateConstraintInfo(StyledProperty<double> minProperty, StyledProperty<double> maxProperty)
+                {
+                    if (ao.IsSet(minProperty) || ao.IsSet(maxProperty))
+                    {
+                        var minValue = ao.GetValue(minProperty);
+                        var maxValue = ao.GetValue(maxProperty);
+
+                        return $"{minValue} < size < {maxValue}";
+                    }
+
+                    return null;
+                }
+
+                WidthConstraint = CreateConstraintInfo(Layoutable.MinWidthProperty, Layoutable.MaxWidthProperty);
+                HeightConstraint = CreateConstraintInfo(Layoutable.MinHeightProperty, Layoutable.MaxHeightProperty);
+            }
         }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
@@ -99,11 +143,9 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 _updatingFromControl = true;
 
-                var updateSize = false;
-
                 if (e.Property == Visual.BoundsProperty)
                 {
-                    updateSize = true;
+                    UpdateSize();
                 }
                 else
                 {
@@ -120,15 +162,15 @@ namespace Avalonia.Diagnostics.ViewModels
                         else if (e.Property == Border.BorderThicknessProperty)
                         {
                             BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
-
-                            updateSize = true;
+                        } 
+                        else if (e.Property == Layoutable.MinWidthProperty ||
+                                 e.Property == Layoutable.MaxWidthProperty ||
+                                 e.Property == Layoutable.MinHeightProperty ||
+                                 e.Property == Layoutable.MaxHeightProperty)
+                        {
+                            UpdateSizeConstraints();
                         }
                     }
-                }
-
-                if (updateSize)
-                {
-                    UpdateSize();
                 }
             }
             finally
@@ -141,9 +183,8 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             var size = _control.Bounds;
 
-            size.Deflate(BorderThickness);
-            
-            SizeText = $"{size.Width} × {size.Height}";
+            Width = size.Width;
+            Height = size.Height;
         }
     }
 }

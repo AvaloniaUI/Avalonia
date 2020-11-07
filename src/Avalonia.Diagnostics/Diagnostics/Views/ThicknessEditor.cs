@@ -1,8 +1,21 @@
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Media;
 
 namespace Avalonia.Diagnostics.Views
 {
+    internal static class Converters
+    {
+        public static IValueConverter HasConstraintConverter =
+            new FuncValueConverter<object, TextDecorationCollection>(ConvertToDecoration);
+
+        private static TextDecorationCollection ConvertToDecoration(object arg)
+        {
+            return arg != null ? TextDecorations.Underline : null;
+        }
+    }
+
     internal class ThicknessEditor : ContentControl
     {
         public static readonly DirectProperty<ThicknessEditor, Thickness> ThicknessProperty =

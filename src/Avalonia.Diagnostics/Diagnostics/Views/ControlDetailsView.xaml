@@ -106,15 +106,48 @@
 
     <Grid Grid.Column="2" RowDefinitions="Auto,*" >
       <TextBlock Grid.Row="0" Text="Layout Visualizer" Margin="4" />
-      <local:ThicknessEditor Grid.Row="1" Margin="8,0,8,8" Header="margin" VerticalAlignment="Top" HorizontalAlignment="Center" Background="{StaticResource MarginBackgroundBrush}" Thickness="{Binding Layout.MarginThickness}">
-        <local:ThicknessEditor Header="border" Background="{StaticResource BorderBackgroundBrush}" Thickness="{Binding Layout.BorderThickness}" IsPresent="{Binding Layout.HasBorder}">
-          <local:ThicknessEditor Header="padding" Background="{StaticResource PaddingBackgroundBrush}" Thickness="{Binding Layout.PaddingThickness}" IsPresent="{Binding Layout.HasPadding}">
-            <Border BorderThickness="1" BorderBrush="{StaticResource ThicknessBorderBrush}" MinWidth="100" MinHeight="16" Background="{StaticResource SizeBackgroundBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-              <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center"  Text="{Binding Layout.SizeText}" />
-            </Border>
+      
+      <Grid Grid.Row="1" x:Name="LayoutRoot" Margin="8,0,8,8" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
+
+        <Border x:Name="VerticalSize" Grid.Row="0" Grid.Column="1" >
+          <TextBlock VerticalAlignment="Center" FontWeight="Bold"
+                     TextDecorations="{Binding Layout.HeightConstraint, Converter={x:Static local:Converters.HasConstraintConverter}}"
+                     Text="{Binding Layout.Height}"
+                     ToolTip.Tip="{Binding Layout.HeightConstraint}" />
+        </Border>
+        
+        <Border x:Name="HorizontalSize" Grid.Row="1" Grid.Column="0" >
+          <TextBlock HorizontalAlignment="Center" FontWeight="Bold" 
+                     TextDecorations="{Binding Layout.WidthConstraint, Converter={x:Static local:Converters.HasConstraintConverter}}"
+                     Text="{Binding Layout.Width}" 
+                     ToolTip.Tip="{Binding Layout.WidthConstraint}" />
+        </Border>
+        
+        <local:ThicknessEditor Grid.Row="0" Grid.Column="0" Header="margin" VerticalAlignment="Top" HorizontalAlignment="Center" Background="{StaticResource MarginBackgroundBrush}" Thickness="{Binding Layout.MarginThickness}">
+          <local:ThicknessEditor x:Name="BorderArea" Header="border" Background="{StaticResource BorderBackgroundBrush}" Thickness="{Binding Layout.BorderThickness}" IsPresent="{Binding Layout.HasBorder}">
+            <local:ThicknessEditor x:Name="PaddingArea" Header="padding" Background="{StaticResource PaddingBackgroundBrush}" Thickness="{Binding Layout.PaddingThickness}" IsPresent="{Binding Layout.HasPadding}">
+              <Border x:Name="ContentArea" BorderThickness="1" BorderBrush="{StaticResource ThicknessBorderBrush}" MinWidth="100" MinHeight="16" Background="{StaticResource SizeBackgroundBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="content" />
+              </Border>
+            </local:ThicknessEditor>
           </local:ThicknessEditor>
         </local:ThicknessEditor>
-      </local:ThicknessEditor>
+
+        <Canvas Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2">
+          <Canvas.Styles>
+            <Style Selector="Rectangle">
+              <Setter Property="StrokeDashArray" Value="1,3" />
+              <Setter Property="Stroke" Value="#333333" />
+              <Setter Property="StrokeThickness" Value="1" />
+            </Style>
+          </Canvas.Styles>
+          <Rectangle x:Name="HorizontalSizeBegin" />
+          <Rectangle x:Name="HorizontalSizeEnd" />
+          <Rectangle x:Name="VerticalSizeBegin" />
+          <Rectangle x:Name="VerticalSizeEnd" />
+        </Canvas>
+      </Grid>
+      
     </Grid>
   </Grid>
 
