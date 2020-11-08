@@ -6,6 +6,7 @@
 
   <UserControl.Resources>
     <SolidColorBrush x:Key="ThicknessBorderBrush" Color="#666666" />
+    <SolidColorBrush x:Key="SizeGuidelineBrush" Color="#333333" />
     <SolidColorBrush x:Key="MarginBackgroundBrush" Color="#D78965" />
     <SolidColorBrush x:Key="BorderBackgroundBrush" Color="#E3C381" />
     <SolidColorBrush x:Key="PaddingBackgroundBrush" Color="#B8C47F" />
@@ -62,7 +63,7 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid ColumnDefinitions="*,Auto,250">
+  <Grid ColumnDefinitions="*,Auto,280">
 
     <Grid Grid.Column="0" ColumnDefinitions="*,Auto,Auto,Auto" RowDefinitions="Auto,*">
 
@@ -137,7 +138,7 @@
           <Canvas.Styles>
             <Style Selector="Rectangle">
               <Setter Property="StrokeDashArray" Value="1,3" />
-              <Setter Property="Stroke" Value="#333333" />
+              <Setter Property="Stroke" Value="{StaticResource SizeGuidelineBrush}" />
               <Setter Property="StrokeThickness" Value="1" />
             </Style>
           </Canvas.Styles>
