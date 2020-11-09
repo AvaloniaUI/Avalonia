@@ -1,0 +1,3 @@
+Compat issues with assembly Avalonia.Diagnostics:
+TypesMustExist : Type 'Avalonia.Diagnostics.DevTools' does not exist in the implementation but it does exist in the contract.
+Total Issues: 1

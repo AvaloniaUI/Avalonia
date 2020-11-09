@@ -8,7 +8,7 @@ using Avalonia.Interactivity;
 #nullable enable 
 namespace Avalonia.Diagnostics
 {
-    public static class DevTools
+    internal static class DevTools
     {
         private static readonly Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
 
@@ -20,7 +20,7 @@ namespace Avalonia.Diagnostics
             });
         }
 
-        static IDisposable Attach(TopLevel root, DevToolsOptions options)
+        public static IDisposable Attach(TopLevel root, DevToolsOptions options)
         {
             void PreviewKeyDown(object sender, KeyEventArgs e)
             {
@@ -36,12 +36,7 @@ namespace Avalonia.Diagnostics
                 RoutingStrategies.Tunnel);
         }
 
-        public static IDisposable Open(TopLevel root)
-        {
-            return Open(root, new DevToolsOptions());
-        }
-
-        static IDisposable Open(TopLevel root, DevToolsOptions options)
+        private static IDisposable Open(TopLevel root, DevToolsOptions options)
         {
             if (s_open.TryGetValue(root, out var window))
             {
