@@ -94,5 +94,7 @@ namespace Avalonia.Diagnostics.Views
         }
 
         private void RootClosed(object sender, EventArgs e) => Close();
+
+        public MainViewModel ViewModel { get => (MainViewModel)DataContext; }
     }
 }

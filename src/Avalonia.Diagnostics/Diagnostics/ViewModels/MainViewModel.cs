@@ -21,6 +21,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
+        private bool _showLayoutVisualizzer;
 
         public MainViewModel(TopLevel root)
         {
@@ -42,7 +43,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeMarginPadding;
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
         }
-        
+
         public bool ShouldVisualizeDirtyRects
         {
             get => _shouldVisualizeDirtyRects;
@@ -185,5 +186,9 @@ namespace Avalonia.Diagnostics.ViewModels
                 UpdateFocusedControl();
             }
         }
+
+        public bool ShowLayoutVisualizer { get => _showLayoutVisualizzer; set => RaiseAndSetIfChanged(ref _showLayoutVisualizzer, value); }
+
+        void ToggleShowLayoutVisualizer(object paramter) => ShowLayoutVisualizer = !ShowLayoutVisualizer;
     }
 }

@@ -63,7 +63,7 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid ColumnDefinitions="*,Auto,280">
+  <Grid ColumnDefinitions="*,Auto,Auto">
 
     <Grid Grid.Column="0" ColumnDefinitions="*,Auto,Auto,Auto" RowDefinitions="Auto,*">
 
@@ -103,9 +103,9 @@
 
     </Grid>
 
-    <GridSplitter Grid.Column="1" />
+    <GridSplitter Grid.Column="1" IsVisible="{Binding $parent[Window].DataContext.ShowLayoutVisualizer}"/>
 
-    <Grid Grid.Column="2" RowDefinitions="Auto,*" >
+    <Grid Grid.Column="2" RowDefinitions="Auto,*" IsVisible="{Binding $parent[Window].DataContext.ShowLayoutVisualizer}"  MinWidth="280">
       <TextBlock Grid.Row="0" Text="Layout Visualizer" Margin="4" />
       
       <Grid Grid.Row="1" x:Name="LayoutRoot" Margin="8,0,8,8" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">

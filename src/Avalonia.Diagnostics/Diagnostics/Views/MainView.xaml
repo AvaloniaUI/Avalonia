@@ -38,6 +38,13 @@
                       IsEnabled="False"/>
           </MenuItem.Icon>
         </MenuItem>
+        <MenuItem Header="Show Layout Visualizer" Command="{Binding ToggleShowLayoutVisualizer}">
+          <MenuItem.Icon>
+            <CheckBox BorderThickness="0"
+                      IsChecked="{Binding ShowLayoutVisualizer}"
+                      IsEnabled="False"/>
+          </MenuItem.Icon>
+        </MenuItem>        
       </MenuItem>
     </Menu>
     

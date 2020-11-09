@@ -10,7 +10,7 @@ namespace Avalonia.Diagnostics
 {
     internal static class DevTools
     {
-        private static readonly Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
+        private static readonly Dictionary<TopLevel, MainWindow> s_open = new Dictionary<TopLevel, MainWindow>();
 
         public static IDisposable Attach(TopLevel root, KeyGesture gesture)
         {
@@ -52,6 +52,12 @@ namespace Avalonia.Diagnostics
                 };
 
                 window.Closed += DevToolsClosed;
+                window.ViewModel.ShouldVisualizeDirtyRects = options.ShouldVisualizeDirtyRects;
+                window.ViewModel.ShouldVisualizeMarginPadding = options.ShouldVisualizeMarginPadding;
+                window.ViewModel.Console.IsVisible = options.ShowConsole;
+                window.ViewModel.ShowFpsOverlay = options.ShowFpsOverlay;
+                window.ViewModel.ShowLayoutVisualizer = options.ShowLayoutVisualizer;                
+                window.ViewModel.ShowFpsOverlay = options.ShowFpsOverlay;
                 s_open.Add(root, window);
 
                 if (options.OnTop && root is Window inspectedWindow)
