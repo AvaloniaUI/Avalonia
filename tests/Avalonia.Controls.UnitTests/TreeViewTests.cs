@@ -675,6 +675,50 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Same(node, focus.Current);
             }
         }
+        
+        [Fact]
+        public void Keyboard_Navigation_Should_Not_Crash_If_Selected_Item_Is_not_In_Tree()
+        {
+            using (Application())
+            {
+                var focus = FocusManager.Instance;
+                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+                var data = CreateTestTreeData();
+
+                var selectedNode = new Node { Value = "Out of Tree Selected Item" };
+
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = data,
+                    SelectedItem = selectedNode
+                };
+
+                var button = new Button();
+
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { target, button },
+                    }
+                };
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
+
+                var item = data[0].Children[0];
+                var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                Assert.NotNull(node);
+
+                target.SelectedItem = selectedNode;
+                node.Focus();
+                Assert.Same(node, focus.Current);
+
+                var next = KeyboardNavigationHandler.GetNext(node, NavigationDirection.Previous);
+            }
+        }
 
         [Fact]
         public void Pressing_SelectAll_Gesture_Should_Select_All_Nodes()
