@@ -137,12 +137,22 @@ namespace Avalonia.Media
         /// Parses a <see cref="T:Avalonia.Media.FontFamily"/> string.
         /// </summary>
         /// <param name="s">The <see cref="T:Avalonia.Media.FontFamily"/> string.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">
+        /// Specified family is not supported.
+        /// </exception>
+        public static FontFamily Parse(string s) => Parse(s, null);
+
+        /// <summary>
+        /// Parses a <see cref="T:Avalonia.Media.FontFamily"/> string.
+        /// </summary>
+        /// <param name="s">The <see cref="T:Avalonia.Media.FontFamily"/> string.</param>
         /// <param name="baseUri">Specifies the base uri that is used to resolve font family assets.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">
         /// Specified family is not supported.
         /// </exception>
-        public static FontFamily Parse(string s, Uri baseUri = null)
+        public static FontFamily Parse(string s, Uri baseUri)
         {
             if (string.IsNullOrEmpty(s))
             {

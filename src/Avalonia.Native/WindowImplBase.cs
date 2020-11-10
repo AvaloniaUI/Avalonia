@@ -155,10 +155,10 @@ namespace Avalonia.Native
                 }
                 finally
                 {
+                    
+                    _parent?.Dispose();
                     n?.Dispose();
                 }
-                
-                _parent._mouse.Dispose();
             }
 
             void IAvnWindowBaseEvents.Activated() => _parent.Activated?.Invoke();
@@ -336,6 +336,7 @@ namespace Avalonia.Native
             _nativeControlHost = null;
             
             (Screen as ScreenImpl)?.Dispose();
+            _mouse.Dispose();
         }
 
 
