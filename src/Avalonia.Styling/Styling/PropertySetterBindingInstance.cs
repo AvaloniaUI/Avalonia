@@ -92,6 +92,7 @@ namespace Avalonia.Styling
         {
             if (!_isActive)
             {
+                _innerSubscription ??= _binding.Observable.Subscribe(_inner);
                 _isActive = true;
                 PublishNext();
             }
@@ -102,6 +103,8 @@ namespace Avalonia.Styling
             if (_isActive)
             {
                 _isActive = false;
+                _innerSubscription?.Dispose();
+                _innerSubscription = null;
                 PublishNext();
             }
         }
@@ -148,7 +151,10 @@ namespace Avalonia.Styling
 
         protected override void Subscribed()
         {
-            _innerSubscription = _binding.Observable.Subscribe(_inner);
+            if (_isActive)
+            {
+                _innerSubscription = _binding.Observable.Subscribe(_inner);
+            }
         }
 
         protected override void Unsubscribed()
