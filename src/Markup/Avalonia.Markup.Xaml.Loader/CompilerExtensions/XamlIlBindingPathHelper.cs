@@ -198,20 +198,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     case BindingExpressionGrammar.AncestorNode ancestor:
                         if (ancestor.Namespace is null && ancestor.TypeName is null)
                         {
-                            var styledElementType = context.GetAvaloniaTypes().StyledElement;
-                            var ancestorType = context
-                                .ParentNodes()
-                                .OfType<XamlAstConstructableObjectNode>()
-                                .Where(x => styledElementType.IsAssignableFrom(x.Type.GetClrType()))
-                                .ElementAtOrDefault(ancestor.Level)
-                                ?.Type.GetClrType();
-
-                            if (ancestorType is null)
+                            if (ancestor.Namespace is null && ancestor.TypeName is null)
                             {
-                                throw new XamlX.XamlParseException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
-                            }
+                                var styledElementType = context.GetAvaloniaTypes().StyledElement;
+                                var ancestorType = context
+                                    .ParentNodes()
+                                    .OfType<XamlAstConstructableObjectNode>()
+                                    .Where(x => styledElementType.IsAssignableFrom(x.Type.GetClrType()))
+                                    .Skip(1)
+                                    .ElementAtOrDefault(ancestor.Level)
+                                    ?.Type.GetClrType();
 
-                            nodes.Add(new FindAncestorPathElementNode(ancestorType, ancestor.Level));
+                                if (ancestorType is null)
+                                {
+                                    throw new XamlX.XamlParseException("Unable to resolve implicit ancestor type based on XAML tree.", lineInfo);
+                                }
+
+                                nodes.Add(new FindAncestorPathElementNode(ancestorType, ancestor.Level));
+                            }
                         }
                         else
                         {
