@@ -111,7 +111,7 @@ namespace Avalonia.Media.Fonts
             }
             else
             {
-                location = new Uri(fontFamilyKey.Source.AbsolutePath.Replace(fileNameWithExtension, string.Empty));
+                location = new Uri(fontFamilyKey.Source.OriginalString.Replace(fileNameWithExtension, string.Empty),fontFamilyKey.Source.IsAbsoluteUri ? UriKind.Absolute : UriKind.Relative);
             }
 
             return fileNameSegments.First();
