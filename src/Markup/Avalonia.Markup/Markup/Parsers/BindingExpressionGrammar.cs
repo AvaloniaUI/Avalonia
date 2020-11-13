@@ -46,6 +46,10 @@ namespace Avalonia.Markup.Parsers
                         state = ParseIndexer(ref r, nodes);
                         break;
 
+                    case State.TypeCast:
+                        state = ParseTypeCast(ref r, nodes);
+                        break;
+
                     case State.ElementName:
                         state = ParseElementName(ref r, nodes);
                         mode = SourceMode.Control;
@@ -124,6 +128,10 @@ namespace Avalonia.Markup.Parsers
             {
                 return State.Indexer;
             }
+            else if (ParseOpenBrace(ref r))
+            {
+                return State.TypeCast;
+            }
 
             return State.End;
         }
@@ -183,6 +191,27 @@ namespace Avalonia.Markup.Parsers
             }
 
             nodes.Add(new IndexerNode { Arguments = args });
+            return State.AfterMember;
+        }
+
+        private static State ParseTypeCast(ref CharacterReader r, List<INode> nodes)
+        {
+            var (ns, typeName) = ParseTypeName(ref r);
+
+            nodes.Add(new TypeCastNode { Namespace = ns, TypeName = typeName });
+
+            if (ParseMemberAccessor(ref r))
+            {
+                var identifier = r.ParseIdentifier();
+
+                nodes.Add(new PropertyNameNode { PropertyName = identifier.ToString() });
+            }
+
+            if (r.End || !r.TakeIf(')'))
+            {
+                throw new ExpressionParseException(r.Position, "Expected ')'.");
+            }
+
             return State.AfterMember;
         }
 
@@ -322,6 +351,7 @@ namespace Avalonia.Markup.Parsers
             BeforeMember,
             AttachedProperty,
             Indexer,
+            TypeCast,
             End,
         }
 
@@ -382,6 +412,12 @@ namespace Avalonia.Markup.Parsers
             public string Namespace { get; set; }
             public string TypeName { get; set; }
             public int Level { get; set; }
+        }
+
+        public class TypeCastNode : INode
+        {
+            public string Namespace { get; set; }
+            public string TypeName { get; set; }
         }
     }
 }
