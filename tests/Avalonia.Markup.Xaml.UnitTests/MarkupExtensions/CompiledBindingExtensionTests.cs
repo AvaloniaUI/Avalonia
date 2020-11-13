@@ -638,6 +638,52 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void SupportCastToTypeInExpression()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+        x:DataType='local:TestDataContext'>
+    <ContentControl Content='{CompiledBinding $parent.DataContext(local:TestDataContext)}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.FindControl<ContentControl>("contentControl");
+
+                var dataContext = new TestDataContext();
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext, contentControl.Content);
+            }
+        }
+
+        [Fact]
+        public void SupportCastToTypeInExpression_DifferentTypeEvaluatesToNull()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+        x:DataType='local:TestDataContext'>
+    <ContentControl Content='{CompiledBinding $parent.DataContext(local:TestDataContext)}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.FindControl<ContentControl>("contentControl");
+
+                var dataContext = "foo";
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(null, contentControl.Content);
+            }
+        }
+
+        [Fact]
         public void SupportCastToTypeInExpressionWithProperty()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
