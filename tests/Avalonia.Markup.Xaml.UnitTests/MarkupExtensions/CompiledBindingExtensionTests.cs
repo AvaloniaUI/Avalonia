@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
@@ -622,6 +624,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void SupportConverterWithParameter()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext' x:CompileBindings='True'>
+    <TextBlock Name='textBlock' Text='{Binding StringProperty, Converter={x:Static local:AppendConverter.Instance}, ConverterParameter=Bar}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                window.DataContext = new TestDataContext() { StringProperty = "Foo" };
+
+                Assert.Equal("Foo+Bar", textBlock.Text);
+            }
+        }
+
+        [Fact]
         public void ThrowsOnInvalidCompileBindingsDirective()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -781,6 +805,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     public interface IHasPropertyDerived : IHasProperty
     { }
+
+    public class AppendConverter : IValueConverter
+    {
+        public static IValueConverter Instance { get; } = new AppendConverter();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => string.Format("{0}+{1}", value, parameter);
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+
+    }
 
     public class TestDataContext : IHasPropertyDerived
     {
