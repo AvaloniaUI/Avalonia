@@ -69,7 +69,8 @@ namespace Avalonia.Win32
         {
             UnmanagedMethods.WindowStyles style =
                 UnmanagedMethods.WindowStyles.WS_POPUP |
-                UnmanagedMethods.WindowStyles.WS_CLIPSIBLINGS;
+                UnmanagedMethods.WindowStyles.WS_CLIPSIBLINGS |
+                UnmanagedMethods.WindowStyles.WS_CLIPCHILDREN;
 
             UnmanagedMethods.WindowStyles exStyle =
                 UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW |
