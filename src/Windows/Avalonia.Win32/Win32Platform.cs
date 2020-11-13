@@ -155,7 +155,7 @@ namespace Avalonia.Win32
             if (result < 0)
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
-                    ?.Log(this, "Unmanaged error in {0}. Error Code: {1}" ,nameof(RunLoop), Marshal.GetLastWin32Error());
+                    ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(RunLoop), Marshal.GetLastWin32Error());
             }
         }
 

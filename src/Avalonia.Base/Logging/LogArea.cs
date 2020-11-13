@@ -36,7 +36,7 @@ namespace Avalonia.Logging
         public const string Control = "Control";
 
         /// <summary>
-        /// The log evevnt come from Win32Platform
+        /// The log event comes from Win32Platform.
         /// </summary>
         public const string Win32Platform = nameof(Win32Platform);
     }
