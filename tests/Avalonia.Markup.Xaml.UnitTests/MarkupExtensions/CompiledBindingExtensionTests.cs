@@ -616,23 +616,105 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Throws<XamlX.XamlParseException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
+
+        [Fact]
+        public void SupportCastToTypeInExpressionWithProperty()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+        x:DataType='local:TestDataContext'>
+    <ContentControl Content='{CompiledBinding $parent.DataContext(local:TestDataContext).StringProperty}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.FindControl<ContentControl>("contentControl");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, contentControl.Content);
+            }
+        }
+
+        [Fact]
+        public void SupportCastToTypeInExpressionWithProperty1()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+        x:DataType='local:TestDataContext'>
+    <ContentControl Content='{CompiledBinding $parent.DataContext(local:TestDataContext.StringProperty)}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.FindControl<ContentControl>("contentControl");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, contentControl.Content);
+            }
+        }
+
+        [Fact]
+        public void SupportCastToTypeInExpressionWithProperty_DifferentTypeEvaluatesToNull()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+        x:DataType='local:TestDataContext'>
+    <ContentControl Content='{CompiledBinding $parent.DataContext(local:TestDataContext).StringProperty}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.FindControl<ContentControl>("contentControl");
+
+                var dataContext = new TestDataContext
+                {
+                    StringProperty = "foobar"
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(dataContext.StringProperty, contentControl.Content);
+
+                window.DataContext = "foo";
+
+                Assert.Equal(null, contentControl.Content);
+            }
+        }
     }
 
     public interface INonIntegerIndexer
     {
-        string this[string key] {get; set;}
+        string this[string key] { get; set; }
     }
 
     public interface INonIntegerIndexerDerived : INonIntegerIndexer
-    {}
+    { }
 
     public interface IHasProperty
     {
-        string StringProperty {get; set; }
+        string StringProperty { get; set; }
     }
 
     public interface IHasPropertyDerived : IHasProperty
-    {}
+    { }
 
     public class TestDataContext : IHasPropertyDerived
     {
