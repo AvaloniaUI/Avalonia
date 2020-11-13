@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.UnitTests;
 using Moq;
@@ -215,6 +216,78 @@ namespace Avalonia.Styling.UnitTests
             target.Classes.Remove("foo");
 
             Assert.Equal(new[] { "foodefault", "Bar" }, values);
+        }
+
+        [Fact]
+        public void Template_In_Non_Matching_Style_Is_Not_Built()
+        {
+            var instantiationCount = 0;
+            var template = new FuncTemplate<Class1>(() =>
+            {
+                ++instantiationCount;
+                return new Class1();
+            });
+
+            Styles styles = new Styles
+            {
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.ChildProperty, template),
+                    },
+                },
+
+                new Style(x => x.OfType<Class1>())
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.ChildProperty, template),
+                    },
+                }
+            };
+
+            var target = new Class1();
+            styles.TryAttach(target, null);
+
+            Assert.NotNull(target.Child);
+            Assert.Equal(1, instantiationCount);
+        }
+
+        [Fact]
+        public void Template_In_Inactive_Style_Is_Not_Built()
+        {
+            var instantiationCount = 0;
+            var template = new FuncTemplate<Class1>(() =>
+            {
+                ++instantiationCount;
+                return new Class1();
+            });
+
+            Styles styles = new Styles
+            {
+                new Style(x => x.OfType<Class1>())
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.ChildProperty, template),
+                    },
+                },
+
+                new Style(x => x.OfType<Class1>())
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.ChildProperty, template),
+                    },
+                }
+            };
+
+            var target = new Class1();
+            styles.TryAttach(target, null);
+
+            Assert.NotNull(target.Child);
+            Assert.Equal(1, instantiationCount);
         }
 
         [Fact]
@@ -453,10 +526,19 @@ namespace Avalonia.Styling.UnitTests
             public static readonly StyledProperty<string> FooProperty =
                 AvaloniaProperty.Register<Class1, string>(nameof(Foo), "foodefault");
 
+            public static readonly StyledProperty<Class1> ChildProperty =
+                AvaloniaProperty.Register<Class1, Class1>(nameof(Child));
+
             public string Foo
             {
                 get { return GetValue(FooProperty); }
                 set { SetValue(FooProperty, value); }
+            }
+
+            public Class1 Child
+            {
+                get => GetValue(ChildProperty);
+                set => SetValue(ChildProperty, value);
             }
 
             protected override Size MeasureOverride(Size availableSize)
