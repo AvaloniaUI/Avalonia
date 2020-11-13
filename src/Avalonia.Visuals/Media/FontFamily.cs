@@ -3,6 +3,7 @@ using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
 {
+    [System.ComponentModel.TypeConverter("Avalonia.Markup.Xaml.Converters.FontFamilyTypeConverter,Avalonia.Markup.Xaml")]
     public sealed class FontFamily
     {
         public const string DefaultFontFamilyName = "$Default";
