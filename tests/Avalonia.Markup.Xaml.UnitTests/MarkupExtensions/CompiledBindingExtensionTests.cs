@@ -602,6 +602,26 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void SupportParentInPath()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        Title='foo'
+        x:DataType='local:TestDataContext'>
+    <ContentControl Content='{CompiledBinding $parent.Title}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.FindControl<ContentControl>("contentControl");
+
+                Assert.Equal("foo", contentControl.Content);
+            }
+        }
+
+        [Fact]
         public void ThrowsOnInvalidCompileBindingsDirective()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
