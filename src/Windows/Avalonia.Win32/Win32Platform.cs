@@ -129,10 +129,18 @@ namespace Avalonia.Win32
 
         public void ProcessMessage()
         {
-            UnmanagedMethods.MSG msg;
-            UnmanagedMethods.GetMessage(out msg, IntPtr.Zero, 0, 0);
-            UnmanagedMethods.TranslateMessage(ref msg);
-            UnmanagedMethods.DispatchMessage(ref msg);
+
+            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) > 0)
+            {
+                UnmanagedMethods.TranslateMessage(ref msg);
+                UnmanagedMethods.DispatchMessage(ref msg);
+            }
+            else
+            {
+                Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
+                    ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(ProcessMessage), Marshal.GetLastWin32Error());
+
+            }
         }
 
         public void RunLoop(CancellationToken cancellationToken)
@@ -147,7 +155,7 @@ namespace Avalonia.Win32
             if (result < 0)
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
-                    ?.Log(this, "Unmanaged error in message loop. Error Code: {0}", Marshal.GetLastWin32Error());
+                    ?.Log(this, "Unmanaged error in {0}. Error Code: {1}" ,nameof(RunLoop), Marshal.GetLastWin32Error());
             }
         }
 
