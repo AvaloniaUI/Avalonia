@@ -137,12 +137,17 @@ namespace Avalonia.Win32
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var result = 0;
+            while (!cancellationToken.IsCancellationRequested 
+                && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
             {
-                UnmanagedMethods.MSG msg;
-                UnmanagedMethods.GetMessage(out msg, IntPtr.Zero, 0, 0);
                 UnmanagedMethods.TranslateMessage(ref msg);
                 UnmanagedMethods.DispatchMessage(ref msg);
+            }
+            if (result < 0)
+            {
+                Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
+                    ?.Log(this, "Unmanaged error in message loop. Error Code: {0}", Marshal.GetLastWin32Error());
             }
         }
 
