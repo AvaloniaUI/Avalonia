@@ -1,3 +1,6 @@
+using System;
+using System.ComponentModel;
+using Avalonia.Collections;
 using Avalonia.Metadata;
 
 namespace Avalonia.Media
@@ -25,12 +28,39 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Point> StartPointProperty
                         = AvaloniaProperty.Register<PathFigure, Point>(nameof(StartPoint));
 
+        internal event EventHandler SegmentsInvalidated;
+
+        private IDisposable? _segmentsObserver;
+
+        private IDisposable? _segmentsPropertiesObserver;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="PathFigure"/> class.
         /// </summary>
         public PathFigure()
         {
+            SegmentsProperty.Changed.AddClassHandler<PathFigure>((s, e) =>
+                s.OnSegmentsChanged(e.NewValue as PathSegments));
+
             Segments = new PathSegments();
+        }
+
+        private void OnSegmentsChanged(PathSegments? arg2NewValue)
+        {
+            _segmentsObserver?.Dispose();
+            _segmentsPropertiesObserver?.Dispose();
+
+            _segmentsObserver = _segments?.ForEachItem(
+                _ => InvalidateSegments(),
+                _ => InvalidateSegments(),
+                InvalidateSegments);
+            
+            _segmentsPropertiesObserver = _segments?.TrackItemPropertyChanged(_ => InvalidateSegments());
+        }
+
+        private void InvalidateSegments()
+        {
+            SegmentsInvalidated?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
