@@ -35,9 +35,5 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes
                 .Newobj(_types.FontFamilyConstructorUriName);
             return XamlILNodeEmitResult.Type(0, _types.FontFamily);
         }
-
-        
-
-        
     }
 }
