@@ -353,7 +353,47 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             await RenderToFile(target);
             CompareImages();
         }
+        
+        [Fact]
+        public async Task PathSegment_Triggers_Invalidation_On_Property_Change()
+        {
+            var targetSegment = new ArcSegment()
+            {
+                Size = new Size(10,10),
+                Point = new Point(5,5)
+            };
 
+            var targetPath = new Path
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Fill = Brushes.Red,
+                Data = new PathGeometry
+                {
+                    Figures = new PathFigures
+                    {
+                        new PathFigure { IsClosed = false, Segments = new PathSegments { targetSegment } }
+                    }
+                }
+            };
+            
+            var root = new Border
+            {
+                Width = 100,
+                Height = 100,
+                Background = Brushes.White,
+                Child =targetPath
+            };
+            
+            Assert.Equal(10, targetPath.Bounds.Height);
+            Assert.Equal(10, targetPath.Bounds.Width);
+
+            targetSegment.Size = new Size(20, 20);
+
+            Assert.Equal(20, targetPath.Bounds.Height);
+            Assert.Equal(20, targetPath.Bounds.Width);
+        }
+        
         [Fact]
         public async Task Path_With_Rotated_Geometry()
         {
