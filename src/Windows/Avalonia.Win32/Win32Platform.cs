@@ -130,7 +130,7 @@ namespace Avalonia.Win32
         public void ProcessMessage()
         {
 
-            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) > 0)
+            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
             {
                 UnmanagedMethods.TranslateMessage(ref msg);
                 UnmanagedMethods.DispatchMessage(ref msg);
