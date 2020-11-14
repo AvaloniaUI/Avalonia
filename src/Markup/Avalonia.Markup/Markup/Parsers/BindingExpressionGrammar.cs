@@ -183,6 +183,11 @@ namespace Avalonia.Markup.Parsers
 
             var name = r.ParseIdentifier();
 
+            if (name.Length == 0)
+            {
+                throw new ExpressionParseException(r.Position, "Attached Property name expected after '.'.");
+            }
+
             if (r.End || !r.TakeIf(')'))
             {
                 throw new ExpressionParseException(r.Position, "Expected ')'.");
