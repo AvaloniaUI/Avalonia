@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using XamlX.Emit;
 using XamlX.IL;
 using XamlX.Transform;
@@ -47,6 +48,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ReflectionBindingExtension { get; }
 
         public IXamlType RelativeSource { get; }
+        public IXamlType Long { get; }
+        public IXamlType Uri { get; }
+        public IXamlType FontFamily { get; }
+        public IXamlConstructor FontFamilyConstructorUriName { get; }
+        
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -104,6 +110,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ItemsRepeater = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsRepeater");
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
             RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");
+            Long = cfg.TypeSystem.GetType("System.Int64");
+            Uri = cfg.TypeSystem.GetType("System.Uri");
+            FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
+            FontFamilyConstructorUriName = FontFamily.FindConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
         }
     }
 

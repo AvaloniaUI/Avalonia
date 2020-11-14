@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX;
 using XamlX.Ast;
@@ -166,17 +168,41 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public static bool CustomValueConverter(AstTransformationContext context,
             IXamlAstValueNode node, IXamlType type, out IXamlAstValueNode result)
         {
-            if (type.FullName == "System.TimeSpan" 
-                && node is XamlAstTextNode tn
-                && !tn.Text.Contains(":"))
+            if (!(node is XamlAstTextNode textNode))
             {
-                var seconds = double.Parse(tn.Text, CultureInfo.InvariantCulture);
-                result = new XamlStaticOrTargetedReturnMethodCallNode(tn,
-                    type.FindMethod("FromSeconds", type, false, context.Configuration.WellKnownTypes.Double),
-                    new[]
-                    {
-                        new XamlConstantNode(tn, context.Configuration.WellKnownTypes.Double, seconds)
-                    });
+                result = null;
+                return false;
+            }
+
+            var text = textNode.Text;
+            
+            var types = context.GetAvaloniaTypes();
+
+            if (type.FullName == "System.TimeSpan")
+            {
+                var tsText = text.Trim();
+
+                if (!TimeSpan.TryParse(tsText, CultureInfo.InvariantCulture, out var timeSpan))
+                {
+                    // // shorthand seconds format (ie. "0.25")
+                    if (!tsText.Contains(":") && double.TryParse(tsText,
+                        NumberStyles.Float | NumberStyles.AllowThousands,
+                        CultureInfo.InvariantCulture, out var seconds))
+                        timeSpan = TimeSpan.FromSeconds(seconds);
+                    else
+                        throw new XamlX.XamlLoadException($"Unable to parse {text} as a time span", node);
+                }
+
+
+                result = new XamlStaticOrTargetedReturnMethodCallNode(node,
+                    type.FindMethod("FromTicks", type, false, types.Long),
+                    new[] { new XamlConstantNode(node, types.Long, timeSpan.Ticks) });
+                return true;
+            }
+
+            if (type.Equals(types.FontFamily))
+            {
+                result = new AvaloniaXamlIlFontFamilyAstNode(types, text, node);
                 return true;
             }
 
@@ -185,9 +211,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
                 if (scope == null)
                     throw new XamlX.XamlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
-                if (!(node is XamlAstTextNode text))
-                    throw new XamlX.XamlLoadException("Property should be a text node", node);
-                result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text.Text, scope.TargetType, text);
+
+                result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text, scope.TargetType, node );
                 return true;
             }
 
