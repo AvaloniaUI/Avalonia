@@ -170,6 +170,12 @@ namespace Avalonia.Markup.Parsers
         {
             var (ns, owner) = ParseTypeName(ref r);
 
+            if(!r.End && r.TakeIf(')'))
+            {
+                nodes.Add(new TypeCastNode() { Namespace = ns, TypeName = owner });
+                return State.AfterMember;
+            }
+
             if (r.End || !r.TakeIf('.'))
             {
                 throw new ExpressionParseException(r.Position, "Invalid attached property name.");
@@ -220,6 +226,11 @@ namespace Avalonia.Markup.Parsers
                 }
 
                 result = ParseBeforeMember(ref r, nodes);
+
+                if(r.Peek == '[')
+                {
+                    result = ParseIndexer(ref r, nodes);
+                }
             }
 
             nodes.Add(new TypeCastNode { Namespace = ns, TypeName = typeName });
