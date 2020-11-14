@@ -760,6 +760,36 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void SupportCastToTypeInExpressionWithPropertyIndexer()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+        x:DataType='local:TestDataContext'>
+    <ContentControl Content='{CompiledBinding ((local:TestData)ObjectsArrayProperty[0]).StringProperty}' Name='contentControl' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.FindControl<ContentControl>("contentControl");
+
+                var data = new TestData()
+                {
+                    StringProperty = "Foo"
+                };
+                var dataContext = new TestDataContext
+                {
+                    ObjectsArrayProperty = new object[] { data }
+                };
+
+                window.DataContext = dataContext;
+
+                Assert.Equal(data.StringProperty, contentControl.Content);
+            }
+        }
+
+        [Fact]
         public void SupportCastToTypeInExpressionWithProperty_DifferentTypeEvaluatesToNull()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -818,6 +848,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
     }
 
+    public class TestData
+    {
+        public string StringProperty { get; set; }
+    }
+
     public class TestDataContext : IHasPropertyDerived
     {
         public string StringProperty { get; set; }
@@ -829,6 +864,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public ObservableCollection<string> ObservableCollectionProperty { get; set; } = new ObservableCollection<string>();
 
         public string[] ArrayProperty { get; set; }
+
+        public object[] ObjectsArrayProperty { get; set; }
 
         public List<string> ListProperty { get; set; } = new List<string>();
 
