@@ -88,6 +88,11 @@ namespace Avalonia.Markup.Parsers
             }
             else if (ParseOpenBrace(ref r))
             {
+                if (PeekOpenBrace(ref r))
+                {
+                    return State.TypeCast;
+                }
+
                 return State.AttachedProperty;
             }
             else if (PeekOpenBracket(ref r))
@@ -140,6 +145,11 @@ namespace Avalonia.Markup.Parsers
         {
             if (ParseOpenBrace(ref r))
             {
+                if (PeekOpenBrace(ref r))
+                {
+                    return State.TypeCast;
+                }
+
                 return State.AttachedProperty;
             }
             else
@@ -196,23 +206,30 @@ namespace Avalonia.Markup.Parsers
 
         private static State ParseTypeCast(ref CharacterReader r, List<INode> nodes)
         {
+            bool parseMemberBeforeAddCast = ParseOpenBrace(ref r);
+
             var (ns, typeName) = ParseTypeName(ref r);
 
-            nodes.Add(new TypeCastNode { Namespace = ns, TypeName = typeName });
+            var result = State.AfterMember;
 
-            if (ParseMemberAccessor(ref r))
+            if (parseMemberBeforeAddCast)
             {
-                var identifier = r.ParseIdentifier();
+                if (!ParseCloseBrace(ref r))
+                {
+                    throw new ExpressionParseException(r.Position, "Expected ')'.");
+                }
 
-                nodes.Add(new PropertyNameNode { PropertyName = identifier.ToString() });
+                result = ParseBeforeMember(ref r, nodes);
             }
+
+            nodes.Add(new TypeCastNode { Namespace = ns, TypeName = typeName });
 
             if (r.End || !r.TakeIf(')'))
             {
                 throw new ExpressionParseException(r.Position, "Expected ')'.");
             }
 
-            return State.AfterMember;
+            return result;
         }
 
         private static State ParseElementName(ref CharacterReader r, List<INode> nodes)
@@ -317,9 +334,19 @@ namespace Avalonia.Markup.Parsers
             return !r.End && r.TakeIf('(');
         }
 
+        private static bool ParseCloseBrace(ref CharacterReader r)
+        {
+            return !r.End && r.TakeIf(')');
+        }
+
         private static bool PeekOpenBracket(ref CharacterReader r)
         {
             return !r.End && r.Peek == '[';
+        }
+
+        private static bool PeekOpenBrace(ref CharacterReader r)
+        {
+            return !r.End && r.Peek == '(';
         }
 
         private static bool ParseStreamOperator(ref CharacterReader r)
@@ -373,9 +400,9 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        public interface INode {}
+        public interface INode { }
 
-        public interface ITransformNode {}
+        public interface ITransformNode { }
 
         public class EmptyExpressionNode : INode { }
 
@@ -396,11 +423,11 @@ namespace Avalonia.Markup.Parsers
             public IList<string> Arguments { get; set; }
         }
 
-        public class NotNode : INode, ITransformNode {}
+        public class NotNode : INode, ITransformNode { }
 
-        public class StreamNode : INode {}
+        public class StreamNode : INode { }
 
-        public class SelfNode : INode {}
+        public class SelfNode : INode { }
 
         public class NameNode : INode
         {
