@@ -94,7 +94,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         >
-    <ContentControl Content='{Binding $parent.DataContext(local:TestDataContext).StringProperty}' Name='contentControl' />
+    <ContentControl Content='{Binding $parent.((local:TestDataContext)DataContext).StringProperty}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var contentControl = window.FindControl<ContentControl>("contentControl");
@@ -120,7 +120,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         >
-    <ContentControl Content='{Binding $parent.DataContext(local:TestDataContext)}' Name='contentControl' />
+    <ContentControl Content='{Binding $parent.((local:TestDataContext)DataContext)}' Name='contentControl' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var contentControl = window.FindControl<ContentControl>("contentControl");
