@@ -1,0 +1,47 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:xs="using:ControlCatalog.Pages"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             
+             
+                             
+
+             
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.AcrylicPage" >
+     
+    
+    <Panel  >
+        <Panel.Styles>
+            <Style Selector="Path">
+                <Style.Animations>
+                    <Animation Duration="0:0:03" IterationCount="Infinite">
+                        <KeyFrame Cue="0%">
+                            <Setter Property="(RotateTransform.Angle)" Value="0"/>
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                            <Setter Property="(RotateTransform.Angle)" Value="360"/>
+                        </KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+        </Panel.Styles> 
+    <Path 
+          Stroke="{Binding SegmentColor}" 
+          Margin="{Binding PathFigureMargin}" 
+          StrokeLineCap="Flat" Width="{Binding PathFigureWidth}" 
+          Height="{Binding PathFigureHeight}"
+          StrokeThickness="{Binding StrokeThickness}"
+         RenderTransformOrigin="25,25" >
+      <Path.Data>
+        <PathGeometry>
+          <PathFigure IsClosed="False" StartPoint="{Binding PathFigureStartPoint}">  
+            <ArcSegment Size="{Binding ArcSegmentSize}" IsLargeArc="{Binding ArcSegmentIsLargeArc}" SweepDirection="Clockwise" Point="{Binding ArcSegmentPoint}" />
+           
+          </PathFigure>
+        </PathGeometry>
+      </Path.Data>
+    </Path>
+  </Panel>
+</UserControl>
