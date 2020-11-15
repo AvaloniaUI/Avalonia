@@ -129,7 +129,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new Class1();
 
-            Assert.Throws<ExpressionParseException>(() => ExpressionObserverBuilder.Build(data, "(Owner)", typeResolver: _typeResolver));
+            Assert.Throws<ExpressionParseException>(() => ExpressionObserverBuilder.Build(data, "(Owner.)", typeResolver: _typeResolver));
         }
 
         [Fact]
