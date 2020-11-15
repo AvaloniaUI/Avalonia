@@ -93,6 +93,14 @@ namespace Avalonia.OpenGL.Egl
             return MakeCurrent();
         }
 
+        public IDisposable EnsureLocked()
+        {
+            if (IsCurrent)
+                return Disposable.Empty;
+            Monitor.Enter(_lock);
+            return Disposable.Create(() => Monitor.Exit(_lock));
+        }
+
         public bool IsSharedWith(IGlContext context)
         {
             var c = (EglContext)context;

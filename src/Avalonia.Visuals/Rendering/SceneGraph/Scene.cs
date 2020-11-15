@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
 
@@ -13,6 +14,7 @@ namespace Avalonia.Rendering.SceneGraph
     public class Scene : IDisposable
     {
         private readonly Dictionary<IVisual, IVisualNode> _index;
+        private readonly TaskCompletionSource<bool> _rendered = new TaskCompletionSource<bool>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Scene"/> class.
@@ -40,6 +42,8 @@ namespace Avalonia.Rendering.SceneGraph
             Generation = generation;
             root.LayerRoot = root.Visual;
         }
+
+        public Task Rendered => _rendered.Task;
 
         /// <summary>
         /// Gets a value identifying the scene's generation. This is incremented each time the scene is cloned.
@@ -97,6 +101,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         public void Dispose()
         {
+            _rendered.TrySetResult(false);
             foreach (var node in _index.Values)
             {
                 node.Dispose();
@@ -340,5 +345,7 @@ namespace Avalonia.Rendering.SceneGraph
                 }
             }
         }
+
+        public void MarkAsRendered() => _rendered.TrySetResult(true);
     }
 }

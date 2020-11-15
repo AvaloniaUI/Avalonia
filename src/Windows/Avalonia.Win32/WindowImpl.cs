@@ -15,6 +15,8 @@ using Avalonia.Rendering;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl;
+using Avalonia.Win32.WinRT;
+using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -107,7 +109,7 @@ namespace Avalonia.Win32
 
             var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
 
-            var compositionConnector = AvaloniaLocator.Current.GetService<CompositionConnector>();
+            var compositionConnector = AvaloniaLocator.Current.GetService<WinUICompositorConnection>();
 
             _isUsingComposition = compositionConnector is { } &&
                 glPlatform is EglPlatformOpenGlInterface egl &&
@@ -121,8 +123,8 @@ namespace Avalonia.Win32
             {
                 if (_isUsingComposition)
                 {
-                    var cgl = new CompositionEglGlPlatformSurface(glPlatform as EglPlatformOpenGlInterface, this);
-                    _blurHost = cgl.AttachToCompositionTree(compositionConnector, _hwnd);
+                    var cgl = new WinUiCompositedWindowSurface(compositionConnector, this);
+                    _blurHost = cgl;
 
                     _gl = cgl;
 
@@ -452,9 +454,14 @@ namespace Avalonia.Win32
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
-            return Win32Platform.UseDeferredRendering ?
-                (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock) :
-                new ImmediateRenderer(root);
+            return Win32Platform.UseDeferredRendering 
+                ?  _isUsingComposition 
+                    ? new DeferredRenderer(root, loop)
+                    {
+                        RenderOnlyOnRenderThread = true
+                    } 
+                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
+                : new ImmediateRenderer(root);
         }
 
         public void Resize(Size value)
@@ -489,6 +496,8 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
+            (_gl as IDisposable)?.Dispose();
+
             if (_dropTarget != null)
             {
                 OleContext.Current?.UnregisterDragDrop(Handle);
