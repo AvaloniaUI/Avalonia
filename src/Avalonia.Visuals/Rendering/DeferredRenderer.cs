@@ -99,6 +99,11 @@ namespace Avalonia.Rendering
         /// </summary>
         public string DebugFramesPath { get; set; }
 
+        /// <summary>
+        /// Forces the renderer to only draw frames on the render thread. Makes Paint to wait until frame is rendered
+        /// </summary>
+        public bool RenderOnlyOnRenderThread { get; set; } = true;
+
         /// <inheritdoc/>
         public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
 
@@ -180,11 +185,38 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Paint(Rect rect)
         {
-            var t = (IRenderLoopTask)this;
-            if(t.NeedsUpdate)
-                UpdateScene();
-            if(_scene?.Item != null)
-                Render(true);
+            if (RenderOnlyOnRenderThread)
+            {
+                while (true)
+                {
+                    Scene scene;
+                    bool? updated;
+                    lock (_sceneLock)
+                    {
+                        updated = UpdateScene();
+                        scene = _scene?.Item;
+                    }
+                    
+                    // Renderer is in invalid state, skip drawing
+                    if(updated == null)
+                        return;
+
+                    // Wait for the scene to be rendered or disposed
+                    scene?.Rendered.Wait();
+                    
+                    // That was an up-to-date scene, we can return immediately
+                    if (updated == true)
+                        return;
+                }
+            }
+            else
+            {
+                var t = (IRenderLoopTask)this;
+                if (t.NeedsUpdate)
+                    UpdateScene();
+                if (_scene?.Item != null)
+                    Render(true);
+            }
         }
 
         /// <inheritdoc/>
@@ -270,13 +302,20 @@ namespace Avalonia.Rendering
                         {
                             if (scene?.Item != null)
                             {
-                                var overlay = DrawDirtyRects || DrawFps;
-                                if (DrawDirtyRects)
-                                    _dirtyRectsDisplay.Tick();
-                                if (overlay)
-                                    RenderOverlay(scene.Item, ref context);
-                                if (updated || forceComposite || overlay)
-                                    RenderComposite(scene.Item, ref context);
+                                try
+                                {
+                                    var overlay = DrawDirtyRects || DrawFps;
+                                    if (DrawDirtyRects)
+                                        _dirtyRectsDisplay.Tick();
+                                    if (overlay)
+                                        RenderOverlay(scene.Item, ref context);
+                                    if (updated || forceComposite || overlay)
+                                        RenderComposite(scene.Item, ref context);
+                                }
+                                finally
+                                {
+                                    scene.Item.MarkAsRendered();
+                                }
                             }
                         }
                     }
@@ -559,15 +598,15 @@ namespace Avalonia.Rendering
                 UpdateScene();
         }
         
-        private void UpdateScene()
+        private bool? UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
             lock (_sceneLock)
             {
                 if (_disposed)
-                    return;
+                    return null;
                 if (_scene?.Item.Generation > _lastSceneId)
-                    return;
+                    return false;
             }
             if (_root.IsVisible)
             {
@@ -619,6 +658,8 @@ namespace Avalonia.Rendering
 
                     SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
                 }
+
+                return true;
             }
             else
             {
@@ -628,6 +669,8 @@ namespace Avalonia.Rendering
                     _scene = null;
                     oldScene?.Dispose();
                 }
+
+                return null;
             }
         }
 
