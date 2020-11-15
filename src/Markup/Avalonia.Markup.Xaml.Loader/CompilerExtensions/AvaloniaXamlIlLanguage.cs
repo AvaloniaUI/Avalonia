@@ -205,6 +205,66 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 result = new AvaloniaXamlIlFontFamilyAstNode(types, text, node);
                 return true;
             }
+            
+            if (type.Equals(types.Thickness))
+            {
+                var thickness = Thickness.Parse(text);
+
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Thickness, types.ThicknessFullConstructorName,
+                    new[] { thickness.Left, thickness.Top, thickness.Right, thickness.Bottom });
+                
+                return true;
+            }
+
+            if (type.Equals(types.Point))
+            {
+                var point = Point.Parse(text);
+
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Point, types.PointFullConstructorName,
+                    new[] { point.X, point.Y });
+                
+                return true;
+            }
+            
+            if (type.Equals(types.Vector))
+            {
+                var vector = Vector.Parse(text);
+
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Vector, types.VectorFullConstructorName,
+                    new[] { vector.X, vector.Y });
+                
+                return true;
+            }
+            
+            if (type.Equals(types.Size))
+            {
+                var size = Size.Parse(text);
+
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Size, types.SizeFullConstructorName,
+                    new[] { size.Width, size.Height });
+                
+                return true;
+            }
+            
+            if (type.Equals(types.Matrix))
+            {
+                var matrix = Matrix.Parse(text);
+
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Matrix, types.MatrixFullConstructorName,
+                    new[] { matrix.M11, matrix.M12, matrix.M21, matrix.M22, matrix.M31, matrix.M32 });
+                
+                return true;
+            }
+            
+            if (type.Equals(types.CornerRadius))
+            {
+                var cornerRadius = CornerRadius.Parse(text);
+
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.CornerRadius, types.CornerRadiusFullConstructorName,
+                    new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft });
+                
+                return true;
+            }
 
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {

@@ -5,7 +5,10 @@ namespace Avalonia.Utilities
     /// <summary>
     /// Provides math utilities not provided in System.Math.
     /// </summary>
-    public static class MathUtilities
+#if !BUILDTASK
+    public
+#endif
+    static class MathUtilities
     {
         // smallest such that 1.0+DoubleEpsilon != 1.0
         internal static readonly double DoubleEpsilon = 2.2204460492503131e-016;
