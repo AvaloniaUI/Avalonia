@@ -16,7 +16,7 @@ namespace Avalonia.Markup.Parsers
 
     internal static class BindingExpressionGrammar
     {
-        public static (IList<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
+        public static (List<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
         {
             var nodes = new List<INode>();
             var state = State.Start;
