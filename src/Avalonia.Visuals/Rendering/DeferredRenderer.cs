@@ -102,7 +102,7 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Forces the renderer to only draw frames on the render thread. Makes Paint to wait until frame is rendered
         /// </summary>
-        public bool RenderOnlyOnRenderThread { get; set; } = true;
+        public bool RenderOnlyOnRenderThread { get; set; }
 
         /// <inheritdoc/>
         public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
