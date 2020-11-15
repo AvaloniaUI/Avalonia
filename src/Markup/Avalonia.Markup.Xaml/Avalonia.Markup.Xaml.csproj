@@ -23,6 +23,7 @@
         <Compile Include="MarkupExtensions\CompiledBindings\ObservableStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorFactory.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorPlugin.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\StrongTypeCastNode.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
         <Compile Include="MarkupExtensions\ResolveByNameExtension.cs" />
