@@ -54,17 +54,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType FontFamily { get; }
         public IXamlConstructor FontFamilyConstructorUriName { get; }
         public IXamlType Thickness { get; }
-        public IXamlConstructor ThicknessFullConstructorName { get; }
+        public IXamlConstructor ThicknessFullConstructor { get; }
         public IXamlType Point { get; }
-        public IXamlConstructor PointFullConstructorName { get; }
+        public IXamlConstructor PointFullConstructor { get; }
         public IXamlType Vector { get; }
-        public IXamlConstructor VectorFullConstructorName { get; }
+        public IXamlConstructor VectorFullConstructor { get; }
         public IXamlType Size { get; }
-        public IXamlConstructor SizeFullConstructorName { get; }
+        public IXamlConstructor SizeFullConstructor { get; }
         public IXamlType Matrix { get; }
-        public IXamlConstructor MatrixFullConstructorName { get; }
+        public IXamlConstructor MatrixFullConstructor { get; }
         public IXamlType CornerRadius { get; }
-        public IXamlConstructor CornerRadiusFullConstructorName { get; }
+        public IXamlConstructor CornerRadiusFullConstructor { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -135,12 +135,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 return (type, ctor);
             }
 
-            (Thickness, ThicknessFullConstructorName) = GetNumericTypeInfo("Avalonia.Thickness", XamlIlTypes.Double, 4);
-            (Point, PointFullConstructorName) = GetNumericTypeInfo("Avalonia.Point", XamlIlTypes.Double, 2);
-            (Vector, VectorFullConstructorName) = GetNumericTypeInfo("Avalonia.Vector", XamlIlTypes.Double, 2);
-            (Size, SizeFullConstructorName) = GetNumericTypeInfo("Avalonia.Size", XamlIlTypes.Double, 2);
-            (Matrix, MatrixFullConstructorName) = GetNumericTypeInfo("Avalonia.Matrix", XamlIlTypes.Double, 6);
-            (CornerRadius, CornerRadiusFullConstructorName) = GetNumericTypeInfo("Avalonia.CornerRadius", XamlIlTypes.Double, 4);
+            (Thickness, ThicknessFullConstructor) = GetNumericTypeInfo("Avalonia.Thickness", XamlIlTypes.Double, 4);
+            (Point, PointFullConstructor) = GetNumericTypeInfo("Avalonia.Point", XamlIlTypes.Double, 2);
+            (Vector, VectorFullConstructor) = GetNumericTypeInfo("Avalonia.Vector", XamlIlTypes.Double, 2);
+            (Size, SizeFullConstructor) = GetNumericTypeInfo("Avalonia.Size", XamlIlTypes.Double, 2);
+            (Matrix, MatrixFullConstructor) = GetNumericTypeInfo("Avalonia.Matrix", XamlIlTypes.Double, 6);
+            (CornerRadius, CornerRadiusFullConstructor) = GetNumericTypeInfo("Avalonia.CornerRadius", XamlIlTypes.Double, 4);
         }
     }
 

@@ -1,4 +1,6 @@
-﻿using XamlX.Ast;
+﻿using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using XamlX;
+using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
 using XamlX.TypeSystem;
@@ -10,8 +12,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes
         private readonly IXamlConstructor _constructor;
         private readonly double[] _values;
 
-        public AvaloniaXamlIlVectorLikeConstantAstNode(IXamlLineInfo lineInfo, IXamlType type, IXamlConstructor constructor, double[] values) : base(lineInfo)
+        public AvaloniaXamlIlVectorLikeConstantAstNode(IXamlLineInfo lineInfo, AvaloniaXamlIlWellKnownTypes types, IXamlType type, IXamlConstructor constructor, double[] values) : base(lineInfo)
         {
+            var parameters = constructor.Parameters;
+
+            if (parameters.Count != values.Length)
+            {
+                throw new XamlTypeSystemException($"Constructor that takes {values.Length} parameters is expected, got {parameters.Count} instead.");
+            }
+
+            var elementType = types.XamlIlTypes.Double;
+
+            foreach (var parameter in parameters)
+            {
+                if (parameter != elementType)
+                {
+                    throw new XamlTypeSystemException($"Expected parameter of type {elementType}, got {parameter} instead.");
+                }
+            }
+            
             _constructor = constructor;
             _values = values;
             

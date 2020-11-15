@@ -210,7 +210,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var thickness = Thickness.Parse(text);
 
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Thickness, types.ThicknessFullConstructorName,
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Thickness, types.ThicknessFullConstructor,
                     new[] { thickness.Left, thickness.Top, thickness.Right, thickness.Bottom });
                 
                 return true;
@@ -220,7 +220,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var point = Point.Parse(text);
 
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Point, types.PointFullConstructorName,
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Point, types.PointFullConstructor,
                     new[] { point.X, point.Y });
                 
                 return true;
@@ -230,7 +230,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var vector = Vector.Parse(text);
 
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Vector, types.VectorFullConstructorName,
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Vector, types.VectorFullConstructor,
                     new[] { vector.X, vector.Y });
                 
                 return true;
@@ -240,7 +240,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var size = Size.Parse(text);
 
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Size, types.SizeFullConstructorName,
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Size, types.SizeFullConstructor,
                     new[] { size.Width, size.Height });
                 
                 return true;
@@ -250,7 +250,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var matrix = Matrix.Parse(text);
 
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.Matrix, types.MatrixFullConstructorName,
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Matrix, types.MatrixFullConstructor,
                     new[] { matrix.M11, matrix.M12, matrix.M21, matrix.M22, matrix.M31, matrix.M32 });
                 
                 return true;
@@ -260,7 +260,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var cornerRadius = CornerRadius.Parse(text);
 
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types.CornerRadius, types.CornerRadiusFullConstructorName,
+                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.CornerRadius, types.CornerRadiusFullConstructor,
                     new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft });
                 
                 return true;
