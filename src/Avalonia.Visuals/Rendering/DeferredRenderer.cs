@@ -187,6 +187,12 @@ namespace Avalonia.Rendering
         {
             if (RenderOnlyOnRenderThread)
             {
+                // Renderer is stopped and doesn't tick on the render thread
+                // This indicates a bug somewhere in our code
+                // (currently happens when a window gets minimized with Show desktop on Windows 10)
+                if(!_running)
+                    return;
+                
                 while (true)
                 {
                     Scene scene;
