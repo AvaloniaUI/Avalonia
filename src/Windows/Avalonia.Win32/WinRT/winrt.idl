@@ -691,3 +691,28 @@ interface ICompositionScopedBatch : IInspectable
     [eventadd] HRESULT AddCompleted([in] void* handler, [out] [retval] int* token);
     [eventremove] HRESULT RemoveCompleted([in] int token);
 }
+
+[uuid(48EA31AD-7FCD-4076-A79C-90CC4B852C9B)]
+interface ICompositor5 : IInspectable
+{
+    [propget] HRESULT GetComment([out] [retval] HSTRING* value);
+    [propput] HRESULT SetComment([in] HSTRING value);
+    [propget] HRESULT GetGlobalPlaybackRate([out] [retval] FLOAT* value);
+    [propput] HRESULT SetGlobalPlaybackRate([in] FLOAT value);
+    HRESULT CreateBounceScalarAnimation([out] [retval] void** result);
+    HRESULT CreateBounceVector2Animation([out] [retval] void** result);
+    HRESULT CreateBounceVector3Animation([out] [retval] void** result);
+    HRESULT CreateContainerShape([out] [retval] void** result);
+    HRESULT CreateEllipseGeometry([out] [retval] void** result);
+    HRESULT CreateLineGeometry([out] [retval] void** result);
+    [overload("CreatePathGeometry")] HRESULT CreatePathGeometry([out] [retval] void** result);
+    [overload("CreatePathGeometry")] HRESULT CreatePathGeometryWithPath([in] void* path, [out] [retval] void** result);
+    HRESULT CreatePathKeyFrameAnimation([out] [retval] void** result);
+    HRESULT CreateRectangleGeometry([out] [retval] void** result);
+    HRESULT CreateRoundedRectangleGeometry([out] [retval] void** result);
+    HRESULT CreateShapeVisual([out] [retval] void** result);
+    [overload("CreateSpriteShape")] HRESULT CreateSpriteShape([out] [retval] void** result);
+    [overload("CreateSpriteShape")] HRESULT CreateSpriteShapeWithGeometry([in] void* geometry, [out] [retval] void** result);
+    HRESULT CreateViewBox([out] [retval] void** result);
+    HRESULT RequestCommitAsync([out] [retval] IAsyncAction** operation);
+}

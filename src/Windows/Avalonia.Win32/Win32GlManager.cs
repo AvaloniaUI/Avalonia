@@ -25,13 +25,8 @@ namespace Avalonia.Win32
                     var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
 
                     if (egl is { } &&
-                        opts?.UseWindowsUIComposition == true)
-                    {
-                        var compositionConnector = WinUICompositorConnection.TryCreate(egl);
-
-                        if (compositionConnector != null)
-                            AvaloniaLocator.CurrentMutable.BindToSelf(compositionConnector);
-                    }
+                        opts?.UseWindowsUIComposition == true) 
+                        WinUICompositorConnection.TryCreateAndRegister(egl);
 
                     return egl;
                 }

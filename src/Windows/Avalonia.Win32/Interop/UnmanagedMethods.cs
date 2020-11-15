@@ -1386,6 +1386,9 @@ namespace Avalonia.Win32.Interop
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
         [DllImport("dwmapi.dll")]
+        public static extern void DwmFlush();
+        
+        [DllImport("dwmapi.dll")]
         public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
         
         [DllImport("dwmapi.dll")]

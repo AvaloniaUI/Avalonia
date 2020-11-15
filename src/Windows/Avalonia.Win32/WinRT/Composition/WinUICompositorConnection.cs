@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -13,12 +14,13 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.WinRT.Composition
 {
-    class WinUICompositorConnection
+    class WinUICompositorConnection : IRenderTimer
     {
         private readonly EglContext _syncContext;
         private IntPtr _queue;
         private ICompositor _compositor;
         private ICompositor2 _compositor2;
+        private ICompositor5 _compositor5;
         private ICompositorInterop _compositorInterop;
         private AngleWin32EglDisplay _angle;
         private ICompositionGraphicsDevice _device;
@@ -35,22 +37,25 @@ namespace Avalonia.Win32.WinRT.Composition
             _angle = (AngleWin32EglDisplay)_gl.Display;
             _compositor = NativeWinRTMethods.CreateInstance<ICompositor>("Windows.UI.Composition.Compositor");
             _compositor2 = _compositor.QueryInterface<ICompositor2>();
+            _compositor5 = _compositor.QueryInterface<ICompositor5>();
             _compositorInterop = _compositor.QueryInterface<ICompositorInterop>();
             _compositorDesktopInterop = _compositor.QueryInterface<ICompositorDesktopInterop>();
             using var device = MicroComRuntime.CreateProxyFor<IUnknown>(_angle.GetDirect3DDevice(), true);
             
             _device = _compositorInterop.CreateGraphicsDevice(device);
             _blurBrush = CreateBlurBrush();
+            
         }
 
         public EglPlatformOpenGlInterface Egl => _gl;
 
-        static WinUICompositorConnection TryCreateCore(EglPlatformOpenGlInterface angle)
+        static bool TryCreateAndRegisterCore(EglPlatformOpenGlInterface angle)
         {
-            var tcs = new TaskCompletionSource<WinUICompositorConnection>();
+            var tcs = new TaskCompletionSource<bool>();
             var pumpLock = new object();
             var th = new Thread(() =>
             {
+                WinUICompositorConnection connect;
                 try
                 {
                     NativeWinRTMethods.CreateDispatcherQueueController(new NativeWinRTMethods.DispatcherQueueOptions
@@ -59,22 +64,18 @@ namespace Avalonia.Win32.WinRT.Composition
                         dwSize = Marshal.SizeOf<NativeWinRTMethods.DispatcherQueueOptions>(),
                         threadType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT
                     });
-                    tcs.SetResult(new WinUICompositorConnection(angle, pumpLock));
-                    while (true)
-                    {
-                        while (true)
-                        {
-                            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) == 0)
-                                return;
-                            lock (pumpLock)
-                                UnmanagedMethods.DispatchMessage(ref msg);
-                        }
-                    }
+                    connect = new WinUICompositorConnection(angle, pumpLock);
+                    AvaloniaLocator.CurrentMutable.BindToSelf(connect);
+                    AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
+                    tcs.SetResult(true);
+                    
                 }
                 catch (Exception e)
                 {
                     tcs.SetException(e);
+                    return;
                 }
+                connect.RunLoop();
             })
             {
                 IsBackground = true
@@ -83,8 +84,54 @@ namespace Avalonia.Win32.WinRT.Composition
             th.Start();
             return tcs.Task.Result;
         }
+
+        class RunLoopHandler : IAsyncActionCompletedHandler, IMicroComShadowContainer
+        {
+            private readonly WinUICompositorConnection _parent;
+            private Stopwatch _st = Stopwatch.StartNew();
+
+            public RunLoopHandler(WinUICompositorConnection parent)
+            {
+                _parent = parent;
+            }
+            public void Dispose()
+            {
+                
+            }
+
+            public void Invoke(IAsyncAction asyncInfo, AsyncStatus asyncStatus)
+            {
+                _parent.Tick?.Invoke(_st.Elapsed);
+                using var act = _parent._compositor5.RequestCommitAsync();
+                act.SetCompleted(this);
+            }
+
+            public MicroComShadow Shadow { get; set; }
+            public void OnReferencedFromNative()
+            {
+            }
+
+            public void OnUnreferencedFromNative()
+            {
+            }
+        }
         
-        public static WinUICompositorConnection TryCreate(EglPlatformOpenGlInterface angle)
+        private void RunLoop()
+        {
+            {
+                var st = Stopwatch.StartNew();
+                using (var act = _compositor5.RequestCommitAsync()) 
+                    act.SetCompleted(new RunLoopHandler(this));
+                while (true)
+                {
+                    UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
+                    lock (_pumpLock)
+                        UnmanagedMethods.DispatchMessage(ref msg);
+                }
+            }
+        }
+
+        public static void TryCreateAndRegister(EglPlatformOpenGlInterface angle)
         {
             const int majorRequired = 10;
             const int buildRequired = 16299;
@@ -97,14 +144,13 @@ namespace Avalonia.Win32.WinRT.Composition
             {
                 try
                 {
-                    return TryCreateCore(angle);
+                    TryCreateAndRegisterCore(angle);
                 }
                 catch (Exception e)
                 {
                     Logger.TryGet(LogEventLevel.Error, "WinUIComposition")
                         ?.Log(null, "Unable to initialize WinUI compositor: {0}", e);
 
-                    return null;
                 }
             }
 
@@ -113,8 +159,6 @@ namespace Avalonia.Win32.WinRT.Composition
 
             Logger.TryGet(LogEventLevel.Warning, "WinUIComposition")?.Log(null,
                 $"Unable to initialize WinUI compositor: {osVersionNotice}");
-
-            return null;
         }
 
 
@@ -187,7 +231,8 @@ namespace Avalonia.Win32.WinRT.Composition
 
             return visual.CloneReference();
         }
-             
-        
+
+
+        public event Action<TimeSpan> Tick;
     }
 }
