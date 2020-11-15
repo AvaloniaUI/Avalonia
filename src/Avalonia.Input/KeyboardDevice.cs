@@ -211,12 +211,18 @@ namespace Avalonia.Input
                         {
                             var bindings = (currentHandler as IInputElement)?.KeyBindings;
                             if (bindings != null)
-                                foreach (var binding in bindings)
+                            {
+                                // Create a copy of the KeyBindings list.
+                                // If we don't do this the foreach loop will throw an InvalidOperationException when the KeyBindings list is changed.
+                                // This can happen when a new view is loaded which adds its own KeyBindings to the handler.
+                                var cpy = bindings.ToArray();
+                                foreach (var binding in cpy)
                                 {
                                     if (ev.Handled)
                                         break;
                                     binding.TryHandle(ev);
                                 }
+                            }
                             currentHandler = currentHandler.VisualParent;
                         }
 
