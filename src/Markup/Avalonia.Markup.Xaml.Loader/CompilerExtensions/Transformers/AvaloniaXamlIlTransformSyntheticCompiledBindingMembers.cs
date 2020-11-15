@@ -27,8 +27,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
                 else if (prop.Name == "Source")
                 {
-                    return new AvaloniaSyntheticCompiledBindingProperty(node,
-                        SyntheticCompiledBindingPropertyName.Source);
+                    //return new AvaloniaSyntheticCompiledBindingProperty(node,
+                    //    SyntheticCompiledBindingPropertyName.Source);
                 }
             }
 
