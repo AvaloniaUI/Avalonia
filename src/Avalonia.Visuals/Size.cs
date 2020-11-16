@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -8,11 +10,16 @@ namespace Avalonia
     /// <summary>
     /// Defines a size.
     /// </summary>
-    public readonly struct Size : IEquatable<Size>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Size : IEquatable<Size>
     {
         static Size()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<SizeAnimator>(prop => typeof(Size).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>

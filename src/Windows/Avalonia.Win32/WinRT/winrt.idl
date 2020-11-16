@@ -1,0 +1,718 @@
+@clr-namespace Avalonia.Win32.WinRT
+@clr-access internal
+@clr-map FLOAT float
+@clr-map HSTRING IntPtr
+@clr-map Vector2 System.Numerics.Vector2
+@clr-map Vector3 System.Numerics.Vector3
+@clr-map Quaternion System.Numerics.Quaternion
+@clr-map Matrix4x4 System.Numerics.Matrix4x4
+@clr-map RECT Avalonia.Win32.Interop.UnmanagedMethods.RECT
+@clr-map SIZE Avalonia.Win32.Interop.UnmanagedMethods.SIZE
+@clr-map POINT Avalonia.Win32.Interop.UnmanagedMethods.POINT
+@clr-map HWND IntPtr
+@clr-map BOOL int
+@clr-map DWORD int
+@clr-map boolean int
+@clr-map BYTE byte
+@clr-map INT16 short
+@clr-map INT32 int
+@clr-map INT64 long
+@clr-map UINT16 ushort
+@clr-map UINT32 uint
+@clr-map UINT64 ulong
+@clr-map DOUBLE double
+@clr-map GUID System.Guid
+@clr-map WCHAR System.Char
+@clr-map Color Avalonia.Win32.WinRT.WinRTColor
+
+enum TrustLevel
+{
+    BaseTrust,
+    PartialTrust,
+    FullTrust
+}
+
+enum DirectXAlphaMode
+{
+ Unspecified,
+ Premultiplied,
+ Straight,
+ Ignore
+}
+
+enum DirectXPixelFormat
+{
+    Unknown = 0,
+    R32G32B32A32Typeless = 1,
+    R32G32B32A32Float = 2,
+    R32G32B32A32UInt = 3,
+    R32G32B32A32Int = 4,
+    R32G32B32Typeless = 5,
+    R32G32B32Float = 6,
+    R32G32B32UInt = 7,
+    R32G32B32Int = 8,
+    R16G16B16A16Typeless = 9,
+    R16G16B16A16Float = 10, 
+    R16G16B16A16UIntNormalized = 11, 
+    R16G16B16A16UInt = 12, 
+    R16G16B16A16IntNormalized = 13, 
+    R16G16B16A16Int = 14, 
+    R32G32Typeless = 15, 
+    R32G32Float = 16, 
+    R32G32UInt = 17, 
+    R32G32Int = 18, 
+    R32G8X24Typeless = 19, 
+    D32FloatS8X24UInt = 20, 
+    R32FloatX8X24Typeless = 21, 
+    X32TypelessG8X24UInt = 22, 
+    R10G10B10A2Typeless = 23, 
+    R10G10B10A2UIntNormalized = 24, 
+    R10G10B10A2UInt = 25, 
+    R11G11B10Float = 26, 
+    R8G8B8A8Typeless = 27, 
+    R8G8B8A8UIntNormalized = 28, 
+    R8G8B8A8UIntNormalizedSrgb = 29, 
+    R8G8B8A8UInt = 30, 
+    R8G8B8A8IntNormalized = 31, 
+    R8G8B8A8Int = 32, 
+    R16G16Typeless = 33, 
+    R16G16Float = 34, 
+    R16G16UIntNormalized = 35, 
+    R16G16UInt = 36, 
+    R16G16IntNormalized = 37, 
+    R16G16Int = 38, 
+    R32Typeless = 39, 
+    D32Float = 40, 
+    R32Float = 41, 
+    R32UInt = 42, 
+    R32Int = 43, 
+    R24G8Typeless = 44, 
+    D24UIntNormalizedS8UInt = 45, 
+    R24UIntNormalizedX8Typeless = 46, 
+    X24TypelessG8UInt = 47, 
+    R8G8Typeless = 48, 
+    R8G8UIntNormalized = 49, 
+    R8G8UInt = 50, 
+    R8G8IntNormalized = 51, 
+    R8G8Int = 52, 
+    R16Typeless = 53, 
+    R16Float = 54, 
+    D16UIntNormalized = 55, 
+    R16UIntNormalized = 56, 
+    R16UInt = 57, 
+    R16IntNormalized = 58, 
+    R16Int = 59, 
+    R8Typeless = 60, 
+    R8UIntNormalized = 61, 
+    R8UInt = 62, 
+    R8IntNormalized = 63, 
+    R8Int = 64, 
+    A8UIntNormalized = 65, 
+    R1UIntNormalized = 66, 
+    R9G9B9E5SharedExponent = 67, 
+    R8G8B8G8UIntNormalized = 68, 
+    G8R8G8B8UIntNormalized = 69, 
+    BC1Typeless = 70, 
+    BC1UIntNormalized = 71, 
+    BC1UIntNormalizedSrgb = 72, 
+    BC2Typeless = 73, 
+    BC2UIntNormalized = 74, 
+    BC2UIntNormalizedSrgb = 75, 
+    BC3Typeless = 76, 
+    BC3UIntNormalized = 77, 
+    BC3UIntNormalizedSrgb = 78, 
+    BC4Typeless = 79, 
+    BC4UIntNormalized = 80, 
+    BC4IntNormalized = 81, 
+    BC5Typeless = 82, 
+    BC5UIntNormalized = 83, 
+    BC5IntNormalized = 84, 
+    B5G6R5UIntNormalized = 85, 
+    B5G5R5A1UIntNormalized = 86, 
+    B8G8R8A8UIntNormalized = 87, 
+    B8G8R8X8UIntNormalized = 88, 
+    R10G10B10XRBiasA2UIntNormalized = 89, 
+    B8G8R8A8Typeless = 90, 
+    B8G8R8A8UIntNormalizedSrgb = 91, 
+    B8G8R8X8Typeless = 92, 
+    B8G8R8X8UIntNormalizedSrgb = 93, 
+    BC6HTypeless = 94, 
+    BC6H16UnsignedFloat = 95, 
+    BC6H16Float = 96, 
+    BC7Typeless = 97, 
+    BC7UIntNormalized = 98, 
+    BC7UIntNormalizedSrgb = 99, 
+    Ayuv = 100, 
+    Y410 = 101, 
+    Y416 = 102, 
+    NV12 = 103, 
+    P010 = 104, 
+    P016 = 105, 
+    Opaque420 = 106, 
+    Yuy2 = 107, 
+    Y210 = 108, 
+    Y216 = 109, 
+    NV11 = 110, 
+    AI44 = 111, 
+    IA44 = 112, 
+    P8 = 113, 
+    A8P8 = 114, 
+    B4G4R4A4UIntNormalized = 115, 
+    P208 = 130, 
+    V208 = 131, 
+    V408 = 132, 
+}
+
+[uuid(AF86E2E0-B12D-4c6a-9C5A-D7AA65101E90)]
+interface IInspectable : IUnknown
+{
+    HRESULT GetIids(ulong * iidCount, Guid ** iids);
+    HRESULT GetRuntimeClassName( [out] IntPtr* className);
+    HRESULT GetTrustLevel([out] TrustLevel * trustLevel);
+}
+
+enum PropertyType
+{
+    Empty            = 0,
+    UInt8            = 1,
+    Int16            = 2,
+    UInt16           = 3,
+    Int32            = 4,
+    UInt32           = 5,
+    Int64            = 6,
+    UInt64           = 7,
+    Single           = 8,
+    Double           = 9,
+    Char16           = 10,
+    Boolean          = 11,
+    String           = 12,
+    Inspectable      = 13,
+    DateTime         = 14,
+    TimeSpan         = 15,
+    Guid             = 16,
+    Point            = 17,
+    Size             = 18,
+    Rect             = 19,
+    OtherType        = 20,
+    UInt8Array       = 1025,
+    Int16Array       = 1026,
+    UInt16Array      = 1027,
+    Int32Array       = 1028,
+    UInt32Array      = 1029,
+    Int64Array       = 1030,
+    UInt64Array      = 1031,
+    SingleArray      = 1032,
+    DoubleArray      = 1033,
+    Char16Array      = 1034,
+    BooleanArray     = 1035,
+    StringArray      = 1036,
+    InspectableArray = 1037,
+    DateTimeArray    = 1038,
+    TimeSpanArray    = 1039,
+    GuidArray        = 1040,
+    PointArray       = 1041,
+    SizeArray        = 1042,
+    RectArray        = 1043,
+    OtherTypeArray   = 1044
+}
+
+[uuid(4BD682DD-7554-40E9-9A9B-82654EDE7E62)]
+interface IPropertyValue : IInspectable
+{
+    [propget] HRESULT Type([out] [retval] PropertyType* value);
+    [propget] HRESULT IsNumericScalar([out] [retval] boolean* value);
+    HRESULT GetUInt8([out] [retval] BYTE* value);
+    HRESULT GetInt16([out] [retval] INT16* value);
+    HRESULT GetUInt16([out] [retval] UINT16* value);
+    HRESULT GetInt32([out] [retval] INT32* value);
+    HRESULT GetUInt32([out] [retval] UINT32* value);
+    HRESULT GetInt64([out] [retval] INT64* value);
+    HRESULT GetUInt64([out] [retval] UINT64* value);
+    HRESULT GetSingle([out] [retval] FLOAT* value);
+    HRESULT GetDouble([out] [retval] DOUBLE* value);
+    HRESULT GetChar16([out] [retval] WCHAR* value);
+    HRESULT GetBoolean([out] [retval] boolean* value);
+    HRESULT GetString([out] [retval] HSTRING* value);
+    HRESULT GetGuid([out] [retval] GUID* value);
+    HRESULT GetDateTime( void* value);
+    HRESULT GetTimeSpan(void* value);
+    HRESULT GetPoint(void* value);
+    HRESULT GetSize(void* value);
+    HRESULT GetRect(void* value);
+    HRESULT GetUInt8Array([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] BYTE** value);
+    HRESULT GetInt16Array([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] INT16** value);
+    HRESULT GetUInt16Array([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] UINT16** value);
+    HRESULT GetInt32Array([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] INT32** value);
+    HRESULT GetUInt32Array([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] UINT32** value);
+    HRESULT GetInt64Array([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] INT64** value);
+    HRESULT GetUInt64Array([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] UINT64** value);
+    HRESULT GetSingleArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] FLOAT** value);
+    HRESULT GetDoubleArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] DOUBLE** value);
+    HRESULT GetChar16Array([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] WCHAR** value);
+    HRESULT GetBooleanArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] boolean** value);
+    HRESULT GetStringArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] HSTRING** value);
+    HRESULT GetInspectableArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] void*** value);
+    HRESULT GetGuidArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] GUID** value);
+    HRESULT GetDateTimeArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] void** value);
+    HRESULT GetTimeSpanArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] void** value);
+    HRESULT GetPointArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] void** value);
+    HRESULT GetSizeArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] void** value);
+    HRESULT GetRectArray([out] UINT32* __valueSize, [out] [size_is(, *__valueSize)] void** value);
+}
+
+enum AsyncStatus {
+  Started = 0,
+  Completed, 
+  Canceled, 
+  Error,
+}
+
+[uuid(A4ED5C81-76C9-40BD-8BE6-B1D90FB20AE7)]
+interface IAsyncActionCompletedHandler : IUnknown
+{
+    HRESULT Invoke([in] IAsyncAction* asyncInfo, [in] AsyncStatus asyncStatus);
+}
+
+[uuid(5A648006-843A-4DA9-865B-9D26E5DFAD7B)]
+interface IAsyncAction : IInspectable
+{
+    HRESULT SetCompleted([in] IAsyncActionCompletedHandler* handler);
+    HRESULT GetCompleted([out] [retval] IAsyncActionCompletedHandler** ppv);
+    HRESULT GetResults();
+}
+
+[uuid(603E88E4-A338-4FFE-A457-A5CFB9CEB899)]
+interface IDispatcherQueue : IInspectable
+{
+    //TODO
+}
+
+[uuid(22F34E66-50DB-4E36-A98D-61C01B384D20)]
+interface IDispatcherQueueController : IInspectable
+{
+    [propget] HRESULT DispatcherQueue([out] [retval] IDispatcherQueue** value);
+    HRESULT ShutdownQueueAsync([out] [retval] IAsyncAction** operation);
+}
+
+[uuid(00000035-0000-0000-C000-000000000046)]
+interface IActivationFactory : IInspectable
+{
+    HRESULT ActivateInstance([out, retval] IntPtr* instance);
+}
+
+[flags]
+enum CompositionBatchTypes
+{
+    None              = 0x0,
+    Animation         = 0x1,
+    Effect            = 0x2,
+    InfiniteAnimation = 0x4,
+    AllAnimations     = 0x5
+}
+
+[uuid(B403CA50-7F8C-4E83-985F-CC45060036D8)]
+interface ICompositor : IInspectable
+{
+    HRESULT CreateColorKeyFrameAnimation([out] [retval] void** result);
+    [overload("CreateColorBrush")] HRESULT CreateColorBrush([out] [retval]void** result);
+    [overload("CreateColorBrush")] HRESULT CreateColorBrushWithColor([in] Color* color, [out] [retval] ICompositionColorBrush** result);
+    HRESULT CreateContainerVisual([out] [retval] IContainerVisual** result);
+    HRESULT CreateCubicBezierEasingFunction([in] Vector2 controlPoint1, [in] Vector2 controlPoint2, [out] [retval] void** result);
+    [overload("CreateEffectFactory")] HRESULT CreateEffectFactory([in] IGraphicsEffect* graphicsEffect, [out] [retval] ICompositionEffectFactory** result);
+    [overload("CreateEffectFactory")] HRESULT CreateEffectFactoryWithProperties([in] void* graphicsEffect, [in] void* animatableProperties, [out] [retval] void** result);
+    [overload("CreateExpressionAnimation")] HRESULT CreateExpressionAnimation([out] [retval] void** result);
+    [overload("CreateExpressionAnimation")] HRESULT CreateExpressionAnimationWithExpression([in] HSTRING expression, [out] [retval] void** result);
+    [overload("CreateInsetClip")] HRESULT CreateInsetClip([out] [retval] void** result);
+    [overload("CreateInsetClip")] HRESULT CreateInsetClipWithInsets([in] FLOAT leftInset, [in] FLOAT topInset, [in] FLOAT rightInset, [in] FLOAT bottomInset, [out] [retval] void** result);
+    HRESULT CreateLinearEasingFunction([out] [retval] void** result);
+    HRESULT CreatePropertySet([out] [retval] void** result);
+    HRESULT CreateQuaternionKeyFrameAnimation([out] [retval] void** result);
+    HRESULT CreateScalarKeyFrameAnimation([out] [retval] void** result);
+    HRESULT CreateScopedBatch([in] CompositionBatchTypes batchType, [out] [retval] ICompositionScopedBatch** result);
+    HRESULT CreateSpriteVisual([out] [retval] ISpriteVisual** result);
+    HRESULT CreateSurfaceBrush([out] [retval] ICompositionSurfaceBrush** result);
+    HRESULT CreateSurfaceBrushWithSurface([in] ICompositionSurface* surface, 
+        [out] [retval] ICompositionSurfaceBrush** result);
+    HRESULT CreateTargetForCurrentView([out] [retval] void** result);
+    HRESULT CreateVector2KeyFrameAnimation([out] [retval] void** result);
+    HRESULT CreateVector3KeyFrameAnimation([out] [retval] void** result);
+    HRESULT CreateVector4KeyFrameAnimation([out] [retval] void** result);
+    HRESULT GetCommitBatch([in]  CompositionBatchTypes batchType, [out] [retval] void** result);
+}
+
+[uuid(735081DC-5E24-45DA-A38F-E32CC349A9A0)]
+interface ICompositor2 : IInspectable
+{
+    HRESULT CreateAmbientLight([out] [retval] void** result);
+    HRESULT CreateAnimationGroup([out] [retval] void** result);
+    HRESULT CreateBackdropBrush([out] [retval] ICompositionBackdropBrush** result);
+    HRESULT CreateDistantLight([out] [retval] void** result);
+    HRESULT CreateDropShadow([out] [retval] void** result);
+    HRESULT CreateImplicitAnimationCollection([out] [retval] void** result);
+    HRESULT CreateLayerVisual([out] [retval] void** result);
+    HRESULT CreateMaskBrush([out] [retval] void** result);
+    HRESULT CreateNineGridBrush([out] [retval] void** result);
+    HRESULT CreatePointLight([out] [retval] void** result);
+    HRESULT CreateSpotLight([out] [retval] void** result);
+    [overload("CreateStepEasingFunction")] HRESULT CreateStepEasingFunction([out] [retval] void** result);
+    [overload("CreateStepEasingFunction")] HRESULT CreateStepEasingFunctionWithStepCount([in] INT32 stepCount, [out] [retval] void** result);
+}
+
+[uuid(08E05581-1AD1-4F97-9757-402D76E4233B)]
+interface ISpriteVisual : IInspectable
+{
+    [propget] HRESULT GetBrush([out] [retval] ICompositionBrush** value);
+    [propput] HRESULT SetBrush([in] ICompositionBrush* value);
+}
+
+[uuid(FD04E6E3-FE0C-4C3C-AB19-A07601A576EE)]
+interface ICompositionDrawingSurfaceInterop : IUnknown
+{
+    HRESULT BeginDraw(RECT* updateRect, Guid* iid, void** updateObject, [out, retval]POINT* updateOffset);
+    HRESULT EndDraw();
+    HRESULT Resize(POINT sizePixels);
+    HRESULT Scroll(RECT * scrollRect, RECT * clipRect, int offsetX, int offsetY);
+    HRESULT ResumeDraw();
+    HRESULT SuspendDraw();
+};
+
+[uuid(A116FF71-F8BF-4C8A-9C98-70779A32A9C8)]
+interface ICompositionGraphicsDeviceInterop : IUnknown
+{
+    HRESULT GetRenderingDevice([out] IUnknown ** value);
+    HRESULT SetRenderingDevice([out] IUnknown * value);
+};
+
+[uuid(25297D5C-3AD4-4C9C-B5CF-E36A38512330)]
+interface ICompositorInterop : IUnknown
+{
+    HRESULT CreateCompositionSurfaceForHandle(IntPtr swapChain, [out] ICompositionSurface ** res);
+    HRESULT CreateCompositionSurfaceForSwapChain(IUnknown* swapChain, [out] ICompositionSurface ** result);
+    HRESULT CreateGraphicsDevice(IUnknown * renderingDevice, [out] ICompositionGraphicsDevice ** result);
+};
+
+[uuid(26f496a0-7f38-45fb-88f7-faaabe67dd59)]
+interface ISwapChainInterop : IUnknown
+{
+    HRESULT SetSwapChain(IUnknown * swapChain);
+};
+
+/*
+[uuid(2C9DB356-E70D-4642-8298-BC4AA5B4865C)]
+interface ICompositionCapabilitiesInteropFactory : IInspectable
+{
+    HRESULT GetForWindow(IntPtr hwnd, [out] ICompositionCapabilities ** result);
+}*/
+
+[uuid(29E691FA-4567-4DCA-B319-D0F207EB6807)]
+interface ICompositorDesktopInterop : IUnknown
+{
+    HRESULT CreateDesktopWindowTarget(HWND hwndTarget, BOOL isTopmost, [out] IDesktopWindowTarget ** result);
+    HRESULT EnsureOnThread(DWORD threadId);
+};
+
+
+[uuid(35DBF59E-E3F9-45B0-81E7-FE75F4145DC9)]
+interface IDesktopWindowTargetInterop : IUnknown
+{
+    HRESULT GetHWnd([out] IntPtr* value);
+};
+
+[uuid(37642806-F421-4FD0-9F82-23AE7C776182)]
+interface IDesktopWindowContentBridgeInterop : IUnknown
+{
+    HRESULT Initialize(ICompositor* compositor, HWND parentHwnd);
+    HRESULT GetHWnd([out] IntPtr* value);
+
+    HRESULT GetAppliedScaleFactor([out] float* value);
+};
+
+[uuid(FB22C6E1-80A2-4667-9936-DBEAF6EEFE95)]
+interface ICompositionGraphicsDevice : IInspectable
+{
+    HRESULT CreateDrawingSurface([in] SIZE sizePixels, [in] DirectXPixelFormat pixelFormat,
+        [in] DirectXAlphaMode alphaMode, [out] [retval] ICompositionDrawingSurface** result);
+    HRESULT AddRenderingDeviceReplaced(void* handler, void* token);
+    HRESULT RemoveRenderingDeviceReplaced([in] int token);
+}
+
+[uuid(1527540D-42C7-47A6-A408-668F79A90DFB)]
+interface ICompositionSurface : IInspectable
+{
+}
+
+[uuid(6329D6CA-3366-490E-9DB3-25312929AC51)]
+interface IDesktopWindowTarget : IInspectable
+{
+    [propget] HRESULT IsTopmost([out] [retval] int* value);
+}
+
+
+[uuid(A166C300-FAD0-4D11-9E67-E433162FF49E)]
+interface ICompositionDrawingSurface : IInspectable
+{
+    [propget] HRESULT GetAlphaMode([out] [retval] DirectXAlphaMode* value);
+    [propget] HRESULT GetPixelFormat([out] [retval] DirectXPixelFormat* value);
+    [propget] HRESULT GetSize([out] [retval] POINT* value);
+}
+
+enum CompositionBitmapInterpolationMode
+{
+    NearestNeighbor,
+    Linear,
+    MagLinearMinLinearMipLinear,
+    MagLinearMinLinearMipNearest,
+    MagLinearMinNearestMipLinear,
+    MagLinearMinNearestMipNearest,
+    MagNearestMinLinearMipLinear,
+    MagNearestMinLinearMipNearest,
+    MagNearestMinNearestMipLinear,
+    MagNearestMinNearestMipNearest,
+}
+
+enum CompositionStretch
+{
+    None,
+    Fill,
+    Uniform,
+    UniformToFill,
+}
+
+[uuid(AD016D79-1E4C-4C0D-9C29-83338C87C162)]
+interface ICompositionSurfaceBrush : IInspectable
+{
+    [propget] HRESULT BitmapInterpolationMode([out] [retval] CompositionBitmapInterpolationMode* value);
+    [propput] HRESULT BitmapInterpolationMode([in] CompositionBitmapInterpolationMode value);
+    [propget] HRESULT HorizontalAlignmentRatio([out] [retval] FLOAT* value);
+    [propput] HRESULT HorizontalAlignmentRatio([in] FLOAT value);
+    [propget] HRESULT Stretch([out] [retval] CompositionStretch* value);
+    [propput] HRESULT Stretch([in] CompositionStretch value);
+    [propget] HRESULT Surface([out] [retval] ICompositionSurface** value);
+    [propput] HRESULT Surface([in] ICompositionSurface* value);
+    [propget] HRESULT VerticalAlignmentRatio([out] [retval] FLOAT* value);
+    [propput] HRESULT VerticalAlignmentRatio([in] FLOAT value);
+}
+
+[uuid(AB0D7608-30C0-40E9-B568-B60A6BD1FB46)]
+interface ICompositionBrush : IInspectable
+{
+}
+
+enum CompositionBackfaceVisibility
+{
+    Inherit,
+    Visible,
+    Hidden
+}
+
+enum CompositionBorderMode
+{
+    Inherit,
+    Soft,
+    Hard
+}
+
+enum CompositionCompositeMode
+{
+    Inherit,
+    SourceOver,
+    DestinationInvert,
+    MinBlend,
+}
+
+[uuid(117E202D-A859-4C89-873B-C2AA566788E3)]
+interface IVisual : IInspectable
+{
+    [propget] HRESULT AnchorPoint([out] [retval] Vector2* value);
+    [propput] HRESULT AnchorPoint([in] Vector2 value);
+    [propget] HRESULT BackfaceVisibility([out] [retval] CompositionBackfaceVisibility* value);
+    [propput] HRESULT BackfaceVisibility([in] CompositionBackfaceVisibility value);
+    [propget] HRESULT BorderMode([out] [retval] CompositionBorderMode* value);
+    [propput] HRESULT BorderMode([in] CompositionBorderMode value);
+    [propget] HRESULT CenterPoint([out] [retval] Vector3* value);
+    [propput] HRESULT CenterPoint([in] Vector3 value);
+    [propget] HRESULT Clip([out] [retval]void** value);
+    [propput] HRESULT Clip([in] void* value);
+    [propget] HRESULT CompositeMode([out] [retval] CompositionCompositeMode* value);
+    [propput] HRESULT CompositeMode([in] CompositionCompositeMode value);
+    [propget] HRESULT IsVisible([out] [retval] boolean* value);
+    [propput] HRESULT IsVisible([in] boolean value);
+    [propget] HRESULT Offset([out] [retval] Vector3* value);
+    [propput] HRESULT Offset([in] Vector3 value);
+    [propget] HRESULT Opacity([out] [retval] FLOAT* value);
+    [propput] HRESULT Opacity([in] FLOAT value);
+    [propget] HRESULT Orientation([out] [retval] Quaternion* value);
+    [propput] HRESULT Orientation([in] Quaternion value);
+    [propget] HRESULT Parent([out] [retval] IContainerVisual** value);
+    [propget] HRESULT RotationAngle([out] [retval] FLOAT* value);
+    [propput] HRESULT RotationAngle([in] FLOAT value);
+    [propget] HRESULT RotationAngleInDegrees([out] [retval] FLOAT* value);
+    [propput] HRESULT RotationAngleInDegrees([in] FLOAT value);
+    [propget] HRESULT RotationAxis([out] [retval] Vector3* value);
+    [propput] HRESULT RotationAxis([in] Vector3 value);
+    [propget] HRESULT Scale([out] [retval] Vector3* value);
+    [propput] HRESULT Scale([in] Vector3 value);
+    [propget] HRESULT Size([out] [retval] Vector2* value);
+    [propput] HRESULT Size([in] Vector2 value);
+    [propget] HRESULT TransformMatrix([out] [retval] Matrix4x4* value);
+    [propput] HRESULT TransformMatrix([in] Matrix4x4 value);
+}
+
+[uuid(3052B611-56C3-4C3E-8BF3-F6E1AD473F06)]
+interface IVisual2 : IInspectable
+{
+    [propget] HRESULT ParentForTransform([out] [retval] IVisual** value);
+    [propput] HRESULT ParentForTransform([in] IVisual* value);
+    [propget] HRESULT RelativeOffsetAdjustment([out] [retval] Vector3* value);
+    [propput] HRESULT RelativeOffsetAdjustment([in] Vector3 value);
+    [propget] HRESULT RelativeSizeAdjustment([out] [retval] Vector2* value);
+    [propput] HRESULT RelativeSizeAdjustment([in] Vector2 value);
+}
+
+[uuid(02F6BC74-ED20-4773-AFE6-D49B4A93DB32)]
+interface IContainerVisual : IInspectable
+{
+    [propget] HRESULT GetChildren([out] [retval] IVisualCollection** value);
+}
+
+[uuid(8B745505-FD3E-4A98-84A8-E949468C6BCB)]
+interface IVisualCollection : IInspectable
+{
+    [propget] HRESULT GetCount([out] [retval] INT32* value);
+    HRESULT InsertAbove([in] IVisual* newChild, [in] IVisual* sibling);
+    HRESULT InsertAtBottom([in] IVisual* newChild);
+    HRESULT InsertAtTop([in] IVisual* newChild);
+    HRESULT InsertBelow([in] IVisual* newChild, [in] IVisual* sibling);
+    HRESULT Remove([in] IVisual* child);
+    HRESULT RemoveAll();
+}
+
+[uuid(A1BEA8BA-D726-4663-8129-6B5E7927FFA6)]
+interface ICompositionTarget : IInspectable
+{
+    [propget] HRESULT Root([out] [retval] IVisual** value);
+    [propput] HRESULT Root([in] IVisual* value);
+}
+
+
+[uuid(CB51C0CE-8FE6-4636-B202-861FAA07D8F3)]
+interface IGraphicsEffect : IInspectable
+{
+    [propget] HRESULT Name([out] [retval] HSTRING* name);
+    [propput] HRESULT Name([in] HSTRING name);
+}
+
+[uuid(2D8F9DDC-4339-4EB9-9216-F9DEB75658A2)]
+interface IGraphicsEffectSource : IInspectable
+{
+}
+
+enum GRAPHICS_EFFECT_PROPERTY_MAPPING
+{
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_UNKNOWN,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_VECTORX,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_VECTORY,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_VECTORZ,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_VECTORW,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_RECT_TO_VECTOR4,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_RADIANS_TO_DEGREES,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_COLORMATRIX_ALPHA_MODE,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR3,
+    GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR4
+}
+
+[uuid(2FC57384-A068-44D7-A331-30982FCF7177)]
+interface IGraphicsEffectD2D1Interop : IUnknown
+{
+    HRESULT GetEffectId([out] Guid* id);
+    HRESULT GetNamedPropertyMapping(IntPtr name, uint* index, GRAPHICS_EFFECT_PROPERTY_MAPPING* mapping);
+    HRESULT GetPropertyCount([out] uint* count);
+    HRESULT GetProperty(uint index, [out]IPropertyValue** value);
+    HRESULT GetSource(uint index, [out, retval] IGraphicsEffectSource** source);
+    HRESULT GetSourceCount([retval]uint *count);
+};
+
+[uuid(858AB13A-3292-4E4E-B3BB-2B6C6544A6EE)]
+interface ICompositionEffectSourceParameter : IInspectable
+{
+    [propget] HRESULT Name([out] [retval] HSTRING* value);
+}
+
+[uuid(B3D9F276-ABA3-4724-ACF3-D0397464DB1C)]
+interface ICompositionEffectSourceParameterFactory : IInspectable
+{
+    HRESULT Create([in] HSTRING name, [out] [retval] ICompositionEffectSourceParameter** instance);
+}
+
+enum CompositionEffectFactoryLoadStatus
+{
+    Success          = 0,
+    EffectTooComplex = 1,
+    Pending          = 2,
+    Other            = -1
+}
+
+[uuid(BE5624AF-BA7E-4510-9850-41C0B4FF74DF)]
+interface ICompositionEffectFactory : IInspectable
+{
+    HRESULT CreateBrush([out] [retval] ICompositionEffectBrush** result);
+    [propget] HRESULT ExtendedError([out] [retval] int* value);
+    [propget] HRESULT LoadStatus([out] [retval] CompositionEffectFactoryLoadStatus* value);
+}
+
+[uuid(BF7F795E-83CC-44BF-A447-3E3C071789EC)]
+interface ICompositionEffectBrush : IInspectable
+{
+    HRESULT GetSourceParameter([in] HSTRING name, [out] [retval] ICompositionBrush** result);
+    HRESULT SetSourceParameter([in] HSTRING name, [in] ICompositionBrush* source);
+}
+
+[uuid(C5ACAE58-3898-499E-8D7F-224E91286A5D)]
+interface ICompositionBackdropBrush : IInspectable
+{
+}
+
+[uuid(2B264C5E-BF35-4831-8642-CF70C20FFF2F)]
+interface ICompositionColorBrush : IInspectable
+{
+    [propget] HRESULT Color([out] [retval] Color* value);
+    [propput] HRESULT Color([in] Color value);
+}
+
+[uuid(0D00DAD0-FB07-46FD-8C72-6280D1A3D1DD)]
+interface ICompositionScopedBatch : IInspectable
+{
+    [propget] HRESULT IsActive([out] [retval] boolean* value);
+    [propget] HRESULT IsEnded([out] [retval] boolean* value);
+    HRESULT End();
+    HRESULT Resume();
+    HRESULT Suspend();
+    [eventadd] HRESULT AddCompleted([in] void* handler, [out] [retval] int* token);
+    [eventremove] HRESULT RemoveCompleted([in] int token);
+}
+
+[uuid(48EA31AD-7FCD-4076-A79C-90CC4B852C9B)]
+interface ICompositor5 : IInspectable
+{
+    [propget] HRESULT GetComment([out] [retval] HSTRING* value);
+    [propput] HRESULT SetComment([in] HSTRING value);
+    [propget] HRESULT GetGlobalPlaybackRate([out] [retval] FLOAT* value);
+    [propput] HRESULT SetGlobalPlaybackRate([in] FLOAT value);
+    HRESULT CreateBounceScalarAnimation([out] [retval] void** result);
+    HRESULT CreateBounceVector2Animation([out] [retval] void** result);
+    HRESULT CreateBounceVector3Animation([out] [retval] void** result);
+    HRESULT CreateContainerShape([out] [retval] void** result);
+    HRESULT CreateEllipseGeometry([out] [retval] void** result);
+    HRESULT CreateLineGeometry([out] [retval] void** result);
+    [overload("CreatePathGeometry")] HRESULT CreatePathGeometry([out] [retval] void** result);
+    [overload("CreatePathGeometry")] HRESULT CreatePathGeometryWithPath([in] void* path, [out] [retval] void** result);
+    HRESULT CreatePathKeyFrameAnimation([out] [retval] void** result);
+    HRESULT CreateRectangleGeometry([out] [retval] void** result);
+    HRESULT CreateRoundedRectangleGeometry([out] [retval] void** result);
+    HRESULT CreateShapeVisual([out] [retval] void** result);
+    [overload("CreateSpriteShape")] HRESULT CreateSpriteShape([out] [retval] void** result);
+    [overload("CreateSpriteShape")] HRESULT CreateSpriteShapeWithGeometry([in] void* geometry, [out] [retval] void** result);
+    HRESULT CreateViewBox([out] [retval] void** result);
+    HRESULT RequestCommitAsync([out] [retval] IAsyncAction** operation);
+}

@@ -28,7 +28,7 @@ namespace Avalonia.Benchmarks
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
         {
-            throw new NotImplementedException();
+            return new MockStreamGeometryImpl();
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()

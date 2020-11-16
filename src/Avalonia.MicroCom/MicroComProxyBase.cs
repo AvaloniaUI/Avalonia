@@ -56,7 +56,7 @@ namespace Avalonia.MicroCom
         {
             var guid = MicroComRuntime.GetGuidFor(typeof(T));
             var rv = QueryInterface(guid, out var ppv);
-            if (rv != 0)
+            if (rv == 0)
                 return (T)MicroComRuntime.CreateProxyFor(typeof(T), ppv, true);
             throw new COMException("QueryInterface failed", rv);
         }
