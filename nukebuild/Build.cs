@@ -107,7 +107,7 @@ partial class Build : NukeBuild
                 .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
-            .SetToolPath(MsBuildExe.Value)
+            .SetProcessToolPath(MsBuildExe.Value)
             .SetConfiguration(Parameters.Configuration)
             .SetVerbosity(MSBuildVerbosity.Minimal)
             .Apply(configurator));
@@ -132,10 +132,10 @@ partial class Build : NukeBuild
             var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
 
             NpmTasks.NpmInstall(c => c
-                .SetWorkingDirectory(webappDir)
-                .SetArgumentConfigurator(a => a.Add("--silent")));
+                .SetProcessWorkingDirectory(webappDir)
+                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
             NpmTasks.NpmRun(c => c
-                .SetWorkingDirectory(webappDir)
+                .SetProcessWorkingDirectory(webappDir)
                 .SetCommand("dist"));
         });
 
@@ -157,7 +157,7 @@ partial class Build : NukeBuild
         {
             if (Parameters.IsRunningOnWindows)
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .SetArgumentConfigurator(a => a.Add("/r"))
+                    .SetProcessArgumentConfigurator(a => a.Add("/r"))
                     .AddTargets("Build")
                 );
 
@@ -194,7 +194,7 @@ partial class Build : NukeBuild
         var eventsProject = Path.Combine(eventsDirectory, "Avalonia.ReactiveUI.Events.csproj");
         if (Parameters.IsRunningOnWindows)
             MsBuildCommon(eventsProject, c => c
-                .SetArgumentConfigurator(a => a.Add("/r"))
+                .SetProcessArgumentConfigurator(a => a.Add("/r"))
                 .AddTargets("Build")
             );
         else
@@ -242,10 +242,10 @@ partial class Build : NukeBuild
             var webappTestDir = RootDirectory / "tests" / "Avalonia.DesignerSupport.Tests" / "Remote" / "HtmlTransport" / "webapp";
 
             NpmTasks.NpmInstall(c => c
-                .SetWorkingDirectory(webappTestDir)
-                .SetArgumentConfigurator(a => a.Add("--silent")));
+                .SetProcessWorkingDirectory(webappTestDir)
+                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
             NpmTasks.NpmRun(c => c
-                .SetWorkingDirectory(webappTestDir)
+                .SetProcessWorkingDirectory(webappTestDir)
                 .SetCommand("test"));
         });
 

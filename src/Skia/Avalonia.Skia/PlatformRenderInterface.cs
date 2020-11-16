@@ -124,7 +124,8 @@ namespace Avalonia.Skia
                 Width = size.Width,
                 Height = size.Height,
                 Dpi = dpi,
-                DisableTextLcdRendering = false
+                DisableTextLcdRendering = false,
+                DisableManualFbo = true,
             };
 
             return new SurfaceRenderTarget(createInfo);
