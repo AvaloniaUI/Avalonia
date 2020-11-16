@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Dialogs;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 #pragma warning disable 4014
 
@@ -112,11 +113,29 @@ namespace ControlCatalog.Pages
 
         private Window CreateSampleWindow()
         {
-            var window = new Window();
-            window.Height = 200;
-            window.Width = 200;
-            window.Content = new TextBlock { Text = "Hello world!" };
-            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            Button button;
+            
+            var window = new Window
+            {
+                Height = 200,
+                Width = 200,
+                Content = new StackPanel
+                {
+                    Spacing = 4,
+                    Children =
+                    {
+                        new TextBlock { Text = "Hello world!" },
+                        (button = new Button
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Content = "Click to close"
+                        })
+                    }
+                },
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            button.Click += (_, __) => window.Close();
 
             return window;
         }
