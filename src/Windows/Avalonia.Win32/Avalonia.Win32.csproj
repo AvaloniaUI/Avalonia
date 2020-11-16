@@ -5,9 +5,11 @@
     <PackageId>Avalonia.Win32</PackageId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
-    <PackageReference Include="Microsoft.Windows.SDK.NET" Version="10.0.18362.3-preview" />
+    <AvnComIdl Include="WinRT\winrt.idl" OutputFile="WinRT\WinRT.Generated.cs" />
   </ItemGroup>
+  <Import Project="../../../build/MicroCom.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />    
 </Project>

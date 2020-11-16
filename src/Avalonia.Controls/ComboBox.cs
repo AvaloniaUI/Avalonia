@@ -173,11 +173,10 @@ namespace Avalonia.Controls
                 ComboBoxItem.ContentTemplateProperty);
         }
 
-        /// <inheritdoc/>
-        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToLogicalTree(e);
-            this.UpdateSelectionBoxItem(this.SelectedItem);
+            base.OnAttachedToVisualTree(e);
+            this.UpdateSelectionBoxItem(SelectedItem);
         }
 
         /// <inheritdoc/>
@@ -373,19 +372,22 @@ namespace Avalonia.Controls
 
             if (control != null)
             {
-                control.Measure(Size.Infinity);
-
-                SelectionBoxItem = new Rectangle
+                if (VisualRoot is object)
                 {
-                    Width = control.DesiredSize.Width,
-                    Height = control.DesiredSize.Height,
-                    Fill = new VisualBrush
+                    control.Measure(Size.Infinity);
+
+                    SelectionBoxItem = new Rectangle
                     {
-                        Visual = control,
-                        Stretch = Stretch.None,
-                        AlignmentX = AlignmentX.Left,
-                    }
-                };
+                        Width = control.DesiredSize.Width,
+                        Height = control.DesiredSize.Height,
+                        Fill = new VisualBrush
+                        {
+                            Visual = control,
+                            Stretch = Stretch.None,
+                            AlignmentX = AlignmentX.Left,
+                        }
+                    };
+                }
             }
             else
             {
