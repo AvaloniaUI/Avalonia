@@ -57,8 +57,6 @@ namespace Avalonia.Controls.Presenters
 
             set
             {
-                var itemsReplaced = (_items != value);
-
                 _itemsSubscription?.Dispose();
                 _itemsSubscription = null;
 
@@ -69,7 +67,7 @@ namespace Avalonia.Controls.Presenters
 
                 SetAndRaise(ItemsProperty, ref _items, value);
 
-                if (_createdPanel && itemsReplaced)
+                if (_createdPanel)
                 {
                     ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 }
