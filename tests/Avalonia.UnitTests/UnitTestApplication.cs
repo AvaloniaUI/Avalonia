@@ -25,6 +25,7 @@ namespace Avalonia.UnitTests
         public UnitTestApplication(TestServices services)
         {
             _services = services ?? new TestServices();
+            AvaloniaLocator.CurrentMutable.BindToSelf<Application>(this);
             RegisterServices();
         }
 
@@ -36,7 +37,6 @@ namespace Avalonia.UnitTests
         {
             var scope = AvaloniaLocator.EnterScope();
             var app = new UnitTestApplication(services);
-            AvaloniaLocator.CurrentMutable.BindToSelf<Application>(app);
             Dispatcher.UIThread.UpdateServices();
             return Disposable.Create(() =>
             {
