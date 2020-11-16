@@ -1,5 +1,4 @@
 ﻿using Avalonia;
-using Avalonia.ReactiveUI;
 
 namespace Sandbox
 {
@@ -9,7 +8,6 @@ namespace Sandbox
         {
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .UseReactiveUI()
                 .LogToTrace()
                 .StartWithClassicDesktopLifetime(args);
         }
