@@ -449,7 +449,11 @@ namespace Avalonia.Controls
             if (_itemContainerGenerator != null)
             {
                 _itemContainerGenerator.ItemTemplate = (IDataTemplate)e.NewValue;
-                // TODO: Rebuild the item containers.
+
+                if (e.OldValue != null && Presenter != null)
+                {
+                    Presenter.ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                }
             }
         }
 
