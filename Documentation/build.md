@@ -68,7 +68,15 @@ On macOS it is necessary to build and manually install the respective native lib
 
 ```
 cd ~/Library/Developer/Xcode/DerivedData/Avalonia.Native.OSX-[guid]/Build/Products/Debug
-cp libAvalonia.Native.OSX.dylib /usr/local/lib/libAvaloniaNative.dylib
+cp libAvalonia.Native.OSX.dylib /usr/local/lib/libAvalonia.Native.OSX.dylib
+```
+
+For compilation we also need this library on the build path. From the Avalonia root project directory:
+
+```
+mkdir -p build/Products/Release
+cp /usr/local/lib/libAvalonia.Native.OSX.dylib build/Products/Release
+
 ```
 
 ###  Build and Run Avalonia
