@@ -219,6 +219,204 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void Inactive_Values_Should_Not_Be_Made_Active_During_Style_Attach()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+
+            var root = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "Foo"),
+                        },
+                    },
+
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "Bar"),
+                        },
+                    }
+                }
+            };
+
+            var values = new List<string>();
+            var target = new Class1();
+
+            target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
+            root.Child = target;
+
+            Assert.Equal(new[] { "foodefault", "Bar" }, values);
+        }
+
+        [Fact]
+        public void Inactive_Bindings_Should_Not_Be_Made_Active_During_Style_Attach()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+
+            var root = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, new Binding("Foo")),
+                        },
+                    },
+
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, new Binding("Bar")),
+                        },
+                    }
+                }
+            };
+
+            var values = new List<string>();
+            var target = new Class1
+            {
+                DataContext = new
+                {
+                    Foo = "Foo",
+                    Bar = "Bar",
+                }
+            };
+
+            target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
+            root.Child = target;
+
+            Assert.Equal(new[] { "foodefault", "Bar" }, values);
+        }
+
+        [Fact]
+        public void Inactive_Values_Should_Not_Be_Made_Active_During_Style_Detach()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+
+            var root = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "Foo"),
+                        },
+                    },
+
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "Bar"),
+                        },
+                    }
+                }
+            };
+
+            var target = new Class1();
+            root.Child = target;
+
+            var values = new List<string>();
+            target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
+            root.Child = null;
+
+            Assert.Equal(new[] { "Bar", "foodefault" }, values);
+        }
+
+        [Fact]
+        public void Inactive_Values_Should_Not_Be_Made_Active_During_Style_Detach_2()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+
+            var root = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>().Class("foo"))
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "Foo"),
+                        },
+                    },
+
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, "Bar"),
+                        },
+                    }
+                }
+            };
+
+            var target = new Class1 { Classes = { "foo" } };
+            root.Child = target;
+
+            var values = new List<string>();
+            target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
+            root.Child = null;
+
+            Assert.Equal(new[] { "Foo", "foodefault" }, values);
+        }
+
+        [Fact]
+        public void Inactive_Bindings_Should_Not_Be_Made_Active_During_Style_Detach()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealStyler);
+
+            var root = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, new Binding("Foo")),
+                        },
+                    },
+
+                    new Style(x => x.OfType<Class1>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Class1.FooProperty, new Binding("Bar")),
+                        },
+                    }
+                }
+            };
+
+            var target = new Class1
+            {
+                DataContext = new
+                {
+                    Foo = "Foo",
+                    Bar = "Bar",
+                }
+            };
+
+            root.Child = target;
+
+            var values = new List<string>();
+            target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
+            root.Child = null;
+
+            Assert.Equal(new[] { "Bar", "foodefault" }, values);
+        }
+
+        [Fact]
         public void Template_In_Non_Matching_Style_Is_Not_Built()
         {
             var instantiationCount = 0;
