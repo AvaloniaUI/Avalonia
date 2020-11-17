@@ -39,10 +39,13 @@ namespace Avalonia.Media
         /// </summary>
         public PathFigure()
         {
+            Segments = new PathSegments();
+        }
+
+        static PathFigure()
+        {
             SegmentsProperty.Changed.AddClassHandler<PathFigure>((s, e) =>
                 s.OnSegmentsChanged(e.NewValue as PathSegments));
-
-            Segments = new PathSegments();
         }
 
         private void OnSegmentsChanged(PathSegments? arg2NewValue)
