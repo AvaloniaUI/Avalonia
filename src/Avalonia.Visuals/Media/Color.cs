@@ -1,17 +1,24 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// An ARGB color.
     /// </summary>
-    public readonly struct Color : IEquatable<Color>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Color : IEquatable<Color>
     {
         static Color()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<ColorAnimator>(prop => typeof(Color).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>
@@ -223,7 +230,12 @@ namespace Avalonia.Media
             if (input.Length == 3 || input.Length == 4)
             {
                 var extendedLength = 2 * input.Length;
+                
+#if !BUILDTASK
                 Span<char> extended = stackalloc char[extendedLength];
+#else
+                char[] extended = new char[extendedLength];
+#endif
 
                 for (int i = 0; i < input.Length; i++)
                 {
