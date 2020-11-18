@@ -27,7 +27,6 @@ namespace Avalonia.PropertyStore
         private Optional<T> _localValue;
         private Optional<T> _value;
         private bool _isCalculatingValue;
-        private bool _batchUpdate;
 
         public PriorityValue(
             IAvaloniaObject owner,
@@ -94,8 +93,6 @@ namespace Avalonia.PropertyStore
 
         public void BeginBatchUpdate()
         {
-            _batchUpdate = true;
-
             foreach (var entry in _entries)
             {
                 (entry as IBatchUpdate)?.BeginBatchUpdate();
@@ -104,8 +101,6 @@ namespace Avalonia.PropertyStore
 
         public void EndBatchUpdate()
         {
-            _batchUpdate = false;
-
             foreach (var entry in _entries)
             {
                 (entry as IBatchUpdate)?.EndBatchUpdate();
