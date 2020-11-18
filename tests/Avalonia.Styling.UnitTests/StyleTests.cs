@@ -482,9 +482,9 @@ namespace Avalonia.Styling.UnitTests
             };
 
             var target = new Class1();
-            target.BeginInit();
+            target.BeginBatchUpdate();
             styles.TryAttach(target, null);
-            target.EndInit();
+            target.EndBatchUpdate();
 
             Assert.NotNull(target.Child);
             Assert.Equal(1, instantiationCount);

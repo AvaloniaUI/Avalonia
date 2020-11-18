@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Avalonia.Utilities
 {
@@ -16,6 +15,9 @@ namespace Avalonia.Utilities
             // The last item in the list is always int.MaxValue
             _entries = new[] { new Entry { PropertyId = int.MaxValue, Value = default } };
         }
+
+        public int Count => _entries.Length - 1;
+        public TValue this[int index] => _entries[index].Value;
 
         private (int, bool) TryFindEntry(int propertyId)
         {
@@ -145,18 +147,6 @@ namespace Avalonia.Utilities
 
                 _entries = entries;
             }
-        }
-
-        public Dictionary<AvaloniaProperty, TValue> ToDictionary()
-        {
-            var dict = new Dictionary<AvaloniaProperty, TValue>(_entries.Length - 1);
-
-            for (int i = 0; i < _entries.Length - 1; ++i)
-            {
-                dict.Add(AvaloniaPropertyRegistry.Instance.FindRegistered(_entries[i].PropertyId), _entries[i].Value);
-            }
-
-            return dict;
         }
 
         private struct Entry

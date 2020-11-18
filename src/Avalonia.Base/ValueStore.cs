@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
@@ -26,11 +27,55 @@ namespace Avalonia
         private readonly AvaloniaObject _owner;
         private readonly IValueSink _sink;
         private readonly AvaloniaPropertyValueStore<IValue> _values;
+        private List<PropertyUpdate>? _batchUpdate;
 
         public ValueStore(AvaloniaObject owner)
         {
             _sink = _owner = owner;
             _values = new AvaloniaPropertyValueStore<IValue>();
+        }
+
+        public void BeginBatchUpdate()
+        {
+            if (_batchUpdate is object)
+            {
+                throw new InvalidOperationException("Batch update already in progress.");
+            }
+
+            _batchUpdate = new List<PropertyUpdate>();
+
+            for (var i = 0; i < _values.Count; ++i)
+            {
+                (_values[i] as IBatchUpdate)?.BeginBatchUpdate();
+            }
+        }
+
+        public void EndBatchUpdate()
+        {
+            if (_batchUpdate is null)
+            {
+                throw new InvalidOperationException("No batch update in progress.");
+            }
+
+            for (var i = 0; i < _values.Count; ++i)
+            {
+                (_values[i] as IBatchUpdate)?.EndBatchUpdate();
+            }
+
+            foreach (var entry in _batchUpdate)
+            {
+                if (_values.TryGetValue(entry.property, out var slot))
+                {
+                    slot.RaiseValueChanged(_sink, _owner, entry.property, entry.oldValue);
+                }
+                else
+                {
+                    // TODO
+                    throw new NotImplementedException();
+                }
+            }
+
+            _batchUpdate = null;
         }
 
         public bool IsAnimating(AvaloniaProperty property)
@@ -90,23 +135,21 @@ namespace Avalonia
             {
                 // If the property has any coercion callbacks then always create a PriorityValue.
                 var entry = new PriorityValue<T>(_owner, property, this);
-                _values.AddValue(property, entry);
+                AddValue(property, entry);
                 result = entry.SetValue(value, priority);
             }
             else
             {
-                var change = new AvaloniaPropertyChangedEventArgs<T>(_owner, property, default, value, priority);
-
                 if (priority == BindingPriority.LocalValue)
                 {
-                    _values.AddValue(property, new LocalValueEntry<T>(value));
-                    _sink.ValueChanged(change);
+                    AddValue(property, new LocalValueEntry<T>(value));
+                    NotifyValueChanged<T>(property, default, value, priority);
                 }
                 else
                 {
                     var entry = new ConstantValueEntry<T>(property, value, priority, this);
-                    _values.AddValue(property, entry);
-                    _sink.ValueChanged(change);
+                    AddValue(property, entry);
+                    NotifyValueChanged<T>(property, default, value, priority);
                     result = entry;
                 }
             }
@@ -128,15 +171,13 @@ namespace Avalonia
                 // If the property has any coercion callbacks then always create a PriorityValue.
                 var entry = new PriorityValue<T>(_owner, property, this);
                 var binding = entry.AddBinding(source, priority);
-                _values.AddValue(property, entry);
-                binding.Start();
+                AddValue(property, entry);
                 return binding;
             }
             else
             {
                 var entry = new BindingEntry<T>(_owner, property, source, priority, this);
-                _values.AddValue(property, entry);
-                entry.Start();
+                AddValue(property, entry);
                 return entry;
             }
         }
@@ -159,12 +200,7 @@ namespace Avalonia
                     {
                         var old = TryGetValue(property, BindingPriority.LocalValue, out var value) ? value : default;
                         _values.Remove(property);
-                        _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
-                            _owner,
-                            property,
-                            new Optional<T>(old),
-                            default,
-                            BindingPriority.Unset));
+                        NotifyValueChanged<T>(property, old, default, BindingPriority.Unset);
                     }
                 }
             }
@@ -176,7 +212,7 @@ namespace Avalonia
             {
                 if (slot is PriorityValue<T> p)
                 {
-                    p.CoerceValue();
+                    p.UpdateEffectiveValue();
                 }
             }
         }
@@ -198,7 +234,14 @@ namespace Avalonia
 
         void IValueSink.ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            _sink.ValueChanged(change);
+            if (_batchUpdate is object)
+            {
+                NotifyValueChanged<T>(change.Property, change.OldValue, change.NewValue, change.Priority);
+            }
+            else
+            {
+                _sink.ValueChanged(change);
+            }
         }
 
         void IValueSink.Completed<T>(
@@ -240,16 +283,13 @@ namespace Avalonia
                 {
                     var old = l.GetValue(BindingPriority.LocalValue);
                     l.SetValue(value);
-                    _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
-                        _owner,
-                        property,
-                        old,
-                        value,
-                        priority));
+                    NotifyValueChanged<T>(property, old, value, priority);
                 }
                 else
                 {
                     var priorityValue = new PriorityValue<T>(_owner, property, this, l);
+                    if (_batchUpdate is object)
+                        priorityValue.BeginBatchUpdate();
                     result = priorityValue.SetValue(value, priority);
                     _values.SetValue(property, priorityValue);
                 }
@@ -289,8 +329,59 @@ namespace Avalonia
 
             var binding = priorityValue.AddBinding(source, priority);
             _values.SetValue(property, priorityValue);
-            binding.Start();
+            priorityValue.UpdateEffectiveValue();
             return binding;
+        }
+
+        private void AddValue(AvaloniaProperty property, IValue value)
+        {
+            _values.AddValue(property, value);
+            if (_batchUpdate is object && value is IBatchUpdate batch)
+                batch.BeginBatchUpdate();
+            value.Start();
+        }
+
+        private void NotifyValueChanged<T>(
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority)
+        {
+            if (_batchUpdate is object)
+            {
+                var oldValueBoxed = oldValue.ToObject();
+
+                for (var i = 0; i < _batchUpdate.Count; ++i)
+                {
+                    if (_batchUpdate[i].property == property)
+                    {
+                        oldValueBoxed = _batchUpdate[i].oldValue;
+                        _batchUpdate.RemoveAt(i);
+                        break;
+                    }
+                }
+
+                _batchUpdate.Add(new PropertyUpdate
+                {
+                    property = property,
+                    oldValue = oldValueBoxed,
+                });
+            }
+            else
+            {
+                _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                    _owner,
+                    property,
+                    oldValue,
+                    newValue,
+                    priority));
+            }
+        }
+
+        private struct PropertyUpdate
+        {
+            public AvaloniaProperty property;
+            public Optional<object> oldValue;
         }
     }
 }

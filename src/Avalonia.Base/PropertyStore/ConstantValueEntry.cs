@@ -38,5 +38,20 @@ namespace Avalonia.PropertyStore
 
         public void Dispose() => _sink.Completed(Property, this, _value);
         public void Reparent(IValueSink sink) => _sink = sink;
+        public void Start() { }
+
+        public void RaiseValueChanged(
+            IValueSink sink,
+            IAvaloniaObject owner,
+            AvaloniaProperty property,
+            Optional<object> oldValue)
+        {
+            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                owner,
+                (AvaloniaProperty<T>)property,
+                oldValue.GetValueOrDefault<T>(),
+                _value,
+                Priority));
+        }
     }
 }
