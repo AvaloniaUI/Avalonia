@@ -174,7 +174,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Resized(AvnSize* size)
             {
-                if (_parent._native != null)
+                if (_parent?._native != null)
                 {
                     var s = new Size(size->Width, size->Height);
                     _parent._savedLogicalSize = s;
