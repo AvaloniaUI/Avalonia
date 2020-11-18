@@ -1,3 +1,4 @@
+#if !NETCOREAPP3_1
 namespace System
 {
     // This is a hack to enable our span code to work inside MSBuild task without referencing System.Memory
@@ -63,6 +64,8 @@ namespace System
         }
 
         public override string ToString() => _length == 0 ? string.Empty : _s.Substring(_start, _length);
+
+        public static implicit operator ReadOnlySpan<T>(char[] arr) => new ReadOnlySpan<T>(new string(arr));
     }
 
     static class SpanCompatExtensions
@@ -71,3 +74,4 @@ namespace System
     }
 
 }
+#endif
