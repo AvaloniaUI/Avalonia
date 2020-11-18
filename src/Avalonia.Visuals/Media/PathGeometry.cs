@@ -120,7 +120,7 @@ namespace Avalonia.Media
  
         }
 
-        public void InvalidateGeometryFromSegments(object _, EventArgs __)
+        private void InvalidateGeometryFromSegments(object _, EventArgs __)
         {
             InvalidateGeometry();
         }
