@@ -32,7 +32,7 @@ namespace Avalonia.Media
 
         private IDisposable _segmentsDisposable;
 
-        private IDisposable _segmentsPropertiesObserver;
+        private IDisposable _segmentsPropertiesDisposable;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="PathFigure"/> class.
@@ -51,14 +51,14 @@ namespace Avalonia.Media
         private void OnSegmentsChanged(PathSegments? arg2NewValue)
         {
             _segmentsDisposable?.Dispose();
-            _segmentsPropertiesObserver?.Dispose();
+            _segmentsPropertiesDisposable?.Dispose();
 
             _segmentsDisposable = _segments?.ForEachItem(
                 _ => InvalidateSegments(),
                 _ => InvalidateSegments(),
                 InvalidateSegments);
             
-            _segmentsPropertiesObserver = _segments?.TrackItemPropertyChanged(_ => InvalidateSegments());
+            _segmentsPropertiesDisposable = _segments?.TrackItemPropertyChanged(_ => InvalidateSegments());
         }
 
         private void InvalidateSegments()
