@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Metadata;
 
@@ -22,8 +23,10 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Segments"/> property.
         /// </summary>
-        public static readonly DirectProperty<PathFigure, PathSegments> SegmentsProperty
-            = AvaloniaProperty.RegisterDirect<PathFigure, PathSegments>(nameof(Segments), f => f.Segments,
+        public static readonly DirectProperty<PathFigure, PathSegments?> SegmentsProperty
+            = AvaloniaProperty.RegisterDirect<PathFigure, PathSegments?>(
+                nameof(Segments), 
+                f => f.Segments,
                 (f, s) => f.Segments = s);
 
         /// <summary>
@@ -50,11 +53,12 @@ namespace Avalonia.Media
 
         static PathFigure()
         {
-            SegmentsProperty.Changed.AddClassHandler<PathFigure>((s, e) =>
-                s.OnSegmentsChanged(e.NewValue as PathSegments));
+            SegmentsProperty.Changed.AddClassHandler<PathFigure>(
+                (s, e) =>
+                s.OnSegmentsChanged());
         }
 
-        private void OnSegmentsChanged(PathSegments? arg2NewValue)
+        private void OnSegmentsChanged()
         {
             _segmentsDisposable?.Dispose();
             _segmentsPropertiesDisposable?.Dispose();
@@ -103,7 +107,7 @@ namespace Avalonia.Media
         /// The segments.
         /// </value>
         [Content]
-        public PathSegments Segments
+        public PathSegments? Segments
         {
             get { return _segments; }
             set { SetAndRaise(SegmentsProperty, ref _segments, value); }
@@ -120,20 +124,23 @@ namespace Avalonia.Media
             get { return GetValue(StartPointProperty); }
             set { SetValue(StartPointProperty, value); }
         }
+        
+        public override string ToString()
+            => $"M {StartPoint} {string.Join(" ", _segments ?? Enumerable.Empty<PathSegment>())}{(IsClosed ? "Z" : "")}";
 
         internal void ApplyTo(StreamGeometryContext ctx)
         {
             ctx.BeginFigure(StartPoint, IsFilled);
 
-            foreach (var segment in Segments)
+            if (Segments != null)
             {
-                segment.ApplyTo(ctx);
+                foreach (var segment in Segments)
+                {
+                    segment.ApplyTo(ctx);
+                }
             }
 
             ctx.EndFigure(IsClosed);
         }
-
-        public override string ToString()
-            => $"M {StartPoint} {string.Join(" ", _segments)}{(IsClosed ? "Z" : "")}";
     }
 }
