@@ -233,40 +233,72 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Bindings_Should_Not_Be_Subscribed_During_Batch_Update()
+        public void LocalValue_Bindings_Should_Be_Subscribed_During_Batch_Update()
         {
             var target = new TestClass();
             var observable1 = new TestObservable<string>("foo");
             var observable2 = new TestObservable<string>("bar");
-            var observable3 = new TestObservable<string>("baz");
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
 
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            // We need to subscribe to LocalValue bindings even if we've got a batch operation
+            // in progress because otherwise we don't know whether the binding or a subsequent
+            // SetValue with local priority will win. Notifications however shouldn't be sent.
             target.BeginBatchUpdate();
             target.Bind(TestClass.FooProperty, observable1, BindingPriority.LocalValue);
             target.Bind(TestClass.FooProperty, observable2, BindingPriority.LocalValue);
-            target.Bind(TestClass.FooProperty, observable3, BindingPriority.Style);
 
-            Assert.Equal(0, observable1.SubscribeCount);
-            Assert.Equal(0, observable2.SubscribeCount);
-            Assert.Equal(0, observable3.SubscribeCount);
+            Assert.Equal(1, observable1.SubscribeCount);
+            Assert.Equal(1, observable2.SubscribeCount);
+            Assert.Empty(raised);
         }
 
         [Fact]
-        public void Active_Binding_Should_Be_Subscribed_After_Batch_Uppdate()
+        public void Style_Bindings_Should_Not_Be_Subscribed_During_Batch_Update()
         {
             var target = new TestClass();
             var observable1 = new TestObservable<string>("foo");
             var observable2 = new TestObservable<string>("bar");
-            var observable3 = new TestObservable<string>("baz");
 
             target.BeginBatchUpdate();
-            target.Bind(TestClass.FooProperty, observable1, BindingPriority.LocalValue);
-            target.Bind(TestClass.FooProperty, observable2, BindingPriority.LocalValue);
-            target.Bind(TestClass.FooProperty, observable3, BindingPriority.Style);
+            target.Bind(TestClass.FooProperty, observable1, BindingPriority.Style);
+            target.Bind(TestClass.FooProperty, observable2, BindingPriority.StyleTrigger);
+
+            Assert.Equal(0, observable1.SubscribeCount);
+            Assert.Equal(0, observable2.SubscribeCount);
+        }
+
+        [Fact]
+        public void Active_Style_Binding_Should_Be_Subscribed_After_Batch_Uppdate_1()
+        {
+            var target = new TestClass();
+            var observable1 = new TestObservable<string>("foo");
+            var observable2 = new TestObservable<string>("bar");
+
+            target.BeginBatchUpdate();
+            target.Bind(TestClass.FooProperty, observable1, BindingPriority.Style);
+            target.Bind(TestClass.FooProperty, observable2, BindingPriority.Style);
             target.EndBatchUpdate();
 
             Assert.Equal(0, observable1.SubscribeCount);
             Assert.Equal(1, observable2.SubscribeCount);
-            Assert.Equal(0, observable3.SubscribeCount);
+        }
+
+        [Fact]
+        public void Active_Style_Binding_Should_Be_Subscribed_After_Batch_Uppdate_2()
+        {
+            var target = new TestClass();
+            var observable1 = new TestObservable<string>("foo");
+            var observable2 = new TestObservable<string>("bar");
+
+            target.BeginBatchUpdate();
+            target.Bind(TestClass.FooProperty, observable1, BindingPriority.StyleTrigger);
+            target.Bind(TestClass.FooProperty, observable2, BindingPriority.Style);
+            target.EndBatchUpdate();
+
+            Assert.Equal(1, observable1.SubscribeCount);
+            Assert.Equal(0, observable2.SubscribeCount);
         }
 
         public class TestClass : AvaloniaObject

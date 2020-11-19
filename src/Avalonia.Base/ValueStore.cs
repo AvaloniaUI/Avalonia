@@ -313,6 +313,11 @@ namespace Avalonia
             if (slot is IPriorityValueEntry<T> e)
             {
                 priorityValue = new PriorityValue<T>(_owner, property, this, e);
+
+                if (_batchUpdate is object)
+                {
+                    priorityValue.BeginBatchUpdate();
+                }
             }
             else if (slot is PriorityValue<T> p)
             {
