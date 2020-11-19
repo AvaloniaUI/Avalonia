@@ -69,6 +69,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType GridLength { get; }
         public IXamlConstructor GridLengthConstructorValueType { get; }
         public IXamlType Color { get; }
+        public IXamlType StandardCursorType { get; }
+        public IXamlType Cursor { get; }
+        public IXamlConstructor CursorTypeConstructor { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -150,6 +153,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             GridLength = cfg.TypeSystem.GetType("Avalonia.Controls.GridLength");
             GridLengthConstructorValueType = GridLength.GetConstructor(new List<IXamlType> { XamlIlTypes.Double, cfg.TypeSystem.GetType("Avalonia.Controls.GridUnitType") });
             Color = cfg.TypeSystem.GetType("Avalonia.Media.Color");
+            StandardCursorType = cfg.TypeSystem.GetType("Avalonia.Input.StandardCursorType");
+            Cursor = cfg.TypeSystem.GetType("Avalonia.Input.Cursor");
+            CursorTypeConstructor = Cursor.GetConstructor(new List<IXamlType> { StandardCursorType });
         }
     }
 

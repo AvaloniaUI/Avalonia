@@ -341,6 +341,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.Cursor))
+            {
+                if (TypeSystemHelpers.TryGetEnumValueNode(types.StandardCursorType, text, node, out var enumConstantNode))
+                {
+                    var cursorTypeRef = new XamlAstClrTypeReference(node, types.Cursor, false);
+
+                    result = new XamlAstNewClrObjectNode(node, cursorTypeRef, types.CursorTypeConstructor, new List<IXamlAstValueNode> { enumConstantNode });
+                    
+                    return true;
+                }
+            }
+
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
