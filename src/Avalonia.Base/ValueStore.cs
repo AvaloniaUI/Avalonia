@@ -67,11 +67,15 @@ namespace Avalonia
                 if (_values.TryGetValue(entry.property, out var slot))
                 {
                     slot.RaiseValueChanged(_sink, _owner, entry.property, entry.oldValue);
+
+                    if (slot.Priority == BindingPriority.Unset)
+                    {
+                        _values.Remove(entry.property);
+                    }
                 }
                 else
                 {
-                    // TODO
-                    throw new NotImplementedException();
+                    throw new AvaloniaInternalException("Value could not be found at the end of batch update.");
                 }
             }
 
@@ -249,12 +253,16 @@ namespace Avalonia
             IPriorityValueEntry entry,
             Optional<T> oldValue)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (_values.TryGetValue(property, out var slot) && slot == entry)
             {
-                if (slot == entry)
+                if (_batchUpdate is null)
                 {
                     _values.Remove(property);
                     _sink.Completed(property, entry, oldValue);
+                }
+                else
+                {
+                    NotifyValueChanged(property, oldValue, default, BindingPriority.Unset);
                 }
             }
         }

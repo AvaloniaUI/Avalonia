@@ -42,7 +42,7 @@ namespace Avalonia.PropertyStore
         }
 
         public StyledPropertyBase<T> Property { get; }
-        public BindingPriority Priority { get; }
+        public BindingPriority Priority { get; private set; }
         public IObservable<BindingValue<T>> Source { get; }
         Optional<object> IValue.GetValue() => _value.ToObject();
 
@@ -66,10 +66,16 @@ namespace Avalonia.PropertyStore
             _subscription?.Dispose();
             _subscription = null;
             _isSubscribed = false;
-            _sink.Completed(Property, this, _value);
+            OnCompleted();
         }
 
-        public void OnCompleted() => _sink.Completed(Property, this, _value);
+        public void OnCompleted()
+        {
+            var oldValue = _value;
+            _value = default;
+            Priority = BindingPriority.Unset;
+            _sink.Completed(Property, this, oldValue);
+        }
 
         public void OnError(Exception error)
         {

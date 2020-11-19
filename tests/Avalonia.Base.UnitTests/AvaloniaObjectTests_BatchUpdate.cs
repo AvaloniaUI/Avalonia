@@ -39,6 +39,21 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Binding_Completion_Should_Not_Raise_Property_Changes_During_Batch_Update()
+        {
+            var target = new TestClass();
+            var observable = new TestObservable<string>("foo");
+            var raised = new List<string>();
+
+            target.Bind(TestClass.FooProperty, observable, BindingPriority.LocalValue);
+            target.GetObservable(TestClass.FooProperty).Skip(1).Subscribe(x => raised.Add(x));
+            target.BeginBatchUpdate();
+            observable.OnCompleted();
+
+            Assert.Empty(raised);
+        }
+
+        [Fact]
         public void SetValue_Change_Should_Be_Raised_After_Batch_Update_1()
         {
             var target = new TestClass();
@@ -205,6 +220,27 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Binding_Completion_Should_Be_Raised_After_Batch_Update()
+        {
+            var target = new TestClass();
+            var observable = new TestObservable<string>("foo");
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
+
+            target.Bind(TestClass.FooProperty, observable, BindingPriority.LocalValue);
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            target.BeginBatchUpdate();
+            observable.OnCompleted();
+            target.EndBatchUpdate();
+
+            Assert.Equal(1, raised.Count);
+            Assert.Null(target.Foo);
+            Assert.Equal("foo", raised[0].OldValue);
+            Assert.Null(raised[0].NewValue);
+            Assert.Equal(BindingPriority.Unset, raised[0].Priority);
+        }
+
+        [Fact]
         public void Bindings_Should_Be_Subscribed_Before_Batch_Update()
         {
             var target = new TestClass();
@@ -325,14 +361,19 @@ namespace Avalonia.Base.UnitTests
         public class TestObservable<T> : ObservableBase<BindingValue<T>>
         {
             private readonly T _value;
+            private IObserver<BindingValue<T>> _observer;
 
             public TestObservable(T value) => _value = value;
 
             public int SubscribeCount { get; private set; }
 
+            public void OnCompleted() => _observer.OnCompleted();
+            public void OnError(Exception e) => _observer.OnError(e);
+
             protected override IDisposable SubscribeCore(IObserver<BindingValue<T>> observer)
             {
                 ++SubscribeCount;
+                _observer = observer;
                 observer.OnNext(_value);
                 return Disposable.Empty;
             }
