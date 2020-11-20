@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 
 #nullable enable
@@ -17,7 +18,7 @@ namespace Avalonia.PropertyStore
 
         public ConstantValueEntry(
             StyledPropertyBase<T> property,
-            T value,
+            [AllowNull] T value,
             BindingPriority priority,
             IValueSink sink)
         {
@@ -51,13 +52,14 @@ namespace Avalonia.PropertyStore
             IValueSink sink,
             IAvaloniaObject owner,
             AvaloniaProperty property,
-            Optional<object> oldValue)
+            Optional<object> oldValue,
+            Optional<object> newValue)
         {
             sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
                 (AvaloniaProperty<T>)property,
                 oldValue.GetValueOrDefault<T>(),
-                _value,
+                newValue.GetValueOrDefault<T>(),
                 Priority));
         }
     }

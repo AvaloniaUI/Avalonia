@@ -30,13 +30,14 @@ namespace Avalonia.PropertyStore
             IValueSink sink,
             IAvaloniaObject owner,
             AvaloniaProperty property,
-            Optional<object> oldValue)
+            Optional<object> oldValue,
+            Optional<object> newValue)
         {
             sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
                 (AvaloniaProperty<T>)property,
                 oldValue.GetValueOrDefault<T>(),
-                _value,
+                newValue.GetValueOrDefault<T>(),
                 BindingPriority.LocalValue));
         }
     }

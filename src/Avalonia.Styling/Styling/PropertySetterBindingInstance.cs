@@ -125,9 +125,6 @@ namespace Avalonia.Styling
                 sub.Dispose();
             }
 
-            _innerSubscription?.Dispose();
-            _innerSubscription = null;
-
             base.Dispose();
         }
 
@@ -153,7 +150,14 @@ namespace Avalonia.Styling
         {
             if (_isActive)
             {
-                _innerSubscription = _binding.Observable.Subscribe(_inner);
+                if (_innerSubscription is null)
+                {
+                    _innerSubscription ??= _binding.Observable.Subscribe(_inner);
+                }
+                else
+                {
+                    PublishNext();
+                }
             }
         }
 

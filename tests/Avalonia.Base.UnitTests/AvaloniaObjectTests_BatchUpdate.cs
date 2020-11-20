@@ -241,6 +241,26 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void ClearValue_Change_Should_Be_Raised_After_Batch_Update_1()
+        {
+            var target = new TestClass();
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
+
+            target.Foo = "foo";
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            target.BeginBatchUpdate();
+            target.ClearValue(TestClass.FooProperty);
+            target.EndBatchUpdate();
+
+            Assert.Equal(1, raised.Count);
+            Assert.Null(target.Foo);
+            Assert.Equal("foo", raised[0].OldValue);
+            Assert.Null(raised[0].NewValue);
+            Assert.Equal(BindingPriority.Unset, raised[0].Priority);
+        }
+
+        [Fact]
         public void Bindings_Should_Be_Subscribed_Before_Batch_Update()
         {
             var target = new TestClass();
@@ -335,6 +355,98 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal(1, observable1.SubscribeCount);
             Assert.Equal(0, observable2.SubscribeCount);
+        }
+
+        [Fact]
+        public void Change_Can_Be_Triggered_By_Ending_Batch_Update_1()
+        {
+            var target = new TestClass();
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
+
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            target.BeginBatchUpdate();
+            target.Foo = "foo";
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == TestClass.FooProperty && (string)e.NewValue == "foo")
+                    target.Bar = "bar";
+            };
+
+            target.EndBatchUpdate();
+
+            Assert.Equal("foo", target.Foo);
+            Assert.Equal("bar", target.Bar);
+            Assert.Equal(2, raised.Count);
+            Assert.Equal(TestClass.FooProperty, raised[0].Property);
+            Assert.Equal(TestClass.BarProperty, raised[1].Property);
+        }
+
+        [Fact]
+        public void Change_Can_Be_Triggered_By_Ending_Batch_Update_2()
+        {
+            var target = new TestClass();
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
+
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            target.BeginBatchUpdate();
+            target.Foo = "foo";
+            target.Bar = "baz";
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == TestClass.FooProperty && (string)e.NewValue == "foo")
+                    target.Bar = "bar";
+            };
+
+            target.EndBatchUpdate();
+
+            Assert.Equal("foo", target.Foo);
+            Assert.Equal("bar", target.Bar);
+            Assert.Equal(2, raised.Count);
+        }
+
+        [Fact]
+        public void Batch_Update_Can_Be_Triggered_By_Ending_Batch_Update()
+        {
+            var target = new TestClass();
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
+
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            target.BeginBatchUpdate();
+            target.Foo = "foo";
+            target.Bar = "baz";
+
+            // Simulates the following scenario:
+            // - A control is added to the logical tree
+            // - A batch update is started to apply styles
+            // - Ending the batch update triggers something which removes the control from the logical tree
+            // - A new batch update is started to detach styles
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == TestClass.FooProperty && (string)e.NewValue == "foo")
+                {
+                    target.BeginBatchUpdate();
+                    target.ClearValue(TestClass.FooProperty);
+                    target.ClearValue(TestClass.BarProperty);
+                    target.EndBatchUpdate();
+                }
+            };
+
+            target.EndBatchUpdate();
+
+            Assert.Null(target.Foo);
+            Assert.Null(target.Bar);
+            Assert.Equal(2, raised.Count);
+            Assert.Equal(TestClass.FooProperty, raised[0].Property);
+            Assert.Null(raised[0].OldValue);
+            Assert.Equal("foo", raised[0].NewValue);
+            Assert.Equal(TestClass.FooProperty, raised[1].Property);
+            Assert.Equal("foo", raised[1].OldValue);
+            Assert.Null(raised[1].NewValue);
         }
 
         public class TestClass : AvaloniaObject

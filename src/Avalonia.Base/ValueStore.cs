@@ -27,7 +27,7 @@ namespace Avalonia
         private readonly AvaloniaObject _owner;
         private readonly IValueSink _sink;
         private readonly AvaloniaPropertyValueStore<IValue> _values;
-        private List<PropertyUpdate>? _batchUpdate;
+        private BatchUpdate? _batchUpdate;
 
         public ValueStore(AvaloniaObject owner)
         {
@@ -37,17 +37,8 @@ namespace Avalonia
 
         public void BeginBatchUpdate()
         {
-            if (_batchUpdate is object)
-            {
-                throw new InvalidOperationException("Batch update already in progress.");
-            }
-
-            _batchUpdate = new List<PropertyUpdate>();
-
-            for (var i = 0; i < _values.Count; ++i)
-            {
-                (_values[i] as IBatchUpdate)?.BeginBatchUpdate();
-            }
+            _batchUpdate ??= new BatchUpdate(this);
+            _batchUpdate.Begin();
         }
 
         public void EndBatchUpdate()
@@ -57,29 +48,10 @@ namespace Avalonia
                 throw new InvalidOperationException("No batch update in progress.");
             }
 
-            for (var i = 0; i < _values.Count; ++i)
+            if (_batchUpdate.End())
             {
-                (_values[i] as IBatchUpdate)?.EndBatchUpdate();
+                _batchUpdate = null;
             }
-
-            foreach (var entry in _batchUpdate)
-            {
-                if (_values.TryGetValue(entry.property, out var slot))
-                {
-                    slot.RaiseValueChanged(_sink, _owner, entry.property, entry.oldValue);
-
-                    if (slot.Priority == BindingPriority.Unset)
-                    {
-                        _values.Remove(entry.property);
-                    }
-                }
-                else
-                {
-                    throw new AvaloniaInternalException("Value could not be found at the end of batch update.");
-                }
-            }
-
-            _batchUpdate = null;
         }
 
         public bool IsAnimating(AvaloniaProperty property)
@@ -194,18 +166,32 @@ namespace Avalonia
                 {
                     p.ClearLocalValue();
                 }
-                else
+                else if (slot.Priority == BindingPriority.LocalValue)
                 {
-                    var remove = slot is ConstantValueEntry<T> c ?
-                        c.Priority == BindingPriority.LocalValue : 
-                        !(slot is IPriorityValueEntry<T>);
+                    var old = TryGetValue(property, BindingPriority.LocalValue, out var value) ? value : default;
 
-                    if (remove)
+                    // During batch update values can't be removed immediately because they're needed to raise
+                    // a correctly-typed _sink.ValueChanged notification. They instead mark themselves for removal
+                    // by setting their priority to Unset.
+                    if (_batchUpdate is null)
                     {
-                        var old = TryGetValue(property, BindingPriority.LocalValue, out var value) ? value : default;
                         _values.Remove(property);
-                        NotifyValueChanged<T>(property, old, default, BindingPriority.Unset);
                     }
+                    else if (slot is IDisposable d)
+                    {
+                        d.Dispose();
+                    }
+                    else
+                    {
+                        // Local value entries are optimized and contain only a single value field to save space,
+                        // so there's no way to mark them for removal at the end of a batch update. Instead convert
+                        // them to a constant value entry with Unset priority in the event of a local value being
+                        // cleared during a batch update.
+                        var sentinel = new ConstantValueEntry<T>(property, default, BindingPriority.Unset, _sink);
+                        _values.SetValue(property, sentinel);
+                    }
+
+                    NotifyValueChanged<T>(property, old, default, BindingPriority.Unset);
                 }
             }
         }
@@ -240,7 +226,10 @@ namespace Avalonia
         {
             if (_batchUpdate is object)
             {
-                NotifyValueChanged<T>(change.Property, change.OldValue, change.NewValue, change.Priority);
+                if (change.IsEffectiveValueChange)
+                {
+                    NotifyValueChanged<T>(change.Property, change.OldValue, change.NewValue, change.Priority);
+                }
             }
             else
             {
@@ -262,7 +251,7 @@ namespace Avalonia
                 }
                 else
                 {
-                    NotifyValueChanged(property, oldValue, default, BindingPriority.Unset);
+                    _batchUpdate.ValueChanged(property, oldValue.ToObject());
                 }
             }
         }
@@ -360,27 +349,7 @@ namespace Avalonia
             BindingValue<T> newValue,
             BindingPriority priority)
         {
-            if (_batchUpdate is object)
-            {
-                var oldValueBoxed = oldValue.ToObject();
-
-                for (var i = 0; i < _batchUpdate.Count; ++i)
-                {
-                    if (_batchUpdate[i].property == property)
-                    {
-                        oldValueBoxed = _batchUpdate[i].oldValue;
-                        _batchUpdate.RemoveAt(i);
-                        break;
-                    }
-                }
-
-                _batchUpdate.Add(new PropertyUpdate
-                {
-                    property = property,
-                    oldValue = oldValueBoxed,
-                });
-            }
-            else
+            if (_batchUpdate is null)
             {
                 _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                     _owner,
@@ -389,12 +358,135 @@ namespace Avalonia
                     newValue,
                     priority));
             }
+            else
+            {
+                _batchUpdate.ValueChanged(property, oldValue.ToObject());
+            }
         }
 
-        private struct PropertyUpdate
+        private class BatchUpdate
         {
-            public AvaloniaProperty property;
-            public Optional<object> oldValue;
+            private ValueStore _owner;
+            private List<Notification>? _notifications;
+            private int _batchUpdateCount;
+            private int _iterator = -1;
+
+            public BatchUpdate(ValueStore owner) => _owner = owner;
+
+            public void Begin()
+            {
+                if (_batchUpdateCount++ == 0)
+                {
+                    var values = _owner._values;
+
+                    for (var i = 0; i < values.Count; ++i)
+                    {
+                        (values[i] as IBatchUpdate)?.BeginBatchUpdate();
+                    }
+                }
+            }
+
+            public bool End()
+            {
+                if (--_batchUpdateCount > 0)
+                    return false;
+
+                var values = _owner._values;
+
+                // First call EndBatchUpdate on all bindings. This should cause the active binding to be subscribed
+                // but notifications will still not be raised because the owner ValueStore will still have a reference
+                // to this batch update object.
+                for (var i = 0; i < values.Count; ++i)
+                {
+                    (values[i] as IBatchUpdate)?.EndBatchUpdate();
+
+                    // Somehow subscribing to a binding caused a new batch update. This shouldn't happen but in case it
+                    // does, abort and continue batch updating.
+                    if (_batchUpdateCount > 0)
+                        return false;
+                }
+
+                if (_notifications is object)
+                {
+                    // Raise all batched notifications. Doing this can cause other notifications to be added and even
+                    // cause a new batch update to start, so we need to handle _notifications being modified by storing
+                    // the index in field.
+                    _iterator = 0;
+
+                    for (; _iterator < _notifications.Count; ++_iterator)
+                    {
+                        var entry = _notifications[_iterator];
+
+                        if (values.TryGetValue(entry.property, out var slot))
+                        {
+                            var oldValue = entry.oldValue;
+                            var newValue = slot.GetValue();
+
+                            // Raising this notification can cause a new batch update to be started, which in turn
+                            // results in another change to the property. In this case we need to update the old value
+                            // so that the *next* notification has an oldValue which follows on from the newValue
+                            // raised here.
+                            _notifications[_iterator] = new Notification
+                            {
+                                property = entry.property,
+                                oldValue = newValue,
+                            };
+
+                            // Call _sink.ValueChanged with an appropriately typed AvaloniaPropertyChangedEventArgs<T>.
+                            slot.RaiseValueChanged(_owner._sink, _owner._owner, entry.property, oldValue, newValue);
+
+                            // During batch update values can't be removed immediately because they're needed to raise
+                            // the _sink.ValueChanged notification. They instead mark themselves for removal by setting
+                            // their priority to Unset.
+                            if (slot.Priority == BindingPriority.Unset)
+                            {
+                                values.Remove(entry.property);
+                            }
+                        }
+                        else
+                        {
+                            throw new AvaloniaInternalException("Value could not be found at the end of batch update.");
+                        }
+
+                        // If a new batch update was started while ending this one, abort.
+                        if (_batchUpdateCount > 0)
+                            return false;
+                    }
+                }
+
+                _iterator = int.MaxValue - 1;
+                return true;
+            }
+
+            public void ValueChanged(AvaloniaProperty property, Optional<object> oldValue)
+            {
+                _notifications ??= new List<Notification>();
+
+                for (var i = 0; i < _notifications.Count; ++i)
+                {
+                    if (_notifications[i].property == property)
+                    {
+                        oldValue = _notifications[i].oldValue;
+                        _notifications.RemoveAt(i);
+
+                        if (i <= _iterator)
+                            --_iterator;
+                        break;
+                    }
+                }
+
+                _notifications.Add(new Notification
+                {
+                    property = property,
+                    oldValue = oldValue,
+                });
+            }
+
+            private struct Notification
+            {
+                public AvaloniaProperty property;
+                public Optional<object> oldValue;
+            }
         }
     }
 }

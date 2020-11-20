@@ -16,7 +16,8 @@ namespace Avalonia.PropertyStore
             IValueSink sink,
             IAvaloniaObject owner,
             AvaloniaProperty property,
-            Optional<object> oldValue);
+            Optional<object> oldValue,
+            Optional<object> newValue);
     }
 
     /// <summary>
