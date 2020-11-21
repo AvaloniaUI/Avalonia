@@ -2,6 +2,7 @@
 #include "rendertarget.h"
 #import <IOSurface/IOSurface.h>
 #import <IOSurface/IOSurfaceObjC.h>
+#import <QuartzCore/QuartzCore.h>
 
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/OpenGL.h>
@@ -163,12 +164,15 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
         @synchronized (lock) {
             if(_layer == nil)
                 return;
+            [CATransaction begin];
             [_layer setContents: nil];
             if(surface != nil)
             {
                 [_layer setContentsScale: surface->scale];
                 [_layer setContents: (__bridge IOSurface*) surface->surface];
             }
+            [CATransaction commit];
+            [CATransaction flush];
         }
     }
     else
