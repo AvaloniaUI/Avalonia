@@ -50,9 +50,9 @@ namespace Avalonia.Native
                 // NOP on Popup
             }
 
-            bool IAvnWindowEvents.Closing()
+            int IAvnWindowEvents.Closing()
             {
-                return true;
+                return true.AsComBool();
             }
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)

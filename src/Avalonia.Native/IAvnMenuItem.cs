@@ -24,7 +24,7 @@ namespace Avalonia.Native.Interop.Impl
 
         private void UpdateTitle(string title) => SetTitle(title ?? "");
 
-        private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked);
+        private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
 
         private void UpdateToggleType(NativeMenuItemToggleType toggleType)
         {

@@ -33,7 +33,7 @@ namespace Avalonia.Native
                             screen.PixelDensity,
                             screen.Bounds.ToAvaloniaPixelRect(),
                             screen.WorkingArea.ToAvaloniaPixelRect(),
-                            screen.Primary);
+                            screen.Primary.FromComBool());
                     }
 
                     return result;

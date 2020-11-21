@@ -42,14 +42,14 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
-            bool IAvnWindowEvents.Closing()
+            int IAvnWindowEvents.Closing()
             {
                 if (_parent.Closing != null)
                 {
-                    return _parent.Closing();
+                    return _parent.Closing().AsComBool();
                 }
 
-                return true;
+                return true.AsComBool();
             }
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
@@ -69,7 +69,7 @@ namespace Avalonia.Native
 
         public void CanResize(bool value)
         {
-            _native.SetCanResize(value);
+            _native.SetCanResize(value.AsComBool());
         }
 
         public void SetSystemDecorations(Controls.SystemDecorations enabled)
@@ -145,7 +145,7 @@ namespace Avalonia.Native
         {
             _isExtended = extendIntoClientAreaHint;
 
-            _native.SetExtendClientArea(extendIntoClientAreaHint);
+            _native.SetExtendClientArea(extendIntoClientAreaHint.AsComBool());
 
             InvalidateExtendedMargins();
         }
@@ -198,7 +198,7 @@ namespace Avalonia.Native
 
         public void SetEnabled(bool enable)
         {
-            _native.SetEnabled(enable);
+            _native.SetEnabled(enable.AsComBool());
         }
     }
 }
