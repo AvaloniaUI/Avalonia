@@ -33,9 +33,9 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
-            public void Signaled(int priority, bool priorityContainsMeaningfulValue)
+            public void Signaled(int priority, int priorityContainsMeaningfulValue)
             {
-                _parent.Signaled?.Invoke(priorityContainsMeaningfulValue ? (DispatcherPriority?)priority : null);
+                _parent.Signaled?.Invoke(priorityContainsMeaningfulValue.FromComBool() ? (DispatcherPriority?)priority : null);
             }
         }
 
@@ -50,7 +50,7 @@ namespace Avalonia.Native
                 _native.SetSignaledCallback(cb);
         }
 
-        public bool CurrentThreadIsLoopThread => _native.CurrentThreadIsLoopThread;
+        public bool CurrentThreadIsLoopThread => _native.CurrentThreadIsLoopThread.FromComBool();
 
         public event Action<DispatcherPriority?> Signaled;
 
