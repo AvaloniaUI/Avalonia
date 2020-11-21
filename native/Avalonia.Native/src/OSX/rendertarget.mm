@@ -143,13 +143,17 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
     return _layer;
 }
 
-- (void)resize:(AvnPixelSize)size withScale: (float) scale;{
+- (void)resize:(AvnPixelSize)size withScale: (float) scale{
     @synchronized (lock) {
         if(surface == nil
            || surface->size.Width != size.Width
            || surface->size.Height != size.Height
            || surface->scale != scale)
+        {
             surface = [[IOSurfaceHolder alloc] initWithSize:size withScale:scale withOpenGlContext:_glContext.getRaw()];
+            
+            [self updateLayer];
+        }
     }
 }
 
