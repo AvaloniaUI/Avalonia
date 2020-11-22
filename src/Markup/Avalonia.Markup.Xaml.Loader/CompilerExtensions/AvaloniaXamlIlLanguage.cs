@@ -353,6 +353,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.ColumnDefinitions))
+            {
+                return ConvertDefinitionList(node, text, types, types.ColumnDefinitions, types.ColumnDefinition, "column definitions", out result);
+            }
+
+            if (type.Equals(types.RowDefinitions))
+            {
+                return ConvertDefinitionList(node, text, types, types.RowDefinitions, types.RowDefinition, "row definitions", out result);
+            }
+
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
@@ -365,6 +375,44 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             result = null;
             return false;
+        }
+
+        private static bool ConvertDefinitionList(
+            IXamlAstValueNode node, 
+            string text,
+            AvaloniaXamlIlWellKnownTypes types,
+            IXamlType listType,
+            IXamlType elementType,
+            string errorDisplayName,
+            out IXamlAstValueNode result)
+        {
+            try
+            {
+                var lengths = GridLength.ParseLengths(text);
+
+                var definitionTypeRef = new XamlAstClrTypeReference(node, elementType, false);
+
+                var definitionConstructorGridLength = elementType.GetConstructor(new List<IXamlType> {types.GridLength});
+
+                IXamlAstValueNode CreateDefinitionNode(GridLength length)
+                {
+                    var lengthNode = new AvaloniaXamlIlGridLengthAstNode(node, types, length);
+
+                    return new XamlAstNewClrObjectNode(node, definitionTypeRef,
+                        definitionConstructorGridLength, new List<IXamlAstValueNode> {lengthNode});
+                }
+
+                var definitionNodes =
+                    new List<IXamlAstValueNode>(lengths.Select(CreateDefinitionNode));
+
+                result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, listType, elementType, definitionNodes);
+
+                return true;
+            }
+            catch
+            {
+                throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a {errorDisplayName}", node);
+            }
         }
     }
 }
