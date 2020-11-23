@@ -2,6 +2,7 @@ using System;
 using System.Windows.Input;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -62,6 +63,7 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<NativeMenuItem, NativeMenu> MenuProperty =
             AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenu>(nameof(Menu), o => o.Menu, (o, v) => o.Menu = v);
 
+        [Content]
         public NativeMenu Menu
         {
             get => _menu;
