@@ -147,13 +147,16 @@ namespace Avalonia.Controls
             {
                 if (_target.Owner is object)
                 {
-                    observer.OnNext(Convert(_target.Owner?.FindResource(_key)));
+                    observer.OnNext(Convert(_target.Owner.FindResource(_key)));
                 }
             }
 
             private void PublishNext()
             {
-                PublishNext(Convert(_target.Owner?.FindResource(_key)));
+                if (_target.Owner is object)
+                {
+                    PublishNext(Convert(_target.Owner.FindResource(_key)));
+                }
             }
 
             private void OwnerChanged(object sender, EventArgs e)
