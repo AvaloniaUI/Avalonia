@@ -151,7 +151,7 @@ namespace Avalonia.Controls
             IsEnabled = _command?.CanExecute(null) ?? true;
         }
 
-        public bool HasClickHandlers => Clicked != null;
+        public bool HasClickHandlers => Click != null;
 
         public ICommand Command
         {
@@ -182,11 +182,21 @@ namespace Avalonia.Controls
             set { SetValue(CommandParameterProperty, value); }
         }
 
-        public event EventHandler Clicked;
+        /// <summary>
+        /// Occurs when a <see cref="NativeMenuItem"/> is clicked.
+        /// </summary>
+        public event EventHandler Click;
+
+        [Obsolete("Use Click event.")]
+        public event EventHandler Clicked
+        {
+            add => Click += value;
+            remove => Click -= value;
+        }
 
         void INativeMenuItemExporterEventsImplBridge.RaiseClicked()
         {
-            Clicked?.Invoke(this, new EventArgs());
+            Click?.Invoke(this, new EventArgs());
 
             if (Command?.CanExecute(CommandParameter) == true)
             {
