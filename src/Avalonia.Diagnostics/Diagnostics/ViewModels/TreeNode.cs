@@ -23,6 +23,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (visual is IControl control)
             {
+                ElementName = control.Name;
+
                 var removed = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
                     x => control.DetachedFromLogicalTree += x,
                     x => control.DetachedFromLogicalTree -= x);
@@ -61,6 +63,11 @@ namespace Avalonia.Diagnostics.ViewModels
             private set { RaiseAndSetIfChanged(ref _classes, value); }
         }
 
+        public string ElementName
+        {
+            get;
+        }
+
         public IVisual Visual
         {
             get;
@@ -81,27 +88,6 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get;
             private set;
-        }
-
-        public IndexPath Index
-        {
-            get
-            {
-                var indices = new List<int>();
-                var child = this;
-                var parent = Parent;
-                
-                while (parent is object)
-                {
-                    indices.Add(IndexOf(parent.Children, child));
-                    child = child.Parent;
-                    parent = parent.Parent;
-                }
-
-                indices.Add(0);
-                indices.Reverse();
-                return new IndexPath(indices);
-            }
         }
 
         public void Dispose()

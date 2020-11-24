@@ -1,7 +1,9 @@
 using System;
 using Avalonia.Collections;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -39,6 +41,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that lets the user select from a range of values by moving a Thumb control along a Track.
     /// </summary>
+    [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class Slider : RangeBase
     {
         /// <summary>
@@ -92,6 +95,8 @@ namespace Avalonia.Controls
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
                 RoutingStrategies.Bubble);
+            
+            ValueProperty.OverrideMetadata<Slider>(new DirectPropertyMetadata<double>(enableDataValidation: true));
         }
 
         /// <summary>
@@ -221,6 +226,14 @@ namespace Avalonia.Controls
             var finalValue = calcVal * range + Minimum;
 
             Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
+        }
+
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            if (property == ValueProperty)
+            {
+                DataValidationErrors.SetError(this, value.Error);
+            }
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)

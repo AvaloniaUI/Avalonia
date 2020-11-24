@@ -65,56 +65,59 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{DynamicResource ControlCornerRadius}">
-          <Grid ColumnDefinitions="Auto,*,Auto">
-            <ContentPresenter Name="PART_ContentPresenter"
-                              Grid.Column="1"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Content="{TemplateBinding Content}"
-                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                              Padding="{TemplateBinding Padding}" />
+        <DataValidationErrors>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{DynamicResource ControlCornerRadius}"
+                  MinHeight="{TemplateBinding MinHeight}">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+              <ContentPresenter Name="PART_ContentPresenter"
+                                Grid.Column="1"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Content="{TemplateBinding Content}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Padding="{TemplateBinding Padding}" />
 
-            <StackPanel Name="PART_SpinnerPanel"
-                        Orientation="Horizontal"
-                        IsVisible="{TemplateBinding ShowButtonSpinner}">
-              <RepeatButton Name="PART_IncreaseButton"
-                            Classes="ButtonSpinnerRepeatButton"
-                            VerticalContentAlignment="Center"
-                            Foreground="{TemplateBinding Foreground}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            Background="{TemplateBinding Background}"
-                            FontSize="{TemplateBinding FontSize}">
-                <Path Fill="{TemplateBinding Foreground}"
-                      Width="16"
-                      Height="8"
-                      Stretch="Uniform"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
-              </RepeatButton>
+              <StackPanel Name="PART_SpinnerPanel"
+                          Orientation="Horizontal"
+                          IsVisible="{TemplateBinding ShowButtonSpinner}">
+                <RepeatButton Name="PART_IncreaseButton"
+                              Classes="ButtonSpinnerRepeatButton"
+                              VerticalContentAlignment="Center"
+                              Foreground="{TemplateBinding Foreground}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              Background="{TemplateBinding Background}"
+                              FontSize="{TemplateBinding FontSize}">
+                  <Path Fill="{TemplateBinding Foreground}"
+                        Width="16"
+                        Height="8"
+                        Stretch="Uniform"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}" />
+                </RepeatButton>
 
-              <RepeatButton Name="PART_DecreaseButton"
-                            Classes="ButtonSpinnerRepeatButton"
-                            Foreground="{TemplateBinding Foreground}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            Background="{TemplateBinding Background}"
-                            VerticalContentAlignment="Center"
-                            FontSize="{TemplateBinding FontSize}">
-                <Path Fill="{TemplateBinding Foreground}"
-                      Width="16"
-                      Height="8"
-                      Stretch="Uniform"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
-              </RepeatButton>
-            </StackPanel>
-          </Grid>
-        </Border>
+                <RepeatButton Name="PART_DecreaseButton"
+                              Classes="ButtonSpinnerRepeatButton"
+                              Foreground="{TemplateBinding Foreground}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              Background="{TemplateBinding Background}"
+                              VerticalContentAlignment="Center"
+                              FontSize="{TemplateBinding FontSize}">
+                  <Path Fill="{TemplateBinding Foreground}"
+                        Width="16"
+                        Height="8"
+                        Stretch="Uniform"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}" />
+                </RepeatButton>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </DataValidationErrors>
       </ControlTemplate>
     </Setter>
   </Style>

@@ -56,9 +56,14 @@
                       CompactPaneLength="{Binding Value, ElementName=CompactPaneLengthSlider}"
                       DisplayMode="{Binding CurrentDisplayMode}">
           <SplitView.Pane>
-            <Grid RowDefinitions="Auto,*,Auto">
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
               <TextBlock Text="PANE CONTENT" FontWeight="Bold" Name="PaneHeader" Margin="5,12,0,0" />
-              <ListBoxItem Grid.Row="1" VerticalAlignment="Top" Margin="0 10">
+              <ComboBox Width="150" Grid.Row="1">
+                <ComboBoxItem Content="Item1"/>
+                <ComboBoxItem Content="Item2"/>
+                <ComboBoxItem Content="Item3"/>
+              </ComboBox>
+              <ListBoxItem Grid.Row="2" VerticalAlignment="Top" Margin="0 10">
                 <StackPanel Orientation="Horizontal">
                   <!--Path glyph from materialdesignicons.com-->
                   <Border Width="48">
@@ -71,7 +76,7 @@
                   <TextBlock Text="People" VerticalAlignment="Center" />
                 </StackPanel>
               </ListBoxItem>
-              <TextBlock Grid.Row="2" Text="Item at bottom" Margin="60,12" />
+              <TextBlock Grid.Row="3" Text="Item at bottom" Margin="60,12" />
             </Grid>
           </SplitView.Pane>
 

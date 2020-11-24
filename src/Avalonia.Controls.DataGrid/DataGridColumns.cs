@@ -33,6 +33,11 @@ namespace Avalonia.Controls
             ColumnReordering?.Invoke(this, e);
         }
 
+        protected internal virtual void OnColumnSorting(DataGridColumnEventArgs e)
+        {
+            Sorting?.Invoke(this, e);
+        }
+
         /// <summary>
         /// Adjusts the widths of all columns with DisplayIndex >= displayIndex such that the total
         /// width is adjusted by the given amount, if possible.  If the total desired adjustment amount

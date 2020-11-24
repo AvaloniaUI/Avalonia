@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.Git;
@@ -15,6 +16,7 @@ using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Tools.Npm;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
+using Pharmacist.Core;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -105,7 +107,7 @@ partial class Build : NukeBuild
                 .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
-            .SetToolPath(MsBuildExe.Value)
+            .SetProcessToolPath(MsBuildExe.Value)
             .SetConfiguration(Parameters.Configuration)
             .SetVerbosity(MSBuildVerbosity.Minimal)
             .Apply(configurator));
@@ -124,26 +126,38 @@ partial class Build : NukeBuild
 
     Target CompileHtmlPreviewer => _ => _
         .DependsOn(Clean)
+        .OnlyWhenStatic(() => !Parameters.SkipPreviewer)
         .Executes(() =>
         {
             var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
 
             NpmTasks.NpmInstall(c => c
-                .SetWorkingDirectory(webappDir)
-                .SetArgumentConfigurator(a => a.Add("--silent")));
+                .SetProcessWorkingDirectory(webappDir)
+                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
             NpmTasks.NpmRun(c => c
-                .SetWorkingDirectory(webappDir)
+                .SetProcessWorkingDirectory(webappDir)
                 .SetCommand("dist"));
         });
-    
-    Target Compile => _ => _
+
+    Target CompileNative => _ => _
         .DependsOn(Clean)
-        .DependsOn(CompileHtmlPreviewer)
+        .DependsOn(GenerateCppHeaders)
+        .OnlyWhenStatic(() => EnvironmentInfo.IsOsx)
         .Executes(() =>
+        {
+            var project = $"{RootDirectory}/native/Avalonia.Native/src/OSX/Avalonia.Native.OSX.xcodeproj/";
+            var args = $"-project {project} -configuration {Parameters.Configuration} CONFIGURATION_BUILD_DIR={RootDirectory}/Build/Products/Release";
+            ProcessTasks.StartProcess("xcodebuild", args).AssertZeroExitCode();
+        });
+
+    Target Compile => _ => _
+        .DependsOn(Clean, CompileNative)
+        .DependsOn(CompileHtmlPreviewer)
+        .Executes(async () =>
         {
             if (Parameters.IsRunningOnWindows)
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .SetArgumentConfigurator(a => a.Add("/r"))
+                    .SetProcessArgumentConfigurator(a => a.Add("/r"))
                     .AddTargets("Build")
                 );
 
@@ -153,7 +167,43 @@ partial class Build : NukeBuild
                     .AddProperty("PackageVersion", Parameters.Version)
                     .SetConfiguration(Parameters.Configuration)
                 );
+
+            await CompileReactiveEvents();
         });
+
+    async Task CompileReactiveEvents()
+    {
+        var avaloniaBuildOutput = Path.Combine(RootDirectory, "packages", "Avalonia", "bin", Parameters.Configuration);
+        var avaloniaAssemblies = GlobFiles(avaloniaBuildOutput, "**/Avalonia*.dll")
+            .Where(file => !file.Contains("Avalonia.Build.Tasks") &&
+                            !file.Contains("Avalonia.Remote.Protocol"));
+
+        var eventsDirectory = GlobDirectories($"{RootDirectory}/src/**/Avalonia.ReactiveUI.Events").First();
+        var eventsBuildFile = Path.Combine(eventsDirectory, "Events_Avalonia.cs");
+        if (File.Exists(eventsBuildFile))
+            File.Delete(eventsBuildFile);
+
+        using (var stream = File.Create(eventsBuildFile))
+        using (var writer = new StreamWriter(stream))
+        {
+            await ObservablesForEventGenerator.ExtractEventsFromAssemblies(
+                writer, avaloniaAssemblies, new string[0], "netstandard2.0"
+            );
+        }
+
+        var eventsProject = Path.Combine(eventsDirectory, "Avalonia.ReactiveUI.Events.csproj");
+        if (Parameters.IsRunningOnWindows)
+            MsBuildCommon(eventsProject, c => c
+                .SetProcessArgumentConfigurator(a => a.Add("/r"))
+                .AddTargets("Build")
+            );
+        else
+            DotNetBuild(c => c
+                .SetProjectFile(eventsProject)
+                .AddProperty("PackageVersion", Parameters.Version)
+                .SetConfiguration(Parameters.Configuration)
+            );
+    }
 
     void RunCoreTest(string projectName)
     {
@@ -183,6 +233,21 @@ partial class Build : NukeBuild
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
+
+    Target RunHtmlPreviewerTests => _ => _
+        .DependsOn(CompileHtmlPreviewer)
+        .OnlyWhenStatic(() => !(Parameters.SkipPreviewer || Parameters.SkipTests))
+        .Executes(() =>
+        {
+            var webappTestDir = RootDirectory / "tests" / "Avalonia.DesignerSupport.Tests" / "Remote" / "HtmlTransport" / "webapp";
+
+            NpmTasks.NpmInstall(c => c
+                .SetProcessWorkingDirectory(webappTestDir)
+                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
+            NpmTasks.NpmRun(c => c
+                .SetProcessWorkingDirectory(webappTestDir)
+                .SetCommand("test"));
+        });
 
     Target RunCoreLibsTests => _ => _
         .OnlyWhenStatic(() => !Parameters.SkipTests)
@@ -283,6 +348,7 @@ partial class Build : NukeBuild
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunDesignerTests)
+        .DependsOn(RunHtmlPreviewerTests)
         .DependsOn(RunLeakTests);
 
     Target Package => _ => _

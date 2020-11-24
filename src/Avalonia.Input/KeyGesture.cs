@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Avalonia.Input
@@ -29,7 +27,7 @@ namespace Avalonia.Input
             KeyModifiers = modifiers;
         }
 
-        public bool Equals(KeyGesture other)
+        public bool Equals(KeyGesture? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -37,12 +35,12 @@ namespace Avalonia.Input
             return Key == other.Key && KeyModifiers == other.KeyModifiers;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
 
-            return obj is KeyGesture && Equals((KeyGesture)obj);
+            return obj is KeyGesture gesture && Equals(gesture);
         }
 
         public override int GetHashCode()
@@ -53,12 +51,12 @@ namespace Avalonia.Input
             }
         }
 
-        public static bool operator ==(KeyGesture left, KeyGesture right)
+        public static bool operator ==(KeyGesture? left, KeyGesture? right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(KeyGesture left, KeyGesture right)
+        public static bool operator !=(KeyGesture? left, KeyGesture? right)
         {
             return !Equals(left, right);
         }
@@ -146,7 +144,10 @@ namespace Avalonia.Input
             return s.ToString();
         }
 
-        public bool Matches(KeyEventArgs keyEvent) => ResolveNumPadOperationKey(keyEvent.Key) == Key && keyEvent.KeyModifiers == KeyModifiers;
+        public bool Matches(KeyEventArgs keyEvent) =>
+            keyEvent != null &&
+            keyEvent.KeyModifiers == KeyModifiers &&
+            ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(Key);
 
         // TODO: Move that to external key parser
         private static Key ParseKey(string key)

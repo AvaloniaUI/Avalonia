@@ -7,6 +7,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -19,7 +20,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
-    public class SelectingItemsControlTests
+    public partial class SelectingItemsControlTests
     {
         private MouseTestHelper _helper = new MouseTestHelper();
 
@@ -56,7 +57,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
+            Prepare(target);
 
             Assert.False(items[0].IsSelected);
             Assert.False(items[1].IsSelected);
@@ -77,8 +78,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
+
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -101,8 +102,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.SelectedItem = items[1];
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             Assert.False(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
@@ -159,6 +159,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Template = Template();
             target.EndInit();
 
+            Prepare(target);
+
             Assert.Equal(0, target.SelectedIndex);
         }
 
@@ -181,11 +183,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             listBox.EndInit();
 
+            Prepare(listBox);
+
             Assert.Equal("B", listBox.SelectedItem);
         }
 
         [Fact]
-        public void Setting_SelectedIndex_Before_Initialize_Should_Retain()
+        public void Setting_SelectedIndex_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -223,7 +227,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedItem_Before_Initialize_Should_Retain()
+        public void Setting_SelectedItem_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -242,7 +246,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
 
         [Fact]
-        public void Setting_SelectedItems_Before_Initialize_Should_Retain()
+        public void Setting_SelectedItems_Before_Initialize_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -290,7 +294,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Setting_SelectedIndex_Before_Initialize_With_AlwaysSelected_Should_Retain()
+        public void Setting_SelectedIndex_Before_Initialize_With_AlwaysSelected_Should_Retain_Selection()
         {
             var listBox = new ListBox
             {
@@ -324,8 +328,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.SelectedIndex = 1;
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             Assert.False(items[0].IsSelected);
             Assert.True(items[1].IsSelected);
@@ -480,8 +483,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             items.Add(new Item { IsSelected = true });
 
             Assert.Equal(2, target.SelectedIndex);
@@ -530,8 +532,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             target.SelectedIndex = 1;
 
             Assert.Equal(items[1], target.SelectedItem);
@@ -554,6 +555,44 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Removing_Selected_Item_Should_Update_Selection_With_AlwaysSelected()
+        {
+            var item0 = new Item();
+            var item1 = new Item();
+            var items = new AvaloniaList<Item>
+            {
+                item0,
+                item1,
+            };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            SelectionChangedEventArgs receivedArgs = null;
+
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            items.RemoveAt(1);
+
+            Assert.Same(item0, target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Equal(new[] { item0 }, receivedArgs.AddedItems);
+            Assert.Equal(new[] { item1 }, receivedArgs.RemovedItems);
+            Assert.True(items.Single().IsSelected);
+        }
+
+        [Fact]
         public void Removing_Selected_Item_Should_Clear_Selection_With_BeginInit()
         {
             var items = new AvaloniaList<Item>
@@ -568,8 +607,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Template = Template();
             target.EndInit();
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             target.SelectedIndex = 0;
 
             Assert.Equal(items[0], target.SelectedItem);
@@ -635,8 +673,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -666,8 +703,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             target.SelectedItem = items[1];
 
             Assert.False(items[0].IsSelected);
@@ -757,8 +793,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             var called = false;
 
@@ -775,6 +810,186 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Setting_SelectedIndex_Should_Raise_PropertyChanged_Events()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    Assert.Equal(-1, e.OldValue);
+                    Assert.Equal(1, e.NewValue);
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    Assert.Null(e.OldValue);
+                    Assert.Equal("bar", e.NewValue);
+                    ++selectedItemRaised;
+                }
+            };
+
+            target.SelectedIndex = 1;
+
+            Assert.Equal(1, selectedIndexRaised);
+            Assert.Equal(1, selectedItemRaised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item_Should_Raise_PropertyChanged_Events()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+            target.SelectedIndex = 1;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    Assert.Equal(1, e.OldValue);
+                    Assert.Equal(-1, e.NewValue);
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    Assert.Equal("bar", e.OldValue);
+                    Assert.Null(e.NewValue);
+                }
+            };
+
+            items.RemoveAt(1);
+
+            Assert.Equal(1, selectedIndexRaised);
+            Assert.Equal(0, selectedItemRaised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item0_Should_Raise_PropertyChanged_Events_With_AlwaysSelected()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+            target.SelectedIndex = 0;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    Assert.Equal("foo", e.OldValue);
+                    Assert.Equal("bar", e.NewValue);
+                    ++selectedItemRaised;
+                }
+            };
+
+            items.RemoveAt(0);
+
+            Assert.Equal(0, selectedIndexRaised);
+            Assert.Equal(1, selectedItemRaised);
+        }
+
+        [Fact]
+        public void Removing_Selected_Item1_Should_Raise_PropertyChanged_Events_With_AlwaysSelected()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+            target.SelectedIndex = 1;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    Assert.Equal(1, e.OldValue);
+                    Assert.Equal(0, e.NewValue);
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    Assert.Equal("bar", e.OldValue);
+                    Assert.Equal("foo", e.NewValue);
+                }
+            };
+
+            items.RemoveAt(1);
+
+            Assert.Equal(1, selectedIndexRaised);
+            Assert.Equal(0, selectedItemRaised);
+        }
+
+        [Fact]
+        public void Removing_Item_Before_Selection_Should_Raise_PropertyChanged_Events()
+        {
+            var items = new ObservableCollection<string> { "foo", "bar", "baz" };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            var selectedIndexRaised = 0;
+            var selectedItemRaised = 0;
+            target.SelectedIndex = 1;
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == SelectingItemsControl.SelectedIndexProperty)
+                {
+                    Assert.Equal(1, e.OldValue);
+                    Assert.Equal(0, e.NewValue);
+                    ++selectedIndexRaised;
+                }
+                else if (e.Property == SelectingItemsControl.SelectedItemProperty)
+                {
+                    ++selectedItemRaised;
+                }
+            };
+
+            items.RemoveAt(0);
+
+            Assert.Equal(1, selectedIndexRaised);
+            Assert.Equal(0, selectedItemRaised);
+        }
+
+        [Fact]
         public void Order_Of_Setting_Items_And_SelectedIndex_During_Initialization_Should_Not_Matter()
         {
             var items = new[] { "Foo", "Bar" };
@@ -784,6 +999,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedIndex = 1;
             target.Items = items;
             ((ISupportInitialize)target).EndInit();
+
+            Prepare(target);
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
@@ -799,6 +1016,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItem = "Bar";
             target.Items = items;
             ((ISupportInitialize)target).EndInit();
+
+            Prepare(target);
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
@@ -897,8 +1116,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = new[] { "Foo", "Bar", "Baz " },
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
 
             var panel = target.Presenter.Panel;
@@ -919,8 +1137,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = items,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             _helper.Down(target.Presenter.Panel.Children[1]);
 
@@ -1014,8 +1231,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
             Assert.Equal(3, target.SelectedIndex);
@@ -1030,8 +1246,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
             _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
             Assert.Equal(new[] { ":pressed", ":selected" }, target.Presenter.Panel.Children[3].Classes);
@@ -1054,8 +1269,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             items.Insert(0, "Qux");
 
@@ -1080,13 +1294,71 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             items.RemoveAt(0);
 
             Assert.Equal(0, target.SelectedIndex);
             Assert.Equal("Bar", target.SelectedItem);
+        }
+
+        [Fact]
+        public void Binding_SelectedIndex_Selects_Correct_Item()
+        {
+            // Issue #4496 (part 2)
+            var items = new ObservableCollection<string>();
+
+            var other = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                [!ListBox.SelectedIndexProperty] = other[!ListBox.SelectedIndexProperty],
+            };
+
+            Prepare(other);
+            Prepare(target);
+
+            items.Add("Foo");
+
+            Assert.Equal(0, other.SelectedIndex);
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Binding_SelectedItem_Selects_Correct_Item()
+        {
+            // Issue #4496 (part 2)
+            var items = new ObservableCollection<string>();
+
+            var other = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                [!ListBox.SelectedItemProperty] = other[!ListBox.SelectedItemProperty],
+            };
+
+            Prepare(target);
+            other.ApplyTemplate();
+            other.Presenter.ApplyTemplate();
+
+            items.Add("Foo");
+
+            Assert.Equal(0, other.SelectedIndex);
+            Assert.Equal(0, target.SelectedIndex);
         }
 
         [Fact]
@@ -1106,8 +1378,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             items[1] = "Qux";
 
@@ -1131,13 +1402,36 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Items = items,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            var raised = false;
+
+            Prepare(target);
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+            target.SelectedIndex = 2;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Causes_Scroll_To_Initial_SelectedItem()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+            };
 
             var raised = false;
-            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
 
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
             target.SelectedIndex = 2;
+            Prepare(target);
 
             Assert.True(raised);
         }
@@ -1182,6 +1476,99 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void AutoScrollToSelectedItem_Scrolls_When_Reattached_To_Visual_Tree_If_Selection_Changed_While_Detached_From_Visual_Tree()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectedIndex = 2,
+            };
+
+            var raised = false;
+
+            Prepare(target);
+
+            var root = (TestRoot)target.Parent;
+
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+
+            root.Child = null;
+            target.SelectedIndex = 1;
+            root.Child = target;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Doesnt_Scroll_If_Reattached_To_Visual_Tree_With_No_Selection_Change()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectedIndex = 2,
+            };
+
+            var raised = false;
+
+            Prepare(target);
+
+            var root = (TestRoot)target.Parent;
+
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+
+            root.Child = null;
+            root.Child = target;
+
+            Assert.False(raised);
+        }
+
+        [Fact]
+        public void AutoScrollToSelectedItem_Causes_Scroll_When_Turned_On()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                AutoScrollToSelectedItem = false,
+            };
+
+            Prepare(target);
+
+            var raised = false;
+            target.AddHandler(Control.RequestBringIntoViewEvent, (s, e) => raised = true);
+            target.SelectedIndex = 2;
+
+            Assert.False(raised);
+
+            target.AutoScrollToSelectedItem = true;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void Can_Set_Both_SelectedItem_And_SelectedItems_During_Initialization()
         {
             // Issue #2969.
@@ -1194,6 +1581,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems = selectedItems;
             target.SelectedItem = "Bar";
             target.EndInit();
+
+            Prepare(target);
 
             Assert.Equal("Bar", target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
@@ -1261,16 +1650,274 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Items = items;
 
-            target.ApplyTemplate();
-
-            target.Presenter.ApplyTemplate();
+            Prepare(target);
 
             Assert.Equal(second, target.SelectedItem);
 
             Assert.Equal(1, target.SelectedIndex);
         }
 
-        private FuncControlTemplate Template()
+        [Fact]
+        public void Setting_SelectionMode_Should_Update_SelectionModel()
+        {
+            var target = new TestSelector();
+            var model = target.Selection;
+
+            Assert.True(model.SingleSelect);
+
+            target.SelectionMode = SelectionMode.Multiple;
+
+            Assert.False(model.SingleSelect);
+        }
+
+        [Fact]
+        public void Does_The_Best_It_Can_With_AutoSelecting_ViewModel()
+        {
+            // Tests the following scenario:
+            //
+            // - Items changes from empty to having 1 item
+            // - ViewModel auto-selects item 0 in CollectionChanged
+            // - SelectionModel receives CollectionChanged
+            // - And so adjusts the selected item from 0 to 1, which is past the end of the items.
+            //
+            // There's not much we can do about this situation because the order in which
+            // CollectionChanged handlers are called can't be known (the problem also exists with
+            // WPF). The best we can do is not select an invalid index.
+            var vm = new SelectionViewModel();
+
+            vm.Items.CollectionChanged += (s, e) =>
+            {
+                if (vm.SelectedIndex == -1 && vm.Items.Count > 0)
+                {
+                    vm.SelectedIndex = 0;
+                }
+            };
+
+            var target = new ListBox
+            {
+                [!ListBox.ItemsProperty] = new Binding("Items"),
+                [!ListBox.SelectedIndexProperty] = new Binding("SelectedIndex"),
+                DataContext = vm,
+            };
+
+            Prepare(target);
+
+            vm.Items.Add("foo");
+            vm.Items.Add("bar");
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(new[] { 0 }, target.Selection.SelectedIndexes);
+            Assert.Equal("foo", target.SelectedItem);
+            Assert.Equal(new[] { "foo" }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Preserves_Initial_SelectedItems_When_Bound()
+        {
+            // Issue #4272 (there are two issues there, this addresses the second one).
+            var vm = new SelectionViewModel
+            {
+                Items = { "foo", "bar", "baz" },
+                SelectedItems = { "bar" },
+            };
+
+            var target = new ListBox
+            {
+                [!ListBox.ItemsProperty] = new Binding("Items"),
+                [!ListBox.SelectedItemsProperty] = new Binding("SelectedItems"),
+                DataContext = vm,
+            };
+
+            Prepare(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal(new[] { 1 }, target.Selection.SelectedIndexes);
+            Assert.Equal("bar", target.SelectedItem);
+            Assert.Equal(new[] { "bar" }, target.SelectedItems);
+        }
+
+        [Fact]
+        public void Preserves_SelectedItem_When_Items_Changed()
+        {
+            // Issue #4048
+            var target = new SelectingItemsControl
+            {
+                Items = new[] { "foo", "bar", "baz"},
+                SelectedItem = "bar",
+            };
+
+            Prepare(target);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal("bar", target.SelectedItem);
+
+            target.Items = new[] { "qux", "foo", "bar" };
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal("bar", target.SelectedItem);
+        }
+
+        [Fact]
+        public void Setting_SelectedItems_Raises_PropertyChanged()
+        {
+            var target = new TestSelector
+            {
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var raised = 0;
+            var newValue = new AvaloniaList<object>();
+
+            Prepare(target);
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == ListBox.SelectedItemsProperty)
+                {
+                    Assert.Null(e.OldValue);
+                    Assert.Same(newValue, e.NewValue);
+                    ++raised;
+                }
+            };
+
+            target.SelectedItems = newValue;
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Setting_Selection_Raises_SelectedItems_PropertyChanged()
+        {
+            var target = new TestSelector
+            {
+                Items = new[] { "foo", "bar", "baz" },
+            };
+
+            var raised = 0;
+            var oldValue = target.SelectedItems;
+
+            Prepare(target);
+
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == ListBox.SelectedItemsProperty)
+                {
+                    Assert.Same(oldValue, e.OldValue);
+                    Assert.Null(e.NewValue);
+                    ++raised;
+                }
+            };
+
+            target.Selection = new SelectionModel<int>();
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Handles_Removing_Last_Item_In_Two_Controls_With_Bound_SelectedIndex()
+        {
+            var items = new ObservableCollection<string> { "foo" };
+
+            // Simulates problem with TabStrip and Carousel with bound SelectedIndex.
+            var tabStrip = new TestSelector 
+            { 
+                Items = items, 
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var carousel = new TestSelector
+            {
+                Items = items,
+                [!Carousel.SelectedIndexProperty] = tabStrip[!TabStrip.SelectedIndexProperty],
+            };
+
+            var tabStripRaised = 0;
+            var carouselRaised = 0;
+
+            tabStrip.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo" }, e.RemovedItems);
+                Assert.Empty(e.AddedItems);
+                ++tabStripRaised;
+            };
+
+            carousel.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo" }, e.RemovedItems);
+                Assert.Empty(e.AddedItems);
+                ++carouselRaised;
+            };
+
+            items.RemoveAt(0);
+
+            Assert.Equal(1, tabStripRaised);
+            Assert.Equal(1, carouselRaised);
+        }
+
+        [Fact]
+        public void Handles_Removing_Last_Item_In_Controls_With_Bound_SelectedItem()
+        {
+            var items = new ObservableCollection<string> { "foo" };
+
+            // Simulates problem with TabStrip and Carousel with bound SelectedItem.
+            var tabStrip = new TestSelector
+            {
+                Items = items,
+                SelectionMode = SelectionMode.AlwaysSelected,
+            };
+
+            var carousel = new TestSelector
+            {
+                Items = items,
+                [!Carousel.SelectedItemProperty] = tabStrip[!TabStrip.SelectedItemProperty],
+            };
+
+            var tabStripRaised = 0;
+            var carouselRaised = 0;
+
+            tabStrip.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo" }, e.RemovedItems);
+                Assert.Empty(e.AddedItems);
+                ++tabStripRaised;
+            };
+
+            carousel.SelectionChanged += (s, e) =>
+            {
+                Assert.Equal(new[] { "foo" }, e.RemovedItems);
+                Assert.Empty(e.AddedItems);
+                ++carouselRaised;
+            };
+
+            items.RemoveAt(0);
+
+            Assert.Equal(1, tabStripRaised);
+            Assert.Equal(1, carouselRaised);
+        }
+
+        private static void Prepare(SelectingItemsControl target)
+        {
+            var root = new TestRoot
+            {
+                Child = target,
+                Width = 100,
+                Height = 100,
+                Styles =
+                {
+                    new Style(x => x.Is<SelectingItemsControl>())
+                    {
+                        Setters =
+                        {
+                            new Setter(ListBox.TemplateProperty, Template()),
+                        },
+                    },
+                },
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+        }
+
+        private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter
@@ -1310,6 +1957,30 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public int SelectedIndex { get; set; }
         }
 
+        private class SelectionViewModel : NotifyingBase
+        {
+            private int _selectedIndex = -1;
+
+            public SelectionViewModel()
+            {
+                Items = new ObservableCollection<string>();
+                SelectedItems = new ObservableCollection<string>();
+            }
+
+            public int SelectedIndex
+            {
+                get => _selectedIndex;
+                set
+                {
+                    _selectedIndex = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public ObservableCollection<string> Items { get; }
+            public ObservableCollection<string> SelectedItems { get; }
+        }
+
         private class RootWithItems : TestRoot
         {
             public List<string> Items { get; set; } = new List<string>() { "a", "b", "c", "d", "e" };
@@ -1326,6 +1997,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
             public TestSelector(SelectionMode selectionMode)
             {
                 SelectionMode = selectionMode;
+            }
+
+            public new ISelectionModel Selection
+            {
+                get => base.Selection;
+                set => base.Selection = value;
+            }
+
+            public new IList SelectedItems
+            {
+                get => base.SelectedItems;
+                set => base.SelectedItems = value;
+            }
+
+            public new SelectionMode SelectionMode
+            {
+                get => base.SelectionMode;
+                set => base.SelectionMode = value;
             }
 
             public new bool MoveSelection(NavigationDirection direction, bool wrap)

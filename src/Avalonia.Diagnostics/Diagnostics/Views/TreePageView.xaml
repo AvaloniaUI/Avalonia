@@ -2,17 +2,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
              x:Class="Avalonia.Diagnostics.Views.TreePageView">
-  <Grid ColumnDefinitions="*,4,3*">    
+  <Grid ColumnDefinitions="0.4*,4,0.6*">    
     <TreeView Name="tree"
               BorderThickness="0"
               Items="{Binding Nodes}"
-              Selection="{Binding Selection}">
+              SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="{Binding Type}"/>
             <TextBlock Text="{Binding Classes}"/>
+            <TextBlock Foreground="Gray" Text="{Binding ElementName}"/>
           </StackPanel>
         </TreeDataTemplate>
       </TreeView.DataTemplates>

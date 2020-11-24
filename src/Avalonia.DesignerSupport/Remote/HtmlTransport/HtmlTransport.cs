@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
+using InputProtocol = Avalonia.Remote.Protocol.Input;
 
 namespace Avalonia.DesignerSupport.Remote.HtmlTransport
 {
@@ -38,11 +40,13 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         public HtmlWebSocketTransport(IAvaloniaRemoteTransportConnection signalTransport, Uri listenUri)
         {
             if (listenUri.Scheme != "http")
-                throw new ArgumentException("listenUri");
+                throw new ArgumentException("URI scheme is not HTTP.", nameof(listenUri));
 
             var resourcePrefix = "Avalonia.DesignerSupport.Remote.HtmlTransport.webapp.build.";
             _resources = typeof(HtmlWebSocketTransport).Assembly.GetManifestResourceNames()
-                .Where(r => r.StartsWith(resourcePrefix) && r.EndsWith(".gz")).ToDictionary(
+                .Where(r => r.StartsWith(resourcePrefix, StringComparison.OrdinalIgnoreCase)
+                         && r.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(
                     r => r.Substring(resourcePrefix.Length).Substring(0,r.Length-resourcePrefix.Length-3),
                     r =>
                     {
@@ -113,14 +117,11 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 while (true)
                 {
                     var msg = await socket.ReceiveMessage().ConfigureAwait(false);
-                    if(msg == null)
-                        return;
-                    if (msg.IsText)
+                    if(msg != null && msg.IsText)
                     {
-                        var s = Encoding.UTF8.GetString(msg.Data);
-                        var parts = s.Split(':');
-                        if (parts[0] == "frame-received")
-                            _onMessage?.Invoke(this, new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) });
+                        var message = ParseMessage(msg.AsString());
+                        if (message != null)
+                            _onMessage?.Invoke(this, message);
                     }
                 }
             }
@@ -179,7 +180,6 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             _pendingSocket?.Dispose();
             _simpleServer.Dispose();
         }
-
         
         public Task Send(object data)
         {
@@ -262,5 +262,75 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             _onException?.Invoke(this, ex);
         }
         #endregion
+
+        private static object ParseMessage(string message)
+        {
+            var parts = message.Split(':');
+            var key = parts[0];
+            if (key.Equals("frame-received", StringComparison.OrdinalIgnoreCase))
+            {
+                return new FrameReceivedMessage { SequenceId = long.Parse(parts[1]) };
+            }
+            else if (key.Equals("pointer-released", StringComparison.OrdinalIgnoreCase))
+            {
+                return new InputProtocol.PointerReleasedEventMessage
+                {
+                    Modifiers = ParseInputModifiers(parts[1]),
+                    X = ParseDouble(parts[2]),
+                    Y = ParseDouble(parts[3]),
+                    Button = ParseMouseButton(parts[4]),
+                };
+            }
+            else if (key.Equals("pointer-pressed", StringComparison.OrdinalIgnoreCase))
+            {
+                return new InputProtocol.PointerPressedEventMessage
+                {
+                    Modifiers = ParseInputModifiers(parts[1]),
+                    X = ParseDouble(parts[2]),
+                    Y = ParseDouble(parts[3]),
+                    Button = ParseMouseButton(parts[4]),
+                };
+            }
+            else if (key.Equals("pointer-moved", StringComparison.OrdinalIgnoreCase))
+            {
+                return new InputProtocol.PointerMovedEventMessage
+                {
+                    Modifiers = ParseInputModifiers(parts[1]),
+                    X = ParseDouble(parts[2]),
+                    Y = ParseDouble(parts[3]),
+                };
+            }
+            else if (key.Equals("scroll", StringComparison.OrdinalIgnoreCase))
+            {
+                return new InputProtocol.ScrollEventMessage
+                {
+                    Modifiers = ParseInputModifiers(parts[1]),
+                    X = ParseDouble(parts[2]),
+                    Y = ParseDouble(parts[3]),
+                    DeltaX = ParseDouble(parts[4]),
+                    DeltaY = ParseDouble(parts[5]),
+                };
+            }
+            
+            return null;
+        }
+
+        private static InputProtocol.InputModifiers[] ParseInputModifiers(string modifiersText) =>
+            string.IsNullOrWhiteSpace(modifiersText)
+            ? null
+            : modifiersText
+                .Split(',')
+                .Select(x => (InputProtocol.InputModifiers)Enum.Parse(
+                    typeof(InputProtocol.InputModifiers), x, true))
+                .ToArray();
+
+        private static InputProtocol.MouseButton ParseMouseButton(string buttonText) =>
+            string.IsNullOrWhiteSpace(buttonText)
+            ? InputProtocol.MouseButton.None
+            : (InputProtocol.MouseButton)Enum.Parse(
+                typeof(InputProtocol.MouseButton), buttonText, true);
+
+        private static double ParseDouble(string text) =>
+            double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture);
     }
 }

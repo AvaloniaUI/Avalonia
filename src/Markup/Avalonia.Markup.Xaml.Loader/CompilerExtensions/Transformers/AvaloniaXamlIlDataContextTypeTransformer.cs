@@ -24,7 +24,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 AvaloniaXamlIlDataContextTypeMetadataNode inferredDataContextTypeNode = null;
                 AvaloniaXamlIlDataContextTypeMetadataNode directiveDataContextTypeNode = null;
-                bool isDataTemplate = on.Type.GetClrType().Equals(context.GetAvaloniaTypes().DataTemplate);
 
                 for (int i = 0; i < on.Children.Count; ++i)
                 {
@@ -57,7 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         {
                             inferredDataContextTypeNode = ParseDataContext(context, on, obj);
                         }
-                        else if(isDataTemplate
+                        else if(context.GetAvaloniaTypes().DataTemplate.IsAssignableFrom(on.Type.GetClrType())
                             && pa.Property.Name == "DataType"
                             && pa.Values[0] is XamlTypeExtensionNode dataTypeNode)
                         {
@@ -70,7 +69,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 // do more specialized inference
                 if (directiveDataContextTypeNode is null)
                 {
-                    if (isDataTemplate && inferredDataContextTypeNode is null)
+                    if (context.GetAvaloniaTypes().IDataTemplate.IsAssignableFrom(on.Type.GetClrType())
+                        && inferredDataContextTypeNode is null)
                     {
                         // Infer data type from collection binding on a control that displays items.
                         var parentObject = context.ParentNodes().OfType<XamlAstConstructableObjectNode>().FirstOrDefault();

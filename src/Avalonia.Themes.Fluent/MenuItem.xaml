@@ -125,7 +125,7 @@
                     MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
                     HorizontalAlignment="Stretch"
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
-              <ScrollViewer>
+              <ScrollViewer Classes="menuscroller">
                 <ItemsPresenter Name="PART_ItemsPresenter"
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -173,7 +173,7 @@
                       MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
                       HorizontalAlignment="Stretch"
                       CornerRadius="{DynamicResource OverlayCornerRadius}">
-                <ScrollViewer>
+                <ScrollViewer Classes="menuscroller">
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   Items="{TemplateBinding Items}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}"

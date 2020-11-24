@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -20,6 +21,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A menu item control.
     /// </summary>
+    [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
     public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
     {
         /// <summary>
@@ -99,7 +101,7 @@ namespace Avalonia.Controls
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
-        private Popup _popup;
+        private Popup? _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -143,7 +145,7 @@ namespace Avalonia.Controls
                 {
                     var parent = x as Control;
                     return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
-                        Observable.Return<DefinitionBase.SharedSizeScope>(null);
+                        Observable.Return<DefinitionBase.SharedSizeScope?>(null);
                 });
 
             this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);

@@ -4,13 +4,6 @@ jobs:
     vmImage: 'ubuntu-16.04'
   steps:
   - task: CmdLine@2
-    displayName: 'Install CastXML'
-    inputs:
-      script: |
-        sudo apt-get update
-        sudo apt-get install castxml
-
-  - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
@@ -31,20 +24,15 @@ jobs:
     condition: not(canceled())
      
 - job: macOS
+  variables:
+    SolutionDir: '$(Build.SourcesDirectory)'
   pool:
     vmImage: 'macOS-10.14'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.101'
+    displayName: 'Use .NET Core SDK 3.1.401'
     inputs:
-      packageType: sdk
-      version: 3.1.101
-
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core Runtime 3.1.1'
-    inputs:
-      packageType: runtime
-      version: 3.1.1
+      version: 3.1.401
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -52,6 +40,12 @@ jobs:
       script: |
         curl -o ./mono.pkg https://download.mono-project.com/archive/5.18.0/macos-10-universal/MonoFramework-MDK-5.18.0.225.macos10.xamarin.universal.pkg 
         sudo installer -verbose -pkg ./mono.pkg -target /
+
+  - task: CmdLine@2
+    displayName: 'Generate avalonia-native'
+    inputs:
+      script: |
+        cd src/tools/MicroComGenerator; dotnet run -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
 
   - task: Xcode@5
     inputs:
@@ -62,13 +56,6 @@ jobs:
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: '10' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./'
-
-  - task: CmdLine@2
-    displayName: 'Install CastXML'
-    inputs:
-      script: |
-        brew update
-        brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/8a004a91a7fcd3f6620d5b01b6541ff0a640ffba/Formula/castxml.rb
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
@@ -88,7 +75,7 @@ jobs:
         export PATH="$PATH:$HOME/.dotnet/tools"
         dotnet --info
         printenv
-        nuke --target CiAzureOSX --configuration Release
+        nuke --target CiAzureOSX --configuration Release --skip-previewer
 
   - task: PublishTestResults@2
     inputs:
@@ -111,7 +98,14 @@ jobs:
 - job: Windows
   pool:
     vmImage: 'windows-2019'
+  variables:
+    SolutionDir: '$(Build.SourcesDirectory)'
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.401'
+    inputs:
+      version: 3.1.401
+
   - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:

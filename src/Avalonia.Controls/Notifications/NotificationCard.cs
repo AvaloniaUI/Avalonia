@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 
@@ -9,6 +10,7 @@ namespace Avalonia.Controls.Notifications
     /// <summary>
     /// Control that represents and displays a notification.
     /// </summary>
+    [PseudoClasses(":error", ":information", ":success", ":warning")]
     public class NotificationCard : ContentControl
     {
         private bool _isClosed;

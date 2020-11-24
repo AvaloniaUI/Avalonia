@@ -758,8 +758,6 @@ namespace Avalonia.Layout
 
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            base.OnDetachedFromVisualTreeCore(e);
-
             if (e.Root is ILayoutRoot r)
             {
                 if (_layoutUpdated is object)
@@ -772,6 +770,8 @@ namespace Avalonia.Layout
                     r.LayoutManager.UnregisterEffectiveViewportListener(this);
                 }
             }
+
+            base.OnDetachedFromVisualTreeCore(e);
         }
 
         /// <summary>

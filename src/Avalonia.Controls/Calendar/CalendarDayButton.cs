@@ -5,10 +5,12 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 
 namespace Avalonia.Controls.Primitives
 {
+    [PseudoClasses(":pressed", ":disabled", ":selected", ":inactive", ":today", ":blackout", ":dayfocused")]
     public sealed class CalendarDayButton : Button
     {
         /// <summary>

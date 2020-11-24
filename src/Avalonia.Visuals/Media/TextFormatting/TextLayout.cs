@@ -115,22 +115,24 @@ namespace Avalonia.Media.TextFormatting
         /// Draws the text layout.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        /// <param name="origin">The origin.</param>
-        public void Draw(DrawingContext context, Point origin)
+        public void Draw(DrawingContext context)
         {
             if (!TextLines.Any())
             {
                 return;
             }
 
-            var currentY = origin.Y;
+            var currentY = 0.0;
 
             foreach (var textLine in TextLines)
             {
                 var offsetX = TextLine.GetParagraphOffsetX(textLine.LineMetrics.Size.Width, Size.Width,
                     _paragraphProperties.TextAlignment);
 
-                textLine.Draw(context, new Point(origin.X + offsetX, currentY));
+                using (context.PushPostTransform(Matrix.CreateTranslation(offsetX, currentY)))
+                {
+                    textLine.Draw(context);
+                }
 
                 currentY += textLine.LineMetrics.Size.Height;
             }
@@ -221,7 +223,7 @@ namespace Avalonia.Media.TextFormatting
                 while (currentPosition < _text.Length)
                 {
                     var textLine = TextFormatter.Current.FormatLine(textSource, currentPosition, MaxWidth,
-                        _paragraphProperties, previousLine?.LineBreak);
+                        _paragraphProperties, previousLine?.TextLineBreak);
 
                     currentPosition += textLine.TextRange.Length;
 
@@ -230,7 +232,7 @@ namespace Avalonia.Media.TextFormatting
                         if (textLines.Count == MaxLines || !double.IsPositiveInfinity(MaxHeight) &&
                             height + textLine.LineMetrics.Size.Height > MaxHeight)
                         {
-                            if (previousLine?.LineBreak != null && _textTrimming != TextTrimming.None)
+                            if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
                             {
                                 var collapsedLine =
                                     previousLine.Collapse(GetCollapsingProperties(MaxWidth));
@@ -255,7 +257,7 @@ namespace Avalonia.Media.TextFormatting
 
                     previousLine = textLine;
 
-                    if (currentPosition != _text.Length || textLine.LineBreak == null)
+                    if (currentPosition != _text.Length || textLine.TextLineBreak == null)
                     {
                         continue;
                     }

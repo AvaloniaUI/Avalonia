@@ -1,19 +1,17 @@
-﻿using System;
-using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia;
 using Avalonia.ReactiveUI;
 
 namespace VirtualizationDemo
 {
     class Program
     {
-        static void Main(string[] args)
-        {
-            AppBuilder.Configure<App>()
-               .UsePlatformDetect()
-               .UseReactiveUI()
-               .LogToDebug()
-               .Start<MainWindow>();
-        }
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .UseReactiveUI()
+                .LogToTrace();
+
+        public static int Main(string[] args)
+            => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 }

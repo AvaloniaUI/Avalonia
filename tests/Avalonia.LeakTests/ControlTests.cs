@@ -421,80 +421,98 @@ namespace Avalonia.LeakTests
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Canvas>()).ObjectsCount));
             }
         }
+  
+        [Fact]
+        public void Attached_ContextMenu_Is_Freed()
+        {
+            using (Start())
+            {
+                void AttachShowAndDetachContextMenu(Control control)
+                {
+                    var contextMenu = new ContextMenu
+                    {
+                        Items = new[]
+                        {
+                            new MenuItem { Header = "Foo" },
+                            new MenuItem { Header = "Foo" },
+                        }
+                    };
 
-        // [Fact]
-        // public void Attached_ContextMenu_Is_Freed()
-        // {
-        //     using (Start())
-        //     {
-        //         void AttachShowAndDetachContextMenu(Control control)
-        //         {
-        //             var contextMenu = new ContextMenu
-        //             {
-        //                 Items = new[]
-        //                 {
-        //                     new MenuItem { Header = "Foo" },
-        //                     new MenuItem { Header = "Foo" },
-        //                 }
-        //             };
+                    control.ContextMenu = contextMenu;
+                    contextMenu.Open(control);
+                    contextMenu.Close();
+                    control.ContextMenu = null;
+                }
 
-        //             control.ContextMenu = contextMenu;
-        //             contextMenu.Open(control);
-        //             contextMenu.Close();
-        //             control.ContextMenu = null;
-        //         }
+                var window = new Window();
+                window.Show();
 
-        //         var window = new Window();
-        //         window.Show();
+                Assert.Same(window, FocusManager.Instance.Current);
 
-        //         Assert.Same(window, FocusManager.Instance.Current);
+                // Context menu in resources means the baseline may not be 0.
+                var initialMenuCount = 0;
+                var initialMenuItemCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
+                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
+                });
+                
+                AttachShowAndDetachContextMenu(window);
 
-        //         AttachShowAndDetachContextMenu(window);
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
+                dotMemory.Check(memory =>
+                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                dotMemory.Check(memory =>
+                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+            }
+        }
 
-        //         Mock.Get(window.PlatformImpl).ResetCalls();
-        //         dotMemory.Check(memory =>
-        //             Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
-        //         dotMemory.Check(memory =>
-        //             Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
-        //     }
-        // }
+        [Fact]
+        public void Standalone_ContextMenu_Is_Freed()
+        {
+            using (Start())
+            {
+                void BuildAndShowContextMenu(Control control)
+                {
+                    var contextMenu = new ContextMenu
+                    {
+                        Items = new[]
+                        {
+                            new MenuItem { Header = "Foo" },
+                            new MenuItem { Header = "Foo" },
+                        }
+                    };
 
-        // [Fact]
-        // public void Standalone_ContextMenu_Is_Freed()
-        // {
-        //     using (Start())
-        //     {
-        //         void BuildAndShowContextMenu(Control control)
-        //         {
-        //             var contextMenu = new ContextMenu
-        //             {
-        //                 Items = new[]
-        //                 {
-        //                     new MenuItem { Header = "Foo" },
-        //                     new MenuItem { Header = "Foo" },
-        //                 }
-        //             };
+                    contextMenu.Open(control);
+                    contextMenu.Close();
+                }
 
-        //             contextMenu.Open(control);
-        //             contextMenu.Close();
-        //         }
+                var window = new Window();
+                window.Show();
 
-        //         var window = new Window();
-        //         window.Show();
+                Assert.Same(window, FocusManager.Instance.Current);
 
-        //         Assert.Same(window, FocusManager.Instance.Current);
+                // Context menu in resources means the baseline may not be 0.
+                var initialMenuCount = 0;
+                var initialMenuItemCount = 0;
+                dotMemory.Check(memory =>
+                {
+                    initialMenuCount = memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount;
+                    initialMenuItemCount = memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount;
+                });
+                
+                BuildAndShowContextMenu(window);
+                BuildAndShowContextMenu(window);
 
-        //         BuildAndShowContextMenu(window);
-        //         BuildAndShowContextMenu(window);
-
-        //         Mock.Get(window.PlatformImpl).ResetCalls();
-        //         dotMemory.Check(memory =>
-        //             Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
-        //         dotMemory.Check(memory =>
-        //             Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
-        //     }
-        // }
-
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
+                dotMemory.Check(memory =>
+                    Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
+                dotMemory.Check(memory =>
+                    Assert.Equal(initialMenuItemCount, memory.GetObjects(where => where.Type.Is<MenuItem>()).ObjectsCount));
+            }
+        }
+      
         [Fact]
         public void Path_Is_Freed()
         {
@@ -534,6 +552,37 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void ItemsRepeater_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new ItemsRepeater(),
+                    };
+
+                    window.Show();
+
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<ItemsRepeater>(window.Presenter.Child);
+
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
+            }
+        }
+
         private IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
@@ -552,8 +601,9 @@ namespace Avalonia.LeakTests
         {
             public bool DrawFps { get; set; }
             public bool DrawDirtyRects { get; set; }
+#pragma warning disable CS0067
             public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
-
+#pragma warning restore CS0067
             public void AddDirty(IVisual visual)
             {
             }

@@ -137,6 +137,11 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
 
+            InvalidateMeasureOnChildrenChanged();
+        }
+
+        private protected virtual void InvalidateMeasureOnChildrenChanged()
+        {
             InvalidateMeasure();
         }
 

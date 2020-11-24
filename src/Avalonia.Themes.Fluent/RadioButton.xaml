@@ -13,11 +13,11 @@
     <Setter Property="Background" Value="{DynamicResource RadioButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrush}" />
-    <Setter Property="Padding" Value="8,6,0,0" />
+    <Setter Property="Padding" Value="8,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-    <Setter Property="VerticalContentAlignment" Value="Top" />    
+    <Setter Property="VerticalContentAlignment" Value="Center" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="MinWidth" Value="120" />
     <Setter Property="Template">
@@ -25,8 +25,7 @@
         <Border Name="RootBorder"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{DynamicResource ControlCornerRadius}">
+                BorderThickness="{TemplateBinding BorderThickness}">
           <Grid ColumnDefinitions="20,*">
             <Grid VerticalAlignment="Top"
               Height="32">
@@ -76,6 +75,10 @@
     <Setter Property="Opacity" Value="0" />
     <Setter Property="Stroke" Value="{DynamicResource RadioButtonCheckGlyphStroke}" />
     <Setter Property="Fill" Value="{DynamicResource RadioButtonCheckGlyphFill}" />
+  </Style>
+  
+  <Style Selector="RadioButton /template/ Border#RootBorder">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </Style>
 
 

@@ -238,7 +238,7 @@ namespace Avalonia.Headless
             }
         }
 
-        class HeadlessBitmapStub : IBitmapImpl, IRenderTargetBitmapImpl, IWriteableBitmapImpl
+        class HeadlessBitmapStub : IBitmapImpl, IDrawingContextLayerImpl, IWriteableBitmapImpl
         {
             public Size Size { get; }
 
@@ -266,6 +266,13 @@ namespace Avalonia.Headless
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public void Blit(IDrawingContextImpl context)
+            {
+                
+            }
+
+            public bool CanBlit => false;
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
@@ -307,7 +314,7 @@ namespace Avalonia.Headless
 
             }
 
-            public IRenderTargetBitmapImpl CreateLayer(Size size)
+            public IDrawingContextLayerImpl CreateLayer(Size size)
             {
                 return new HeadlessBitmapStub(size, new Vector(96, 96));
             }
@@ -385,7 +392,7 @@ namespace Avalonia.Headless
                 
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
             {
                 
             }

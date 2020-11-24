@@ -12,10 +12,28 @@ namespace Avalonia.Media
         /// </summary>
         public static readonly StyledProperty<Rect> RectProperty =
             AvaloniaProperty.Register<EllipseGeometry, Rect>(nameof(Rect));
+        
+        /// <summary>
+        /// Defines the <see cref="RadiusX"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> RadiusXProperty =
+            AvaloniaProperty.Register<EllipseGeometry, double>(nameof(RadiusX));
+        
+        /// <summary>
+        /// Defines the <see cref="RadiusY"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> RadiusYProperty =
+            AvaloniaProperty.Register<EllipseGeometry, double>(nameof(RadiusY));
+
+        /// <summary>
+        /// Defines the <see cref="Center"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Point> CenterProperty =
+            AvaloniaProperty.Register<EllipseGeometry, Point>(nameof(Center));
 
         static EllipseGeometry()
         {
-            AffectsGeometry(RectProperty);
+            AffectsGeometry(RectProperty, RadiusXProperty, RadiusYProperty, CenterProperty);
         }
 
         /// <summary>
@@ -43,6 +61,33 @@ namespace Avalonia.Media
             set => SetValue(RectProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a double that defines the radius in the X-axis of the ellipse.
+        /// </summary>
+        public double RadiusX
+        {
+            get => GetValue(RadiusXProperty);
+            set => SetValue(RadiusXProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a double that defines the radius in the Y-axis of the ellipse.
+        /// </summary>
+        public double RadiusY
+        {
+            get => GetValue(RadiusYProperty);
+            set => SetValue(RadiusYProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a point that defines the center of the ellipse.
+        /// </summary>
+        public Point Center
+        {
+            get => GetValue(CenterProperty);
+            set => SetValue(CenterProperty, value);
+        }
+
         /// <inheritdoc/>
         public override Geometry Clone()
         {
@@ -54,7 +99,14 @@ namespace Avalonia.Media
         {
             var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
-            return factory.CreateEllipseGeometry(Rect);
+            if (Rect != default) return factory.CreateEllipseGeometry(Rect);
+            
+            var originX = Center.X - RadiusX;
+            var originY = Center.Y - RadiusY;
+            var width = RadiusX * 2;
+            var height = RadiusY * 2;
+            
+            return factory.CreateEllipseGeometry(new Rect(originX, originY, width, height));
         }
     }
 }

@@ -8,9 +8,10 @@ namespace Avalonia.Input
 {
     public class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
     {
-        private IInputElement _focusedElement;
+        private IInputElement? _focusedElement;
+        private IInputRoot? _focusedRoot;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public static IKeyboardDevice Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
 
@@ -18,7 +19,7 @@ namespace Avalonia.Input
 
         public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
 
-        public IInputElement FocusedElement
+        public IInputElement? FocusedElement
         {
             get
             {
@@ -28,18 +29,134 @@ namespace Avalonia.Input
             private set
             {
                 _focusedElement = value;
+
+                if (_focusedElement != null && _focusedElement.IsAttachedToVisualTree)
+                {
+                    _focusedRoot = _focusedElement.VisualRoot as IInputRoot;
+                }
+                else
+                {
+                    _focusedRoot = null;
+                }
+                
                 RaisePropertyChanged();
             }
         }
 
+        private void ClearFocusWithinAncestors(IInputElement? element)
+        {
+            var el = element;
+            
+            while (el != null)
+            {
+                if (el is InputElement ie)
+                {
+                    ie.IsKeyboardFocusWithin = false;
+                }
+
+                el = (IInputElement)el.VisualParent;
+            }
+        }
+        
+        private void ClearFocusWithin(IInputElement element, bool clearRoot)
+        {
+            foreach (var visual in element.VisualChildren)
+            {
+                if (visual is IInputElement el && el.IsKeyboardFocusWithin)
+                {
+                    ClearFocusWithin(el, true);
+                    break;
+                }
+            }
+            
+            if (clearRoot)
+            {
+                if (element is InputElement ie)
+                {
+                    ie.IsKeyboardFocusWithin = false;
+                }
+            }
+        }
+
+        private void SetIsFocusWithin(IInputElement? oldElement, IInputElement? newElement)
+        {
+            if (newElement == null && oldElement != null)
+            {
+                ClearFocusWithinAncestors(oldElement);
+                return;
+            }
+            
+            IInputElement? branch = null;
+
+            var el = newElement;
+
+            while (el != null)
+            {
+                if (el.IsKeyboardFocusWithin)
+                {
+                    branch = el;
+                    break;
+                }
+
+                el = el.VisualParent as IInputElement;
+            }
+
+            el = oldElement;
+
+            if (el != null && branch != null)
+            {
+                ClearFocusWithin(branch, false);
+            }
+
+            el = newElement;
+            
+            while (el != null && el != branch)
+            {
+                if (el is InputElement ie)
+                {
+                    ie.IsKeyboardFocusWithin = true;
+                }
+
+                el = el.VisualParent as IInputElement;
+            }
+        }
+        
+        private void ClearChildrenFocusWithin(IInputElement element, bool clearRoot)
+        {
+            foreach (var visual in element.VisualChildren)
+            {
+                if (visual is IInputElement el && el.IsKeyboardFocusWithin)
+                {
+                    ClearChildrenFocusWithin(el, true);
+                    break;
+                }
+            }
+            
+            if (clearRoot && element is InputElement ie)
+            {
+                ie.IsKeyboardFocusWithin = false;
+            }
+        }
+
         public void SetFocusedElement(
-            IInputElement element, 
+            IInputElement? element, 
             NavigationMethod method,
             KeyModifiers keyModifiers)
         {
             if (element != FocusedElement)
             {
                 var interactive = FocusedElement as IInteractive;
+
+                if (FocusedElement != null && 
+                    (!FocusedElement.IsAttachedToVisualTree ||
+                     _focusedRoot != element?.VisualRoot as IInputRoot) &&
+                    _focusedRoot != null)
+                {
+                    ClearChildrenFocusWithin(_focusedRoot, true);
+                }
+                
+                SetIsFocusWithin(FocusedElement, element);
+                
                 FocusedElement = element;
 
                 interactive?.RaiseEvent(new RoutedEventArgs

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -333,6 +334,28 @@ namespace Avalonia.Base.UnitTests.Collections
             target.Clear();
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void Can_CopyTo_Array_Of_Same_Type()
+        {
+            var target = new AvaloniaList<string> { "foo", "bar", "baz" };
+            var result = new string[3];
+
+            target.CopyTo(result, 0);
+
+            Assert.Equal(target, result);
+        }
+
+        [Fact]
+        public void Can_CopyTo_Array_Of_Base_Type()
+        {
+            var target = new AvaloniaList<string> { "foo", "bar", "baz" };
+            var result = new object[3];
+
+            ((IList)target).CopyTo(result, 0);
+
+            Assert.Equal(target, result);
         }
     }
 }

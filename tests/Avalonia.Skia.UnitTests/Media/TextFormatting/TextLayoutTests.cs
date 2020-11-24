@@ -369,7 +369,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var glyphRun = shapedRun.GlyphRun;
 
-                var width = glyphRun.Bounds.Width;
+                var width = glyphRun.Size.Width;
 
                 var characterHit = glyphRun.GetCharacterHitFromDistance(width, out _);
 
@@ -417,7 +417,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         [Theory]
         [InlineData("abcde\r\n", 7)] // Carriage Return + Line Feed
-        [InlineData("abcde\n\r", 7)] // This isn't valid but we somehow have to support it.
         [InlineData("abcde\u000A", 6)] // Line Feed
         [InlineData("abcde\u000B", 6)] // Vertical Tab
         [InlineData("abcde\u000C", 6)] // Form Feed
@@ -572,6 +571,45 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         textWrapping: TextWrapping.Wrap,
                         maxWidth: 50);
                 }
+            }
+        }
+
+        [Fact]
+        public void Should_Process_Multiple_NewLines_Properly()
+        {
+            using (Start())
+            {
+                var text = "123\r\n\r\n456\r\n\r\n";
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black);
+
+                Assert.Equal(5, layout.TextLines.Count);
+
+                Assert.Equal("123\r\n", layout.TextLines[0].TextRuns[0].Text);
+                Assert.Equal("\r\n", layout.TextLines[1].TextRuns[0].Text);
+                Assert.Equal("456\r\n", layout.TextLines[2].TextRuns[0].Text);
+                Assert.Equal("\r\n", layout.TextLines[3].TextRuns[0].Text);
+            }
+        }
+
+        [Fact]
+        public void Should_Wrap_Min_OneCharacter_EveryLine()
+        {
+            using (Start())
+            {
+                var layout = new TextLayout(
+                    s_singleLineText,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 3);
+
+                //every character should be new line as there not enough space for even one character
+                Assert.Equal(s_singleLineText.Length, layout.TextLines.Count);
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
@@ -11,6 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a date
     /// </summary>
+    [PseudoClasses(":hasnodate")]
     public class DatePicker : TemplatedControl
     {
         /// <summary>

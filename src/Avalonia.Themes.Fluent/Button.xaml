@@ -32,7 +32,6 @@
                           BorderThickness="{TemplateBinding BorderThickness}"
                           Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
-                          CornerRadius="{DynamicResource ControlCornerRadius}"
                           Padding="{TemplateBinding Padding}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -77,7 +76,7 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundPressed}" />
   </Style>
 
-  <Style Selector="Button">
+  <Style Selector="Button, RepeatButton, ToggleButton">
     <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Transitions">
       <Transitions>
@@ -86,7 +85,7 @@
     </Setter>
   </Style>
 
-  <Style Selector="Button:pressed">
+  <Style Selector="Button:pressed, RepeatButton:pressed, ToggleButton:pressed">
     <Setter Property="RenderTransform" Value="scale(0.98)" />    
   </Style>
 
@@ -94,5 +93,9 @@
     <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundDisabled}" />
     <Setter Property="BorderBrush" Value="{DynamicResource AccentButtonBorderBrushDisabled}" />
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" />
+  </Style>
+  
+  <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </Style>
 </Styles>
