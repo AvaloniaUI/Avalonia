@@ -11,7 +11,6 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
-
     /// <summary>
     /// Enum which describes how to position the ticks in a <see cref="Slider"/>.
     /// </summary>
@@ -84,6 +83,8 @@ namespace Avalonia.Controls
         private IDisposable _increaseButtonSubscription;
         private IDisposable _increaseButtonReleaseDispose;
         private IDisposable _pointerMovedDispose;
+        
+        private const double Tolerance = 0.0001;
 
         /// <summary>
         /// Initializes static members of the <see cref="Slider"/> class. 
@@ -95,7 +96,7 @@ namespace Avalonia.Controls
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
                 RoutingStrategies.Bubble);
-            
+
             ValueProperty.OverrideMetadata<Slider>(new DirectPropertyMetadata<double>(enableDataValidation: true));
         }
 
@@ -157,7 +158,7 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            
+
             _decreaseButtonPressDispose?.Dispose();
             _decreaseButtonReleaseDispose?.Dispose();
             _increaseButtonSubscription?.Dispose();
@@ -168,9 +169,11 @@ namespace Avalonia.Controls
             _track = e.NameScope.Find<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
+
             if (_track != null)
             {
                 _track.IsThumbDragHandled = true;
+                _track.KeyDown += TrackOnKeyDown;
             }
 
             if (_decreaseButton != null)
@@ -259,7 +262,21 @@ namespace Avalonia.Controls
                     // Find the current tick we are at
                     var tickNumber = Math.Round((value - Minimum) / TickFrequency);
 
-            _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
+                    if (greaterThan)
+                        tickNumber += 1.0;
+                    else
+                        tickNumber -= 1.0;
+
+                    next = Minimum + tickNumber * TickFrequency;
+                }
+            }
+
+
+            // Update if we've found a better value
+            if (Math.Abs(next - value) > Tolerance)
+            {
+                Value = next;
+            }
         }
 
         private void TrackMoved(object sender, PointerEventArgs e)
@@ -346,19 +363,18 @@ namespace Avalonia.Controls
         {
             if (IsSnapToTickEnabled)
             {
-                double previous = Minimum;
-                double next = Maximum;
+                var previous = Minimum;
+                var next = Maximum;
 
                 // This property is rarely set so let's try to avoid the GetValue
                 var ticks = Ticks;
 
                 // If ticks collection is available, use it.
                 // Note that ticks may be unsorted.
-                if ((ticks != null) && (ticks.Count > 0))
+                if (ticks != null && ticks.Count > 0)
                 {
-                    for (int i = 0; i < ticks.Count; i++)
+                    foreach (var tick in ticks)
                     {
-                        double tick = ticks[i];
                         if (MathUtilities.AreClose(tick, value))
                         {
                             return value;
@@ -376,7 +392,7 @@ namespace Avalonia.Controls
                 }
                 else if (MathUtilities.GreaterThan(TickFrequency, 0.0))
                 {
-                    previous = Minimum + (Math.Round(((value - Minimum) / TickFrequency)) * TickFrequency);
+                    previous = Minimum + Math.Round((value - Minimum) / TickFrequency) * TickFrequency;
                     next = Math.Min(Maximum, previous + TickFrequency);
                 }
 
