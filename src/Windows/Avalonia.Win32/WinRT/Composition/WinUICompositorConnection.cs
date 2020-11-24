@@ -134,7 +134,7 @@ namespace Avalonia.Win32.WinRT.Composition
         public static void TryCreateAndRegister(EglPlatformOpenGlInterface angle)
         {
             const int majorRequired = 10;
-            const int buildRequired = 16299;
+            const int buildRequired = 17134;
 
             var majorInstalled = Win32Platform.WindowsVersion.Major;
             var buildInstalled = Win32Platform.WindowsVersion.Build;

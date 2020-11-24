@@ -60,7 +60,7 @@ namespace Avalonia.Native
                 Header = "About Avalonia",
             };
 
-            aboutItem.Clicked += async (sender, e) =>
+            aboutItem.Click += async (sender, e) =>
             {
                 var dialog = new AboutAvaloniaDialog();
 
