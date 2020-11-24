@@ -188,6 +188,80 @@ namespace Avalonia.Controls
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
         }
 
+        private void TrackOnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyModifiers != KeyModifiers.None) return;
+
+            switch (e.Key)
+            {
+                case Key.Left:
+                    MoveToNextTick(-SmallChange);
+                    break;
+
+                case Key.Right:
+                    MoveToNextTick(SmallChange);
+                    break;
+
+                case Key.PageUp:
+                    MoveToNextTick(-LargeChange);
+                    break;
+
+                case Key.PageDown:
+                    MoveToNextTick(LargeChange);
+                    break;
+
+                case Key.Home:
+                    Value = Minimum;
+                    break;
+
+                case Key.End:
+                    Value = Maximum;
+                    break;
+            }
+        }
+            
+        private void MoveToNextTick(double direction)
+        {
+            if (direction == 0.0) return;
+
+            var value = Value;
+
+            // Find the next value by snapping
+            var next = SnapToTick(Math.Max(Minimum, Math.Min(Maximum, value + direction)));
+
+            var greaterThan = direction > 0; //search for the next tick greater than value?
+
+            // If the snapping brought us back to value, find the next tick point
+            if (Math.Abs(next - value) < Tolerance
+                && !(greaterThan && Math.Abs(value - Maximum) < Tolerance) // Stop if searching up if already at Max
+                && !(!greaterThan && Math.Abs(value - Minimum) < Tolerance)) // Stop if searching down if already at Min
+            {
+                var ticks = Ticks;
+
+                // If ticks collection is available, use it.
+                // Note that ticks may be unsorted.
+                if (ticks != null && ticks.Count > 0)
+                {
+                    foreach (var tick in ticks)
+                    {
+                        // Find the smallest tick greater than value or the largest tick less than value
+                        if (greaterThan && MathUtilities.GreaterThan(tick, value) &&
+                            (MathUtilities.LessThan(tick, next) || Math.Abs(next - value) < Tolerance)
+                            || !greaterThan && MathUtilities.LessThan(tick, value) &&
+                            (MathUtilities.GreaterThan(tick, next) || Math.Abs(next - value) < Tolerance))
+                        {
+                            next = tick;
+                        }
+                    }
+                }
+                else if (MathUtilities.GreaterThan(TickFrequency, 0.0))
+                {
+                    // Find the current tick we are at
+                    var tickNumber = Math.Round((value - Minimum) / TickFrequency);
+
+            _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
+        }
+
         private void TrackMoved(object sender, PointerEventArgs e)
         {
             if (_isDragging)
