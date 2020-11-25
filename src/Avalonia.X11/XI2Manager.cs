@@ -351,7 +351,7 @@ namespace Avalonia.X11
             if (state.HasFlag(XModifierMask.Mod4Mask))
                 Modifiers |= RawInputModifiers.Meta;
 
-            Modifiers = ParseButtonState(ev->buttons.MaskLen, ev->buttons.Mask);
+            Modifiers |= ParseButtonState(ev->buttons.MaskLen, ev->buttons.Mask);
 
             Valuators = new Dictionary<int, double>();
             Position = new Point(ev->event_x, ev->event_y);

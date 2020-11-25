@@ -7,7 +7,10 @@ namespace Avalonia
     /// <summary>
     /// A 2x3 matrix.
     /// </summary>
-    public readonly struct Matrix : IEquatable<Matrix>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Matrix : IEquatable<Matrix>
     {
         private readonly double _m11;
         private readonly double _m12;

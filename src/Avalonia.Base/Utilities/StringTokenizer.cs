@@ -4,7 +4,10 @@ using static System.Char;
 
 namespace Avalonia.Utilities
 {
-    public struct StringTokenizer : IDisposable
+#if !BUILDTASK
+    public
+#endif
+    struct StringTokenizer : IDisposable
     {
         private const char DefaultSeparatorChar = ',';
 
