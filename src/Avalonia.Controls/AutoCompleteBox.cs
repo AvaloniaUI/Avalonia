@@ -1405,8 +1405,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Enter:
-                    OnAdapterSelectionComplete(this, new RoutedEventArgs());
-                    e.Handled = true;
+                    if (IsDropDownOpen)
+                    {
+                        OnAdapterSelectionComplete(this, new RoutedEventArgs());
+                        e.Handled = true;
+                    }
                     break;
 
                 default:
