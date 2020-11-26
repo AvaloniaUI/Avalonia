@@ -17,8 +17,12 @@ namespace Avalonia.Win32
 
         private async Task<IDisposable> OpenClipboard()
         {
+            var i = OleRetryCount;
+
             while (!UnmanagedMethods.OpenClipboard(IntPtr.Zero))
             {
+                if (--i == 0)
+                    throw new TimeoutException("Timeout opening clipboard.");
                 await Task.Delay(100);
             }
 
