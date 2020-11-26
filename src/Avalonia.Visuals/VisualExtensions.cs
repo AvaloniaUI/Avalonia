@@ -51,14 +51,12 @@ namespace Avalonia
                 var thisOffset = GetOffsetFrom(common, from);
                 var thatOffset = GetOffsetFrom(common, to);
 
-                var thatOffsetInverted = thatOffset.TryInvert();
-
-                if (!thatOffsetInverted.HasValue)
+                if (!thatOffset.TryInvert(out var thatOffsetInverted))
                 {
                     return null;
                 }
-                
-                return thatOffsetInverted.Value * thisOffset;
+
+                return thatOffsetInverted * thisOffset;
             }
 
             return null;
