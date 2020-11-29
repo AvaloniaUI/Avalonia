@@ -1,6 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="Avalonia.Themes.Fluent.Controls.FluentTheme">
+        x:Class="Avalonia.Themes.Fluent.Controls.FluentControls">
   <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->  
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToolTip.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml"/>

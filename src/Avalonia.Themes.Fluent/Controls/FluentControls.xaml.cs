@@ -6,7 +6,7 @@ namespace Avalonia.Themes.Fluent.Controls
     /// <summary>
     /// The default Avalonia theme.
     /// </summary>
-    public class FluentTheme : Styles
+    public class FluentControls : Styles
     {
     }
 }
