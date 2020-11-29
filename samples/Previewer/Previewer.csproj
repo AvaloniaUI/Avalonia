@@ -8,7 +8,6 @@
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
     <EmbeddedResource Include="**\*.xaml" />
-    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
   </ItemGroup>
   
   <Import Project="..\..\build\SampleApp.props" />

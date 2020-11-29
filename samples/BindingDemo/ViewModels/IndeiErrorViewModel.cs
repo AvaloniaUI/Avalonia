@@ -1,11 +1,11 @@
-﻿using ReactiveUI;
+﻿using MiniMvvm;
 using System;
 using System.ComponentModel;
 using System.Collections;
 
 namespace BindingDemo.ViewModels
 {
-    public class IndeiErrorViewModel : ReactiveObject, INotifyDataErrorInfo
+    public class IndeiErrorViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         private int _maximum = 10;
         private int _value;
