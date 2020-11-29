@@ -5,5 +5,5 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/Base.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/FluentBaseDark.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Accents/FluentControlResourcesDark.xaml" />
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml" />
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FluentControls.xaml" />
 </Styles>
