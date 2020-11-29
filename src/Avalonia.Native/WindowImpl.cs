@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -17,6 +18,8 @@ namespace Avalonia.Native
         private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
+        private DoubleClickHelper _doubleClickHelper;
+        
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativePlatformOpenGlInterface glFeature) : base(opts, glFeature)
@@ -24,6 +27,8 @@ namespace Avalonia.Native
             _factory = factory;
             _opts = opts;
             _glFeature = glFeature;
+            _doubleClickHelper = new DoubleClickHelper();
+            
             using (var e = new WindowEvents(this))
             {
                 var context = _opts.UseGpu ? glFeature?.MainContext : null;
@@ -42,14 +47,14 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
-            bool IAvnWindowEvents.Closing()
+            int IAvnWindowEvents.Closing()
             {
                 if (_parent.Closing != null)
                 {
-                    return _parent.Closing();
+                    return _parent.Closing().AsComBool();
                 }
 
-                return true;
+                return true.AsComBool();
             }
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
@@ -69,7 +74,7 @@ namespace Avalonia.Native
 
         public void CanResize(bool value)
         {
-            _native.SetCanResize(value);
+            _native.SetCanResize(value.AsComBool());
         }
 
         public void SetSystemDecorations(Controls.SystemDecorations enabled)
@@ -118,7 +123,22 @@ namespace Avalonia.Native
 
                     if(visual == null)
                     {
-                        _native.BeginMoveDrag();
+                        if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
+                        {
+                            // TOGGLE WINDOW STATE.
+                            if (WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen)
+                            {
+                                WindowState = WindowState.Normal;
+                            }
+                            else
+                            {
+                                WindowState = WindowState.Maximized;
+                            }
+                        }
+                        else
+                        {
+                            _native.BeginMoveDrag();   
+                        }
                     }
                 }
             }
@@ -145,7 +165,7 @@ namespace Avalonia.Native
         {
             _isExtended = extendIntoClientAreaHint;
 
-            _native.SetExtendClientArea(extendIntoClientAreaHint);
+            _native.SetExtendClientArea(extendIntoClientAreaHint.AsComBool());
 
             InvalidateExtendedMargins();
         }
@@ -198,7 +218,7 @@ namespace Avalonia.Native
 
         public void SetEnabled(bool enable)
         {
-            _native.SetEnabled(enable);
+            _native.SetEnabled(enable.AsComBool());
         }
     }
 }

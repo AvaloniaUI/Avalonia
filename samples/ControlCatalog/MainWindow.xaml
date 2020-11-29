@@ -16,47 +16,39 @@
   <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="File">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
-            <NativeMenuItemSeperator/>
-            <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
-              <NativeMenuItem.Menu>
-                <NativeMenu/>
-              </NativeMenuItem.Menu>
-            </NativeMenuItem>
-            <NativeMenuItemSeperator/>
-            <NativeMenuItem Header="{x:Static local:MainWindow.MenuQuitHeader}"
-                            Gesture="{x:Static local:MainWindow.MenuQuitGesture}"
-                            Clicked="OnCloseClicked" />
-          </NativeMenu>
-        </NativeMenuItem.Menu>
+        <NativeMenu>
+          <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
+          <NativeMenuItemSeperator/>
+          <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
+            <NativeMenu/>
+          </NativeMenuItem>
+          <NativeMenuItemSeperator/>
+          <NativeMenuItem Header="{x:Static local:MainWindow.MenuQuitHeader}"
+                          Gesture="{x:Static local:MainWindow.MenuQuitGesture}"
+                          Clicked="OnCloseClicked" />
+        </NativeMenu>
       </NativeMenuItem>
       <NativeMenuItem Header="Edit">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Header="Copy"/>
-            <NativeMenuItem Header="Paste"/>
-          </NativeMenu>
-        </NativeMenuItem.Menu>
+        <NativeMenu>
+          <NativeMenuItem Header="Copy"/>
+          <NativeMenuItem Header="Paste"/>
+        </NativeMenu>
       </NativeMenuItem>
       <NativeMenuItem Header="Options">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-           <NativeMenuItem Header="Check Me (None)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="None"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-            <NativeMenuItem Header="Check Me (CheckBox)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="CheckBox"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-            <NativeMenuItem Header="Check Me (Radio)" 
-                            Command="{Binding ToggleMenuItemCheckedCommand}"
-                            ToggleType="Radio"
-                            IsChecked="{Binding IsMenuItemChecked}"  />
-          </NativeMenu>
-        </NativeMenuItem.Menu>
+        <NativeMenu>
+          <NativeMenuItem Header="Check Me (None)" 
+                          Command="{Binding ToggleMenuItemCheckedCommand}"
+                          ToggleType="None"
+                          IsChecked="{Binding IsMenuItemChecked}"  />
+          <NativeMenuItem Header="Check Me (CheckBox)" 
+                          Command="{Binding ToggleMenuItemCheckedCommand}"
+                          ToggleType="CheckBox"
+                          IsChecked="{Binding IsMenuItemChecked}"  />
+          <NativeMenuItem Header="Check Me (Radio)" 
+                          Command="{Binding ToggleMenuItemCheckedCommand}"
+                          ToggleType="Radio"
+                          IsChecked="{Binding IsMenuItemChecked}"  />
+        </NativeMenu>
       </NativeMenuItem>
     </NativeMenu>
   </NativeMenu.Menu>

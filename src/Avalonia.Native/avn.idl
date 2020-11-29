@@ -1,5 +1,6 @@
 @clr-namespace Avalonia.Native.Interop
 @clr-access internal
+@clr-map bool int
 @cpp-preamble @@
 #include "com.h"
 #include "key.h"
