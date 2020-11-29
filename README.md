@@ -1,4 +1,4 @@
-[![NuGet Stats](https://img.shields.io/nuget/v/Avalonia.NameGenerator.svg)](https://www.nuget.org/packages/Avalonia.NameGenerator) [![downloads](https://img.shields.io/nuget/dt/Avalonia.NameGenerator)](https://www.nuget.org/packages/Avalonia.NameGenerator) ![Build](https://github.com/avaloniaui/Avalonia.NameGenerator/workflows/Build/badge.svg) ![License](https://img.shields.io/github/license/avaloniaui/Avalonia.NameGenerator.svg) ![Size](https://img.shields.io/github/repo-size/avaloniaui/Avalonia.NameGenerator.svg)
+[![NuGet Stats](https://img.shields.io/nuget/v/XamlNameReferenceGenerator.svg)](https://www.nuget.org/packages/XamlNameReferenceGenerator) [![downloads](https://img.shields.io/nuget/dt/XamlNameReferenceGenerator)](https://www.nuget.org/packages/XamlNameReferenceGenerator) ![Build](https://github.com/avaloniaui/Avalonia.NameGenerator/workflows/Build/badge.svg) ![License](https://img.shields.io/github/license/avaloniaui/Avalonia.NameGenerator.svg) ![Size](https://img.shields.io/github/repo-size/avaloniaui/Avalonia.NameGenerator.svg)
 
 > **Warning** This tool hasn't been extensively tested, so use at your own risk.
 
@@ -27,7 +27,7 @@ So in your project file you write the following code:
 And then you reference the source generator by installing a NuGet package:
 
 ```
-dotnet add package Avalonia.NameGenerator
+dotnet add package XamlNameReferenceGenerator
 ```
 
 Or, if you are using submodules, reference the generator as such:
