@@ -2,7 +2,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using ControlCatalog.Models;
-using ReactiveUI;
 
 namespace ControlCatalog.Pages
 {

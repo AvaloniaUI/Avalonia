@@ -23,7 +23,7 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentDark.xaml")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml")
             },
             DataGridFluent
         };
@@ -32,7 +32,7 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentLight.xaml")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/FluentLight.xaml")
             },
             DataGridFluent
         };
