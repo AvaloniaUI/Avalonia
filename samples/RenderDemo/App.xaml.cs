@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
 
 namespace RenderDemo
 {
@@ -32,7 +31,6 @@ namespace RenderDemo
                    OverlayPopups = true,
                })
                 .UsePlatformDetect()
-                .UseReactiveUI()
                 .LogToTrace();
     }
 }

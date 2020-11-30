@@ -68,10 +68,11 @@ namespace MicroComGenerator
 
         bool IsPropertyRewriteCandidate(MethodDeclarationSyntax method)
         {
-            if(method.Identifier.Text.Contains("GetScaling"))
-                Console.WriteLine();
-            return (method.Identifier.Text.StartsWith("Get") &&
-                    method.ParameterList.Parameters.Count == 0);
+
+            return
+                method.ReturnType.ToFullString() != "void"
+                && method.Identifier.Text.StartsWith("Get")
+                && method.ParameterList.Parameters.Count == 0;
         }
 
         TypeDeclarationSyntax RewriteMethodsToProperties<T>(T decl) where T : TypeDeclarationSyntax

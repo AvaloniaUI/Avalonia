@@ -37,6 +37,6 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the index of the item in the <see cref="ItemsControl.Items"/> collection.
         /// </summary>
-        public int Index { get; internal set; }
+        public int Index { get; set; }
     }
 }

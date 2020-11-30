@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.Pages
 {
-    public class ScrollViewerPageViewModel : ReactiveObject
+    public class ScrollViewerPageViewModel : ViewModelBase
     {
         private bool _allowAutoHide;
         private ScrollBarVisibility _horizontalScrollVisibility;

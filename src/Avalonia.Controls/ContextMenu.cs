@@ -236,7 +236,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Opens the menu.
         /// </summary>
-        public override void Open() => Open(null);
+        public override void Open() => throw new NotSupportedException();
 
         /// <summary>
         /// Opens a context menu on the specified control.
