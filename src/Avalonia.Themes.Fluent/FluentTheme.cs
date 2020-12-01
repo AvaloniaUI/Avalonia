@@ -8,7 +8,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Themes.Fluent
 {
-    public enum FluentColorScheme
+    public enum FluentThemeMode
     {
         Light,
         Dark,
@@ -42,9 +42,9 @@ namespace Avalonia.Themes.Fluent
         }
 
         /// <summary>
-        /// Gets or sets the color scheme to use (light, dark).
+        /// Gets or sets the mode of the fluent theme (light, dark).
         /// </summary>
-        public FluentColorScheme Scheme { get; set; }
+        public FluentThemeMode Mode { get; set; }
 
         public IResourceHost? Owner => (Loaded as IResourceProvider)?.Owner;
 
@@ -105,9 +105,9 @@ namespace Avalonia.Themes.Fluent
         void IResourceProvider.AddOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.AddOwner(owner);
         void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
 
-        private Uri GetUri() => Scheme switch
+        private Uri GetUri() => Mode switch
         {
-            FluentColorScheme.Dark => new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml", UriKind.Absolute),
+            FluentThemeMode.Dark => new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml", UriKind.Absolute),
             _ => new Uri("avares://Avalonia.Themes.Fluent/FluentLight.xaml", UriKind.Absolute),
         };
     }
