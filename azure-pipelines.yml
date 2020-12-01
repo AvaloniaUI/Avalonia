@@ -4,13 +4,6 @@ jobs:
     vmImage: 'ubuntu-16.04'
   steps:
   - task: CmdLine@2
-    displayName: 'Install CastXML'
-    inputs:
-      script: |
-        sudo apt-get update
-        sudo apt-get install castxml
-
-  - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
@@ -47,6 +40,12 @@ jobs:
       script: |
         curl -o ./mono.pkg https://download.mono-project.com/archive/5.18.0/macos-10-universal/MonoFramework-MDK-5.18.0.225.macos10.xamarin.universal.pkg 
         sudo installer -verbose -pkg ./mono.pkg -target /
+
+  - task: CmdLine@2
+    displayName: 'Generate avalonia-native'
+    inputs:
+      script: |
+        cd src/tools/MicroComGenerator; dotnet run -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
 
   - task: Xcode@5
     inputs:

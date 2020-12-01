@@ -65,6 +65,11 @@ namespace Avalonia.Win32
                             return IntPtr.Zero;
                         }
 
+                        BeforeCloseCleanup(false);
+
+                        // Used to distinguish between programmatic and regular close requests.
+                        _isCloseRequested = true;
+
                         break;
                     }
 

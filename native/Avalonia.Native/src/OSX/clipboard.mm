@@ -67,7 +67,7 @@ public:
         }
     }
     
-    virtual HRESULT SetText (char* type, void* utf8String) override
+    virtual HRESULT SetText (char* type, char* utf8String) override
     {
         Clear();
         @autoreleasepool

@@ -768,7 +768,7 @@ private:
         }
     }
     
-    virtual HRESULT SetTitle (void* utf8title) override
+    virtual HRESULT SetTitle (char* utf8title) override
     {
         @autoreleasepool
         {
@@ -1338,6 +1338,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     _parent->BaseEvents->RunRenderPriorityJobs();
+    
+    if (_parent == nullptr)
+    {
+        return;
+    }
+        
     _parent->BaseEvents->Paint();
 }
 

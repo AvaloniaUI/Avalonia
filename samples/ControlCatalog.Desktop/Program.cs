@@ -3,7 +3,6 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
-using Avalonia.ReactiveUI;
 
 namespace ControlCatalog
 {
@@ -18,9 +17,8 @@ namespace ControlCatalog
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
-                .LogToDebug()
-                .UsePlatformDetect()
-                .UseReactiveUI();
+                .LogToTrace()
+                .UsePlatformDetect();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {

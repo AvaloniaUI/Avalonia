@@ -73,7 +73,7 @@ namespace Avalonia.Input
         /// </returns>
         public static bool IsDirectional(this NavigationDirection direction)
         {
-            return direction > NavigationDirection.Previous ||
+            return direction > NavigationDirection.Previous &&
                 direction <= NavigationDirection.Down;
         }
 

@@ -1,75 +1,17 @@
 ﻿using System;
 using System.Runtime.ExceptionServices;
-using SharpGen.Runtime;
+using Avalonia.MicroCom;
 using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    public class CallbackBase : SharpGen.Runtime.IUnknown, IExceptionCallback
+    public class CallbackBase : IUnknown, IMicroComShadowContainer, IMicroComExceptionCallback
     {
-        private uint _refCount;
-        private bool _disposed;
         private readonly object _lock = new object();
-        private ShadowContainer _shadow;
-
-        public CallbackBase()
-        {
-            _refCount = 1;
-        }
-
-        public ShadowContainer Shadow
-        {
-            get => _shadow;
-            set
-            {
-                lock (_lock)
-                {
-                    if (_disposed && value != null)
-                    {
-                        throw new ObjectDisposedException("CallbackBase");
-                    }
-
-                    _shadow = value;
-                }
-            }
-        }
-
-        public uint AddRef()
-        {
-            lock (_lock)
-            {
-                return ++_refCount;
-            }
-        }
-
-        public void Dispose()
-        {
-            lock (_lock)
-            {
-                if (!_disposed)
-                {
-                    _disposed = true;
-                    Release();
-                }
-            }
-        }
-
-        public uint Release()
-        {
-            lock (_lock)
-            {
-                _refCount--;
-
-                if (_refCount == 0)
-                {
-                    Shadow?.Dispose();
-                    Shadow = null;
-                    Destroyed();
-                }
-
-                return _refCount;
-            }
-        }
+        private bool _referencedFromManaged = true;
+        private bool _referencedFromNative = false;
+        private bool _destroyed;
+        
 
         protected virtual void Destroyed()
         {
@@ -83,6 +25,42 @@ namespace Avalonia.Native
                 threadingInterface.TerminateNativeApp();
 
                 threadingInterface.DispatchException(ExceptionDispatchInfo.Capture(e));
+            }
+        }
+
+        public void Dispose()
+        {
+            lock (_lock)
+            {
+                _referencedFromManaged = false;
+                DestroyIfNeeded();
+            }
+        }
+
+        void DestroyIfNeeded()
+        {
+            if(_destroyed)
+                return;
+            if (_referencedFromManaged == false && _referencedFromNative == false)
+            {
+                _destroyed = true;
+                Destroyed();
+            }
+        }
+
+        public MicroComShadow Shadow { get; set; }
+        public void OnReferencedFromNative()
+        {
+            lock (_lock) 
+                _referencedFromNative = true;
+        }
+
+        public void OnUnreferencedFromNative()
+        {
+            lock (_lock)
+            {
+                _referencedFromNative = false;
+                DestroyIfNeeded();
             }
         }
     }

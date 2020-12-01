@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Dialogs;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
-using Avalonia.Skia;
-using Avalonia.ReactiveUI;
 using Avalonia.Threading;
-using Avalonia.Dialogs;
 
 namespace ControlCatalog.NetCore
 {
@@ -119,9 +117,8 @@ namespace ControlCatalog.NetCore
                     AllowEglInitialization = true
                 })
                 .UseSkia()
-                .UseReactiveUI()
                 .UseManagedSystemDialogs()
-                .LogToDebug();
+                .LogToTrace();
 
         static void SilenceConsole()
         {

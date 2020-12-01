@@ -101,7 +101,7 @@ public:
     
     virtual bool GetCurrentThreadIsLoopThread() override
     {
-        return [[NSThread currentThread] isMainThread];
+        return [NSThread isMainThread];
     }
     virtual void SetSignaledCallback(IAvnSignaledCallback* cb) override
     {

@@ -5,13 +5,13 @@ using System.Reactive;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using ReactiveUI;
 using Avalonia.Layout;
 using Avalonia.Controls.Selection;
+using MiniMvvm;
 
 namespace VirtualizationDemo.ViewModels
 {
-    internal class MainWindowViewModel : ReactiveObject
+    internal class MainWindowViewModel : ViewModelBase
     {
         private int _itemCount = 200;
         private string _newItemString = "New Item";
@@ -25,15 +25,15 @@ namespace VirtualizationDemo.ViewModels
         public MainWindowViewModel()
         {
             this.WhenAnyValue(x => x.ItemCount).Subscribe(ResizeItems);
-            RecreateCommand = ReactiveCommand.Create(() => Recreate());
+            RecreateCommand = MiniCommand.Create(() => Recreate());
 
-            AddItemCommand = ReactiveCommand.Create(() => AddItem());
+            AddItemCommand = MiniCommand.Create(() => AddItem());
 
-            RemoveItemCommand = ReactiveCommand.Create(() => Remove());
+            RemoveItemCommand = MiniCommand.Create(() => Remove());
 
-            SelectFirstCommand = ReactiveCommand.Create(() => SelectItem(0));
+            SelectFirstCommand = MiniCommand.Create(() => SelectItem(0));
 
-            SelectLastCommand = ReactiveCommand.Create(() => SelectItem(Items.Count - 1));
+            SelectLastCommand = MiniCommand.Create(() => SelectItem(Items.Count - 1));
         }
 
         public string NewItemString
@@ -80,11 +80,11 @@ namespace VirtualizationDemo.ViewModels
         public IEnumerable<ScrollBarVisibility> ScrollBarVisibilities =>
             Enum.GetValues(typeof(ScrollBarVisibility)).Cast<ScrollBarVisibility>();
 
-        public ReactiveCommand<Unit, Unit> AddItemCommand { get; private set; }
-        public ReactiveCommand<Unit, Unit> RecreateCommand { get; private set; }
-        public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; private set; }
-        public ReactiveCommand<Unit, Unit> SelectFirstCommand { get; private set; }
-        public ReactiveCommand<Unit, Unit> SelectLastCommand { get; private set; }
+        public MiniCommand<Unit, Unit> AddItemCommand { get; private set; }
+        public MiniCommand<Unit, Unit> RecreateCommand { get; private set; }
+        public MiniCommand<Unit, Unit> RemoveItemCommand { get; private set; }
+        public MiniCommand<Unit, Unit> SelectFirstCommand { get; private set; }
+        public MiniCommand<Unit, Unit> SelectLastCommand { get; private set; }
 
         public void RandomizeSize()
         {

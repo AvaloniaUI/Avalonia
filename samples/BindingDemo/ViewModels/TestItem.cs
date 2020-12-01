@@ -1,8 +1,8 @@
-using ReactiveUI;
+using MiniMvvm;
 
 namespace BindingDemo.ViewModels
 {
-    public class TestItem : ReactiveObject
+    public class TestItem : ViewModelBase
     {
         private string _stringValue = "String Value";
         private string _detail;

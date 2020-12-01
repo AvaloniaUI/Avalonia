@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Data;
@@ -619,33 +620,29 @@ namespace Avalonia
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (Visual v in e.NewItems)
-                    {
-                        v.SetVisualParent(this);
-                    }
-
+                    SetVisualParent(e.NewItems, this);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (Visual v in e.OldItems)
-                    {
-                        v.SetVisualParent(null);
-                    }
-
+                    SetVisualParent(e.OldItems, null);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    foreach (Visual v in e.OldItems)
-                    {
-                        v.SetVisualParent(null);
-                    }
-
-                    foreach (Visual v in e.NewItems)
-                    {
-                        v.SetVisualParent(this);
-                    }
-
+                    SetVisualParent(e.OldItems, null);
+                    SetVisualParent(e.NewItems, this);
                     break;
+            }
+        }
+        
+        private static void SetVisualParent(IList children, Visual parent)
+        {
+            var count = children.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                var visual = (Visual) children[i];
+                
+                visual.SetVisualParent(parent);
             }
         }
     }
