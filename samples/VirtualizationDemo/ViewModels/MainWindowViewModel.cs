@@ -80,11 +80,11 @@ namespace VirtualizationDemo.ViewModels
         public IEnumerable<ScrollBarVisibility> ScrollBarVisibilities =>
             Enum.GetValues(typeof(ScrollBarVisibility)).Cast<ScrollBarVisibility>();
 
-        public MiniCommand<Unit, Unit> AddItemCommand { get; private set; }
-        public MiniCommand<Unit, Unit> RecreateCommand { get; private set; }
-        public MiniCommand<Unit, Unit> RemoveItemCommand { get; private set; }
-        public MiniCommand<Unit, Unit> SelectFirstCommand { get; private set; }
-        public MiniCommand<Unit, Unit> SelectLastCommand { get; private set; }
+        public MiniCommand AddItemCommand { get; private set; }
+        public MiniCommand RecreateCommand { get; private set; }
+        public MiniCommand RemoveItemCommand { get; private set; }
+        public MiniCommand SelectFirstCommand { get; private set; }
+        public MiniCommand SelectLastCommand { get; private set; }
 
         public void RandomizeSize()
         {

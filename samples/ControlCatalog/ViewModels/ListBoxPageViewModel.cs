@@ -92,7 +92,7 @@ namespace ControlCatalog.ViewModels
         }
 
         public SelectionModel<object> Selection { get; }
-        public SelectionMode SelectionMode => _selectionMode.Value;
+        public IObservable<SelectionMode> SelectionMode => _selectionMode;
 
         public bool Multiple
         {
@@ -124,9 +124,9 @@ namespace ControlCatalog.ViewModels
             set => this.RaiseAndSetIfChanged(ref _itemType, value);
         }
 
-        public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
-        public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
-        public ReactiveCommand<Unit, Unit> SelectRandomItemCommand { get; }
+        public MiniCommand AddItemCommand { get; }
+        public MiniCommand RemoveItemCommand { get; }
+        public MiniCommand SelectRandomItemCommand { get; }
 
         private string GenerateContent() => $"Item {_counter++.ToString()}";
         private ListBoxItem GenerateItem() => new ListBoxItem 

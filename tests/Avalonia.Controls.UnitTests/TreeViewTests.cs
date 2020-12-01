@@ -623,7 +623,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Keyboard_Navigation_Should_Not_Crash_If_Selected_Item_Is_not_In_Tree()
         {
-            using (Application())
+            using (Start())
             {
                 var focus = FocusManager.Instance;
                 var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
@@ -633,23 +633,18 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new TreeView
                 {
-                    Template = CreateTreeViewTemplate(),
                     Items = data,
                     SelectedItem = selectedNode
                 };
 
                 var button = new Button();
 
-                var root = new TestRoot
+                CreateRoot(new StackPanel
                 {
-                    Child = new StackPanel
-                    {
-                        Children = { target, button },
-                    }
-                };
+                    Children = { target, button },
+                });
 
-                CreateNodeDataTemplate(target);
-                ApplyTemplates(target);
+                Prepare(target);
                 ExpandAll(target);
 
                 var item = data[0].Children[0];
