@@ -311,7 +311,8 @@ namespace Avalonia.Controls
         /// <param name="newView">The new items view.</param>
         protected virtual void ItemsViewChanged(ItemsSourceView? oldView, ItemsSourceView newView)
         {
-            LogicalChildren.Clear();
+            if (oldView is object)
+                RemoveControlItemsFromLogicalChildren(oldView);
             AddControlItemsToLogicalChildren(newView);
             UpdatePseudoClasses();
             ItemCount = ItemsView.Count;
