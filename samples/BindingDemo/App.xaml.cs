@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
 
 namespace BindingDemo
 {
@@ -25,7 +24,6 @@ namespace BindingDemo
         public static AppBuilder BuildAvaloniaApp()
           => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .UseReactiveUI()
                 .LogToTrace();
     }
 }

@@ -282,25 +282,44 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Inverts the Matrix.
+        /// Attempts to invert the Matrix.
         /// </summary>
-        /// <returns>The inverted matrix.</returns>
-        public Matrix Invert()
+        /// <returns>The inverted matrix or <see langword="null"/> when matrix is not invertible.</returns>
+        public bool TryInvert(out Matrix inverted)
         {
             double d = GetDeterminant();
 
             if (MathUtilities.IsZero(d))
             {
-                throw new InvalidOperationException("Transform is not invertible.");
+                inverted = default;
+                
+                return false;
             }
 
-            return new Matrix(
+            inverted = new Matrix(
                 _m22 / d,
                 -_m12 / d,
                 -_m21 / d,
                 _m11 / d,
                 ((_m21 * _m32) - (_m22 * _m31)) / d,
                 ((_m12 * _m31) - (_m11 * _m32)) / d);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Inverts the Matrix.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Matrix is not invertible.</exception>
+        /// <returns>The inverted matrix.</returns>
+        public Matrix Invert()
+        {
+            if (!TryInvert(out Matrix inverted))
+            {
+                throw new InvalidOperationException("Transform is not invertible.");
+            }
+
+            return inverted;
         }
 
         /// <summary>
