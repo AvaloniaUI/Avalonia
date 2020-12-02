@@ -18,7 +18,6 @@ namespace ControlCatalog.ViewModels
         private bool _alwaysSelected;
         private bool _autoScrollToSelectedItem = true;
         private ItemTypes _itemType;
-        private int _counter;
         private IObservable<SelectionMode> _selectionMode;
 
         public ListBoxPageViewModel()
@@ -29,9 +28,9 @@ namespace ControlCatalog.ViewModels
                     Items = x switch
                     {
                         ItemTypes.FromDataTemplate => new ObservableCollection<string>(
-                            Enumerable.Range(0, 10000).Select(i => GenerateContent())),
+                            Enumerable.Range(0, 10000).Select(i => GenerateContent(i))),
                         ItemTypes.ListBoxItems => new ObservableCollection<ListBoxItem>(
-                            Enumerable.Range(0, 200).Select(i => GenerateItem())),
+                            Enumerable.Range(0, 200).Select(i => GenerateItem(i))),
                         _ => throw new NotSupportedException(),
                     };
                 });
@@ -52,11 +51,11 @@ namespace ControlCatalog.ViewModels
             {
                 if (ItemType == ItemTypes.FromDataTemplate)
                 {
-                    Items.Add(GenerateContent());
+                    Items.Add(GenerateContent(Items.Count));
                 }
                 else
                 {
-                    Items.Add(GenerateItem());
+                    Items.Add(GenerateItem(Items.Count));
                 }
             });
 
@@ -128,10 +127,10 @@ namespace ControlCatalog.ViewModels
         public MiniCommand RemoveItemCommand { get; }
         public MiniCommand SelectRandomItemCommand { get; }
 
-        private string GenerateContent() => $"Item {_counter++.ToString()}";
-        private ListBoxItem GenerateItem() => new ListBoxItem 
+        private string GenerateContent(int index) => $"Item {index}";
+        private ListBoxItem GenerateItem(int index) => new ListBoxItem 
         { 
-            Content = "ListBoxItem " + GenerateContent() 
+            Content = "ListBoxItem " + GenerateContent(index) 
         };
 
         public enum ItemTypes
