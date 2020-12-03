@@ -7,6 +7,11 @@
     <PackageProjectUrl>https://github.com/AvaloniaUI/Avalonia/tree/master/src/Avalonia.Diagnostics</PackageProjectUrl>
 
     <IsBuildPackage>False</IsBuildPackage>
+    <UseIntermediatePackages>False</UseIntermediatePackages>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(UseIntermediatePackages)' == 'True' ">
+    <RestoreSources>$(RestoreSources);../../build-intermediate/nuget</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsBuildPackage)' == 'False' ">
@@ -37,5 +42,6 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ApiDiff.props" />
 
-  <Import Project="..\..\build\BuildTargets.targets" Condition=" '$(IsBuildPackage)' == 'False' " />
+  <Import Project="..\..\build\BuildTargets.targets"
+          Condition=" '$(IsBuildPackage)' == 'False' Or '$(UseIntermediatePackages)' == 'True' " />
 </Project>
