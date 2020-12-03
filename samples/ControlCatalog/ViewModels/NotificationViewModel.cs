@@ -1,6 +1,6 @@
 ﻿using System.Reactive;
 using Avalonia.Controls.Notifications;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
@@ -8,12 +8,12 @@ namespace ControlCatalog.ViewModels
     {
         public NotificationViewModel(INotificationManager manager)
         {
-            YesCommand = ReactiveCommand.Create(() =>
+            YesCommand = MiniCommand.Create(() =>
             {
                 manager.Show(new Avalonia.Controls.Notifications.Notification("Avalonia Notifications", "Start adding notifications to your app today."));
             });
 
-            NoCommand = ReactiveCommand.Create(() =>
+            NoCommand = MiniCommand.Create(() =>
             {
                 manager.Show(new Avalonia.Controls.Notifications.Notification("Avalonia Notifications", "Start adding notifications to your app today. To find out more visit..."));
             });
@@ -22,9 +22,9 @@ namespace ControlCatalog.ViewModels
         public string Title { get; set; }
         public string Message { get; set; }
 
-        public ReactiveCommand<Unit, Unit> YesCommand { get; }
+        public MiniCommand YesCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> NoCommand { get; }
+        public MiniCommand NoCommand { get; }
 
     }
 }
