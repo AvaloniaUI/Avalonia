@@ -4,9 +4,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Avalonia</RootNamespace>
     <PackageId>Avalonia.Diagnostics</PackageId>
+    <PackageProjectUrl>https://github.com/AvaloniaUI/Avalonia/tree/master/src/Avalonia.Diagnostics</PackageProjectUrl>
+
+    <IsBuildPackage>False</IsBuildPackage>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(IsBuildPackage)' == 'False' ">
     <ProjectReference Include="..\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
@@ -21,12 +24,18 @@
     <ProjectReference Include="..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(IsBuildPackage)' == 'True' ">
+    <PackageReference Include="Avalonia" Version="$(Version)" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="$(Version)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.4.0" />
   </ItemGroup>
 
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\ApiDiff.props" />
+
+  <Import Project="..\..\build\BuildTargets.targets" Condition=" '$(IsBuildPackage)' == 'False' " />
 </Project>
