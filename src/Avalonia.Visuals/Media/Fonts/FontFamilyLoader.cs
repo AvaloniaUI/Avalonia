@@ -13,18 +13,10 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="fontFamilyKey"></param>
         /// <returns></returns>
-        public static IEnumerable<Uri> LoadFontAssets(FontFamilyKey fontFamilyKey)
-        {
-            var sourceWithoutArguments = fontFamilyKey.Source.OriginalString.Split('?').First();
-
-            if (sourceWithoutArguments.EndsWith(".ttf")
-                || sourceWithoutArguments.EndsWith(".otf"))
-            {
-                return GetFontAssetsByExpression(fontFamilyKey);
-            }
-
-            return GetFontAssetsBySource(fontFamilyKey);
-        }
+        public static IEnumerable<Uri> LoadFontAssets(FontFamilyKey fontFamilyKey) =>
+            IsFontTtfOrOtf(fontFamilyKey.Source)
+                ? GetFontAssetsByExpression(fontFamilyKey)
+                : GetFontAssetsBySource(fontFamilyKey);
 
         /// <summary>
         /// Searches for font assets at a given location and returns a quantity of found assets
@@ -34,14 +26,8 @@ namespace Avalonia.Media.Fonts
         private static IEnumerable<Uri> GetFontAssetsBySource(FontFamilyKey fontFamilyKey)
         {
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
-
             var availableAssets = assetLoader.GetAssets(fontFamilyKey.Source, fontFamilyKey.BaseUri);
-
-            var matchingAssets =
-                availableAssets.Where(
-                    x => x.GetUnescapeAbsolutePath().EndsWith(".ttf") || x.GetUnescapeAbsolutePath().EndsWith(".otf"));
-
-            return matchingAssets;
+            return availableAssets.Where(IsFontTtfOrOtf);
         }
 
         /// <summary>
@@ -120,6 +106,13 @@ namespace Avalonia.Media.Fonts
             }
 
             return fileNameSegments.First();
+        }
+
+        private static bool IsFontTtfOrOtf(Uri uri)
+        {
+            var sourceWithoutArguments = uri.OriginalString.Split('?')[0];
+            return sourceWithoutArguments.EndsWith(".ttf", StringComparison.Ordinal)
+                   || sourceWithoutArguments.EndsWith(".otf", StringComparison.Ordinal);
         }
     }
 }
