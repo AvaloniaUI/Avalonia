@@ -166,10 +166,8 @@ namespace Avalonia.Shared.PlatformSupport
                         "don't know where to look up for the resource, try specifying assembly explicitly.");
                 }
 
-                IAssetDescriptor rv;
-
                 var resourceKey = uri.AbsolutePath;
-                asm.Resources.TryGetValue(resourceKey, out rv);
+                asm.Resources.TryGetValue(resourceKey, out var rv);
                 return rv;
             }
 
@@ -205,9 +203,8 @@ namespace Avalonia.Shared.PlatformSupport
                 if (uri.Scheme == "resm")
                 {
                     var qs = ParseQueryString(uri);
-                    string assemblyName;
 
-                    if (qs.TryGetValue("assembly", out assemblyName))
+                    if (qs.TryGetValue("assembly", out var assemblyName))
                     {
                         return GetAssembly(assemblyName);
                     }
@@ -222,8 +219,7 @@ namespace Avalonia.Shared.PlatformSupport
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            AssemblyDescriptor rv;
-            if (!AssemblyNameCache.TryGetValue(name, out rv))
+            if (!AssemblyNameCache.TryGetValue(name, out var rv))
             {
                 var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);

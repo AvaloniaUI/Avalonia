@@ -359,10 +359,8 @@ namespace Avalonia.Shared.PlatformSupport
                         "don't know where to look up for the resource, try specifying assembly explicitly.");
                 }
 
-                IAssetDescriptor rv;
-
                 var resourceKey = uri.AbsolutePath;
-                asm.Resources.TryGetValue(resourceKey, out rv);
+                asm.Resources.TryGetValue(resourceKey, out var rv);
                 return rv;
             }
 
@@ -398,9 +396,8 @@ namespace Avalonia.Shared.PlatformSupport
                 if (uri.Scheme == "resm")
                 {
                     var qs = ParseQueryString(uri);
-                    string assemblyName;
 
-                    if (qs.TryGetValue("assembly", out assemblyName))
+                    if (qs.TryGetValue("assembly", out var assemblyName))
                     {
                         return GetAssembly(assemblyName);
                     }
