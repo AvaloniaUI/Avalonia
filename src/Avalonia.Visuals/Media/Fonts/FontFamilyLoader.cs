@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -44,29 +45,9 @@ namespace Avalonia.Media.Fonts
 
             var availableResources = assetLoader.GetAssets(location, fontFamilyKey.BaseUri);
 
-            string compareTo;
+            var filePattern = CreateFilePattern(fontFamilyKey, location, fileName);
 
-            if (fontFamilyKey.Source.IsAbsoluteUri)
-            {
-                if (fontFamilyKey.Source.IsResm())
-                {
-                    compareTo = location.GetUnescapeAbsolutePath() + "." + fileName.Split('*').First();
-                }
-                else
-                {
-                    compareTo = location.GetUnescapeAbsolutePath() + fileName.Split('*').First();
-                }
-            }
-            else
-            {
-                compareTo = location.GetUnescapeAbsolutePath() + fileName.Split('*').First();
-            }
-
-            var matchingResources = availableResources.Where(
-                x => x.GetUnescapeAbsolutePath().Contains(compareTo)
-                     && x.GetUnescapeAbsolutePath().EndsWith(fileExtension));
-
-            return matchingResources;
+            return availableResources.Where(x => IsContainsFile(x, filePattern, fileExtension));
         }
 
         private static string GetFileName(FontFamilyKey fontFamilyKey, out string fileExtension, out Uri location)
@@ -113,6 +94,21 @@ namespace Avalonia.Media.Fonts
             var sourceWithoutArguments = uri.OriginalString.Split('?')[0];
             return sourceWithoutArguments.EndsWith(".ttf", StringComparison.Ordinal)
                    || sourceWithoutArguments.EndsWith(".otf", StringComparison.Ordinal);
+        }
+
+        private static string CreateFilePattern(FontFamilyKey fontFamilyKey, Uri location, string fileNameWithoutExtension)
+        {
+            var path = location.GetUnescapeAbsolutePath();
+            var file = fileNameWithoutExtension.Split('*').First();
+            return fontFamilyKey.Source.IsAbsoluteResm()
+                ? path + "." + file
+                : path + file;
+        }
+
+        private static bool IsContainsFile(Uri x, string filePattern, string fileExtension)
+        {
+            var path = x.GetUnescapeAbsolutePath();
+            return path.Contains(filePattern) && path.EndsWith(fileExtension);
         }
     }
 }
