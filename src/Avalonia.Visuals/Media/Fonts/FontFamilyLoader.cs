@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
@@ -37,7 +38,8 @@ namespace Avalonia.Media.Fonts
             var availableAssets = assetLoader.GetAssets(fontFamilyKey.Source, fontFamilyKey.BaseUri);
 
             var matchingAssets =
-                availableAssets.Where(x => x.AbsolutePath.EndsWith(".ttf") || x.AbsolutePath.EndsWith(".otf"));
+                availableAssets.Where(
+                    x => x.GetUnescapeAbsolutePath().EndsWith(".ttf") || x.GetUnescapeAbsolutePath().EndsWith(".otf"));
 
             return matchingAssets;
         }
@@ -60,32 +62,32 @@ namespace Avalonia.Media.Fonts
 
             if (fontFamilyKey.Source.IsAbsoluteUri)
             {
-                if (fontFamilyKey.Source.Scheme == "resm")
+                if (fontFamilyKey.Source.IsResm())
                 {
-                    compareTo = location.AbsolutePath + "." + fileName.Split('*').First();
+                    compareTo = location.GetUnescapeAbsolutePath() + "." + fileName.Split('*').First();
                 }
                 else
                 {
-                    compareTo = location.AbsolutePath + fileName.Split('*').First();
+                    compareTo = location.GetUnescapeAbsolutePath() + fileName.Split('*').First();
                 }
             }
             else
             {
-                compareTo = location.AbsolutePath + fileName.Split('*').First();
+                compareTo = location.GetUnescapeAbsolutePath() + fileName.Split('*').First();
             }
 
             var matchingResources = availableResources.Where(
-                x => x.AbsolutePath.Contains(compareTo)
-                     && x.AbsolutePath.EndsWith(fileExtension));
+                x => x.GetUnescapeAbsolutePath().Contains(compareTo)
+                     && x.GetUnescapeAbsolutePath().EndsWith(fileExtension));
 
             return matchingResources;
         }
 
         private static string GetFileName(FontFamilyKey fontFamilyKey, out string fileExtension, out Uri location)
         {
-            if (fontFamilyKey.Source.IsAbsoluteUri && fontFamilyKey.Source.Scheme == "resm")
+            if (fontFamilyKey.Source.IsAbsoluteResm())
             {
-                fileExtension = "." + fontFamilyKey.Source.AbsolutePath.Split('.').LastOrDefault();
+                fileExtension = "." + fontFamilyKey.Source.GetUnescapeAbsolutePath().Split('.').LastOrDefault();
 
                 var fileName = fontFamilyKey.Source.LocalPath.Replace(fileExtension, string.Empty).Split('.').LastOrDefault();
 
@@ -111,7 +113,10 @@ namespace Avalonia.Media.Fonts
             }
             else
             {
-                location = new Uri(fontFamilyKey.Source.AbsolutePath.Replace(fileNameWithExtension, string.Empty));
+                location = new Uri(
+                    fontFamilyKey.Source
+                        .GetUnescapeAbsolutePath()
+                        .Replace(fileNameWithExtension, string.Empty));
             }
 
             return fileNameSegments.First();

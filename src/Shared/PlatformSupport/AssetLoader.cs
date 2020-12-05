@@ -109,17 +109,18 @@ namespace Avalonia.Shared.PlatformSupport
         /// <returns>All matching assets as a tuple of the absolute path to the asset and the assembly containing the asset</returns>
         public IEnumerable<Uri> GetAssets(Uri uri, Uri baseUri)
         {
-            if (uri.IsAbsoluteUri && uri.Scheme == "resm")
+            if (uri.IsAbsoluteResm())
             {
                 var assembly = GetAssembly(uri);
 
-                return assembly?.Resources.Where(x => x.Key.Contains(uri.AbsolutePath))
+                return assembly?.Resources
+                           .Where(x => x.Key.Contains(uri.GetUnescapeAbsolutePath()))
                            .Select(x =>new Uri($"resm:{x.Key}?assembly={assembly.Name}")) ??
                        Enumerable.Empty<Uri>();
             }
 
-            uri = EnsureAbsolute(uri, baseUri);
-            if (uri.Scheme == "avares")
+            uri = uri.EnsureAbsolute(baseUri);
+            if (uri.IsAvares())
             {
                 var (asm, path) = GetResAsmAndPath(uri);
                 if (asm == null)
@@ -138,24 +139,10 @@ namespace Avalonia.Shared.PlatformSupport
 
             return Enumerable.Empty<Uri>();
         }
-
-        private Uri EnsureAbsolute(Uri uri, Uri baseUri)
-        {
-            if (uri.IsAbsoluteUri)
-                return uri;
-            if(baseUri == null)
-                throw new ArgumentException($"Relative uri {uri} without base url");
-            if (!baseUri.IsAbsoluteUri)
-                throw new ArgumentException($"Base uri {baseUri} is relative");
-            if (baseUri.Scheme == "resm")
-                throw new ArgumentException(
-                    $"Relative uris for 'resm' scheme aren't supported; {baseUri} uses resm");
-            return new Uri(baseUri, uri);
-        }
         
         private IAssetDescriptor GetAsset(Uri uri, Uri baseUri)
         {           
-            if (uri.IsAbsoluteUri && uri.Scheme == "resm")
+            if (uri.IsAbsoluteResm())
             {
                 var asm = GetAssembly(uri) ?? GetAssembly(baseUri) ?? _defaultResmAssembly;
 
@@ -166,14 +153,13 @@ namespace Avalonia.Shared.PlatformSupport
                         "don't know where to look up for the resource, try specifying assembly explicitly.");
                 }
 
-                var resourceKey = uri.AbsolutePath;
+                var resourceKey = uri.GetUnescapeAbsolutePath();
                 asm.Resources.TryGetValue(resourceKey, out var rv);
                 return rv;
             }
 
-            uri = EnsureAbsolute(uri, baseUri);
-
-            if (uri.Scheme == "avares")
+            uri = uri.EnsureAbsolute(baseUri);
+            if (uri.IsAvares())
             {
                 var (asm, path) = GetResAsmAndPath(uri);
                 if (asm.AvaloniaResources == null)
@@ -188,7 +174,7 @@ namespace Avalonia.Shared.PlatformSupport
         private (AssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
         {
             var asm = GetAssembly(uri.Authority);
-            return (asm, uri.AbsolutePath);
+            return (asm, uri.GetUnescapeAbsolutePath());
         }
         
         private AssemblyDescriptor GetAssembly(Uri uri)
@@ -197,13 +183,12 @@ namespace Avalonia.Shared.PlatformSupport
             {
                 if (!uri.IsAbsoluteUri)
                     return null;
-                if (uri.Scheme == "avares")
+                if (uri.IsAvares())
                     return GetResAsmAndPath(uri).asm;
 
-                if (uri.Scheme == "resm")
+                if (uri.IsResm())
                 {
-                    var qs = ParseQueryString(uri);
-
+                    var qs = uri.ParseQueryString();
                     if (qs.TryGetValue("assembly", out var assemblyName))
                     {
                         return GetAssembly(assemblyName);
@@ -235,21 +220,12 @@ namespace Avalonia.Shared.PlatformSupport
                     throw new InvalidOperationException(
                         $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
 #else
-                    name = Uri.UnescapeDataString(name);
                     AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
 #endif
                 }
             }
 
             return rv;
-        }
-
-        private Dictionary<string, string> ParseQueryString(Uri uri)
-        {
-            return uri.Query.TrimStart('?')
-                .Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Split('='))
-                .ToDictionary(p => p[0], p => p[1]);
         }
 
         private interface IAssetDescriptor
@@ -383,16 +359,7 @@ namespace Avalonia.Shared.PlatformSupport
             public Dictionary<string, IAssetDescriptor> AvaloniaResources { get; }
             public string Name { get; }
         }
-        
-        public static void RegisterResUriParsers()
-        {
-            if (!UriParser.IsKnownScheme("avares"))
-                UriParser.Register(new GenericUriParser(
-                    GenericUriParserOptions.GenericAuthority |
-                    GenericUriParserOptions.NoUserInfo |
-                    GenericUriParserOptions.NoPort |
-                    GenericUriParserOptions.NoQuery |
-                    GenericUriParserOptions.NoFragment), "avares", -1);
-        }
+
+        public static void RegisterResUriParsers() => UriUtilities.RegisterResUriParsers();
     }
 }
