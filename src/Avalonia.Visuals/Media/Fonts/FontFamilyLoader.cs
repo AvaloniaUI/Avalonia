@@ -39,16 +39,14 @@ namespace Avalonia.Media.Fonts
         /// <returns></returns>
         private static IEnumerable<Uri> GetFontAssetsByExpression(FontFamilyKey fontFamilyKey)
         {
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
-
             var fileName = GetFileName(fontFamilyKey, out var location);
             var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-
-            var availableResources = assetLoader.GetAssets(location, fontFamilyKey.BaseUri);
 
             var filePattern = CreateFilePattern(fontFamilyKey, location, fileNameWithoutExtension);
             var fileExtension = Path.GetExtension(fileName);
 
+            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var availableResources = assetLoader.GetAssets(location, fontFamilyKey.BaseUri);
             return availableResources.Where(x => IsContainsFile(x, filePattern, fileExtension));
         }
 
