@@ -41,40 +41,36 @@ namespace Avalonia.Media.Fonts
         {
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-            var fileName = GetFileName(fontFamilyKey, out var fileExtension, out var location);
+            var fileName = GetFileName(fontFamilyKey, out var location);
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
 
             var availableResources = assetLoader.GetAssets(location, fontFamilyKey.BaseUri);
 
-            var filePattern = CreateFilePattern(fontFamilyKey, location, fileName);
+            var filePattern = CreateFilePattern(fontFamilyKey, location, fileNameWithoutExtension);
+            var fileExtension = Path.GetExtension(fileName);
 
             return availableResources.Where(x => IsContainsFile(x, filePattern, fileExtension));
         }
 
-        private static string GetFileName(FontFamilyKey fontFamilyKey, out string fileExtension, out Uri location)
+        private static string GetFileName(FontFamilyKey fontFamilyKey, out Uri location)
         {
             if (fontFamilyKey.Source.IsAbsoluteResm())
             {
-                fileExtension = "." + fontFamilyKey.Source.GetUnescapeAbsolutePath().Split('.').LastOrDefault();
+                var fileName = Path.GetFileName(fontFamilyKey.Source.GetUnescapeAbsolutePath());
 
-                var fileName = fontFamilyKey.Source.LocalPath.Replace(fileExtension, string.Empty).Split('.').LastOrDefault();
-
-                location = new Uri(fontFamilyKey.Source.AbsoluteUri.Replace("." + fileName + fileExtension, string.Empty), UriKind.RelativeOrAbsolute);
+                location = new Uri(
+                    fontFamilyKey.Source.AbsoluteUri.Replace("." + fileName, string.Empty),
+                    UriKind.RelativeOrAbsolute);
 
                 return fileName;
             }
 
-            var pathSegments = fontFamilyKey.Source.OriginalString.Split('/');
-
-            var fileNameWithExtension = pathSegments.Last();
-
-            var fileNameSegments = fileNameWithExtension.Split('.');
-
-            fileExtension = "." + fileNameSegments.Last();
+            var filename = Path.GetFileName(fontFamilyKey.Source.OriginalString);
 
             if (fontFamilyKey.BaseUri != null)
             {
                 var relativePath = fontFamilyKey.Source.OriginalString
-                    .Replace(fileNameWithExtension, string.Empty);
+                    .Replace(filename, string.Empty);
 
                 location = new Uri(fontFamilyKey.BaseUri, relativePath);
             }
@@ -83,10 +79,10 @@ namespace Avalonia.Media.Fonts
                 location = new Uri(
                     fontFamilyKey.Source
                         .GetUnescapeAbsolutePath()
-                        .Replace(fileNameWithExtension, string.Empty));
+                        .Replace(filename, string.Empty));
             }
 
-            return fileNameSegments.First();
+            return filename;
         }
 
         private static bool IsFontTtfOrOtf(Uri uri)
@@ -96,7 +92,8 @@ namespace Avalonia.Media.Fonts
                    || sourceWithoutArguments.EndsWith(".otf", StringComparison.Ordinal);
         }
 
-        private static string CreateFilePattern(FontFamilyKey fontFamilyKey, Uri location, string fileNameWithoutExtension)
+        private static string CreateFilePattern(
+            FontFamilyKey fontFamilyKey, Uri location, string fileNameWithoutExtension)
         {
             var path = location.GetUnescapeAbsolutePath();
             var file = fileNameWithoutExtension.Split('*').First();
