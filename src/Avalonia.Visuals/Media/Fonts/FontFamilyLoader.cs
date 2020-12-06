@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -39,36 +38,37 @@ namespace Avalonia.Media.Fonts
         /// <returns></returns>
         private static IEnumerable<Uri> GetFontAssetsByExpression(FontFamilyKey fontFamilyKey)
         {
-            var fileName = GetFileName(fontFamilyKey, out var location);
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-
+            var (fileNameWithoutExtension, extension) = GetFileName(fontFamilyKey, out var location);
             var filePattern = CreateFilePattern(fontFamilyKey, location, fileNameWithoutExtension);
-            var fileExtension = Path.GetExtension(fileName);
 
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
             var availableResources = assetLoader.GetAssets(location, fontFamilyKey.BaseUri);
-            return availableResources.Where(x => IsContainsFile(x, filePattern, fileExtension));
+            return availableResources.Where(x => IsContainsFile(x, filePattern, extension));
         }
 
-        private static string GetFileName(FontFamilyKey fontFamilyKey, out Uri location)
+        private static (string fileNameWithoutExtension, string extension) GetFileName(
+            FontFamilyKey fontFamilyKey, out Uri location)
         {
             if (fontFamilyKey.Source.IsAbsoluteResm())
             {
-                var fileName = Path.GetFileName(fontFamilyKey.Source.GetUnescapeAbsolutePath());
+                var fileName = GetFileNameAndExtension(
+                    fontFamilyKey.Source.GetUnescapeAbsolutePath(), '.');
 
                 location = new Uri(
-                    fontFamilyKey.Source.AbsoluteUri.Replace("." + fileName, string.Empty),
+                    fontFamilyKey.Source.AbsoluteUri.Replace(
+                        "." + fileName.fileNameWithoutExtension + fileName.extension, string.Empty),
                     UriKind.RelativeOrAbsolute);
 
                 return fileName;
             }
 
-            var filename = Path.GetFileName(fontFamilyKey.Source.OriginalString);
+            var filename = GetFileNameAndExtension(fontFamilyKey.Source.OriginalString);
+            var fullFilename = filename.fileNameWithoutExtension + filename.extension;
 
             if (fontFamilyKey.BaseUri != null)
             {
                 var relativePath = fontFamilyKey.Source.OriginalString
-                    .Replace(filename, string.Empty);
+                    .Replace(fullFilename, string.Empty);
 
                 location = new Uri(fontFamilyKey.BaseUri, relativePath);
             }
@@ -77,7 +77,7 @@ namespace Avalonia.Media.Fonts
                 location = new Uri(
                     fontFamilyKey.Source
                         .GetUnescapeAbsolutePath()
-                        .Replace(filename, string.Empty));
+                        .Replace(fullFilename, string.Empty));
             }
 
             return filename;
@@ -105,5 +105,47 @@ namespace Avalonia.Media.Fonts
             var path = x.GetUnescapeAbsolutePath();
             return path.Contains(filePattern) && path.EndsWith(fileExtension);
         }
+
+        private static (string fileNameWithoutExtension, string extension) GetFileNameAndExtension(
+            string path, char directorySeparator = '/')
+        {
+            var pathAsSpan = path.AsSpan();
+            pathAsSpan = IsPathRooted(pathAsSpan, directorySeparator)
+                ? pathAsSpan.Slice(1, path.Length - 1)
+                : pathAsSpan;
+            
+            var extension = GetFileExtension(pathAsSpan);
+            if (extension.Length == pathAsSpan.Length)
+                return (extension.ToString(), string.Empty);
+
+            var fileName = GetFileName(pathAsSpan, directorySeparator, extension.Length);
+            return (fileName.ToString(), extension.ToString());
+        }
+
+        private static ReadOnlySpan<char> GetFileExtension(ReadOnlySpan<char> path)
+        {
+            for (var i = path.Length - 1; i > 0; --i)
+            {
+                if (path[i] == '.')
+                    return path.Slice(i, path.Length - i);
+            }
+ 
+            return path;
+        }
+
+        private static ReadOnlySpan<char> GetFileName(
+            ReadOnlySpan<char> path, char directorySeparator, int extensionLength)
+        {
+            for (var i = path.Length - extensionLength - 1; i >= 0; --i)
+            {
+                if (path[i] == directorySeparator)
+                    return path.Slice(i + 1, path.Length - i - extensionLength - 1);
+            }
+ 
+            return path;
+        }
+
+        private static bool IsPathRooted(ReadOnlySpan<char> path, char directorySeparator) =>
+            path.Length > 0 && path[0] == directorySeparator;
     }
 }
