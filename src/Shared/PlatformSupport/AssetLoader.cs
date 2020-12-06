@@ -132,8 +132,12 @@ namespace Avalonia.Shared.PlatformSupport
 
                 if (asm.AvaloniaResources == null)
                     return Enumerable.Empty<Uri>();
-                path = path.TrimEnd('/') + '/';
-                return asm.AvaloniaResources.Where(r => r.Key.StartsWith(path, StringComparison.Ordinal))
+
+                if (path[path.Length - 1] != '/')
+                    path += '/';
+
+                return asm.AvaloniaResources
+                    .Where(r => r.Key.StartsWith(path, StringComparison.Ordinal))
                     .Select(x => new Uri($"avares://{asm.Name}{x.Key}"));
             }
 
@@ -347,8 +351,10 @@ namespace Avalonia.Shared.PlatformSupport
                             var indexLength = new BinaryReader(resources).ReadInt32();
                             var index = AvaloniaResourcesIndexReaderWriter.Read(new SlicedStream(resources, 4, indexLength));
                             var baseOffset = indexLength + 4;
-                            AvaloniaResources = index.ToDictionary(r => "/" + r.Path.TrimStart('/'), r => (IAssetDescriptor)
-                                new AvaloniaResourceDescriptor(assembly, baseOffset + r.Offset, r.Size));
+                            AvaloniaResources = index.ToDictionary(
+                                GetPathRooted,
+                                r => (IAssetDescriptor) new AvaloniaResourceDescriptor(
+                                    assembly, baseOffset + r.Offset, r.Size));
                         }
                     }
                 }
@@ -358,6 +364,9 @@ namespace Avalonia.Shared.PlatformSupport
             public Dictionary<string, IAssetDescriptor> Resources { get; }
             public Dictionary<string, IAssetDescriptor> AvaloniaResources { get; }
             public string Name { get; }
+
+            private static string GetPathRooted(AvaloniaResourcesIndexEntry r) =>
+                r.Path[0] == '/' ? r.Path : '/' + r.Path;
         }
 
         public static void RegisterResUriParsers() => UriUtilities.RegisterResUriParsers();
