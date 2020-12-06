@@ -83,7 +83,7 @@ namespace Avalonia.Media.Fonts
 
         private static bool IsFontTtfOrOtf(Uri uri)
         {
-            var sourceWithoutArguments = uri.OriginalString.Split('?')[0];
+            var sourceWithoutArguments = GetSubString(uri.OriginalString, '?');
             return sourceWithoutArguments.EndsWith(".ttf", StringComparison.Ordinal)
                    || sourceWithoutArguments.EndsWith(".otf", StringComparison.Ordinal);
         }
@@ -92,7 +92,7 @@ namespace Avalonia.Media.Fonts
             FontFamilyKey fontFamilyKey, Uri location, string fileNameWithoutExtension)
         {
             var path = location.GetUnescapeAbsolutePath();
-            var file = fileNameWithoutExtension.Split('*').First();
+            var file = GetSubString(fileNameWithoutExtension, '*');
             return fontFamilyKey.Source.IsAbsoluteResm()
                 ? path + "." + file
                 : path + file;
@@ -146,5 +146,16 @@ namespace Avalonia.Media.Fonts
 
         private static bool IsPathRooted(ReadOnlySpan<char> path, char directorySeparator) =>
             path.Length > 0 && path[0] == directorySeparator;
+
+        private static string GetSubString(string path, char separator)
+        {
+            for (var i = 0; i < path.Length; i++)
+            {
+                if (path[i] == separator)
+                    return path.Substring(0, i);
+            }
+
+            return path;
+        }
     }
 }
