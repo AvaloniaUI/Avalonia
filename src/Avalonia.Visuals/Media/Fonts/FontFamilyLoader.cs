@@ -72,10 +72,10 @@ namespace Avalonia.Media.Fonts
             }
             else
             {
-                location = new Uri(
-                    fontFamilyKey.Source
-                        .GetUnescapeAbsolutePath()
-                        .Replace(fullFilename, string.Empty));
+                var uriString = fontFamilyKey.Source
+                    .GetUnescapeAbsoluteUri()
+                    .Replace(fullFilename, string.Empty);
+                location = new Uri(uriString);
             }
 
             return filename;
@@ -101,7 +101,8 @@ namespace Avalonia.Media.Fonts
         private static bool IsContainsFile(Uri x, string filePattern, string fileExtension)
         {
             var path = x.GetUnescapeAbsolutePath();
-            return path.IndexOf(filePattern, StringComparison.Ordinal) >= 0 && path.EndsWith(fileExtension);
+            return path.IndexOf(filePattern, StringComparison.Ordinal) >= 0
+                   && path.EndsWith(fileExtension, StringComparison.Ordinal);
         }
 
         private static (string fileNameWithoutExtension, string extension) GetFileNameAndExtension(
