@@ -307,8 +307,8 @@ namespace Avalonia.Shared.PlatformSupport
                 var assembly = GetAssembly(uri);
 
                 return assembly?.Resources
-                           .Where(x => x.Key.Contains(uri.GetUnescapeAbsolutePath()))
-                           .Select(x =>new Uri($"resm:{x.Key}?assembly={assembly.Name}")) ??
+                           .Where(x => x.Key.IndexOf(uri.GetUnescapeAbsolutePath(), StringComparison.Ordinal) >= 0)
+                           .Select(x => new Uri($"resm:{x.Key}?assembly={assembly.Name}")) ??
                        Enumerable.Empty<Uri>();
             }
 
@@ -323,10 +323,10 @@ namespace Avalonia.Shared.PlatformSupport
                         "don't know where to look up for the resource, try specifying assembly explicitly.");
                 }
 
-                if (asm?.AvaloniaResources == null)
+                if (asm.AvaloniaResources == null)
                     return Enumerable.Empty<Uri>();
                 path = path.TrimEnd('/') + '/';
-                return asm.AvaloniaResources.Where(r => r.Key.StartsWith(path))
+                return asm.AvaloniaResources.Where(r => r.Key.StartsWith(path, StringComparison.Ordinal))
                     .Select(x => new Uri($"avares://{asm.Name}{x.Key}"));
             }
 
@@ -466,8 +466,8 @@ namespace Avalonia.Shared.PlatformSupport
                 return new SlicedStream(Assembly.GetManifestResourceStream(AvaloniaResourceName), _offset, _length);
             }
         }
-        
-        class SlicedStream : Stream
+
+        private class SlicedStream : Stream
         {
             private readonly Stream _baseStream;
             private readonly int _from;

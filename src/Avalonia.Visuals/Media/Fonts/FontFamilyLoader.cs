@@ -103,7 +103,7 @@ namespace Avalonia.Media.Fonts
         private static bool IsContainsFile(Uri x, string filePattern, string fileExtension)
         {
             var path = x.GetUnescapeAbsolutePath();
-            return path.Contains(filePattern) && path.EndsWith(fileExtension);
+            return path.IndexOf(filePattern, StringComparison.Ordinal) >= 0 && path.EndsWith(fileExtension);
         }
 
         private static (string fileNameWithoutExtension, string extension) GetFileNameAndExtension(
