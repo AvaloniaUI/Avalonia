@@ -142,7 +142,7 @@ namespace Avalonia.Media.Fonts
                     return path.Slice(i + 1, path.Length - i - extensionLength - 1);
             }
  
-            return path;
+            return path.Slice(0, path.Length - extensionLength);
         }
 
         private static bool IsPathRooted(ReadOnlySpan<char> path, char directorySeparator) =>
