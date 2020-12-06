@@ -17,6 +17,8 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
         private const string Assembly = "?assembly=Avalonia.Visuals.UnitTests";
         private const string AssetLocation = "resm:Avalonia.Visuals.UnitTests.Assets";
         private const string AssetLocationAvares = "avares://Avalonia.Visuals.UnitTests";
+        private const string AssetYourFileName = "/Assets/YourFont.ttf";
+        private const string AssetYourFontAvares = AssetLocationAvares + AssetYourFileName;
 
         private readonly IDisposable _testApplication;
 
@@ -24,7 +26,6 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
         {
             const string AssetMyFontBold = AssetLocation + ".MyFont Bold.ttf" + Assembly + FontName;
             const string AssetYourFont = AssetLocation + ".YourFont.ttf" + Assembly + FontName;
-            const string AssetYourFontAvares = AssetLocationAvares + "/Assets/YourFont.ttf";
 
             var fontAssets = new[]
             {
@@ -54,10 +55,22 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
         }
 
         [Fact]
-        public void Should_Load_Single_FontAsset_With_Avares()
+        public void Should_Load_Single_FontAsset_Avares_Without_BaseUri()
         {
-            var source = new Uri(AssetLocationAvares + "/Assets/YourFont.ttf");
+            var source = new Uri(AssetYourFontAvares);
             var key = new FontFamilyKey(source);
+
+            var fontAssets = FontFamilyLoader.LoadFontAssets(key);
+
+            Assert.Single(fontAssets);
+        }
+
+        [Fact]
+        public void Should_Load_Single_FontAsset_Avares_With_BaseUri()
+        {
+            var source = new Uri(AssetYourFileName, UriKind.RelativeOrAbsolute);
+            var baseUri = new Uri(AssetLocationAvares);
+            var key = new FontFamilyKey(source, baseUri);
 
             var fontAssets = FontFamilyLoader.LoadFontAssets(key);
 
