@@ -12,6 +12,7 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
 
     public class FontFamilyLoaderTests : IDisposable
     {
+        private const string AssetMyFontRegular = AssetLocation + ".MyFont Regular.ttf" + Assembly + FontName;
         private const string FontName = "#MyFont";
         private const string Assembly = "?assembly=Avalonia.Visuals.UnitTests";
         private const string AssetLocation = "resm:Avalonia.Visuals.UnitTests.Assets";
@@ -20,16 +21,15 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
 
         public FontFamilyLoaderTests()
         {
-            const string AssetMyFontRegular = AssetLocation + ".MyFont-Regular.ttf" + Assembly + FontName;
-            const string AssetMyFontBold = AssetLocation + ".MyFont-Bold.ttf" + Assembly + FontName;
+            const string AssetMyFontBold = AssetLocation + ".MyFont Bold.ttf" + Assembly + FontName;
             const string AssetYourFont = AssetLocation + ".YourFont.ttf" + Assembly + FontName;
 
             var fontAssets = new[]
-                                    {
-                                        (AssetMyFontRegular, "AssetData"),
-                                        (AssetMyFontBold, "AssetData"),
-                                        (AssetYourFont, "AssetData")
-                                    };
+            {
+                (AssetMyFontRegular, "AssetData"),
+                (AssetMyFontBold, "AssetData"),
+                (AssetYourFont, "AssetData")
+            };
 
             _testApplication = StartWithResources(fontAssets);
         }
@@ -42,10 +42,7 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
         [Fact]
         public void Should_Load_Single_FontAsset()
         {
-            const string FontAsset = AssetLocation + ".MyFont-Regular.ttf" + Assembly + FontName;
-
-            var source = new Uri(FontAsset, UriKind.RelativeOrAbsolute);
-
+            var source = new Uri(AssetMyFontRegular, UriKind.RelativeOrAbsolute);
             var key = new FontFamilyKey(source);
 
             var fontAssets = FontFamilyLoader.LoadFontAssets(key);
@@ -56,8 +53,7 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
         [Fact]
         public void Should_Load_Matching_Assets()
         {
-            var source = new Uri(AssetLocation + ".MyFont-*.ttf" + Assembly + FontName, UriKind.RelativeOrAbsolute);
-
+            var source = new Uri(AssetLocation + ".MyFont*.ttf" + Assembly + FontName, UriKind.RelativeOrAbsolute);
             var key = new FontFamilyKey(source);
 
             var fontAssets = FontFamilyLoader.LoadFontAssets(key).ToArray();

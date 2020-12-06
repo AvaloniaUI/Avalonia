@@ -51,13 +51,11 @@ namespace Avalonia.Media.Fonts
         {
             if (fontFamilyKey.Source.IsAbsoluteResm())
             {
-                var fileName = GetFileNameAndExtension(
-                    fontFamilyKey.Source.GetUnescapeAbsolutePath(), '.');
+                var fileName = GetFileNameAndExtension(fontFamilyKey.Source.GetUnescapeAbsolutePath(), '.');
 
-                location = new Uri(
-                    fontFamilyKey.Source.AbsoluteUri.Replace(
-                        "." + fileName.fileNameWithoutExtension + fileName.extension, string.Empty),
-                    UriKind.RelativeOrAbsolute);
+                var uriLocation = fontFamilyKey.Source.GetUnescapeAbsoluteUri()
+                    .Replace("." + fileName.fileNameWithoutExtension + fileName.extension, string.Empty);
+                location = new Uri(uriLocation, UriKind.RelativeOrAbsolute);
 
                 return fileName;
             }

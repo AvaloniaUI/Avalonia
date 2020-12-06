@@ -29,6 +29,9 @@ namespace Avalonia.Utilities
 
         public static string GetUnescapeAbsolutePath(this Uri uri) =>
             Uri.UnescapeDataString(uri.AbsolutePath);
+
+        public static string GetUnescapeAbsoluteUri(this Uri uri) =>
+            Uri.UnescapeDataString(uri.AbsoluteUri);
         
         public static Dictionary<string, string> ParseQueryString(this Uri uri) =>
             Uri.UnescapeDataString(uri.Query)
