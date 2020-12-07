@@ -2,6 +2,7 @@ using System;
 using System.Runtime.ConstrainedExecution;
 using System.Threading;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
@@ -10,9 +11,9 @@ namespace Avalonia.Win32
     {
         private readonly SynchronizationContext _inner;
 
-        private NonPumpingSyncContext()
+        private NonPumpingSyncContext(SynchronizationContext inner)
         {
-            _inner = Current;
+            _inner = inner;
             SetWaitNotificationRequired();
             SetSynchronizationContext(this);
         }
@@ -27,8 +28,25 @@ namespace Avalonia.Win32
                 millisecondsTimeout, false);
         }
 
-        public void Dispose() => SynchronizationContext.SetSynchronizationContext(_inner);
+        public void Dispose() => SetSynchronizationContext(_inner);
 
-        public static IDisposable Use() => new NonPumpingSyncContext();
+        public static IDisposable Use()
+        {
+            var current = Current;
+            if (current == null)
+            {
+                if (Thread.CurrentThread.GetApartmentState() != ApartmentState.STA)
+                    return null;
+            }
+            if (current is NonPumpingSyncContext)
+                return null;
+            
+            return new NonPumpingSyncContext(current);
+        }
+
+        internal class HelperImpl : NonPumpingLockHelper.IHelperImpl
+        {
+            IDisposable NonPumpingLockHelper.IHelperImpl.Use() => NonPumpingSyncContext.Use();
+        }
     }
 }
