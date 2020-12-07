@@ -348,6 +348,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_PAINT:
                 {
+                    using(NonPumpingSyncContext.Use())
                     using (_rendererLock.Lock())
                     {
                         if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
