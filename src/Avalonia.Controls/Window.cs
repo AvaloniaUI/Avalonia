@@ -130,6 +130,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
 
         /// <summary>
+        /// Defines the <see cref="ShowActivated"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowActivatedProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(ShowActivated), true);
+
+        /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
         public static readonly StyledProperty<bool> ShowInTaskbarProperty =
@@ -352,11 +358,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Sets the system decorations (title bar, border, etc)
         /// </summary>
-        /// 
         public SystemDecorations SystemDecorations
         {
             get { return GetValue(SystemDecorationsProperty); }
             set { SetValue(SystemDecorationsProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether a window is activated when first shown. 
+        /// </summary>
+        public bool ShowActivated
+        {
+            get { return GetValue(ShowActivatedProperty); }
+            set { SetValue(ShowActivatedProperty, value); }
         }
 
         /// <summary>
@@ -650,7 +664,7 @@ namespace Avalonia.Controls
                 Owner = parent;
                 parent?.AddChild(this, false);
 
-                PlatformImpl?.Show();
+                PlatformImpl?.Show(ShowActivated);
                 Renderer?.Start();
                 SetWindowStartupLocation(Owner?.PlatformImpl);
             }
@@ -720,7 +734,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.SetParent(owner.PlatformImpl);
                 Owner = owner;
                 owner.AddChild(this, true);
-                PlatformImpl?.Show();
+                PlatformImpl?.Show(ShowActivated);
 
                 Renderer?.Start();
 
