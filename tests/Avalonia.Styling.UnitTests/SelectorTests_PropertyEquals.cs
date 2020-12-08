@@ -23,6 +23,20 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public async Task PropertyEquals_Matches_When_Property_Has_Matching_Value_And_Different_Type()
+        {
+            var control = new TextBlock();
+            var target = default(Selector).PropertyEquals(TextBlock.TagProperty, "Bar");
+            var activator = target.Match(control).Activator.ToObservable();
+
+            Assert.False(await activator.Take(1));
+            control.Tag = FooBar.Bar;
+            Assert.True(await activator.Take(1));
+            control.Tag = null;
+            Assert.False(await activator.Take(1));
+        }
+
+        [Fact]
         public void OfType_PropertyEquals_Doesnt_Match_Control_Of_Wrong_Type()
         {
             var control = new TextBlock();
@@ -39,6 +53,12 @@ namespace Avalonia.Styling.UnitTests
                 .PropertyEquals(TextBlock.TextProperty, "foo");
 
             Assert.Equal("TextBlock[Text=foo]", target.ToString());
+        }
+
+        private enum FooBar
+        {
+            Foo,
+            Bar
         }
     }
 }
