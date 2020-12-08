@@ -16,6 +16,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -110,7 +111,7 @@ namespace Avalonia.Win32
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
-                .Bind<AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider>().ToConstant(new NonPumpingWaitProvider())
+                .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
 
             Win32GlManager.Initialize();
