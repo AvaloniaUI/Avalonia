@@ -67,7 +67,7 @@ namespace ControlCatalog
             if (Application.Current.Styles.Contains(App.FluentDark)
                 || Application.Current.Styles.Contains(App.FluentLight))
             {
-                var theme = new Avalonia.Themes.Fluent.FluentTheme();
+                var theme = new Avalonia.Themes.Fluent.Controls.FluentControls();
                 theme.TryGetResource("Button", out _);
             }
             else

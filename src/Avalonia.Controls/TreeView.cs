@@ -117,10 +117,8 @@ namespace Avalonia.Controls
                 if (value != null)
                 {
                     if (selectedItems.Count != 1 || selectedItems[0] != value)
-                    {
-                        _syncingSelectedItems = true;
-                        SelectSingleItem(value);
-                        _syncingSelectedItems = false;
+                    {                        
+                        SelectSingleItem(value);                        
                     }
                 }
                 else if (SelectedItems.Count > 0)
@@ -219,8 +217,12 @@ namespace Avalonia.Controls
 
         private void SelectSingleItem(object item)
         {
-            SelectedItems.Clear();
+            _syncingSelectedItems = true;
+            SelectedItems.Clear();            
             SelectedItems.Add(item);
+            _syncingSelectedItems = false;
+
+            SetAndRaise(SelectedItemProperty, ref _selectedItem, item);            
         }
 
         /// <summary>
@@ -376,10 +378,11 @@ namespace Avalonia.Controls
             {
                 if (!this.IsVisualAncestorOf(element))
                 {
-                    IControl result = _selectedItem != null ?
+                    var result = _selectedItem != null ?
                         ItemContainerGenerator.Index.ContainerFromItem(_selectedItem) :
                         ItemContainerGenerator.ContainerFromIndex(0);
-                    return (true, result);
+                    
+                    return (result != null, result); // SelectedItem may not be in the treeview.
                 }
 
                 return (true, null);

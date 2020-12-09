@@ -43,6 +43,14 @@ namespace Avalonia.Input
             AvaloniaProperty.Register<InputElement, Cursor?>(nameof(Cursor), null, true);
 
         /// <summary>
+        /// Defines the <see cref="IsKeyboardFocusWithin"/> property.
+        /// </summary>
+        public static readonly DirectProperty<InputElement, bool> IsKeyboardFocusWithinProperty =
+            AvaloniaProperty.RegisterDirect<InputElement, bool>(
+                nameof(IsKeyboardFocusWithin),
+                o => o.IsKeyboardFocusWithin);
+        
+        /// <summary>
         /// Defines the <see cref="IsFocused"/> property.
         /// </summary>
         public static readonly DirectProperty<InputElement, bool> IsFocusedProperty =
@@ -160,6 +168,7 @@ namespace Avalonia.Input
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
+        private bool _isKeyboardFocusWithin;
         private bool _isFocusVisible;
         private bool _isPointerOver;
         private GestureRecognizerCollection? _gestureRecognizers;
@@ -342,6 +351,15 @@ namespace Avalonia.Input
         {
             get { return GetValue(CursorProperty); }
             set { SetValue(CursorProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets a value indicating whether keyboard focus is anywhere within the element or its visual tree child elements.
+        /// </summary>
+        public bool IsKeyboardFocusWithin
+        {
+            get => _isKeyboardFocusWithin;
+            internal set => SetAndRaise(IsKeyboardFocusWithinProperty, ref _isKeyboardFocusWithin, value); 
         }
 
         /// <summary>
@@ -543,6 +561,10 @@ namespace Avalonia.Input
             else if (change.Property == IsPointerOverProperty)
             {
                 UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
+            }
+            else if (change.Property == IsKeyboardFocusWithinProperty)
+            {
+                PseudoClasses.Set(":focus-within", _isKeyboardFocusWithin);
             }
         }
 

@@ -1,3 +1,4 @@
 Compat issues with assembly Avalonia.Base:
-CannotAddAbstractMembers : Member 'protected System.IObservable<Avalonia.AvaloniaPropertyChangedEventArgs> Avalonia.AvaloniaProperty.GetChanged()' is abstract in the implementation but is missing in the contract.
-Total Issues: 1
+MembersMustExist : Member 'public void Avalonia.Threading.AvaloniaSynchronizationContext..ctor(Avalonia.Threading.AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider)' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Threading.AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider' does not exist in the implementation but it does exist in the contract.
+Total Issues: 2

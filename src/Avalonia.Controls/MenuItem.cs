@@ -22,7 +22,7 @@ namespace Avalonia.Controls
     /// A menu item control.
     /// </summary>
     [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -101,7 +101,7 @@ namespace Avalonia.Controls
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
-        private Popup _popup;
+        private Popup? _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -145,7 +145,7 @@ namespace Avalonia.Controls
                 {
                     var parent = x as Control;
                     return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
-                        Observable.Return<DefinitionBase.SharedSizeScope>(null);
+                        Observable.Return<DefinitionBase.SharedSizeScope?>(null);
                 });
 
             this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
@@ -608,6 +608,8 @@ namespace Avalonia.Controls
         {
             SelectedItem = null;
         }
+
+        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.

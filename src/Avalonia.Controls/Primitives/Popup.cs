@@ -265,6 +265,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the control that is used to determine the popup's position.
         /// </summary>
+        [ResolveByName]
         public Control? PlacementTarget
         {
             get { return GetValue(PlacementTargetProperty); }
@@ -358,7 +359,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            var placementTarget = PlacementTarget ?? this.GetLogicalAncestors().OfType<IVisual>().FirstOrDefault();
+            var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
 
             if (placementTarget == null)
             {
@@ -586,6 +587,26 @@ namespace Avalonia.Controls.Primitives
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
+
+            var focusCheck = FocusManager.Instance?.Current;
+
+            // Focus is set to null as part of popup closing, so we only want to
+            // set focus to PlacementTarget if this is the case
+            if (focusCheck == null)
+            {
+                if (PlacementTarget != null)
+                {
+                    FocusManager.Instance?.Focus(PlacementTarget);
+                }
+                else
+                {
+                    var anc = this.FindLogicalAncestorOfType<IControl>();
+                    if (anc != null)
+                    {
+                        FocusManager.Instance?.Focus(anc);
+                    }
+                }
+            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)

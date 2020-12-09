@@ -189,6 +189,11 @@ namespace Avalonia.X11
             if (platform.Options.UseDBusMenu)
                 NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
             NativeControlHost = new X11NativeControlHost(_platform, this);
+            DispatcherTimer.Run(() =>
+            {
+                Paint?.Invoke(default);
+                return _handle != IntPtr.Zero;
+            }, TimeSpan.FromMilliseconds(100));
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -338,7 +343,10 @@ namespace Avalonia.X11
                 return customRendererFactory.Create(root, loop);
             
             return _platform.Options.UseDeferredRendering ?
-                new DeferredRenderer(root, loop) :
+                new DeferredRenderer(root, loop)
+                {
+                    RenderOnlyOnRenderThread = true
+                } :
                 (IRenderer)new X11ImmediateRendererProxy(root, loop);
         }
 
@@ -815,7 +823,7 @@ namespace Avalonia.X11
                 XSetTransientForHint(_x11.Display, _handle, parent.Handle.Handle);
         }
 
-        public void Show()
+        public void Show(bool activate)
         {
             _wasMappedAtLeastOnce = true;
             XMapWindow(_x11.Display, _handle);

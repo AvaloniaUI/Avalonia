@@ -73,7 +73,8 @@ namespace Avalonia.OpenGL.Egl
                 var old = new RestoreContext(_egl, _disp.Handle, _lock);
                 var surf = surface ?? OffscreenSurface;
                 _egl.MakeCurrent(_disp.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-                if (!_egl.MakeCurrent(_disp.Handle, surf.DangerousGetHandle(), surf.DangerousGetHandle(), Context))
+                if (!_egl.MakeCurrent(_disp.Handle, surf?.DangerousGetHandle() ?? IntPtr.Zero,
+                    surf?.DangerousGetHandle() ?? IntPtr.Zero, Context))
                     throw OpenGlException.GetFormattedException("eglMakeCurrent", _egl);
                 success = true;
                 return old;
@@ -90,6 +91,14 @@ namespace Avalonia.OpenGL.Egl
             if(IsCurrent)
                 return Disposable.Empty;
             return MakeCurrent();
+        }
+
+        public IDisposable EnsureLocked()
+        {
+            if (IsCurrent)
+                return Disposable.Empty;
+            Monitor.Enter(_lock);
+            return Disposable.Create(() => Monitor.Exit(_lock));
         }
 
         public bool IsSharedWith(IGlContext context)

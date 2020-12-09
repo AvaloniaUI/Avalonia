@@ -1,0 +1,44 @@
+<Style xmlns="https://github.com/avaloniaui" 
+       Selector="DataValidationErrors"
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Design.PreviewWith>
+    <Border Padding="20"> 
+      <TextBox Text="Sample">
+        <DataValidationErrors.Error>
+          <sys:Exception/> 
+        </DataValidationErrors.Error>
+      </TextBox>
+    </Border>
+  </Design.PreviewWith>
+    
+  <Setter Property="Template">
+    <ControlTemplate>
+      <DockPanel LastChildFill="True">
+        <ContentControl Margin="0 4 0 0"
+          DockPanel.Dock="Bottom"
+          ContentTemplate="{TemplateBinding ErrorTemplate}"
+          DataContext="{TemplateBinding Owner}"
+          Content="{Binding (DataValidationErrors.Errors)}"
+          IsVisible="{Binding (DataValidationErrors.HasErrors)}" />
+        <ContentPresenter
+          Name="PART_ContentPresenter"
+          Background="{TemplateBinding Background}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          ContentTemplate="{TemplateBinding ContentTemplate}"
+          Content="{TemplateBinding Content}"
+          Padding="{TemplateBinding Padding}" />
+      </DockPanel>
+    </ControlTemplate>
+  </Setter>
+  <Setter Property="ErrorTemplate">
+    <DataTemplate>
+      <ItemsControl Items="{Binding}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Message}" Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" TextWrapping="Wrap" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </DataTemplate>
+  </Setter>
+</Style>

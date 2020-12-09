@@ -6,7 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.Pages
 {
@@ -26,7 +26,7 @@ namespace ControlCatalog.Pages
 
     }
 
-    public class NumbersPageViewModel : ReactiveObject
+    public class NumbersPageViewModel : ViewModelBase
     {
         private IList<FormatObject> _formats;
         private FormatObject _selectedFormat;
