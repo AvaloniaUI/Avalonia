@@ -125,79 +125,57 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
     }
 }
 
-NSString* keyCodeToString(CGKeyCode keyCode)
-{
-  TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardInputSource();
-  CFDataRef uchr =
-    (CFDataRef)TISGetInputSourceProperty(currentKeyboard,
-                                         kTISPropertyUnicodeKeyLayoutData);
-  const UCKeyboardLayout *keyboardLayout =
-    (const UCKeyboardLayout*)CFDataGetBytePtr(uchr);
-
-  if(keyboardLayout)
-  {
-    UInt32 deadKeyState = 0;
-    UniCharCount maxStringLength = 255;
-    UniCharCount actualStringLength = 0;
-    UniChar unicodeString[maxStringLength];
-
-    OSStatus status = UCKeyTranslate(keyboardLayout,
-                                     keyCode, kUCKeyActionDown, 0,
-                                     LMGetKbdType(), 0,
-                                     &deadKeyState,
-                                     maxStringLength,
-                                     &actualStringLength, unicodeString);
-
-    if (actualStringLength == 0 && deadKeyState)
-    {
-      status = UCKeyTranslate(keyboardLayout,
-                                       kVK_Space, kUCKeyActionDown, 0,
-                                       LMGetKbdType(), 0,
-                                       &deadKeyState,
-                                       maxStringLength,
-                                       &actualStringLength, unicodeString);
-    }
-    if(actualStringLength > 0 && status == noErr)
-      return [[NSString stringWithCharacters:unicodeString
-                        length:(NSUInteger)actualStringLength] lowercaseString];
-  }
-
-  return nil;
-}
-
 
 HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
     @autoreleasepool
     {
-        NSEventModifierFlags flags = 0;
-        
-        if (modifiers & Control)
-            flags |= NSEventModifierFlagControl;
-        if (modifiers & Shift)
-            flags |= NSEventModifierFlagShift;
-        if (modifiers & Alt)
-            flags |= NSEventModifierFlagOption;
-        if (modifiers & Windows)
-            flags |= NSEventModifierFlagCommand;
-        
-        auto it = s_AvnKeyMap.find(key);
-        
-        if(it != s_AvnKeyMap.end())
+        if(key != AvnKeyNone)
         {
-            auto keyString = keyCodeToString(it->second);
+            NSEventModifierFlags flags = 0;
             
-            if(keyString != nullptr)
+            if (modifiers & Control)
+                flags |= NSEventModifierFlagControl;
+            if (modifiers & Shift)
+                flags |= NSEventModifierFlagShift;
+            if (modifiers & Alt)
+                flags |= NSEventModifierFlagOption;
+            if (modifiers & Windows)
+                flags |= NSEventModifierFlagCommand;
+            
+            auto it = s_UnicodeKeyMap.find(key);
+            
+            if(it != s_UnicodeKeyMap.end())
             {
+                auto keyString= [NSString stringWithFormat:@"%C", (unsigned short)it->second];
+                
                 [_native setKeyEquivalent: keyString];
                 [_native setKeyEquivalentModifierMask:flags];
+                
+                return S_OK;
             }
             else
             {
-                [_native setKeyEquivalent: @""];
-                [_native setKeyEquivalentModifierMask: 0];
+                auto it = s_AvnKeyMap.find(key); // check if a virtual key is mapped.
+                
+                if(it != s_AvnKeyMap.end())
+                {
+                    auto it1 = s_QwertyKeyMap.find(it->second); // convert virtual key to qwerty string.
+                    
+                    if(it1 != s_QwertyKeyMap.end())
+                    {
+                        [_native setKeyEquivalent: [NSString  stringWithUTF8String: it1->second]];
+                        [_native setKeyEquivalentModifierMask:flags];
+                        
+                        return S_OK;
+                    }
+                }
             }
         }
+        
+        // Nothing matched... clear.
+        [_native setKeyEquivalent: @""];
+        [_native setKeyEquivalentModifierMask: 0];
         
         return S_OK;
     }
