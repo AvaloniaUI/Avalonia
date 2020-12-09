@@ -28,4 +28,5 @@
   <Import Project="..\..\src\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
 </Project>
