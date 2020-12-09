@@ -6,7 +6,6 @@ using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using ControlCatalog.ViewModels;
-using ReactiveUI;
 
 namespace ControlCatalog.Pages
 {

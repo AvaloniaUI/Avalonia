@@ -39,6 +39,7 @@
   <Setter Property="HorizontalAlignment" Value="Stretch" />
   <Setter Property="TextBlock.FontSize" Value="{DynamicResource ContentControlFontSize}" />
   <Setter Property="TextBlock.FontWeight" Value="Normal" />
+  <Setter Property="WindowManagerAddShadowHint" Value="False" />
   <Setter Property="Template">
     <ControlTemplate>
       <Border Background="{TemplateBinding Background}"
