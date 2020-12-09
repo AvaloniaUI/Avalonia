@@ -351,9 +351,9 @@ namespace Avalonia.Native
         }
 
 
-        public virtual void Show()
+        public virtual void Show(bool activate)
         {
-            _native.Show();
+            _native.Show(activate.AsComBool());
         }
 
 

@@ -20,7 +20,7 @@ namespace Avalonia.DesignerSupport.Remote
             ClientSize = new Size(1, 1);
         }
 
-        public void Show()
+        public void Show(bool activate)
         {
         }
 
