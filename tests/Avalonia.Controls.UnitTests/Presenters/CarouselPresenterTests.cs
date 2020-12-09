@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.UnitTests;
@@ -256,10 +259,132 @@ namespace Avalonia.Controls.UnitTests.Presenters
             AssertState(target);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Moving_SelectedIndex_Forwards_Initiates_Transition(bool isVirtualized)
+        {
+            using var app = Start();
+            var transition = new Mock<IPageTransition>();
+            var (target, root) = CreateTarget(isVirtualized, transition: transition.Object);
+
+            transition.Verify(x =>
+                x.Start(It.IsAny<Visual>(), It.IsAny<Visual>(), It.IsAny<bool>()),
+                Times.Never);
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            transition.Verify(x =>
+                x.Start(
+                    It.Is<Visual>(x => IsContainer(x, "foo")),
+                    It.Is<Visual>(x => IsContainer(x, "bar")), 
+                    true),
+                Times.Once);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Moving_SelectedIndex_Backwards_Initiates_Transition(bool isVirtualized)
+        {
+            using var app = Start();
+            var transition = new Mock<IPageTransition>();
+            var (target, root) = CreateTarget(
+                isVirtualized,
+                selectedIndex: 1,
+                transition: transition.Object);
+
+            transition.Verify(x =>
+                x.Start(It.IsAny<Visual>(), It.IsAny<Visual>(), It.IsAny<bool>()),
+                Times.Never);
+
+            target.SelectedIndex = 0;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            transition.Verify(x =>
+                x.Start(
+                    It.Is<Visual>(x => IsContainer(x, "bar")),
+                     It.Is<Visual>(x => IsContainer(x, "foo")),
+                    false),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Completing_Transition_Removes_Control_When_Virtualized()
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var transition = new Mock<IPageTransition>();
+            var (target, root) = CreateTarget(true, transition: transition.Object);
+            var tcs = new TaskCompletionSource<object?>();
+
+            transition.Setup(x => x.Start(It.IsAny<Visual>(), It.IsAny<Visual>(), It.IsAny<bool>()))
+                .Returns(tcs.Task);
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            tcs.SetResult(null);
+            sync.ExecutePostedCallbacks();
+
+            AssertState(target);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Changing_SelectedIndex_During_A_Transition_Queues_New_Transition(bool isVirtualized)
+        {
+            using var app = Start();
+            using var sync = UnitTestSynchronizationContext.Begin();
+            var transition = new Mock<IPageTransition>();
+            var items = new[] { "foo", "bar", "baz" };
+            var (target, root) = CreateTarget(isVirtualized, items: items, transition: transition.Object);
+            var tcs = new TaskCompletionSource<object?>();
+
+            transition.Setup(x => x.Start(It.IsAny<Visual>(), It.IsAny<Visual>(), It.IsAny<bool>()))
+                .Returns(tcs.Task);
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            target.SelectedIndex = 2;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            transition.Verify(x =>
+                x.Start(
+                    It.Is<Visual>(x => IsContainer(x, "foo")),
+                    It.Is<Visual>(x => IsContainer(x, "bar")),
+                    true),
+                Times.Once);
+
+            tcs.SetResult(null);
+            sync.ExecutePostedCallbacks();
+
+            tcs = new TaskCompletionSource<object?>();
+            transition.Setup(x => x.Start(It.IsAny<Visual>(), It.IsAny<Visual>(), It.IsAny<bool>()))
+                .Returns(tcs.Task);
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            transition.Verify(x =>
+                x.Start(
+                    It.Is<Visual>(x => IsContainer(x, "bar")),
+                    It.Is<Visual>(x => IsContainer(x, "baz")),
+                    true),
+                Times.Once);
+            tcs.SetResult(null);
+            sync.ExecutePostedCallbacks();
+
+            AssertState(target);
+        }
+
         private static (CarouselPresenter, TestRoot) CreateTarget(
             bool isVirtualized,
             IEnumerable? items = null,
-            int? selectedIndex = null)
+            int? selectedIndex = null,
+            IPageTransition? transition = null)
         {
             RuntimeHelpers.RunClassConstructor(typeof(CarouselPresenter).TypeHandle);
 
@@ -268,12 +393,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Items = items ?? new[] { "foo", "bar" },
                 SelectedIndex = selectedIndex ?? 0,
                 IsVirtualized = isVirtualized,
+                PageTransition = transition,
                 Template = new FuncControlTemplate<Carousel>((c, ns) =>
                     new CarouselPresenter
                     {
                         Name = "PART_ItemsPresenter",
                         [!ItemsControl.ItemsProperty] = c[!ItemsControl.ItemsViewProperty],
                         [!CarouselPresenter.IsVirtualizedProperty] = c[!Carousel.IsVirtualizedProperty],
+                        [!CarouselPresenter.PageTransitionProperty] = c[!Carousel.PageTransitionProperty],
                         [!CarouselPresenter.SelectedIndexProperty] = c[!Carousel.SelectedIndexProperty],
                     }),
             };
@@ -329,6 +456,13 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var services = TestServices.MockPlatformRenderInterface;
             return UnitTestApplication.Start(services);
+        }
+
+        private static bool IsContainer(Visual v, string expected)
+        {
+            return v is ContentPresenter cp &&
+                cp.DataContext is string s &&
+                s == expected;
         }
     }
 }

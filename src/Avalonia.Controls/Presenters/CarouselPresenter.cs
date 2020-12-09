@@ -3,14 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 
 #nullable enable
 
 namespace Avalonia.Controls.Presenters
 {
+    /// <summary>
+    /// Displays the items for a <see cref="Carousel"/>.
+    /// </summary>
     public class CarouselPresenter : Panel, IItemsPresenter, ICollectionChangedListener
     {
         /// <summary>
@@ -26,6 +30,12 @@ namespace Avalonia.Controls.Presenters
             ItemsControl.ItemsProperty.AddOwner<CarouselPresenter>(o => o.Items, (o, v) => o.Items = v);
         
         /// <summary>
+        /// Defines the <see cref="PageTransition"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IPageTransition> PageTransitionProperty =
+            Carousel.PageTransitionProperty.AddOwner<CarouselPresenter>();
+
+        /// <summary>
         /// Defines the <see cref="SelectedIndex"/> property.
         /// </summary>
         public static readonly DirectProperty<CarouselPresenter, int> SelectedIndexProperty =
@@ -39,6 +49,11 @@ namespace Avalonia.Controls.Presenters
         private int _realizedIndex = -1;
         private List<IControl?>? _nonVirtualizedContainers;
         private int _selectedIndex;
+        private Task? _currentTransition;
+        private Visual? _transitionFromControl;
+        private Visual? _transitionToControl;
+        private bool  _queuedTransition;
+        private bool _transitionForward;
 
         /// <summary>
         /// Gets or sets the element factory used to create items for the control.
@@ -93,6 +108,15 @@ namespace Avalonia.Controls.Presenters
                     throw new ArgumentException("Carousel.Items must be an ItemsSourceView.");
                 }
             }
+        }
+        
+        /// <summary>
+        /// Gets or sets a transition to use when switching pages.
+        /// </summary>
+        public IPageTransition PageTransition
+        {
+            get { return GetValue(PageTransitionProperty); }
+            set { SetValue(PageTransitionProperty, value); }
         }
 
         /// <summary>
@@ -163,6 +187,21 @@ namespace Avalonia.Controls.Presenters
                 return MeasureNonVirtualized(availableSize);
         }
 
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            var result = base.ArrangeOverride(finalSize);
+            var transition = PageTransition;
+
+            if (transition is object &&
+                _currentTransition is null &&
+                (_transitionFromControl is object || _transitionToControl is object))
+            {
+                StartTransition();
+            }
+            
+            return result;
+        }
+
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             if (change.Property == SelectedIndexProperty &&
@@ -200,21 +239,35 @@ namespace Avalonia.Controls.Presenters
                 return default;
             }
 
-            IControl? element = null;
-
             if (_realizedIndex != _selectedIndex)
             {
-                Children.Clear();
-                element = GetElement(_selectedIndex);
-                _realizedIndex = _selectedIndex;
-            }
-            else if (Children.Count > 0)
-            {
-                element = Children[0];
+                if (_currentTransition is null)
+                {
+                    var performTransition = PageTransition is object && _realizedIndex >= 0;
+
+                    if (!performTransition)
+                    {
+                        Children.Clear();
+                    }
+                    else
+                    {
+                        _transitionFromControl = Children.FirstOrDefault() as Visual;
+                        _transitionForward = _selectedIndex > _realizedIndex;
+                    }
+
+                    var element = GetElement(_selectedIndex);
+                    _realizedIndex = _selectedIndex;
+
+                    if (performTransition)
+                        _transitionToControl = element as Visual;
+                }
+                else
+                {
+                    _queuedTransition = true;
+                }
             }
 
-            element?.Measure(availableSize);
-            return element?.DesiredSize ?? default;
+            return base.MeasureOverride(availableSize);
         }
 
         private Size MeasureNonVirtualized(Size availableSize)
@@ -232,6 +285,21 @@ namespace Avalonia.Controls.Presenters
                 AddItems(0, _items.Count);
             }
 
+            var performTransition = PageTransition is object &&
+                _realizedIndex != _selectedIndex &&
+                _realizedIndex >= 0;
+
+            if (performTransition)
+            {
+                _transitionForward = _selectedIndex > _realizedIndex;
+
+                if (_currentTransition is object)
+                {
+                    _queuedTransition = true;
+                    return base.MeasureOverride(availableSize);
+                }
+            }
+
             var result = Size.Empty;
 
             for (var i = 0; i < _nonVirtualizedContainers.Count; ++i)
@@ -243,9 +311,15 @@ namespace Avalonia.Controls.Presenters
                     element.IsVisible = true;
                     element.Measure(availableSize);
                     result = element.DesiredSize;
+
+                    if (performTransition)
+                        _transitionToControl = element as Visual;
                 }
                 else
                 {
+                    if (performTransition && i == _realizedIndex)
+                        _transitionFromControl = element as Visual;
+
                     element.IsVisible = false;
                 }
             }
@@ -355,6 +429,30 @@ namespace Avalonia.Controls.Presenters
                 _nonVirtualizedContainers.Insert(index, null);
 
             InvalidateMeasure();
+        }
+
+        private void StartTransition()
+        {
+            _currentTransition = PageTransition.Start(_transitionFromControl, _transitionToControl, _transitionForward);
+            _currentTransition.ContinueWith(TransitionCompleted, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void TransitionCompleted(Task task)
+        {
+            if (IsVirtualized)
+            {
+                if (_transitionFromControl is object)
+                    Children.Remove((IControl)_transitionFromControl);
+            }
+
+            _currentTransition = null;
+            _transitionFromControl = _transitionToControl = null;
+
+            if (_queuedTransition)
+            {
+                InvalidateMeasure();
+                _queuedTransition = false;
+            }
         }
     }
 }

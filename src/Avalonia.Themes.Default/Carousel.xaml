@@ -7,6 +7,7 @@
         <CarouselPresenter IsVirtualized="{TemplateBinding IsVirtualized}"
                            Items="{TemplateBinding ItemsView}"
                            Margin="{TemplateBinding Padding}"
+                           PageTransition="{TemplateBinding PageTransition}"
                            SelectedIndex="{TemplateBinding SelectedIndex}"/>
       </Border>
     </ControlTemplate>
