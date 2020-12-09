@@ -243,7 +243,7 @@ namespace Avalonia.Win32
             {
                 if (IsWindowVisible(_hwnd))
                 {
-                    ShowWindow(value);
+                    ShowWindow(value, true);
                 }
                 else
                 {
@@ -567,10 +567,11 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
         }
 
-        public virtual void Show()
+        public virtual void Show(bool activate)
         {
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
-            ShowWindow(_showWindowState);
+
+            ShowWindow(_showWindowState, activate);
         }
 
         public Action GotInputWhenDisabled { get; set; }
@@ -908,7 +909,7 @@ namespace Avalonia.Win32
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
 
-        private void ShowWindow(WindowState state)
+        private void ShowWindow(WindowState state, bool activate)
         {
             ShowWindowCommand? command;
 
@@ -918,7 +919,7 @@ namespace Avalonia.Win32
             {
                 case WindowState.Minimized:
                     newWindowProperties.IsFullScreen = false;
-                    command = ShowWindowCommand.Minimize;
+                    command = activate ? ShowWindowCommand.Minimize : ShowWindowCommand.ShowMinNoActive;
                     break;
                 case WindowState.Maximized:
                     newWindowProperties.IsFullScreen = false;
@@ -927,7 +928,8 @@ namespace Avalonia.Win32
 
                 case WindowState.Normal:
                     newWindowProperties.IsFullScreen = false;
-                    command = ShowWindowCommand.Restore;
+                    command = IsWindowVisible(_hwnd) ? ShowWindowCommand.Restore : 
+                        activate ? ShowWindowCommand.Normal : ShowWindowCommand.ShowNoActivate;
                     break;
 
                 case WindowState.FullScreen:
