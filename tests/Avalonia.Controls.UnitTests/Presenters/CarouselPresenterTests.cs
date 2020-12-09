@@ -39,22 +39,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Same(parent.ItemContainerGenerator, target.ElementFactory);
         }
 
-        //[Fact]
-        //public void Switching_To_Virtualized_Should_Reset_Containers()
-        //{
-        //    var target = new CarouselPresenter
-        //    {
-        //        Items = new[] { "foo", "bar" },
-        //        SelectedIndex = 0,
-        //        IsVirtualized = false,
-        //    };
-
-        //    target.ApplyTemplate();
-        //    target.IsVirtualized = true;
-
-        //    AssertSingle(target);
-        //}
-
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -252,6 +236,23 @@ namespace Avalonia.Controls.UnitTests.Presenters
             root.LayoutManager.ExecuteLayoutPass();
 
             Assert.Equal(1, target.SelectedIndex);
+            AssertState(target);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Switching_IsVirtualized_Should_Reset_Containers(bool isVirtualized)
+        {
+            using var app = Start();
+            var (target, root) = CreateTarget(isVirtualized);
+
+            target.IsVirtualized = !target.IsVirtualized;
+
+            Assert.False(target.IsMeasureValid);
+            Assert.Empty(target.Children);
+            root.LayoutManager.ExecuteLayoutPass();
+
             AssertState(target);
         }
 

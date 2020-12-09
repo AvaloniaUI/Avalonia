@@ -180,6 +180,13 @@ namespace Avalonia.Controls.Presenters
                     ElementFactory = _host.ElementFactory;
                 }
             }
+            else if (change.Property == IsVirtualizedProperty)
+            {
+                InvalidateMeasure();
+                Children.Clear();
+                _realizedIndex = -1;
+                _nonVirtualizedContainers = null;
+            }
 
             base.OnPropertyChanged(change);
         }
