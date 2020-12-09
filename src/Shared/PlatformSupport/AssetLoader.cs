@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Platform;
+using Avalonia.Shared.PlatformSupport.Internal;
 using Avalonia.Utilities;
 
 namespace Avalonia.Shared.PlatformSupport
@@ -13,9 +14,8 @@ namespace Avalonia.Shared.PlatformSupport
     /// </summary>
     public class AssetLoader : IAssetLoader
     {
-        private const string AvaloniaResourceName = "!AvaloniaResources";
-        private static readonly Dictionary<string, AssemblyDescriptor> AssemblyNameCache
-            = new Dictionary<string, AssemblyDescriptor>();
+        private readonly static IAssemblyDescriptorResolver _assemblyDescriptorResolver
+            = new AssemblyDescriptorResolver();
 
         private AssemblyDescriptor _defaultResmAssembly;
 
@@ -175,13 +175,13 @@ namespace Avalonia.Shared.PlatformSupport
             throw new ArgumentException($"Unsupported url type: " + uri.Scheme, nameof(uri));
         }
 
-        private (AssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
+        private (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
         {
             var asm = GetAssembly(uri.Authority);
             return (asm, uri.GetUnescapeAbsolutePath());
         }
         
-        private AssemblyDescriptor GetAssembly(Uri uri)
+        private IAssemblyDescriptor GetAssembly(Uri uri)
         {
             if (uri != null)
             {
@@ -203,170 +203,12 @@ namespace Avalonia.Shared.PlatformSupport
             return null;
         }
 
-        private AssemblyDescriptor GetAssembly(string name)
+        private IAssemblyDescriptor GetAssembly(string name)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            if (!AssemblyNameCache.TryGetValue(name, out var rv))
-            {
-                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-                var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
-                if (match != null)
-                {
-                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(match);
-                }
-                else
-                {
-                    // iOS does not support loading assemblies dynamically!
-                    //
-#if __IOS__
-                    throw new InvalidOperationException(
-                        $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
-#else
-                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
-#endif
-                }
-            }
-
-            return rv;
-        }
-
-        private interface IAssetDescriptor
-        {
-            Stream GetStream();
-            Assembly Assembly { get; }
-        }
-
-        private class AssemblyResourceDescriptor : IAssetDescriptor
-        {
-            private readonly Assembly _asm;
-            private readonly string _name;
-
-            public AssemblyResourceDescriptor(Assembly asm, string name)
-            {
-                _asm = asm;
-                _name = name;
-            }
-
-            public Stream GetStream()
-            {
-                return _asm.GetManifestResourceStream(_name);
-            }
-
-            public Assembly Assembly => _asm;
-        }
-        
-        private class AvaloniaResourceDescriptor : IAssetDescriptor
-        {
-            private readonly int _offset;
-            private readonly int _length;
-            public Assembly Assembly { get; }
-
-            public AvaloniaResourceDescriptor(Assembly asm, int offset, int length)
-            {
-                _offset = offset;
-                _length = length;
-                Assembly = asm;
-            }
-            
-            public Stream GetStream()
-            {
-                return new SlicedStream(Assembly.GetManifestResourceStream(AvaloniaResourceName), _offset, _length);
-            }
-        }
-
-        private class SlicedStream : Stream
-        {
-            private readonly Stream _baseStream;
-            private readonly int _from;
-
-            public SlicedStream(Stream baseStream, int from, int length)
-            {
-                Length = length;
-                _baseStream = baseStream;
-                _from = from;
-                _baseStream.Position = from;
-            }
-            public override void Flush()
-            {
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                return _baseStream.Read(buffer, offset, (int)Math.Min(count, Length - Position));
-            }
-
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                if (origin == SeekOrigin.Begin)
-                    Position = offset;
-                if (origin == SeekOrigin.End)
-                    Position = _from + Length + offset;
-                if (origin == SeekOrigin.Current)
-                    Position = Position + offset;
-                return Position;
-            }
-
-            public override void SetLength(long value) => throw new NotSupportedException();
-
-            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-
-            public override bool CanRead => true;
-            public override bool CanSeek => _baseStream.CanRead;
-            public override bool CanWrite => false;
-            public override long Length { get; }
-            public override long Position
-            {
-                get => _baseStream.Position - _from;
-                set => _baseStream.Position = value + _from;
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                if (disposing)
-                    _baseStream.Dispose();
-            }
-
-            public override void Close() => _baseStream.Close();
-        }
-
-        private class AssemblyDescriptor
-        {
-            public AssemblyDescriptor(Assembly assembly)
-            {
-                Assembly = assembly;
-
-                if (assembly != null)
-                {
-                    Resources = assembly.GetManifestResourceNames()
-                        .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
-                    Name = assembly.GetName().Name;
-                    using (var resources = assembly.GetManifestResourceStream(AvaloniaResourceName))
-                    {
-                        if (resources != null)
-                        {
-                            Resources.Remove(AvaloniaResourceName);
-
-                            var indexLength = new BinaryReader(resources).ReadInt32();
-                            var index = AvaloniaResourcesIndexReaderWriter.Read(new SlicedStream(resources, 4, indexLength));
-                            var baseOffset = indexLength + 4;
-                            AvaloniaResources = index.ToDictionary(
-                                GetPathRooted,
-                                r => (IAssetDescriptor) new AvaloniaResourceDescriptor(
-                                    assembly, baseOffset + r.Offset, r.Size));
-                        }
-                    }
-                }
-            }
-
-            public Assembly Assembly { get; }
-            public Dictionary<string, IAssetDescriptor> Resources { get; }
-            public Dictionary<string, IAssetDescriptor> AvaloniaResources { get; }
-            public string Name { get; }
-
-            private static string GetPathRooted(AvaloniaResourcesIndexEntry r) =>
-                r.Path[0] == '/' ? r.Path : '/' + r.Path;
+            return _assemblyDescriptorResolver.Get(name);
         }
 
         public static void RegisterResUriParsers() => UriUtilities.RegisterResUriParsers();
