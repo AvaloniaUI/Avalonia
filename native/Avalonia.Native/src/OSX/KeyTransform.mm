@@ -237,3 +237,21 @@ const int kVK_JIS_Kana = 0x68;
     {kVK_UpArrow, Up},
     {kVK_JIS_Kana, AvnKeyKanaMode},
 };
+
+static std::map<AvnKey, int> BuildAvnKeyMap ()
+{
+    std::map<AvnKey, int> result;
+    
+    for( auto it = s_KeyMap.begin(); it != s_KeyMap.end(); ++it )
+    {
+        int key = it->first;
+        AvnKey value = it->second;
+        
+        result[value] = key;
+    }
+    
+    return result;
+}
+
+std::map<AvnKey, int> s_AvnKeyMap = BuildAvnKeyMap();
+

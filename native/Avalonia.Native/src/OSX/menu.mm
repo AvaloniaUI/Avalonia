@@ -2,6 +2,9 @@
 #include "common.h"
 #include "menu.h"
 #include "window.h"
+#include "KeyTransform.h"
+#include <CoreFoundation/CoreFoundation.h>
+#include <Carbon/Carbon.h> /* For kVK_ constants, and TIS functions. */
 
 @implementation AvnMenu
 {
@@ -122,7 +125,48 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
     }
 }
 
-HRESULT AvnAppMenuItem::SetGesture (char* key, AvnInputModifiers modifiers)
+NSString* keyCodeToString(CGKeyCode keyCode)
+{
+  TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardInputSource();
+  CFDataRef uchr =
+    (CFDataRef)TISGetInputSourceProperty(currentKeyboard,
+                                         kTISPropertyUnicodeKeyLayoutData);
+  const UCKeyboardLayout *keyboardLayout =
+    (const UCKeyboardLayout*)CFDataGetBytePtr(uchr);
+
+  if(keyboardLayout)
+  {
+    UInt32 deadKeyState = 0;
+    UniCharCount maxStringLength = 255;
+    UniCharCount actualStringLength = 0;
+    UniChar unicodeString[maxStringLength];
+
+    OSStatus status = UCKeyTranslate(keyboardLayout,
+                                     keyCode, kUCKeyActionDown, 0,
+                                     LMGetKbdType(), 0,
+                                     &deadKeyState,
+                                     maxStringLength,
+                                     &actualStringLength, unicodeString);
+
+    if (actualStringLength == 0 && deadKeyState)
+    {
+      status = UCKeyTranslate(keyboardLayout,
+                                       kVK_Space, kUCKeyActionDown, 0,
+                                       LMGetKbdType(), 0,
+                                       &deadKeyState,
+                                       maxStringLength,
+                                       &actualStringLength, unicodeString);
+    }
+    if(actualStringLength > 0 && status == noErr)
+      return [[NSString stringWithCharacters:unicodeString
+                        length:(NSUInteger)actualStringLength] lowercaseString];
+  }
+
+  return nil;
+}
+
+
+HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
     @autoreleasepool
     {
@@ -137,8 +181,23 @@ HRESULT AvnAppMenuItem::SetGesture (char* key, AvnInputModifiers modifiers)
         if (modifiers & Windows)
             flags |= NSEventModifierFlagCommand;
         
-        [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)key]];
-        [_native setKeyEquivalentModifierMask:flags];
+        auto it = s_AvnKeyMap.find(key);
+        
+        if(it != s_AvnKeyMap.end())
+        {
+            auto keyString = keyCodeToString(it->second);
+            
+            if(keyString != nullptr)
+            {
+                [_native setKeyEquivalent: keyString];
+                [_native setKeyEquivalentModifierMask:flags];
+            }
+            else
+            {
+                [_native setKeyEquivalent: @""];
+                [_native setKeyEquivalentModifierMask: 0];
+            }
+        }
         
         return S_OK;
     }
