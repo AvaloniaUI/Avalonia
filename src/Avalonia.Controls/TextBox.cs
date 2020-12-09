@@ -867,7 +867,10 @@ namespace Avalonia.Controls
             {
                 var point = e.GetPosition(_presenter);
 
-                point = new Point(MathUtilities.Clamp(point.X, 0, _presenter.Bounds.Width - 1), MathUtilities.Clamp(point.Y, 0, _presenter.Bounds.Height - 1));
+                point = new Point(
+                    MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
+                    MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
+
                 CaretIndex = SelectionEnd = _presenter.GetCaretIndex(point);
             }
         }

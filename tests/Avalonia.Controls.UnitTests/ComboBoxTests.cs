@@ -40,6 +40,7 @@ namespace Avalonia.Controls.UnitTests
                 Items = items,
                 SelectedIndex = 0,
             };
+            var root = new TestRoot(target);
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
             Assert.NotNull(rectangle);

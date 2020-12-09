@@ -1,5 +1,4 @@
 ﻿using Avalonia;
-using Avalonia.ReactiveUI;
 
 namespace VirtualizationDemo
 {
@@ -8,7 +7,6 @@ namespace VirtualizationDemo
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .UseReactiveUI()
                 .LogToTrace();
 
         public static int Main(string[] args)

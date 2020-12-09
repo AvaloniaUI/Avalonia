@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using RenderDemo.ViewModels;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace RenderDemo
 {

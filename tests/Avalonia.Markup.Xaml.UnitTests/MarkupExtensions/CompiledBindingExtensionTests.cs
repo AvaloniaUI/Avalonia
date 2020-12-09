@@ -375,7 +375,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Window.DataTemplates>
     <ContentControl Name='target' Content='{CompiledBinding}' />
 </Window>";
-                Assert.Throws<XamlTransformException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -393,7 +393,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
     </ContentControl>
 </Window>";
-                Assert.Throws<XamlTransformException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -450,7 +450,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         </ItemsControl.DataTemplates>
     </ItemsControl>
 </Window>";
-                Assert.Throws<XamlTransformException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                ThrowsXamlTransformException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -718,7 +718,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:CompileBindings='true'>
     <TextBlock Text='{Binding InvalidPath}' Name='textBlock' />
 </Window>";
-                Assert.Throws<XamlX.XamlParseException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                ThrowsXamlParseException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -776,7 +776,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         x:DataType='local:TestDataContext'
         x:CompileBindings='notabool'>
 </Window>";
-                Assert.Throws<XamlX.XamlParseException>(() => AvaloniaRuntimeXamlLoader.Load(xaml));
+                ThrowsXamlParseException(() => AvaloniaRuntimeXamlLoader.Load(xaml));
             }
         }
 
@@ -937,8 +937,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal(null, contentControl.Content);
             }
         }
-    }
 
+        void Throws(string type, Action cb)
+        {
+            try
+            {
+                cb();
+            }
+            catch (Exception e) when (e.GetType().Name == type)
+            {
+                return;
+            }
+
+            throw new Exception("Expected " + type);
+        }
+
+        void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
+        void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
+    }
+    
     public interface INonIntegerIndexer
     {
         string this[string key] { get; set; }

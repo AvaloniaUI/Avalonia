@@ -83,6 +83,7 @@ namespace Avalonia.Win32
         private POINT _maxTrackSize;
         private WindowImpl _parent;        
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
+        private bool _isCloseRequested;
 
         public WindowImpl()
         {
@@ -242,7 +243,7 @@ namespace Avalonia.Win32
             {
                 if (IsWindowVisible(_hwnd))
                 {
-                    ShowWindow(value);
+                    ShowWindow(value, true);
                 }
                 else
                 {
@@ -506,6 +507,13 @@ namespace Avalonia.Win32
 
             if (_hwnd != IntPtr.Zero)
             {
+                // Detect if we are being closed programmatically - this would mean that WM_CLOSE was not called
+                // and we didn't prepare this window for destruction.
+                if (!_isCloseRequested)
+                {
+                    BeforeCloseCleanup(true);
+                }
+                
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
@@ -559,10 +567,11 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
         }
 
-        public virtual void Show()
+        public virtual void Show(bool activate)
         {
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
-            ShowWindow(_showWindowState);
+
+            ShowWindow(_showWindowState, activate);
         }
 
         public Action GotInputWhenDisabled { get; set; }
@@ -900,7 +909,7 @@ namespace Avalonia.Win32
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
 
-        private void ShowWindow(WindowState state)
+        private void ShowWindow(WindowState state, bool activate)
         {
             ShowWindowCommand? command;
 
@@ -910,7 +919,7 @@ namespace Avalonia.Win32
             {
                 case WindowState.Minimized:
                     newWindowProperties.IsFullScreen = false;
-                    command = ShowWindowCommand.Minimize;
+                    command = activate ? ShowWindowCommand.Minimize : ShowWindowCommand.ShowMinNoActive;
                     break;
                 case WindowState.Maximized:
                     newWindowProperties.IsFullScreen = false;
@@ -919,7 +928,8 @@ namespace Avalonia.Win32
 
                 case WindowState.Normal:
                     newWindowProperties.IsFullScreen = false;
-                    command = ShowWindowCommand.Restore;
+                    command = IsWindowVisible(_hwnd) ? ShowWindowCommand.Restore : 
+                        activate ? ShowWindowCommand.Normal : ShowWindowCommand.ShowNoActivate;
                     break;
 
                 case WindowState.FullScreen:
@@ -946,6 +956,32 @@ namespace Avalonia.Win32
             if (!Design.IsDesignMode)
             {
                 SetFocus(_hwnd);
+            }
+        }
+        
+        private void BeforeCloseCleanup(bool isDisposing)
+        {
+            // Based on https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Window.cs#L4270-L4337
+            // We need to enable parent window before destroying child window to prevent OS from activating a random window behind us (or last active window).
+            // This is described here: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enablewindow#remarks
+            // We need to verify if parent is still alive (perhaps it got destroyed somehow).
+            if (_parent != null && IsWindow(_parent._hwnd))
+            {
+                var wasActive = GetActiveWindow() == _hwnd;
+
+                // We can only set enabled state if we are not disposing - generally Dispose happens after enabled state has been set.
+                // Ignoring this would cause us to enable a window that might be disabled.
+                if (!isDisposing)
+                {
+                    // Our window closed callback will set enabled state to a correct value after child window gets destroyed.
+                    _parent.SetEnabled(true);
+                }
+                
+                // We also need to activate our parent window since again OS might try to activate a window behind if it is not set.
+                if (wasActive)
+                {
+                    SetActiveWindow(_parent._hwnd);
+                }
             }
         }
 
