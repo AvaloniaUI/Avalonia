@@ -78,6 +78,6 @@ namespace Avalonia.Controls.Presenters
         /// represents has changed. For example, when another item is added or removed in the data
         /// source, the index for items that come after in the ordering will be impacted.
         /// </remarks>
-        event EventHandler<ElementIndexChangedEventArgs> ElementIndexChanged;
+        event EventHandler<ElementIndexChangedEventArgs>? ElementIndexChanged;
     }
 }

@@ -4,6 +4,8 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
@@ -11,7 +13,7 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     public class ItemsPresenter : ItemsRepeater, IItemsPresenter
     {
-        private IItemsPresenterHost _host;
+        private IItemsPresenterHost? _host;
 
         public IEnumerable<IControl> RealizedElements
         {
@@ -52,7 +54,7 @@ namespace Avalonia.Controls.Presenters
         {
             base.OnGotFocus(e);
 
-            var child = ((IVisual)e.Source).GetSelfAndVisualAncestors()
+            var child = ((IVisual?)e.Source)?.GetSelfAndVisualAncestors()
                 .FirstOrDefault(x => x.VisualParent == this);
 
             if (child != null)
@@ -69,7 +71,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (_host is object)
                 {
-                    _host?.RegisterItemsPresenter(this);
+                    _host.RegisterItemsPresenter(this);
                     ItemTemplate = _host.ElementFactory;
                 }
             }
