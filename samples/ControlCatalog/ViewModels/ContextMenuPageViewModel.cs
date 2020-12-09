@@ -3,7 +3,7 @@ using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
@@ -12,9 +12,9 @@ namespace ControlCatalog.ViewModels
         public Control View { get; set; }
         public ContextMenuPageViewModel()
         {
-            OpenCommand = ReactiveCommand.CreateFromTask(Open);
-            SaveCommand = ReactiveCommand.Create(Save);
-            OpenRecentCommand = ReactiveCommand.Create<string>(OpenRecent);
+            OpenCommand = MiniCommand.CreateFromTask(Open);
+            SaveCommand = MiniCommand.Create(Save);
+            OpenRecentCommand = MiniCommand.Create<string>(OpenRecent);
 
             MenuItems = new[]
             {
@@ -44,9 +44,9 @@ namespace ControlCatalog.ViewModels
         }
 
         public IReadOnlyList<MenuItemViewModel> MenuItems { get; set; }
-        public ReactiveCommand<Unit, Unit> OpenCommand { get; }
-        public ReactiveCommand<Unit, Unit> SaveCommand { get; }
-        public ReactiveCommand<string, Unit> OpenRecentCommand { get; }
+        public MiniCommand OpenCommand { get; }
+        public MiniCommand SaveCommand { get; }
+        public MiniCommand OpenRecentCommand { get; }
 
         public async Task Open()
         {

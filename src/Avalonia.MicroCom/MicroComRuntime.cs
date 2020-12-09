@@ -38,13 +38,20 @@ namespace Avalonia.MicroCom
         public static T CreateProxyFor<T>(IntPtr pObject, bool ownsHandle) => (T)CreateProxyFor(typeof(T), pObject, ownsHandle);
         
         public static object CreateProxyFor(Type type, IntPtr pObject, bool ownsHandle) => _factories[type](pObject, ownsHandle);
-        
+
+        public static IntPtr GetNativeIntPtr<T>(this T obj, bool owned = false) where T : IUnknown
+            => new IntPtr(GetNativePointer(obj, owned));
         public static void* GetNativePointer<T>(T obj, bool owned = false) where T : IUnknown
         {
             if (obj == null)
                 return null;
             if (obj is MicroComProxyBase proxy)
+            {
+                if(owned)
+                    proxy.AddRef();
                 return (void*)proxy.NativePointer;
+            }
+
             if (obj is IMicroComShadowContainer container)
             {
                 container.Shadow ??= new MicroComShadow(container);
@@ -89,10 +96,27 @@ namespace Avalonia.MicroCom
 
         }
 
-        public static T CloneReference<T>(T iface) where T : IUnknown
+        public static T CloneReference<T>(this T iface) where T : IUnknown
         {
+            var proxy = (MicroComProxyBase)(object)iface;
             var ownedPointer = GetNativePointer(iface, true);
             return CreateProxyFor<T>(ownedPointer, true);
+        }
+
+        public static T QueryInterface<T>(this IUnknown unknown) where T : IUnknown
+        {
+            var proxy = (MicroComProxyBase)unknown;
+            return proxy.QueryInterface<T>();
+        }
+
+        public static void UnsafeAddRef(this IUnknown unknown)
+        {
+            ((MicroComProxyBase)unknown).AddRef();
+        }
+        
+        public static void UnsafeRelease(this IUnknown unknown)
+        {
+            ((MicroComProxyBase)unknown).Release();
         }
     }
 }

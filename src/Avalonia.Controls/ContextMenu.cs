@@ -233,6 +233,16 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == WindowManagerAddShadowHintProperty && _popup != null)
+            {
+                _popup.WindowManagerAddShadowHint = change.NewValue.GetValueOrDefault<bool>();
+            }
+        }
+
         /// <summary>
         /// Opens the menu.
         /// </summary>

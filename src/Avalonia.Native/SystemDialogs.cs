@@ -26,7 +26,7 @@ namespace Avalonia.Native
             if (dialog is OpenFileDialog ofd)
             {
                 _native.OpenFileDialog(nativeParent,
-                                        events, ofd.AllowMultiple,
+                                        events, ofd.AllowMultiple.AsComBool(),
                                         ofd.Title ?? "",
                                         ofd.Directory ?? "",
                                         ofd.InitialFileName ?? "",
