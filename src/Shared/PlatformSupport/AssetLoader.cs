@@ -14,10 +14,13 @@ namespace Avalonia.Shared.PlatformSupport
     /// </summary>
     public class AssetLoader : IAssetLoader
     {
-        private readonly static IAssemblyDescriptorResolver _assemblyDescriptorResolver
+        private static IAssemblyDescriptorResolver _assemblyDescriptorResolver
             = new AssemblyDescriptorResolver();
 
         private AssemblyDescriptor _defaultResmAssembly;
+
+        internal static void SetAssemblyDescriptorResolver(IAssemblyDescriptorResolver resolver) =>
+            _assemblyDescriptorResolver = resolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetLoader"/> class.
