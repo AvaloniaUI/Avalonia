@@ -131,7 +131,7 @@ namespace Avalonia.Controls
 
         protected abstract IControl GenerateEditingElementDirect(DataGridCell cell, object dataItem); 
 
-        internal AvaloniaProperty BindingTarget { get; set; } 
+        internal AvaloniaProperty BindingTarget { get; set; }
 
         internal void SetHeaderFromBinding()
         {

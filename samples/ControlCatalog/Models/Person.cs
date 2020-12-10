@@ -16,6 +16,7 @@ namespace ControlCatalog.Models
         string _firstName;
         string _lastName;
         bool _isBanned;
+        UserRole _role;
 
         public string FirstName
         {
@@ -55,7 +56,18 @@ namespace ControlCatalog.Models
             {
                 _isBanned = value;
 
-                OnPropertyChanged(nameof(_isBanned));
+                OnPropertyChanged(nameof(IsBanned));
+            }
+        }
+
+        public UserRole Role
+        {
+            get => _role;
+            set
+            {
+                _role = value;
+
+                OnPropertyChanged(nameof(Role));
             }
         }
 
@@ -106,5 +118,12 @@ namespace ControlCatalog.Models
             else
                 return null;
         }
+    }
+
+    public enum UserRole
+    {
+        Guest,
+        User,
+        Admin
     }
 }

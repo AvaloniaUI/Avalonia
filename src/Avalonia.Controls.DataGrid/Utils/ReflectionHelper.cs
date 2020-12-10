@@ -10,7 +10,11 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
+
+using Avalonia.Data;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Controls.Utils
 {
@@ -237,6 +241,12 @@ namespace Avalonia.Controls.Utils
                 s += '?';
             }
             return s;
+        }
+
+        internal static string GetBindingPropertyName(this IBinding binding)
+        {
+            var path = (binding as Binding)?.Path ?? (binding as CompiledBindingExtension)?.Path.ToString();
+            return path?.Split('.')?.LastOrDefault();
         }
 
         internal static Type GetNestedPropertyType(this Type parentType, string propertyPath)

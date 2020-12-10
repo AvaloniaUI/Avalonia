@@ -6,6 +6,10 @@
 using System;
 using System.Globalization;
 
+using Avalonia.Data;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
+
 namespace Avalonia.Controls
 {
 
@@ -171,6 +175,41 @@ namespace Avalonia.Controls
             public static InvalidOperationException CannotChangeSelectedItemsCollectionInSingleMode()
             {
                 return new InvalidOperationException("Can only change SelectedItems collection in Extended selection mode.  Use SelectedItem property in Single selection mode.");
+            }
+        }
+
+        public static class DataGridComboBoxColumn
+        {
+            public static ArgumentException UnsetBinding(string header)
+            {
+                return new ArgumentException(Format("Binding for column {0} is null. Ensure that the binding path has been set correctly.", header));
+            }
+
+            public static ArgumentException UnsetBinding(Type type)
+            {
+                return new ArgumentException(Format("Binding for column of type {0} is null. Ensure that the binding path has been set correctly.", type.FullName));
+            }
+
+            public static ArgumentException UnknownBindingPath(IBinding binding, Type type)
+            {
+                var path = (binding as Binding)?.Path ?? (binding as CompiledBindingExtension)?.Path.ToString();
+                return new ArgumentException(Format("Binding path {0} could not be found in type {1}. Ensure that the binding path has been set correctly.", path, type.FullName));
+            }
+
+            public static ArgumentException UnknownDisplayMemberPath(string displayMemberPath, Type type)
+            {
+                return new ArgumentException(Format("DisplayMemberPath {0} could not be found in type {1}. Ensure that the value has been set correctly and note that for built-in types DisplayMemberPath should not be used.", displayMemberPath, type.FullName));
+            }
+
+            public static ArgumentException UnknownItemsSourcePath(IBinding binding)
+            {
+                var path = (binding as Binding)?.Path ?? (binding as CompiledBindingExtension)?.Path.ToString();
+                return new ArgumentException(Format("The Items elements do not contain a property {0}. Ensure that the binding path has been set correctly.", path));
+            }
+
+            public static ArgumentException BindingTypeMismatch(Type bindingType, Type itemSourceType)
+            {
+                return new ArgumentException(Format("The DataGridComboBoxColumn ItemSource elements of type \'{0}\' do not match the Binding type \'{1}\'. Ensure that the paths have been set correctly and specify a DisplayMemberPath for non built-in types.", itemSourceType.FullName, bindingType.FullName));
             }
         }
 
