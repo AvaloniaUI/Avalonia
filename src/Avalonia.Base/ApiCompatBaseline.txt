@@ -1,4 +1,20 @@
 Compat issues with assembly Avalonia.Base:
+MembersMustExist : Member 'protected void Avalonia.AvaloniaProperty..ctor(Avalonia.AvaloniaProperty, System.Type, Avalonia.PropertyMetadata)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.AvaloniaProperty..ctor(System.String, System.Type, System.Type, Avalonia.PropertyMetadata, System.Action<Avalonia.IAvaloniaObject, System.Boolean>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.PropertyMetadata Avalonia.AvaloniaProperty.GetMetadata(System.Type)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.PropertyMetadata Avalonia.AvaloniaProperty.GetMetadata<T>()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.AvaloniaProperty.OverrideMetadata(System.Type, Avalonia.PropertyMetadata)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.AvaloniaProperty<TValue>..ctor(Avalonia.AvaloniaProperty, System.Type, Avalonia.PropertyMetadata)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.AvaloniaProperty<TValue>..ctor(Avalonia.AvaloniaProperty<TValue>, System.Type, Avalonia.PropertyMetadata)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.AvaloniaProperty<TValue>..ctor(System.String, System.Type, Avalonia.PropertyMetadata, System.Action<Avalonia.IAvaloniaObject, System.Boolean>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.DirectPropertyBase<TValue>..ctor(Avalonia.AvaloniaProperty, System.Type, Avalonia.PropertyMetadata)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.DirectPropertyBase<TValue>..ctor(Avalonia.DirectPropertyBase<TValue>, System.Type, Avalonia.PropertyMetadata)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.DirectPropertyBase<TValue>..ctor(System.String, System.Type, Avalonia.PropertyMetadata)' does not exist in the implementation but it does exist in the contract.
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.DirectPropertyMetadata<TValue>' does not inherit from base type 'Avalonia.PropertyMetadata' in the implementation but it does in the contract.
+MembersMustExist : Member 'public void Avalonia.DirectPropertyMetadata<TValue>.Merge(Avalonia.PropertyMetadata, Avalonia.AvaloniaProperty)' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.PropertyMetadata' does not exist in the implementation but it does exist in the contract.
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.StyledPropertyMetadata<TValue>' does not inherit from base type 'Avalonia.PropertyMetadata' in the implementation but it does in the contract.
+MembersMustExist : Member 'public void Avalonia.StyledPropertyMetadata<TValue>.Merge(Avalonia.PropertyMetadata, Avalonia.AvaloniaProperty)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Threading.AvaloniaSynchronizationContext..ctor(Avalonia.Threading.AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider)' does not exist in the implementation but it does exist in the contract.
 TypesMustExist : Type 'Avalonia.Threading.AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider' does not exist in the implementation but it does exist in the contract.
-Total Issues: 2
+Total Issues: 18
