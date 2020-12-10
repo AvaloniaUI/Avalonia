@@ -19,6 +19,9 @@ namespace Avalonia.Shared.PlatformSupport
 
         private AssemblyDescriptor _defaultResmAssembly;
 
+        /// <remarks>
+        /// Introduced for tests.
+        /// </remarks>
         internal static void SetAssemblyDescriptorResolver(IAssemblyDescriptorResolver resolver) =>
             _assemblyDescriptorResolver = resolver;
 
