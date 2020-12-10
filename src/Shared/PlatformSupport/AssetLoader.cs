@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Platform;
+using Avalonia.Platform.Internal;
 using Avalonia.Shared.PlatformSupport.Internal;
 using Avalonia.Utilities;
 

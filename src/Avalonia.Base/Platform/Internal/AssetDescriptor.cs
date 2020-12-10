@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Reflection;
 
-namespace Avalonia.Shared.PlatformSupport.Internal
+namespace Avalonia.Platform.Internal
 {
     internal interface IAssetDescriptor
     {

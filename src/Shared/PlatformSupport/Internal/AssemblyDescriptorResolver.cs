@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Platform.Internal;
 
 namespace Avalonia.Shared.PlatformSupport.Internal
 {
-    internal interface IAssemblyDescriptorResolver
-    {
-        IAssemblyDescriptor Get(string name);
-    }
-    
     internal class AssemblyDescriptorResolver : IAssemblyDescriptorResolver
     {
         private readonly Dictionary<string, IAssemblyDescriptor> _assemblyNameCache

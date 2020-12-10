@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Avalonia.Shared.PlatformSupport;
-using Avalonia.Shared.PlatformSupport.Internal;
+using Avalonia.Platform.Internal;
 using Moq;
 using Xunit;
 
