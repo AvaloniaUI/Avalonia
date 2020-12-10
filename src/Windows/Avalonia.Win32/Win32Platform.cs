@@ -17,6 +17,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using Avalonia.Win32;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -39,7 +40,7 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         public bool UseDeferredRendering { get; set; } = true;
-        public bool AllowEglInitialization { get; set; } = true;
+        public bool AllowEglInitialization { get; set; } = Win32Platform.WindowsVersion > new Version(6, 1);
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
         public bool UseWgl { get; set; }

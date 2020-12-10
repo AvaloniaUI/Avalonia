@@ -113,8 +113,7 @@ namespace ControlCatalog.NetCore
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true,
-                    AllowEglInitialization = true
+                    EnableMultitouch = true
                 })
                 .UseSkia()
                 .UseManagedSystemDialogs()
