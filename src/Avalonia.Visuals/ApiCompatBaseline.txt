@@ -1,5 +1,0 @@
-Compat issues with assembly Avalonia.Visuals:
-MembersMustExist : Member 'public Avalonia.StyledProperty<System.Collections.Generic.IReadOnlyList<System.Double>> Avalonia.StyledProperty<System.Collections.Generic.IReadOnlyList<System.Double>> Avalonia.Media.DashStyle.DashesProperty' does not exist in the implementation but it does exist in the contract.
-MembersMustExist : Member 'public System.Collections.Generic.IReadOnlyList<System.Double> Avalonia.Media.DashStyle.Dashes.get()' does not exist in the implementation but it does exist in the contract.
-MembersMustExist : Member 'public void Avalonia.Media.DashStyle.Dashes.set(System.Collections.Generic.IReadOnlyList<System.Double>)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 3
