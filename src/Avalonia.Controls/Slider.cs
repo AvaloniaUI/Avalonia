@@ -83,7 +83,8 @@ namespace Avalonia.Controls
         private IDisposable _increaseButtonSubscription;
         private IDisposable _increaseButtonReleaseDispose;
         private IDisposable _pointerMovedDispose;
-        
+        private IDisposable _trackOnKeyDownDispose;
+
         private const double Tolerance = 0.0001;
 
         /// <summary>
@@ -164,16 +165,16 @@ namespace Avalonia.Controls
             _increaseButtonSubscription?.Dispose();
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
-
+            _trackOnKeyDownDispose?.Dispose();
+            
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
-
             if (_track != null)
             {
                 _track.IsThumbDragHandled = true;
-                _track.KeyDown += TrackOnKeyDown;
+                _trackOnKeyDownDispose = _track.AddDisposableHandler(KeyDownEvent, TrackOnKeyDown);
             }
 
             if (_decreaseButton != null)
@@ -184,8 +185,10 @@ namespace Avalonia.Controls
 
             if (_increaseButton != null)
             {
-                _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-                _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
+                _increaseButtonSubscription =
+                    _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent,
+                    TrackReleased, RoutingStrategies.Tunnel);
             }
 
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
