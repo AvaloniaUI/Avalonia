@@ -185,10 +185,8 @@ namespace Avalonia.Controls
 
             if (_increaseButton != null)
             {
-                _increaseButtonSubscription =
-                    _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
-                _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent,
-                    TrackReleased, RoutingStrategies.Tunnel);
+                _increaseButtonSubscription = _increaseButton.AddDisposableHandler(PointerPressedEvent, TrackPressed, RoutingStrategies.Tunnel);
+                _increaseButtonReleaseDispose = _increaseButton.AddDisposableHandler(PointerReleasedEvent, TrackReleased, RoutingStrategies.Tunnel);
             }
 
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
