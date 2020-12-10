@@ -10,7 +10,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Dialogs;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
-using Avalonia.ReactiveUI;
 using Avalonia.Threading;
 
 namespace ControlCatalog.NetCore
@@ -118,7 +117,6 @@ namespace ControlCatalog.NetCore
                     AllowEglInitialization = true
                 })
                 .UseSkia()
-                .UseReactiveUI()
                 .UseManagedSystemDialogs()
                 .LogToTrace();
 

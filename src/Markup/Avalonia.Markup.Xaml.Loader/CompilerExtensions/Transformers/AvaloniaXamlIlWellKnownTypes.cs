@@ -50,6 +50,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public IXamlType RelativeSource { get; }
         public IXamlType UInt { get; }
+        public IXamlType Int { get; }
         public IXamlType Long { get; }
         public IXamlType Uri { get; }
         public IXamlType FontFamily { get; }
@@ -72,6 +73,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType StandardCursorType { get; }
         public IXamlType Cursor { get; }
         public IXamlConstructor CursorTypeConstructor { get; }
+        public IXamlType RowDefinition { get; }
+        public IXamlType RowDefinitions { get; }
+        public IXamlType ColumnDefinition { get; }
+        public IXamlType ColumnDefinitions { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -130,6 +135,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
             RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");
             UInt = cfg.TypeSystem.GetType("System.UInt32");
+            Int = cfg.TypeSystem.GetType("System.Int32");
             Long = cfg.TypeSystem.GetType("System.Int64");
             Uri = cfg.TypeSystem.GetType("System.Uri");
             FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
@@ -156,6 +162,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             StandardCursorType = cfg.TypeSystem.GetType("Avalonia.Input.StandardCursorType");
             Cursor = cfg.TypeSystem.GetType("Avalonia.Input.Cursor");
             CursorTypeConstructor = Cursor.GetConstructor(new List<IXamlType> { StandardCursorType });
+            ColumnDefinition = cfg.TypeSystem.GetType("Avalonia.Controls.ColumnDefinition");
+            ColumnDefinitions = cfg.TypeSystem.GetType("Avalonia.Controls.ColumnDefinitions");
+            RowDefinition = cfg.TypeSystem.GetType("Avalonia.Controls.RowDefinition");
+            RowDefinitions = cfg.TypeSystem.GetType("Avalonia.Controls.RowDefinitions");
         }
     }
 
