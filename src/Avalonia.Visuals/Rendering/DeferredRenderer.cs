@@ -607,6 +607,7 @@ namespace Avalonia.Rendering
         private bool? UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
+            using var noPump = NonPumpingLockHelper.Use();
             lock (_sceneLock)
             {
                 if (_disposed)
