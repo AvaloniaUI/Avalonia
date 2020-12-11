@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using Avalonia.Media;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -175,97 +177,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             var text = textNode.Text;
-            
             var types = context.GetAvaloniaTypes();
 
-            if (type.FullName == "System.TimeSpan")
+            if (AvaloniaXamlIlLanguageParseIntrinsics.TryConvert(context, node, text, type, types, out result))
             {
-                var tsText = text.Trim();
-
-                if (!TimeSpan.TryParse(tsText, CultureInfo.InvariantCulture, out var timeSpan))
-                {
-                    // // shorthand seconds format (ie. "0.25")
-                    if (!tsText.Contains(":") && double.TryParse(tsText,
-                        NumberStyles.Float | NumberStyles.AllowThousands,
-                        CultureInfo.InvariantCulture, out var seconds))
-                        timeSpan = TimeSpan.FromSeconds(seconds);
-                    else
-                        throw new XamlX.XamlLoadException($"Unable to parse {text} as a time span", node);
-                }
-
-
-                result = new XamlStaticOrTargetedReturnMethodCallNode(node,
-                    type.FindMethod("FromTicks", type, false, types.Long),
-                    new[] { new XamlConstantNode(node, types.Long, timeSpan.Ticks) });
-                return true;
-            }
-
-            if (type.Equals(types.FontFamily))
-            {
-                result = new AvaloniaXamlIlFontFamilyAstNode(types, text, node);
                 return true;
             }
             
-            if (type.Equals(types.Thickness))
-            {
-                var thickness = Thickness.Parse(text);
-
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Thickness, types.ThicknessFullConstructor,
-                    new[] { thickness.Left, thickness.Top, thickness.Right, thickness.Bottom });
-                
-                return true;
-            }
-
-            if (type.Equals(types.Point))
-            {
-                var point = Point.Parse(text);
-
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Point, types.PointFullConstructor,
-                    new[] { point.X, point.Y });
-                
-                return true;
-            }
-            
-            if (type.Equals(types.Vector))
-            {
-                var vector = Vector.Parse(text);
-
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Vector, types.VectorFullConstructor,
-                    new[] { vector.X, vector.Y });
-                
-                return true;
-            }
-            
-            if (type.Equals(types.Size))
-            {
-                var size = Size.Parse(text);
-
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Size, types.SizeFullConstructor,
-                    new[] { size.Width, size.Height });
-                
-                return true;
-            }
-            
-            if (type.Equals(types.Matrix))
-            {
-                var matrix = Matrix.Parse(text);
-
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Matrix, types.MatrixFullConstructor,
-                    new[] { matrix.M11, matrix.M12, matrix.M21, matrix.M22, matrix.M31, matrix.M32 });
-                
-                return true;
-            }
-            
-            if (type.Equals(types.CornerRadius))
-            {
-                var cornerRadius = CornerRadius.Parse(text);
-
-                result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.CornerRadius, types.CornerRadiusFullConstructor,
-                    new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft });
-                
-                return true;
-            }
-
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();

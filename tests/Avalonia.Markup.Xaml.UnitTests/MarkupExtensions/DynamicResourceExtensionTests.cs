@@ -346,6 +346,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
+        [Fact]
+        public void DynamicResource_Can_Be_Assigned_To_Resource_Property_In_Application()
+        {
+            var xaml = @"
+<Application xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Application.Resources>
+        <Color x:Key='color'>#ff506070</Color>
+        <SolidColorBrush x:Key='brush' Color='{DynamicResource color}'/>
+    </Application.Resources>
+</Application>";
+
+            var application = (Application)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var brush = (SolidColorBrush)application.Resources["brush"];
+
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
 
         [Fact]
         public void DynamicResource_Can_Be_Assigned_To_ItemTemplate_Property()

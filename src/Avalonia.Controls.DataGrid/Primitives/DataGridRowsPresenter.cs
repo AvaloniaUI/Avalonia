@@ -22,6 +22,22 @@ namespace Avalonia.Controls.Primitives
         }
 
         private double _measureHeightOffset = 0;
+        private double _effectiveViewPortHeight = 0;
+
+        public DataGridRowsPresenter()
+        {
+            EffectiveViewportChanged += OnEffectiveViewportChanged;
+        }
+
+        private void OnEffectiveViewportChanged(object sender, Layout.EffectiveViewportChangedEventArgs e)
+        {
+            if (_effectiveViewPortHeight != e.EffectiveViewport.Height)
+            {
+                _effectiveViewPortHeight = e.EffectiveViewport.Height;
+                InvalidateMeasure();
+            }
+        }
+
         private double CalculateEstimatedAvailableHeight(Size availableSize)
         {
             if(!Double.IsPositiveInfinity(availableSize.Height))
@@ -108,6 +124,11 @@ namespace Avalonia.Controls.Primitives
         /// </returns>
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (double.IsInfinity(availableSize.Height))
+            {
+                availableSize = availableSize.WithHeight(_effectiveViewPortHeight);
+            }
+
             if (availableSize.Height == 0 || OwningGrid == null)
             {
                 return base.MeasureOverride(availableSize);

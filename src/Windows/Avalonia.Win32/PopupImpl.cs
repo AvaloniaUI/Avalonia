@@ -17,8 +17,9 @@ namespace Avalonia.Win32
         [ThreadStatic]
         private static IntPtr s_parentHandle;
 
-        public override void Show()
+        public override void Show(bool activate)
         {
+            // Popups are always shown non-activated.
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
 
             // We need to steal focus if it's held by a child window of our toplevel window

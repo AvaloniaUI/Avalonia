@@ -192,14 +192,14 @@ namespace Avalonia.Native
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
 
-            bool IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+            int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
             {
-                return _parent.RawKeyEvent(type, timeStamp, modifiers, key);
+                return _parent.RawKeyEvent(type, timeStamp, modifiers, key).AsComBool();
             }
 
-            bool IAvnWindowBaseEvents.RawTextInputEvent(uint timeStamp, string text)
+            int IAvnWindowBaseEvents.RawTextInputEvent(uint timeStamp, string text)
             {
-                return _parent.RawTextInputEvent(timeStamp, text);
+                return _parent.RawTextInputEvent(timeStamp, text).AsComBool();
             }
 
 
@@ -351,9 +351,9 @@ namespace Avalonia.Native
         }
 
 
-        public virtual void Show()
+        public virtual void Show(bool activate)
         {
-            _native.Show();
+            _native.Show(activate.AsComBool());
         }
 
 
@@ -388,7 +388,7 @@ namespace Avalonia.Native
 
         public void SetTopmost(bool value)
         {
-            _native.SetTopMost(value);
+            _native.SetTopMost(value.AsComBool());
         }
 
         public double RenderScaling => _native?.Scaling ?? 1;
@@ -456,7 +456,7 @@ namespace Avalonia.Native
 
                 TransparencyLevel = transparencyLevel;
 
-                _native?.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                _native?.SetBlurEnabled((TransparencyLevel >= WindowTransparencyLevel.Blur).AsComBool());
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }

@@ -10,7 +10,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Dialogs;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
-using Avalonia.ReactiveUI;
 using Avalonia.Threading;
 
 namespace ControlCatalog.NetCore
@@ -114,11 +113,9 @@ namespace ControlCatalog.NetCore
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true,
-                    AllowEglInitialization = true
+                    EnableMultitouch = true
                 })
                 .UseSkia()
-                .UseReactiveUI()
                 .UseManagedSystemDialogs()
                 .LogToTrace();
 

@@ -1,4 +1,8 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
+#nullable enable
 
 namespace Avalonia.Utilities
 {
@@ -8,12 +12,14 @@ namespace Avalonia.Utilities
     /// <typeparam name="TValue">Stored value type.</typeparam>
     internal sealed class AvaloniaPropertyValueStore<TValue>
     {
+        // The last item in the list is always int.MaxValue.
+        private static readonly Entry[] s_emptyEntries = { new Entry { PropertyId = int.MaxValue, Value = default! } };
+        
         private Entry[] _entries;
 
         public AvaloniaPropertyValueStore()
         {
-            // The last item in the list is always int.MaxValue
-            _entries = new[] { new Entry { PropertyId = int.MaxValue, Value = default } };
+            _entries = s_emptyEntries;
         }
 
         public int Count => _entries.Length - 1;
@@ -88,7 +94,7 @@ namespace Avalonia.Utilities
             return (0, false);
         }
 
-        public bool TryGetValue(AvaloniaProperty property, out TValue value)
+        public bool TryGetValue(AvaloniaProperty property, [MaybeNull] out TValue value)
         {
             (int index, bool found) = TryFindEntry(property.Id);
             if (!found)
@@ -134,7 +140,18 @@ namespace Avalonia.Utilities
 
             if (found)
             {
-                Entry[] entries = new Entry[_entries.Length - 1];
+                var newLength = _entries.Length - 1;
+                
+                // Special case - one element left means that value store is empty so we can just reuse our "empty" array.
+                if (newLength == 1)
+                {
+                    _entries = s_emptyEntries;
+                    
+                    return;
+                }
+                
+                var entries = new Entry[newLength];
+
                 int ix = 0;
 
                 for (int i = 0; i < _entries.Length; ++i)
