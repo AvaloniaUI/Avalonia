@@ -46,18 +46,11 @@ jobs:
     inputs:
       script: |
         cd src/tools/MicroComGenerator; dotnet run -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
- 
-  - task: CmdLine@2
-    displayName: 'List SDKs'
-    inputs:
-      script: |
-        xcodebuild -showsdks
 
-  - task: Xcode@5
   - task: Xcode@5
     inputs:
       actions: 'build'
-      scheme: ''
+      scheme: 'macosx11.0'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: '12' # Options: 8, 9, default, specifyPath
