@@ -50,7 +50,8 @@ jobs:
   - task: Xcode@5
     inputs:
       actions: 'build'
-      scheme: 'macosx11.0'
+      scheme: ''
+      sdk: 'macosx11.0'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: '12' # Options: 8, 9, default, specifyPath
