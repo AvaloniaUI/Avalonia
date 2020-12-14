@@ -14,7 +14,7 @@ namespace Avalonia.Base.UnitTests.Platform
 
         private const string AssemblyNameWithWhitespace = "Awesome Library";
 
-        private static readonly string s_assemblyNameWithNonAscii;
+        private const string AssemblyNameWithNonAscii = "Какое-то-название";
 
         static AssetLoaderTests()
         {
@@ -23,9 +23,8 @@ namespace Avalonia.Base.UnitTests.Platform
             var descriptor = CreateAssemblyDescriptor(AssemblyNameWithWhitespace);
             Mock.Get(resolver).Setup(x => x.Get(AssemblyNameWithWhitespace)).Returns(descriptor);
 
-            s_assemblyNameWithNonAscii = CreateAssemblyNameWithNonAscii();
-            descriptor = CreateAssemblyDescriptor(s_assemblyNameWithNonAscii);
-            Mock.Get(resolver).Setup(x => x.Get(s_assemblyNameWithNonAscii)).Returns(descriptor);
+            descriptor = CreateAssemblyDescriptor(AssemblyNameWithNonAscii);
+            Mock.Get(resolver).Setup(x => x.Get(AssemblyNameWithNonAscii)).Returns(descriptor);
 
             AssetLoader.SetAssemblyDescriptorResolver(resolver);
         }
@@ -44,12 +43,12 @@ namespace Avalonia.Base.UnitTests.Platform
         [Fact]
         public void AssemblyName_With_Non_ASCII_Should_Load_Avares()
         {
-            var uri = new Uri($"avares://{s_assemblyNameWithNonAscii}/Assets/something");
+            var uri = new Uri($"avares://{AssemblyNameWithNonAscii}/Assets/something");
             var loader = new AssetLoader();
 
             var assemblyActual = loader.GetAssembly(uri, null);
 
-            Assert.Equal(s_assemblyNameWithNonAscii, assemblyActual.FullName);
+            Assert.Equal(AssemblyNameWithNonAscii, assemblyActual.FullName);
         }
 
         private static IAssemblyDescriptor CreateAssemblyDescriptor(string assemblyName)
@@ -61,13 +60,6 @@ namespace Avalonia.Base.UnitTests.Platform
             var descriptor = Mock.Of<IAssemblyDescriptor>();
             Mock.Get(descriptor).Setup(x => x.Assembly).Returns(assembly);
             return descriptor;
-        }
-
-        private static string CreateAssemblyNameWithNonAscii()
-        {
-            var rnd = new Random();
-            return string.Join("", Enumerable.Range(0, 7)
-                .Select(_ => Convert.ToChar(rnd.Next(char.MaxValue - 128) + 128)));
         }
     }
 }
