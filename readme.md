@@ -41,6 +41,8 @@ Examples of UIs built with Avalonia
 
 [JetBrains Rider](https://www.jetbrains.com/rider/whatsnew/?mkt_tok=eyJpIjoiTURBNU1HSmhNV0kwTUdFMiIsInQiOiJtNnU2VEc1TlNLa1ZRVkROYmdZYVpYREJsaU1qdUhmS3dxSzRHczdYWHl0RVlTNDMwSFwvNUs3VENTNVM0bVcyNFdaRmVYZzVWTTF1N3VrQWNGTkJreEhlam1hMlB4UVVWcHBGM1dNOUxoXC95YnRQdGgyUXl1YmZCM3h3d3BVWWdBIn0%3D#avalonia-support) now has official support for Avalonia.
 
+Code completion, inspections and refactorings are supported out of the box, for XAML previewer add `https://plugins.jetbrains.com/plugins/dev/14839` to plugin repositories and install [AvaloniaRider](https://github.com/ForNeVeR/AvaloniaRider) plugin.
+
 ## Bleeding Edge Builds
 
 We also have a [nightly build](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed) which tracks the current state of master. Although these packages are less stable than the release on NuGet.org, you'll get all the latest features and bugfixes right away and many of our users actually prefer this feed!
