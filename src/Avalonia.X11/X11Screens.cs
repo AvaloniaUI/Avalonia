@@ -82,6 +82,39 @@ namespace Avalonia.X11
                     _cache = null;
             }
 
+            private unsafe Size? GetPhysicalMonitorSizeFromEDID(IntPtr rrOutput)
+            {
+                if(rrOutput == IntPtr.Zero)
+                    return null;
+                var output = Marshal.ReadInt64(rrOutput);
+                var properties = XRRListOutputProperties(_x11.Display,output, out int propertyCount);
+                var hasEDID = false;
+                for(var pc = 0; pc < propertyCount; pc++)
+                {
+                    if(properties[pc] == _x11.Atoms.RR_PROPERTY_RANDR_EDID)
+                        hasEDID = true;
+                }
+                if(!hasEDID)
+                    return null;
+                XRRGetOutputProperty(_x11.Display, output, _x11.Atoms.RR_PROPERTY_RANDR_EDID, 0, 128, false, false, _x11.Atoms.AnyPropertyType, out int actualType, out int actualFormat, out int nItems, out _, out IntPtr prop);
+                if(actualType != 19) // XA_INTEGER
+                    return null;
+                if(actualFormat != 8)
+                    return null;
+
+                var edid = new byte[nItems];
+                Marshal.Copy(prop,edid,0,nItems);
+                XFree(prop);
+                XFree(new IntPtr(properties));
+                if(edid.Length < 22)
+                    return null;
+                var width = edid[21];
+                var height = edid[22];
+                if(width == 0 && height == 0)
+                    return null;
+                return new Size(width * 10, height * 10);
+            }
+
             public unsafe X11Screen[] Screens
             {
                 get
@@ -97,24 +130,13 @@ namespace Avalonia.X11
                         var namePtr = XGetAtomName(_x11.Display, mon.Name);
                         var name = Marshal.PtrToStringAnsi(namePtr);
                         XFree(namePtr);
-
-                        var density = 1d;
-                        if (_settings.NamedScaleFactors?.TryGetValue(name, out density) != true)
-                        {
-                            if (mon.MWidth == 0)
-                                density = 1;
-                            else
-                                density = X11Screen.GuessPixelDensity(mon.Width, mon.MWidth);
-                        }
-
-                        density *= _settings.GlobalScaleFactor;
-                        
                         var bounds = new PixelRect(mon.X, mon.Y, mon.Width, mon.Height);
-                        screens[c] = new X11Screen(bounds, 
-                            mon.Primary != 0, 
-                            name,
-                            (mon.MWidth == 0 || mon.MHeight == 0) ? (Size?)null : new Size(mon.MWidth, mon.MHeight),
-                            density);
+                        var density = 1d;
+                        var pSize = GetPhysicalMonitorSizeFromEDID(mon.Outputs);
+                        if (_settings.NamedScaleFactors?.TryGetValue(name, out  density) != true && pSize != null)
+                            density = X11Screen.GuessPixelDensity(bounds, pSize.Value);
+                        density *= _settings.GlobalScaleFactor;
+                        screens[c] = new X11Screen(bounds, mon.Primary != 0, name, pSize, density);
                     }
                     
                     XFree(new IntPtr(monitors));
@@ -162,7 +184,6 @@ namespace Avalonia.X11
             return impl;
 
         }
-
 
         public int ScreenCount => _impl.Screens.Length;
 
@@ -229,6 +250,7 @@ namespace Avalonia.X11
     class X11Screen
     {
         private const int FullHDWidth = 1920;
+        private const int FullHDHeight = 1080;
         public bool Primary { get; }
         public string Name { get; set; }
         public PixelRect Bounds { get; set; }
@@ -248,7 +270,7 @@ namespace Avalonia.X11
             }
             else if (pixelDensity == null)
             {
-                PixelDensity = GuessPixelDensity(bounds.Width, physicalSize.Value.Width);
+                PixelDensity = GuessPixelDensity(bounds, physicalSize.Value);
             }
             else
             {
@@ -257,7 +279,26 @@ namespace Avalonia.X11
             }
         }
 
-        public static double GuessPixelDensity(double pixelWidth, double mmWidth)
-            => pixelWidth <= FullHDWidth ? 1 : Math.Max(1, Math.Round(pixelWidth / mmWidth * 25.4 / 96));
+        public static double GuessPixelDensity(PixelRect pixel, Size physical)
+        {
+            var calculatedDensity = 1d;
+            if(physical.Width > 0)
+                calculatedDensity = pixel.Width <= FullHDWidth ? 1 : Math.Max(1, pixel.Width / physical.Width * 25.4 / 96);
+            else if(physical.Height > 0)
+                calculatedDensity = pixel.Height <= FullHDHeight ? 1 : Math.Max(1, pixel.Height / physical.Height * 25.4 / 96);
+            
+            if(calculatedDensity > 3)
+                return 1;
+            else
+            {
+                var sanePixelDensities = new double[] { 1, 1.25, 1.50, 1.75, 2 };
+                foreach(var saneDensity in sanePixelDensities)
+                {
+                    if(calculatedDensity <= saneDensity + 0.20)
+                        return saneDensity;
+                }
+                return sanePixelDensities.Last();
+            }
+        }
     }
 }

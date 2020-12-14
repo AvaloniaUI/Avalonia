@@ -500,6 +500,13 @@ namespace Avalonia.X11
         [DllImport(libX11Randr)]
         public static extern XRRMonitorInfo*
             XRRGetMonitors(IntPtr dpy, IntPtr window, bool get_active, out int nmonitors);
+
+        [DllImport(libX11Randr)]
+        public static extern IntPtr* XRRListOutputProperties(IntPtr dpy, long output, out int count);
+
+        [DllImport(libX11Randr)]
+        public static extern int XRRGetOutputProperty(IntPtr dpy, long output, IntPtr atom, long offset, long length, bool _delete, bool pending, IntPtr req_type, out int actual_type, out int actual_format, out int nitems, out long bytes_after, out IntPtr prop);
+            
         [DllImport(libX11Randr)]
         public static extern void XRRSelectInput(IntPtr dpy, IntPtr window, RandrEventMask mask);
 
