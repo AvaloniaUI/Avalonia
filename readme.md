@@ -39,7 +39,7 @@ Examples of UIs built with Avalonia
 
 ## JetBrains Rider
 
-[JetBrains Rider]((https://www.jetbrains.com/rider/whatsnew/?mkt_tok=eyJpIjoiTURBNU1HSmhNV0kwTUdFMiIsInQiOiJtNnU2VEc1TlNLa1ZRVkROYmdZYVpYREJsaU1qdUhmS3dxSzRHczdYWHl0RVlTNDMwSFwvNUs3VENTNVM0bVcyNFdaRmVYZzVWTTF1N3VrQWNGTkJreEhlam1hMlB4UVVWcHBGM1dNOUxoXC95YnRQdGgyUXl1YmZCM3h3d3BVWWdBIn0%3D#avalonia-support) now has official support for Avalonia.
+[JetBrains Rider](https://www.jetbrains.com/rider/whatsnew/?mkt_tok=eyJpIjoiTURBNU1HSmhNV0kwTUdFMiIsInQiOiJtNnU2VEc1TlNLa1ZRVkROYmdZYVpYREJsaU1qdUhmS3dxSzRHczdYWHl0RVlTNDMwSFwvNUs3VENTNVM0bVcyNFdaRmVYZzVWTTF1N3VrQWNGTkJreEhlam1hMlB4UVVWcHBGM1dNOUxoXC95YnRQdGgyUXl1YmZCM3h3d3BVWWdBIn0%3D#avalonia-support) now has official support for Avalonia.
 
 ## Bleeding Edge Builds
 
