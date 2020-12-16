@@ -60,14 +60,14 @@ namespace Avalonia.Native
             }
         }
 
-        public override void Show()
+        public override void Show(bool activate)
         {
             var parent = _parent;
             while (parent is PopupImpl p) 
                 parent = p._parent;
             if (parent is WindowImpl w)
                 w.Native.TakeFocusFromChildren();
-            base.Show();
+            base.Show(false);
         }
 
         public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, _glFeature, this);

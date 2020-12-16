@@ -150,7 +150,7 @@ namespace Avalonia.Controls
 
         void CanExecuteChanged()
         {
-            IsEnabled = _command?.CanExecute(null) ?? true;
+            IsEnabled = _command?.CanExecute(CommandParameter) ?? true;
         }
 
         public bool HasClickHandlers => Click != null;

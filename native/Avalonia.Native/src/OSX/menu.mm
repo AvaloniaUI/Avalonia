@@ -2,6 +2,9 @@
 #include "common.h"
 #include "menu.h"
 #include "window.h"
+#include "KeyTransform.h"
+#include <CoreFoundation/CoreFoundation.h>
+#include <Carbon/Carbon.h> /* For kVK_ constants, and TIS functions. */
 
 @implementation AvnMenu
 {
@@ -122,23 +125,57 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
     }
 }
 
-HRESULT AvnAppMenuItem::SetGesture (char* key, AvnInputModifiers modifiers)
+
+HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
     @autoreleasepool
     {
-        NSEventModifierFlags flags = 0;
+        if(key != AvnKeyNone)
+        {
+            NSEventModifierFlags flags = 0;
+            
+            if (modifiers & Control)
+                flags |= NSEventModifierFlagControl;
+            if (modifiers & Shift)
+                flags |= NSEventModifierFlagShift;
+            if (modifiers & Alt)
+                flags |= NSEventModifierFlagOption;
+            if (modifiers & Windows)
+                flags |= NSEventModifierFlagCommand;
+            
+            auto it = s_UnicodeKeyMap.find(key);
+            
+            if(it != s_UnicodeKeyMap.end())
+            {
+                auto keyString= [NSString stringWithFormat:@"%C", (unsigned short)it->second];
+                
+                [_native setKeyEquivalent: keyString];
+                [_native setKeyEquivalentModifierMask:flags];
+                
+                return S_OK;
+            }
+            else
+            {
+                auto it = s_AvnKeyMap.find(key); // check if a virtual key is mapped.
+                
+                if(it != s_AvnKeyMap.end())
+                {
+                    auto it1 = s_QwertyKeyMap.find(it->second); // convert virtual key to qwerty string.
+                    
+                    if(it1 != s_QwertyKeyMap.end())
+                    {
+                        [_native setKeyEquivalent: [NSString  stringWithUTF8String: it1->second]];
+                        [_native setKeyEquivalentModifierMask:flags];
+                        
+                        return S_OK;
+                    }
+                }
+            }
+        }
         
-        if (modifiers & Control)
-            flags |= NSEventModifierFlagControl;
-        if (modifiers & Shift)
-            flags |= NSEventModifierFlagShift;
-        if (modifiers & Alt)
-            flags |= NSEventModifierFlagOption;
-        if (modifiers & Windows)
-            flags |= NSEventModifierFlagCommand;
-        
-        [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)key]];
-        [_native setKeyEquivalentModifierMask:flags];
+        // Nothing matched... clear.
+        [_native setKeyEquivalent: @""];
+        [_native setKeyEquivalentModifierMask: 0];
         
         return S_OK;
     }

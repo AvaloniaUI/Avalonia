@@ -106,13 +106,13 @@ public:
         return Window;
     }
     
-    virtual HRESULT Show() override
+    virtual HRESULT Show(bool activate) override
     {
         @autoreleasepool
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
-            if(ShouldTakeFocusOnShow())
+            if(ShouldTakeFocusOnShow() && activate)
             {
                 [Window makeKeyAndOrderFront:Window];
                 [NSApp activateIgnoringOtherApps:YES];
@@ -561,11 +561,11 @@ private:
         }
     }
     
-    virtual HRESULT Show () override
+    virtual HRESULT Show (bool activate) override
     {
         @autoreleasepool
         {            
-            WindowBaseImpl::Show();
+            WindowBaseImpl::Show(activate);
             
             HideOrShowTrafficLights();
             

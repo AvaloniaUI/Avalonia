@@ -110,7 +110,7 @@
             </Grid>
           </Border>
           <Popup Name="PART_Popup"
-                 WindowManagerAddShadowHint="True"
+                 WindowManagerAddShadowHint="False"
                  PlacementMode="Right"
                  HorizontalOffset="{StaticResource MenuFlyoutSubItemPopupHorizontalOffset}"
                  IsLightDismissEnabled="True"
