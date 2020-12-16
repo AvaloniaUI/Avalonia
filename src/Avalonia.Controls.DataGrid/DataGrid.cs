@@ -2286,6 +2286,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Comparator class so we can sort list by the display index
+        /// </summary>
+        public class DisplayIndexComparer : IComparer<DataGridColumn>
+        {
+            int IComparer<DataGridColumn>.Compare(DataGridColumn x, DataGridColumn y)
+            {
+                return (x.DisplayIndexWithFiller < y.DisplayIndexWithFiller) ? -1 : 1;
+            }
+        }
+
+        /// <summary>
         /// Builds the visual tree for the column header when a new template is applied.
         /// </summary>
         //TODO Validation UI
@@ -2309,8 +2320,11 @@ namespace Avalonia.Controls
                     ColumnsInternal.FillerColumn.IsRepresented = false;
                 }
                 _columnHeadersPresenter.OwningGrid = this;
-                // Columns were added before before our Template was applied, add the ColumnHeaders now
-                foreach (DataGridColumn column in ColumnsItemsInternal)
+
+                // Columns were added before our Template was applied, add the ColumnHeaders now
+                List<DataGridColumn> sortedInternal = new List<DataGridColumn>(ColumnsItemsInternal);
+                sortedInternal.Sort(new DisplayIndexComparer());
+                foreach (DataGridColumn column in sortedInternal)
                 {
                     InsertDisplayedColumnHeader(column);
                 }
