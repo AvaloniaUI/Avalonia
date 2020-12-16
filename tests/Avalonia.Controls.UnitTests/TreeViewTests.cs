@@ -1117,7 +1117,7 @@ namespace Avalonia.Controls.UnitTests
             return new FuncControlTemplate<TreeView>((parent, scope) => new ItemsPresenter
             {
                 Name = "PART_ItemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
+                [~ItemsPresenter.ItemsViewProperty] = parent[~ItemsControl.ItemsViewProperty],
                 [~ItemsPresenter.LayoutProperty] = parent[~ItemsControl.LayoutProperty],
             }.RegisterInNameScope(scope));
         }
@@ -1137,7 +1137,7 @@ namespace Avalonia.Controls.UnitTests
                     new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
+                        [~ItemsPresenter.ItemsViewProperty] = parent[~ItemsControl.ItemsViewProperty],
                         [~ItemsPresenter.LayoutProperty] = parent[~ItemsControl.LayoutProperty],
                     }.RegisterInNameScope(scope)
                 }

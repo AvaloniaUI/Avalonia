@@ -12,7 +12,7 @@
               Padding="{TemplateBinding Padding}">
           <ScrollViewer Classes="menuscroller">
               <ItemsPresenter Name="PART_ItemsPresenter"
-                              Items="{TemplateBinding ItemsView}"
+                              ItemsView="{TemplateBinding ItemsView}"
                               Layout="{TemplateBinding Layout}"
                               ItemTemplate="{TemplateBinding ItemTemplate}"
                               KeyboardNavigation.TabNavigation="Continue"/>

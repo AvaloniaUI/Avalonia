@@ -14,9 +14,9 @@ namespace Avalonia.Controls.Presenters
         IEnumerable<IControl> RealizedElements { get; }
 
         /// <summary>
-        /// Gets or sets the items to display in the items presenter.
+        /// Gets or sets the items view containing the items to display in the presenter.
         /// </summary>
-        IEnumerable? Items { get; set; }
+        ItemsSourceView? ItemsView { get; set; }
 
         /// <summary>
         /// Retrieves the index of the item from the data source that corresponds to the specified

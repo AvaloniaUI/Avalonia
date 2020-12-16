@@ -93,7 +93,7 @@
           </Border>
           <ItemsPresenter Name="PART_ItemsPresenter"
                           IsVisible="{TemplateBinding IsExpanded}"
-                          Items="{TemplateBinding ItemsView}"
+                          ItemsView="{TemplateBinding ItemsView}"
                           Layout="{TemplateBinding Layout}" />
         </StackPanel>
       </ControlTemplate>

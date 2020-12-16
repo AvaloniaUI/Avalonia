@@ -24,10 +24,10 @@ namespace Avalonia.Controls.Presenters
             Carousel.IsVirtualizedProperty.AddOwner<CarouselPresenter>();
 
         /// <summary>
-        /// Defines the <see cref="Items"/> property.
+        /// Defines the <see cref="ItemsView"/> property.
         /// </summary>
-        public static readonly DirectProperty<CarouselPresenter, IEnumerable?> ItemsProperty =
-            ItemsControl.ItemsProperty.AddOwner<CarouselPresenter>(o => o.Items, (o, v) => o.Items = v);
+        public static readonly DirectProperty<CarouselPresenter, ItemsSourceView?> ItemsViewProperty =
+            ItemsPresenter.ItemsViewProperty.AddOwner<CarouselPresenter>(o => o.ItemsView, (o, v) => o.ItemsView = v);
         
         /// <summary>
         /// Defines the <see cref="PageTransition"/> property.
@@ -45,7 +45,7 @@ namespace Avalonia.Controls.Presenters
 
         private IItemsPresenterHost? _host;
         private IElementFactory? _elementFactory;
-        private ItemsSourceView? _items;
+        private ItemsSourceView? _itemsView;
         private int _realizedIndex = -1;
         private List<IControl?>? _nonVirtualizedContainers;
         private int _selectedIndex;
@@ -84,22 +84,22 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets or sets an object source used to generate the content of the CarouselPresenter.
+        /// Gets or sets the items view containing the items to display in the presenter.
         /// </summary>
-        public IEnumerable? Items
+        public ItemsSourceView? ItemsView
         {
-            get => _items;
+            get => _itemsView;
             set
             {
                 if (value is null || value is ItemsSourceView)
                 {
-                    if (value != _items)
+                    if (value != _itemsView)
                     {
-                        var oldValue = _items;
-                        _items?.RemoveListener(this);
-                        _items = value as ItemsSourceView;
-                        _items?.AddListener(this);
-                        RaisePropertyChanged(ItemsProperty, oldValue, _items);
+                        var oldValue = _itemsView;
+                        _itemsView?.RemoveListener(this);
+                        _itemsView = value;
+                        _itemsView?.AddListener(this);
+                        RaisePropertyChanged(ItemsViewProperty, oldValue, _itemsView);
                         InvalidateMeasure();
                     }
                 }
@@ -232,7 +232,7 @@ namespace Avalonia.Controls.Presenters
 
         private Size MeasureVirtualized(Size availableSize)
         {
-            if (_items is null || _elementFactory is null || _selectedIndex < 0 || _selectedIndex > _items.Count)
+            if (_itemsView is null || _elementFactory is null || _selectedIndex < 0 || _selectedIndex > _itemsView.Count)
             {
                 Children.Clear();
                 _realizedIndex = -1;
@@ -272,7 +272,7 @@ namespace Avalonia.Controls.Presenters
 
         private Size MeasureNonVirtualized(Size availableSize)
         {
-            if (_items is null || _elementFactory is null)
+            if (_itemsView is null || _elementFactory is null)
             {
                 Children.Clear();
                 _realizedIndex = -1;
@@ -281,8 +281,8 @@ namespace Avalonia.Controls.Presenters
 
             if (_nonVirtualizedContainers is null)
             {
-                _nonVirtualizedContainers = new List<IControl?>(_items.Count);
-                AddItems(0, _items.Count);
+                _nonVirtualizedContainers = new List<IControl?>(_itemsView.Count);
+                AddItems(0, _itemsView.Count);
             }
 
             var performTransition = PageTransition is object &&
@@ -330,7 +330,7 @@ namespace Avalonia.Controls.Presenters
 
         private IControl GetElement(int index)
         {
-            var data = _items![index];
+            var data = _itemsView![index];
             var element = _elementFactory!.GetElement(new ElementFactoryGetArgs
             {
                 Data = data,

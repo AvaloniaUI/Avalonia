@@ -13,7 +13,19 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     public class ItemsPresenter : ItemsRepeater, IItemsPresenter
     {
+        public static readonly DirectProperty<ItemsPresenter, ItemsSourceView?> ItemsViewProperty =
+            AvaloniaProperty.RegisterDirect<ItemsPresenter, ItemsSourceView?>(
+                nameof(ItemsView),
+                o => o.ItemsView,
+                (o, v) => o.ItemsView = v);
+
         private IItemsPresenterHost? _host;
+
+        public ItemsSourceView? ItemsView
+        {
+            get => (ItemsSourceView?)Items;
+            set => Items = value;
+        }
 
         public IEnumerable<IControl> RealizedElements
         {

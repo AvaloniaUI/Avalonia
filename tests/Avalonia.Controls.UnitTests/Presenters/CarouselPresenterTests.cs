@@ -398,7 +398,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     new CarouselPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        [!ItemsControl.ItemsProperty] = c[!ItemsControl.ItemsViewProperty],
+                        [!ItemsPresenter.ItemsViewProperty] = c[!ItemsControl.ItemsViewProperty],
                         [!CarouselPresenter.IsVirtualizedProperty] = c[!Carousel.IsVirtualizedProperty],
                         [!CarouselPresenter.PageTransitionProperty] = c[!Carousel.PageTransitionProperty],
                         [!CarouselPresenter.SelectedIndexProperty] = c[!Carousel.SelectedIndexProperty],
@@ -421,7 +421,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private static void AssertVirtualizedState(CarouselPresenter target)
         {
-            var items = (ItemsSourceView)target.Items!;
+            var items = (ItemsSourceView)target.ItemsView!;
             var index = target.SelectedIndex;
             var content = items[index];
             var child = Assert.Single(target.Children);
@@ -435,7 +435,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private static void AssertNonVirtualizedState(CarouselPresenter target)
         {
-            var items = (ItemsSourceView)target.Items!;
+            var items = (ItemsSourceView)target.ItemsView!;
 
             Assert.True(target.Children.Count <= items.Count);
             Assert.True(target.RealizedElements.Count() <= items.Count);

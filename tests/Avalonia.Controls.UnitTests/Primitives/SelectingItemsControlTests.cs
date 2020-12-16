@@ -1945,7 +1945,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         Name = "PART_ItemsPresenter",
                         HorizontalCacheLength = 0,
                         VerticalCacheLength = 0,
-                        [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
+                        [~ItemsPresenter.ItemsViewProperty] = parent.GetObservable(ItemsControl.ItemsViewProperty).ToBinding(),
                         [~ItemsPresenter.LayoutProperty] = parent.GetObservable(ItemsControl.LayoutProperty).ToBinding(),
                     }.RegisterInNameScope(scope)
                 }.RegisterInNameScope(scope));

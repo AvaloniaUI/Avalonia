@@ -405,7 +405,7 @@ namespace Avalonia.Controls.UnitTests
             var presenter = new ItemsPresenter
             {
                 [StyledElement.TemplatedParentProperty] = target,
-                [~ItemsPresenter.ItemsProperty] = target[~ItemsControl.ItemsProperty],
+                [~ItemsPresenter.ItemsViewProperty] = target[~ItemsControl.ItemsViewProperty],
             };
 
             presenter.ApplyTemplate();
@@ -628,7 +628,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_ItemsPresenter",
                         [~ItemsPresenter.LayoutProperty] = parent[~ItemsControl.LayoutProperty],
-                        [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsViewProperty],
+                        [~ItemsPresenter.ItemsViewProperty] = parent[~ItemsControl.ItemsViewProperty],
                     }.RegisterInNameScope(scope)
                 };
             });
