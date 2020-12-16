@@ -476,7 +476,7 @@ namespace Avalonia.Controls.UnitTests
                         new ItemsPresenter
                         {
                             Name = "PART_ItemsPresenter",
-                            [!TabStrip.ItemsViewProperty] = parent[!TabControl.ItemsViewProperty],
+                            [!ItemsPresenter.ItemsViewProperty] = parent[!TabControl.ItemsViewProperty],
                             [!TabStrip.ItemTemplateProperty] = parent[!TabControl.ItemTemplateProperty],
                         }.RegisterInNameScope(scope),
                         new ContentPresenter
