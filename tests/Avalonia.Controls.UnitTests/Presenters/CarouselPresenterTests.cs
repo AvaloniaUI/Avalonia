@@ -207,6 +207,40 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
+        public void Should_Handle_Resetting_Items(bool isVirtualized)
+        {
+            using var app = Start();
+
+            var items = new ObservableCollection<string> { "foo", "bar" };
+            var (target, root) = CreateTarget(isVirtualized, items: items);
+
+            items.Clear();
+            Assert.False(target.IsMeasureValid);
+
+            AssertState(target);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Should_Handle_Reassigning_Items(bool isVirtualized)
+        {
+            using var app = Start();
+            var (target, root) = CreateTarget(isVirtualized);
+            var owner = (Carousel)target.TemplatedParent!;
+
+            AssertState(target);
+
+            owner.Items = new[] { "new", "items" };
+            Assert.False(target.IsMeasureValid);
+            root.LayoutManager.ExecuteLayoutPass();
+
+            AssertState(target);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void Should_Handle_Replacing_Non_SelectedItem(bool isVirtualized)
         {
             using var app = Start();
@@ -422,15 +456,24 @@ namespace Avalonia.Controls.UnitTests.Presenters
         private static void AssertVirtualizedState(CarouselPresenter target)
         {
             var items = (ItemsSourceView)target.ItemsView!;
-            var index = target.SelectedIndex;
-            var content = items[index];
-            var child = Assert.Single(target.Children);
-            var presenter = Assert.IsType<ContentPresenter>(child);
-            var visible = Assert.Single(target.RealizedElements.Where(x => x.IsVisible));
 
-            Assert.Same(child, visible);
-            Assert.Equal(content, presenter.Content);
-            Assert.Single(target.RealizedElements);
+            if (items.Count > 0)
+            {
+                var index = target.SelectedIndex;
+                var content = items[index];
+                var child = Assert.Single(target.Children);
+                var presenter = Assert.IsType<ContentPresenter>(child);
+                var visible = Assert.Single(target.RealizedElements.Where(x => x.IsVisible));
+
+                Assert.Same(child, visible);
+                Assert.Equal(content, presenter.Content);
+                Assert.Single(target.RealizedElements);
+            }
+            else
+            {
+                Assert.Empty(target.Children);
+                Assert.Empty(target.RealizedElements);
+            }
         }
 
         private static void AssertNonVirtualizedState(CarouselPresenter target)

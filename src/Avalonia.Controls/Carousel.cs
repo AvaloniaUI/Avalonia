@@ -1,8 +1,6 @@
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
-using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -29,7 +27,6 @@ namespace Avalonia.Controls
         static Carousel()
         {
             SelectionModeProperty.OverrideDefaultValue<Carousel>(SelectionMode.AlwaysSelected);
-            ////ItemsPanelProperty.OverrideDefaultValue<Carousel>(PanelTemplate);
         }
         
         /// <summary>

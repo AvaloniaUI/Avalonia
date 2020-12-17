@@ -154,7 +154,11 @@ namespace Avalonia.Controls.Presenters
 
         public IControl? TryGetElement(int index)
         {
-            if (IsVirtualized)
+            if (index < 0)
+            {
+                return null;
+            }
+            else if (IsVirtualized)
             {
                 return index == _realizedIndex ? Children[0] : null;
             }
@@ -226,6 +230,10 @@ namespace Avalonia.Controls.Presenters
                 _realizedIndex = -1;
                 _nonVirtualizedContainers = null;
             }
+            else if (change.Property == ItemsViewProperty)
+            {
+                ResetContainers();
+            }
 
             base.OnPropertyChanged(change);
         }
@@ -282,7 +290,7 @@ namespace Avalonia.Controls.Presenters
             if (_nonVirtualizedContainers is null)
             {
                 _nonVirtualizedContainers = new List<IControl?>(_itemsView.Count);
-                AddItems(0, _itemsView.Count);
+                AddNullNonVirtualizedEntries(0, _itemsView.Count);
             }
 
             var performTransition = PageTransition is object &&
@@ -367,7 +375,7 @@ namespace Avalonia.Controls.Presenters
                     if (e.NewStartingIndex <= _realizedIndex)
                         _realizedIndex += e.NewItems.Count;
 
-                    AddItems(e.NewStartingIndex, e.NewItems.Count);
+                    AddNullNonVirtualizedEntries(e.NewStartingIndex, e.NewItems.Count);
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     if (e.OldStartingIndex + e.OldItems.Count < _realizedIndex)
@@ -413,14 +421,17 @@ namespace Avalonia.Controls.Presenters
                     }
 
                     RemoveItems(e.OldStartingIndex, e.OldItems.Count);
-                    AddItems(e.NewStartingIndex, e.NewItems.Count);
+                    AddNullNonVirtualizedEntries(e.NewStartingIndex, e.NewItems.Count);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    ResetContainers();
                     break;
                 default:
                     throw new NotImplementedException();
             }
         }
 
-        private void AddItems(int index, int count)
+        private void AddNullNonVirtualizedEntries(int index, int count)
         {
             if (_nonVirtualizedContainers is null)
                 return;
@@ -429,6 +440,22 @@ namespace Avalonia.Controls.Presenters
                 _nonVirtualizedContainers.Insert(index, null);
 
             InvalidateMeasure();
+        }
+
+        private void ResetContainers()
+        {
+            if (_nonVirtualizedContainers is object)
+            {
+                _nonVirtualizedContainers.Clear();
+                AddNullNonVirtualizedEntries(0, ItemsView?.Count ?? 0);
+                Children.Clear();
+            }
+            else
+            {
+                _realizedIndex = -1;
+                Children.Clear();
+                InvalidateMeasure();
+            }
         }
 
         private void StartTransition()
