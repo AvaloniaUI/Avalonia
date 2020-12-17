@@ -61,7 +61,7 @@ namespace Avalonia.Controls
         /// </summary>
         static TabControl()
         {
-            LayoutProperty.OverrideDefaultValue<TabControl>(new NonVirtualizingStackLayout
+            LayoutProperty.OverrideDefaultValue<TabControl>(new WrapLayout
             { 
                 Orientation = Orientation.Horizontal 
             });

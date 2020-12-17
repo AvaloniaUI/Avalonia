@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Primitives
     {
         static TabStrip()
         {
-            LayoutProperty.OverrideDefaultValue<TabStrip>(new NonVirtualizingStackLayout
+            LayoutProperty.OverrideDefaultValue<TabStrip>(new WrapLayout
             {
                 Orientation = Orientation.Horizontal
             });
