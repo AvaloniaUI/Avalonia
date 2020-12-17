@@ -13,7 +13,6 @@
       <ControlTemplate>
         <ItemsPresenter Name="PART_ItemsPresenter"
                         ItemsView="{TemplateBinding ItemsView}"
-                        ItemTemplate="{TemplateBinding ItemTemplate}"
                         Layout="{TemplateBinding Layout}"/>
       </ControlTemplate>
     </Setter>

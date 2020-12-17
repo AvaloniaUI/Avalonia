@@ -137,7 +137,6 @@
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   ItemsView="{TemplateBinding ItemsView}"
                                   Margin="{DynamicResource ComboBoxDropdownContentMargin}"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
                                   Layout="{TemplateBinding Layout}"/>
                 </ScrollViewer>
               </Border>

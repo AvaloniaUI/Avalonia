@@ -31,8 +31,7 @@
                             DockPanel.Dock="Left">
                             <ItemsPresenter
                                 Name="PART_ItemsPresenter"                          
-                                ItemsView="{TemplateBinding ItemsView}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}">
+                                ItemsView="{TemplateBinding ItemsView}">
                             </ItemsPresenter>
                         </ScrollViewer>
                         <ContentControl Content="{TemplateBinding Tag}" HorizontalContentAlignment="Right" DockPanel.Dock="Bottom"/>

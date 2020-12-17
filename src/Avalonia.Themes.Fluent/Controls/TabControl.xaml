@@ -38,7 +38,6 @@
           <DockPanel>
             <ItemsPresenter Name="PART_ItemsPresenter"
                             ItemsView="{TemplateBinding ItemsView}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
                             Layout="{TemplateBinding Layout}"
                             DockPanel.Dock="{TemplateBinding TabStripPlacement}"/>
             <ContentPresenter Name="PART_SelectedContentHost"

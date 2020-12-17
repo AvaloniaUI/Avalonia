@@ -13,8 +13,7 @@
                         <ItemsPresenter
                             Name="PART_ItemsPresenter"
                             Layout="{TemplateBinding Layout}"
-                            ItemsView="{TemplateBinding ItemsView}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}">
+                            ItemsView="{TemplateBinding ItemsView}">
                         </ItemsPresenter>
                         <ContentPresenter
                             Name="PART_SelectedContentHost"

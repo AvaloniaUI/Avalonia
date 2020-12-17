@@ -67,7 +67,6 @@
                 <ScrollViewer Classes="menuscroller">                  
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     ItemsView="{TemplateBinding ItemsView}"
-                                    ItemTemplate="{TemplateBinding ItemTemplate}"
                                     Layout="{TemplateBinding Layout}"
                                     Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
@@ -117,7 +116,6 @@
                 <ScrollViewer Classes="menuscroller">
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   ItemsView="{TemplateBinding ItemsView}"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
                                   Layout="{TemplateBinding Layout}"
                                   Grid.IsSharedSizeScope="True"/>
                 </ScrollViewer>
