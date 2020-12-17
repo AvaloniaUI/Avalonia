@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -66,7 +65,7 @@ namespace Avalonia.Controls.Presenters
                 if (_elementFactory != value)
                 {
                     _elementFactory = value;
-                    // TODO: Reset controls
+                    ResetContainers();
                 }
             }
         }
