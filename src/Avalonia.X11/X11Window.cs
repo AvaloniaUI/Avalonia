@@ -5,12 +5,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
@@ -22,9 +24,10 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
+    unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
         ITopLevelImplWithNativeMenuExporter,
-        ITopLevelImplWithNativeControlHost
+        ITopLevelImplWithNativeControlHost,
+        ITopLevelImplWithTextInputMethod
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IWindowImpl _popupParent;
@@ -178,11 +181,13 @@ namespace Avalonia.X11
             Surfaces = surfaces.ToArray();
             UpdateMotifHints();
             UpdateSizeHints(null);
-            _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
-                XNames.XNClientWindow, _handle, IntPtr.Zero);
+
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
-
+            _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle,
+                XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
+                XNames.XNClientWindow, _handle, IntPtr.Zero);
+            
             XFlush(_x11.Display);
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
@@ -194,6 +199,7 @@ namespace Avalonia.X11
                 Paint?.Invoke(default);
                 return _handle != IntPtr.Zero;
             }, TimeSpan.FromMilliseconds(100));
+            InitializeIme();
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -386,9 +392,13 @@ namespace Avalonia.X11
                 if (ActivateTransientChildIfNeeded())
                     return;
                 Activated?.Invoke();
+                _imeControl.SetWindowActive(true);
             }
             else if (ev.type == XEventName.FocusOut)
+            {
+                _imeControl.SetWindowActive(false);
                 Deactivated?.Invoke();
+            }
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
@@ -477,6 +487,7 @@ namespace Avalonia.X11
                             PositionChanged?.Invoke(npos);
                             updatedSizeViaScaling = UpdateScaling();
                         }
+                        UpdateImePosition();
 
                         if (changedSize && !updatedSizeViaScaling && !_popup)
                             Resized?.Invoke(ClientSize);
@@ -507,39 +518,7 @@ namespace Avalonia.X11
             {
                 if (ActivateTransientChildIfNeeded())
                     return;
-                var buffer = stackalloc byte[40];
-
-                var index = ev.KeyEvent.state.HasFlag(XModifierMask.ShiftMask);
-                
-                // We need the latin key, since it's mainly used for hotkeys, we use a different API for text anyway
-                var key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 1 : 0).ToInt32();
-                
-                // Manually switch the Shift index for the keypad,
-                // there should be a proper way to do this
-                if (ev.KeyEvent.state.HasFlag(XModifierMask.Mod2Mask)
-                    && key > X11Key.Num_Lock && key <= X11Key.KP_9)
-                    key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
-                
-                
-                ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot,
-                    ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                    X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev);
-
-                if (ev.type == XEventName.KeyPress)
-                {
-                    var len = Xutf8LookupString(_xic, ref ev, buffer, 40, out _, out _);
-                    if (len != 0)
-                    {
-                        var text = Encoding.UTF8.GetString(buffer, len);
-                        if (text.Length == 1)
-                        {
-                            if (text[0] < ' ' || text[0] == 0x7f) //Control codes or DEL
-                                return;
-                        }
-                        ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot, text),
-                            ref ev);
-                    }
-                }
+                HandleKeyEvent(ev);
             }
         }
 
@@ -562,6 +541,7 @@ namespace Avalonia.X11
                     var oldScaledSize = ClientSize;
                     RenderScaling = newScaling;
                     ScalingChanged?.Invoke(RenderScaling);
+                    UpdateImePosition();
                     SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
                     if(!skipResize)
                         Resize(oldScaledSize, true);
@@ -699,6 +679,7 @@ namespace Avalonia.X11
             _x11.LastActivityTimestamp = xev.ButtonEvent.time;
             ScheduleInput(args);
         }
+        
 
         public void ScheduleXI2Input(RawInputEventArgs args)
         {
@@ -781,6 +762,13 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            if (_imeControl != null)
+            {
+                _imeControl.Dispose();
+                _imeControl = null;
+                _ime = null;
+            }
+            
             if (_xic != IntPtr.Zero)
             {
                 XDestroyIC(_xic);
@@ -1130,6 +1118,8 @@ namespace Avalonia.X11
         public IPopupPositioner PopupPositioner { get; }
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
         public INativeControlHostImpl NativeControlHost { get; }
+        public ITextInputMethodImpl TextInputMethod => _ime;
+
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
             _transparencyHelper.SetTransparencyRequest(transparencyLevel);
 

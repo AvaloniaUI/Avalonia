@@ -4,6 +4,7 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
@@ -58,7 +59,7 @@ namespace Avalonia.X11
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
                 .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider());
-            
+            X11DBusImeHelper.RegisterIfNeeded(options.EnableIme);
             X11Screens = Avalonia.X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
             if (Info.XInputVersion != null)
@@ -103,6 +104,7 @@ namespace Avalonia
         public bool OverlayPopups { get; set; }
         public bool UseDBusMenu { get; set; }
         public bool UseDeferredRendering { get; set; } = true;
+        public bool? EnableIme { get; set; }
 
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {

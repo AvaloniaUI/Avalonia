@@ -109,7 +109,8 @@ namespace ControlCatalog.NetCore
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    UseDBusMenu = true
+                    UseDBusMenu = true,OverlayPopups = true,
+                    EnableIme = true
                 })
                 .With(new Win32PlatformOptions
                 {
@@ -117,7 +118,7 @@ namespace ControlCatalog.NetCore
                     AllowEglInitialization = true
                 })
                 .UseSkia()
-                .UseManagedSystemDialogs()
+                //.UseManagedSystemDialogs()
                 .LogToTrace();
 
         static void SilenceConsole()
