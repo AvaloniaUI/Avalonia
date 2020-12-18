@@ -122,6 +122,7 @@
                    IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                   PlacementConstraintAdjustment="SlideX,FlipY,ResizeY"
                    PlacementTarget="Background"
                    IsLightDismissEnabled="True">
               <Border x:Name="PopupBorder"
