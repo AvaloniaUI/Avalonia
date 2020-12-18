@@ -7,6 +7,13 @@
                           Foreground="Red" />
         </IconSourceElement.IconSource>
       </IconSourceElement>
+      <IconSourceElement>
+        <IconSourceElement.IconSource>
+          <FontIconSource Glyph="A"
+                          FontWeight="Bold"
+                          Foreground="Blue" />
+        </IconSourceElement.IconSource>
+      </IconSourceElement>
     </StackPanel>
   </Design.PreviewWith>
 
