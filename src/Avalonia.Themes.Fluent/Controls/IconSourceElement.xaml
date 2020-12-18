@@ -3,6 +3,11 @@
     <StackPanel Margin="10" Spacing="10">
       <IconSourceElement>
         <IconSourceElement.IconSource>
+          <ImageIconSource Source="avares://ControlCatalog/Assets/test_icon.ico" />
+        </IconSourceElement.IconSource>
+      </IconSourceElement>
+      <IconSourceElement>
+        <IconSourceElement.IconSource>
           <PathIconSource Data="M100,10 40,198 190,78 10,78 160,198"
                           Foreground="Red" />
         </IconSourceElement.IconSource>
