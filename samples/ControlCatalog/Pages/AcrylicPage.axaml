@@ -1,0 +1,24 @@
+﻿<pages:AcrylicPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             ButtonEnable="True"
+             x:Class="ControlCatalog.Pages.AcrylicPage">
+    <Panel>
+        <Panel.Styles> 
+            <Style Selector="pages|AcrylicPage TextBox">
+                <Setter Property="BorderThickness" Value="0 0 0 2"/> 
+            </Style>
+        </Panel.Styles>
+        <Panel>
+            <TextBox Width="400" VerticalAlignment="Center" HorizontalAlignment="Center" Watermark="The Quick Brown Fox Jumps Over The Lazy Dog"/>
+             <Panel  Background="#AE000000" Name="asdasd">
+                 <Border CornerRadius="3" Width="120" Height="120" Background="White">
+                     <TextBox Width="100" VerticalAlignment="Center" Watermark="The Quick Brown Fox Jumps Over The Lazy Dog" HorizontalAlignment="Center" Margin="0 30 0 0"/>
+                 </Border>
+             </Panel>
+        </Panel>
+    </Panel>
+</pages:AcrylicPage>

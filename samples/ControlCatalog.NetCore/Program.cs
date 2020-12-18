@@ -109,7 +109,7 @@ namespace ControlCatalog.NetCore
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    UseDBusMenu = true
+                    UseDBusMenu = true, UseGpu = true
                 })
                 .With(new Win32PlatformOptions
                 {
