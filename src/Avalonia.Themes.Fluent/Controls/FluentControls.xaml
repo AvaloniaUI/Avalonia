@@ -22,6 +22,7 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/IconSourceElement.xaml" />
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ProgressBar.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/RadioButton.xaml"/>

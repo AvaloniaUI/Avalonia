@@ -1,6 +1,12 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <StackPanel Margin="10" Spacing="10">
+      <IconSourceElement>
+        <IconSourceElement.IconSource>
+          <PathIconSource Data="M100,10 40,198 190,78 10,78 160,198"
+                          Foreground="Red" />
+        </IconSourceElement.IconSource>
+      </IconSourceElement>
     </StackPanel>
   </Design.PreviewWith>
 
