@@ -66,7 +66,8 @@ namespace Avalonia.X11
             private X11Screen[] _cache;
             private X11Info _x11;
             private IntPtr _window;
-
+            const int EDIDStructureLength = 32; // Length of a EDID-Block-Length(128 bytes), XRRGetOutputProperty multiplies offset and length by 4
+            
             public Randr15ScreensImpl(AvaloniaX11Platform platform, X11ScreensUserSettings settings)
             {
                 _settings = settings;
@@ -86,8 +87,7 @@ namespace Avalonia.X11
             {
                 if(rrOutput == IntPtr.Zero)
                     return null;
-                var output = Marshal.ReadInt64(rrOutput);
-                var properties = XRRListOutputProperties(_x11.Display,output, out int propertyCount);
+                var properties = XRRListOutputProperties(_x11.Display,rrOutput, out int propertyCount);
                 var hasEDID = false;
                 for(var pc = 0; pc < propertyCount; pc++)
                 {
@@ -96,20 +96,20 @@ namespace Avalonia.X11
                 }
                 if(!hasEDID)
                     return null;
-                XRRGetOutputProperty(_x11.Display, output, _x11.Atoms.RR_PROPERTY_RANDR_EDID, 0, 128, false, false, _x11.Atoms.AnyPropertyType, out int actualType, out int actualFormat, out int nItems, out _, out IntPtr prop);
-                if(actualType != 19) // XA_INTEGER
+                XRRGetOutputProperty(_x11.Display, rrOutput, _x11.Atoms.RR_PROPERTY_RANDR_EDID, 0, EDIDStructureLength, false, false, _x11.Atoms.AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _, out IntPtr prop);
+                if(actualType != _x11.Atoms.XA_INTEGER)
                     return null;
-                if(actualFormat != 8)
+                if(actualFormat != 8) // Expecting an byte array
                     return null;
 
-                var edid = new byte[nItems];
-                Marshal.Copy(prop,edid,0,nItems);
+                var edid = new byte[bytesAfter];
+                Marshal.Copy(prop,edid,0,bytesAfter);
                 XFree(prop);
                 XFree(new IntPtr(properties));
                 if(edid.Length < 22)
                     return null;
-                var width = edid[21];
-                var height = edid[22];
+                var width = edid[21]; // 0x15 1 Max. Horizontal Image Size cm. 
+                var height = edid[22]; // 0x16 1 Max. Vertical Image Size cm. 
                 if(width == 0 && height == 0)
                     return null;
                 return new Size(width * 10, height * 10);
@@ -131,10 +131,25 @@ namespace Avalonia.X11
                         var name = Marshal.PtrToStringAnsi(namePtr);
                         XFree(namePtr);
                         var bounds = new PixelRect(mon.X, mon.Y, mon.Width, mon.Height);
-                        var density = 1d;
-                        var pSize = GetPhysicalMonitorSizeFromEDID(mon.Outputs);
-                        if (_settings.NamedScaleFactors?.TryGetValue(name, out  density) != true && pSize != null)
-                            density = X11Screen.GuessPixelDensity(bounds, pSize.Value);
+                        Size? pSize = null;
+                        double density = 0;
+                        if (_settings.NamedScaleFactors?.TryGetValue(name, out density) != true)
+                        {
+                            for(int o = 0; o < mon.NOutput; o++)
+                            {
+                                var outputSize = GetPhysicalMonitorSizeFromEDID(mon.Outputs[o]);
+                                var outputDensity = 1d;
+                                if(outputSize != null)
+                                    outputDensity = X11Screen.GuessPixelDensity(bounds, outputSize.Value);
+                                if(density == 0 || density > outputDensity)
+                                {
+                                    density = outputDensity;
+                                    pSize = outputSize;
+                                }
+                            }
+                        }
+                        if(density == 0)
+                            density = 1;
                         density *= _settings.GlobalScaleFactor;
                         screens[c] = new X11Screen(bounds, mon.Primary != 0, name, pSize, density);
                     }
