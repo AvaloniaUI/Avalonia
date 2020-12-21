@@ -13,7 +13,6 @@
     <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightTransparentBrush}" />
     <Setter Property="Maximum" Value="100" />
-    <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -40,12 +39,12 @@
     <Setter Property="VerticalAlignment" Value="Bottom" />
   </Style>
   <Style Selector="ProgressBar:horizontal">
-    <Setter Property="MinWidth" Value="200" />
-    <Setter Property="MinHeight" Value="4" />
+    <Setter Property="Width" Value="200" />
+    <Setter Property="Height" Value="4" />
   </Style>
   <Style Selector="ProgressBar:vertical">
-    <Setter Property="MinWidth" Value="4" />
-    <Setter Property="MinHeight" Value="200" />
+    <Setter Property="Height" Value="200" />
+    <Setter Property="Width" Value="4" />
   </Style>
   <Style Selector="ProgressBar:vertical /template/ LayoutTransformControl#PART_LayoutTransformControl">
     <Setter Property="LayoutTransform">

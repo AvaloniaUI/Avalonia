@@ -35,12 +35,12 @@
     <Setter Property="VerticalAlignment" Value="Bottom"/>
   </Style>
   <Style Selector="ProgressBar:horizontal">
-    <Setter Property="MinWidth" Value="200"/>
-    <Setter Property="MinHeight" Value="16"/>
+    <Setter Property="Width" Value="200"/>
+    <Setter Property="Height" Value="16"/>
   </Style>
   <Style Selector="ProgressBar:vertical">
-    <Setter Property="MinWidth" Value="16"/>
-    <Setter Property="MinHeight" Value="200"/>
+    <Setter Property="Width" Value="16"/>
+    <Setter Property="Height" Value="200"/>
   </Style>
   <Style Selector="ProgressBar:vertical /template/ LayoutTransformControl#PART_LayoutTransformControl">
     <Setter Property="LayoutTransform">
