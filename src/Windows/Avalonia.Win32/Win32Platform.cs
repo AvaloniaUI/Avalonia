@@ -40,7 +40,9 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         public bool UseDeferredRendering { get; set; } = true;
-        public bool AllowEglInitialization { get; set; } = Win32Platform.WindowsVersion > new Version(6, 1);
+        
+        public bool? AllowEglInitialization { get; set; }
+        
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
         public bool UseWgl { get; set; }

@@ -1,4 +1,0 @@
-Compat issues with assembly Avalonia.Base:
-MembersMustExist : Member 'public void Avalonia.Threading.AvaloniaSynchronizationContext..ctor(Avalonia.Threading.AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider)' does not exist in the implementation but it does exist in the contract.
-TypesMustExist : Type 'Avalonia.Threading.AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider' does not exist in the implementation but it does exist in the contract.
-Total Issues: 2
