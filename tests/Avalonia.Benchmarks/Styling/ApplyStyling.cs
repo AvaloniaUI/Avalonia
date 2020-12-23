@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
@@ -45,7 +42,7 @@ namespace Avalonia.Benchmarks.Styling
             {
                 _window.Styles.Add(new Style(x => x.OfType<TextBox>().Class("foo").Class("bar").Class("baz"))
                 {
-                    Setters = new[]
+                    Setters =
                     {
                         new Setter(TextBox.TextProperty, "foo"),
                     }

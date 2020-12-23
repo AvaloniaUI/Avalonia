@@ -1,5 +1,6 @@
 ﻿using Avalonia.Collections;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {

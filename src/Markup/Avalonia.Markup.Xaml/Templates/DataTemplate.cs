@@ -1,15 +1,11 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    public class DataTemplate : IDataTemplate
+    public class DataTemplate : IRecyclingDataTemplate
     {
         public Type DataType { get; set; }
 
@@ -17,8 +13,6 @@ namespace Avalonia.Markup.Xaml.Templates
         [Content]
         [TemplateContent]
         public object Content { get; set; }
-
-        public bool SupportsRecycling { get; set; } = true;
 
         public bool Match(object data)
         {
@@ -28,10 +22,15 @@ namespace Avalonia.Markup.Xaml.Templates
             }
             else
             {
-                return DataType.GetTypeInfo().IsAssignableFrom(data.GetType().GetTypeInfo());
+                return DataType.IsInstanceOfType(data);
             }
         }
 
-        public IControl Build(object data) => TemplateContent.Load(Content).Control;
+        public IControl Build(object data) => Build(data, null);
+
+        public IControl Build(object data, IControl existing)
+        {
+            return existing ?? TemplateContent.Load(Content).Control;
+        }
     }
 }

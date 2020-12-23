@@ -56,6 +56,6 @@ namespace Avalonia.Layout
             MaxArrangeBounds = Math.Max(MaxArrangeBounds, minorSize);
         }
 
-        internal void OnArrangeLayoutEnd() => MaxArrangeBounds = 0;
+        internal void OnMeasureStart() => MaxArrangeBounds = 0;
     }
 }

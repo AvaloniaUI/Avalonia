@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -29,7 +26,7 @@ namespace Avalonia.Dialogs
                 using (Process process = Process.Start(new ProcessStartInfo
                 {
                     FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? url : "open",
-                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"-e {url}" : "",
+                    Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"{url}" : "",
                     CreateNoWindow = true,
                     UseShellExecute = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 }));

@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -66,12 +63,12 @@ namespace Avalonia.Data.Core.Plugins
             {
                 if (errors.Count == 1)
                 {
-                    return new ValidationException(errors[0].ErrorMessage);
+                    return new DataValidationException(errors[0].ErrorMessage);
                 }
                 else
                 {
                     return new AggregateException(
-                        errors.Select(x => new ValidationException(x.ErrorMessage)));
+                        errors.Select(x => new DataValidationException(x.ErrorMessage)));
                 }
             }
         }

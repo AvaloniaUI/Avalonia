@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Data;
 
 namespace Avalonia
@@ -8,7 +5,7 @@ namespace Avalonia
     /// <summary>
     /// Metadata for direct avalonia properties.
     /// </summary>
-    public class DirectPropertyMetadata<TValue> : PropertyMetadata, IDirectPropertyMetadata
+    public class DirectPropertyMetadata<TValue> : AvaloniaPropertyMetadata, IDirectPropertyMetadata
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyMetadata{TValue}"/> class.
@@ -50,7 +47,7 @@ namespace Avalonia
         object IDirectPropertyMetadata.UnsetValue => UnsetValue;
 
         /// <inheritdoc/>
-        public override void Merge(PropertyMetadata baseMetadata, AvaloniaProperty property)
+        public override void Merge(AvaloniaPropertyMetadata baseMetadata, AvaloniaProperty property)
         {
             base.Merge(baseMetadata, property);
 

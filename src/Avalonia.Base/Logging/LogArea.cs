@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Logging
 {
     /// <summary>
@@ -37,5 +34,10 @@ namespace Avalonia.Logging
         /// The log event comes from the control system.
         /// </summary>
         public const string Control = "Control";
+
+        /// <summary>
+        /// The log event comes from Win32Platform.
+        /// </summary>
+        public const string Win32Platform = nameof(Win32Platform);
     }
 }

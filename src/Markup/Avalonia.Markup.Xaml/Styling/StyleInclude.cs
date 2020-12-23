@@ -1,46 +1,45 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Styling;
 using System;
 using Avalonia.Controls;
+using System.Collections.Generic;
+
+#nullable enable
 
 namespace Avalonia.Markup.Xaml.Styling
 {
     /// <summary>
     /// Includes a style from a URL.
     /// </summary>
-    public class StyleInclude : IStyle, ISetStyleParent
+    public class StyleInclude : IStyle, IResourceProvider
     {
-        private Uri _baseUri;
-        private IStyle _loaded;
-        private IResourceNode _parent;
+        private readonly Uri _baseUri;
+        private IStyle[]? _loaded;
+        private bool _isLoading;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
         /// </summary>
-        /// <param name="baseUri"></param>
+        /// <param name="baseUri">The base URL for the XAML context.</param>
         public StyleInclude(Uri baseUri)
         {
             _baseUri = baseUri;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StyleInclude"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The XAML service provider.</param>
         public StyleInclude(IServiceProvider serviceProvider)
         {
             _baseUri = serviceProvider.GetContextBaseUri();
         }
-        
-        /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged
-        {
-            add {}
-            remove {}
-        }
+
+        public IResourceHost? Owner => (Loaded as IResourceProvider)?.Owner;
 
         /// <summary>
         /// Gets or sets the source URL.
         /// </summary>
-        public Uri Source { get; set; }
+        public Uri? Source { get; set; }
 
         /// <summary>
         /// Gets the loaded style.
@@ -51,58 +50,52 @@ namespace Avalonia.Markup.Xaml.Styling
             {
                 if (_loaded == null)
                 {
-                    var loader = new AvaloniaXamlLoader();
-                    _loaded = (IStyle)loader.Load(Source, _baseUri);
-                    (_loaded as ISetStyleParent)?.SetParent(this);
+                    _isLoading = true;
+                    var loaded = (IStyle)AvaloniaXamlLoader.Load(Source, _baseUri);
+                    _loaded = new[] { loaded };
+                    _isLoading = false;
                 }
 
-                return _loaded;
+                return _loaded?[0]!;
             }
         }
 
-        /// <inheritdoc/>
-        bool IResourceProvider.HasResources => Loaded.HasResources;
+        bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
 
-        /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
+        IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
-        /// <inheritdoc/>
-        public bool Attach(IStyleable control, IStyleHost container)
+        public event EventHandler OwnerChanged
         {
-            if (Source != null)
+            add
             {
-                return Loaded.Attach(control, container);
+                if (Loaded is IResourceProvider rp)
+                {
+                    rp.OwnerChanged += value;
+                }
+            }
+            remove
+            {
+                if (Loaded is IResourceProvider rp)
+                {
+                    rp.OwnerChanged -= value;
+                }
+            }
+        }
+
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
+
+        public bool TryGetResource(object key, out object? value)
+        {
+            if (!_isLoading && Loaded is IResourceProvider p)
+            {
+                return p.TryGetResource(key, out value);
             }
 
+            value = null;
             return false;
         }
 
-        public void Detach()
-        {
-            if (Source != null)
-            {
-                Loaded.Detach();
-            }
-        }
-
-        /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value) => Loaded.TryGetResource(key, out value);
-
-        /// <inheritdoc/>
-        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
-        {
-            (Loaded as ISetStyleParent)?.NotifyResourcesChanged(e);
-        }
-
-        /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceNode parent)
-        {
-            if (_parent != null && parent != null)
-            {
-                throw new InvalidOperationException("The Style already has a parent.");
-            }
-
-            _parent = parent;
-        }
+        void IResourceProvider.AddOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.AddOwner(owner);
+        void IResourceProvider.RemoveOwner(IResourceHost owner) => (Loaded as IResourceProvider)?.RemoveOwner(owner);
     }
 }

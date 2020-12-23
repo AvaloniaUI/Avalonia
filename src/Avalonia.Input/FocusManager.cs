@@ -1,9 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -17,8 +15,8 @@ namespace Avalonia.Input
         /// <summary>
         /// The focus scopes in which the focus is currently defined.
         /// </summary>
-        private readonly Dictionary<IFocusScope, IInputElement> _focusScopes =
-            new Dictionary<IFocusScope, IInputElement>();
+        private readonly ConditionalWeakTable<IFocusScope, IInputElement?> _focusScopes =
+            new ConditionalWeakTable<IFocusScope, IInputElement?>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FocusManager"/> class.
@@ -39,12 +37,12 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
         /// </summary>
-        public IInputElement Current => KeyboardDevice.Instance?.FocusedElement;
+        public IInputElement? Current => KeyboardDevice.Instance?.FocusedElement;
 
         /// <summary>
         /// Gets the current focus scope.
         /// </summary>
-        public IFocusScope Scope
+        public IFocusScope? Scope
         {
             get;
             private set;
@@ -55,11 +53,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="control">The control to focus.</param>
         /// <param name="method">The method by which focus was changed.</param>
-        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         public void Focus(
-            IInputElement control, 
+            IInputElement? control, 
             NavigationMethod method = NavigationMethod.Unspecified,
-            InputModifiers modifiers = InputModifiers.None)
+            KeyModifiers keyModifiers = KeyModifiers.None)
         {
             if (control != null)
             {
@@ -69,7 +67,7 @@ namespace Avalonia.Input
                 if (scope != null)
                 {
                     Scope = scope;
-                    SetFocusedElement(scope, control, method, modifiers);
+                    SetFocusedElement(scope, control, method, keyModifiers);
                 }
             }
             else if (Current != null)
@@ -77,17 +75,18 @@ namespace Avalonia.Input
                 // If control is null, set focus to the topmost focus scope.
                 foreach (var scope in GetFocusScopeAncestors(Current).Reverse().ToList())
                 {
-                    IInputElement element;
-
-                    if (_focusScopes.TryGetValue(scope, out element) && element != null)
+                    if (_focusScopes.TryGetValue(scope, out var element) && element != null)
                     {
                         Focus(element, method);
                         return;
                     }
                 }
 
-                // Couldn't find a focus scope, clear focus.
-                SetFocusedElement(Scope, null);
+                if (Scope is object)
+                {
+                    // Couldn't find a focus scope, clear focus.
+                    SetFocusedElement(Scope, null);
+                }
             }
         }
 
@@ -97,24 +96,35 @@ namespace Avalonia.Input
         /// <param name="scope">The focus scope.</param>
         /// <param name="element">The element to focus. May be null.</param>
         /// <param name="method">The method by which focus was changed.</param>
-        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         /// <remarks>
         /// If the specified scope is the current <see cref="Scope"/> then the keyboard focus
         /// will change.
         /// </remarks>
         public void SetFocusedElement(
             IFocusScope scope,
-            IInputElement element,
+            IInputElement? element,
             NavigationMethod method = NavigationMethod.Unspecified,
-            InputModifiers modifiers = InputModifiers.None)
+            KeyModifiers keyModifiers = KeyModifiers.None)
         {
-            Contract.Requires<ArgumentNullException>(scope != null);
+            scope = scope ?? throw new ArgumentNullException(nameof(scope));
 
-            _focusScopes[scope] = element;
+            if (_focusScopes.TryGetValue(scope, out var existingElement))
+            {
+                if (element != existingElement)
+                {
+                    _focusScopes.Remove(scope);
+                    _focusScopes.Add(scope, element);
+                }
+            }
+            else
+            {
+                _focusScopes.Add(scope, element);
+            }
 
             if (Scope == scope)
             {
-                KeyboardDevice.Instance?.SetFocusedElement(element, method, modifiers);
+                KeyboardDevice.Instance?.SetFocusedElement(element, method, keyModifiers);
             }
         }
 
@@ -124,11 +134,9 @@ namespace Avalonia.Input
         /// <param name="scope">The new focus scope.</param>
         public void SetFocusScope(IFocusScope scope)
         {
-            Contract.Requires<ArgumentNullException>(scope != null);
+            scope = scope ?? throw new ArgumentNullException(nameof(scope));
 
-            IInputElement e;
-
-            if (!_focusScopes.TryGetValue(scope, out e))
+            if (!_focusScopes.TryGetValue(scope, out var e))
             {
                 // TODO: Make this do something useful, i.e. select the first focusable
                 // control, select a control that the user has specified to have default
@@ -155,17 +163,19 @@ namespace Avalonia.Input
         /// <returns>The focus scopes.</returns>
         private static IEnumerable<IFocusScope> GetFocusScopeAncestors(IInputElement control)
         {
-            while (control != null)
-            {
-                var scope = control as IFocusScope;
+            IInputElement? c = control;
 
-                if (scope != null)
+            while (c != null)
+            {
+                var scope = c as IFocusScope;
+
+                if (scope != null && c.VisualRoot?.IsVisible == true)
                 {
                     yield return scope;
                 }
 
-                control = control.GetVisualParent<IInputElement>() ??
-                    ((control as IHostedVisualTreeRoot)?.Host as IInputElement);
+                c = c.GetVisualParent<IInputElement>() ??
+                    ((c as IHostedVisualTreeRoot)?.Host as IInputElement);
             }
         }
 
@@ -177,21 +187,22 @@ namespace Avalonia.Input
         private static void OnPreviewPointerPressed(object sender, RoutedEventArgs e)
         {
             var ev = (PointerPressedEventArgs)e;
+            var visual = (IVisual)sender;
 
-            if (sender == e.Source && ev.MouseButton == MouseButton.Left)
+            if (sender == e.Source && ev.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
             {
-                var element = (ev.Pointer?.Captured as IInputElement) ?? (e.Source as IInputElement);
+                IVisual? element = ev.Pointer?.Captured ?? e.Source as IInputElement;
 
-                if (element == null || !CanFocus(element))
+                while (element != null)
                 {
-                    element = element.GetSelfAndVisualAncestors()
-                        .OfType<IInputElement>()
-                        .FirstOrDefault(CanFocus);
-                }
+                    if (element is IInputElement inputElement && CanFocus(inputElement))
+                    {
+                        Instance?.Focus(inputElement, NavigationMethod.Pointer, ev.KeyModifiers);
 
-                if (element != null)
-                {
-                    Instance?.Focus(element, NavigationMethod.Pointer, ev.InputModifiers);
+                        break;
+                    }
+                    
+                    element = element.VisualParent;
                 }
             }
         }

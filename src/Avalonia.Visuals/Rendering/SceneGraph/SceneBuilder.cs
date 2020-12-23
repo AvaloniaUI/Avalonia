@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -27,7 +24,8 @@ namespace Avalonia.Rendering.SceneGraph
             using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
             using (var context = new DrawingContext(impl))
             {
-                Update(context, scene, (VisualNode)scene.Root, scene.Root.Visual.Bounds, true);
+                var clip = new Rect(scene.Root.Visual.Bounds.Size);
+                Update(context, scene, (VisualNode)scene.Root, clip, true);
             }
         }
 
@@ -80,7 +78,7 @@ namespace Avalonia.Rendering.SceneGraph
                         using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
                         using (var context = new DrawingContext(impl))
                         {
-                            var clip = scene.Root.Visual.Bounds;
+                            var clip = new Rect(scene.Root.Visual.Bounds.Size);
 
                             if (node.Parent != null)
                             {
@@ -166,6 +164,10 @@ namespace Avalonia.Rendering.SceneGraph
             var visual = node.Visual;
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
+            var clipToBoundsRadius = visual is IVisualWithRoundRectClip roundRectClip ?
+                roundRectClip.ClipToBoundsRadius :
+                default;
+            
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
@@ -173,7 +175,9 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (visual.IsVisible)
             {
-                var m = Matrix.CreateTranslation(visual.Bounds.Position);
+                var m = node != scene.Root ? 
+                    Matrix.CreateTranslation(visual.Bounds.Position) :
+                    Matrix.Identity;
 
                 var renderTransform = Matrix.Identity;
 
@@ -204,6 +208,7 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.LayoutBounds = globalBounds;
+                    node.ClipToBoundsRadius = clipToBoundsRadius;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
 
@@ -392,13 +397,8 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        private static bool ShouldStartLayer(IVisual visual)
-        {
-            var o = visual as IAvaloniaObject;
-            return visual.VisualChildren.Count > 0 &&
-                o != null &&
-                o.IsAnimating(Visual.OpacityProperty);
-        }
+        // HACK: Disabled layers because they're broken in current renderer. See #2244.
+        private static bool ShouldStartLayer(IVisual visual) => false;
 
         private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)
         {

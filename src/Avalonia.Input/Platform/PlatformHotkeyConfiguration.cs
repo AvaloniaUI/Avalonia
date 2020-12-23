@@ -4,14 +4,14 @@ namespace Avalonia.Input.Platform
 {
     public class PlatformHotkeyConfiguration
     {
-        public PlatformHotkeyConfiguration() : this(InputModifiers.Control)
+        public PlatformHotkeyConfiguration() : this(KeyModifiers.Control)
         {
             
         }
         
-        public PlatformHotkeyConfiguration(InputModifiers commandModifiers,
-            InputModifiers selectionModifiers = InputModifiers.Shift,
-            InputModifiers wholeWordTextActionModifiers = InputModifiers.Control)
+        public PlatformHotkeyConfiguration(KeyModifiers commandModifiers,
+            KeyModifiers selectionModifiers = KeyModifiers.Shift,
+            KeyModifiers wholeWordTextActionModifiers = KeyModifiers.Control)
         {
             CommandModifiers = commandModifiers;
             SelectionModifiers = selectionModifiers;
@@ -75,9 +75,9 @@ namespace Avalonia.Input.Platform
             };
         }
         
-        public InputModifiers CommandModifiers { get; set; }
-        public InputModifiers WholeWordTextActionModifiers { get; set; }
-        public InputModifiers SelectionModifiers { get; set; }
+        public KeyModifiers CommandModifiers { get; set; }
+        public KeyModifiers WholeWordTextActionModifiers { get; set; }
+        public KeyModifiers SelectionModifiers { get; set; }
         public List<KeyGesture> Copy { get; set; }
         public List<KeyGesture> Cut { get; set; }
         public List<KeyGesture> Paste { get; set; }

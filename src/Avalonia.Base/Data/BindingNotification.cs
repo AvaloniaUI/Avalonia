@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 
 namespace Avalonia.Data
 {
@@ -30,6 +27,12 @@ namespace Avalonia.Data
     /// Represents a binding notification that can be a valid binding value, or a binding or
     /// data validation error.
     /// </summary>
+    /// <remarks>
+    /// This class is very similar to <see cref="BindingValue{T}"/>, but where <see cref="BindingValue{T}"/>
+    /// is used by typed bindings, this class is used to hold binding and data validation errors in
+    /// untyped bindings. As Avalonia moves towards using typed bindings by default we may want to remove
+    /// this class.
+    /// </remarks>
     public class BindingNotification
     {
         /// <summary>
@@ -234,6 +237,26 @@ namespace Avalonia.Data
         public void SetValue(object value)
         {
             _value = value;
+        }
+
+        public BindingValue<object> ToBindingValue()
+        {
+            if (ErrorType == BindingErrorType.None)
+            {
+                return HasValue ? new BindingValue<object>(Value) : BindingValue<object>.Unset;
+            }
+            else if (ErrorType == BindingErrorType.Error)
+            {
+                return BindingValue<object>.BindingError(
+                    Error,
+                    HasValue ? new Optional<object>(Value) : Optional<object>.Empty);
+            }
+            else
+            {
+                return BindingValue<object>.DataValidationError(
+                    Error,
+                    HasValue ? new Optional<object>(Value) : Optional<object>.Empty);
+            }
         }
 
         /// <inheritdoc/>

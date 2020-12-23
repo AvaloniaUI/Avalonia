@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
@@ -33,7 +30,7 @@ namespace Avalonia.Direct2D1
             return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget);
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             return D2DRenderTargetBitmapImpl.CreateCompatible(_renderTarget, size);
         }

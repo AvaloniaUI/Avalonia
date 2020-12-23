@@ -43,5 +43,11 @@ namespace Avalonia.Android.Platform
 
             return Task.FromResult<object>(null);
         }
+
+        public Task SetDataObjectAsync(IDataObject data) => throw new PlatformNotSupportedException();
+
+        public Task<string[]> GetFormatsAsync() => throw new PlatformNotSupportedException();
+
+        public Task<object> GetDataAsync(string format) => throw new PlatformNotSupportedException();
     }
 }

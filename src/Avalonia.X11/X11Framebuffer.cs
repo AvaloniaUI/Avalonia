@@ -14,6 +14,10 @@ namespace Avalonia.X11
 
         public X11Framebuffer(IntPtr display, IntPtr xid, int depth, int width, int height, double factor)
         {
+            // HACK! Please fix renderer, should never ask for 0x0 bitmap.
+            width = Math.Max(1, width);
+            height = Math.Max(1, height);
+
             _display = display;
             _xid = xid;
             _depth = depth;

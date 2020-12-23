@@ -1,5 +1,7 @@
 ﻿using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
@@ -14,6 +16,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a spinner control that includes two Buttons.
     /// </summary>
+    [PseudoClasses(":left", ":right")]
     public class ButtonSpinner : Spinner
     {
         /// <summary>
@@ -33,6 +36,11 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<Location> ButtonSpinnerLocationProperty =
             AvaloniaProperty.Register<ButtonSpinner, Location>(nameof(ButtonSpinnerLocation), Location.Right);
+
+        public ButtonSpinner()
+        {
+            UpdatePseudoClasses(ButtonSpinnerLocation);
+        }
 
         private Button _decreaseButton;
         /// <summary>
@@ -85,8 +93,6 @@ namespace Avalonia.Controls
         static ButtonSpinner()
         {
             AllowSpinProperty.Changed.Subscribe(AllowSpinChanged);
-            PseudoClass<ButtonSpinner, Location>(ButtonSpinnerLocationProperty, location => location == Location.Left, ":left");
-            PseudoClass<ButtonSpinner, Location>(ButtonSpinnerLocationProperty, location => location == Location.Right, ":right");
         }
 
         /// <summary>
@@ -117,7 +123,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             IncreaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
             DecreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
@@ -201,6 +207,16 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ButtonSpinnerLocationProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Location>());
+            }
+        }
+
         protected override void OnValidSpinDirectionChanged(ValidSpinDirections oldValue, ValidSpinDirections newValue)
         {
             SetButtonUsage();
@@ -258,6 +274,12 @@ namespace Avalonia.Controls
                 var direction = sender == IncreaseButton ? SpinDirection.Increase : SpinDirection.Decrease;
                 OnSpin(new SpinEventArgs(SpinEvent, direction));
             }
+        }
+
+        private void UpdatePseudoClasses(Location location)
+        {
+            PseudoClasses.Set(":left", location == Location.Left);
+            PseudoClasses.Set(":right", location == Location.Right);
         }
     }
 }

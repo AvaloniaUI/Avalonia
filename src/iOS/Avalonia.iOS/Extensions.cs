@@ -14,7 +14,7 @@ namespace Avalonia.iOS
 
         static nfloat ColorComponent(byte c) => ((float) c) / 255;
 
-        public static UIColor ToUiColor(this Color color)=>new UIColor(
+        public static UIColor ToUiColor(this Color color) => new UIColor(
             ColorComponent(color.R),
             ColorComponent(color.G),
             ColorComponent(color.B),

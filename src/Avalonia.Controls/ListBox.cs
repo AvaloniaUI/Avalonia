@@ -1,10 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.VisualTree;
@@ -33,6 +31,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
+
+        /// <summary>
+        /// Defines the <see cref="Selection"/> property.
+        /// </summary>
+        public static readonly new DirectProperty<SelectingItemsControl, ISelectionModel> SelectionProperty =
+            SelectingItemsControl.SelectionProperty;
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
@@ -73,6 +77,13 @@ namespace Avalonia.Controls
             set => base.SelectedItems = value;
         }
 
+        /// <inheritdoc/>
+        public new ISelectionModel Selection
+        {
+            get => base.Selection;
+            set => base.Selection = value;
+        }
+
         /// <summary>
         /// Gets or sets the selection mode.
         /// </summary>
@@ -98,12 +109,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Selects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public new void SelectAll() => base.SelectAll();
+        public void SelectAll() => Selection.SelectAll();
 
         /// <summary>
         /// Deselects all items in the <see cref="ListBox"/>.
         /// </summary>
-        public new void UnselectAll() => base.UnselectAll();
+        public void UnselectAll() => Selection.Clear();
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -124,7 +135,8 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.InputModifiers & InputModifiers.Shift) != 0);
+                    (e.KeyModifiers & KeyModifiers.Shift) != 0,
+                    (e.KeyModifiers & KeyModifiers.Control) != 0);
             }
         }
 
@@ -149,10 +161,10 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            base.OnApplyTemplate(e);
             Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
-            base.OnTemplateApplied(e);
         }
     }
 }

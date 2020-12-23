@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -145,6 +142,16 @@ namespace Avalonia.Controls.UnitTests.Generators
                 BindingPriority.Style);
 
             Assert.Equal("bar", container.Content);
+        }
+
+        [Fact]
+        public void Materialize_Should_Create_Containers_When_Item_Is_Null()
+        {
+            var owner = new Decorator();
+            var target = new ItemContainerGenerator<ListBoxItem>(owner, ListBoxItem.ContentProperty, null);
+            var container = (ListBoxItem)target.Materialize(0, null).ContainerControl;
+
+            Assert.True(container != null, "The containers is not materialized.");
         }
 
         private IList<ItemContainerInfo> Materialize(

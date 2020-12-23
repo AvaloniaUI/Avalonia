@@ -1,16 +1,36 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
     public static class SkiaSharpExtensions
     {
+        public static SKFilterQuality ToSKFilterQuality(this BitmapInterpolationMode interpolationMode)
+        {
+            switch (interpolationMode)
+            {
+                case BitmapInterpolationMode.LowQuality:
+                    return SKFilterQuality.Low;
+                case BitmapInterpolationMode.MediumQuality:
+                    return SKFilterQuality.Medium;
+                case BitmapInterpolationMode.HighQuality:
+                    return SKFilterQuality.High;
+                case BitmapInterpolationMode.Default:
+                    return SKFilterQuality.None;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
+            }
+        }
+
         public static SKPoint ToSKPoint(this Point p)
+        {
+            return new SKPoint((float)p.X, (float)p.Y);
+        }
+        
+        public static SKPoint ToSKPoint(this Vector p)
         {
             return new SKPoint((float)p.X, (float)p.Y);
         }
@@ -18,6 +38,21 @@ namespace Avalonia.Skia
         public static SKRect ToSKRect(this Rect r)
         {
             return new SKRect((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
+        }
+
+        public static SKRoundRect ToSKRoundRect(this RoundedRect r)
+        {
+            var rc = r.Rect.ToSKRect();
+            var result = new SKRoundRect();
+
+            result.SetRectRadii(rc,
+                   new[]
+                   {
+                        r.RadiiTopLeft.ToSKPoint(), r.RadiiTopRight.ToSKPoint(),
+                        r.RadiiBottomRight.ToSKPoint(), r.RadiiBottomLeft.ToSKPoint(),
+                   });            
+
+            return result;
         }
 
         public static Rect ToAvaloniaRect(this SKRect r)
@@ -70,6 +105,28 @@ namespace Avalonia.Skia
             throw new ArgumentException("Unknown pixel format: " + fmt);
         }
 
+        public static SKAlphaType ToSkAlphaType(this AlphaFormat fmt)
+        {
+            return fmt switch
+            {
+                AlphaFormat.Premul => SKAlphaType.Premul,
+                AlphaFormat.Unpremul => SKAlphaType.Unpremul,
+                AlphaFormat.Opaque => SKAlphaType.Opaque,
+                _ => throw new ArgumentException($"Unknown alpha format: {fmt}")
+            };
+        }
+
+        public static AlphaFormat ToAlphaFormat(this SKAlphaType fmt)
+        {
+            return fmt switch
+            {
+                SKAlphaType.Premul => AlphaFormat.Premul,
+                SKAlphaType.Unpremul => AlphaFormat.Unpremul,
+                SKAlphaType.Opaque => AlphaFormat.Opaque,
+                _ => throw new ArgumentException($"Unknown alpha format: {fmt}")
+            };
+        }
+
         public static SKShaderTileMode ToSKShaderTileMode(this Media.GradientSpreadMethod m)
         {
             switch (m)
@@ -101,6 +158,17 @@ namespace Avalonia.Skia
                 case SKTextAlign.Center: return TextAlignment.Center;
                 case SKTextAlign.Right: return TextAlignment.Right;
             }
+        }
+
+        public static FontStyle ToAvalonia(this SKFontStyleSlant slant)
+        {
+            return slant switch
+            {
+                SKFontStyleSlant.Upright => FontStyle.Normal,
+                SKFontStyleSlant.Italic => FontStyle.Italic,
+                SKFontStyleSlant.Oblique => FontStyle.Oblique,
+                _ => throw new ArgumentOutOfRangeException(nameof (slant), slant, null)
+            };
         }
 
         public static SKPath Clone(this SKPath src)

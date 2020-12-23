@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
 
@@ -12,7 +9,7 @@ namespace Avalonia.Platform
         /// <summary>
         ///     Gets the system's default font family's name.
         /// </summary>
-        string DefaultFontFamilyName { get; }
+        string GetDefaultFontFamilyName();
 
         /// <summary>
         ///     Get all installed fonts in the system.
@@ -21,28 +18,28 @@ namespace Avalonia.Platform
         IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false);
 
         /// <summary>
-        ///     Get a typeface from specified parameters.
-        /// </summary>
-        /// <param name="fontFamily">The font family.</param>
-        /// <param name="fontWeight">The font weight.</param>
-        /// <param name="fontStyle">The font style.</param>
-        /// <returns>
-        ///     The typeface.
-        /// </returns>
-        Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle);
-
-        /// <summary>
         ///     Tries to match a specified character to a typeface that supports specified font properties.
         /// </summary>
         /// <param name="codepoint">The codepoint to match against.</param>
-        /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStyle">The font style.</param>
+        /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontFamily">The font family. This is optional and used for fallback lookup.</param>
         /// <param name="culture">The culture.</param>
+        /// <param name="typeface">The matching typeface.</param>
         /// <returns>
-        ///     The typeface.
+        ///     <c>True</c>, if the <see cref="IFontManagerImpl"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
-        Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
-            FontFamily fontFamily = null, CultureInfo culture = null);
+        bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontFamily fontFamily, CultureInfo culture, out Typeface typeface);
+
+        /// <summary>
+        ///     Creates a glyph typeface.
+        /// </summary>
+        /// <param name="typeface">The typeface.</param>
+        /// <returns>0
+        ///     The created glyph typeface. Can be <c>Null</c> if it was not possible to create a glyph typeface.
+        /// </returns>
+        IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface);
     }
 }

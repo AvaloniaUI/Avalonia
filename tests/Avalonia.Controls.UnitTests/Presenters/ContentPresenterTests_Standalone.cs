@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -60,7 +57,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var parentMock = new Mock<Control>();
             parentMock.As<IContentPresenterHost>();
             parentMock.As<IRenderRoot>();
-            parentMock.As<IStyleRoot>();
+            parentMock.As<ILogicalRoot>();
 
             (target as ISetLogicalParent).SetParent(parentMock.Object);
 
@@ -105,7 +102,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var parentMock = new Mock<Control>();
             parentMock.As<IRenderRoot>();
-            parentMock.As<IStyleRoot>();
+            parentMock.As<ILogicalRoot>();
             parentMock.As<ILogical>().SetupGet(l => l.IsAttachedToLogicalTree).Returns(true);
 
             (contentControl as ISetLogicalParent).SetParent(parentMock.Object);
@@ -150,7 +147,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var parentMock = new Mock<Control>();
             parentMock.As<IContentPresenterHost>();
             parentMock.As<IRenderRoot>();
-            parentMock.As<IStyleRoot>();
+            parentMock.As<ILogicalRoot>();
 
             (target as ISetLogicalParent).SetParent(parentMock.Object);
 
@@ -215,7 +212,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var root = new TestRoot(target);
             var renderer = Mock.Get(root.Renderer);
-            renderer.ResetCalls();
+            renderer.Invocations.Clear();
 
             ((SolidColorBrush)target.Background).Color = Colors.Green;
 

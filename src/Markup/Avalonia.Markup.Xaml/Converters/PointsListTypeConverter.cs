@@ -1,13 +1,11 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-	using System.ComponentModel;
+    using System.ComponentModel;
+    using Avalonia.Utilities;
 
     public class PointsListTypeConverter : TypeConverter
     {
@@ -18,15 +16,17 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            string strValue = (string)value;
-            string[] pointStrs = strValue.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var result = new List<Point>(pointStrs.Length);
-            foreach (var pointStr in pointStrs)
+            var points = new List<Point>();
+
+            using (var tokenizer = new StringTokenizer((string)value, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PointsList."))
             {
-                result.Add(Point.Parse(pointStr));
+                while (tokenizer.TryReadDouble(out double x))
+                {
+                    points.Add(new Point(x, tokenizer.ReadDouble()));
+                }
             }
 
-            return result;
+            return points;
         }
     }
 }

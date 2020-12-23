@@ -1,9 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -11,11 +10,16 @@ namespace Avalonia
     /// <summary>
     /// Represents the radii of a rectangle's corners.
     /// </summary>
-    public readonly struct CornerRadius : IEquatable<CornerRadius>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct CornerRadius : IEquatable<CornerRadius>
     {
         static CornerRadius()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<CornerRadiusAnimator>(prop => typeof(CornerRadius).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         public CornerRadius(double uniformRadius)

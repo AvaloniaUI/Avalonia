@@ -49,13 +49,17 @@ namespace Avalonia.Controls
                     {
                         if(_binding is Avalonia.Data.Binding binding)
                         {
-                            // Force the TwoWay binding mode if there is a Path present.  TwoWay binding requires a Path.
-                            if (!String.IsNullOrEmpty(binding.Path))
+                            if (binding.Mode == BindingMode.OneWayToSource)
+                            {
+                                throw new InvalidOperationException("DataGridColumn doesn't support BindingMode.OneWayToSource. Use BindingMode.TwoWay instead.");
+                            }
+
+                            if (!String.IsNullOrEmpty(binding.Path) && binding.Mode == BindingMode.Default)
                             {
                                 binding.Mode = BindingMode.TwoWay;
                             } 
 
-                            if (binding.Converter == null)
+                            if (binding.Converter == null && string.IsNullOrEmpty(binding.StringFormat))
                             {
                                 binding.Converter = DataGridValueConverter.Instance;
                             }

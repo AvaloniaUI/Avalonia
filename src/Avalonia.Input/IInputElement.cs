@@ -1,5 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
 using System;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
@@ -63,7 +61,7 @@ namespace Avalonia.Input
         event EventHandler<PointerReleasedEventArgs> PointerReleased;
 
         /// <summary>
-        /// Occurs when the mouse wheen is scrolled over the control.
+        /// Occurs when the mouse wheel is scrolled over the control.
         /// </summary>
         event EventHandler<PointerWheelEventArgs> PointerWheelChanged;
 
@@ -80,7 +78,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets the associated mouse cursor.
         /// </summary>
-        Cursor Cursor { get; }
+        Cursor? Cursor { get; }
 
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are enabled.
@@ -91,6 +89,11 @@ namespace Avalonia.Input
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
         bool IsEffectivelyEnabled { get; }
+        
+        /// <summary>
+        /// Gets a value indicating whether keyboard focus is anywhere within the element or its visual tree child elements.
+        /// </summary>
+        bool IsKeyboardFocusWithin { get; }
 
         /// <summary>
         /// Gets a value indicating whether the control is focused.

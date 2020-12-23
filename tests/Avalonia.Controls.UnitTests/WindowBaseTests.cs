@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive;
 using System.Reactive.Subjects;
@@ -113,7 +110,8 @@ namespace Avalonia.Controls.UnitTests
         public void IsVisible_Should_Be_False_Atfer_Impl_Signals_Close()
         {
             var windowImpl = new Mock<IPopupImpl>();
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.SetupProperty(x => x.Closed);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -131,14 +129,15 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_IsVisible_True_Shows_Window()
         {
             var windowImpl = new Mock<IPopupImpl>();
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var target = new TestWindowBase(windowImpl.Object);
                 target.IsVisible = true;
 
-                windowImpl.Verify(x => x.Show());
+                windowImpl.Verify(x => x.Show(true));
             }
         }
 
@@ -146,7 +145,8 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_IsVisible_False_Hides_Window()
         {
             var windowImpl = new Mock<IPopupImpl>();
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -211,7 +211,8 @@ namespace Avalonia.Controls.UnitTests
             {
                 var renderer = new Mock<IRenderer>();
                 var windowImpl = new Mock<IPopupImpl>();
-                windowImpl.Setup(x => x.Scaling).Returns(1);
+                windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+                windowImpl.Setup(x => x.RenderScaling).Returns(1);
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
@@ -240,7 +241,7 @@ namespace Avalonia.Controls.UnitTests
 
             public TestWindowBase(IRenderer renderer = null)
                 : base(Mock.Of<IWindowBaseImpl>(x => 
-                    x.Scaling == 1 &&
+                    x.RenderScaling == 1 &&
                     x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer))
             {
             }

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Linq;
 using System.Reactive.Linq;
@@ -22,8 +19,9 @@ namespace Avalonia.Input
 
         private readonly Pointer _pointer;
         private bool _disposed;
+        private PixelPoint? _position; 
 
-        public MouseDevice(Pointer pointer = null)
+        public MouseDevice(Pointer? pointer = null)
         {
             _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
         }
@@ -37,15 +35,16 @@ namespace Avalonia.Input
         /// <see cref="Capture"/> method.
         /// </remarks>
         [Obsolete("Use IPointer instead")]
-        public IInputElement Captured => _pointer.Captured;
+        public IInputElement? Captured => _pointer.Captured;
 
         /// <summary>
         /// Gets the mouse position, in screen coordinates.
         /// </summary>
+        [Obsolete("Use events instead")]
         public PixelPoint Position
         {
-            get;
-            protected set;
+            get => _position ?? new PixelPoint(-1, -1);
+            protected set => _position = value;
         }
 
         /// <summary>
@@ -57,7 +56,7 @@ namespace Avalonia.Input
         /// within the control's bounds or not. The current mouse capture control is exposed
         /// by the <see cref="Captured"/> property.
         /// </remarks>
-        public void Capture(IInputElement control)
+        public void Capture(IInputElement? control)
         {
             _pointer.Capture(control);
         }
@@ -69,7 +68,7 @@ namespace Avalonia.Input
         /// <returns>The mouse position in the control's coordinates.</returns>
         public Point GetPosition(IVisual relativeTo)
         {
-            Contract.Requires<ArgumentNullException>(relativeTo != null);
+            relativeTo = relativeTo ?? throw new ArgumentNullException(nameof(relativeTo));
 
             if (relativeTo.VisualRoot == null)
             {
@@ -78,7 +77,7 @@ namespace Avalonia.Input
 
             var rootPoint = relativeTo.VisualRoot.PointToClient(Position);
             var transform = relativeTo.VisualRoot.TransformToVisual(relativeTo);
-            return rootPoint * transform.Value;
+            return rootPoint * transform!.Value;
         }
 
         public void ProcessRawEvent(RawInputEventArgs e)
@@ -94,7 +93,16 @@ namespace Avalonia.Input
 
         public void SceneInvalidated(IInputRoot root, Rect rect)
         {
-            var clientPoint = root.PointToClient(Position);
+            // Pointer is outside of the target area
+            if (_position == null )
+            {
+                if (root.PointerOverElement != null)
+                    ClearPointerOver(this, 0, root, PointerPointProperties.None, KeyModifiers.None);
+                return;
+            }
+            
+            
+            var clientPoint = root.PointToClient(_position.Value);
 
             if (rect.Contains(clientPoint))
             {
@@ -120,18 +128,22 @@ namespace Avalonia.Input
                 rv++;
             if (props.IsRightButtonPressed)
                 rv++;
+            if (props.IsXButton1Pressed)
+                rv++;
+            if (props.IsXButton2Pressed)
+                rv++;
             return rv;
         }
         
         private void ProcessRawEvent(RawPointerEventArgs e)
         {
-            Contract.Requires<ArgumentNullException>(e != null);
+            e = e ?? throw new ArgumentNullException(nameof(e));
 
             var mouse = (MouseDevice)e.Device;
             if(mouse._disposed)
                 return;
 
-            Position = e.Root.PointToScreen(e.Position);
+            _position = e.Root.PointToScreen(e.Position);
             var props = CreateProperties(e);
             var keyModifiers = KeyModifiersUtils.ConvertToKey(e.InputModifiers);
             switch (e.Type)
@@ -142,6 +154,8 @@ namespace Avalonia.Input
                 case RawPointerEventType.LeftButtonDown:
                 case RawPointerEventType.RightButtonDown:
                 case RawPointerEventType.MiddleButtonDown:
+                case RawPointerEventType.XButton1Down:
+                case RawPointerEventType.XButton2Down:
                     if (ButtonCount(props) > 1)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     else
@@ -151,6 +165,8 @@ namespace Avalonia.Input
                 case RawPointerEventType.LeftButtonUp:
                 case RawPointerEventType.RightButtonUp:
                 case RawPointerEventType.MiddleButtonUp:
+                case RawPointerEventType.XButton1Up:
+                case RawPointerEventType.XButton2Up:
                     if (ButtonCount(props) != 0)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers);
                     else
@@ -168,9 +184,10 @@ namespace Avalonia.Input
         private void LeaveWindow(IMouseDevice device, ulong timestamp, IInputRoot root, PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
 
+            _position = null;
             ClearPointerOver(this, timestamp, root, properties, inputModifiers);
         }
 
@@ -186,12 +203,20 @@ namespace Avalonia.Input
                 kind = PointerUpdateKind.MiddleButtonPressed;
             if (args.Type == RawPointerEventType.RightButtonDown)
                 kind = PointerUpdateKind.RightButtonPressed;
+            if (args.Type == RawPointerEventType.XButton1Down)
+                kind = PointerUpdateKind.XButton1Pressed;
+            if (args.Type == RawPointerEventType.XButton2Down)
+                kind = PointerUpdateKind.XButton2Pressed;
             if (args.Type == RawPointerEventType.LeftButtonUp)
                 kind = PointerUpdateKind.LeftButtonReleased;
             if (args.Type == RawPointerEventType.MiddleButtonUp)
                 kind = PointerUpdateKind.MiddleButtonReleased;
             if (args.Type == RawPointerEventType.RightButtonUp)
                 kind = PointerUpdateKind.RightButtonReleased;
+            if (args.Type == RawPointerEventType.XButton1Up)
+                kind = PointerUpdateKind.XButton1Released;
+            if (args.Type == RawPointerEventType.XButton2Up)
+                kind = PointerUpdateKind.XButton2Released;
             
             return new PointerPointProperties(args.InputModifiers, kind);
         }
@@ -201,8 +226,8 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
 
             var hit = HitTest(root, p);
 
@@ -237,10 +262,10 @@ namespace Avalonia.Input
         private bool MouseMove(IMouseDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
 
-            IInputElement source;
+            IInputElement? source;
 
             if (_pointer.Captured == null)
             {
@@ -252,18 +277,23 @@ namespace Avalonia.Input
                 source = _pointer.Captured;
             }
 
-            var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, root,
-                p, timestamp, properties, inputModifiers);
+            if (source is object)
+            {
+                var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, root,
+                    p, timestamp, properties, inputModifiers);
 
-            source?.RaiseEvent(e);
-            return e.Handled;
+                source.RaiseEvent(e);
+                return e.Handled;
+            }
+
+            return false;
         }
 
         private bool MouseUp(IMouseDevice device, ulong timestamp, IInputRoot root, Point p, PointerPointProperties props,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
 
             var hit = HitTest(root, p);
 
@@ -285,8 +315,8 @@ namespace Avalonia.Input
             PointerPointProperties props,
             Vector delta, KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
 
             var hit = HitTest(root, p);
 
@@ -304,21 +334,21 @@ namespace Avalonia.Input
 
         private IInteractive GetSource(IVisual hit)
         {
-            Contract.Requires<ArgumentNullException>(hit != null);
+            hit = hit ?? throw new ArgumentNullException(nameof(hit));
 
             return _pointer.Captured ??
                 (hit as IInteractive) ??
                 hit.GetSelfAndVisualAncestors().OfType<IInteractive>().FirstOrDefault();
         }
 
-        private IInputElement HitTest(IInputElement root, Point p)
+        private IInputElement? HitTest(IInputElement root, Point p)
         {
-            Contract.Requires<ArgumentNullException>(root != null);
+            root = root ?? throw new ArgumentNullException(nameof(root));
 
             return _pointer.Captured ?? root.InputHitTest(p);
         }
 
-        PointerEventArgs CreateSimpleEvent(RoutedEvent ev, ulong timestamp, IInteractive source,
+        PointerEventArgs CreateSimpleEvent(RoutedEvent ev, ulong timestamp, IInteractive? source,
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
@@ -330,8 +360,8 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
 
             var element = root.PointerOverElement;
             var e = CreateSimpleEvent(InputElement.PointerLeaveEvent, timestamp, element, properties, inputModifiers);
@@ -371,12 +401,12 @@ namespace Avalonia.Input
             }
         }
 
-        private IInputElement SetPointerOver(IPointerDevice device, ulong timestamp, IInputRoot root, Point p, 
+        private IInputElement? SetPointerOver(IPointerDevice device, ulong timestamp, IInputRoot root, Point p, 
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
 
             var element = root.InputHitTest(p);
 
@@ -399,11 +429,11 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers inputModifiers)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
-            Contract.Requires<ArgumentNullException>(root != null);
-            Contract.Requires<ArgumentNullException>(element != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
+            root = root ?? throw new ArgumentNullException(nameof(root));
+            element = element ?? throw new ArgumentNullException(nameof(element));
 
-            IInputElement branch = null;
+            IInputElement? branch = null;
 
             var el = element;
 

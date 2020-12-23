@@ -1,12 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Linq;
 
 namespace Avalonia.Data.Converters
 {
     /// <summary>
-    /// Provides a set of useful <see cref="IValueConverter"/>s for working with string values.
+    /// Provides a set of useful <see cref="IValueConverter"/>s for working with bool values.
     /// </summary>
     public static class BoolConverters
     {

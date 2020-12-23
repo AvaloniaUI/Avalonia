@@ -1,19 +1,17 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using ReactiveUI;
 using Avalonia.Layout;
+using Avalonia.Controls.Selection;
+using MiniMvvm;
 
 namespace VirtualizationDemo.ViewModels
 {
-    internal class MainWindowViewModel : ReactiveObject
+    internal class MainWindowViewModel : ViewModelBase
     {
         private int _itemCount = 200;
         private string _newItemString = "New Item";
@@ -28,15 +26,15 @@ namespace VirtualizationDemo.ViewModels
         public MainWindowViewModel()
         {
             this.WhenAnyValue(x => x.ItemCount).Subscribe(ResizeItems);
-            RecreateCommand = ReactiveCommand.Create(() => Recreate());
+            RecreateCommand = MiniCommand.Create(() => Recreate());
 
-            AddItemCommand = ReactiveCommand.Create(() => AddItem());
+            AddItemCommand = MiniCommand.Create(() => AddItem());
 
-            RemoveItemCommand = ReactiveCommand.Create(() => Remove());
+            RemoveItemCommand = MiniCommand.Create(() => Remove());
 
-            SelectFirstCommand = ReactiveCommand.Create(() => SelectItem(0));
+            SelectFirstCommand = MiniCommand.Create(() => SelectItem(0));
 
-            SelectLastCommand = ReactiveCommand.Create(() => SelectItem(Items.Count - 1));
+            SelectLastCommand = MiniCommand.Create(() => SelectItem(Items.Count - 1));
         }
 
         public string NewItemString
@@ -51,8 +49,7 @@ namespace VirtualizationDemo.ViewModels
             set { this.RaiseAndSetIfChanged(ref _itemCount, value); }
         }
 
-        public AvaloniaList<ItemViewModel> SelectedItems { get; } 
-            = new AvaloniaList<ItemViewModel>();
+        public SelectionModel<ItemViewModel> Selection { get; } = new SelectionModel<ItemViewModel>();
 
         public AvaloniaList<ItemViewModel> Items
         {
@@ -93,11 +90,11 @@ namespace VirtualizationDemo.ViewModels
         public IEnumerable<ItemVirtualizationMode> VirtualizationModes => 
             Enum.GetValues(typeof(ItemVirtualizationMode)).Cast<ItemVirtualizationMode>();
 
-        public ReactiveCommand<Unit, Unit> AddItemCommand { get; private set; }
-        public ReactiveCommand<Unit, Unit> RecreateCommand { get; private set; }
-        public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; private set; }
-        public ReactiveCommand<Unit, Unit> SelectFirstCommand { get; private set; }
-        public ReactiveCommand<Unit, Unit> SelectLastCommand { get; private set; }
+        public MiniCommand AddItemCommand { get; private set; }
+        public MiniCommand RecreateCommand { get; private set; }
+        public MiniCommand RemoveItemCommand { get; private set; }
+        public MiniCommand SelectFirstCommand { get; private set; }
+        public MiniCommand SelectLastCommand { get; private set; }
 
         public void RandomizeSize()
         {
@@ -141,9 +138,9 @@ namespace VirtualizationDemo.ViewModels
         {
             var index = Items.Count;
 
-            if (SelectedItems.Count > 0)
+            if (Selection.SelectedItems.Count > 0)
             {
-                index = Items.IndexOf(SelectedItems[0]);
+                index = Selection.SelectedIndex;
             }
 
             Items.Insert(index, new ItemViewModel(_newItemIndex++, NewItemString));
@@ -151,9 +148,9 @@ namespace VirtualizationDemo.ViewModels
 
         private void Remove()
         {
-            if (SelectedItems.Count > 0)
+            if (Selection.SelectedItems.Count > 0)
             {
-                Items.RemoveAll(SelectedItems);
+                Items.RemoveAll(Selection.SelectedItems.ToList());
             }
         }
 
@@ -167,8 +164,7 @@ namespace VirtualizationDemo.ViewModels
 
         private void SelectItem(int index)
         {
-            SelectedItems.Clear();
-            SelectedItems.Add(Items[index]);
+            Selection.SelectedIndex = index;
         }
     }
 }

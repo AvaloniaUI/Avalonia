@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +28,7 @@ namespace Avalonia.Input
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot _owner;
+        private IInputRoot? _owner;
 
         /// <summary>
         /// Whether access keys are currently being shown;
@@ -51,17 +48,17 @@ namespace Avalonia.Input
         /// <summary>
         /// Element to restore following AltKey taking focus.
         /// </summary>
-        private IInputElement _restoreFocusElement;
+        private IInputElement? _restoreFocusElement;
 
         /// <summary>
         /// The window's main menu.
         /// </summary>
-        private IMainMenu _mainMenu;
+        private IMainMenu? _mainMenu;
 
         /// <summary>
         /// Gets or sets the window's main menu.
         /// </summary>
-        public IMainMenu MainMenu
+        public IMainMenu? MainMenu
         {
             get => _mainMenu;
             set
@@ -89,14 +86,12 @@ namespace Avalonia.Input
         /// </remarks>
         public void SetOwner(IInputRoot owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
-
             if (_owner != null)
             {
                 throw new InvalidOperationException("AccessKeyHandler owner has already been set.");
             }
 
-            _owner = owner;
+            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
             _owner.AddHandler(InputElement.KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
             _owner.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Bubble);
@@ -140,7 +135,7 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftAlt)
+            if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
                 _altIsDown = true;
 
@@ -152,7 +147,7 @@ namespace Avalonia.Input
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
-                    _owner.ShowAccessKeys = _showingAccessKeys = true;
+                    _owner!.ShowAccessKeys = _showingAccessKeys = true;
                 }
                 else
                 {
@@ -218,6 +213,7 @@ namespace Avalonia.Input
             switch (e.Key)
             {
                 case Key.LeftAlt:
+                case Key.RightAlt:
                     _altIsDown = false;
 
                     if (_ignoreAltUp)
@@ -243,7 +239,7 @@ namespace Avalonia.Input
         {
             if (_showingAccessKeys)
             {
-                _owner.ShowAccessKeys = false;
+                _owner!.ShowAccessKeys = false;
             }
         }
 
@@ -252,13 +248,13 @@ namespace Avalonia.Input
         /// </summary>
         private void CloseMenu()
         {
-            MainMenu.Close();
-            _owner.ShowAccessKeys = _showingAccessKeys = false;
+            MainMenu!.Close();
+            _owner!.ShowAccessKeys = _showingAccessKeys = false;
         }
 
         private void MainMenuClosed(object sender, EventArgs e)
         {
-            _owner.ShowAccessKeys = false;
+            _owner!.ShowAccessKeys = false;
         }
     }
 }

@@ -352,7 +352,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
             AvaloniaProperty.Register<Calendar, CalendarMode>(
                 nameof(DisplayMode),
-                validate: ValidateDisplayMode);
+                validate: IsValidDisplayMode);
+
         /// <summary>
         /// Gets or sets a value indicating whether the calendar is displayed in
         /// months, years, or decades.
@@ -416,17 +417,6 @@ namespace Avalonia.Controls
                 }
             }
             OnDisplayModeChanged(new CalendarModeChangedEventArgs((CalendarMode)e.OldValue, mode));
-        }
-        private static CalendarMode ValidateDisplayMode(Calendar o, CalendarMode mode)
-        {
-            if(IsValidDisplayMode(mode))
-            {
-                return mode;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(mode), "Invalid DisplayMode");
-            }
         }
         private static bool IsValidDisplayMode(CalendarMode mode)
         {
@@ -1008,10 +998,10 @@ namespace Avalonia.Controls
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether DatePicker should change its 
+        /// Gets or sets a value indicating whether CalendarDatePicker should change its 
         /// DisplayDate because of a SelectedDate change on its Calendar.
         /// </summary>
-        internal bool DatePickerDisplayDateFlag { get; set; }
+        internal bool CalendarDatePickerDisplayDateFlag { get; set; }
 
         internal CalendarDayButton FindDayButtonFromDay(DateTime day)
         {
@@ -1585,7 +1575,7 @@ namespace Avalonia.Controls
             base.OnPointerWheelChanged(e);
             if (!e.Handled)
             {
-                CalendarExtensions.GetMetaKeyState(e.InputModifiers, out bool ctrl, out bool shift);
+                CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
                 if (!ctrl)
                 {
@@ -1641,7 +1631,7 @@ namespace Avalonia.Controls
             // Some keys (e.g. Left/Right) need to be translated in RightToLeft mode
             Key invariantKey = e.Key;  //InteractionHelper.GetLogicalKey(FlowDirection, e.Key);
 
-            CalendarExtensions.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
             switch (invariantKey)
             {
@@ -2089,10 +2079,8 @@ namespace Avalonia.Controls
         /// <see cref="T:System.Windows.Controls.Calendar" /> when a new
         /// template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             Root = e.NameScope.Find<Panel>(PART_ElementRoot);
 
             SelectedMonth = DisplayDate;

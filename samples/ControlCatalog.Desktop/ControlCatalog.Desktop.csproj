@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +11,5 @@
   </ItemGroup>
 
   <Import Project="..\..\build\SampleApp.props" />
-  <Import Project="..\..\build\Serilog.props" />
   <Import Project="..\..\build\NetFX.props" />
 </Project>

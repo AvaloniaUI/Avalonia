@@ -1,9 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Reactive.Linq;
 using System.Text;
+using Avalonia.Styling.Activators;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
@@ -13,14 +12,14 @@ namespace Avalonia.Styling
     /// </summary>
     internal class PropertyEqualsSelector : Selector
     {
-        private readonly Selector _previous;
+        private readonly Selector? _previous;
         private readonly AvaloniaProperty _property;
-        private readonly object _value;
-        private string _selectorString;
+        private readonly object? _value;
+        private string? _selectorString;
 
-        public PropertyEqualsSelector(Selector previous, AvaloniaProperty property, object value)
+        public PropertyEqualsSelector(Selector? previous, AvaloniaProperty property, object? value)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            property = property ?? throw new ArgumentNullException(nameof(property));
 
             _previous = previous;
             _property = property;
@@ -33,13 +32,8 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public override bool IsCombinator => false;
 
-        /// <summary>
-        /// Gets the name of the control to match.
-        /// </summary>
-        public string Name { get; private set; }
-
         /// <inheritdoc/>
-        public override Type TargetType => _previous?.TargetType;
+        public override Type? TargetType => _previous?.TargetType;
 
         /// <inheritdoc/>
         public override string ToString()
@@ -77,7 +71,7 @@ namespace Avalonia.Styling
         {
             if (subscribe)
             {
-                return new SelectorMatch(control.GetObservable(_property).Select(v => Equals(v ?? string.Empty, _value)));
+                return new SelectorMatch(new PropertyEqualsActivator(control, _property, _value));
             }
             else
             {
@@ -86,6 +80,6 @@ namespace Avalonia.Styling
             }
         }
 
-        protected override Selector MovePrevious() => _previous;
+        protected override Selector? MovePrevious() => _previous;
     }
 }

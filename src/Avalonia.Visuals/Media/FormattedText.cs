@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Generic;
 using Avalonia.Platform;
 
@@ -203,7 +200,13 @@ namespace Avalonia.Media
 
         private void Set<T>(ref T field, T value)
         {
+            if (field != null && field.Equals(value))
+            {
+                return;
+            }
+
             field = value;
+
             _platformImpl = null;
         }
     }

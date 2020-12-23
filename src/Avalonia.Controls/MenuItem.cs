@@ -1,11 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Windows.Input;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -13,21 +12,25 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A menu item control.
     /// </summary>
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
+    [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<MenuItem, ICommand> CommandProperty =
+        public static readonly DirectProperty<MenuItem, ICommand?> CommandProperty =
             Button.CommandProperty.AddOwner<MenuItem>(
-                menuItem => menuItem.Command, 
-                (menuItem, command) => menuItem.Command = command, 
+                menuItem => menuItem.Command,
+                (menuItem, command) => menuItem.Command = command,
                 enableDataValidation: true);
 
         /// <summary>
@@ -47,6 +50,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<object> IconProperty =
             AvaloniaProperty.Register<MenuItem, object>(nameof(Icon));
+
+        /// <summary>
+        /// Defines the <see cref="InputGesture"/> property.
+        /// </summary>
+        public static readonly StyledProperty<KeyGesture> InputGestureProperty =
+            AvaloniaProperty.Register<MenuItem, KeyGesture>(nameof(InputGesture));
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -90,9 +99,9 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 
-        private ICommand _command;
+        private ICommand? _command;
         private bool _commandCanExecute = true;
-        private Popup _popup;
+        private Popup? _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -100,6 +109,7 @@ namespace Avalonia.Controls
         static MenuItem()
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
+            PressedMixin.Attach<MenuItem>();
             CommandProperty.Changed.Subscribe(CommandChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             HeaderProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.HeaderChanged(e));
@@ -113,6 +123,32 @@ namespace Avalonia.Controls
 
         public MenuItem()
         {
+            // HACK: This nasty but it's all WPF's fault. Grid uses an inherited attached
+            // property to store SharedSizeGroup state, except property inheritance is done
+            // down the logical tree. In this case, the control which is setting
+            // Grid.IsSharedSizeScope="True" is not in the logical tree. Instead of fixing
+            // the way Grid stores shared size state, the developers of WPF just created a
+            // binding of the internal state of the visual parent to the menu item. We don't
+            // have much choice but to do the same for now unless we want to refactor Grid,
+            // which I honestly am not brave enough to do right now. Here's the same hack in
+            // the WPF codebase:
+            //
+            // https://github.com/dotnet/wpf/blob/89537909bdf36bc918e88b37751add46a8980bb0/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/MenuItem.cs#L2126-L2141
+            //
+            // In addition to the hack from WPF, we also make sure to return null when we have
+            // no parent. If we don't do this, inheritance falls back to the logical tree,
+            // causing the shared size scope in the parent MenuItem to be used, breaking
+            // menu layout.
+
+            var parentSharedSizeScope = this.GetObservable(VisualParentProperty)
+                .SelectMany(x =>
+                {
+                    var parent = x as Control;
+                    return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
+                        Observable.Return<DefinitionBase.SharedSizeScope?>(null);
+                });
+
+            this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
         }
 
         /// <summary>
@@ -160,7 +196,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the command associated with the menu item.
         /// </summary>
-        public ICommand Command
+        public ICommand? Command
         {
             get { return _command; }
             set { SetAndRaise(CommandProperty, ref _command, value); }
@@ -192,6 +228,19 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IconProperty); }
             set { SetValue(IconProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the input gesture that will be displayed in the menu item.
+        /// </summary>
+        /// <remarks>
+        /// Setting this property does not cause the input gesture to be handled by the menu item,
+        /// it simply displays the gesture text in the menu.
+        /// </remarks>
+        public KeyGesture InputGesture
+        {
+            get { return GetValue(InputGestureProperty); }
+            set { SetValue(InputGestureProperty, value); }
         }
 
         /// <summary>
@@ -227,7 +276,7 @@ namespace Avalonia.Controls
         bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
 
         /// <inheritdoc/>
-        IMenuElement IMenuItem.Parent => Parent as IMenuElement;
+        IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
 
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
@@ -235,7 +284,7 @@ namespace Avalonia.Controls
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
         /// <inheritdoc/>
-        IMenuItem IMenuElement.SelectedItem
+        IMenuItem? IMenuElement.SelectedItem
         {
             get
             {
@@ -373,10 +422,8 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             if (_popup != null)
             {
                 _popup.Opened -= PopupOpened;
@@ -394,12 +441,12 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
-            base.UpdateDataValidation(property, status);
+            base.UpdateDataValidation(property, value);
             if (property == CommandProperty)
             {
-                if (status?.ErrorType == BindingErrorType.Error)
+                if (value.Type == BindingValueType.BindingError)
                 {
                     if (_commandCanExecute)
                     {
@@ -492,11 +539,13 @@ namespace Avalonia.Controls
             if (oldValue != null)
             {
                 LogicalChildren.Remove(oldValue);
+                PseudoClasses.Remove(":icon");
             }
 
             if (newValue != null)
             {
                 LogicalChildren.Add(newValue);
+                PseudoClasses.Add(":icon");
             }
         }
 
@@ -506,7 +555,7 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if ((bool)e.NewValue!)
             {
                 Focus();
             }
@@ -518,17 +567,19 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void SubMenuOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var value = (bool)e.NewValue;
+            var value = (bool)e.NewValue!;
 
             if (value)
             {
                 RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
                 IsSelected = true;
+                PseudoClasses.Add(":open");
             }
             else
             {
                 CloseSubmenus();
                 SelectedIndex = -1;
+                PseudoClasses.Remove(":open");
             }
         }
 
@@ -557,6 +608,8 @@ namespace Avalonia.Controls
         {
             SelectedItem = null;
         }
+
+        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.

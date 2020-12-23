@@ -13,12 +13,15 @@ using System.Diagnostics;
 using Avalonia.Utilities;
 using System;
 using Avalonia.Controls.Utils;
+using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents an individual <see cref="T:Avalonia.Controls.DataGrid" /> column header.
     /// </summary>
+    [PseudoClasses(":dragIndicator", ":pressed", ":sortascending", ":sortdescending")]
     public class DataGridColumnHeader : ContentControl
     {
         private enum DragMode
@@ -39,7 +42,7 @@ namespace Avalonia.Controls
         private static Cursor _originalCursor;
         private static double _originalHorizontalOffset;
         private static double _originalWidth;
-        private bool _desiredSeparatorVisibility;
+        private bool _desiredSeparatorVisibility = true;
         private static Point? _dragStart;
         private static DataGridColumn _dragColumn;
         private static double _frozenColumnsWidth;
@@ -67,7 +70,8 @@ namespace Avalonia.Controls
 
         static DataGridColumnHeader()
         {
-            AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x,e) => x.OnAreSeparatorsVisibleChanged(e));
+            AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>((x, e) => x.OnAreSeparatorsVisibleChanged(e));
+            PressedMixin.Attach<DataGridColumnHeader>();
         }
 
         /// <summary>
@@ -103,7 +107,7 @@ namespace Avalonia.Controls
         {
             get;
             set;
-        } 
+        }
         internal DataGrid OwningGrid => OwningColumn?.OwningGrid;
 
         internal int ColumnIndex
@@ -116,19 +120,19 @@ namespace Avalonia.Controls
                 }
                 return OwningColumn.Index;
             }
-        } 
+        }
 
         internal ListSortDirection? CurrentSortingState
         {
             get;
             private set;
-        } 
+        }
 
         private bool IsMouseOver
         {
             get;
             set;
-        } 
+        }
 
         private bool IsPressed
         {
@@ -149,8 +153,7 @@ namespace Avalonia.Controls
             }
         }
 
-        //TODO Implement
-        internal void ApplyState()
+        internal void UpdatePseudoClasses()
         {
             CurrentSortingState = null;
             if (OwningGrid != null
@@ -158,15 +161,16 @@ namespace Avalonia.Controls
                 && OwningGrid.DataConnection.AllowSort)
             {
                 var sort = OwningColumn.GetSortDescription();
-                if(sort != null)
+                if (sort != null)
                 {
-                    CurrentSortingState = sort.Descending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+                    CurrentSortingState = sort.Direction;
                 }
             }
-            PseudoClasses.Set(":sortascending", 
-                CurrentSortingState.HasValue && CurrentSortingState.Value == ListSortDirection.Ascending);
-            PseudoClasses.Set(":sortdescending", 
-                CurrentSortingState.HasValue && CurrentSortingState.Value == ListSortDirection.Descending);
+
+            PseudoClasses.Set(":sortascending",
+                CurrentSortingState == ListSortDirection.Ascending);
+            PseudoClasses.Set(":sortdescending",
+                CurrentSortingState == ListSortDirection.Descending);
         }
 
         internal void UpdateSeparatorVisibility(DataGridColumn lastVisibleColumn)
@@ -190,101 +194,111 @@ namespace Avalonia.Controls
             }
         }
 
-        internal void OnMouseLeftButtonUp_Click(InputModifiers inputModifiers, ref bool handled)
+        internal void OnMouseLeftButtonUp_Click(KeyModifiers keyModifiers, ref bool handled)
         {
             // completed a click without dragging, so we're sorting
-            InvokeProcessSort(inputModifiers);
+            InvokeProcessSort(keyModifiers);
             handled = true;
-        } 
+        }
 
-        internal void InvokeProcessSort(InputModifiers inputModifiers)
+        internal void InvokeProcessSort(KeyModifiers keyModifiers)
         {
             Debug.Assert(OwningGrid != null);
-            if (OwningGrid.WaitForLostFocus(() => InvokeProcessSort(inputModifiers)))
+            if (OwningGrid.WaitForLostFocus(() => InvokeProcessSort(keyModifiers)))
             {
                 return;
             }
             if (OwningGrid.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true))
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(inputModifiers));
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(keyModifiers));
             }
-        } 
+        }
 
         //TODO GroupSorting
-        internal void ProcessSort(InputModifiers inputModifiers)
+        internal void ProcessSort(KeyModifiers keyModifiers)
         {
             // if we can sort:
-            //  - DataConnection.AllowSort is true, and
             //  - AllowUserToSortColumns and CanSort are true, and
-            //  - OwningColumn is bound, and
-            //  - SortDescriptionsCollection exists, and
-            //  - the column's data type is comparable
+            //  - OwningColumn is bound
             // then try to sort
             if (OwningColumn != null
                 && OwningGrid != null
                 && OwningGrid.EditingRow == null
                 && OwningColumn != OwningGrid.ColumnsInternal.FillerColumn
-                && OwningGrid.DataConnection.AllowSort
                 && OwningGrid.CanUserSortColumns
-                && OwningColumn.CanUserSort
-                && OwningGrid.DataConnection.SortDescriptions != null)
+                && OwningColumn.CanUserSort)
             {
-                DataGrid owningGrid = OwningGrid;
+                var ea = new DataGridColumnEventArgs(OwningColumn);
+                OwningGrid.OnColumnSorting(ea);
 
-                DataGridSortDescription newSort;
-
-                KeyboardHelper.GetMetaKeyState(inputModifiers, out bool ctrl, out bool shift);
-
-                DataGridSortDescription sort = OwningColumn.GetSortDescription();
-                IDataGridCollectionView collectionView = owningGrid.DataConnection.CollectionView;
-                Debug.Assert(collectionView != null);
-                using (collectionView.DeferRefresh())
+                if (!ea.Handled && OwningGrid.DataConnection.AllowSort && OwningGrid.DataConnection.SortDescriptions != null)
                 {
-                    // if shift is held down, we multi-sort, therefore if it isn't, we'll clear the sorts beforehand
-                    if (!shift || owningGrid.DataConnection.SortDescriptions.Count == 0)
-                    {
-                        owningGrid.DataConnection.SortDescriptions.Clear();
-                    }
+                    // - DataConnection.AllowSort is true, and
+                    // - SortDescriptionsCollection exists, and
+                    // - the column's data type is comparable
 
-                    if (sort != null)
-                    {
-                        newSort = sort.SwitchSortDirection();
+                    DataGrid owningGrid = OwningGrid;
+                    DataGridSortDescription newSort;
 
-                        // changing direction should not affect sort order, so we replace this column's
-                        // sort description instead of just adding it to the end of the collection
-                        int oldIndex = owningGrid.DataConnection.SortDescriptions.IndexOf(sort);
-                        if (oldIndex >= 0)
-                        {
-                            owningGrid.DataConnection.SortDescriptions.Remove(sort);
-                            owningGrid.DataConnection.SortDescriptions.Insert(oldIndex, newSort);
-                        }
-                        else
-                        {
-                            owningGrid.DataConnection.SortDescriptions.Add(newSort);
-                        }
-                    }
-                    else
+                    KeyboardHelper.GetMetaKeyState(keyModifiers, out bool ctrl, out bool shift);
+
+                    DataGridSortDescription sort = OwningColumn.GetSortDescription();
+                    IDataGridCollectionView collectionView = owningGrid.DataConnection.CollectionView;
+                    Debug.Assert(collectionView != null);
+
+                    using (collectionView.DeferRefresh())
                     {
-                        string propertyName = OwningColumn.GetSortPropertyName();
-                        // no-opt if we couldn't find a property to sort on
-                        if (string.IsNullOrEmpty(propertyName))
+                        // if shift is held down, we multi-sort, therefore if it isn't, we'll clear the sorts beforehand
+                        if (!shift || owningGrid.DataConnection.SortDescriptions.Count == 0)
                         {
-                            return;
+                            owningGrid.DataConnection.SortDescriptions.Clear();
                         }
 
-                        newSort = DataGridSortDescription.FromPath(propertyName, culture: collectionView.Culture);
-                        owningGrid.DataConnection.SortDescriptions.Add(newSort);
+                        // if ctrl is held down, we only clear the sort directions
+                        if (!ctrl)
+                        {
+                            if (sort != null)
+                            {
+                                newSort = sort.SwitchSortDirection();
+
+                                // changing direction should not affect sort order, so we replace this column's
+                                // sort description instead of just adding it to the end of the collection
+                                int oldIndex = owningGrid.DataConnection.SortDescriptions.IndexOf(sort);
+                                if (oldIndex >= 0)
+                                {
+                                    owningGrid.DataConnection.SortDescriptions.Remove(sort);
+                                    owningGrid.DataConnection.SortDescriptions.Insert(oldIndex, newSort);
+                                }
+                                else
+                                {
+                                    owningGrid.DataConnection.SortDescriptions.Add(newSort);
+                                }
+                            }
+                            else
+                            {
+                                string propertyName = OwningColumn.GetSortPropertyName();
+                                // no-opt if we couldn't find a property to sort on
+                                if (string.IsNullOrEmpty(propertyName))
+                                {
+                                    return;
+                                }
+
+                                newSort = DataGridSortDescription.FromPath(propertyName, culture: collectionView.Culture);
+
+                                owningGrid.DataConnection.SortDescriptions.Add(newSort);
+                            }
+                        }
                     }
                 }
             }
-        } 
+        }
 
         private bool CanReorderColumn(DataGridColumn column)
         {
-            return OwningGrid.CanUserReorderColumns 
+            return OwningGrid.CanUserReorderColumns
                 && !(column is DataGridFillerColumn)
                 && (column.CanUserReorderInternal.HasValue && column.CanUserReorderInternal.Value || !column.CanUserReorderInternal.HasValue);
-        } 
+        }
 
         /// <summary>
         /// Determines whether a column can be resized by dragging the border of its header.  If star sizing
@@ -297,12 +311,12 @@ namespace Avalonia.Controls
         private static bool CanResizeColumn(DataGridColumn column)
         {
             if (column.OwningGrid != null && column.OwningGrid.ColumnsInternal != null && column.OwningGrid.UsesStarSizing &&
-                (column.OwningGrid.ColumnsInternal.LastVisibleColumn == column || !DoubleUtil.AreClose(column.OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth, column.OwningGrid.CellsWidth)))
+                (column.OwningGrid.ColumnsInternal.LastVisibleColumn == column || !MathUtilities.AreClose(column.OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth, column.OwningGrid.CellsWidth)))
             {
                 return false;
             }
             return column.ActualCanUserResize;
-        }  
+        }
 
         private static bool TrySetResizeColumn(DataGridColumn column)
         {
@@ -316,7 +330,7 @@ namespace Avalonia.Controls
                 return true;
             }
             return false;
-        } 
+        }
 
         //TODO DragDrop
 
@@ -326,8 +340,6 @@ namespace Avalonia.Controls
 
             if (OwningGrid != null && OwningGrid.ColumnHeaders != null)
             {
-                args.Device.Capture(this);
-
                 _dragMode = DragMode.MouseDown;
                 _frozenColumnsWidth = OwningGrid.ColumnsInternal.GetVisibleFrozenEdgedColumnsWidth();
                 _lastMousePositionHeaders = this.Translate(OwningGrid.ColumnHeaders, mousePosition);
@@ -371,7 +383,7 @@ namespace Avalonia.Controls
             {
                 if (_dragMode == DragMode.MouseDown)
                 {
-                   OnMouseLeftButtonUp_Click(args.InputModifiers, ref handled);
+                    OnMouseLeftButtonUp_Click(args.KeyModifiers, ref handled);
                 }
                 else if (_dragMode == DragMode.Reorder)
                 {
@@ -391,7 +403,7 @@ namespace Avalonia.Controls
                 SetDragCursor(mousePosition);
 
                 // Variables that track drag mode states get reset in DataGridColumnHeader_LostMouseCapture
-                args.Device.Capture(null);
+                args.Pointer.Capture(null);
                 OnLostMouseCapture();
                 _dragMode = DragMode.None;
                 handled = true;
@@ -399,8 +411,9 @@ namespace Avalonia.Controls
         }
 
         //TODO DragEvents
-        internal void OnMouseMove(ref bool handled, Point mousePosition, Point mousePositionHeaders)
+        internal void OnMouseMove(PointerEventArgs args, Point mousePosition, Point mousePositionHeaders)
         {
+            var handled = args.Handled;
             if (handled || OwningGrid == null || OwningGrid.ColumnHeaders == null)
             {
                 return;
@@ -424,7 +437,10 @@ namespace Avalonia.Controls
             }
 
             _lastMousePositionHeaders = mousePositionHeaders;
-
+            
+            if (args.Pointer.Captured != this && _dragMode == DragMode.Drag)
+                args.Pointer.Capture(this);
+            
             SetDragCursor(mousePosition);
         }
 
@@ -437,7 +453,7 @@ namespace Avalonia.Controls
 
             Point mousePosition = e.GetPosition(this);
             OnMouseEnter(mousePosition);
-            ApplyState();
+            UpdatePseudoClasses();
         }
 
         private void DataGridColumnHeader_PointerLeave(object sender, PointerEventArgs e)
@@ -448,12 +464,12 @@ namespace Avalonia.Controls
             }
 
             OnMouseLeave();
-            ApplyState();
-        } 
+            UpdatePseudoClasses();
+        }
 
         private void DataGridColumnHeader_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (OwningColumn == null || e.Handled || !IsEnabled || e.MouseButton != MouseButton.Left)
+            if (OwningColumn == null || e.Handled || !IsEnabled || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 return;
             }
@@ -463,7 +479,7 @@ namespace Avalonia.Controls
             OnMouseLeftButtonDown(ref handled, e, mousePosition);
             e.Handled = handled;
 
-            ApplyState();
+            UpdatePseudoClasses();
         }
 
         private void DataGridColumnHeader_PointerReleased(object sender, PointerReleasedEventArgs e)
@@ -479,7 +495,7 @@ namespace Avalonia.Controls
             OnMouseLeftButtonUp(ref handled, e, mousePosition, mousePositionHeaders);
             e.Handled = handled;
 
-            ApplyState();
+            UpdatePseudoClasses();
         }
 
         private void DataGridColumnHeader_PointerMove(object sender, PointerEventArgs e)
@@ -492,8 +508,7 @@ namespace Avalonia.Controls
             Point mousePosition = e.GetPosition(this);
             Point mousePositionHeaders = e.GetPosition(OwningGrid.ColumnHeaders);
 
-            bool handled = false;
-            OnMouseMove(ref handled, mousePosition, mousePositionHeaders);
+            OnMouseMove(e, mousePosition, mousePositionHeaders);
         }
 
         /// <summary>
@@ -577,7 +592,7 @@ namespace Avalonia.Controls
             {
                 return OwningGrid.Columns.Count - 1;
             }
-        } 
+        }
 
         /// <summary>
         /// Returns true if the mouse is 
@@ -723,7 +738,7 @@ namespace Avalonia.Controls
                     Point targetPosition = new Point(0, 0);
                     if (targetColumn == null || targetColumn == OwningGrid.ColumnsInternal.FillerColumn || targetColumn.IsFrozen != OwningColumn.IsFrozen)
                     {
-                        targetColumn = 
+                        targetColumn =
                             OwningGrid.ColumnsInternal.GetLastColumn(
                                 isVisible: true,
                                 isFrozen: OwningColumn.IsFrozen,
@@ -741,7 +756,7 @@ namespace Avalonia.Controls
 
                 handled = true;
             }
-        } 
+        }
 
         private void OnMouseMove_Resize(ref bool handled, Point mousePositionHeaders)
         {
@@ -764,7 +779,7 @@ namespace Avalonia.Controls
 
                 handled = true;
             }
-        } 
+        }
 
         private void SetDragCursor(Point mousePosition)
         {

@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Input
 {
     /// <summary>
@@ -11,7 +8,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets the window's main menu.
         /// </summary>
-        IMainMenu MainMenu { get; set; }
+        IMainMenu? MainMenu { get; set; }
 
         /// <summary>
         /// Sets the owner of the access key handler.

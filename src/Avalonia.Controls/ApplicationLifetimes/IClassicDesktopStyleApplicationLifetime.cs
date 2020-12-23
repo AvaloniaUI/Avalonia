@@ -9,6 +9,13 @@ namespace Avalonia.Controls.ApplicationLifetimes
     public interface IClassicDesktopStyleApplicationLifetime : IControlledApplicationLifetime
     {
         /// <summary>
+        /// Gets the arguments passed to the
+        /// <see cref="ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime{T}(T, string[], ShutdownMode)"/>
+        /// method.
+        /// </summary>
+        string[] Args { get; }
+        
+        /// <summary>
         /// Gets or sets the <see cref="ShutdownMode"/>. This property indicates whether the application is shutdown explicitly or implicitly. 
         /// If <see cref="ShutdownMode"/> is set to OnExplicitShutdown the application is only closes if Shutdown is called.
         /// The default is OnLastWindowClose

@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="bounds">The bounds of the mask.</param>
         /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
         public OpacityMaskNode(IBrush mask, Rect bounds, IDictionary<IVisual, Scene> childScenes = null)
-            : base(Rect.Empty, Matrix.Identity, null)
+            : base(Rect.Empty, Matrix.Identity)
         {
             Mask = mask?.ToImmutable();
             MaskBounds = bounds;
@@ -30,7 +30,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// opacity mask pop.
         /// </summary>
         public OpacityMaskNode()
-            : base(Rect.Empty, Matrix.Identity, null)
+            : base(Rect.Empty, Matrix.Identity)
         {
         }
 

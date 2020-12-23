@@ -10,9 +10,11 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
@@ -29,6 +31,7 @@ namespace Avalonia.Controls
     /// <see cref="E:Avalonia.Controls.AutoCompleteBox.Populated" />
     /// event.
     /// </summary>
+    [PseudoClasses(":dropdownopen")]
     public class PopulatedEventArgs : EventArgs
     {
         /// <summary>
@@ -225,6 +228,27 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
+    /// Represents the selector used by the
+    /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control to
+    /// determine how the specified text should be modified with an item.
+    /// </summary>
+    /// <returns>
+    /// Modified text that will be used by the
+    /// <see cref="T:Avalonia.Controls.AutoCompleteBox" />.
+    /// </returns>
+    /// <param name="search">The string used as the basis for filtering.</param>
+    /// <param name="item">
+    /// The selected item that should be combined with the
+    /// <paramref name="search" /> parameter.
+    /// </param>
+    /// <typeparam name="T">
+    /// The type used for filtering the
+    /// <see cref="T:Avalonia.Controls.AutoCompleteBox" />.
+    /// This type can be either a string or an object.
+    /// </typeparam>
+    public delegate string AutoCompleteSelector<T>(string search, T item);
+
+    /// <summary>
     /// Represents a control that provides a text box for user input and a
     /// drop-down that contains possible matches based on the input in the text
     /// box.
@@ -361,6 +385,9 @@ namespace Avalonia.Controls
         private AutoCompleteFilterPredicate<object> _itemFilter;
         private AutoCompleteFilterPredicate<string> _textFilter = AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith);
 
+        private AutoCompleteSelector<object> _itemSelector;
+        private AutoCompleteSelector<string> _textSelector;
+
         public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
             RoutedEvent.Register<SelectionChangedEventArgs>(nameof(SelectionChanged), RoutingStrategies.Bubble, typeof(AutoCompleteBox));
 
@@ -378,7 +405,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<int> MinimumPrefixLengthProperty =
             AvaloniaProperty.Register<AutoCompleteBox, int>(
                 nameof(MinimumPrefixLength), 1,
-                validate: ValidateMinimumPrefixLength);
+                validate: IsValidMinimumPrefixLength);
 
         /// <summary>
         /// Identifies the
@@ -392,7 +419,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<AutoCompleteBox, TimeSpan>(
                 nameof(MinimumPopulateDelay),
                 TimeSpan.Zero,
-                validate: ValidateMinimumPopulateDelay);
+                validate: IsValidMinimumPopulateDelay);
 
         /// <summary>
         /// Identifies the
@@ -406,7 +433,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<AutoCompleteBox, double>(
                 nameof(MaxDropDownHeight),
                 double.PositiveInfinity,
-                validate: ValidateMaxDropDownHeight);
+                validate: IsValidMaxDropDownHeight);
 
         /// <summary>
         /// Identifies the
@@ -467,10 +494,11 @@ namespace Avalonia.Controls
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.Text" />
         /// dependency property.</value>
         public static readonly DirectProperty<AutoCompleteBox, string> TextProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, string>(
-                nameof(Text),
+            TextBlock.TextProperty.AddOwnerWithDataValidation<AutoCompleteBox>(
                 o => o.Text,
-                (o, v) => o.Text = v);
+                (o, v) => o.Text = v,
+                defaultBindingMode: BindingMode.TwoWay,
+                enableDataValidation: true);
 
         /// <summary>
         /// Identifies the
@@ -495,7 +523,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteFilterMode>(
                 nameof(FilterMode),
                 defaultValue: AutoCompleteFilterMode.StartsWith,
-                validate: ValidateFilterMode);
+                validate: IsValidFilterMode);
 
         /// <summary>
         /// Identifies the
@@ -528,6 +556,34 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Identifies the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemSelector" />
+        /// dependency property.
+        /// </summary>
+        /// <value>The identifier for the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemSelector" />
+        /// dependency property.</value>
+        public static readonly DirectProperty<AutoCompleteBox, AutoCompleteSelector<object>> ItemSelectorProperty =
+            AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteSelector<object>>(
+                nameof(ItemSelector),
+                o => o.ItemSelector,
+                (o, v) => o.ItemSelector = v);
+
+        /// <summary>
+        /// Identifies the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextSelector" />
+        /// dependency property.
+        /// </summary>
+        /// <value>The identifier for the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextSelector" />
+        /// dependency property.</value>
+        public static readonly DirectProperty<AutoCompleteBox, AutoCompleteSelector<string>> TextSelectorProperty =
+            AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteSelector<string>>(
+                nameof(TextSelector),
+                o => o.TextSelector,
+                (o, v) => o.TextSelector = v);
+
+        /// <summary>
+        /// Identifies the
         /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
         /// dependency property.
         /// </summary>
@@ -546,26 +602,11 @@ namespace Avalonia.Controls
                 o => o.AsyncPopulator,
                 (o, v) => o.AsyncPopulator = v);
 
-        private static int ValidateMinimumPrefixLength(AutoCompleteBox control, int value)
-        {
-            Contract.Requires<ArgumentOutOfRangeException>(value >= -1);
+        private static bool IsValidMinimumPrefixLength(int value) => value >= -1;
 
-            return value;
-        }
+        private static bool IsValidMinimumPopulateDelay(TimeSpan value) => value.TotalMilliseconds >= 0.0;
 
-        private static TimeSpan ValidateMinimumPopulateDelay(AutoCompleteBox control, TimeSpan value)
-        {
-            Contract.Requires<ArgumentOutOfRangeException>(value.TotalMilliseconds >= 0.0);
-
-            return value;
-        }
-
-        private static double ValidateMaxDropDownHeight(AutoCompleteBox control, double value)
-        {
-            Contract.Requires<ArgumentOutOfRangeException>(value >= 0.0);
-
-            return value;
-        }
+        private static bool IsValidMaxDropDownHeight(double value) => value >= 0.0;
 
         private static bool IsValidFilterMode(AutoCompleteFilterMode mode)
         {
@@ -589,12 +630,6 @@ namespace Avalonia.Controls
                 default:
                     return false;
             }
-        }
-        private static AutoCompleteFilterMode ValidateFilterMode(AutoCompleteBox control, AutoCompleteFilterMode value)
-        {
-            Contract.Requires<ArgumentException>(IsValidFilterMode(value));
-
-            return value;
         }
 
         /// <summary>
@@ -704,7 +739,7 @@ namespace Avalonia.Controls
                 added.Add(e.NewValue);
             }
 
-            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, added, removed));
+            OnSelectionChanged(new SelectionChangedEventArgs(SelectionChangedEvent, removed, added));
         }
 
         /// <summary>
@@ -1080,6 +1115,40 @@ namespace Avalonia.Controls
             set { SetAndRaise(TextFilterProperty, ref _textFilter, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the custom method that combines the user-entered
+        /// text and one of the items specified by the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />.
+        /// </summary>
+        /// <value>
+        /// The custom method that combines the user-entered
+        /// text and one of the items specified by the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />.
+        /// </value>
+        public AutoCompleteSelector<object> ItemSelector
+        {
+            get { return _itemSelector; }
+            set { SetAndRaise(ItemSelectorProperty, ref _itemSelector, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the custom method that combines the user-entered
+        /// text and one of the items specified by the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// in a text-based way.
+        /// </summary>
+        /// <value>
+        /// The custom method that combines the user-entered
+        /// text and one of the items specified by the
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// in a text-based way.
+        /// </value>
+        public AutoCompleteSelector<string> TextSelector
+        {
+            get { return _textSelector; }
+            set { SetAndRaise(TextSelectorProperty, ref _textSelector, value); }
+        }
+
         public Func<string, CancellationToken, Task<IEnumerable<object>>> AsyncPopulator
         {
             get { return _asyncPopulator; }
@@ -1121,6 +1190,7 @@ namespace Avalonia.Controls
                 {
                     _textBoxSubscriptions =
                         _textBox.GetObservable(TextBox.TextProperty)
+                                .Skip(1)
                                 .Subscribe(_ => OnTextBoxTextChanged());
 
                     if (Text != null)
@@ -1233,7 +1303,7 @@ namespace Avalonia.Controls
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control
         /// when a new template is applied.
         /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
 
             if (DropDownPopup != null)
@@ -1261,7 +1331,21 @@ namespace Avalonia.Controls
                 OpeningDropDown(false);
             }
 
-            base.OnTemplateApplied(e);
+            base.OnApplyTemplate(e);
+        }
+        
+        /// <summary>
+        /// Called to update the validation state for properties for which data validation is
+        /// enabled.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The new binding value for the property.</param>
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            if (property == TextProperty)
+            {
+                DataValidationErrors.SetError(this, value.Error);
+            }
         }
 
         /// <summary>
@@ -1321,8 +1405,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Enter:
-                    OnAdapterSelectionComplete(this, new RoutedEventArgs());
-                    e.Handled = true;
+                    if (IsDropDownOpen)
+                    {
+                        OnAdapterSelectionComplete(this, new RoutedEventArgs());
+                        e.Handled = true;
+                    }
                     break;
 
                 default:
@@ -2332,6 +2419,14 @@ namespace Avalonia.Controls
             if (newItem == null)
             {
                 text = SearchText;
+            }
+            else if (TextSelector != null)
+            {
+                text = TextSelector(SearchText, FormatValue(newItem, true));
+            }
+            else if (ItemSelector != null)
+            {
+                text = ItemSelector(SearchText, newItem);
             }
             else
             {

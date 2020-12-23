@@ -1,6 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
@@ -13,12 +11,10 @@ namespace Avalonia.Skia
     {
         private SKFontManager _skFontManager = SKFontManager.Default;
 
-        public FontManagerImpl()
+        public string GetDefaultFontFamilyName()
         {
-            DefaultFontFamilyName = SKTypeface.Default.FamilyName;
+            return SKTypeface.Default.FamilyName;
         }
-
-        public string DefaultFontFamilyName { get; }
 
         public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false)
         {
@@ -30,53 +26,118 @@ namespace Avalonia.Skia
             return _skFontManager.FontFamilies;
         }
 
-        public Typeface GetTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
-        {
-            return TypefaceCache.Get(fontFamily.Name, fontWeight, fontStyle).Typeface;
-        }
+        [ThreadStatic] private static string[] t_languageTagBuffer;
 
-        public Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default, FontStyle fontStyle = default,
-            FontFamily fontFamily = null, CultureInfo culture = null)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
         {
-            var fontFamilyName = FontFamily.Default.Name;
+            SKFontStyle skFontStyle;
+
+            switch (fontWeight)
+            {
+                case FontWeight.Normal when fontStyle == FontStyle.Normal:
+                    skFontStyle = SKFontStyle.Normal;
+                    break;
+                case FontWeight.Normal when fontStyle == FontStyle.Italic:
+                    skFontStyle = SKFontStyle.Italic;
+                    break;
+                case FontWeight.Bold when fontStyle == FontStyle.Normal:
+                    skFontStyle = SKFontStyle.Bold;
+                    break;
+                case FontWeight.Bold when fontStyle == FontStyle.Italic:
+                    skFontStyle = SKFontStyle.BoldItalic;
+                    break;
+                default:
+                    skFontStyle = new SKFontStyle((SKFontStyleWeight)fontWeight, SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle);
+                    break;
+            }
 
             if (culture == null)
             {
                 culture = CultureInfo.CurrentUICulture;
             }
 
-            if (fontFamily != null)
+            if (t_languageTagBuffer == null)
             {
-                foreach (var familyName in fontFamily.FamilyNames)
+                t_languageTagBuffer = new string[2];
+            }
+
+            t_languageTagBuffer[0] = culture.TwoLetterISOLanguageName;
+            t_languageTagBuffer[1] = culture.ThreeLetterISOLanguageName;
+
+            if (fontFamily != null && fontFamily.FamilyNames.HasFallbacks)
+            {
+                var familyNames = fontFamily.FamilyNames;
+
+                for (var i = 1; i < familyNames.Count; i++)
                 {
-                    var skTypeface = _skFontManager.MatchCharacter(familyName, (SKFontStyleWeight)fontWeight,
-                        SKFontStyleWidth.Normal,
-                        (SKFontStyleSlant)fontStyle,
-                        new[] { culture.TwoLetterISOLanguageName, culture.ThreeLetterISOLanguageName }, codepoint);
+                    var skTypeface =
+                        _skFontManager.MatchCharacter(familyNames[i], skFontStyle, t_languageTagBuffer, codepoint);
 
                     if (skTypeface == null)
                     {
                         continue;
                     }
 
-                    fontFamilyName = familyName;
+                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight);
+
+                    return true;
+                }
+            }
+            else
+            {
+                var skTypeface = _skFontManager.MatchCharacter(null, skFontStyle, t_languageTagBuffer, codepoint);
+
+                if (skTypeface != null)
+                {
+                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight);
+
+                    return true;
+                }
+            }
+
+            fontKey = default;
+
+            return false;
+        }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            SKTypeface skTypeface = null;
+
+            if (typeface.FontFamily.Key == null)
+            {
+                var defaultName = SKTypeface.Default.FamilyName;
+
+                foreach (var familyName in typeface.FontFamily.FamilyNames)
+                {
+                    skTypeface = SKTypeface.FromFamilyName(familyName, (SKFontStyleWeight)typeface.Weight,
+                        SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style);
+
+                    if (!skTypeface.FamilyName.Equals(familyName, StringComparison.Ordinal) &&
+                        defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
 
                     break;
                 }
             }
             else
             {
-                var skTypeface = _skFontManager.MatchCharacter(null, (SKFontStyleWeight)fontWeight, SKFontStyleWidth.Normal,
-                    (SKFontStyleSlant)fontStyle,
-                    new[] { culture.TwoLetterISOLanguageName, culture.ThreeLetterISOLanguageName }, codepoint);
+                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
 
-                if (skTypeface != null)
-                {
-                    fontFamilyName = skTypeface.FamilyName;
-                }
+                skTypeface = fontCollection.Get(typeface);
             }
 
-            return GetTypeface(fontFamilyName, fontWeight, fontStyle);
+            if (skTypeface == null)
+            {
+                throw new InvalidOperationException(
+                    $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
+            }
+
+            return new GlyphTypefaceImpl(skTypeface);
         }
     }
 }

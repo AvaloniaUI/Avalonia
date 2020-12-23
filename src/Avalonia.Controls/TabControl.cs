@@ -1,6 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -69,7 +67,7 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
-            SelectedIndexProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent(e));
+            SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
         }
 
         /// <summary>
@@ -148,55 +146,27 @@ namespace Avalonia.Controls
         protected override void OnContainersMaterialized(ItemContainerEventArgs e)
         {
             base.OnContainersMaterialized(e);
-
-            if (SelectedContent != null || SelectedIndex == -1)
-            {
-                return;
-            }
-
-            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(SelectedIndex);
-
-            if (container == null)
-            {
-                return;
-            }
-
-            UpdateSelectedContent(container);
+            UpdateSelectedContent();
         }
 
-        private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnContainersRecycled(ItemContainerEventArgs e)
         {
-            var index = (int)e.NewValue;
-
-            if (index == -1)
-            {
-                SelectedContentTemplate = null;
-
-                SelectedContent = null;
-
-                return;
-            }
-
-            var container = (TabItem)ItemContainerGenerator.ContainerFromIndex(index);
-
-            if (container == null)
-            {
-                return;
-            }
-
-            UpdateSelectedContent(container);
+            base.OnContainersRecycled(e);
+            UpdateSelectedContent();
         }
 
-        private void UpdateSelectedContent(IContentControl item)
+        private void UpdateSelectedContent()
         {
-            if (SelectedContentTemplate != item.ContentTemplate)
+            if (SelectedIndex == -1)
             {
-                SelectedContentTemplate = item.ContentTemplate;
+                SelectedContent = SelectedContentTemplate = null;
             }
-
-            if (SelectedContent != item.Content)
+            else
             {
-                SelectedContent = item.Content;
+                var container = SelectedItem as IContentControl ??
+                    ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
+                SelectedContentTemplate = container?.ContentTemplate;
+                SelectedContent = container?.Content;
             }
         }
 
@@ -220,10 +190,8 @@ namespace Avalonia.Controls
             return new TabItemContainerGenerator(this);
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
             ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
         }
 
@@ -243,7 +211,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.MouseButton == MouseButton.Left && e.Pointer.Type == PointerType.Mouse)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && e.Pointer.Type == PointerType.Mouse)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }

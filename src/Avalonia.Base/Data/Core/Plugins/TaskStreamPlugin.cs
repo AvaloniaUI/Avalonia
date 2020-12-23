@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
@@ -62,7 +59,7 @@ namespace Avalonia.Data.Core.Plugins
             return Observable.Empty<object>();
         }
 
-        protected IObservable<object> HandleCompleted(Task task)
+        private IObservable<object> HandleCompleted(Task task)
         {
             var resultProperty = task.GetType().GetRuntimeProperty("Result");
             

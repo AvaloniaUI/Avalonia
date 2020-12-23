@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -62,12 +59,12 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             {
                 new BindingNotification(5),
                 new BindingNotification(
-                    new ValidationException(errmsg),
+                    new DataValidationException(errmsg),
                     BindingErrorType.DataValidationError,
                     3),
                 new BindingNotification(7),
                 new BindingNotification(
-                    new ValidationException(errmsg),
+                    new DataValidationException(errmsg),
                     BindingErrorType.DataValidationError,
                     11),
             }, result);

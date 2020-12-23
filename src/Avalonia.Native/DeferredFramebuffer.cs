@@ -1,15 +1,11 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
-using SharpGen.Runtime;
 
 namespace Avalonia.Native
 {
-    public class DeferredFramebuffer : ILockedFramebuffer
+    internal unsafe class DeferredFramebuffer : ILockedFramebuffer
     {
         private readonly Func<Action<IAvnWindowBase>, bool> _lockWindow;
 
@@ -21,7 +17,7 @@ namespace Avalonia.Native
             Size = new PixelSize(width, height);
             RowBytes = width * 4;
             Dpi = dpi;
-            Format = PixelFormat.Rgba8888;
+            Format = PixelFormat.Bgra8888;
         }
 
         public IntPtr Address { get; set; }
@@ -59,7 +55,7 @@ namespace Avalonia.Native
             {
                 var fb = new AvnFramebuffer
                 {
-                    Data = Address,
+                    Data = Address.ToPointer(),
                     Dpi = new AvnVector
                     {
                         X = Dpi.X,
@@ -73,7 +69,7 @@ namespace Avalonia.Native
 
                 using (var d = new Disposer(Address))
                 {
-                    win.ThreadSafeSetSwRenderedFrame(ref fb, d);
+                    win.ThreadSafeSetSwRenderedFrame(&fb, d);
                 }
             }))
             {

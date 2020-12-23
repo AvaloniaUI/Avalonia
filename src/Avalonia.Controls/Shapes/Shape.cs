@@ -1,43 +1,67 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Reflection;
 using Avalonia.Collections;
 using Avalonia.Media;
 
+#nullable enable
+
 namespace Avalonia.Controls.Shapes
 {
+    /// <summary>
+    /// Provides a base class for shape elements, such as <see cref="Ellipse"/>, <see cref="Polygon"/> and <see cref="Rectangle"/>.
+    /// </summary>
     public abstract class Shape : Control
     {
-        public static readonly StyledProperty<IBrush> FillProperty =
-            AvaloniaProperty.Register<Shape, IBrush>(nameof(Fill));
+        /// <summary>
+        /// Defines the <see cref="Fill"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush?> FillProperty =
+            AvaloniaProperty.Register<Shape, IBrush?>(nameof(Fill));
 
+        /// <summary>
+        /// Defines the <see cref="Stretch"/> property.
+        /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
             AvaloniaProperty.Register<Shape, Stretch>(nameof(Stretch));
 
-        public static readonly StyledProperty<IBrush> StrokeProperty =
-            AvaloniaProperty.Register<Shape, IBrush>(nameof(Stroke));
+        /// <summary>
+        /// Defines the <see cref="Stroke"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush?> StrokeProperty =
+            AvaloniaProperty.Register<Shape, IBrush?>(nameof(Stroke));
 
-        public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
-            AvaloniaProperty.Register<Shape, AvaloniaList<double>>(nameof(StrokeDashArray));
+        /// <summary>
+        /// Defines the <see cref="StrokeDashArray"/> property.
+        /// </summary>
+        public static readonly StyledProperty<AvaloniaList<double>?> StrokeDashArrayProperty =
+            AvaloniaProperty.Register<Shape, AvaloniaList<double>?>(nameof(StrokeDashArray));
 
+        /// <summary>
+        /// Defines the <see cref="StrokeDashOffset"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> StrokeDashOffsetProperty =
             AvaloniaProperty.Register<Shape, double>(nameof(StrokeDashOffset));
 
+        /// <summary>
+        /// Defines the <see cref="StrokeThickness"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> StrokeThicknessProperty =
             AvaloniaProperty.Register<Shape, double>(nameof(StrokeThickness));
 
+        /// <summary>
+        /// Defines the <see cref="StrokeLineCap"/> property.
+        /// </summary>
         public static readonly StyledProperty<PenLineCap> StrokeLineCapProperty =
             AvaloniaProperty.Register<Shape, PenLineCap>(nameof(StrokeLineCap), PenLineCap.Flat);
 
+        /// <summary>
+        /// Defines the <see cref="StrokeJoin"/> property.
+        /// </summary>
         public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
 
         private Matrix _transform = Matrix.Identity;
-        private Geometry _definingGeometry;
-        private Geometry _renderedGeometry;
-        bool _calculateTransformOnArrange = false;
+        private Geometry? _definingGeometry;
+        private Geometry? _renderedGeometry;
 
         static Shape()
         {
@@ -47,7 +71,10 @@ namespace Avalonia.Controls.Shapes
                 StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty);
         }
 
-        public Geometry DefiningGeometry
+        /// <summary>
+        /// Gets a value that represents the <see cref="Geometry"/> of the shape.
+        /// </summary>
+        public Geometry? DefiningGeometry
         {
             get
             {
@@ -60,13 +87,10 @@ namespace Avalonia.Controls.Shapes
             }
         }
 
-        public IBrush Fill
-        {
-            get { return GetValue(FillProperty); }
-            set { SetValue(FillProperty, value); }
-        }
-
-        public Geometry RenderedGeometry
+        /// <summary>
+        /// Gets a value that represents the final rendered <see cref="Geometry"/> of the shape.
+        /// </summary>
+        public Geometry? RenderedGeometry
         {
             get
             {
@@ -97,42 +121,72 @@ namespace Avalonia.Controls.Shapes
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="IBrush"/> that specifies how the shape's interior is painted.
+        /// </summary>
+        public IBrush? Fill
+        {
+            get { return GetValue(FillProperty); }
+            set { SetValue(FillProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a <see cref="Stretch"/> enumeration value that describes how the shape fills its allocated space.
+        /// </summary>
         public Stretch Stretch
         {
             get { return GetValue(StretchProperty); }
             set { SetValue(StretchProperty, value); }
         }
 
-        public IBrush Stroke
+        /// <summary>
+        /// Gets or sets the <see cref="IBrush"/> that specifies how the shape's outline is painted.
+        /// </summary>
+        public IBrush? Stroke
         {
             get { return GetValue(StrokeProperty); }
             set { SetValue(StrokeProperty, value); }
         }
 
-        public AvaloniaList<double> StrokeDashArray
+        /// <summary>
+        /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps that is used to outline shapes.
+        /// </summary>
+        public AvaloniaList<double>? StrokeDashArray
         {
             get { return GetValue(StrokeDashArrayProperty); }
             set { SetValue(StrokeDashArrayProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that specifies the distance within the dash pattern where a dash begins.
+        /// </summary>
         public double StrokeDashOffset
         {
             get { return GetValue(StrokeDashOffsetProperty); }
             set { SetValue(StrokeDashOffsetProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the width of the shape outline.
+        /// </summary>
         public double StrokeThickness
         {
             get { return GetValue(StrokeThicknessProperty); }
             set { SetValue(StrokeThicknessProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a <see cref="PenLineCap"/> enumeration value that describes the shape at the ends of a line.
+        /// </summary>
         public PenLineCap StrokeLineCap
         {
             get { return GetValue(StrokeLineCapProperty); }
             set { SetValue(StrokeLineCapProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a <see cref="PenLineJoin"/> enumeration value that specifies the type of join that is used at the vertices of a Shape.
+        /// </summary>
         public PenLineJoin StrokeJoin
         {
             get { return GetValue(StrokeJoinProperty); }
@@ -166,74 +220,48 @@ namespace Avalonia.Controls.Shapes
             {
                 property.Changed.Subscribe(e =>
                 {
-                    var senderType = e.Sender.GetType().GetTypeInfo();
-                    var affectedType = typeof(TShape).GetTypeInfo();
-
-                    if (affectedType.IsAssignableFrom(senderType))
+                    if (e.Sender is TShape shape)
                     {
-                        AffectsGeometryInvalidate(e);
+                        AffectsGeometryInvalidate(shape, e);
                     }
                 });
             }
         }
 
-        protected abstract Geometry CreateDefiningGeometry();
+        /// <summary>
+        /// Creates the shape's defining geometry.
+        /// </summary>
+        /// <returns>Defining <see cref="Geometry"/> of the shape.</returns>
+        protected abstract Geometry? CreateDefiningGeometry();
 
+        /// <summary>
+        /// Invalidates the geometry of this shape.
+        /// </summary>
         protected void InvalidateGeometry()
         {
             _renderedGeometry = null;
             _definingGeometry = null;
+
             InvalidateMeasure();
         }
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            bool deferCalculateTransform;
-            switch (Stretch)
+            if (DefiningGeometry is null)
             {
-                case Stretch.Fill:
-                case Stretch.UniformToFill:
-                    deferCalculateTransform = double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height);
-                    break;
-                case Stretch.Uniform:
-                    deferCalculateTransform = double.IsInfinity(availableSize.Width) && double.IsInfinity(availableSize.Height);
-                    break;
-                case Stretch.None:
-                default:
-                    deferCalculateTransform = false;
-                    break;
+                return default;
             }
 
-            if (deferCalculateTransform)
-            {
-                _calculateTransformOnArrange = true;
-                return DefiningGeometry?.Bounds.Size ?? Size.Empty;
-            }
-            else
-            {
-                _calculateTransformOnArrange = false;
-                return CalculateShapeSizeAndSetTransform(availableSize);
-            }
+            return CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch).size;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
-        {
-            if (_calculateTransformOnArrange)
-            {
-                _calculateTransformOnArrange = false;
-                CalculateShapeSizeAndSetTransform(finalSize);
-            }
-
-            return finalSize;
-        }
-
-        private Size CalculateShapeSizeAndSetTransform(Size availableSize)
         {
             if (DefiningGeometry != null)
             {
                 // This should probably use GetRenderBounds(strokeThickness) but then the calculations
                 // will multiply the stroke thickness as well, which isn't correct.
-                var (size, transform) = CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch);
+                var (_, transform) = CalculateSizeAndTransform(finalSize, DefiningGeometry.Bounds, Stretch);
 
                 if (_transform != transform)
                 {
@@ -241,13 +269,13 @@ namespace Avalonia.Controls.Shapes
                     _renderedGeometry = null;
                 }
 
-                return size;
+                return finalSize;
             }
 
             return Size.Empty;
         }
 
-        internal static (Size, Matrix) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)
+        internal static (Size size, Matrix transform) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)
         {
             Size shapeSize = new Size(shapeBounds.Right, shapeBounds.Bottom);
             Matrix translate = Matrix.Identity;
@@ -322,19 +350,14 @@ namespace Avalonia.Controls.Shapes
             return (size, transform);
         }
 
-        private static void AffectsGeometryInvalidate(AvaloniaPropertyChangedEventArgs e)
+        private static void AffectsGeometryInvalidate(Shape control, AvaloniaPropertyChangedEventArgs e)
         {
-            if (!(e.Sender is Shape control))
-            {
-                return;
-            }
-
             // If the geometry is invalidated when Bounds changes, only invalidate when the Size
             // portion changes.
             if (e.Property == BoundsProperty)
             {
-                var oldBounds = (Rect)e.OldValue;
-                var newBounds = (Rect)e.NewValue;
+                var oldBounds = (Rect)e.OldValue!;
+                var newBounds = (Rect)e.NewValue!;
 
                 if (oldBounds.Size == newBounds.Size)
                 {

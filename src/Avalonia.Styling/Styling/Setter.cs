@@ -1,14 +1,11 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Reactive.Disposables;
-using System.Reflection;
 using Avalonia.Animation;
-using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Metadata;
-using Avalonia.Reactive;
+using Avalonia.Utilities;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
@@ -19,9 +16,9 @@ namespace Avalonia.Styling
     /// A <see cref="Setter"/> is used to set a <see cref="AvaloniaProperty"/> value on a
     /// <see cref="AvaloniaObject"/> depending on a condition.
     /// </remarks>
-    public class Setter : ISetter, IAnimationSetter
+    public class Setter : ISetter, IAnimationSetter, IAvaloniaPropertyVisitor<Setter.SetterVisitorData>
     {
-        private object _value;
+        private object? _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Setter"/> class.
@@ -44,11 +41,7 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets or sets the property to set.
         /// </summary>
-        public AvaloniaProperty Property
-        {
-            get;
-            set;
-        }
+        public AvaloniaProperty? Property { get; set; }
 
         /// <summary>
         /// Gets or sets the property value.
@@ -56,13 +49,9 @@ namespace Avalonia.Styling
         [Content]
         [AssignBinding]
         [DependsOn(nameof(Property))]
-        public object Value
+        public object? Value
         {
-            get
-            {
-                return _value;
-            }
-
+            get => _value;
             set
             {
                 (value as ISetterValue)?.Initialize(this);
@@ -70,98 +59,78 @@ namespace Avalonia.Styling
             }
         }
 
-        /// <summary>
-        /// Applies the setter to a control.
-        /// </summary>
-        /// <param name="style">The style that is being applied.</param>
-        /// <param name="control">The control.</param>
-        /// <param name="activator">An optional activator.</param>
-        public IDisposable Apply(IStyle style, IStyleable control, IObservable<bool> activator)
+        public ISetterInstance Instance(IStyleable target)
         {
-            Contract.Requires<ArgumentNullException>(control != null);
+            target = target ?? throw new ArgumentNullException(nameof(target));
 
-            var description = style?.ToString();
-
-            if (Property == null)
+            if (Property is null)
             {
                 throw new InvalidOperationException("Setter.Property must be set.");
             }
 
             var value = Value;
-            var binding = value as IBinding;
 
-            if (binding == null)
+            if (value is ITemplate template &&
+                !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
             {
-                var template = value as ITemplate;
-                bool isPropertyOfTypeITemplate = typeof(ITemplate).GetTypeInfo()
-                    .IsAssignableFrom(Property.PropertyType.GetTypeInfo());
-
-                if (template != null && !isPropertyOfTypeITemplate)
-                {
-                    var materialized = template.Build();
-                    value = materialized;
-                }
-
-                if (activator == null)
-                {
-                    return control.Bind(Property, ObservableEx.SingleValue(value), BindingPriority.Style);
-                }
-                else
-                {
-                    var activated = new ActivatedValue(activator, value, description);
-                    return control.Bind(Property, activated, BindingPriority.StyleTrigger);
-                }
-            }
-            else
-            {
-                var source = binding.Initiate(control, Property);
-
-                if (source != null)
-                {
-                    var cloned = Clone(source, source.Mode == BindingMode.Default ? Property.GetMetadata(control.GetType()).DefaultBindingMode : source.Mode, style, activator);
-                    return BindingOperations.Apply(control, Property, cloned, null);
-                }
+                value = template.Build();
             }
 
-            return Disposable.Empty;
+            var data = new SetterVisitorData
+            {
+                target = target,
+                value = value,
+            };
+
+            Property.Accept(this, ref data);
+            return data.result!;
         }
 
-        private InstancedBinding Clone(InstancedBinding sourceInstance, BindingMode mode, IStyle style, IObservable<bool> activator)
+        void IAvaloniaPropertyVisitor<SetterVisitorData>.Visit<T>(
+            StyledPropertyBase<T> property,
+            ref SetterVisitorData data)
         {
-            if (activator != null)
+            if (data.value is IBinding binding)
             {
-                var description = style?.ToString();
-
-                switch (mode)
-                {
-                    case BindingMode.OneTime:
-                        if (sourceInstance.Observable != null)
-                        {
-                            var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
-                            return InstancedBinding.OneTime(activated, BindingPriority.StyleTrigger);
-                        }
-                        else
-                        {
-                            var activated = new ActivatedValue(activator, sourceInstance.Value, description);
-                            return InstancedBinding.OneTime(activated, BindingPriority.StyleTrigger);
-                        }
-                    case BindingMode.OneWay:
-                        {
-                            var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
-                            return InstancedBinding.OneWay(activated, BindingPriority.StyleTrigger);
-                        }
-                    default:
-                        {
-                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                            return new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
-                        }
-                }
-
+                data.result = new PropertySetterBindingInstance<T>(
+                    data.target,
+                    property,
+                    binding);
             }
             else
             {
-                return sourceInstance.WithPriority(BindingPriority.Style);
+                data.result = new PropertySetterInstance<T>(
+                    data.target,
+                    property,
+                    (T)data.value);
             }
+        }
+
+        void IAvaloniaPropertyVisitor<SetterVisitorData>.Visit<T>(
+            DirectPropertyBase<T> property,
+            ref SetterVisitorData data)
+        {
+            if (data.value is IBinding binding)
+            {
+                data.result = new PropertySetterBindingInstance<T>(
+                    data.target,
+                    property,
+                    binding);
+            }
+            else
+            {
+                data.result = new PropertySetterInstance<T>(
+                    data.target,
+                    property,
+                    (T)data.value);
+            }
+        }
+
+        private struct SetterVisitorData
+        {
+            public IStyleable target;
+            public object? value;
+            public ISetterInstance? result;
         }
     }
 }

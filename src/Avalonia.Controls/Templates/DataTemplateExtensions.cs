@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Linq;
 using Avalonia.LogicalTree;
+
+#nullable enable
 
 namespace Avalonia.Controls.Templates
 {
@@ -21,21 +19,23 @@ namespace Avalonia.Controls.Templates
         /// tree are searched.
         /// </param>
         /// <returns>The data template or null if no matching data template was found.</returns>
-        public static IDataTemplate FindDataTemplate(
+        public static IDataTemplate? FindDataTemplate(
             this IControl control,
             object data,
-            IDataTemplate primary = null)
+            IDataTemplate? primary = null)
         {
             if (primary?.Match(data) == true)
             {
                 return primary;
             }
 
-            foreach (var i in control.GetSelfAndLogicalAncestors().OfType<IDataTemplateHost>())
+            var currentTemplateHost = control as ILogical;
+
+            while (currentTemplateHost != null)
             {
-                if (i.IsDataTemplatesInitialized)
+                if (currentTemplateHost is IDataTemplateHost hostCandidate && hostCandidate.IsDataTemplatesInitialized)
                 {
-                    foreach (IDataTemplate dt in i.DataTemplates)
+                    foreach (IDataTemplate dt in hostCandidate.DataTemplates)
                     {
                         if (dt.Match(data))
                         {
@@ -43,20 +43,19 @@ namespace Avalonia.Controls.Templates
                         }
                     }
                 }
+
+                currentTemplateHost = currentTemplateHost.LogicalParent;
             }
 
             IGlobalDataTemplates global = AvaloniaLocator.Current.GetService<IGlobalDataTemplates>();
 
-            if (global != null)
+            if (global != null && global.IsDataTemplatesInitialized)
             {
-                if (global.IsDataTemplatesInitialized)
+                foreach (IDataTemplate dt in global.DataTemplates)
                 {
-                    foreach (IDataTemplate dt in global.DataTemplates)
+                    if (dt.Match(data))
                     {
-                        if (dt.Match(data))
-                        {
-                            return dt;
-                        }
+                        return dt;
                     }
                 }
             }

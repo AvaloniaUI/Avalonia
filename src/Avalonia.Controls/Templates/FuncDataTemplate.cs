@@ -1,16 +1,13 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
-using System.Reflection;
+using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls.Templates
 {
     /// <summary>
     /// Builds a control for a piece of data.
     /// </summary>
-    public class FuncDataTemplate : FuncTemplate<object, IControl>, IDataTemplate
+    public class FuncDataTemplate : FuncTemplate<object, IControl>, IRecyclingDataTemplate
     {
         /// <summary>
         /// The default data template used in the case where no matching data template is found.
@@ -35,9 +32,32 @@ namespace Avalonia.Controls.Templates
                 true);
 
         /// <summary>
+        /// The default data template used in the case where no matching data template is found
+        /// but <see cref="AccessText"/> should be used.
+        /// </summary>
+        public static readonly FuncDataTemplate Access =
+            new FuncDataTemplate<object>(
+                (data, s) =>
+                {
+                    if (data != null)
+                    {
+                        var result = new AccessText();
+                        result.Bind(TextBlock.TextProperty,
+                            result.GetObservable(Control.DataContextProperty).Select(x => x?.ToString()));
+                        return result;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                },
+                true);
+
+        /// <summary>
         /// The implementation of the <see cref="Match"/> method.
         /// </summary>
         private readonly Func<object, bool> _match;
+        private readonly bool _supportsRecycling;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncDataTemplate"/> class.
@@ -48,7 +68,7 @@ namespace Avalonia.Controls.Templates
         /// </param>
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
-            Type type, 
+            Type type,
             Func<object, INameScope, IControl> build,
             bool supportsRecycling = false)
             : this(o => IsInstance(o, type), build, supportsRecycling)
@@ -74,11 +94,8 @@ namespace Avalonia.Controls.Templates
             Contract.Requires<ArgumentNullException>(match != null);
 
             _match = match;
-            SupportsRecycling = supportsRecycling;
+            _supportsRecycling = supportsRecycling;
         }
-
-        /// <inheritdoc/>
-        public bool SupportsRecycling { get; }
 
         /// <summary>
         /// Checks to see if this data template matches the specified data.
@@ -93,6 +110,24 @@ namespace Avalonia.Controls.Templates
         }
 
         /// <summary>
+        /// Creates or recycles a control to display the specified data.
+        /// </summary>
+        /// <param name="data">The data to display.</param>
+        /// <param name="existing">An optional control to recycle.</param>
+        /// <returns>
+        /// The <paramref name="existing"/> control if supplied and applicable to
+        /// <paramref name="data"/>, otherwise a new control.
+        /// </returns>
+        /// <remarks>
+        /// The caller should ensure that any control passed to <paramref name="existing"/>
+        /// originated from the same data template.
+        /// </remarks>
+        public IControl Build(object data, IControl existing)
+        {
+            return _supportsRecycling && existing is object ? existing : Build(data);
+        }
+
+        /// <summary>
         /// Determines of an object is of the specified type.
         /// </summary>
         /// <param name="o">The object.</param>
@@ -102,7 +137,7 @@ namespace Avalonia.Controls.Templates
         /// </returns>
         private static bool IsInstance(object o, Type t)
         {
-            return (o != null) && t.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());
+            return t.IsInstanceOfType(o);
         }
     }
 }

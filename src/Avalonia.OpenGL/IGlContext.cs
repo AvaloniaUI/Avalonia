@@ -1,8 +1,15 @@
+using System;
+
 namespace Avalonia.OpenGL
 {
-    public interface IGlContext
+    public interface IGlContext : IDisposable
     {
-        IGlDisplay Display { get; }
-        void MakeCurrent();
+        GlVersion Version { get; }
+        GlInterface GlInterface { get; }
+        int SampleCount { get; }
+        int StencilSize { get; }
+        IDisposable MakeCurrent();
+        IDisposable EnsureCurrent();
+        bool IsSharedWith(IGlContext context);
     }
 }

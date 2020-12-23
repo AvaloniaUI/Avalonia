@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -10,14 +7,14 @@ namespace Avalonia.Input
 {
     public class PointerEventArgs : RoutedEventArgs
     {
-        private readonly IVisual _rootVisual;
+        private readonly IVisual? _rootVisual;
         private readonly Point _rootVisualPosition;
         private readonly PointerPointProperties _properties;
 
         public PointerEventArgs(RoutedEvent routedEvent,
-            IInteractive source,
+            IInteractive? source,
             IPointer pointer,
-            IVisual rootVisual, Point rootVisualPosition,
+            IVisual? rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers)
@@ -43,8 +40,8 @@ namespace Avalonia.Input
             
             public void ProcessRawEvent(RawInputEventArgs ev) => throw new NotSupportedException();
 
-            public IInputElement Captured => _ev.Pointer.Captured;
-            public void Capture(IInputElement control)
+            public IInputElement? Captured => _ev.Pointer.Captured;
+            public void Capture(IInputElement? control)
             {
                 _ev.Pointer.Capture(control);
             }
@@ -55,7 +52,7 @@ namespace Avalonia.Input
         public IPointer Pointer { get; }
         public ulong Timestamp { get; }
 
-        private IPointerDevice _device;
+        private IPointerDevice? _device;
 
         [Obsolete("Use Pointer to get pointer-specific information")]
         public IPointerDevice Device => _device ?? (_device = new EmulatedDevice(this));
@@ -79,7 +76,7 @@ namespace Avalonia.Input
         
         public KeyModifiers KeyModifiers { get; }
 
-        public Point GetPosition(IVisual relativeTo)
+        public Point GetPosition(IVisual? relativeTo)
         {
             if (_rootVisual == null)
                 return default;
@@ -89,14 +86,14 @@ namespace Avalonia.Input
         }
 
         [Obsolete("Use GetCurrentPoint")]
-        public PointerPoint GetPointerPoint(IVisual relativeTo) => GetCurrentPoint(relativeTo);
+        public PointerPoint GetPointerPoint(IVisual? relativeTo) => GetCurrentPoint(relativeTo);
         
         /// <summary>
         /// Returns the PointerPoint associated with the current event
         /// </summary>
         /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns></returns>
-        public PointerPoint GetCurrentPoint(IVisual relativeTo)
+        public PointerPoint GetCurrentPoint(IVisual? relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
 
         /// <summary>
@@ -131,10 +128,10 @@ namespace Avalonia.Input
             _obsoleteClickCount = obsoleteClickCount;
         }
 
-        [Obsolete("Use DoubleTapped or DoubleRightTapped event instead")]
+        [Obsolete("Use DoubleTapped event or Gestures.DoubleRightTapped attached event")]
         public int ClickCount => _obsoleteClickCount;
 
-        [Obsolete("Use PointerUpdateKind")]
+        [Obsolete("Use PointerPressedEventArgs.GetCurrentPoint(this).Properties")]
         public MouseButton MouseButton => Properties.PointerUpdateKind.GetMouseButton();
     }
 
@@ -156,7 +153,7 @@ namespace Avalonia.Input
         /// </summary>
         public MouseButton InitialPressMouseButton { get; }
 
-        [Obsolete("Either use GetCurrentPoint(this).Properties.PointerUpdateKind or InitialPressMouseButton, see https://github.com/AvaloniaUI/Avalonia/wiki/Pointer-events-in-0.9 for more details", true)]
+        [Obsolete("Use InitialPressMouseButton")]
         public MouseButton MouseButton => InitialPressMouseButton;
     }
 

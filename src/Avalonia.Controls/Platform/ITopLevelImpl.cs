@@ -1,8 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Rendering;
@@ -25,10 +23,10 @@ namespace Avalonia.Platform
         Size ClientSize { get; }
 
         /// <summary>
-        /// Gets the scaling factor for the toplevel.
+        /// Gets the scaling factor for the toplevel. This is used for rendering.
         /// </summary>
-        double Scaling { get; }
-
+        double RenderScaling { get; }
+        
         /// <summary>
         /// The list of native platform's surfaces that can be consumed by rendering subsystems.
         /// </summary>
@@ -60,6 +58,11 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the toplevel's scaling changes.
         /// </summary>
         Action<double> ScalingChanged { get; set; }
+
+        /// <summary>
+        /// Gets or sets a method called when the toplevel's TransparencyLevel changes.
+        /// </summary>
+        Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         /// <summary>
         /// Creates a new renderer for the toplevel.
@@ -101,6 +104,11 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the underlying implementation is destroyed.
         /// </summary>
         Action Closed { get; set; }
+        
+        /// <summary>
+        /// Gets or sets a method called when the input focus is lost.
+        /// </summary>
+        Action LostFocus { get; set; }
 
         /// <summary>
         /// Gets a mouse device associated with toplevel
@@ -109,5 +117,20 @@ namespace Avalonia.Platform
         IMouseDevice MouseDevice { get; }
 
         IPopupImpl CreatePopup();
+
+        /// <summary>
+        /// Sets the <see cref="WindowTransparencyLevel"/> hint of the TopLevel.
+        /// </summary>
+        void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel);
+
+        /// <summary>
+        /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
+        /// </summary>
+        WindowTransparencyLevel TransparencyLevel { get; }
+
+        /// <summary>
+        /// Gets the <see cref="AcrylicPlatformCompensationLevels"/> for the platform.        
+        /// </summary>
+        AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
     }
 }

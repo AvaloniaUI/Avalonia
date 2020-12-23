@@ -24,10 +24,11 @@ namespace Avalonia.Direct2D1.Media
         {
             var fontFamily = typeface.FontFamily;
             var fontCollection = GetOrAddFontCollection(fontFamily);
+            int index;
 
-            foreach (var familyName in fontFamily.FamilyNames)
+            foreach (var name in fontFamily.FamilyNames)
             {
-                if (fontCollection.FindFamilyName(familyName, out var index))
+                if (fontCollection.FindFamilyName(name, out index))
                 {
                     return fontCollection.GetFontFamily(index).GetFirstMatchingFont(
                         (FontWeight)typeface.Weight,
@@ -36,9 +37,9 @@ namespace Avalonia.Direct2D1.Media
                 }
             }
 
-            InstalledFontCollection.FindFamilyName(FontFamily.Default.Name, out var i);
+            InstalledFontCollection.FindFamilyName("Segoe UI", out index);
 
-            return InstalledFontCollection.GetFontFamily(i).GetFirstMatchingFont(
+            return InstalledFontCollection.GetFontFamily(index).GetFirstMatchingFont(
                 (FontWeight)typeface.Weight,
                 FontStretch.Normal,
                 (FontStyle)typeface.Style);

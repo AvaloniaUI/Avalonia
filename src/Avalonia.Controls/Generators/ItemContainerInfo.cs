@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Controls.Generators
 {
     /// <summary>
@@ -40,6 +37,6 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the index of the item in the <see cref="ItemsControl.Items"/> collection.
         /// </summary>
-        public int Index { get; internal set; }
+        public int Index { get; set; }
     }
 }

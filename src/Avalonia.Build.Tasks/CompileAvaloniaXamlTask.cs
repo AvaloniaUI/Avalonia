@@ -12,6 +12,8 @@ namespace Avalonia.Build.Tasks
     {
         public bool Execute()
         {
+            Enum.TryParse(ReportImportance, true, out MessageImportance outputImportance);
+
             OutputPath = OutputPath ?? AssemblyFile;
             var outputPdb = GetPdbPath(OutputPath);
             var input = AssemblyFile;
@@ -32,9 +34,14 @@ namespace Avalonia.Build.Tasks
                 }
             }
 
+            var msg = $"CompileAvaloniaXamlTask -> AssemblyFile:{AssemblyFile}, ProjectDirectory:{ProjectDirectory}, OutputPath:{OutputPath}";
+            BuildEngine.LogMessage(msg, outputImportance < MessageImportance.Low ? MessageImportance.High : outputImportance);
+
             var res = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
-                ProjectDirectory, OutputPath, VerifyIl);
+                ProjectDirectory, OutputPath, VerifyIl, outputImportance,
+                (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null,
+                EnableComInteropPatching, SkipXamlCompilation);
             if (!res.Success)
                 return false;
             if (!res.WrittenFile)
@@ -69,6 +76,15 @@ namespace Avalonia.Build.Tasks
 
         public bool VerifyIl { get; set; }
         
+        public bool EnableComInteropPatching { get; set; }
+        public bool SkipXamlCompilation { get; set; }
+        
+        public string AssemblyOriginatorKeyFile { get; set; }
+        public bool SignAssembly { get; set; }
+        public bool DelaySign { get; set; }
+
+        public string ReportImportance { get; set; }
+
         public IBuildEngine BuildEngine { get; set; }
         public ITaskHost HostObject { get; set; }
     }

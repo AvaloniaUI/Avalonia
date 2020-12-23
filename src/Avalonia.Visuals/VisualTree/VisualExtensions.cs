@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +11,7 @@ namespace Avalonia.VisualTree
     public static class VisualExtensions
     {
         /// <summary>
-        /// Calculates the distance from a visual's <see cref="IRenderRoot"/>.
+        /// Calculates the distance from a visual's ancestor.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <param name="ancestor">The ancestor visual.</param>
@@ -30,11 +27,37 @@ namespace Avalonia.VisualTree
 
             while (visual != null && visual != ancestor)
             {
-                ++result;
                 visual = visual.VisualParent;
+
+                result++;
             }
 
             return visual != null ? result : -1;
+        }
+
+        /// <summary>
+        /// Calculates the distance from a visual's root.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>
+        /// The number of steps from the visual to the root.
+        /// </returns>
+        public static int CalculateDistanceFromRoot(IVisual visual)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            var result = 0;
+
+            visual = visual?.VisualParent;
+
+            while (visual != null)
+            {
+                visual = visual.VisualParent;
+
+                result++;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -47,8 +70,53 @@ namespace Avalonia.VisualTree
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            return visual.GetSelfAndVisualAncestors().Intersect(target.GetSelfAndVisualAncestors())
-                .FirstOrDefault();
+            if (target is null)
+            {
+                return null;
+            }
+
+            void GoUpwards(ref IVisual node, int count)
+            {
+                for (int i = 0; i < count; ++i)
+                {
+                    node = node.VisualParent;
+                }
+            }
+
+            // We want to find lowest node first, then make sure that both nodes are at the same height.
+            // By doing that we can sometimes find out that other node is our lowest common ancestor.
+            var firstHeight = CalculateDistanceFromRoot(visual);
+            var secondHeight = CalculateDistanceFromRoot(target);
+
+            if (firstHeight > secondHeight)
+            {
+                GoUpwards(ref visual, firstHeight - secondHeight);
+            }
+            else
+            {
+                GoUpwards(ref target, secondHeight - firstHeight);
+            }
+
+            if (visual == target)
+            {
+                return visual;
+            }
+
+            while (visual != null && target != null)
+            {
+                IVisual firstParent = visual.VisualParent;
+                IVisual secondParent = target.VisualParent;
+
+                if (firstParent == secondParent)
+                {
+                    return firstParent;
+                }
+
+                visual = visual.VisualParent;
+                target = target.VisualParent;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -67,6 +135,57 @@ namespace Avalonia.VisualTree
                 yield return visual;
                 visual = visual.VisualParent;
             }
+        }
+
+        /// <summary>
+        /// Finds first ancestor of given type.
+        /// </summary>
+        /// <typeparam name="T">Ancestor type.</typeparam>
+        /// <param name="visual">The visual.</param>
+        /// <param name="includeSelf">If given visual should be included in search.</param>
+        /// <returns>First ancestor of given type.</returns>
+        public static T FindAncestorOfType<T>(this IVisual visual, bool includeSelf = false) where T : class
+        {
+            if (visual is null)
+            {
+                return null;
+            }
+
+            IVisual parent = includeSelf ? visual : visual.VisualParent;
+
+            while (parent != null)
+            {
+                if (parent is T result)
+                {
+                    return result;
+                }
+
+                parent = parent.VisualParent;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Finds first descendant of given type.
+        /// </summary>
+        /// <typeparam name="T">Descendant type.</typeparam>
+        /// <param name="visual">The visual.</param>
+        /// <param name="includeSelf">If given visual should be included in search.</param>
+        /// <returns>First descendant of given type.</returns>
+        public static T FindDescendantOfType<T>(this IVisual visual, bool includeSelf = false) where T : class
+        {
+            if (visual is null)
+            {
+                return null;
+            }
+
+            if (includeSelf && visual is T result)
+            {
+                return result;
+            }
+
+            return FindDescendantOfTypeCore<T>(visual);
         }
 
         /// <summary>
@@ -91,12 +210,37 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="visual">The root visual to test.</param>
         /// <param name="p">The point.</param>
-        /// <returns>The visuals at the requested point.</returns>
+        /// <returns>The visual at the requested point.</returns>
         public static IVisual GetVisualAt(this IVisual visual, Point p)
         {
             Contract.Requires<ArgumentNullException>(visual != null);
 
-            return visual.GetVisualsAt(p).FirstOrDefault();
+            return visual.GetVisualAt(p, x => x.IsVisible);
+        }
+
+        /// <summary>
+        /// Gets the first visual in the visual tree whose bounds contain a point.
+        /// </summary>
+        /// <param name="visual">The root visual to test.</param>
+        /// <param name="p">The point.</param>
+        /// <param name="filter">
+        /// A filter predicate. If the predicate returns false then the visual and all its
+        /// children will be excluded from the results.
+        /// </param>
+        /// <returns>The visual at the requested point.</returns>
+        public static IVisual GetVisualAt(this IVisual visual, Point p, Func<IVisual, bool> filter)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            var root = visual.GetVisualRoot();
+            var rootPoint = visual.TranslatePoint(p, root);
+
+            if (rootPoint.HasValue)
+            {
+                return root.Renderer.HitTestFirst(rootPoint.Value, visual, filter);
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -233,7 +377,19 @@ namespace Avalonia.VisualTree
         /// </returns>
         public static bool IsVisualAncestorOf(this IVisual visual, IVisual target)
         {
-            return target.GetVisualAncestors().Any(x => x == visual);
+            IVisual current = target?.VisualParent;
+
+            while (current != null)
+            {
+                if (current == visual)
+                {
+                    return true;
+                }
+
+                current = current.VisualParent;
+            }
+
+            return false;
         }
 
         public static IEnumerable<IVisual> SortByZIndex(this IEnumerable<IVisual> elements)
@@ -247,6 +403,31 @@ namespace Avalonia.VisualTree
                 })
                 .OrderBy(x => x, null)
                 .Select(x => x.Element);
+        }
+
+        private static T FindDescendantOfTypeCore<T>(IVisual visual) where T : class
+        {
+            var visualChildren = visual.VisualChildren;
+            var visualChildrenCount = visualChildren.Count;
+
+            for (var i = 0; i < visualChildrenCount; i++)
+            {
+                IVisual child = visualChildren[i];
+
+                if (child is T result)
+                {
+                    return result;
+                }
+
+                var childResult = FindDescendantOfTypeCore<T>(child);
+
+                if (!(childResult is null))
+                {
+                    return childResult;
+                }
+            }
+
+            return null;
         }
 
         private class ZOrderElement : IComparable<ZOrderElement>

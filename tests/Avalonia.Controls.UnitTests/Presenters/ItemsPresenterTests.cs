@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.ObjectModel;
 using System.Linq;
 using Moq;
@@ -61,6 +58,25 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(2, target.Panel.Children.Count);
             Assert.IsType<ListBoxItem>(target.Panel.Children[0]);
             Assert.IsType<ListBoxItem>(target.Panel.Children[1]);
+        }
+
+        [Fact]
+        public void Should_Create_Containers_Only_Once()
+        {
+            var parent = new TestItemsControl();
+            var target = new ItemsPresenter
+            {
+                Items = new[] { "foo", "bar" },
+                [StyledElement.TemplatedParentProperty] = parent,
+            };
+            var raised = 0;
+
+            parent.ItemContainerGenerator.Materialized += (s, e) => ++raised;
+
+            target.ApplyTemplate();
+
+            Assert.Equal(2, target.Panel.Children.Count);
+            Assert.Equal(2, raised);
         }
 
         [Fact]

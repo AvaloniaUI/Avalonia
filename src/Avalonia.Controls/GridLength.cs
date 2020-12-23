@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +8,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// Defines the valid units for a <see cref="GridLength"/>.
     /// </summary>
-    public enum GridUnitType
+#if !BUILDTASK
+    public
+#endif
+    enum GridUnitType
     {
         /// <summary>
         /// The row or column is auto-sized to fit its content.
@@ -32,7 +32,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// Holds the width or height of a <see cref="Grid"/>'s column and row definitions.
     /// </summary>
-    public struct GridLength : IEquatable<GridLength>
+#if !BUILDTASK
+    public
+#endif
+    struct GridLength : IEquatable<GridLength>
     {
         private readonly GridUnitType _type;
 

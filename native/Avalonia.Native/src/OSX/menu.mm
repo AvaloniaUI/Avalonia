@@ -2,8 +2,35 @@
 #include "common.h"
 #include "menu.h"
 #include "window.h"
+#include "KeyTransform.h"
+#include <CoreFoundation/CoreFoundation.h>
+#include <Carbon/Carbon.h> /* For kVK_ constants, and TIS functions. */
 
 @implementation AvnMenu
+{
+    bool _isReparented;
+    NSObject<NSMenuDelegate>* _wtf;
+}
+
+- (id) initWithDelegate: (NSObject<NSMenuDelegate>*)del
+{
+    self = [super init];
+    self.delegate = del;
+    _wtf = del;
+    _isReparented = false;
+    return self;
+}
+
+- (bool)hasGlobalMenuItem
+{
+    return _isReparented;
+}
+
+- (void)setHasGlobalMenuItem:(bool)value
+{
+    _isReparented = value;
+}
+
 @end
 
 @implementation AvnMenuItem
@@ -46,6 +73,7 @@
 
 AvnAppMenuItem::AvnAppMenuItem(bool isSeperator)
 {
+    _isCheckable = false;
     _isSeperator = isSeperator;
     
     if(isSeperator)
@@ -65,49 +93,168 @@ NSMenuItem* AvnAppMenuItem::GetNative()
     return _native;
 }
 
-HRESULT AvnAppMenuItem::SetSubMenu (IAvnAppMenu* menu)
+HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 {
-    auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
-    
-    [_native setSubmenu: nsMenu];
-    
-    return S_OK;
-}
-
-HRESULT AvnAppMenuItem::SetTitle (void* utf8String)
-{
-    if (utf8String != nullptr)
+    @autoreleasepool
     {
-        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        if(menu != nullptr)
+        {
+            auto nsMenu = dynamic_cast<AvnAppMenu*>(menu)->GetNative();
+            
+            [_native setSubmenu: nsMenu];
+        }
+        else
+        {
+            [_native setSubmenu: nullptr];
+        }
+        
+        return S_OK;
     }
-    
-    return S_OK;
 }
 
-HRESULT AvnAppMenuItem::SetGesture (void* key, AvnInputModifiers modifiers)
+HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
 {
-    NSEventModifierFlags flags = 0;
-    
-    if (modifiers & Control)
-        flags |= NSEventModifierFlagControl;
-    if (modifiers & Shift)
-        flags |= NSEventModifierFlagShift;
-    if (modifiers & Alt)
-        flags |= NSEventModifierFlagOption;
-    if (modifiers & Windows)
-        flags |= NSEventModifierFlagCommand;
-    
-    [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)key]];
-    [_native setKeyEquivalentModifierMask:flags];
-    
-    return S_OK;
+    @autoreleasepool
+    {
+        if (utf8String != nullptr)
+        {
+            [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        }
+        
+        return S_OK;
+    }
+}
+
+
+HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
+{
+    @autoreleasepool
+    {
+        if(key != AvnKeyNone)
+        {
+            NSEventModifierFlags flags = 0;
+            
+            if (modifiers & Control)
+                flags |= NSEventModifierFlagControl;
+            if (modifiers & Shift)
+                flags |= NSEventModifierFlagShift;
+            if (modifiers & Alt)
+                flags |= NSEventModifierFlagOption;
+            if (modifiers & Windows)
+                flags |= NSEventModifierFlagCommand;
+            
+            auto it = s_UnicodeKeyMap.find(key);
+            
+            if(it != s_UnicodeKeyMap.end())
+            {
+                auto keyString= [NSString stringWithFormat:@"%C", (unsigned short)it->second];
+                
+                [_native setKeyEquivalent: keyString];
+                [_native setKeyEquivalentModifierMask:flags];
+                
+                return S_OK;
+            }
+            else
+            {
+                auto it = s_AvnKeyMap.find(key); // check if a virtual key is mapped.
+                
+                if(it != s_AvnKeyMap.end())
+                {
+                    auto it1 = s_QwertyKeyMap.find(it->second); // convert virtual key to qwerty string.
+                    
+                    if(it1 != s_QwertyKeyMap.end())
+                    {
+                        [_native setKeyEquivalent: [NSString  stringWithUTF8String: it1->second]];
+                        [_native setKeyEquivalentModifierMask:flags];
+                        
+                        return S_OK;
+                    }
+                }
+            }
+        }
+        
+        // Nothing matched... clear.
+        [_native setKeyEquivalent: @""];
+        [_native setKeyEquivalentModifierMask: 0];
+        
+        return S_OK;
+    }
 }
 
 HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback)
 {
-    _predicate = predicate;
-    _callback = callback;
-    return S_OK;
+    @autoreleasepool
+    {
+        _predicate = predicate;
+        _callback = callback;
+        return S_OK;
+    }
+}
+
+HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
+{
+    @autoreleasepool
+    {
+        [_native setState:(isChecked && _isCheckable ? NSOnState : NSOffState)];
+        return S_OK;
+    }
+}
+
+HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
+{
+    @autoreleasepool
+    {
+        switch(toggleType)
+        {
+            case AvnMenuItemToggleType::None:
+                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuCheckmark"]];
+                
+                _isCheckable = false;
+                break;
+                
+            case AvnMenuItemToggleType::CheckMark:
+                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuCheckmark"]];
+                
+                _isCheckable = true;
+                break;
+                
+            case AvnMenuItemToggleType::Radio:
+                [_native setOnStateImage: [NSImage imageNamed:@"NSMenuItemBullet"]];
+                
+                _isCheckable = true;
+                break;
+        }
+        
+        return S_OK;
+    }
+}
+
+HRESULT AvnAppMenuItem::SetIcon(void *data, size_t length)
+{
+    @autoreleasepool
+    {
+        if(data != nullptr)
+        {
+            NSData *imageData = [NSData dataWithBytes:data length:length];
+            NSImage *image = [[NSImage alloc] initWithData:imageData];
+            
+            NSSize originalSize = [image size];
+             
+            NSSize size;
+            size.height = [[NSFont menuFontOfSize:0] pointSize] * 1.333333;
+            
+            auto scaleFactor = size.height / originalSize.height;
+            size.width = originalSize.width * scaleFactor;
+            
+            [image setSize: size];
+            [_native setImage:image];
+        }
+        else
+        {
+            [_native setImage:nullptr];
+        }
+        return S_OK;
+    }
 }
 
 bool AvnAppMenuItem::EvaluateItemEnabled()
@@ -130,71 +277,123 @@ void AvnAppMenuItem::RaiseOnClicked()
     }
 }
 
-AvnAppMenu::AvnAppMenu()
+AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events)
 {
-    _native = [AvnMenu new];
+    _baseEvents = events;
+    id del = [[AvnMenuDelegate alloc] initWithParent: this];
+    _native = [[AvnMenu alloc] initWithDelegate: del];
 }
 
-AvnAppMenu::AvnAppMenu(AvnMenu* native)
-{
-    _native = native;
-}
 
 AvnMenu* AvnAppMenu::GetNative()
 {
     return _native;
 }
 
-HRESULT AvnAppMenu::AddItem (IAvnAppMenuItem* item)
+void AvnAppMenu::RaiseNeedsUpdate()
 {
-    auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
-    
-    if(avnMenuItem != nullptr)
+    if(_baseEvents != nullptr)
     {
-        [_native addItem: avnMenuItem->GetNative()];
+        _baseEvents->NeedsUpdate();
     }
-    
-    return S_OK;
 }
 
-HRESULT AvnAppMenu::RemoveItem (IAvnAppMenuItem* item)
+HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
-    auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
-    
-    if(avnMenuItem != nullptr)
+    @autoreleasepool
     {
-        [_native removeItem:avnMenuItem->GetNative()];
+        if([_native hasGlobalMenuItem])
+        {
+            index++;
+        }
+        
+        auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+        
+        if(avnMenuItem != nullptr)
+        {
+            [_native insertItem: avnMenuItem->GetNative() atIndex:index];
+        }
+        
+        return S_OK;
     }
-    
-    return S_OK;
 }
 
-HRESULT AvnAppMenu::SetTitle (void* utf8String)
+HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
 {
-    if (utf8String != nullptr)
+    @autoreleasepool
     {
-        [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
+        
+        if(avnMenuItem != nullptr)
+        {
+            [_native removeItem:avnMenuItem->GetNative()];
+        }
+        
+        return S_OK;
     }
-    
-    return S_OK;
+}
+
+HRESULT AvnAppMenu::SetTitle (char* utf8String)
+{
+    @autoreleasepool
+    {
+        if (utf8String != nullptr)
+        {
+            [_native setTitle:[NSString stringWithUTF8String:(const char*)utf8String]];
+        }
+        
+        return S_OK;
+    }
 }
 
 HRESULT AvnAppMenu::Clear()
 {
-    [_native removeAllItems];
-    return S_OK;
-}
-
-extern IAvnAppMenu* CreateAppMenu()
-{
     @autoreleasepool
     {
-        id menuBar = [NSMenu new];
-        return new AvnAppMenu(menuBar);
+        [_native removeAllItems];
+        return S_OK;
     }
 }
 
-extern IAvnAppMenuItem* CreateAppMenuItem()
+@implementation AvnMenuDelegate
+{
+    ComPtr<AvnAppMenu> _parent;
+}
+- (id) initWithParent:(AvnAppMenu *)parent
+{
+    self = [super init];
+    _parent = parent;
+    return self;
+}
+- (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)item atIndex:(NSInteger)index shouldCancel:(BOOL)shouldCancel
+{
+    if(shouldCancel)
+        return NO;
+    return YES;
+}
+
+- (NSInteger)numberOfItemsInMenu:(NSMenu *)menu
+{
+    return [menu numberOfItems];
+}
+
+- (void)menuNeedsUpdate:(NSMenu *)menu
+{
+    _parent->RaiseNeedsUpdate();
+}
+
+
+@end
+
+extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* cb)
+{
+    @autoreleasepool
+    {
+        return new AvnAppMenu(cb);
+    }
+}
+
+extern IAvnMenuItem* CreateAppMenuItem()
 {
     @autoreleasepool
     {
@@ -202,7 +401,7 @@ extern IAvnAppMenuItem* CreateAppMenuItem()
     }
 }
 
-extern IAvnAppMenuItem* CreateAppMenuItemSeperator()
+extern IAvnMenuItem* CreateAppMenuItemSeperator()
 {
     @autoreleasepool
     {
@@ -210,10 +409,10 @@ extern IAvnAppMenuItem* CreateAppMenuItemSeperator()
     }
 }
 
-static IAvnAppMenu* s_appMenu = nullptr;
+static IAvnMenu* s_appMenu = nullptr;
 static NSMenuItem* s_appMenuItem = nullptr;
 
-extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
+extern void SetAppMenu (NSString* appName, IAvnMenu* menu)
 {
     s_appMenu = menu;
     
@@ -294,7 +493,7 @@ extern void SetAppMenu (NSString* appName, IAvnAppMenu* menu)
     }
 }
 
-extern IAvnAppMenu* GetAppMenu ()
+extern IAvnMenu* GetAppMenu ()
 {
     return s_appMenu;
 }

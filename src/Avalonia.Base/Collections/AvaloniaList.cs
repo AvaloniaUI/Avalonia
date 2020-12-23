@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -64,6 +61,15 @@ namespace Avalonia.Collections
         public AvaloniaList()
         {
             _inner = new List<T>();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AvaloniaList{T}"/>.
+        /// </summary>
+        /// <param name="capacity">Initial list capacity.</param>
+        public AvaloniaList(int capacity)
+        {
+            _inner = new List<T>(capacity);
         }
 
         /// <summary>
@@ -176,6 +182,15 @@ namespace Avalonia.Collections
         {
             get { return this[index]; }
             set { this[index] = (T)value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the total number of elements the internal data structure can hold without resizing.
+        /// </summary>
+        public int Capacity
+        {
+            get => _inner.Capacity;
+            set => _inner.Capacity = value;
         }
 
         /// <summary>
@@ -327,6 +342,8 @@ namespace Avalonia.Collections
                     }
                     else
                     {
+                        EnsureCapacity(_inner.Count + list.Count);
+
                         using (IEnumerator<T> en = items.GetEnumerator())
                         {
                             int insertIndex = index;
@@ -544,11 +561,95 @@ namespace Avalonia.Collections
         /// <inheritdoc/>
         void ICollection.CopyTo(Array array, int index)
         {
-            _inner.CopyTo((T[])array, index);
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
+            if (array.Rank != 1)
+            {
+                throw new ArgumentException("Multi-dimensional arrays are not supported.");
+            }
+
+            if (array.GetLowerBound(0) != 0)
+            {
+                throw new ArgumentException("Non-zero lower bounds are not supported.");
+            }
+
+            if (index < 0)
+            {
+                throw new ArgumentException("Invalid index.");
+            }
+
+            if (array.Length - index < Count)
+            {
+                throw new ArgumentException("The target array is too small.");
+            }
+
+            if (array is T[] tArray)
+            {
+                _inner.CopyTo(tArray, index);
+            }
+            else
+            {
+                //
+                // Catch the obvious case assignment will fail.
+                // We can't find all possible problems by doing the check though.
+                // For example, if the element type of the Array is derived from T,
+                // we can't figure out if we can successfully copy the element beforehand.
+                //
+                Type targetType = array.GetType().GetElementType()!;
+                Type sourceType = typeof(T);
+                if (!(targetType.IsAssignableFrom(sourceType) || sourceType.IsAssignableFrom(targetType)))
+                {
+                    throw new ArgumentException("Invalid array type");
+                }
+
+                //
+                // We can't cast array of value type to object[], so we don't support
+                // widening of primitive types here.
+                //
+                object[] objects = array as object[];
+                if (objects == null)
+                {
+                    throw new ArgumentException("Invalid array type");
+                }
+
+                int count = _inner.Count;
+                try
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        objects[index++] = _inner[i];
+                    }
+                }
+                catch (ArrayTypeMismatchException)
+                {
+                    throw new ArgumentException("Invalid array type");
+                }
+            }
         }
 
         /// <inheritdoc/>
         Delegate[] INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
+
+        private void EnsureCapacity(int capacity)
+        {
+            // Adapted from List<T> implementation.
+            var currentCapacity = _inner.Capacity;
+
+            if (currentCapacity < capacity)
+            {
+                var newCapacity = currentCapacity == 0 ? 4 : currentCapacity * 2;
+
+                if (newCapacity < capacity)
+                {
+                    newCapacity = capacity;
+                }
+
+                _inner.Capacity = newCapacity;
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="CollectionChanged"/> event with an add action.

@@ -1,7 +1,6 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Collections;
+using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Data;
@@ -93,6 +92,69 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public async Task Should_Negate_BindingNotification_Value()
+        {
+            var data = new { Foo = true };
+            var target = ExpressionObserverBuilder.Build(data, "!Foo", enableDataValidation: true);
+            var result = await target.Take(1);
+
+            Assert.Equal(new BindingNotification(false), result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public async Task Should_Pass_Through_BindingNotification_Error()
+        {
+            var data = new { };
+            var target = ExpressionObserverBuilder.Build(data, "!Foo", enableDataValidation: true);
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new MissingMemberException("Could not find a matching property accessor for 'Foo' on '{ }'"),
+                    BindingErrorType.Error),
+                result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public async Task Should_Negate_BindingNotification_Error_FallbackValue()
+        {
+            var data = new Test { DataValidationError = "Test error" };
+            var target = ExpressionObserverBuilder.Build(data, "!Foo", enableDataValidation: true);
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new DataValidationException("Test error"),
+                    BindingErrorType.DataValidationError,
+                    true),
+                result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public async Task Should_Add_Error_To_BindingNotification_For_FallbackValue_Not_Convertible_To_Boolean()
+        {
+            var data = new Test { Bar = new object(), DataValidationError = "Test error" };
+            var target = ExpressionObserverBuilder.Build(data, "!Bar", enableDataValidation: true);
+            var result = await target.Take(1);
+
+            Assert.Equal(
+                new BindingNotification(
+                    new AggregateException(
+                        new DataValidationException("Test error"),
+                        new InvalidCastException($"Unable to convert 'System.Object' to bool.")),
+                    BindingErrorType.Error),
+                result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
         public void SetValue_Should_Return_False_For_Invalid_Value()
         {
             var data = new { Foo = "foo" };
@@ -104,9 +166,33 @@ namespace Avalonia.Markup.UnitTests.Parsers
             GC.KeepAlive(data);
         }
 
-        private class Test
+        private class Test : INotifyDataErrorInfo
         {
+            private string _dataValidationError;
+
             public bool Foo { get; set; }
+            public object Bar { get; set; }
+
+            public string DataValidationError
+            {
+                get => _dataValidationError;
+                set
+                {
+                    if (value == _dataValidationError)
+                        return;
+                    _dataValidationError = value;
+                    ErrorsChanged?
+                        .Invoke(this, new DataErrorsChangedEventArgs(nameof(DataValidationError)));
+                }
+            }
+            public bool HasErrors => !string.IsNullOrWhiteSpace(DataValidationError);
+
+            public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+
+            public IEnumerable GetErrors(string propertyName)
+            {
+                return DataValidationError is object ? new[] { DataValidationError } : null;
+            }
         }
     }
 }

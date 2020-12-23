@@ -3,5 +3,6 @@
     <HiddenComponentWarnings>
       <Value>MissingOrIgnoredProjectReference</Value>
     </HiddenComponentWarnings>
+        <FixtureName>Avalonia.Controls.UnitTests.TimePickerTests</FixtureName>
   </Settings>
 </ProjectConfiguration>

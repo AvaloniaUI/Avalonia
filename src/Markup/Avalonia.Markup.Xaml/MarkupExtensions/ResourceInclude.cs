@@ -2,17 +2,18 @@
 using System.ComponentModel;
 using Avalonia.Controls;
 
+#nullable enable
+
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     /// <summary>
     /// Loads a resource dictionary from a specified URL.
     /// </summary>
-    public class ResourceInclude :IResourceProvider
+    public class ResourceInclude : IResourceProvider
     {
-        private Uri _baseUri;
-        private IResourceDictionary _loaded;
-
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        private Uri? _baseUri;
+        private IResourceDictionary? _loaded;
+        private bool _isLoading;
 
         /// <summary>
         /// Gets the loaded resource dictionary.
@@ -23,32 +24,43 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 if (_loaded == null)
                 {
-                    var loader = new AvaloniaXamlLoader();
-                    _loaded = (IResourceDictionary)loader.Load(Source, _baseUri);
-
-                    if (_loaded.HasResources)
-                    {
-                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-                    }
+                    _isLoading = true;
+                    _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(Source, _baseUri);
+                    _isLoading = false;
                 }
 
                 return _loaded;
             }
         }
 
+        public IResourceHost? Owner => Loaded.Owner;
+
         /// <summary>
         /// Gets or sets the source URL.
         /// </summary>
-        public Uri Source { get; set; }
+        public Uri? Source { get; set; }
 
-        /// <inhertidoc/>
-        bool IResourceProvider.HasResources => Loaded.HasResources;
+        bool IResourceNode.HasResources => Loaded.HasResources;
 
-        /// <inhertidoc/>
-        bool IResourceProvider.TryGetResource(object key, out object value)
+        public event EventHandler OwnerChanged
         {
-            return Loaded.TryGetResource(key, out value);
+            add => Loaded.OwnerChanged += value;
+            remove => Loaded.OwnerChanged -= value;
         }
+
+        bool IResourceNode.TryGetResource(object key, out object? value)
+        {
+            if (!_isLoading)
+            {
+                return Loaded.TryGetResource(key, out value);                
+            }
+
+            value = null;
+            return false;
+        }
+
+        void IResourceProvider.AddOwner(IResourceHost owner) => Loaded.AddOwner(owner);
+        void IResourceProvider.RemoveOwner(IResourceHost owner) => Loaded.RemoveOwner(owner);
 
         public ResourceInclude ProvideValue(IServiceProvider serviceProvider)
         {

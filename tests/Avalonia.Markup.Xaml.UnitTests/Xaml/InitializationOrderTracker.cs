@@ -1,7 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,10 +18,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             base.OnAttachedToLogicalTree(e);
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            Order.Add($"Property {e.Property.Name} Changed");
-            base.OnPropertyChanged(e);
+            Order.Add($"Property {change.Property.Name} Changed");
+            base.OnPropertyChanged(change);
         }
 
         void ISupportInitialize.BeginInit()

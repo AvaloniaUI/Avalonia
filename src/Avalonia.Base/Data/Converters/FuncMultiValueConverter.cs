@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -30,7 +27,23 @@ namespace Avalonia.Data.Converters
         /// <inheritdoc/>
         public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
         {
-            var converted = values.OfType<TIn>().ToList();
+            //standard OfType skip null values, even they are valid for the Type
+            static IEnumerable<TIn> OfTypeWithDefaultSupport(IList<object> list)
+            {
+                foreach (object obj in list)
+                {
+                    if (obj is TIn result)
+                    {
+                        yield return result;
+                    }
+                    else if (Equals(obj, default(TIn)))
+                    {
+                        yield return default(TIn);
+                    }
+                }
+            }
+
+            var converted = OfTypeWithDefaultSupport(values).ToList();
 
             if (converted.Count == values.Count)
             {

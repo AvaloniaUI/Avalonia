@@ -1,9 +1,5 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
-using Avalonia.Media;
 using Avalonia.Platform;
 using HarfBuzzSharp;
 using SkiaSharp;
@@ -14,9 +10,9 @@ namespace Avalonia.Skia
     {
         private bool _isDisposed;
 
-        public GlyphTypefaceImpl(Typeface typeface)
+        public GlyphTypefaceImpl(SKTypeface typeface)
         {
-            Typeface = TypefaceCache.Get(typeface.FontFamily, typeface.Weight, typeface.Style).SKTypeface;
+            Typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
             Face = new Face(GetTable)
             {
@@ -27,40 +23,35 @@ namespace Avalonia.Skia
 
             Font.SetFunctionsOpenType();
 
-            Font.GetScale(out var xScale, out _);
+            DesignEmHeight = (short)Typeface.UnitsPerEm;
 
-            DesignEmHeight = (short)xScale;
+            var metrics = Typeface.ToFont().Metrics;
 
-            if (!Font.TryGetHorizontalFontExtents(out var fontExtents))
-            {
-                Font.TryGetVerticalFontExtents(out fontExtents);
-            }
+            const double defaultFontRenderingEmSize = 12.0;
 
-            Ascent = -fontExtents.Ascender;
+            Ascent = (int)(metrics.Ascent / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
 
-            Descent = -fontExtents.Descender;
+            Descent = (int)(metrics.Descent / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
 
-            LineGap = fontExtents.LineGap;
+            LineGap = (int)(metrics.Leading / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
 
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineOffset, out var underlinePosition))
-            {
-                UnderlinePosition = underlinePosition;
-            }
+            UnderlinePosition = metrics.UnderlinePosition != null ?
+                (int)(metrics.UnderlinePosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
+                0;
 
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineSize, out var underlineThickness))
-            {
-                UnderlineThickness = underlineThickness;
-            }
+            UnderlineThickness = metrics.UnderlineThickness != null ?
+                (int)(metrics.UnderlineThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
+                0;
 
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutOffset, out var strikethroughPosition))
-            {
-                StrikethroughPosition = strikethroughPosition;
-            }
+            StrikethroughPosition = metrics.StrikeoutPosition != null ?
+                (int)(metrics.StrikeoutPosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
+                0;
 
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutSize, out var strikethroughThickness))
-            {
-                StrikethroughThickness = strikethroughThickness;
-            }
+            StrikethroughThickness = metrics.StrikeoutThickness != null ?
+                (int)(metrics.StrikeoutThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
+                0;
+
+            IsFixedPitch = Typeface.IsFixedPitch;
         }
 
         public Face Face { get; }
@@ -81,7 +72,6 @@ namespace Avalonia.Skia
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public int LineGap { get; }
 
-        //ToDo: Get these values from HarfBuzz
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public int UnderlinePosition { get; }
 
@@ -93,6 +83,9 @@ namespace Avalonia.Skia
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public int StrikethroughThickness { get; }
+
+        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        public bool IsFixedPitch { get; }
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public ushort GetGlyph(uint codepoint)

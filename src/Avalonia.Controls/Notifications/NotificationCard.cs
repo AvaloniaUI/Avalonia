@@ -1,9 +1,7 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 
@@ -12,6 +10,7 @@ namespace Avalonia.Controls.Notifications
     /// <summary>
     /// Control that represents and displays a notification.
     /// </summary>
+    [PseudoClasses(":error", ":information", ":success", ":warning")]
     public class NotificationCard : ContentControl
     {
         private bool _isClosed;
@@ -118,7 +117,7 @@ namespace Avalonia.Controls.Notifications
         /// Defines the CloseOnClick property.
         /// </summary>
         public static readonly AvaloniaProperty CloseOnClickProperty =
-          AvaloniaProperty.RegisterAttached<Button, bool>("CloseOnClick", typeof(NotificationCard), validate: CloseOnClickChanged);
+          AvaloniaProperty.RegisterAttached<Button, bool>("CloseOnClick", typeof(NotificationCard)/*, validate: CloseOnClickChanged*/);
 
         private static bool CloseOnClickChanged(Button button, bool value)
         {

@@ -1,6 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+using System;
 using System.Collections.Concurrent;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -11,11 +9,11 @@ namespace Avalonia.Skia
 {
     internal static class SKTypefaceCollectionCache
     {
-        private static readonly ConcurrentDictionary<FontFamilyKey, SKTypefaceCollection> s_cachedCollections;
+        private static readonly ConcurrentDictionary<FontFamily, SKTypefaceCollection> s_cachedCollections;
 
         static SKTypefaceCollectionCache()
         {
-            s_cachedCollections = new ConcurrentDictionary<FontFamilyKey, SKTypefaceCollection>();
+            s_cachedCollections = new ConcurrentDictionary<FontFamily, SKTypefaceCollection>();
         }
 
         /// <summary>
@@ -25,7 +23,7 @@ namespace Avalonia.Skia
         /// <returns></returns>
         public static SKTypefaceCollection GetOrAddTypefaceCollection(FontFamily fontFamily)
         {
-            return s_cachedCollections.GetOrAdd(fontFamily.Key, x => CreateCustomFontCollection(fontFamily));
+            return s_cachedCollections.GetOrAdd(fontFamily, x => CreateCustomFontCollection(fontFamily));
         }
 
         /// <summary>
@@ -45,13 +43,23 @@ namespace Avalonia.Skia
             {
                 var assetStream = assetLoader.Open(asset);
 
-                var skTypeface = SKTypeface.FromStream(assetStream);
+                if (assetStream == null)
+                    throw new InvalidOperationException("Asset could not be loaded.");
 
-                var typeface = new Typeface(fontFamily, (FontWeight)skTypeface.FontWeight, (FontStyle)skTypeface.FontSlant);
+                var typeface = SKTypeface.FromStream(assetStream);
 
-                var entry = new TypefaceCollectionEntry(typeface, skTypeface);
+                if (typeface == null)
+                    throw new InvalidOperationException("Typeface could not be loaded.");
 
-                typeFaceCollection.AddEntry(skTypeface.FamilyName, new FontKey(typeface.Weight, typeface.Style), entry);
+                if (typeface.FamilyName != fontFamily.Name)
+                {
+                    continue;
+                }
+
+                var key = new Typeface(fontFamily, typeface.FontSlant.ToAvalonia(),
+                    (FontWeight)typeface.FontWeight);
+
+                typeFaceCollection.AddTypeface(key, typeface);
             }
 
             return typeFaceCollection;

@@ -10,9 +10,12 @@ namespace Avalonia.OpenGL
 			DirectX11
         }
 
-        public List<PlatformApi> AllowedPlatformApis = new List<PlatformApi>
+        public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
-            PlatformApi.DirectX9
+            new GlVersion(GlProfileType.OpenGLES, 3, 0),
+            new GlVersion(GlProfileType.OpenGLES, 2, 0)
         };
+
+        public IList<PlatformApi> AllowedPlatformApis { get; set; } = null;
     }
 }

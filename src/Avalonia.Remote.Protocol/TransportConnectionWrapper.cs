@@ -98,5 +98,7 @@ namespace Avalonia.Remote.Protocol
             add => _onException.Add(value);
             remove => _onException.Remove(value);
         }
+
+        public void Start() => _conn.Start();
     }
 }

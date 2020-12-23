@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Xunit;
 using ReactiveUI;
 using Avalonia.ReactiveUI;
@@ -31,10 +28,17 @@ namespace Avalonia.ReactiveUI.UnitTests
 
         public class ExampleView : ReactiveUserControl<ExampleViewModel>
         {
-            public ItemsControl List { get; } = new ItemsControl();
-
-            public ExampleView()
+            public ItemsControl List { get; } = new ItemsControl
             {
+                Template = GetTemplate()
+            };
+
+            public ExampleView(Action<ItemsControl> adjustItemsControl = null)
+            {
+                adjustItemsControl?.Invoke(List);
+                List.ApplyTemplate();
+                List.Presenter.ApplyTemplate();
+                
                 Content = List;
                 ViewModel = new ExampleViewModel();
                 this.OneWayBind(ViewModel, x => x.Items, x => x.List.Items);
@@ -53,17 +57,14 @@ namespace Avalonia.ReactiveUI.UnitTests
         {
             var view = new ExampleView();
             Assert.NotNull(view.List.ItemTemplate);
+            Assert.IsType<FuncDataTemplate<object>>(view.List.ItemTemplate);
         }
 
         [Fact]
-        public void Should_Use_View_Model_View_Host_As_Data_Template()
+        public void Should_Use_ViewModelViewHost_As_Data_Template_By_Default()
         {
             var view = new ExampleView();
             view.ViewModel.Items.Add(new NestedViewModel());
-
-            view.List.Template = GetTemplate();
-            view.List.ApplyTemplate();
-            view.List.Presenter.ApplyTemplate();
 
             var child = view.List.Presenter.Panel.Children[0];
             var container = (ContentPresenter) child;
@@ -73,15 +74,10 @@ namespace Avalonia.ReactiveUI.UnitTests
         }
 
         [Fact]
-        public void Should_Resolve_And_Embedd_Appropriate_View_Model()
+        public void ViewModelViewHost_Should_Resolve_And_Embedd_Appropriate_View_Model()
         {
             var view = new ExampleView();
-            var root = new TestRoot { Child = view };
             view.ViewModel.Items.Add(new NestedViewModel());
-
-            view.List.Template = GetTemplate();
-            view.List.ApplyTemplate();
-            view.List.Presenter.ApplyTemplate();
 
             var child = view.List.Presenter.Panel.Children[0];
             var container = (ContentPresenter) child;
@@ -96,19 +92,55 @@ namespace Avalonia.ReactiveUI.UnitTests
             Assert.IsType<string>(host.DataContext);
         }
 
-        private FuncControlTemplate GetTemplate()
+        [Fact]
+        public void Should_Not_Override_Data_Template_Binding_When_Item_Template_Is_Set()
         {
-            return new FuncControlTemplate<ItemsControl>((parent, scope) =>
+            var view = new ExampleView(control => control.ItemTemplate = GetItemTemplate());
+            Assert.NotNull(view.List.ItemTemplate);
+            Assert.IsType<FuncDataTemplate<TextBlock>>(view.List.ItemTemplate);
+        }
+
+        [Fact]
+        public void Should_Not_Use_View_Model_View_Host_When_Item_Template_Is_Set()
+        {
+            var view = new ExampleView(control => control.ItemTemplate = GetItemTemplate());
+            view.ViewModel.Items.Add(new NestedViewModel());
+
+            var child = view.List.Presenter.Panel.Children[0];
+            var container = (ContentPresenter) child;
+            container.UpdateChild();
+
+            Assert.IsType<TextBlock>(container.Child);
+        }
+        
+        [Fact]
+        public void Should_Not_Use_View_Model_View_Host_When_Data_Templates_Are_Not_Empty()
+        {
+            var view = new ExampleView(control => control.DataTemplates.Add(GetItemTemplate()));
+            view.ViewModel.Items.Add(new NestedViewModel());
+
+            var child = view.List.Presenter.Panel.Children[0];
+            var container = (ContentPresenter) child;
+            container.UpdateChild();
+
+            Assert.IsType<TextBlock>(container.Child);
+        }
+
+        private static FuncDataTemplate GetItemTemplate()
+        {
+            return new FuncDataTemplate<TextBlock>((parent, scope) => new TextBlock());
+        }
+
+        private static FuncControlTemplate GetTemplate()
+        {
+            return new FuncControlTemplate<ItemsControl>((parent, scope) => new Border
             {
-                return new Border
+                Background = new Media.SolidColorBrush(0xffffffff),
+                Child = new ItemsPresenter
                 {
-                    Background = new Media.SolidColorBrush(0xffffffff),
-                    Child = new ItemsPresenter
-                    {
-                        Name = "PART_ItemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-                    }.RegisterInNameScope(scope)
-                };
+                    Name = "PART_ItemsPresenter",
+                    [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
+                }.RegisterInNameScope(scope)
             });
         }
     }

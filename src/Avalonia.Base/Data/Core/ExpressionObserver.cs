@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -21,7 +18,7 @@ namespace Avalonia.Data.Core
         /// An ordered collection of property accessor plugins that can be used to customize
         /// the reading and subscription of property values on a type.
         /// </summary>
-        public static readonly IList<IPropertyAccessorPlugin> PropertyAccessors =
+        public static readonly List<IPropertyAccessorPlugin> PropertyAccessors =
             new List<IPropertyAccessorPlugin>
             {
                 new AvaloniaPropertyAccessorPlugin(),
@@ -33,7 +30,7 @@ namespace Avalonia.Data.Core
         /// An ordered collection of validation checker plugins that can be used to customize
         /// the validation of view model and model data.
         /// </summary>
-        public static readonly IList<IDataValidationPlugin> DataValidators =
+        public static readonly List<IDataValidationPlugin> DataValidators =
             new List<IDataValidationPlugin>
             {
                 new DataAnnotationsValidationPlugin(),
@@ -45,7 +42,7 @@ namespace Avalonia.Data.Core
         /// An ordered collection of stream plugins that can be used to customize the behavior
         /// of the '^' stream binding operator.
         /// </summary>
-        public static readonly IList<IStreamPlugin> StreamHandlers =
+        public static readonly List<IStreamPlugin> StreamHandlers =
             new List<IStreamPlugin>
             {
                 new TaskStreamPlugin(),
@@ -57,6 +54,7 @@ namespace Avalonia.Data.Core
         private object _root;
         private IDisposable _rootSubscription;
         private WeakReference<object> _value;
+        private IReadOnlyList<ITransformNode> _transformNodes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -191,6 +189,24 @@ namespace Avalonia.Data.Core
                 description ?? expression.ToString());
         }
 
+        private IReadOnlyList<ITransformNode> GetTransformNodesFromChain()
+        {
+            LinkedList<ITransformNode> transforms = new LinkedList<ITransformNode>();
+            var node = _node;
+            while (node != null)
+            {
+                if (node is ITransformNode transform)
+                {
+                    transforms.AddFirst(transform);
+                }
+                node = node.Next;
+            }
+
+            return new List<ITransformNode>(transforms);
+        }
+
+        private IReadOnlyList<ITransformNode> TransformNodes => (_transformNodes ?? (_transformNodes = GetTransformNodesFromChain()));
+
         /// <summary>
         /// Attempts to set the value of a property expression.
         /// </summary>
@@ -206,18 +222,13 @@ namespace Avalonia.Data.Core
         {
             if (Leaf is SettableNode settable)
             {
-                var node = _node;
-                while (node != null)
+                foreach (var transform in TransformNodes)
                 {
-                    if (node is ITransformNode transform)
+                    value = transform.Transform(value);
+                    if (value is BindingNotification)
                     {
-                        value = transform.Transform(value);
-                        if (value is BindingNotification)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
-                    node = node.Next;
                 }
                 return settable.SetTargetValue(value, priority);
             }

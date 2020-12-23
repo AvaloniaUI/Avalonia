@@ -1,10 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -16,6 +16,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using JetBrains.Annotations;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -32,6 +33,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
             };
+
+            var root = new TestRoot(target);
 
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
@@ -77,6 +80,8 @@ namespace Avalonia.Controls.UnitTests
                 Items = CreateTestTreeData(),
             };
 
+            var root = new TestRoot(target);
+
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
@@ -117,304 +122,379 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Item_Should_Select_It()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
 
-            var item = tree[0].Children[1].Children[0];
-            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                var item = tree[0].Children[1].Children[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
 
-            Assert.NotNull(container);
+                Assert.NotNull(container);
 
-            _mouse.Click(container);
+                _mouse.Click(container);
 
-            Assert.Equal(item, target.SelectedItem);
-            Assert.True(container.IsSelected);
+                Assert.Equal(item, target.SelectedItem);
+                Assert.True(container.IsSelected);
+            }
         }
 
         [Fact]
         public void Clicking_WithControlModifier_Selected_Item_Should_Deselect_It()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
 
-            var item = tree[0].Children[1].Children[0];
-            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                var item = tree[0].Children[1].Children[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
 
-            Assert.NotNull(container);
+                Assert.NotNull(container);
 
-            target.SelectedItem = item;
+                target.SelectedItem = item;
 
-            Assert.True(container.IsSelected);
+                Assert.True(container.IsSelected);
 
-            _mouse.Click(container, modifiers: InputModifiers.Control);
+                _mouse.Click(container, modifiers: KeyModifiers.Control);
 
-            Assert.Null(target.SelectedItem);
-            Assert.False(container.IsSelected);
+                Assert.Null(target.SelectedItem);
+                Assert.False(container.IsSelected);
+            }
         }
 
         [Fact]
         public void Clicking_WithControlModifier_Not_Selected_Item_Should_Select_It()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
 
-            var item1 = tree[0].Children[1].Children[0];
-            var container1 = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item1);
+                var item1 = tree[0].Children[1].Children[0];
+                var container1 = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item1);
 
-            var item2 = tree[0].Children[1];
-            var container2 = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item2);
+                var item2 = tree[0].Children[1];
+                var container2 = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item2);
 
-            Assert.NotNull(container1);
-            Assert.NotNull(container2);
+                Assert.NotNull(container1);
+                Assert.NotNull(container2);
 
-            target.SelectedItem = item1;
+                target.SelectedItem = item1;
 
-            Assert.True(container1.IsSelected);
+                Assert.True(container1.IsSelected);
 
-            _mouse.Click(container2, modifiers: InputModifiers.Control);
-            
-            Assert.Equal(item2, target.SelectedItem);
-            Assert.False(container1.IsSelected);
-            Assert.True(container2.IsSelected);
+                _mouse.Click(container2, modifiers: KeyModifiers.Control);
+
+                Assert.Equal(item2, target.SelectedItem);
+                Assert.False(container1.IsSelected);
+                Assert.True(container2.IsSelected);
+            }
         }
 
         [Fact]
         public void Clicking_WithControlModifier_Selected_Item_Should_Deselect_And_Remove_From_SelectedItems()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
 
-            var rootNode = tree[0];
+                var rootNode = tree[0];
 
-            var item1 = rootNode.Children[0];
-            var item2 = rootNode.Children.Last();
+                var item1 = rootNode.Children[0];
+                var item2 = rootNode.Children.Last();
 
-            var item1Container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item1);
-            var item2Container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item2);
+                var item1Container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item1);
+                var item2Container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item2);
 
-            ClickContainer(item1Container, InputModifiers.Control);
-            Assert.True(item1Container.IsSelected);
+                ClickContainer(item1Container, KeyModifiers.Control);
+                Assert.True(item1Container.IsSelected);
 
-            ClickContainer(item2Container, InputModifiers.Control);
-            Assert.True(item2Container.IsSelected);
+                ClickContainer(item2Container, KeyModifiers.Control);
+                Assert.True(item2Container.IsSelected);
 
-            Assert.Equal(new[] {item1, item2}, target.SelectedItems.OfType<Node>());
+                Assert.Equal(new[] { item1, item2 }, target.SelectedItems.OfType<Node>());
 
-            ClickContainer(item1Container, InputModifiers.Control);
-            Assert.False(item1Container.IsSelected);
+                ClickContainer(item1Container, KeyModifiers.Control);
+                Assert.False(item1Container.IsSelected);
 
-            Assert.DoesNotContain(item1, target.SelectedItems.OfType<Node>());
+                Assert.DoesNotContain(item1, target.SelectedItems.OfType<Node>());
+            }
         }
 
         [Fact]
         public void Clicking_WithShiftModifier_DownDirection_Should_Select_Range_Of_Items()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
 
-            var rootNode = tree[0];
+                var rootNode = tree[0];
 
-            var from = rootNode.Children[0];
-            var to = rootNode.Children.Last();
+                var from = rootNode.Children[0];
+                var to = rootNode.Children.Last();
 
-            var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-            var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-            ClickContainer(fromContainer, InputModifiers.None);
+                ClickContainer(fromContainer, KeyModifiers.None);
 
-            Assert.True(fromContainer.IsSelected);
+                Assert.True(fromContainer.IsSelected);
 
-            ClickContainer(toContainer, InputModifiers.Shift);
-            AssertChildrenSelected(target, rootNode);
+                ClickContainer(toContainer, KeyModifiers.Shift);
+                AssertChildrenSelected(target, rootNode);
+            }
         }
 
         [Fact]
         public void Clicking_WithShiftModifier_UpDirection_Should_Select_Range_Of_Items()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
 
-            var rootNode = tree[0];
+                var rootNode = tree[0];
 
-            var from = rootNode.Children.Last();
-            var to = rootNode.Children[0];
+                var from = rootNode.Children.Last();
+                var to = rootNode.Children[0];
 
-            var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-            var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-            ClickContainer(fromContainer, InputModifiers.None);
+                ClickContainer(fromContainer, KeyModifiers.None);
 
-            Assert.True(fromContainer.IsSelected);
+                Assert.True(fromContainer.IsSelected);
 
-            ClickContainer(toContainer, InputModifiers.Shift);
-            AssertChildrenSelected(target, rootNode);
+                ClickContainer(toContainer, KeyModifiers.Shift);
+                AssertChildrenSelected(target, rootNode);
+            }
         }
 
         [Fact]
         public void Clicking_First_Item_Of_SelectedItems_Should_Select_Only_It()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple
-            };
-
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
-
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
-
-            var rootNode = tree[0];
-
-            var from = rootNode.Children.Last();
-            var to = rootNode.Children[0];
-
-            var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-            var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
-
-            ClickContainer(fromContainer, InputModifiers.None);
-
-            ClickContainer(toContainer, InputModifiers.Shift);
-            AssertChildrenSelected(target, rootNode);
-
-            ClickContainer(fromContainer, InputModifiers.None);
-
-            Assert.True(fromContainer.IsSelected);
-
-            foreach (var child in rootNode.Children)
-            {
-                if (child == from)
+                var tree = CreateTestTreeData();
+                var target = new TreeView
                 {
-                    continue;
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
+
+                var rootNode = tree[0];
+
+                var from = rootNode.Children.Last();
+                var to = rootNode.Children[0];
+
+                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+
+                ClickContainer(fromContainer, KeyModifiers.None);
+
+                ClickContainer(toContainer, KeyModifiers.Shift);
+                AssertChildrenSelected(target, rootNode);
+
+                ClickContainer(fromContainer, KeyModifiers.None);
+
+                Assert.True(fromContainer.IsSelected);
+
+                foreach (var child in rootNode.Children)
+                {
+                    if (child == from)
+                    {
+                        continue;
+                    }
+
+                    var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(child);
+
+                    Assert.False(container.IsSelected);
                 }
-
-                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(child);
-
-                Assert.False(container.IsSelected);
             }
         }
 
         [Fact]
         public void Setting_SelectedItem_Should_Set_Container_Selected()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
 
-            var item = tree[0].Children[1].Children[0];
-            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                var item = tree[0].Children[1].Children[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
 
-            Assert.NotNull(container);
+                Assert.NotNull(container);
 
-            target.SelectedItem = item;
+                target.SelectedItem = item;
 
-            Assert.True(container.IsSelected);
+                Assert.True(container.IsSelected);
+            }
         }
 
         [Fact]
         public void Setting_SelectedItem_Should_Raise_SelectedItemChanged_Event()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
 
-            var item = tree[0].Children[1].Children[0];
+                var item = tree[0].Children[1].Children[0];
 
-            var called = false;
-            target.SelectionChanged += (s, e) =>
+                var called = false;
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.RemovedItems);
+                    Assert.Equal(1, e.AddedItems.Count);
+                    Assert.Same(item, e.AddedItems[0]);
+                    called = true;
+                };
+
+                target.SelectedItem = item;
+                Assert.True(called);
+            }
+        }
+
+        [Fact]
+        public void Bound_SelectedItem_Should_Not_Be_Cleared_when_Changing_Selection()
+        {
+            using (Application())
             {
-                Assert.Empty(e.RemovedItems);
-                Assert.Equal(1, e.AddedItems.Count);
-                Assert.Same(item, e.AddedItems[0]);
-                called = true;
-            };
+                var dataContext = new TestDataContext();
 
-            target.SelectedItem = item;
-            Assert.True(called);
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    DataContext = dataContext
+                };
+
+                target.Bind(TreeView.ItemsProperty, new Binding("Items"));
+                target.Bind(TreeView.SelectedItemProperty, new Binding("SelectedItem"));
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                var selectedValues = new List<object>();
+
+                dataContext.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName == nameof(TestDataContext.SelectedItem))
+                        selectedValues.Add(dataContext.SelectedItem);
+                };
+                selectedValues.Add(dataContext.SelectedItem);
+
+                _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Left);
+                _mouse.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Left);
+
+                Assert.Equal(3, selectedValues.Count);
+                Assert.Equal(new[] { null, "Item 0", "Item 2" }, selectedValues.ToArray());
+            }
         }
 
         [Fact]
@@ -527,6 +607,8 @@ namespace Avalonia.Controls.UnitTests
                 Items = data,
             };
 
+            var root = new TestRoot(target);
+
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
@@ -552,7 +634,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Keyboard_Navigation_Should_Move_To_Last_Selected_Node()
         {
-            using (UnitTestApplication.Start(TestServices.RealFocus))
+            using (Application())
             {
                 var focus = FocusManager.Instance;
                 var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
@@ -576,6 +658,7 @@ namespace Avalonia.Controls.UnitTests
 
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
+                ExpandAll(target);
 
                 var item = data[0].Children[0];
                 var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
@@ -590,6 +673,50 @@ namespace Avalonia.Controls.UnitTests
 
                 navigation.Move(focus.Current, NavigationDirection.Next);
                 Assert.Same(node, focus.Current);
+            }
+        }
+        
+        [Fact]
+        public void Keyboard_Navigation_Should_Not_Crash_If_Selected_Item_Is_not_In_Tree()
+        {
+            using (Application())
+            {
+                var focus = FocusManager.Instance;
+                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+                var data = CreateTestTreeData();
+
+                var selectedNode = new Node { Value = "Out of Tree Selected Item" };
+
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = data,
+                    SelectedItem = selectedNode
+                };
+
+                var button = new Button();
+
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { target, button },
+                    }
+                };
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
+
+                var item = data[0].Children[0];
+                var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                Assert.NotNull(node);
+
+                target.SelectedItem = selectedNode;
+                node.Focus();
+                Assert.Same(node, focus.Current);
+
+                var next = KeyboardNavigationHandler.GetNext(node, NavigationDirection.Previous);
             }
         }
 
@@ -611,6 +738,7 @@ namespace Avalonia.Controls.UnitTests
 
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
+                ExpandAll(target);
 
                 var rootNode = tree[0];
 
@@ -633,7 +761,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Pressing_SelectAll_Gesture_With_Downward_Range_Selected_Should_Select_All_Nodes()
         {
-            using (UnitTestApplication.Start())
+            using (Application())
             {
                 var tree = CreateTestTreeData();
                 var target = new TreeView
@@ -648,6 +776,7 @@ namespace Avalonia.Controls.UnitTests
 
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
+                ExpandAll(target);
 
                 var rootNode = tree[0];
 
@@ -657,8 +786,8 @@ namespace Avalonia.Controls.UnitTests
                 var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
                 var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-                ClickContainer(fromContainer, InputModifiers.None);
-                ClickContainer(toContainer, InputModifiers.Shift);
+                ClickContainer(fromContainer, KeyModifiers.None);
+                ClickContainer(toContainer, KeyModifiers.Shift);
 
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
@@ -679,7 +808,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Pressing_SelectAll_Gesture_With_Upward_Range_Selected_Should_Select_All_Nodes()
         {
-            using (UnitTestApplication.Start())
+            using (Application())
             {
                 var tree = CreateTestTreeData();
                 var target = new TreeView
@@ -694,6 +823,7 @@ namespace Avalonia.Controls.UnitTests
 
                 CreateNodeDataTemplate(target);
                 ApplyTemplates(target);
+                ExpandAll(target);
 
                 var rootNode = tree[0];
 
@@ -703,8 +833,8 @@ namespace Avalonia.Controls.UnitTests
                 var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
                 var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-                ClickContainer(fromContainer, InputModifiers.None);
-                ClickContainer(toContainer, InputModifiers.Shift);
+                ClickContainer(fromContainer, KeyModifiers.None);
+                ClickContainer(toContainer, KeyModifiers.Shift);
 
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
@@ -752,97 +882,106 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Right_Click_On_UnselectedItem_Should_Clear_Existing_Selection()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple,
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple,
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
-            target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
 
-            var rootNode = tree[0];
-            var to = rootNode.Children[0];
-            var then = rootNode.Children[1];
+                var rootNode = tree[0];
+                var to = rootNode.Children[0];
+                var then = rootNode.Children[1];
 
-            var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(rootNode);
-            var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
-            var thenContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(then);
+                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(rootNode);
+                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var thenContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(then);
 
-            ClickContainer(fromContainer, InputModifiers.None);
-            ClickContainer(toContainer, InputModifiers.Shift);
+                ClickContainer(fromContainer, KeyModifiers.None);
+                ClickContainer(toContainer, KeyModifiers.Shift);
 
-            Assert.Equal(2, target.SelectedItems.Count);
+                Assert.Equal(2, target.SelectedItems.Count);
 
-            _mouse.Click(thenContainer, MouseButton.Right);
+                _mouse.Click(thenContainer, MouseButton.Right);
 
-            Assert.Equal(1, target.SelectedItems.Count);
+                Assert.Equal(1, target.SelectedItems.Count);
+            }
         }
 
         [Fact]
         public void Shift_Right_Click_Should_Not_Select_Multiple()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple,
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple,
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
-            target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
 
-            var rootNode = tree[0];
-            var from = rootNode.Children[0];
-            var to = rootNode.Children[1];
-            var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-            var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var rootNode = tree[0];
+                var from = rootNode.Children[0];
+                var to = rootNode.Children[1];
+                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-            _mouse.Click(fromContainer);
-            _mouse.Click(toContainer, MouseButton.Right, modifiers: InputModifiers.Shift);
+                _mouse.Click(fromContainer);
+                _mouse.Click(toContainer, MouseButton.Right, modifiers: KeyModifiers.Shift);
 
-            Assert.Equal(1, target.SelectedItems.Count);
+                Assert.Equal(1, target.SelectedItems.Count);
+            }
         }
 
         [Fact]
         public void Ctrl_Right_Click_Should_Not_Select_Multiple()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (Application())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple,
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple,
+                };
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
-            target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
 
-            var rootNode = tree[0];
-            var from = rootNode.Children[0];
-            var to = rootNode.Children[1];
-            var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
-            var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+                var rootNode = tree[0];
+                var from = rootNode.Children[0];
+                var to = rootNode.Children[1];
+                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-            _mouse.Click(fromContainer);
-            _mouse.Click(toContainer, MouseButton.Right, modifiers: InputModifiers.Control);
+                _mouse.Click(fromContainer);
+                _mouse.Click(toContainer, MouseButton.Right, modifiers: KeyModifiers.Control);
 
-            Assert.Equal(1, target.SelectedItems.Count);
+                Assert.Equal(1, target.SelectedItems.Count);
+            }
         }
 
         [Fact]
@@ -894,10 +1033,41 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Adding_Node_To_Removed_And_ReAdded_Parent_Should_Not_Crash()
+        {
+            // Issue #2985
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+            ExpandAll(target);
+
+            var parent = tree[0];
+            var node = parent.Children[1];
+
+            parent.Children.Remove(node);
+            parent.Children.Add(node);
+
+            var item = target.ItemContainerGenerator.Index.ContainerFromItem(node);
+            ApplyTemplates(new[] { item });
+
+            // #2985 causes ArgumentException here.
+            node.Children.Add(new Node());
+        }
+
+        [Fact]
         public void Auto_Expanding_In_Style_Should_Not_Break_Range_Selection()
         {
             /// Issue #2980.
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            using (Application())
             {
                 var target = new DerivedTreeView
                 {
@@ -929,8 +1099,71 @@ namespace Avalonia.Controls.UnitTests
                 ApplyTemplates(target);
 
                 _mouse.Click(GetItem(target, 0));
-                _mouse.Click(GetItem(target, 1), modifiers: InputModifiers.Shift);
+                _mouse.Click(GetItem(target, 1), modifiers: KeyModifiers.Shift);
             }
+        }
+
+        [Fact]
+        public void Removing_TreeView_From_Root_Should_Preserve_TreeViewItems()
+        {
+            // Issue #3328
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var root = new TestRoot();
+            root.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+            ExpandAll(target);
+
+            Assert.Equal(5, target.ItemContainerGenerator.Index.Containers.Count());
+
+            root.Child = null;
+
+            Assert.Equal(5, target.ItemContainerGenerator.Index.Containers.Count());
+            Assert.Equal(1, target.Presenter.Panel.Children.Count);
+
+            var rootNode = Assert.IsType<TreeViewItem>(target.Presenter.Panel.Children[0]);
+            Assert.Equal(3, rootNode.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(3, rootNode.Presenter.Panel.Children.Count);
+
+            var child2Node = Assert.IsType<TreeViewItem>(rootNode.Presenter.Panel.Children[1]);
+            Assert.Equal(1, child2Node.ItemContainerGenerator.Containers.Count());
+            Assert.Equal(1, child2Node.Presenter.Panel.Children.Count);
+        }
+
+        [Fact]
+        public void Clearing_TreeView_Items_Clears_Index()
+        {
+            // Issue #3551
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var root = new TestRoot();
+            root.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+
+            var rootNode = tree[0];
+            var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(rootNode);
+
+            Assert.NotNull(container);
+
+            root.Child = null;
+
+            tree.Clear();
+
+            Assert.Empty(target.ItemContainerGenerator.Index.Containers);
         }
 
         private void ApplyTemplates(TreeView tree)
@@ -1073,12 +1306,12 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        void ClickContainer(IControl container, InputModifiers modifiers)
+        private void ClickContainer(IControl container, KeyModifiers modifiers)
         {
             _mouse.Click(container, modifiers: modifiers);
         }
 
-        void AssertChildrenSelected(TreeView treeView, Node rootNode)
+        private void AssertChildrenSelected(TreeView treeView, Node rootNode)
         {
             foreach (var child in rootNode.Children)
             {
@@ -1086,6 +1319,16 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(container.IsSelected);
             }
+        }
+
+        private IDisposable Application()
+        {
+            return UnitTestApplication.Start(
+                TestServices.MockThreadingInterface.With(
+                    focusManager: new FocusManager(),
+                    keyboardDevice: () => new KeyboardDevice(),
+                    keyboardNavigation: new KeyboardNavigationHandler(),
+                    inputManager: new InputManager()));
         }
 
         private class Node : NotifyingBase
@@ -1117,8 +1360,6 @@ namespace Avalonia.Controls.UnitTests
                 return new TextBlock { Text = node.Value };
             }
 
-            public bool SupportsRecycling => false;
-
             public InstancedBinding ItemsSelector(object item)
             {
                 var obs = ExpressionObserver.Create(item, o => (o as Node).Children);
@@ -1133,6 +1374,31 @@ namespace Avalonia.Controls.UnitTests
 
         private class DerivedTreeView : TreeView
         {
+        }
+
+        private class TestDataContext : INotifyPropertyChanged
+        {
+            private string _selectedItem;
+
+            public TestDataContext()
+            {
+                Items = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => $"Item {i}"));
+            }
+
+            public ObservableCollection<string> Items { get; }
+
+            public string SelectedItem
+            {
+                get { return _selectedItem; }
+                set
+                {
+                    _selectedItem = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItem)));
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+            
         }
     }
 }

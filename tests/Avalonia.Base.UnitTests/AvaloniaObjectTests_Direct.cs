@@ -1,18 +1,12 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Platform;
-using Avalonia.Threading;
-using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -22,7 +16,7 @@ namespace Avalonia.Base.UnitTests
     public class AvaloniaObjectTests_Direct
     {
         [Fact]
-        public void GetValue_Gets_Value()
+        public void GetValue_Gets_Default_Value()
         {
             var target = new Class1();
 
@@ -100,8 +94,8 @@ namespace Avalonia.Base.UnitTests
 
             Class1.FooProperty.Changed.Subscribe(e =>
                 raised = e.Property == Class1.FooProperty &&
-                         (string)e.OldValue == "initial" &&
-                         (string)e.NewValue == "newvalue" &&
+                         e.OldValue.GetValueOrDefault() == "initial" &&
+                         e.NewValue.GetValueOrDefault() == "newvalue" &&
                          e.Priority == BindingPriority.LocalValue);
 
             target.SetValue(Class1.FooProperty, "newvalue");
@@ -110,11 +104,97 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Setting_Object_Property_To_UnsetValue_Reverts_To_Default_Value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FrankProperty, "newvalue");
+            target.SetValue(Class1.FrankProperty, AvaloniaProperty.UnsetValue);
+
+            Assert.Equal("Kups", target.GetValue(Class1.FrankProperty));
+        }
+
+        [Fact]
+        public void Setting_Object_Property_To_DoNothing_Does_Nothing()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FrankProperty, "newvalue");
+            target.SetValue(Class1.FrankProperty, BindingOperations.DoNothing);
+
+            Assert.Equal("newvalue", target.GetValue(Class1.FrankProperty));
+        }
+
+        [Fact]
+        public void Bind_Raises_PropertyChanged()
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+            bool raised = false;
+
+            target.PropertyChanged += (s, e) =>
+                raised = e.Property == Class1.FooProperty &&
+                         (string)e.OldValue == "initial" &&
+                         (string)e.NewValue == "newvalue" &&
+                         e.Priority == BindingPriority.LocalValue;
+
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext("newvalue");
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void PropertyChanged_Not_Raised_When_Value_Unchanged()
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+            var raised = 0;
+
+            target.PropertyChanged += (s, e) => ++raised;
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext("newvalue");
+            source.OnNext("newvalue");
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
         public void SetValue_On_Unregistered_Property_Throws_Exception()
         {
             var target = new Class2();
 
             Assert.Throws<ArgumentException>(() => target.SetValue(Class1.BarProperty, "value"));
+        }
+
+        [Fact]
+        public void ClearValue_Restores_Default_value()
+        {
+            var target = new Class1();
+
+            Assert.Equal("initial", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void ClearValue_Raises_PropertyChanged()
+        {
+            Class1 target = new Class1();
+            var raised = 0;
+
+            target.SetValue(Class1.FooProperty, "newvalue");
+            target.PropertyChanged += (s, e) =>
+            {
+                Assert.Same(target, s);
+                Assert.Equal(BindingPriority.LocalValue, e.Priority);
+                Assert.Equal(Class1.FooProperty, e.Property);
+                Assert.Equal("newvalue", (string)e.OldValue);
+                Assert.Equal("unset", (string)e.NewValue);
+                ++raised;
+            };
+
+            target.ClearValue(Class1.FooProperty);
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
@@ -170,7 +250,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Bind_NonGeneric_Uses_UnsetValue()
+        public void Bind_NonGeneric_Accepts_UnsetValue()
         {
             var target = new Class1();
             var source = new Subject<object>();
@@ -194,7 +274,7 @@ namespace Avalonia.Base.UnitTests
 
             source.OnNext(45);
 
-            Assert.Null(target.Foo);
+            Assert.Equal("unset", target.Foo);
         }
 
         [Fact]
@@ -207,7 +287,7 @@ namespace Avalonia.Base.UnitTests
 
             source.OnNext("foo");
 
-            Assert.Equal(0, target.Baz);
+            Assert.Equal(-1, target.Baz);
         }
 
         [Fact]
@@ -343,46 +423,66 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Property_Notifies_Initialized()
+        public void Binding_Error_Reverts_To_Default_Value()
         {
-            bool raised = false;
-
-            Class1.FooProperty.Initialized.Subscribe(e =>
-                raised = e.Property == Class1.FooProperty &&
-                         e.OldValue == AvaloniaProperty.UnsetValue &&
-                         (string)e.NewValue == "initial" &&
-                         e.Priority == BindingPriority.Unset);
-
             var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
 
-            Assert.True(raised);
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext("initial");
+            source.OnNext(BindingValue<string>.BindingError(new InvalidOperationException("Foo")));
+
+            Assert.Equal("unset", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Binding_Error_With_FallbackValue_Causes_Target_Update()
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext("initial");
+            source.OnNext(BindingValue<string>.BindingError(new InvalidOperationException("Foo"), "bar"));
+
+            Assert.Equal("bar", target.GetValue(Class1.FooProperty));
         }
 
         [Fact]
         public void DataValidationError_Does_Not_Cause_Target_Update()
         {
             var target = new Class1();
-            var source = new Subject<object>();
+            var source = new Subject<BindingValue<string>>();
 
             target.Bind(Class1.FooProperty, source);
             source.OnNext("initial");
-            source.OnNext(new BindingNotification(new InvalidOperationException("Foo"), BindingErrorType.DataValidationError));
+            source.OnNext(BindingValue<string>.DataValidationError(new InvalidOperationException("Foo")));
 
             Assert.Equal("initial", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void DataValidationError_With_FallbackValue_Causes_Target_Update()
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext("initial");
+            source.OnNext(BindingValue<string>.DataValidationError(new InvalidOperationException("Foo"), "bar"));
+
+            Assert.Equal("bar", target.GetValue(Class1.FooProperty));
         }
 
         [Fact]
         public void BindingError_With_FallbackValue_Causes_Target_Update()
         {
             var target = new Class1();
-            var source = new Subject<object>();
+            var source = new Subject<BindingValue<string>>();
 
             target.Bind(Class1.FooProperty, source);
             source.OnNext("initial");
-            source.OnNext(new BindingNotification(
-                new InvalidOperationException("Foo"),
-                BindingErrorType.Error,
-                "fallback"));
+            source.OnNext(BindingValue<string>.BindingError(new InvalidOperationException("Foo"), "fallback"));
 
             Assert.Equal("fallback", target.GetValue(Class1.FooProperty));
         }
@@ -391,7 +491,7 @@ namespace Avalonia.Base.UnitTests
         public void Binding_To_Direct_Property_Logs_BindingError()
         {
             var target = new Class1();
-            var source = new Subject<object>();
+            var source = new Subject<BindingValue<string>>();
             var called = false;
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
@@ -412,7 +512,7 @@ namespace Avalonia.Base.UnitTests
             {
                 target.Bind(Class1.FooProperty, source);
                 source.OnNext("baz");
-                source.OnNext(new BindingNotification(new InvalidOperationException("Binding Error Message"), BindingErrorType.Error));
+                source.OnNext(BindingValue<string>.BindingError(new InvalidOperationException("Binding Error Message")));
             }
 
             Assert.True(called);
@@ -527,10 +627,18 @@ namespace Avalonia.Base.UnitTests
                     o => o.DoubleValue,
                     (o, v) => o.DoubleValue = v);
 
+            public static readonly DirectProperty<Class1, object> FrankProperty =
+                AvaloniaProperty.RegisterDirect<Class1, object>(
+                    nameof(Frank),
+                    o => o.Frank,
+                    (o, v) => o.Frank = v,
+                    unsetValue: "Kups");
+
             private string _foo = "initial";
             private readonly string _bar = "bar";
             private int _baz = 5;
             private double _doubleValue;
+            private object _frank;
 
             public string Foo
             {
@@ -553,6 +661,12 @@ namespace Avalonia.Base.UnitTests
             {
                 get { return _doubleValue; }
                 set { SetAndRaise(DoubleValueProperty, ref _doubleValue, value); }
+            }
+
+            public object Frank
+            {
+                get { return _frank; }
+                set { SetAndRaise(FrankProperty, ref _frank, value); }
             }
         }
 

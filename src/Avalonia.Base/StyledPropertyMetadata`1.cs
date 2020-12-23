@@ -1,8 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Diagnostics;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -10,67 +6,54 @@ namespace Avalonia
     /// <summary>
     /// Metadata for styled avalonia properties.
     /// </summary>
-    public class StyledPropertyMetadata<TValue> : PropertyMetadata, IStyledPropertyMetadata
+    public class StyledPropertyMetadata<TValue> : AvaloniaPropertyMetadata, IStyledPropertyMetadata
     {
+        private Optional<TValue> _defaultValue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyMetadata{TValue}"/> class.
         /// </summary>
         /// <param name="defaultValue">The default value of the property.</param>
-        /// <param name="validate">A validation function.</param>
         /// <param name="defaultBindingMode">The default binding mode.</param>
+        /// <param name="coerce">A value coercion callback.</param>
         public StyledPropertyMetadata(
-            TValue defaultValue = default,
-            Func<IAvaloniaObject, TValue, TValue> validate = null,
-            BindingMode defaultBindingMode = BindingMode.Default)
+            Optional<TValue> defaultValue = default,
+            BindingMode defaultBindingMode = BindingMode.Default,
+            Func<IAvaloniaObject, TValue, TValue> coerce = null)
                 : base(defaultBindingMode)
         {
-            DefaultValue = new BoxedValue<TValue>(defaultValue);
-            Validate = validate;
+            _defaultValue = defaultValue;
+            CoerceValue = coerce;
         }
 
         /// <summary>
         /// Gets the default value for the property.
         /// </summary>
-        internal BoxedValue<TValue> DefaultValue { get; private set; }
+        public TValue DefaultValue => _defaultValue.GetValueOrDefault();
 
         /// <summary>
-        /// Gets the validation callback.
+        /// Gets the value coercion callback, if any.
         /// </summary>
-        public Func<IAvaloniaObject, TValue, TValue> Validate { get; private set; }
+        public Func<IAvaloniaObject, TValue, TValue> CoerceValue { get; private set; }
 
-        object IStyledPropertyMetadata.DefaultValue => DefaultValue.Boxed;
-
-        Func<IAvaloniaObject, object, object> IStyledPropertyMetadata.Validate => Cast(Validate);
+        object IStyledPropertyMetadata.DefaultValue => DefaultValue;
 
         /// <inheritdoc/>
-        public override void Merge(PropertyMetadata baseMetadata, AvaloniaProperty property)
+        public override void Merge(AvaloniaPropertyMetadata baseMetadata, AvaloniaProperty property)
         {
             base.Merge(baseMetadata, property);
 
             if (baseMetadata is StyledPropertyMetadata<TValue> src)
             {
-                if (DefaultValue.Boxed == null)
+                if (!_defaultValue.HasValue)
                 {
-                    DefaultValue = src.DefaultValue;
+                    _defaultValue = src.DefaultValue;
                 }
 
-                if (Validate == null)
+                if (CoerceValue == null)
                 {
-                    Validate = src.Validate;
+                    CoerceValue = src.CoerceValue;
                 }
-            }
-        }
-
-        [DebuggerHidden]
-        private static Func<IAvaloniaObject, object, object> Cast(Func<IAvaloniaObject, TValue, TValue> f)
-        {
-            if (f == null)
-            {
-                return null;
-            }
-            else
-            {
-                return (o, v) => f(o, (TValue)v);
             }
         }
     }

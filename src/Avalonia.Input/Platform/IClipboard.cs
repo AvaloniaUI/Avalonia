@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Threading.Tasks;
 
 namespace Avalonia.Input.Platform
@@ -12,5 +9,11 @@ namespace Avalonia.Input.Platform
         Task SetTextAsync(string text);
 
         Task ClearAsync();
+
+        Task SetDataObjectAsync(IDataObject data);
+        
+        Task<string[]> GetFormatsAsync();
+        
+        Task<object> GetDataAsync(string format);
     }
 }

@@ -4,28 +4,29 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Nuke.Common;
-using Nuke.Common.BuildServers;
-using Nuke.Common.Execution;
+using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.IO;
-using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
-using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 
 public partial class Build
 {
     [Parameter("configuration")]
     public string Configuration { get; set; }
-    
+
     [Parameter("skip-tests")]
     public bool SkipTests { get; set; }
-    
+
     [Parameter("force-nuget-version")]
     public string ForceNugetVersion { get; set; }
-    
+
+    [Parameter("skip-previewer")]
+    public bool SkipPreviewer { get; set; }
+
     public class BuildParameters
     {
         public string Configuration { get; }
         public bool SkipTests { get; }
+        public bool SkipPreviewer {get;}
         public string MainRepo { get; }
         public string MasterBranch { get; }
         public string RepositoryName { get; }
@@ -61,11 +62,12 @@ public partial class Build
         public AbsolutePath ZipTargetControlCatalogDesktopDir { get; }
 
 
-       public BuildParameters(Build b)
+        public BuildParameters(Build b)
         {
             // ARGUMENTS
             Configuration = b.Configuration ?? "Release";
             SkipTests = b.SkipTests;
+            SkipPreviewer = b.SkipPreviewer;
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
@@ -79,15 +81,15 @@ public partial class Build
             IsRunningOnUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                               Environment.OSVersion.Platform == PlatformID.MacOSX;
             IsRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsRunningOnAzure = Host == HostType.TeamServices ||
+            IsRunningOnAzure = Host == HostType.AzurePipelines ||
                                Environment.GetEnvironmentVariable("LOGNAME") == "vsts";
 
             if (IsRunningOnAzure)
             {
-                RepositoryName = TeamServices.Instance.RepositoryUri;
-                RepositoryBranch = TeamServices.Instance.SourceBranch;
-                IsPullRequest = TeamServices.Instance.PullRequestId.HasValue;
-                IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, TeamServices.Instance.RepositoryUri);
+                RepositoryName = AzurePipelines.Instance.RepositoryUri;
+                RepositoryBranch = AzurePipelines.Instance.SourceBranch;
+                IsPullRequest = AzurePipelines.Instance.PullRequestId.HasValue;
+                IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, AzurePipelines.Instance.RepositoryUri);
             }
             IsMainRepo =
                 StringComparer.OrdinalIgnoreCase.Equals(MainRepo,

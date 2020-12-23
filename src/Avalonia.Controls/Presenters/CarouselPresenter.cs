@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
@@ -156,6 +153,11 @@ namespace Avalonia.Controls.Presenters
                     GetOrCreateContainer(SelectedIndex);
                 }
             }
+        }
+
+        protected override void PanelCreated(IPanel panel)
+        {
+            ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         /// <summary>

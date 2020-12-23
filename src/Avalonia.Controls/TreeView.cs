@@ -1,15 +1,16 @@
 
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -54,6 +55,7 @@ namespace Avalonia.Controls
         private static readonly IList Empty = Array.Empty<object>();
         private object _selectedItem;
         private IList _selectedItems;
+        private bool _syncingSelectedItems;
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeView"/> class.
@@ -87,8 +89,6 @@ namespace Avalonia.Controls
             set => SetValue(AutoScrollToSelectedItemProperty, value);
         }
 
-        private bool _syncingSelectedItems;
-
         /// <summary>
         /// Gets or sets the selection mode.
         /// </summary>
@@ -101,6 +101,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the selected item.
         /// </summary>
+        /// <remarks>
+        /// Note that setting this property only currently works if the item is expanded to be visible.
+        /// To select non-expanded nodes use `Selection.SelectedIndex`.
+        /// </remarks>
         public object SelectedItem
         {
             get => _selectedItem;
@@ -113,10 +117,8 @@ namespace Avalonia.Controls
                 if (value != null)
                 {
                     if (selectedItems.Count != 1 || selectedItems[0] != value)
-                    {
-                        _syncingSelectedItems = true;
-                        SelectSingleItem(value);
-                        _syncingSelectedItems = false;
+                    {                        
+                        SelectSingleItem(value);                        
                     }
                 }
                 else if (SelectedItems.Count > 0)
@@ -127,7 +129,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the selected items.
+        /// Gets or sets the selected items.
         /// </summary>
         public IList SelectedItems
         {
@@ -215,8 +217,12 @@ namespace Avalonia.Controls
 
         private void SelectSingleItem(object item)
         {
-            SelectedItems.Clear();
+            _syncingSelectedItems = true;
+            SelectedItems.Clear();            
             SelectedItems.Add(item);
+            _syncingSelectedItems = false;
+
+            SetAndRaise(SelectedItemProperty, ref _selectedItem, item);            
         }
 
         /// <summary>
@@ -324,8 +330,8 @@ namespace Avalonia.Controls
             {
                 var changed = new SelectionChangedEventArgs(
                     SelectingItemsControl.SelectionChangedEvent,
-                    added ?? Empty,
-                    removed ?? Empty);
+                    removed ?? Empty,
+                    added ?? Empty);
                 RaiseEvent(changed);
             }
         }
@@ -365,7 +371,6 @@ namespace Avalonia.Controls
                 incc.CollectionChanged -= SelectedItemsCollectionChanged;
             }
         }
-
         (bool handled, IInputElement next) ICustomKeyboardNavigation.GetNext(IInputElement element,
             NavigationDirection direction)
         {
@@ -373,10 +378,11 @@ namespace Avalonia.Controls
             {
                 if (!this.IsVisualAncestorOf(element))
                 {
-                    IControl result = _selectedItem != null ?
+                    var result = _selectedItem != null ?
                         ItemContainerGenerator.Index.ContainerFromItem(_selectedItem) :
                         ItemContainerGenerator.ContainerFromIndex(0);
-                    return (true, result);
+                    
+                    return (result != null, result); // SelectedItem may not be in the treeview.
                 }
 
                 return (true, null);
@@ -393,8 +399,7 @@ namespace Avalonia.Controls
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemTemplateProperty,
                 TreeViewItem.ItemsProperty,
-                TreeViewItem.IsExpandedProperty,
-                new TreeContainerIndex());
+                TreeViewItem.IsExpandedProperty);
             result.Index.Materialized += ContainerMaterialized;
             return result;
         }
@@ -407,7 +412,7 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.InputModifiers & InputModifiers.Shift) != 0);
+                    (e.KeyModifiers & KeyModifiers.Shift) != 0);
             }
         }
 

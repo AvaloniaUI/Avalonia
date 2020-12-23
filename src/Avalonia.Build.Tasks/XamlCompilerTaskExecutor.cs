@@ -7,17 +7,18 @@ using System.Text;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Microsoft.Build.Framework;
 using Mono.Cecil;
-using XamlIl.TypeSystem;
 using Avalonia.Utilities;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using XamlIl;
-using XamlIl.Ast;
-using XamlIl.Parsers;
-using XamlIl.Transform;
+using XamlX;
+using XamlX.Ast;
+using XamlX.Parsers;
+using XamlX.Transform;
+using XamlX.TypeSystem;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
+using XamlX.IL;
 
 namespace Avalonia.Build.Tasks
 {
@@ -25,7 +26,8 @@ namespace Avalonia.Build.Tasks
     public static partial class XamlCompilerTaskExecutor
     {
         static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".paml");
+                                               || r.Name.ToLowerInvariant().EndsWith(".paml")
+                                               || r.Name.ToLowerInvariant().EndsWith(".axaml");
         
         public class CompileResult
         {
@@ -38,34 +40,76 @@ namespace Avalonia.Build.Tasks
                 WrittenFile = writtenFile;
             }
         }
-        
-        public static CompileResult Compile(IBuildEngine engine, string input, string[] references, string projectDirectory,
-            string output, bool verifyIl)
+
+        public static CompileResult Compile(IBuildEngine engine, string input, string[] references,
+            string projectDirectory,
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
+            bool skipXamlCompilation)
         {
-            var typeSystem = new CecilTypeSystem(references.Concat(new[] {input}), input);
+            var typeSystem = new CecilTypeSystem(references
+                .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
+                .Concat(new[] { input }), input);
+            
+            var asm = typeSystem.TargetAssemblyDefinition;
+
+            if (!skipXamlCompilation)
+            {
+                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance);
+                if (compileRes == null && !patchCom)
+                    return new CompileResult(true);
+                if (compileRes == false)
+                    return new CompileResult(false);
+            }
+
+            if (patchCom)
+                ComInteropHelper.PatchAssembly(asm, typeSystem);
+            
+            var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
+            if (!string.IsNullOrWhiteSpace(strongNameKey))
+                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+
+            asm.Write(output, writerParameters);
+
+            return new CompileResult(true, true);
+            
+        }
+        
+        static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
+            string projectDirectory, bool verifyIl, 
+            MessageImportance logImportance)
+        {
             var asm = typeSystem.TargetAssemblyDefinition;
             var emres = new EmbeddedResources(asm);
             var avares = new AvaloniaResources(asm, projectDirectory);
             if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
-                return new CompileResult(true);
-            
-            var xamlLanguage = AvaloniaXamlIlLanguage.Configure(typeSystem);
-            var compilerConfig = new XamlIlTransformerConfiguration(typeSystem,
+                return null;
+
+            var clrPropertiesDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlHelpers",
+                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            asm.MainModule.Types.Add(clrPropertiesDef);
+            var indexerAccessorClosure = new TypeDefinition("CompiledAvaloniaXaml", "!IndexerAccessorFactoryClosure",
+                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            asm.MainModule.Types.Add(indexerAccessorClosure);
+
+            var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
+            var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
                 typeSystem.TargetAssembly,
                 xamlLanguage,
-                XamlIlXmlnsMappings.Resolve(typeSystem, xamlLanguage),
-                AvaloniaXamlIlLanguage.CustomValueConverter);
+                XamlXmlnsMappings.Resolve(typeSystem, xamlLanguage),
+                AvaloniaXamlIlLanguage.CustomValueConverter,
+                new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
+                new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)));
 
 
             var contextDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlContext", 
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(contextDef);
 
-            var contextClass = XamlIlContextDefinition.GenerateContextClass(typeSystem.CreateTypeBuilder(contextDef), typeSystem,
-                xamlLanguage);
+            var contextClass = XamlILContextDefinition.GenerateContextClass(typeSystem.CreateTypeBuilder(contextDef), typeSystem,
+                xamlLanguage, emitConfig);
 
-            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, contextClass) { EnableIlVerification = verifyIl };
+            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass) { EnableIlVerification = verifyIl };
 
             var editorBrowsableAttribute = typeSystem
                 .GetTypeReference(typeSystem.FindType("System.ComponentModel.EditorBrowsableAttribute"))
@@ -117,41 +161,43 @@ namespace Avalonia.Build.Tasks
                 asm.MainModule.Types.Add(typeDef);
                 var builder = typeSystem.CreateTypeBuilder(typeDef);
                 
-                foreach (var res in group.Resources.Where(CheckXamlName))
+                foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x=>x.FilePath.ToLowerInvariant()))
                 {
                     try
                     {
+                        engine.LogMessage($"XAMLIL: {res.Name} -> {res.Uri}", logImportance);
+
                         // StreamReader is needed here to handle BOM
                         var xaml = new StreamReader(new MemoryStream(res.FileContents)).ReadToEnd();
-                        var parsed = XDocumentXamlIlParser.Parse(xaml);
+                        var parsed = XDocumentXamlParser.Parse(xaml);
 
-                        var initialRoot = (XamlIlAstObjectNode)parsed.Root;
+                        var initialRoot = (XamlAstObjectNode)parsed.Root;
                         
                         
-                        var precompileDirective = initialRoot.Children.OfType<XamlIlAstXmlDirective>()
+                        var precompileDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
                             .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Precompile");
                         if (precompileDirective != null)
                         {
-                            var precompileText = (precompileDirective.Values[0] as XamlIlAstTextNode)?.Text.Trim()
+                            var precompileText = (precompileDirective.Values[0] as XamlAstTextNode)?.Text.Trim()
                                 .ToLowerInvariant();
                             if (precompileText == "false")
                                 continue;
                             if (precompileText != "true")
-                                throw new XamlIlParseException("Invalid value for x:Precompile", precompileDirective);
+                                throw new XamlParseException("Invalid value for x:Precompile", precompileDirective);
                         }
                         
-                        var classDirective = initialRoot.Children.OfType<XamlIlAstXmlDirective>()
+                        var classDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
                             .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Class");
-                        IXamlIlType classType = null;
+                        IXamlType classType = null;
                         if (classDirective != null)
                         {
-                            if (classDirective.Values.Count != 1 || !(classDirective.Values[0] is XamlIlAstTextNode tn))
-                                throw new XamlIlParseException("x:Class should have a string value", classDirective);
+                            if (classDirective.Values.Count != 1 || !(classDirective.Values[0] is XamlAstTextNode tn))
+                                throw new XamlParseException("x:Class should have a string value", classDirective);
                             classType = typeSystem.TargetAssembly.FindType(tn.Text);
                             if (classType == null)
-                                throw new XamlIlParseException($"Unable to find type `{tn.Text}`", classDirective);
+                                throw new XamlParseException($"Unable to find type `{tn.Text}`", classDirective);
                             compiler.OverrideRootType(parsed,
-                                new XamlIlAstClrTypeReference(classDirective, classType, false));
+                                new XamlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
                         }
                         
@@ -320,7 +366,7 @@ namespace Avalonia.Build.Tasks
                     catch (Exception e)
                     {
                         int lineNumber = 0, linePosition = 0;
-                        if (e is XamlIlParseException xe)
+                        if (e is XamlParseException xe)
                         {
                             lineNumber = xe.LineNumber;
                             linePosition = xe.LinePosition;
@@ -332,28 +378,36 @@ namespace Avalonia.Build.Tasks
                     }
                     res.Remove();
                 }
+                
+                
+                // Technically that's a hack, but it fixes corert incompatibility caused by deterministic builds
+                int dupeCounter = 1;
+                foreach (var grp in typeDef.NestedTypes.GroupBy(x => x.Name))
+                {
+                    if (grp.Count() > 1)
+                    {
+                        foreach (var dupe in grp)
+                            dupe.Name += "_dup" + dupeCounter++;
+                    }
+                }
+                
+                
                 return true;
             }
             
             if (emres.Resources.Count(CheckXamlName) != 0)
                 if (!CompileGroup(emres))
-                    return new CompileResult(false);
+                    return false;
             if (avares.Resources.Count(CheckXamlName) != 0)
             {
                 if (!CompileGroup(avares))
-                    return new CompileResult(false);
+                    return false;
                 avares.Save();
             }
             
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-            
-            asm.Write(output, new WriterParameters
-            {
-                WriteSymbols = asm.MainModule.HasSymbols
-            });
-
-            return new CompileResult(true, true);
+            return true;
         }
         
     }

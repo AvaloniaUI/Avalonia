@@ -1,6 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+using System;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Input
@@ -18,6 +16,16 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets any input modifiers active at the time of focus.
         /// </summary>
-        public InputModifiers InputModifiers { get; set; }
+        [Obsolete("Use KeyModifiers")]
+        public InputModifiers InputModifiers
+        {
+            get => (InputModifiers)KeyModifiers;
+            set => KeyModifiers = (KeyModifiers)((int)value & 0xF);
+        }
+
+        /// <summary>
+        /// Gets or sets any key modifiers active at the time of focus.
+        /// </summary>
+        public KeyModifiers KeyModifiers { get; set; }
     }
 }

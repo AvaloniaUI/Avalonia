@@ -1,0 +1,27 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="Window">
+  <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>  
+  <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource SystemControlBackgroundAltHighBrush}" />
+  <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+  <Setter Property="FontSize" Value="{DynamicResource ContentControlFontSize}"/>  
+  <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Panel>
+        <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
+        <Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
+        <Panel Background="Transparent" Margin="{TemplateBinding WindowDecorationMargin}" />
+        <VisualLayerManager>
+          <VisualLayerManager.ChromeOverlayLayer>
+            <TitleBar />
+          </VisualLayerManager.ChromeOverlayLayer>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </VisualLayerManager>
+      </Panel>
+    </ControlTemplate>
+  </Setter>
+</Style>

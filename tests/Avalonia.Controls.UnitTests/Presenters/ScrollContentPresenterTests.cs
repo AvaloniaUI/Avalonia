@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -120,10 +117,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     Width = 150,
                     Height = 150,
                 },
-                Offset = new Vector(25, 25),
             };
 
             target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            target.Offset = new Vector(25, 25);
+
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 

@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -16,7 +15,7 @@ namespace Avalonia.Controls
             EnableMenuItemClickForwardingProperty.Changed.Subscribe(args =>
             {
                 var item = (MenuItem)args.Sender;
-                if (args.NewValue.Equals(true))
+                if (args.NewValue.GetValueOrDefault<bool>())
                     item.Click += OnMenuItemClick;
                 else
                     item.Click -= OnMenuItemClick;
@@ -30,7 +29,7 @@ namespace Avalonia.Controls
 
         private static void OnMenuItemClick(object sender, RoutedEventArgs e)
         {
-            (((MenuItem)sender).DataContext as NativeMenuItem)?.RaiseClick();
+            (((MenuItem)sender).DataContext as INativeMenuItemExporterEventsImplBridge)?.RaiseClicked();
         }
     }
 }

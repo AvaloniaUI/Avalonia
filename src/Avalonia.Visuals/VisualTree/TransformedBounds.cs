@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.VisualTree
@@ -79,5 +76,7 @@ namespace Avalonia.VisualTree
         {
             return !left.Equals(right);
         }
+
+        public override string ToString() => $"Bounds: {Bounds} Clip: {Clip} Transform {Transform}";
     }
 }

@@ -1,16 +1,13 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
     public static class BindingOperations
     {
-        public static readonly object DoNothing = new object();
+        public static readonly object DoNothing = new DoNothingType();
 
         /// <summary>
         /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="IAvaloniaObject"/>.
@@ -56,25 +53,51 @@ namespace Avalonia.Data
 
                     if (source != null)
                     {
+                        // Perf: Avoid allocating closure in the outer scope.
+                        var targetCopy = target;
+                        var propertyCopy = property;
+                        var bindingCopy = binding;
+
                         return source
                             .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
                             .Take(1)
-                            .Subscribe(x => target.SetValue(property, x, binding.Priority));
+                            .Subscribe(x => targetCopy.SetValue(
+                                propertyCopy,
+                                BindingNotification.ExtractValue(x),
+                                bindingCopy.Priority));
                     }
                     else
                     {
                         target.SetValue(property, binding.Value, binding.Priority);
                         return Disposable.Empty;
                     }
+
                 case BindingMode.OneWayToSource:
+                {
+                    // Perf: Avoid allocating closure in the outer scope.
+                    var bindingCopy = binding;
+
                     return Observable.CombineLatest(
                         binding.Observable,
                         target.GetObservable(property),
                         (_, v) => v)
-                    .Subscribe(x => binding.Subject.OnNext(x));
+                    .Subscribe(x => bindingCopy.Subject.OnNext(x));
+                }
+
                 default:
                     throw new ArgumentException("Invalid binding mode.");
             }
         }
+    }
+
+    public sealed class DoNothingType
+    {
+        internal DoNothingType() { }
+
+        /// <summary>
+        /// Returns the string representation of <see cref="BindingOperations.DoNothing"/>.
+        /// </summary>
+        /// <returns>The string "(do nothing)".</returns>
+        public override string ToString() => "(do nothing)";
     }
 }

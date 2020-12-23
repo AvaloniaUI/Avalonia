@@ -1,79 +1,56 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
+
+#nullable enable
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// A style that consists of a number of child styles.
     /// </summary>
-    public class Styles : AvaloniaObject, IAvaloniaList<IStyle>, IStyle, ISetStyleParent
+    public class Styles : AvaloniaObject,
+        IAvaloniaList<IStyle>,
+        IStyle,
+        IResourceProvider
     {
-        private IResourceNode _parent;
-        private IResourceDictionary _resources;
-        private AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
-        private Dictionary<Type, List<IStyle>> _cache;
+        private readonly AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
+        private IResourceHost? _owner;
+        private IResourceDictionary? _resources;
+        private Dictionary<Type, List<IStyle>?>? _cache;
 
         public Styles()
         {
             _styles.ResetBehavior = ResetBehavior.Remove;
-            _styles.ForEachItem(
-                x =>
-                {
-                    if (x.ResourceParent == null && x is ISetStyleParent setParent)
-                    {
-                        setParent.SetParent(this);
-                        setParent.NotifyResourcesChanged(new ResourcesChangedEventArgs());
-                    }
-
-                    if (x.HasResources)
-                    {
-                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-                    }
-
-                    x.ResourcesChanged += SubResourceChanged;
-                    _cache = null;
-                },
-                x =>
-                {
-                    if (x.ResourceParent == this && x is ISetStyleParent setParent)
-                    {
-                        setParent.SetParent(null);
-                        setParent.NotifyResourcesChanged(new ResourcesChangedEventArgs());
-                    }
-
-                    if (x.HasResources)
-                    {
-                        ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
-                    }
-
-                    x.ResourcesChanged -= SubResourceChanged;
-                    _cache = null;
-                },
-                () => { });
+            _styles.CollectionChanged += OnCollectionChanged;
         }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged
+        public Styles(IResourceHost owner)
+            : this()
         {
-            add => _styles.CollectionChanged += value;
-            remove => _styles.CollectionChanged -= value;
+            Owner = owner;
         }
 
-        /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        public event EventHandler? OwnerChanged;
 
-        /// <inheritdoc/>
         public int Count => _styles.Count;
 
-        /// <inheritdoc/>
-        public bool HasResources => _resources?.Count > 0 || this.Any(x => x.HasResources);
+        public IResourceHost? Owner
+        {
+            get => _owner;
+            private set
+            {
+                if (_owner != value)
+                {
+                    _owner = value;
+                    OwnerChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets a dictionary of style resources.
@@ -83,102 +60,98 @@ namespace Avalonia.Styling
             get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                value = value ?? throw new ArgumentNullException(nameof(Resources));
 
-                var hadResources = false;
-
-                if (_resources != null)
+                if (Owner is object)
                 {
-                    hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
+                    _resources?.RemoveOwner(Owner);
                 }
 
                 _resources = value;
-                _resources.ResourcesChanged += ResourceDictionaryChanged;
 
-                if (hadResources || _resources.Count > 0)
+                if (Owner is object)
                 {
-                    ((ISetStyleParent)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                    _resources.AddOwner(Owner);
                 }
             }
         }
 
-        /// <inheritdoc/>
-        IResourceNode IResourceNode.ResourceParent => _parent;
-
-        /// <inheritdoc/>
         bool ICollection<IStyle>.IsReadOnly => false;
 
-        /// <inheritdoc/>
+        bool IResourceNode.HasResources
+        {
+            get
+            {
+                if (_resources?.Count > 0)
+                {
+                    return true;
+                }
+
+                foreach (var i in this)
+                {
+                    if (i is IResourceProvider p && p.HasResources)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         IStyle IReadOnlyList<IStyle>.this[int index] => _styles[index];
 
-        /// <inheritdoc/>
+        IReadOnlyList<IStyle> IStyle.Children => this;
+
         public IStyle this[int index]
         {
             get => _styles[index];
             set => _styles[index] = value;
         }
 
-        /// <summary>
-        /// Attaches the style to a control if the style's selector matches.
-        /// </summary>
-        /// <param name="control">The control to attach to.</param>
-        /// <param name="container">
-        /// The control that contains this style. May be null.
-        /// </param>
-        public bool Attach(IStyleable control, IStyleHost container)
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
         {
-            if (_cache == null)
-            {
-                _cache = new Dictionary<Type, List<IStyle>>();
-            }
+            _cache ??= new Dictionary<Type, List<IStyle>?>();
 
-            if (_cache.TryGetValue(control.StyleKey, out var cached))
+            if (_cache.TryGetValue(target.StyleKey, out var cached))
             {
-                if (cached != null)
+                if (cached is object)
                 {
                     foreach (var style in cached)
                     {
-                        style.Attach(control, container);
+                        style.TryAttach(target, host);
                     }
 
-                    return true;
+                    return SelectorMatchResult.AlwaysThisType;
                 }
-
-                return false;
+                else
+                {
+                    return SelectorMatchResult.NeverThisType;
+                }
             }
             else
             {
-                List<IStyle> result = null;
+                List<IStyle>? matches = null;
 
-                foreach (var style in this)
+                foreach (var child in this)
                 {
-                    if (style.Attach(control, container))
+                    if (child.TryAttach(target, host) != SelectorMatchResult.NeverThisType)
                     {
-                        if (result == null)
-                        {
-                            result = new List<IStyle>();
-                        }
-
-                        result.Add(style);
+                        matches ??= new List<IStyle>();
+                        matches.Add(child);
                     }
                 }
 
-                _cache.Add(control.StyleKey, result);
-                return result != null;
-            }
-        }
-
-        public void Detach()
-        {
-            foreach (IStyle style in this)
-            {
-                style.Detach();
+                _cache.Add(target.StyleKey, matches);
+                
+                return matches is null ?
+                    SelectorMatchResult.NeverThisType :
+                    SelectorMatchResult.AlwaysThisType;
             }
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value)
+        public bool TryGetResource(object key, out object? value)
         {
             if (_resources != null && _resources.TryGetResource(key, out value))
             {
@@ -187,7 +160,7 @@ namespace Avalonia.Styling
 
             for (var i = Count - 1; i >= 0; --i)
             {
-                if (this[i].TryGetResource(key, out value))
+                if (this[i] is IResourceProvider p && p.TryGetResource(key, out value))
                 {
                     return true;
                 }
@@ -239,54 +212,123 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public bool Remove(IStyle item) => _styles.Remove(item);
 
+        public AvaloniaList<IStyle>.Enumerator GetEnumerator() => _styles.GetEnumerator();
+
         /// <inheritdoc/>
-        public IEnumerator<IStyle> GetEnumerator() => _styles.GetEnumerator();
+        IEnumerator<IStyle> IEnumerable<IStyle>.GetEnumerator() => _styles.GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => _styles.GetEnumerator();
 
         /// <inheritdoc/>
-        void ISetStyleParent.SetParent(IResourceNode parent)
+        void IResourceProvider.AddOwner(IResourceHost owner)
         {
-            if (_parent != null && parent != null)
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            if (Owner != null)
             {
-                throw new InvalidOperationException("The Style already has a parent.");
+                throw new InvalidOperationException("The Styles already has a owner.");
             }
 
-            _parent = parent;
+            Owner = owner;
+            _resources?.AddOwner(owner);
+
+            foreach (var child in this)
+            {
+                if (child is IResourceProvider r)
+                {
+                    r.AddOwner(owner);
+                }
+            }
         }
 
         /// <inheritdoc/>
-        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        void IResourceProvider.RemoveOwner(IResourceHost owner)
         {
-            ResourcesChanged?.Invoke(this, e);
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            if (Owner == owner)
+            {
+                Owner = null;
+                _resources?.RemoveOwner(owner);
+
+                foreach (var child in this)
+                {
+                    if (child is IResourceProvider r)
+                    {
+                        r.RemoveOwner(owner);
+                    }
+                }
+            }
         }
 
-        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            foreach (var child in this)
+            static IReadOnlyList<T> ToReadOnlyList<T>(IList list)
             {
-                (child as ISetStyleParent)?.NotifyResourcesChanged(e);
+                if (list is IReadOnlyList<T>)
+                {
+                    return (IReadOnlyList<T>)list;
+                }
+                else
+                {
+                    var result = new T[list.Count];
+                    list.CopyTo(result, 0);
+                    return result;
+                }
             }
 
-            ResourcesChanged?.Invoke(this, e);
-        }
-
-        private void SubResourceChanged(object sender, ResourcesChangedEventArgs e)
-        {
-            var foundSource = false;
-
-            foreach (var child in this)
+            void Add(IList items)
             {
-                if (foundSource)
+                for (var i = 0; i < items.Count; ++i)
                 {
-                    (child as ISetStyleParent)?.NotifyResourcesChanged(e);
+                    var style = (IStyle)items[i];
+
+                    if (Owner is object && style is IResourceProvider resourceProvider)
+                    {
+                        resourceProvider.AddOwner(Owner);
+                    }
+
+                    _cache = null;
                 }
 
-                foundSource |= child == sender;
+                (Owner as IStyleHost)?.StylesAdded(ToReadOnlyList<IStyle>(items));
             }
 
-            ResourcesChanged?.Invoke(this, e);
+            void Remove(IList items)
+            {
+                for (var i = 0; i < items.Count; ++i)
+                {
+                    var style = (IStyle)items[i];
+
+                    if (Owner is object && style is IResourceProvider resourceProvider)
+                    {
+                        resourceProvider.RemoveOwner(Owner);
+                    }
+
+                    _cache = null;
+                }
+
+                (Owner as IStyleHost)?.StylesRemoved(ToReadOnlyList<IStyle>(items));
+            }
+
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Add(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Remove(e.OldItems);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Remove(e.OldItems);
+                    Add(e.NewItems);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    throw new InvalidOperationException("Reset should not be called on Styles.");
+            }
+
+            CollectionChanged?.Invoke(this, e);
         }
     }
 }

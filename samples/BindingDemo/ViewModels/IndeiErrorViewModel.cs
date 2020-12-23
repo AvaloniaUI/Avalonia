@@ -1,14 +1,11 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using ReactiveUI;
+﻿using MiniMvvm;
 using System;
 using System.ComponentModel;
 using System.Collections;
 
 namespace BindingDemo.ViewModels
 {
-    public class IndeiErrorViewModel : ReactiveObject, INotifyDataErrorInfo
+    public class IndeiErrorViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         private int _maximum = 10;
         private int _value;

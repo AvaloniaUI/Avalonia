@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
@@ -62,10 +59,14 @@ namespace Avalonia.Controls.UnitTests
                 CanHorizontallyScroll = true,
                 CanVerticallyScroll = true,
                 Content = scrollable,
-                Offset = new Vector(25, 25),
             };
 
             target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            target.Offset = new Vector(25, 25);
+            
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -104,7 +105,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.UpdateChild();
 
-            Assert.NotNull(scrollable.InvalidateScroll);
+            Assert.True(scrollable.HasScrollInvalidatedSubscriber);
         }
 
         [Fact]
@@ -120,7 +121,7 @@ namespace Avalonia.Controls.UnitTests
             target.Content = null;
             target.UpdateChild();
 
-            Assert.Null(scrollable.InvalidateScroll);
+            Assert.False(scrollable.HasScrollInvalidatedSubscriber);
         }
 
         [Fact]
@@ -220,7 +221,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 100, 100), scrollable.Bounds);
 
             scrollable.IsLogicalScrollEnabled = false;
-            scrollable.InvalidateScroll();
+            scrollable.RaiseScrollInvalidated(EventArgs.Empty);
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -230,7 +231,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 150, 150), scrollable.Bounds);
 
             scrollable.IsLogicalScrollEnabled = true;
-            scrollable.InvalidateScroll();
+            scrollable.RaiseScrollInvalidated(EventArgs.Empty);
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -321,12 +322,20 @@ namespace Avalonia.Controls.UnitTests
             private Size _extent;
             private Vector _offset;
             private Size _viewport;
+            private EventHandler _scrollInvalidated;
 
             public bool CanHorizontallyScroll { get; set; }
             public bool CanVerticallyScroll { get; set; }
             public bool IsLogicalScrollEnabled { get; set; } = true;
             public Size AvailableSize { get; private set; }
-            public Action InvalidateScroll { get; set; }
+
+            public bool HasScrollInvalidatedSubscriber => _scrollInvalidated != null;
+            
+            public event EventHandler ScrollInvalidated
+            {
+                add => _scrollInvalidated += value;
+                remove => _scrollInvalidated -= value;
+            }
 
             public Size Extent
             {
@@ -334,7 +343,7 @@ namespace Avalonia.Controls.UnitTests
                 set
                 {
                     _extent = value;
-                    InvalidateScroll?.Invoke();
+                    _scrollInvalidated?.Invoke(this, EventArgs.Empty);
                 }
             }
 
@@ -344,7 +353,7 @@ namespace Avalonia.Controls.UnitTests
                 set
                 {
                     _offset = value;
-                    InvalidateScroll?.Invoke();
+                    _scrollInvalidated?.Invoke(this, EventArgs.Empty);
                 }
             }
 
@@ -354,7 +363,7 @@ namespace Avalonia.Controls.UnitTests
                 set
                 {
                     _viewport = value;
-                    InvalidateScroll?.Invoke();
+                    _scrollInvalidated?.Invoke(this, EventArgs.Empty);
                 }
             }
 
@@ -377,6 +386,11 @@ namespace Avalonia.Controls.UnitTests
             public bool BringIntoView(IControl target, Rect targetRect)
             {
                 throw new NotImplementedException();
+            }
+
+            public void RaiseScrollInvalidated(EventArgs e)
+            {
+                _scrollInvalidated?.Invoke(this, e);
             }
 
             protected override Size MeasureOverride(Size availableSize)

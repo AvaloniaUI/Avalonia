@@ -1,10 +1,8 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -14,13 +12,15 @@ using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, IRenderRoot, IStyleHost, ILogicalRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 
         public TestRoot()
         {
             Renderer = Mock.Of<IRenderer>();
+            LayoutManager = new LayoutManager(this);
+            IsVisible = true;
         }
 
         public TestRoot(IControl child)
@@ -44,9 +44,9 @@ namespace Avalonia.UnitTests
 
         public Size MaxClientSize { get; set; } = Size.Infinity;
 
-        public double LayoutScaling => 1;
+        public double LayoutScaling { get; set; } = 1;
 
-        public ILayoutManager LayoutManager { get; set; } = new LayoutManager();
+        public ILayoutManager LayoutManager { get; set; }
 
         public double RenderScaling => 1;
 
@@ -72,7 +72,7 @@ namespace Avalonia.UnitTests
             dc.Setup(x => x.CreateLayer(It.IsAny<Size>())).Returns(() =>
             {
                 var layerDc = new Mock<IDrawingContextImpl>();
-                var layer = new Mock<IRenderTargetBitmapImpl>();
+                var layer = new Mock<IDrawingContextLayerImpl>();
                 layer.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(layerDc.Object);
                 return layer.Object;
             });

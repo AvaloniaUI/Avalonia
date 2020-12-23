@@ -36,7 +36,7 @@ namespace Avalonia.Reactive
             return this;
         }
 
-        void IDisposable.Dispose()
+        public virtual void Dispose()
         {
             Unsubscribed();
             _observer = null;

@@ -36,7 +36,9 @@ namespace Avalonia.Controls
         public bool IsHeldByLayout => Owner == ElementOwner.Layout;
         public bool IsRealized => IsHeldByLayout || Owner == ElementOwner.PinnedPool;
         public bool IsInUniqueIdResetPool => Owner == ElementOwner.UniqueIdResetPool;
+        public bool MustClearDataContext { get; set; }
         public bool KeepAlive { get; set; }
+        public bool IsRegisteredAsAnchorCandidate { get; set; }
         public ElementOwner Owner { get; private set; } = ElementOwner.ElementFactory;
         public string UniqueId { get; private set; }
 

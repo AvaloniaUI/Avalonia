@@ -1,8 +1,8 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -11,9 +11,54 @@ namespace Avalonia.Media
     ///     The font manager is used to query the system's installed fonts and is responsible for caching loaded fonts.
     ///     It is also responsible for the font fallback.
     /// </summary>
-    public abstract class FontManager
+    public sealed class FontManager
     {
-        public static readonly FontManager Default = CreateDefault();
+        private readonly ConcurrentDictionary<Typeface, GlyphTypeface> _glyphTypefaceCache =
+            new ConcurrentDictionary<Typeface, GlyphTypeface>();
+        private readonly FontFamily _defaultFontFamily;
+
+        public FontManager(IFontManagerImpl platformImpl)
+        {
+            PlatformImpl = platformImpl;
+
+            DefaultFontFamilyName = PlatformImpl.GetDefaultFontFamilyName();
+
+            if (string.IsNullOrEmpty(DefaultFontFamilyName))
+            {
+                throw new InvalidOperationException("Default font family name can't be null or empty.");
+            }
+
+            _defaultFontFamily = new FontFamily(DefaultFontFamilyName);
+        }
+
+        public static FontManager Current
+        {
+            get
+            {
+                var current = AvaloniaLocator.Current.GetService<FontManager>();
+
+                if (current != null)
+                {
+                    return current;
+                }
+
+                var fontManagerImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
+
+                if (fontManagerImpl == null)
+                    throw new InvalidOperationException("No font manager implementation was registered.");
+
+                current = new FontManager(fontManagerImpl);
+
+                AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant(current);
+
+                return current;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IFontManagerImpl PlatformImpl { get; }
 
         /// <summary>
         ///     Gets the system's default font family's name.
@@ -21,92 +66,62 @@ namespace Avalonia.Media
         public string DefaultFontFamilyName
         {
             get;
-            protected set;
         }
 
         /// <summary>
-        ///     Get all installed fonts in the system.
+        ///     Get all installed font family names.
+        /// </summary>
         /// <param name="checkForUpdates">If <c>true</c> the font collection is updated.</param>
-        /// </summary>
-        public abstract IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false);
+        public IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
+            PlatformImpl.GetInstalledFontFamilyNames(checkForUpdates);
 
         /// <summary>
-        ///     Get a cached typeface from specified parameters.
+        ///     Returns a new <see cref="GlyphTypeface"/>, or an existing one if a matching <see cref="GlyphTypeface"/> exists.
         /// </summary>
-        /// <param name="fontFamily">The font family.</param>
-        /// <param name="fontWeight">The font weight.</param>
-        /// <param name="fontStyle">The font style.</param>
+        /// <param name="typeface">The typeface.</param>
         /// <returns>
-        ///     The cached typeface.
+        ///     The <see cref="GlyphTypeface"/>.
         /// </returns>
-        public abstract Typeface GetCachedTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle);
+        public GlyphTypeface GetOrAddGlyphTypeface(Typeface typeface)
+        {
+            while (true)
+            {
+                if (_glyphTypefaceCache.TryGetValue(typeface, out var glyphTypeface))
+                {
+                    return glyphTypeface;
+                }
+
+                glyphTypeface = new GlyphTypeface(typeface);
+
+                if (_glyphTypefaceCache.TryAdd(typeface, glyphTypeface))
+                {
+                    return glyphTypeface;
+                }
+
+                if (typeface.FontFamily == _defaultFontFamily)
+                {
+                    return null;
+                }
+
+                typeface = new Typeface(_defaultFontFamily, typeface.Style, typeface.Weight);
+            }
+        }
 
         /// <summary>
-        ///     Tries to match a specified character to a typeface that supports specified font properties.
-        ///     Returns <c>null</c> if no fallback was found.
+        ///     Tries to match a specified character to a <see cref="Typeface"/> that supports specified font properties.
         /// </summary>
         /// <param name="codepoint">The codepoint to match against.</param>
-        /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontStyle">The font style.</param>
+        /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontFamily">The font family. This is optional and used for fallback lookup.</param>
         /// <param name="culture">The culture.</param>
+        /// <param name="typeface">The matching <see cref="Typeface"/>.</param>
         /// <returns>
-        ///     The matched typeface.
+        ///     <c>True</c>, if the <see cref="FontManager"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
-        public abstract Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
-            FontStyle fontStyle = default,
-            FontFamily fontFamily = null, CultureInfo culture = null);
-
-        public static FontManager CreateDefault()
-        {
-            var platformImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
-
-            if (platformImpl != null)
-            {
-                return new PlatformFontManager(platformImpl);
-            }
-
-            return new EmptyFontManager();
-        }
-
-        private class PlatformFontManager : FontManager
-        {
-            private readonly IFontManagerImpl _platformImpl;
-
-            public PlatformFontManager(IFontManagerImpl platformImpl)
-            {
-                _platformImpl = platformImpl;
-
-                DefaultFontFamilyName = _platformImpl.DefaultFontFamilyName;
-            }
-
-            public override IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
-                _platformImpl.GetInstalledFontFamilyNames(checkForUpdates);
-
-            public override Typeface GetCachedTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle) =>
-                _platformImpl.GetTypeface(fontFamily, fontWeight, fontStyle);
-
-            public override Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
-                FontStyle fontStyle = default,
-                FontFamily fontFamily = null, CultureInfo culture = null) =>
-                _platformImpl.MatchCharacter(codepoint, fontWeight, fontStyle, fontFamily, culture);
-        }
-
-        private class EmptyFontManager : FontManager
-        {
-            public EmptyFontManager()
-            {
-                DefaultFontFamilyName = "Empty";
-            }
-
-            public override IEnumerable<string> GetInstalledFontFamilyNames(bool checkForUpdates = false) =>
-                new[] { DefaultFontFamilyName };
-
-            public override Typeface GetCachedTypeface(FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle) => new Typeface(fontFamily, fontWeight, fontStyle);
-
-            public override Typeface MatchCharacter(int codepoint, FontWeight fontWeight = default,
-                FontStyle fontStyle = default,
-                FontFamily fontFamily = null, CultureInfo culture = null) => null;
-        }
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontFamily fontFamily, CultureInfo culture, out Typeface typeface) =>
+            PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontFamily, culture, out typeface);
     }
 }

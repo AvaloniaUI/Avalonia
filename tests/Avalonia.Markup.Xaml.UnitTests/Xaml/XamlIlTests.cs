@@ -6,7 +6,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -20,7 +24,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         [Fact]
         public void Binding_Button_IsPressed_ShouldWork()
         {
-            var parsed = (Button)AvaloniaXamlLoader.Parse(@"
+            var parsed = (Button)AvaloniaRuntimeXamlLoader.Parse(@"
 <Button xmlns='https://github.com/avaloniaui' IsPressed='{Binding IsPressed, Mode=TwoWay}' />");
             var ctx = new XamlIlBugTestsDataContext();
             parsed.DataContext = ctx;
@@ -31,12 +35,14 @@ namespace Avalonia.Markup.Xaml.UnitTests
         [Fact]
         public void Transitions_Should_Be_Properly_Parsed()
         {
-            var parsed = (Grid)AvaloniaXamlLoader.Parse(@"
+            var parsed = (Grid)AvaloniaRuntimeXamlLoader.Parse(@"
 <Grid xmlns='https://github.com/avaloniaui' >
   <Grid.Transitions>
-    <DoubleTransition Property='Opacity'
-       Easing='CircularEaseIn'
-       Duration='0:0:0.5' />
+    <Transitions>
+      <DoubleTransition Property='Opacity'
+        Easing='CircularEaseIn'
+        Duration='0:0:0.5' />
+    </Transitions>
   </Grid.Transitions>
 </Grid>");
             Assert.Equal(1, parsed.Transitions.Count);
@@ -49,7 +55,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             var precompiled = new XamlIlClassWithPrecompiledXaml();
             Assert.Equal(Brushes.Red, precompiled.Background);
             Assert.Equal(1, precompiled.Opacity);
-            var loaded = (XamlIlClassWithPrecompiledXaml)AvaloniaXamlLoader.Parse(@"
+            var loaded = (XamlIlClassWithPrecompiledXaml)AvaloniaRuntimeXamlLoader.Parse(@"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
              x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlClassWithPrecompiledXaml'
@@ -66,7 +72,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                new AvaloniaXamlLoader().Load(@"
+                AvaloniaRuntimeXamlLoader.Load(@"
 <Application
   xmlns='https://github.com/avaloniaui'
   xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
@@ -99,7 +105,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
   </Application.Styles>
 </Application>",
                     null, Application.Current); 
-                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+                var parsed = (Window)AvaloniaRuntimeXamlLoader.Parse(@"
 <Window
   xmlns='https://github.com/avaloniaui'
   xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
@@ -145,7 +151,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             var precompiled = new XamlIlClassWithCustomProperty();
             Assert.Equal("123", precompiled.Test);
-            var loaded = (XamlIlClassWithCustomProperty)AvaloniaXamlLoader.Parse(@"
+            var loaded = (XamlIlClassWithCustomProperty)AvaloniaRuntimeXamlLoader.Parse(@"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
              x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlClassWithCustomProperty'
@@ -176,14 +182,15 @@ namespace Avalonia.Markup.Xaml.UnitTests
         public void Bug2570()
         {
             SomeStaticProperty = "123";
-            AssertThrows(() => new AvaloniaXamlLoader() {IsDesignMode = true}
+            AssertThrows(() => AvaloniaRuntimeXamlLoader
                     .Load(@"
 <UserControl 
     xmlns='https://github.com/avaloniaui'
     xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
     xmlns:tests='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
     d:DataContext='{x:Static tests:XamlIlTests.SomeStaticPropery}'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly),
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly,
+                        designMode: true),
                 e => e.Message.Contains("Unable to resolve ")
                      && e.Message.Contains(" as static field, property, constant or enum value"));
 
@@ -194,14 +201,15 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             SomeStaticProperty = "123";
             
-            var loaded = (UserControl)new AvaloniaXamlLoader() {IsDesignMode = true}
+            var loaded = (UserControl)AvaloniaRuntimeXamlLoader
                 .Load(@"
 <UserControl 
     xmlns='https://github.com/avaloniaui'
     xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
     xmlns:tests='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
     d:DataContext='{x:Static tests:XamlIlTests.SomeStaticProperty}'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly);
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly,
+                    designMode: true);
             Assert.Equal(Design.GetDataContext(loaded), SomeStaticProperty);
         }
         
@@ -211,7 +219,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
 
-                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+                var parsed = (Window)AvaloniaRuntimeXamlLoader.Parse(@"
 <Window
   xmlns='https://github.com/avaloniaui'
   xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
@@ -233,11 +241,35 @@ namespace Avalonia.Markup.Xaml.UnitTests
         }
 
         [Fact]
+        public void Provide_Value_Target_Should_Provide_Clr_Property_Info()
+        {
+            var parsed = AvaloniaRuntimeXamlLoader.Parse<XamlIlClassWithClrPropertyWithValue>(@"
+<XamlIlClassWithClrPropertyWithValue 
+    xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
+    Count='{XamlIlCheckClrPropertyInfo ExpectedPropertyName=Count}'
+/>", typeof(XamlIlClassWithClrPropertyWithValue).Assembly);
+            Assert.Equal(6, parsed.Count);
+        }
+
+        [Fact]
+        public void DataContextType_Resolution()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = AvaloniaRuntimeXamlLoader.Parse<UserControl>(@"
+<UserControl 
+    xmlns='https://github.com/avaloniaui'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:DataType='local:XamlIlBugTestsDataContext' />");
+            }
+        }
+
+        [Fact]
         public void DataTemplates_Should_Resolve_Named_Controls_From_Parent_Scope()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+                var parsed = (Window)AvaloniaRuntimeXamlLoader.Parse(@"
 <Window
   xmlns='https://github.com/avaloniaui'
   xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
@@ -263,8 +295,27 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.Equal("Test", templated.Text);
             }
         }
+
+        [Fact]
+        public void Should_Work_With_Base_Property()
+        {
+            var parsed = (ListBox)AvaloniaRuntimeXamlLoader.Load(@"
+<ListBox
+  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+  xmlns='https://github.com/avaloniaui'
+  xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+>
+    <ItemsControl.ItemTemplate>
+      <DataTemplate>
+        <ContentControl Content='{Binding}' />
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+</ListBox>");
+
+            Assert.NotNull(parsed.ItemTemplate);
+        }
     }
-    
+
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
     {
         public object SavedContext;
@@ -275,7 +326,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
         public XamlIlBugTestsEventHandlerCodeBehind()
         {
-            new AvaloniaXamlLoader().Load(@"
+            AvaloniaRuntimeXamlLoader.Load(@"
 <Window x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlBugTestsEventHandlerCodeBehind'
   xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
   xmlns='https://github.com/avaloniaui'
@@ -342,5 +393,23 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             return (int)control.GetValue(TestIntProperty);
         }
+    }
+
+    public class XamlIlCheckClrPropertyInfoExtension
+    {
+        public string ExpectedPropertyName { get; set; }
+
+        public object ProvideValue(IServiceProvider prov)
+        {
+            var pvt = prov.GetService<IProvideValueTarget>();
+            var info = (ClrPropertyInfo)pvt.TargetProperty;
+            var v = (int)info.Get(pvt.TargetObject);
+            return v + 1;
+        }
+    }
+
+    public class XamlIlClassWithClrPropertyWithValue
+    {
+        public int Count { get; set; }= 5;
     }
 }

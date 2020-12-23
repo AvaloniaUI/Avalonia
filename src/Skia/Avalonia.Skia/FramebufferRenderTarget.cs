@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
@@ -55,7 +52,7 @@ namespace Avalonia.Skia
 
             var createInfo = new DrawingContextImpl.CreateInfo
             {
-                Canvas = canvas,
+                Surface = _framebufferSurface,
                 Dpi = framebuffer.Dpi,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true

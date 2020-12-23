@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
@@ -27,7 +24,7 @@ namespace Avalonia.Rendering.SceneGraph
             Point origin,
             IFormattedTextImpl text,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(text.Bounds.Translate(origin), transform, null)
+            : base(text.Bounds.Translate(origin), transform)
         {
             Transform = transform;
             Foreground = foreground?.ToImmutable();

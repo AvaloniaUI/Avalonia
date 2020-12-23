@@ -1,10 +1,9 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Generators
 {
@@ -15,6 +14,8 @@ namespace Avalonia.Controls.Generators
     public class TreeItemContainerGenerator<T> : ItemContainerGenerator<T>, ITreeItemContainerGenerator
         where T : class, IControl, new()
     {
+        private TreeView _treeView;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TreeItemContainerGenerator{T}"/> class.
         /// </summary>
@@ -23,31 +24,28 @@ namespace Avalonia.Controls.Generators
         /// <param name="contentTemplateProperty">The container's ContentTemplate property.</param>
         /// <param name="itemsProperty">The container's Items property.</param>
         /// <param name="isExpandedProperty">The container's IsExpanded property.</param>
-        /// <param name="index">The container index for the tree</param>
         public TreeItemContainerGenerator(
             IControl owner,
             AvaloniaProperty contentProperty,
             AvaloniaProperty contentTemplateProperty,
             AvaloniaProperty itemsProperty,
-            AvaloniaProperty isExpandedProperty,
-            TreeContainerIndex index)
+            AvaloniaProperty isExpandedProperty)
             : base(owner, contentProperty, contentTemplateProperty)
         {
             Contract.Requires<ArgumentNullException>(owner != null);
             Contract.Requires<ArgumentNullException>(contentProperty != null);
             Contract.Requires<ArgumentNullException>(itemsProperty != null);
             Contract.Requires<ArgumentNullException>(isExpandedProperty != null);
-            Contract.Requires<ArgumentNullException>(index != null);
 
             ItemsProperty = itemsProperty;
             IsExpandedProperty = isExpandedProperty;
-            Index = index;
+            UpdateIndex();
         }
 
         /// <summary>
         /// Gets the container index for the tree.
         /// </summary>
-        public TreeContainerIndex Index { get; }
+        public TreeContainerIndex Index { get; private set; }
 
         /// <summary>
         /// Gets the item container's Items property.
@@ -70,7 +68,7 @@ namespace Avalonia.Controls.Generators
             }
             else if (container != null)
             {
-                Index.Add(item, container);
+                Index?.Add(item, container);
                 return container;
             }
             else
@@ -92,7 +90,7 @@ namespace Avalonia.Controls.Generators
                     result.DataContext = item;
                 }
 
-                Index.Add(item, result);
+                Index?.Add(item, result);
 
                 return result;
             }
@@ -101,30 +99,49 @@ namespace Avalonia.Controls.Generators
         public override IEnumerable<ItemContainerInfo> Clear()
         {
             var items = base.Clear();
-            Index.Remove(0, items);
+            Index?.Remove(0, items);
             return items;
         }
 
         public override IEnumerable<ItemContainerInfo> Dematerialize(int startingIndex, int count)
         {
-            Index.Remove(startingIndex, GetContainerRange(startingIndex, count));
+            Index?.Remove(startingIndex, GetContainerRange(startingIndex, count));
             return base.Dematerialize(startingIndex, count);
         }
 
         public override IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count)
         {
-            Index.Remove(startingIndex, GetContainerRange(startingIndex, count));
+            Index?.Remove(startingIndex, GetContainerRange(startingIndex, count));
             return base.RemoveRange(startingIndex, count);
         }
 
         public override bool TryRecycle(int oldIndex, int newIndex, object item) => false;
+
+        public void UpdateIndex()
+        {
+            if (Owner is TreeView treeViewOwner && Index == null)
+            {
+                Index = new TreeContainerIndex();
+                _treeView = treeViewOwner;
+            }
+            else
+            {
+                var treeView = Owner.GetSelfAndLogicalAncestors().OfType<TreeView>().FirstOrDefault();
+                
+                if (treeView != _treeView)
+                {
+                    Clear();
+                    Index = treeView?.ItemContainerGenerator?.Index;
+                    _treeView = treeView;
+                }
+            }
+        }
 
         class WrapperTreeDataTemplate : ITreeDataTemplate
         {
             private readonly IDataTemplate _inner;
             public WrapperTreeDataTemplate(IDataTemplate inner) => _inner = inner;
             public IControl Build(object param) => _inner.Build(param);
-            public bool SupportsRecycling => _inner.SupportsRecycling;
             public bool Match(object data) => _inner.Match(data);
             public InstancedBinding ItemsSelector(object item) => null;
         }

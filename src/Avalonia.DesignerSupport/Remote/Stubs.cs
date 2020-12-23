@@ -19,9 +19,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public IPlatformHandle Handle { get; }
-        public Size MaxClientSize { get; }
+        public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
-        public double Scaling { get; } = 1.0;
+        public double RenderScaling { get; } = 1.0;
+        public double DesktopScaling => 1.0;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -29,6 +30,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<double> ScalingChanged { get; set; }
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
+        public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
         public IPopupImpl CreatePopup() => new WindowStub(this);
 
@@ -36,6 +38,14 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<PixelPoint> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
+
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }        
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
 
         public WindowStub(IWindowImpl parent = null)
         {
@@ -67,7 +77,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void Show()
+        public void Show(bool activate)
         {
         }
 
@@ -110,7 +120,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(SystemDecorations enabled)
         {
         }
 
@@ -130,7 +140,43 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetParent(IWindowImpl parent)
+        {
+        }
+
+        public void SetEnabled(bool enable)
+        {
+        }
+
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
+
+        public void SetWindowManagerAddShadowHint(bool enabled)
+        {
+        }
+
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public bool IsClientAreaExtendedToDecorations { get; }
+
+        public bool NeedsManagedDecorations => false;
+        
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 
     class ClipboardStub : IClipboard
@@ -140,6 +186,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Task SetTextAsync(string text) => Task.CompletedTask;
 
         public Task ClearAsync() => Task.CompletedTask;
+        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+
+        public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
 
     class CursorFactoryStub : IStandardCursorFactory
@@ -166,10 +216,10 @@ namespace Avalonia.DesignerSupport.Remote
 
     class SystemDialogsStub : ISystemDialogImpl
     {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent) =>
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
             Task.FromResult((string[])null);
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent) =>
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
             Task.FromResult((string)null);
     }
 

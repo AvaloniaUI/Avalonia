@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Input
 {
     /// <summary>
@@ -11,23 +8,23 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
         /// </summary>
-        IInputElement Current { get; }
+        IInputElement? Current { get; }
 
         /// <summary>
         /// Gets the current focus scope.
         /// </summary>
-        IFocusScope Scope { get; }
+        IFocusScope? Scope { get; }
 
         /// <summary>
         /// Focuses a control.
         /// </summary>
         /// <param name="control">The control to focus.</param>
         /// <param name="method">The method by which focus was changed.</param>
-        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         void Focus(
-            IInputElement control, 
+            IInputElement? control,
             NavigationMethod method = NavigationMethod.Unspecified,
-            InputModifiers modifiers = InputModifiers.None);
+            KeyModifiers keyModifiers = KeyModifiers.None);
 
         /// <summary>
         /// Notifies the focus manager of a change in focus scope.

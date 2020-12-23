@@ -6,7 +6,7 @@ using IDataObject = Avalonia.Input.IDataObject;
 
 namespace Avalonia.Win32
 {
-    class OleDropTarget : IDropTarget
+    internal class OleDropTarget : IDropTarget
     {
         private readonly IInputRoot _target;
         private readonly ITopLevelImpl _tl;

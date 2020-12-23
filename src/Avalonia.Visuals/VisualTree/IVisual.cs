@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using Avalonia.Collections;
 using Avalonia.Media;
@@ -79,7 +76,7 @@ namespace Avalonia.VisualTree
         /// <summary>
         /// Gets or sets the render transform of the control.
         /// </summary>
-        Transform RenderTransform { get; set; }
+        ITransform RenderTransform { get; set; }
 
         /// <summary>
         /// Gets or sets the render transform origin of the control.

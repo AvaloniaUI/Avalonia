@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +7,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -54,9 +53,7 @@ namespace Avalonia.Controls
         /// <param name="interactionHandler">The menu interaction handler.</param>
         public MenuBase(IMenuInteractionHandler interactionHandler)
         {
-            Contract.Requires<ArgumentNullException>(interactionHandler != null);
-
-            InteractionHandler = interactionHandler;
+            InteractionHandler = interactionHandler ?? throw new ArgumentNullException(nameof(interactionHandler));
         }
 
         /// <summary>
@@ -80,7 +77,7 @@ namespace Avalonia.Controls
         IMenuInteractionHandler IMenu.InteractionHandler => InteractionHandler;
 
         /// <inheritdoc/>
-        IMenuItem IMenuElement.SelectedItem
+        IMenuItem? IMenuElement.SelectedItem
         {
             get
             {

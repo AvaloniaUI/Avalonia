@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
@@ -88,6 +85,23 @@ namespace Avalonia.Controls
                 ApplicationType = typeof(TApp),
                 // Needed for CoreRT compatibility
                 _appFactory = () => new TApp()
+            };
+        }
+
+        /// <summary>
+        /// Begin configuring an <see cref="Application"/>.
+        /// </summary>
+        /// <param name="appFactory">Factory function for <typeparamref name="TApp"/>.</param>
+        /// <typeparam name="TApp">The subclass of <see cref="Application"/> to configure.</typeparam>
+        /// <remarks><paramref name="appFactory"/> is useful for passing of dependencies to <typeparamref name="TApp"/>.</remarks>
+        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
+        public static TAppBuilder Configure<TApp>(Func<TApp> appFactory)
+            where TApp : Application
+        {
+            return new TAppBuilder()
+            {
+                ApplicationType = typeof(TApp),
+                _appFactory = appFactory
             };
         }
 

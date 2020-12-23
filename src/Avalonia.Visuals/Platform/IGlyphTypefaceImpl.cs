@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 
 namespace Avalonia.Platform
 {
@@ -46,6 +43,11 @@ namespace Avalonia.Platform
         ///     Gets a value that indicates the thickness of the underline in design em size.
         /// </summary>
         int StrikethroughThickness { get; }
+
+        /// <summary>
+        ///     A <see cref="bool"/> value indicating whether all glyphs in the font have the same advancement. 
+        /// </summary>
+        bool IsFixedPitch { get; }
 
         /// <summary>
         ///     Returns an glyph index for the specified codepoint.

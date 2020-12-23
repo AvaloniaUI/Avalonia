@@ -1,62 +1,64 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
+using SkiaSharp;
 
 namespace Avalonia.Skia
 {
     internal class SKTypefaceCollection
     {
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<FontKey, TypefaceCollectionEntry>> _fontFamilies =
-            new ConcurrentDictionary<string, ConcurrentDictionary<FontKey, TypefaceCollectionEntry>>();
+        private readonly ConcurrentDictionary<Typeface, SKTypeface> _typefaces =
+            new ConcurrentDictionary<Typeface, SKTypeface>();
 
-        public void AddEntry(string familyName, FontKey key, TypefaceCollectionEntry entry)
+        public void AddTypeface(Typeface key, SKTypeface typeface)
         {
-            if (!_fontFamilies.TryGetValue(familyName, out var fontFamily))
-            {
-                fontFamily = new ConcurrentDictionary<FontKey, TypefaceCollectionEntry>();
+            _typefaces.TryAdd(key, typeface);
+        }
 
-                _fontFamilies.TryAdd(familyName, fontFamily);
+        public SKTypeface Get(Typeface typeface)
+        {
+            return GetNearestMatch(_typefaces, typeface);
+        }
+
+        private static SKTypeface GetNearestMatch(IDictionary<Typeface, SKTypeface> typefaces, Typeface key)
+        {
+            if (typefaces.TryGetValue(key, out var typeface))
+            {
+                return typeface;
             }
 
-            fontFamily.TryAdd(key, entry);
-        }
+            var weight = (int)key.Weight;
 
-        public TypefaceCollectionEntry Get(string familyName, FontWeight fontWeight, FontStyle fontStyle)
-        {
-            var key = new FontKey(fontWeight, fontStyle);
+            weight -= weight % 100; // make sure we start at a full weight
 
-            return _fontFamilies.TryGetValue(familyName, out var fontFamily) ?
-                fontFamily.GetOrAdd(key, GetFallback(fontFamily, key)) :
-                new TypefaceCollectionEntry(Typeface.Default, SkiaSharp.SKTypeface.Default);
-        }
-
-        private static TypefaceCollectionEntry GetFallback(IDictionary<FontKey, TypefaceCollectionEntry> fontFamily, FontKey key)
-        {
-            var keys = fontFamily.Keys.Where(
-                x => ((int)x.Weight <= (int)key.Weight || (int)x.Weight > (int)key.Weight) && x.Style == key.Style).ToArray();
-
-            if (!keys.Any())
+            for (var i = (int)key.Style; i < 2; i++)
             {
-                keys = fontFamily.Keys.Where(
-                    x => x.Weight == key.Weight && (x.Style >= key.Style || x.Style < key.Style)).ToArray();
-
-                if (!keys.Any())
+                // only try 2 font weights in each direction
+                for (var j = 0; j < 200; j += 100)
                 {
-                    keys = fontFamily.Keys.Where(
-                        x => ((int)x.Weight <= (int)key.Weight || (int)x.Weight > (int)key.Weight) &&
-                             (x.Style >= key.Style || x.Style < key.Style)).ToArray();
+                    if (weight - j >= 100)
+                    {
+                        if (typefaces.TryGetValue(new Typeface(key.FontFamily, (FontStyle)i, (FontWeight)(weight - j)), out typeface))
+                        {
+                            return typeface;
+                        }
+                    }
+
+                    if (weight + j > 900)
+                    {
+                        continue;
+                    }
+
+                    if (typefaces.TryGetValue(new Typeface(key.FontFamily, (FontStyle)i, (FontWeight)(weight + j)), out typeface))
+                    {
+                        return typeface;
+                    }
                 }
             }
 
-            key = keys.FirstOrDefault();
-
-            fontFamily.TryGetValue(key, out var entry);
-
-            return entry;
+            //Nothing was found so we use the first typeface we can get.
+            return typefaces.Values.FirstOrDefault();
         }
     }
 }

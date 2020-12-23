@@ -10,7 +10,7 @@
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
               Padding="{TemplateBinding Padding}">
-          <ScrollViewer>
+          <ScrollViewer Classes="menuscroller">
               <ItemsPresenter Name="PART_ItemsPresenter"
                               Items="{TemplateBinding Items}"
                               ItemsPanel="{TemplateBinding ItemsPanel}"

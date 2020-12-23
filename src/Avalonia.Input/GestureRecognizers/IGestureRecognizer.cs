@@ -6,7 +6,7 @@ namespace Avalonia.Input.GestureRecognizers
         void PointerPressed(PointerPressedEventArgs e);
         void PointerReleased(PointerReleasedEventArgs e);
         void PointerMoved(PointerEventArgs e);
-        void PointerCaptureLost(PointerCaptureLostEventArgs e);
+        void PointerCaptureLost(IPointer pointer);
     }
     
     public interface IGestureRecognizerActionsDispatcher

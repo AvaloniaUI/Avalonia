@@ -1,8 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System.Linq;
-using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -12,57 +8,101 @@ namespace Avalonia.Base.UnitTests
         public AvaloniaObjectTests_Metadata()
         {
             // Ensure properties are registered.
-            AvaloniaProperty p;
-            p = Class1.FooProperty;
-            p = Class2.BarProperty;
-            p = AttachedOwner.AttachedProperty;
+            RuntimeHelpers.RunClassConstructor(typeof(Class1).TypeHandle);
+            RuntimeHelpers.RunClassConstructor(typeof(Class2).TypeHandle);
+            RuntimeHelpers.RunClassConstructor(typeof(Class3).TypeHandle);
         }
 
-        [Fact]
-        public void IsSet_Returns_False_For_Unset_Property()
+        public class StyledProperty : AvaloniaObjectTests_Metadata
         {
-            var target = new Class1();
+            [Fact]
+            public void Default_Value_Can_Be_Overridden_In_Derived_Class()
+            {
+                var baseValue = Class1.StyledProperty.GetDefaultValue(typeof(Class1));
+                var derivedValue = Class1.StyledProperty.GetDefaultValue(typeof(Class2));
 
-            Assert.False(target.IsSet(Class1.FooProperty));
+                Assert.Equal("foo", baseValue);
+                Assert.Equal("bar", derivedValue);
+            }
+
+            [Fact]
+            public void Default_Value_Can_Be_Overridden_In_AddOwnered_Property()
+            {
+                var baseValue = Class1.StyledProperty.GetDefaultValue(typeof(Class1));
+                var addOwneredValue = Class1.StyledProperty.GetDefaultValue(typeof(Class3));
+
+                Assert.Equal("foo", baseValue);
+                Assert.Equal("baz", addOwneredValue);
+            }
         }
 
-        [Fact]
-        public void IsSet_Returns_False_For_Set_Property()
+        public class DirectProperty : AvaloniaObjectTests_Metadata
         {
-            var target = new Class1();
+            [Fact]
+            public void Unset_Value_Can_Be_Overridden_In_Derived_Class()
+            {
+                var baseValue = Class1.DirectProperty.GetUnsetValue(typeof(Class1));
+                var derivedValue = Class1.DirectProperty.GetUnsetValue(typeof(Class2));
 
-            target.SetValue(Class1.FooProperty, "foo");
+                Assert.Equal("foo", baseValue);
+                Assert.Equal("bar", derivedValue);
+            }
 
-            Assert.True(target.IsSet(Class1.FooProperty));
-        }
+            [Fact]
+            public void Unset_Value_Can_Be_Overridden_In_AddOwnered_Property()
+            {
+                var baseValue = Class1.DirectProperty.GetUnsetValue(typeof(Class1));
+                var addOwneredValue = Class3.DirectProperty.GetUnsetValue(typeof(Class3));
 
-        [Fact]
-        public void IsSet_Returns_False_For_Cleared_Property()
-        {
-            var target = new Class1();
-
-            target.SetValue(Class1.FooProperty, "foo");
-            target.SetValue(Class1.FooProperty, AvaloniaProperty.UnsetValue);
-
-            Assert.False(target.IsSet(Class1.FooProperty));
+                Assert.Equal("foo", baseValue);
+                Assert.Equal("baz", addOwneredValue);
+            }
         }
 
         private class Class1 : AvaloniaObject
         {
-            public static readonly StyledProperty<string> FooProperty =
-                AvaloniaProperty.Register<Class1, string>("Foo");
+            public static readonly StyledProperty<string> StyledProperty =
+                AvaloniaProperty.Register<Class1, string>("Styled", "foo");
+
+            public static readonly DirectProperty<Class1, string> DirectProperty =
+                AvaloniaProperty.RegisterDirect<Class1, string>("Styled", o => o.Direct, unsetValue: "foo");
+
+            private string _direct = default;
+
+            public string Direct
+            {
+                get => _direct;
+            }
         }
 
         private class Class2 : Class1
         {
-            public static readonly StyledProperty<string> BarProperty =
-                AvaloniaProperty.Register<Class2, string>("Bar");
+            static Class2()
+            {
+                StyledProperty.OverrideDefaultValue<Class2>("bar");
+                DirectProperty.OverrideMetadata<Class2>(new DirectPropertyMetadata<string>("bar"));
+            }
         }
 
-        private class AttachedOwner
+        private class Class3 : AvaloniaObject
         {
-            public static readonly AttachedProperty<string> AttachedProperty =
-                AvaloniaProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached");
+            public static readonly StyledProperty<string> StyledProperty =
+                Class1.StyledProperty.AddOwner<Class3>();
+
+            public static readonly DirectProperty<Class3, string> DirectProperty =
+                Class1.DirectProperty.AddOwner<Class3>(o => o.Direct, unsetValue: "baz");
+
+            private string _direct = default;
+
+            static Class3()
+            {
+                StyledProperty.OverrideDefaultValue<Class3>("baz");
+            }
+
+            public string Direct
+            {
+                get => _direct;
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
+using System.Reactive.Subjects;
+using Avalonia.Data;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -9,8 +9,10 @@ namespace Avalonia
     /// A typed avalonia property.
     /// </summary>
     /// <typeparam name="TValue">The value type of the property.</typeparam>
-    public class AvaloniaProperty<TValue> : AvaloniaProperty
+    public abstract class AvaloniaProperty<TValue> : AvaloniaProperty
     {
+        private readonly Subject<AvaloniaPropertyChangedEventArgs<TValue>> _changed;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
         /// </summary>
@@ -21,24 +23,87 @@ namespace Avalonia
         protected AvaloniaProperty(
             string name,
             Type ownerType,
-            PropertyMetadata metadata,
+            AvaloniaPropertyMetadata metadata,
             Action<IAvaloniaObject, bool> notifying = null)
             : base(name, typeof(TValue), ownerType, metadata, notifying)
+        {
+            _changed = new Subject<AvaloniaPropertyChangedEventArgs<TValue>>();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
+        /// </summary>
+        /// <param name="source">The property to copy.</param>
+        /// <param name="ownerType">The new owner type.</param>
+        /// <param name="metadata">Optional overridden metadata.</param>
+        [Obsolete("Use constructor with AvaloniaProperty<TValue> instead.", true)]
+        protected AvaloniaProperty(
+            AvaloniaProperty source,
+            Type ownerType,
+            AvaloniaPropertyMetadata metadata)
+            : this(source as AvaloniaProperty<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaProperty"/> class.
+        /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
         /// </summary>
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
         protected AvaloniaProperty(
-            AvaloniaProperty source, 
-            Type ownerType, 
-            PropertyMetadata metadata)
+            AvaloniaProperty<TValue> source,
+            Type ownerType,
+            AvaloniaPropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
+            _changed = source._changed;
+        }
+
+        /// <summary>
+        /// Gets an observable that is fired when this property changes on any
+        /// <see cref="AvaloniaObject"/> instance.
+        /// </summary>
+        /// <value>
+        /// An observable that is fired when this property changes on any
+        /// <see cref="AvaloniaObject"/> instance.
+        /// </value>
+
+        public new IObservable<AvaloniaPropertyChangedEventArgs<TValue>> Changed => _changed;
+
+        /// <summary>
+        /// Notifies the <see cref="Changed"/> observable.
+        /// </summary>
+        /// <param name="e">The observable arguments.</param>
+        internal void NotifyChanged(AvaloniaPropertyChangedEventArgs<TValue> e)
+        {
+            _changed.OnNext(e);
+        }
+
+        protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
+
+        protected BindingValue<object> TryConvert(object value)
+        {
+            if (value == UnsetValue)
+            {
+                return BindingValue<object>.Unset;
+            }
+            else if (value == BindingOperations.DoNothing)
+            {
+                return BindingValue<object>.DoNothing;
+            }
+
+            if (!TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
+            {
+                var error = new ArgumentException(string.Format(
+                    "Invalid value for Property '{0}': '{1}' ({2})",
+                    Name,
+                    value,
+                    value?.GetType().FullName ?? "(null)"));
+                return BindingValue<object>.BindingError(error);
+            }
+
+            return converted;
         }
     }
 }

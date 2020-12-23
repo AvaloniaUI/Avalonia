@@ -1,19 +1,23 @@
 using System;
-using Avalonia.Controls;
 
 namespace Avalonia.Platform
 {
     public interface IWindowBaseImpl : ITopLevelImpl
     {
         /// <summary>
-        /// Shows the top level.
+        /// Shows the window.
         /// </summary>
-        void Show();
+        void Show(bool activate);
 
         /// <summary>
         /// Hides the window.
         /// </summary>
         void Hide();
+        
+        /// <summary>
+        /// Gets the scaling factor for Window positioning and sizing.
+        /// </summary>
+        double DesktopScaling { get; }
 
         /// <summary>
         /// Gets the position of the window in device pixels.
@@ -46,9 +50,9 @@ namespace Avalonia.Platform
         IPlatformHandle Handle { get; }
        
         /// <summary>
-        /// Gets the maximum size of a window on the system.
+        /// Gets a maximum client size hint for an auto-sizing window, in device-independent pixels.
         /// </summary>
-        Size MaxClientSize { get; }
+        Size MaxAutoSizeHint { get; }
 
         /// <summary>
         /// Sets whether this window appears on top of all other windows

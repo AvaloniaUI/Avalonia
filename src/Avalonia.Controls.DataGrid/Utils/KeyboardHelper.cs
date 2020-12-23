@@ -9,16 +9,17 @@ namespace Avalonia.Controls.Utils
 {
     internal static class KeyboardHelper
     {
-        public static void GetMetaKeyState(InputModifiers modifiers, out bool ctrl, out bool shift)
+        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrl, out bool shift)
         {
-            ctrl = (modifiers & InputModifiers.Control) == InputModifiers.Control;
-            shift = (modifiers & InputModifiers.Shift) == InputModifiers.Shift;
+            ctrl = (modifiers & KeyModifiers.Control) == KeyModifiers.Control;
+            shift = (modifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
         }
-        public static void GetMetaKeyState(InputModifiers modifiers, out bool ctrl, out bool shift, out bool alt)
+
+        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrl, out bool shift, out bool alt)
         {
-            ctrl = (modifiers & InputModifiers.Control) == InputModifiers.Control;
-            shift = (modifiers & InputModifiers.Shift) == InputModifiers.Shift;
-            alt = (modifiers & InputModifiers.Alt) == InputModifiers.Alt;
+            ctrl = (modifiers & KeyModifiers.Control) == KeyModifiers.Control;
+            shift = (modifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
+            alt = (modifiers & KeyModifiers.Alt) == KeyModifiers.Alt;
         }
     }
 }

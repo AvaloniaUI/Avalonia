@@ -1,9 +1,5 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
-using System.Linq;
-using System.Reactive.Linq;
+using System.Diagnostics;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
@@ -11,12 +7,20 @@ namespace Avalonia.Data.Core
     public class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
+        private IPropertyAccessorPlugin _customPlugin;
         private IPropertyAccessor _accessor;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
             PropertyName = propertyName;
             _enableValidation = enableValidation;
+        }
+
+        public PropertyAccessorNode(string propertyName, bool enableValidation, IPropertyAccessorPlugin customPlugin)
+        {
+            PropertyName = propertyName;
+            _enableValidation = enableValidation;
+            _customPlugin = customPlugin;
         }
 
         public override string Description => PropertyName;
@@ -41,8 +45,20 @@ namespace Avalonia.Data.Core
         {
             reference.TryGetTarget(out object target);
 
-            var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(target, PropertyName));
+            var plugin = _customPlugin ?? GetPropertyAccessorPluginForObject(target);
             var accessor = plugin?.Start(reference, PropertyName);
+
+            // We need to handle accessor fallback before handling validation. Validators do not support null accessors.
+            if (accessor == null)
+            {
+                reference.TryGetTarget(out object instance);
+
+                var message = $"Could not find a matching property accessor for '{PropertyName}' on '{instance}'";
+
+                var exception = new MissingMemberException(message);
+
+                accessor = new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
+            }
 
             if (_enableValidation && Next == null)
             {
@@ -55,14 +71,25 @@ namespace Avalonia.Data.Core
                 }
             }
 
-            if (accessor == null)
+            if (accessor is null)
             {
-                throw new NotSupportedException(
-                    $"Could not find a matching property accessor for {PropertyName}.");
+                throw new AvaloniaInternalException("Data validators must return non-null accessor.");
             }
 
             _accessor = accessor;
             accessor.Subscribe(ValueChanged);
+        }
+
+        private IPropertyAccessorPlugin GetPropertyAccessorPluginForObject(object target)
+        {
+            foreach (IPropertyAccessorPlugin x in ExpressionObserver.PropertyAccessors)
+            {
+                if (x.Match(target, PropertyName))
+                {
+                    return x;
+                }
+            }
+            return null;
         }
 
         protected override void StopListeningCore()

@@ -1,7 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
 
@@ -22,7 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="destRect">The destination rect.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
-            : base(destRect, transform, null)
+            : base(destRect, transform)
         {
             Transform = transform;
             Source = source.Clone();
@@ -100,7 +97,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
+            context.DrawBitmap(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
         }
 
         /// <inheritdoc/>

@@ -21,11 +21,8 @@ namespace Avalonia.Controls.Primitives
 
             return null;
         }
-        
-        public bool HitTest(Point point)
-        {
-            return Children.Any(ctrl => ctrl.TransformedBounds?.Contains(point) == true);
-        }
+
+        public bool HitTest(Point point) => Children.HitTestCustom(point);
         
         protected override Size ArrangeOverride(Size finalSize)
         {

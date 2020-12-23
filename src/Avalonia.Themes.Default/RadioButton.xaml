@@ -13,7 +13,6 @@
                    Height="18"
                    VerticalAlignment="Center"/>
           <Ellipse Name="checkMark"
-                   Fill="{DynamicResource HighlightBrush}"
                    Width="10"
                    Height="10"
                    Stretch="Uniform"
@@ -38,10 +37,12 @@
       </ControlTemplate>
     </Setter>
   </Style>
+  
   <Style Selector="RadioButton:pointerover /template/ Ellipse#border">
     <Setter Property="Stroke" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
   <Style Selector="RadioButton /template/ Ellipse#checkMark">
+    <Setter Property="Fill" Value="{DynamicResource HighlightBrush}"/>
     <Setter Property="IsVisible" Value="False"/>
   </Style>
   <Style Selector="RadioButton /template/ Ellipse#indeterminateMark">

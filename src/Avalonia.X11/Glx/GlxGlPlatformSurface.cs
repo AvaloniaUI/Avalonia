@@ -1,5 +1,8 @@
 using System;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
+using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.X11.Glx
 {
@@ -40,46 +43,41 @@ namespace Avalonia.X11.Glx
 
             public IGlPlatformSurfaceRenderingSession BeginDraw()
             {
-                var l = _context.Lock();
-                try
-                {
-                    _context.MakeCurrent(_info.Handle);
-                    return new Session(_context, _info, l);
-                }
-                catch
-                {
-                    l.Dispose();
-                    throw;
-                }
+                var oldContext = _context.MakeCurrent(_info.Handle);
+                
+                // Reset to default FBO first
+                _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, 0);
+                    
+                return new Session(_context, _info, oldContext);
             }
             
             class Session : IGlPlatformSurfaceRenderingSession
             {
                 private readonly GlxContext _context;
                 private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
-                private IDisposable _lock;
+                private readonly IDisposable _clearContext;
+                public IGlContext Context => _context;
 
                 public Session(GlxContext context, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info,
-                    IDisposable @lock)
+                    IDisposable clearContext)
                 {
                     _context = context;
                     _info = info;
-                    _lock = @lock;
+                    _clearContext = clearContext;
                 }
 
                 public void Dispose()
                 {
-                    _context.Display.GlInterface.Flush();
+                    _context.GlInterface.Flush();
                     _context.Glx.WaitGL();
                     _context.Display.SwapBuffers(_info.Handle);
                     _context.Glx.WaitX();
-                    _context.Display.ClearContext();
-                    _lock.Dispose();
+                    _clearContext.Dispose();
                 }
 
-                public IGlDisplay Display => _context.Display;
                 public PixelSize Size => _info.Size;
                 public double Scaling => _info.Scaling;
+                public bool IsYFlipped { get; }
             }
         }
     }

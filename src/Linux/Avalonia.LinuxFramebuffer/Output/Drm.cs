@@ -113,22 +113,22 @@ namespace Avalonia.LinuxFramebuffer.Output
         [StructLayout(LayoutKind.Sequential)]
         public struct drmModeConnector {
             public uint connector_id;
-            public uint encoder_id; /**< Encoder currently connected to */
+            public uint encoder_id; // Encoder currently connected to 
             public uint connector_type;
             public uint connector_type_id;
             public DrmModeConnection connection;
-            public uint mmWidth, mmHeight; /**< HxW in millimeters */
+            public uint mmWidth, mmHeight; //  HxW in millimeters 
             public DrmModeSubPixel subpixel;
 
             public int count_modes;
             public drmModeModeInfo* modes;
 
             public int count_props;
-            public uint *props; /**< List of property ids */
-            public ulong *prop_values; /**< List of property values */
+            public uint *props; // List of property ids 
+            public ulong *prop_values; // List of property values 
 
             public int count_encoders;
-            public uint *encoders; /**< List of encoder ids */
+            public uint *encoders; //List of encoder ids
         }
         
         [StructLayout(LayoutKind.Sequential)]
@@ -143,14 +143,14 @@ namespace Avalonia.LinuxFramebuffer.Output
         [StructLayout(LayoutKind.Sequential)]
         public struct drmModeCrtc {
             public uint crtc_id;
-            public uint buffer_id; /**< FB id to connect to 0 = disconnect */
+            public uint buffer_id; // FB id to connect to 0 = disconnect 
 
-            public uint x, y; /**< Position on the framebuffer */
+            public uint x, y; // Position on the framebuffer 
             public uint width, height;
             public int mode_valid;
             public drmModeModeInfo mode;
 
-            public int gamma_size; /**< Number of gamma stops */
+            public int gamma_size; // Number of gamma stops 
 
         }
         
@@ -176,7 +176,13 @@ namespace Avalonia.LinuxFramebuffer.Output
         [DllImport(libdrm, SetLastError = true)]
         public static extern int drmModeAddFB(int fd, uint width, uint height, byte depth,
             byte bpp, uint pitch, uint bo_handle,
-            out uint buf_id); 
+            out uint buf_id);
+
+        [DllImport(libdrm, SetLastError = true)]
+        public static extern int drmModeAddFB2(int fd, uint width, uint height,
+            uint pixel_format, uint[] bo_handles, uint[] pitches,
+            uint[] offsets, out uint buf_id, uint flags);
+
         [DllImport(libdrm, SetLastError = true)]
         public static extern int drmModeSetCrtc(int fd, uint crtcId, uint bufferId,
             uint x, uint y, uint *connectors, int count,
@@ -261,6 +267,8 @@ namespace Avalonia.LinuxFramebuffer.Output
         [DllImport(libgbm, SetLastError = true)]
         public static extern uint gbm_bo_get_stride(IntPtr bo);
 
+        [DllImport(libgbm, SetLastError = true)]
+        public static extern uint gbm_bo_get_format(IntPtr bo);
 
         [StructLayout(LayoutKind.Explicit)]
         public struct GbmBoHandle
@@ -278,7 +286,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
         
         [DllImport(libgbm, SetLastError = true)]
-        public static extern ulong gbm_bo_get_handle(IntPtr bo);
+        public static extern GbmBoHandle gbm_bo_get_handle(IntPtr bo);
 
         public static  class GbmColorFormats
         {

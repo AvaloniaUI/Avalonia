@@ -1,27 +1,38 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
-    public class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
+    internal class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
+        private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
         IAvnWindow _native;
-        public WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(opts)
+        private double _extendTitleBarHeight = -1;
+        private DoubleClickHelper _doubleClickHelper;
+        
+
+        internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
+            AvaloniaNativePlatformOpenGlInterface glFeature) : base(opts, glFeature)
         {
             _factory = factory;
             _opts = opts;
+            _glFeature = glFeature;
+            _doubleClickHelper = new DoubleClickHelper();
+            
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e), factory.CreateScreens());
+                var context = _opts.UseGpu ? glFeature?.MainContext : null;
+                Init(_native = factory.CreateWindow(e, context?.Context), factory.CreateScreens(), context);
             }
 
             NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
@@ -36,65 +47,148 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
-            bool IAvnWindowEvents.Closing()
+            int IAvnWindowEvents.Closing()
             {
-                if(_parent.Closing != null)
+                if (_parent.Closing != null)
                 {
-                    return _parent.Closing();
+                    return _parent.Closing().AsComBool();
                 }
 
-                return true;
+                return true.AsComBool();
             }
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
+                _parent.InvalidateExtendedMargins();
+
                 _parent.WindowStateChanged?.Invoke((WindowState)state);
+            }
+
+            void IAvnWindowEvents.GotInputWhenDisabled()
+            {
+                _parent.GotInputWhenDisabled?.Invoke();
             }
         }
 
         public IAvnWindow Native => _native;
 
-        public void ShowDialog(IWindowImpl window)
-        {
-            _native.ShowDialog(((WindowImpl)window).Native);
-        }
-
         public void CanResize(bool value)
         {
-            _native.CanResize = value;
+            _native.SetCanResize(value.AsComBool());
         }
 
-        public void SetSystemDecorations(bool enabled)
+        public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
-            _native.HasDecorations = enabled;
+            _native.SetDecorations((Interop.SystemDecorations)enabled);
         }
 
-        public void SetTitleBarColor (Avalonia.Media.Color color)
+        public void SetTitleBarColor(Avalonia.Media.Color color)
         {
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
 
-        public void SetTitle(string title)
-        {
-            using (var buffer = new Utf8Buffer(title))
-            {
-                _native.SetTitle(buffer.DangerousGetHandle());
-            }
-        }
+        public void SetTitle(string title) => _native.SetTitle(title);
 
         public WindowState WindowState
         {
-            get
-            {
-                return (WindowState)_native.GetWindowState();
-            }
-            set
-            {
-                _native.SetWindowState((AvnWindowState)value);
-            }
+            get => (WindowState)_native.WindowState;
+            set => _native.SetWindowState((AvnWindowState)value);
         }
 
-        public Action<WindowState> WindowStateChanged { get; set; }
+        public Action<WindowState> WindowStateChanged { get; set; }        
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; private set; }
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
+
+        private bool _isExtended;
+        public bool IsClientAreaExtendedToDecorations => _isExtended;
+
+        protected override bool ChromeHitTest (RawPointerEventArgs e)
+        {
+            if(_isExtended)
+            {
+                if(e.Type == RawPointerEventType.LeftButtonDown)
+                {
+                    var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
+                            {
+                                if (x is IInputElement ie && !ie.IsHitTestVisible)
+                                {
+                                    return false;
+                                }
+                                return true;
+                            });
+
+                    if(visual == null)
+                    {
+                        if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
+                        {
+                            // TOGGLE WINDOW STATE.
+                            if (WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen)
+                            {
+                                WindowState = WindowState.Normal;
+                            }
+                            else
+                            {
+                                WindowState = WindowState.Maximized;
+                            }
+                        }
+                        else
+                        {
+                            _native.BeginMoveDrag();   
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+        
+        private void InvalidateExtendedMargins()
+        {
+            if (WindowState ==  WindowState.FullScreen)
+            {
+                ExtendedMargins = new Thickness();
+            }
+            else
+            {
+                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.ExtendTitleBarHeight : _extendTitleBarHeight, 0, 0) : new Thickness();
+            }
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
+        }
+
+        /// <inheritdoc/>
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+            _isExtended = extendIntoClientAreaHint;
+
+            _native.SetExtendClientArea(extendIntoClientAreaHint.AsComBool());
+
+            InvalidateExtendedMargins();
+        }
+
+        /// <inheritdoc/>
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {   
+            _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
+        }
+
+        /// <inheritdoc/>
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+            _extendTitleBarHeight = titleBarHeight;
+            _native.SetExtendTitleBarHeight(titleBarHeight);
+
+            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.ExtendTitleBarHeight : titleBarHeight, 0, 0) : new Thickness();
+
+            ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
+        }
+
+        /// <inheritdoc/>
+        public bool NeedsManagedDecorations => false;
 
         public void ShowTaskbarIcon(bool value)
         {
@@ -113,6 +207,18 @@ namespace Avalonia.Native
         public void Move(PixelPoint point) => Position = point;
 
         public override IPopupImpl CreatePopup() =>
-            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, this);
+            _opts.OverlayPopups ? null : new PopupImpl(_factory, _opts, _glFeature, this);
+
+        public Action GotInputWhenDisabled { get; set; }
+
+        public void SetParent(IWindowImpl parent)
+        {
+            _native.SetParent(((WindowImpl)parent).Native);
+        }
+
+        public void SetEnabled(bool enable)
+        {
+            _native.SetEnabled(enable.AsComBool());
+        }
     }
 }

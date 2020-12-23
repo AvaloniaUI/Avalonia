@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 namespace Avalonia.Input
 {
     /// <summary>
@@ -86,7 +83,7 @@ namespace Avalonia.Input
         /// </returns>
         public static bool IsDirectional(this NavigationDirection direction)
         {
-            return direction > NavigationDirection.Previous ||
+            return direction > NavigationDirection.Previous &&
                 direction <= NavigationDirection.PageDown;
         }
 
@@ -100,12 +97,12 @@ namespace Avalonia.Input
         /// </returns>
         public static NavigationDirection? ToNavigationDirection(
             this Key key,
-            InputModifiers modifiers = InputModifiers.None)
+            KeyModifiers modifiers = KeyModifiers.None)
         {
             switch (key)
             {
                 case Key.Tab:
-                    return (modifiers & InputModifiers.Shift) != 0 ?
+                    return (modifiers & KeyModifiers.Shift) == 0 ?
                         NavigationDirection.Next : NavigationDirection.Previous;
                 case Key.Up:
                     return NavigationDirection.Up;

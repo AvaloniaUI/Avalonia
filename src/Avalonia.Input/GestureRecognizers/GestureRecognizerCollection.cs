@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
@@ -11,8 +9,8 @@ namespace Avalonia.Input.GestureRecognizers
     public class GestureRecognizerCollection : IReadOnlyCollection<IGestureRecognizer>, IGestureRecognizerActionsDispatcher
     {
         private readonly IInputElement _inputElement;
-        private List<IGestureRecognizer> _recognizers;
-        private Dictionary<IPointer, IGestureRecognizer> _pointerGrabs;
+        private List<IGestureRecognizer>? _recognizers;
+        private Dictionary<IPointer, IGestureRecognizer>? _pointerGrabs;
         
         
         public GestureRecognizerCollection(IInputElement inputElement)
@@ -72,7 +70,7 @@ namespace Avalonia.Input.GestureRecognizers
         {
             if (_recognizers == null)
                 return false;
-            if (_pointerGrabs.TryGetValue(e.Pointer, out var capture))
+            if (_pointerGrabs!.TryGetValue(e.Pointer, out var capture))
             {
                 capture.PointerReleased(e);
             }
@@ -90,7 +88,7 @@ namespace Avalonia.Input.GestureRecognizers
         {
             if (_recognizers == null)
                 return false;
-            if (_pointerGrabs.TryGetValue(e.Pointer, out var capture))
+            if (_pointerGrabs!.TryGetValue(e.Pointer, out var capture))
             {
                 capture.PointerMoved(e);
             }
@@ -108,19 +106,22 @@ namespace Avalonia.Input.GestureRecognizers
         {
             if (_recognizers == null)
                 return;
-            _pointerGrabs.Remove(e.Pointer);
+            _pointerGrabs!.Remove(e.Pointer);
             foreach (var r in _recognizers)
             {
-                if(e.Handled)
-                    break;
-                r.PointerCaptureLost(e);
+                r.PointerCaptureLost(e.Pointer);
             }
         }
 
         void IGestureRecognizerActionsDispatcher.Capture(IPointer pointer, IGestureRecognizer recognizer)
         {
             pointer.Capture(_inputElement);
-            _pointerGrabs[pointer] = recognizer;
+            _pointerGrabs![pointer] = recognizer;
+            foreach (var r in _recognizers!)
+            {
+                if (r != recognizer)
+                    r.PointerCaptureLost(pointer);
+            }
         }
 
     }

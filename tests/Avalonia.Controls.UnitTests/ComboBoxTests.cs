@@ -1,11 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
-using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -30,6 +26,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(target.IsDropDownOpen);
 
             _helper.Down(target);
+            _helper.Up(target);
 
             Assert.False(target.IsDropDownOpen);
         }
@@ -43,6 +40,7 @@ namespace Avalonia.Controls.UnitTests
                 Items = items,
                 SelectedIndex = 0,
             };
+            var root = new TestRoot(target);
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
             Assert.NotNull(rectangle);
@@ -107,6 +105,37 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
             });
+        }
+
+        [Fact]
+        public void Detaching_Closed_ComboBox_Keeps_Current_Focus()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target = new ComboBox
+                {
+                    Items = new[] { new Canvas() },
+                    SelectedIndex = 0,
+                    Template = GetTemplate(),
+                };
+
+                var other = new Control { Focusable = true };
+
+                StackPanel panel;
+
+                var root = new TestRoot { Child = panel = new StackPanel { Children = { target, other } } };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+
+                other.Focus();
+
+                Assert.True(other.IsFocused);
+
+                panel.Children.Remove(target);
+
+                Assert.True(other.IsFocused);
+            }
         }
     }
 }

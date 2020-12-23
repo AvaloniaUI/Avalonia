@@ -1,6 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+﻿using System;
 using System.IO;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -11,7 +9,7 @@ using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
-    public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IRenderTargetBitmapImpl, ILayerFactory
+    public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IDrawingContextLayerImpl, ILayerFactory
     {
         private readonly BitmapRenderTarget _renderTarget;
 
@@ -37,7 +35,11 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, null, () => Version++);
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public void Blit(IDrawingContextImpl context) => throw new NotSupportedException();
+
+        public bool CanBlit => false;
+
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             return CreateCompatible(_renderTarget, size);
         }
@@ -58,7 +60,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             {
                 using (var dc = wic.CreateDrawingContext(null))
                 {
-                    dc.DrawImage(
+                    dc.DrawBitmap(
                         RefCountable.CreateUnownedNotClonable(this),
                         1,
                         new Rect(PixelSize.ToSizeWithDpi(Dpi.X)),

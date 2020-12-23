@@ -23,37 +23,37 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ResizeDirection"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<GridResizeDirection> ResizeDirectionProperty =
+        public static readonly StyledProperty<GridResizeDirection> ResizeDirectionProperty =
             AvaloniaProperty.Register<GridSplitter, GridResizeDirection>(nameof(ResizeDirection));
 
         /// <summary>
         /// Defines the <see cref="ResizeBehavior"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<GridResizeBehavior> ResizeBehaviorProperty =
+        public static readonly StyledProperty<GridResizeBehavior> ResizeBehaviorProperty =
             AvaloniaProperty.Register<GridSplitter, GridResizeBehavior>(nameof(ResizeBehavior));
 
         /// <summary>
         /// Defines the <see cref="ShowsPreview"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<bool> ShowsPreviewProperty =
+        public static readonly StyledProperty<bool> ShowsPreviewProperty =
             AvaloniaProperty.Register<GridSplitter, bool>(nameof(ShowsPreview));
 
         /// <summary>
         /// Defines the <see cref="KeyboardIncrement"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> KeyboardIncrementProperty =
+        public static readonly StyledProperty<double> KeyboardIncrementProperty =
             AvaloniaProperty.Register<GridSplitter, double>(nameof(KeyboardIncrement), 10d);
 
         /// <summary>
         /// Defines the <see cref="DragIncrement"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<double> DragIncrementProperty =
+        public static readonly StyledProperty<double> DragIncrementProperty =
             AvaloniaProperty.Register<GridSplitter, double>(nameof(DragIncrement), 1d);
 
         /// <summary>
         /// Defines the <see cref="PreviewContent"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<ITemplate<IControl>> PreviewContentProperty =
+        public static readonly StyledProperty<ITemplate<IControl>> PreviewContentProperty =
             AvaloniaProperty.Register<GridSplitter, ITemplate<IControl>>(nameof(PreviewContent));
 
         private static readonly Cursor s_columnSplitterCursor = new Cursor(StandardCursorType.SizeWestEast);

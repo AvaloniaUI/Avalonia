@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -176,7 +173,7 @@ namespace Avalonia.Visuals.UnitTests
             };
 
             root.Child = child;
-            renderer.ResetCalls();
+            renderer.Invocations.Clear();
             root.Child = null;
 
             renderer.Verify(x => x.AddDirty(child));
@@ -236,6 +233,25 @@ namespace Avalonia.Visuals.UnitTests
 
             //child is centered (400 - 100*2 scale)/2
             Assert.Equal(new Point(100, 100), point);
+        }
+
+        [Fact]
+        public void TransformToVisual_With_NonInvertible_RenderTransform_Should_Work()
+        {
+            var child = new Decorator
+            {
+                Width = 100,
+                Height = 100,
+                RenderTransform = new ScaleTransform() { ScaleX = 0, ScaleY = 0 }
+            };
+            var root = new TestRoot() { Child = child, Width = 400, Height = 400 };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(new Point(), root.DesiredSize));
+
+            var tr = root.TransformToVisual(child);
+
+            Assert.Null(tr);
         }
 
         [Fact]

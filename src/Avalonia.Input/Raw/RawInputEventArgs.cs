@@ -1,6 +1,3 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 
 namespace Avalonia.Input.Raw
@@ -24,7 +21,7 @@ namespace Avalonia.Input.Raw
         /// <param name="root">The root from which the event originates.</param>
         public RawInputEventArgs(IInputDevice device, ulong timestamp, IInputRoot root)
         {
-            Contract.Requires<ArgumentNullException>(device != null);
+            device = device ?? throw new ArgumentNullException(nameof(device));
 
             Device = device;
             Timestamp = timestamp;

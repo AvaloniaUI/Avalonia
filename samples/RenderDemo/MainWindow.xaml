@@ -3,8 +3,8 @@
         x:Class="RenderDemo.MainWindow"
         Title="AvaloniaUI Rendering Test"
         xmlns:pages="clr-namespace:RenderDemo.Pages"
-        Width="800"
-        Height="600">
+        Width="{Binding Width, Mode=TwoWay}"
+        Height="{Binding Height, Mode=TwoWay}">
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="Rendering">
@@ -24,10 +24,17 @@
           </MenuItem.Icon>
         </MenuItem>
       </MenuItem>
+      <MenuItem Header="Tests">
+        <MenuItem Header="Resize window"
+                  Command="{Binding ResizeWindow}"/>
+      </MenuItem>
     </Menu>
     <TabControl Classes="sidebar">
       <TabItem Header="Animations">
         <pages:AnimationsPage/>
+      </TabItem>
+      <TabItem Header="Transitions">
+        <pages:TransitionsPage/>
       </TabItem>
       <TabItem Header="Clipping">
         <pages:ClippingPage/>
@@ -40,6 +47,15 @@
       </TabItem>
       <TabItem Header="RenderTargetBitmap">
         <pages:RenderTargetBitmapPage/>
+      </TabItem>
+      <TabItem Header="WriteableBitmap">
+        <pages:WriteableBitmapPage/>
+      </TabItem>
+      <TabItem Header="GlyphRun">
+        <pages:GlyphRunPage/>
+      </TabItem>
+      <TabItem Header="LineBounds">
+        <pages:LineBoundsPage />
       </TabItem>
     </TabControl>
   </DockPanel>

@@ -8,8 +8,12 @@
     -->
     <Version>0.7.0</Version>
     <NoWarn>CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NugetPackageName>Avalonia</NugetPackageName>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Remote\HtmlTransport\webapp\build\**\*.gz" />
+    <EmbeddedResource Condition="'$(Configuration)' == 'Debug'" Remove="Remote\HtmlTransport\webapp\build\**\*.map.gz"/>
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
@@ -23,4 +27,5 @@
     <ProjectReference Include="..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>

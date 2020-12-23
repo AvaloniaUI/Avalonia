@@ -14,7 +14,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
     public partial class SceneBuilderTests
     {
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Control_With_Animated_Opacity_And_Children_Should_Start_New_Layer()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -40,7 +40,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
@@ -105,7 +105,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
@@ -118,7 +118,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Removing_Control_With_Animated_Opacity_Should_Remove_Layers()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -147,7 +147,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
@@ -168,7 +168,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void Hiding_Transparent_Control_Should_Remove_Layers()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -197,7 +197,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
@@ -218,7 +218,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Layers are disabled. See #2244")]
         public void GeometryClip_Should_Affect_Child_Layers()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -241,7 +241,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var animation = new BehaviorSubject<double>(0.5);
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);

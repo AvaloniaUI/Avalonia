@@ -1,20 +1,20 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Metadata;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// An indexed dictionary of resources.
     /// </summary>
-    public class ResourceDictionary : AvaloniaDictionary<object, object>, IResourceDictionary
+    public class ResourceDictionary : AvaloniaDictionary<object, object?>, IResourceDictionary
     {
-        private AvaloniaList<IResourceProvider> _mergedDictionaries;
+        private IResourceHost? _owner;
+        private AvaloniaList<IResourceProvider>? _mergedDictionaries;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
@@ -24,10 +24,28 @@ namespace Avalonia.Controls
             CollectionChanged += OnCollectionChanged;
         }
 
-        /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
+        /// </summary>
+        public ResourceDictionary(IResourceHost owner)
+            : this()
+        {
+            Owner = owner;
+        }
 
-        /// <inheritdoc/>
+        public IResourceHost? Owner
+        {
+            get => _owner;
+            private set
+            {
+                if (_owner != value)
+                {
+                    _owner = value;
+                    OwnerChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
         public IList<IResourceProvider> MergedDictionaries
         {
             get
@@ -39,37 +57,51 @@ namespace Avalonia.Controls
                     _mergedDictionaries.ForEachItem(
                         x =>
                         {
-                            if (x.HasResources)
+                            if (Owner is object)
                             {
-                                OnResourcesChanged();
+                                x.AddOwner(Owner);
                             }
-
-                            x.ResourcesChanged += MergedDictionaryResourcesChanged;
                         },
                         x =>
                         {
-                            if (x.HasResources)
+                            if (Owner is object)
                             {
-                                OnResourcesChanged();
+                                x.RemoveOwner(Owner);
                             }
-
-                            x.ResourcesChanged -= MergedDictionaryResourcesChanged;
-                        },
-                        () => { });
+                        }, null);
                 }
 
                 return _mergedDictionaries;
             }
         }
 
-        /// <inheritdoc/>
-        bool IResourceProvider.HasResources
+        bool IResourceNode.HasResources
         {
-            get => Count > 0 || (_mergedDictionaries?.Any(x => x.HasResources) ?? false);
+            get
+            {
+                if (Count > 0)
+                {
+                    return true;
+                }
+
+                if (_mergedDictionaries?.Count > 0)
+                {
+                    foreach (var i in _mergedDictionaries)
+                    {
+                        if (i.HasResources)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
         }
 
-        /// <inheritdoc/>
-        public bool TryGetResource(object key, out object value)
+        public event EventHandler? OwnerChanged;
+
+        public bool TryGetResource(object key, out object? value)
         {
             if (TryGetValue(key, out value))
             {
@@ -90,12 +122,63 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private void OnResourcesChanged()
+        void IResourceProvider.AddOwner(IResourceHost owner)
         {
-            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            if (Owner != null)
+            {
+                throw new InvalidOperationException("The ResourceDictionary already has a parent.");
+            }
+            
+            Owner = owner;
+
+            var hasResources = Count > 0;
+            
+            if (_mergedDictionaries is object)
+            {
+                foreach (var i in _mergedDictionaries)
+                {
+                    i.AddOwner(owner);
+                    hasResources |= i.HasResources;
+                }
+            }
+
+            if (hasResources)
+            {
+                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            }
         }
 
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) => OnResourcesChanged();
-        private void MergedDictionaryResourcesChanged(object sender, ResourcesChangedEventArgs e) => OnResourcesChanged();
+        void IResourceProvider.RemoveOwner(IResourceHost owner)
+        {
+            owner = owner ?? throw new ArgumentNullException(nameof(owner));
+
+            if (Owner == owner)
+            {
+                Owner = null;
+
+                var hasResources = Count > 0;
+
+                if (_mergedDictionaries is object)
+                {
+                    foreach (var i in _mergedDictionaries)
+                    {
+                        i.RemoveOwner(owner);
+                        hasResources |= i.HasResources;
+                    }
+                }
+
+                if (hasResources)
+                {
+                    owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                }
+            }
+        }
+
+        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+        }
     }
 }
