@@ -49,4 +49,5 @@
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NetFX.props" />
   <Import Project="..\..\build\CoreLibraries.props" />
+  <Import Project="..\..\build\SourceLink.props" />
 </Project>
