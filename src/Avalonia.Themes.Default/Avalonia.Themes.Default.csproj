@@ -12,8 +12,10 @@
     <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <AvaloniaResource Include="**/*.xaml" />
-    <AvaloniaResource Include="Assets\*" />
+    <AvaloniaResource Include="DefaultTheme.xaml" />
+    <AvaloniaResource Include="Accents/*.xaml" />
+    <!-- Compatibility with old apps, probably need to replace with AvaloniaResource -->
+    <EmbeddedResource Include="**/*.xaml" />
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\Rx.props" />
