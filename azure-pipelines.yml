@@ -54,7 +54,7 @@ jobs:
       sdk: 'macosx11.0'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
-      xcodeVersion: '12' # Options: 8, 9, default, specifyPath
+      xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
