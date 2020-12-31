@@ -1,4 +1,0 @@
-Compat issues with assembly Avalonia.Input:
-InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Input.IInputElement.IsKeyboardFocusWithin' is present in the implementation but not in the contract.
-InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Input.IInputElement.IsKeyboardFocusWithin.get()' is present in the implementation but not in the contract.
-Total Issues: 2

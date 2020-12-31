@@ -55,9 +55,9 @@ namespace Avalonia.Native.Interop.Impl
 
         private void UpdateGesture(Input.KeyGesture gesture)
         {
-            var text = gesture == null ? "" : OsxUnicodeKeys.ConvertOSXSpecialKeyCodes(gesture.Key);
             var modifiers = gesture == null ? AvnInputModifiers.AvnInputModifiersNone : (AvnInputModifiers)gesture.KeyModifiers;
-            SetGesture(text, modifiers);
+            var key = gesture == null ? AvnKey.AvnKeyNone : (AvnKey)gesture.Key;
+            SetGesture(key, modifiers);
         }
 
         private void UpdateAction(NativeMenuItem item)

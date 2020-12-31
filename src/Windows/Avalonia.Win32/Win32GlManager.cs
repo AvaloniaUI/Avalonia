@@ -20,13 +20,17 @@ namespace Avalonia.Win32
                     return wgl;
                 }
 
-                if (opts?.AllowEglInitialization == true)
+                if (opts?.AllowEglInitialization == true ||
+                    ((!opts?.AllowEglInitialization.HasValue ?? false) &&
+                     Win32Platform.WindowsVersion > new Version(6, 1)))
                 {
                     var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
 
                     if (egl is { } &&
-                        opts?.UseWindowsUIComposition == true) 
+                        opts?.UseWindowsUIComposition == true)
+                    {
                         WinUICompositorConnection.TryCreateAndRegister(egl);
+                    }
 
                     return egl;
                 }
