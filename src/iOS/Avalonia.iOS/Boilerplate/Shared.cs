@@ -386,11 +386,9 @@ namespace Avalonia.Shared.PlatformSupport
 
                 if (uri.IsResm())
                 {
-                    var qs = uri.ParseQueryString();
-                    if (qs.TryGetValue("assembly", out var assemblyName))
-                    {
-                        return GetAssembly(assemblyName);
-                    }
+                    var assemblyName = uri.GetAssemblyNameFromQuery();
+                    if (assemblyName.Length > 0)
+                        GetAssembly(assemblyName);
                 }
             }
 

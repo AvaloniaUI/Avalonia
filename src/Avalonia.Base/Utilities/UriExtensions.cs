@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Avalonia.Utilities
 {
@@ -33,11 +31,41 @@ namespace Avalonia.Utilities
         public static string GetUnescapeAbsoluteUri(this Uri uri) =>
             Uri.UnescapeDataString(uri.AbsoluteUri);
         
-        public static Dictionary<string, string> ParseQueryString(this Uri uri) =>
-            Uri.UnescapeDataString(uri.Query)
-                .TrimStart('?')
-                .Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Split('='))
-                .ToDictionary(p => p[0], p => p[1]);
+        public static string GetAssemblyNameFromQuery(this Uri uri)
+        {
+            const string assembly = "assembly";
+
+            var query = Uri.UnescapeDataString(uri.Query);
+            
+            // Skip the '?'
+            var currentIndex = 1;
+            while (currentIndex < query.Length)
+            {
+                var isFind = false;
+                for (var i = 0; i < assembly.Length; ++currentIndex, ++i)
+                    if (query[currentIndex] == assembly[i])
+                    {
+                        isFind = i == assembly.Length - 1;
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                // Skip the '='
+                ++currentIndex;
+
+                var beginIndex = currentIndex;
+                while (currentIndex < query.Length && query[currentIndex] != '&')
+                    ++currentIndex;
+
+                if (isFind)
+                    return query.Substring(beginIndex, currentIndex - beginIndex);
+
+                ++currentIndex;
+            }
+
+            return string.Empty;
+        }
     }
 }
