@@ -28,12 +28,14 @@ namespace Avalonia.Controls
             {
                 control.PointerEnter -= ControlPointerEnter;
                 control.PointerLeave -= ControlPointerLeave;
+                control.PropertyChanged -= Control_PropertyChanged;
             }
 
             if (e.NewValue != null)
             {
                 control.PointerEnter += ControlPointerEnter;
                 control.PointerLeave += ControlPointerLeave;
+                control.PropertyChanged += Control_PropertyChanged;
             }
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
@@ -95,6 +97,17 @@ namespace Avalonia.Controls
         {
             var control = (Control)sender;
             Close(control);
+        }
+
+        private void Control_PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            var control = (Control)sender;
+
+            if (e.Property == Visual.TransformedBoundsProperty)
+            {
+                var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+                toolTip?.RecalculatePosition(control);
+            }
         }
 
         private void StartShowTimer(int showDelay, Control control)
