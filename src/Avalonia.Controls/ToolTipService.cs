@@ -103,7 +103,7 @@ namespace Avalonia.Controls
         {
             var control = (Control)sender;
 
-            if (e.Property == Visual.TransformedBoundsProperty)
+            if (e.Property == Visual.BoundsProperty)
             {
                 var toolTip = control.GetValue(ToolTip.ToolTipProperty);
                 toolTip?.RecalculatePosition(control);
