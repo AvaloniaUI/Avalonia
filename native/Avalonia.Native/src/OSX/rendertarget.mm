@@ -111,7 +111,11 @@
         if(_renderbuffer != 0)
             glDeleteRenderbuffers(1, &_renderbuffer);
     }
-    CFRelease(surface);
+
+    if(surface != nullptr)
+    {
+        CFRelease(surface);
+    }
 }
 @end
 
