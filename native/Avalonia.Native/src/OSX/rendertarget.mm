@@ -149,6 +149,12 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
 }
 
 - (void)resize:(AvnPixelSize)size withScale: (float) scale{
+
+    if(size.Height <= 0)
+        size.Height = 1;
+    if(size.Width <= 0)
+        size.Width = 1;
+
     @synchronized (lock) {
         if(surface == nil
            || surface->size.Width != size.Width
