@@ -149,6 +149,7 @@ namespace Avalonia.Controls
         private int _selectionStart;
         private int _selectionEnd;
         private TextPresenter _presenter;
+        private TextBoxTextInputMethodClient _imClient = new TextBoxTextInputMethodClient();
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
@@ -161,6 +162,10 @@ namespace Avalonia.Controls
         static TextBox()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+            TextInputMethodClientRequestedEvent.AddClassHandler<TextBox>((tb, e) =>
+            {
+                e.Client = tb._imClient;
+            });
         }
 
         public TextBox()
@@ -437,7 +442,7 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
-
+            _imClient.SetPresenter(_presenter);
             if (IsFocused)
             {
                 _presenter?.ShowCaret();
