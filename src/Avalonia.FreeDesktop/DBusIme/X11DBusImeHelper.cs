@@ -35,7 +35,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             return null;
         }
         
-        public static void RegisterIfNeeded(bool? optionsWantIme)
+        public static bool RegisterIfNeeded(bool? optionsWantIme)
         {
             if(
                 optionsWantIme == true
@@ -47,9 +47,15 @@ namespace Avalonia.FreeDesktop.DBusIme
                 {
                     var conn = DBusHelper.TryInitialize();
                     if (conn != null)
+                    {
                         AvaloniaLocator.CurrentMutable.Bind<IX11InputMethodFactory>().ToConstant(factory(conn));
+                        return true;
+                    }
                 }
             }
+
+            return false;
+
         }
     }
 }

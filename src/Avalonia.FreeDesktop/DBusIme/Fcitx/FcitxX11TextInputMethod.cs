@@ -211,6 +211,16 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             }, OnError);
         }
         
+        public void Reset()
+        {
+            _queue.Enqueue(async () =>
+            {
+                if (_context == null)
+                    return;
+                await _context.ResetAsync();
+            }, OnError);
+        }
+
         public void SetActive(bool active)
         {
             _controlActive = active;
@@ -225,9 +235,9 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 
         bool IX11InputMethodControl.IsEnabled => _context != null && _controlActive;
 
-        Task<bool> IX11InputMethodControl.HandleEventAsync(RawKeyEventArgs args, int keyVal, int keyCode)
+        ValueTask<bool> IX11InputMethodControl.HandleEventAsync(RawKeyEventArgs args, int keyVal, int keyCode)
         {
-            return _queue.EnqueueAsync<bool>(async () =>
+            return new ValueTask<bool>(_queue.EnqueueAsync<bool>(async () =>
             {
                 if (_context == null)
                     return false;
@@ -255,7 +265,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                     await OnError(e);
                     return false;
                 }
-            });
+            }));
         }
 
         private Action<string> _onCommit;

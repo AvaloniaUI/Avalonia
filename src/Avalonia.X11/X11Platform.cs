@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
@@ -22,7 +23,8 @@ namespace Avalonia.X11
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, Action<XEvent>> Windows = new Dictionary<IntPtr, Action<XEvent>>();
+        public Dictionary<IntPtr, X11PlatformThreading.EventHandler> Windows =
+            new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
@@ -30,9 +32,20 @@ namespace Avalonia.X11
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
+        [DllImport("libc")]
+        static extern void setlocale(int type, string s);
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
+            
+            bool useXim = false;
+            if (!X11DBusImeHelper.RegisterIfNeeded(Options.EnableIme)) 
+                useXim = ShouldUseXim();
+            
+            // XIM doesn't work at all otherwise
+            if (useXim)
+                setlocale(0, "");
+
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
             DeferredDisplay = XOpenDisplay(IntPtr.Zero);
@@ -41,7 +54,8 @@ namespace Avalonia.X11
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
             XError.Init();
-            Info = new X11Info(Display, DeferredDisplay);
+            
+            Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
             //TODO: log
             if (options.UseDBusMenu)
@@ -59,7 +73,7 @@ namespace Avalonia.X11
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
                 .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider());
-            X11DBusImeHelper.RegisterIfNeeded(options.EnableIme);
+            
             X11Screens = Avalonia.X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
             if (Info.XInputVersion != null)
@@ -91,6 +105,31 @@ namespace Avalonia.X11
         {
             throw new NotSupportedException();
         }
+
+        bool ShouldUseXim()
+        {
+            // Check if XIM is configured
+            var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
+            if (modifiers == null)
+                return false;
+            if (modifiers.Contains("@im=none") || modifiers.Contains("@im=null"))
+                return false;
+            if (!modifiers.Contains("@im="))
+                return false;
+            
+            // Check if we are configured to use it
+            if (Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "xim"
+                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "xim"
+                || Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "xim")
+                return true;
+
+            // Check if fallback is enabled
+            if (Options.ForceEnableXimFallback ||
+                Environment.GetEnvironmentVariable("AVALONIA_FORCE_XIM_FALLBACK") == "1")
+                return true;
+            
+            return false;
+        }
     }
 }
 
@@ -105,6 +144,7 @@ namespace Avalonia
         public bool UseDBusMenu { get; set; }
         public bool UseDeferredRendering { get; set; } = true;
         public bool? EnableIme { get; set; }
+        public bool ForceEnableXimFallback { get; set; }
 
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {

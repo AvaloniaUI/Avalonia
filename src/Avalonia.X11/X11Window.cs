@@ -82,7 +82,7 @@ namespace Avalonia.X11
 
             if (_popup)
             {
-                attr.override_redirect = true;
+                attr.override_redirect = 1;
                 valueMask |= SetWindowValuemask.OverrideRedirect;
             }
 
@@ -184,10 +184,9 @@ namespace Avalonia.X11
 
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
-            _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle,
-                XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
-                XNames.XNClientWindow, _handle, IntPtr.Zero);
-            
+
+            CreateIC();
+
             XFlush(_x11.Display);
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
@@ -356,15 +355,13 @@ namespace Avalonia.X11
                 (IRenderer)new X11ImmediateRendererProxy(root, loop);
         }
 
-        void OnEvent(XEvent ev)
+        void OnEvent(ref XEvent ev)
         {
             lock (SyncRoot)
-                OnEventSync(ev);
+                OnEventSync(ref ev);
         }
-        void OnEventSync(XEvent ev)
+        void OnEventSync(ref XEvent ev)
         {
-            if(XFilterEvent(ref ev, _handle))
-                return;
             if (ev.type == XEventName.MapNotify)
             {
                 _mapped = true;
@@ -392,11 +389,11 @@ namespace Avalonia.X11
                 if (ActivateTransientChildIfNeeded())
                     return;
                 Activated?.Invoke();
-                _imeControl.SetWindowActive(true);
+                _imeControl?.SetWindowActive(true);
             }
             else if (ev.type == XEventName.FocusOut)
             {
-                _imeControl.SetWindowActive(false);
+                _imeControl?.SetWindowActive(false);
                 Deactivated?.Invoke();
             }
             else if (ev.type == XEventName.MotionNotify)
@@ -457,7 +454,7 @@ namespace Avalonia.X11
                     return;
                 var needEnqueue = (_configure == null);
                 _configure = ev.ConfigureEvent;
-                if (ev.ConfigureEvent.override_redirect || ev.ConfigureEvent.send_event)
+                if (ev.ConfigureEvent.override_redirect != 0  || ev.ConfigureEvent.send_event != 0)
                     _configurePoint = new PixelPoint(ev.ConfigureEvent.x, ev.ConfigureEvent.y);
                 else
                 {
@@ -498,7 +495,8 @@ namespace Avalonia.X11
                     XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
                         ev.ConfigureEvent.height);
             }
-            else if (ev.type == XEventName.DestroyNotify && ev.AnyEvent.window == _handle)
+            else if (ev.type == XEventName.DestroyNotify 
+                     && ev.DestroyWindowEvent.window == _handle)
             {
                 Cleanup();
             }
@@ -518,7 +516,7 @@ namespace Avalonia.X11
             {
                 if (ActivateTransientChildIfNeeded())
                     return;
-                HandleKeyEvent(ev);
+                HandleKeyEvent(ref ev);
             }
         }
 
@@ -945,7 +943,7 @@ namespace Avalonia.X11
                 ClientMessageEvent =
                 {
                     type = XEventName.ClientMessage,
-                    send_event = true,
+                    send_event = 1,
                     window = _handle,
                     message_type = message_type,
                     format = 32,

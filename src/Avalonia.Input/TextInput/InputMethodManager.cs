@@ -36,6 +36,7 @@ namespace Avalonia.Input.TextInput
                         RoutedEvent = InputElement.TextInputOptionsQueryEvent
                     };
                     _focusedElement?.RaiseEvent(optionsQuery);
+                    _im?.Reset();
                     _im?.SetOptions(optionsQuery);
                     _transformTracker?.SetVisual(_client?.TextViewVisual);
                     UpdateCursorRect();

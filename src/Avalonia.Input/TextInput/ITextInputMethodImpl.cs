@@ -5,6 +5,7 @@ namespace Avalonia.Input.TextInput
         void SetActive(bool active);
         void SetCursorRect(Rect rect);
         void SetOptions(TextInputOptionsQueryEventArgs options);
+        void Reset();
     }
     
     public interface ITextInputMethodRoot : IInputRoot
