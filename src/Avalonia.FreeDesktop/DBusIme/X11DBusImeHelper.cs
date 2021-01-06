@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.FreeDesktop.DBusIme.Fcitx;
+using Avalonia.FreeDesktop.DBusIme.IBus;
 using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop.DBusIme
@@ -11,24 +12,20 @@ namespace Avalonia.FreeDesktop.DBusIme
             new Dictionary<string, Func<Connection, IX11InputMethodFactory>>
             {
                 ["fcitx"] = conn =>
-                    new DBusInputMethodFactory<FcitxX11TextInputMethod>(_ => new FcitxX11TextInputMethod(conn))
+                    new DBusInputMethodFactory<FcitxX11TextInputMethod>(_ => new FcitxX11TextInputMethod(conn)),
+                ["ibus"] = conn =>
+                    new DBusInputMethodFactory<IBusX11TextInputMethod>(_ => new IBusX11TextInputMethod(conn))
             };
         
-        static bool IsCjkLocale(string lang)
-        {
-            if (lang == null)
-                return false;
-            return lang.Contains("zh")
-                   || lang.Contains("ja")
-                   || lang.Contains("vi")
-                   || lang.Contains("ko");
-        }
-
         static Func<Connection, IX11InputMethodFactory> DetectInputMethod()
         {
             foreach (var name in new[] { "AVALONIA_IM_MODULE", "GTK_IM_MODULE", "QT_IM_MODULE" })
             {
                 var value = Environment.GetEnvironmentVariable(name);
+                
+                if (value == "none")
+                    return null;
+                
                 if (value != null && KnownMethods.TryGetValue(value, out var factory))
                     return factory;
             }
@@ -36,22 +33,16 @@ namespace Avalonia.FreeDesktop.DBusIme
             return null;
         }
         
-        public static bool RegisterIfNeeded(bool? optionsWantIme)
+        public static bool DetectAndRegister()
         {
-            if(
-                optionsWantIme == true
-                || Environment.GetEnvironmentVariable("AVALONIA_FORCE_IME") == "1"
-                || (optionsWantIme == null && IsCjkLocale(Environment.GetEnvironmentVariable("LANG"))))
+            var factory = DetectInputMethod();
+            if (factory != null)
             {
-                var factory = DetectInputMethod();
-                if (factory != null)
+                var conn = DBusHelper.TryInitialize();
+                if (conn != null)
                 {
-                    var conn = DBusHelper.TryInitialize();
-                    if (conn != null)
-                    {
-                        AvaloniaLocator.CurrentMutable.Bind<IX11InputMethodFactory>().ToConstant(factory(conn));
-                        return true;
-                    }
+                    AvaloniaLocator.CurrentMutable.Bind<IX11InputMethodFactory>().ToConstant(factory(conn));
+                    return true;
                 }
             }
 

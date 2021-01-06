@@ -60,6 +60,9 @@ namespace Avalonia.FreeDesktop.DBusIme
         }
         
         protected abstract Task<bool> Connect(string name);
+
+        protected string GetAppName() =>
+            Application.Current.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
         
         private async void OnNameChange(ServiceOwnerChangedEventArgs args)
         {

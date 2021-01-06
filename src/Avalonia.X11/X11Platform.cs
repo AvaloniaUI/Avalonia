@@ -39,9 +39,13 @@ namespace Avalonia.X11
             Options = options;
             
             bool useXim = false;
-            if (!X11DBusImeHelper.RegisterIfNeeded(Options.EnableIme)) 
-                useXim = ShouldUseXim();
-            
+            if (EnableIme(options))
+            {
+                // Attempt to configure DBus-based input method and check if we can fall back to XIM
+                if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
+                    useXim = true;
+            }
+
             // XIM doesn't work at all otherwise
             if (useXim)
                 setlocale(0, "");
@@ -106,8 +110,36 @@ namespace Avalonia.X11
             throw new NotSupportedException();
         }
 
+        bool EnableIme(X11PlatformOptions options)
+        {
+            // Disable if explicitly asked by user
+            var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
+            if (avaloniaImModule == "none")
+                return false;
+            
+            // Use value from options when specified
+            if (options.EnableIme.HasValue)
+                return options.EnableIme.Value;
+            
+            // Automatically enable for CJK locales
+            var lang = Environment.GetEnvironmentVariable("LANG");
+            var isCjkLocale = lang != null &&
+                              (lang.Contains("zh")
+                               || lang.Contains("ja")
+                               || lang.Contains("vi")
+                               || lang.Contains("ko"));
+
+            return isCjkLocale;
+        }
+        
         bool ShouldUseXim()
         {
+            // Check if we are forbidden from using IME
+            if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
+                || Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "none"
+                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "none")
+                return true;
+            
             // Check if XIM is configured
             var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
             if (modifiers == null)
@@ -121,11 +153,6 @@ namespace Avalonia.X11
             if (Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "xim"
                 || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "xim"
                 || Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "xim")
-                return true;
-
-            // Check if fallback is enabled
-            if (Options.ForceEnableXimFallback ||
-                Environment.GetEnvironmentVariable("AVALONIA_FORCE_XIM_FALLBACK") == "1")
                 return true;
             
             return false;
@@ -144,7 +171,6 @@ namespace Avalonia
         public bool UseDBusMenu { get; set; }
         public bool UseDeferredRendering { get; set; } = true;
         public bool? EnableIme { get; set; }
-        public bool ForceEnableXimFallback { get; set; }
 
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {

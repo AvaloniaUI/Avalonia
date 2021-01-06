@@ -25,11 +25,10 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 
         protected override async Task<bool> Connect(string name)
         {
-            var appName = Application.Current.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
             if (name == "org.fcitx.Fcitx")
             {
                 var method = Connection.CreateProxy<IFcitxInputMethod>(name, "/inputmethod");
-                var resp = await method.CreateICv3Async(appName,
+                var resp = await method.CreateICv3Async(GetAppName(),
                     Process.GetCurrentProcess().Id);
 
                 var proxy = Connection.CreateProxy<IFcitxInputContext>(name,
@@ -40,7 +39,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             else
             {
                 var method = Connection.CreateProxy<IFcitxInputMethod1>(name, "/inputmethod");
-                var resp = await method.CreateInputContextAsync(new[] { ("appName", appName) });
+                var resp = await method.CreateInputContextAsync(new[] { ("appName", GetAppName()) });
                 var proxy = Connection.CreateProxy<IFcitxInputContext1>(name, resp.path);
                 _context = new FcitxICWrapper(proxy);
             }
