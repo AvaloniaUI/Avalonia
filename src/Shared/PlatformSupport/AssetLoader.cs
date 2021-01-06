@@ -201,7 +201,7 @@ namespace Avalonia.Shared.PlatformSupport
                 {
                     var assemblyName = uri.GetAssemblyNameFromQuery();
                     if (assemblyName.Length > 0)
-                        GetAssembly(assemblyName);
+                        return GetAssembly(assemblyName);
                 }
             }
 
