@@ -130,10 +130,12 @@ namespace Avalonia.Controls
 
         private static object GetExceptionData(Exception exception)
         {
-            if (exception is DataValidationException dataValidationException)
-                return dataValidationException.ErrorData;
-
-            return exception;
+            return exception switch
+            {
+                DataValidationException dataValidationException => dataValidationException.ErrorData,
+                InvalidCastException invalidCastException => invalidCastException.Message,
+                _ => exception
+            };
         }
     }
 }
