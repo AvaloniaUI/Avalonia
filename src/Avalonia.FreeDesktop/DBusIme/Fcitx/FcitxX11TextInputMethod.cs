@@ -12,23 +12,38 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 {
     internal class FcitxX11TextInputMethod : DBusTextInputMethodBase
     {
-        private IFcitxInputContext _context;
+        private FcitxICWrapper _context;
         private FcitxCapabilityFlags? _lastReportedFlags;
 
-        public FcitxX11TextInputMethod(Connection connection) : base(connection, "org.fcitx.Fcitx")
+        public FcitxX11TextInputMethod(Connection connection) : base(connection,
+            "org.fcitx.Fcitx",
+            "org.freedesktop.portal.Fcitx"
+            )
         {
 
         }
 
         protected override async Task<bool> Connect(string name)
         {
-            var method = Connection.CreateProxy<IFcitxInputMethod>(name, "/inputmethod");
-            var resp = await method.CreateICv3Async(
-                Application.Current.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia",
-                Process.GetCurrentProcess().Id);
+            var appName = Application.Current.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
+            if (name == "org.fcitx.Fcitx")
+            {
+                var method = Connection.CreateProxy<IFcitxInputMethod>(name, "/inputmethod");
+                var resp = await method.CreateICv3Async(appName,
+                    Process.GetCurrentProcess().Id);
 
-            _context = Connection.CreateProxy<IFcitxInputContext>(name,
-                "/inputcontext_" + resp.icid);
+                var proxy = Connection.CreateProxy<IFcitxInputContext>(name,
+                    "/inputcontext_" + resp.icid);
+
+                _context = new FcitxICWrapper(proxy);
+            }
+            else
+            {
+                var method = Connection.CreateProxy<IFcitxInputMethod1>(name, "/inputmethod");
+                var resp = await method.CreateInputContextAsync(new[] { ("appName", appName) });
+                var proxy = Connection.CreateProxy<IFcitxInputContext1>(name, resp.path);
+                _context = new FcitxICWrapper(proxy);
+            }
 
             AddDisposable(await _context.WatchCommitStringAsync(OnCommitString));
             AddDisposable(await _context.WatchForwardKeyAsync(OnForward));
@@ -74,9 +89,9 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             var type = args.Type == RawKeyEventType.KeyDown ?
                 FcitxKeyEventType.FCITX_PRESS_KEY :
                 FcitxKeyEventType.FCITX_RELEASE_KEY;
+            
             return await _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state, (int)type,
-                (uint)args.Timestamp) != 0;
-
+                (uint)args.Timestamp).ConfigureAwait(false);
         }
         
         public override void SetOptions(TextInputOptionsQueryEventArgs options) =>

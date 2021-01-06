@@ -53,10 +53,10 @@ namespace Avalonia.FreeDesktop.DBusIme
             Watch();
         }
 
-        void Watch()
+        async void Watch()
         {
             foreach (var name in _knownNames)
-                _disposables.Add(Connection.ResolveServiceOwnerAsync(name, OnNameChange));
+                _disposables.Add(await Connection.ResolveServiceOwnerAsync(name, OnNameChange));
         }
         
         protected abstract Task<bool> Connect(string name);
