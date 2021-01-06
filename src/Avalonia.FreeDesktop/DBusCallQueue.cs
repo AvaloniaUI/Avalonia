@@ -6,25 +6,26 @@ namespace Avalonia.FreeDesktop
 {
     class DBusCallQueue
     {
+        private readonly Func<Exception, Task> _errorHandler;
+
         class Item
         {
             public Func<Task> Callback;
-            public Func<Exception, Task> OnFinish;
+            public Action<Exception> OnFinish;
         }
         private Queue<Item> _q = new Queue<Item>();
         private bool _processing;
+
+        public DBusCallQueue(Func<Exception, Task> errorHandler)
+        {
+            _errorHandler = errorHandler;
+        }
         
-        public void Enqueue(Func<Task> cb, Func<Exception, Task> onError)
+        public void Enqueue(Func<Task> cb)
         {
             _q.Enqueue(new Item
             {
-                Callback = cb,
-                OnFinish = e =>
-                {
-                    if (e != null)
-                        return onError?.Invoke(e);
-                    return Task.CompletedTask;
-                }
+                Callback = cb
             });
             Process();
         }
@@ -41,7 +42,6 @@ namespace Avalonia.FreeDesktop
                         tcs.TrySetResult(0);
                     else
                         tcs.TrySetException(e);
-                    return Task.CompletedTask;
                 }
             });
             Process();
@@ -62,7 +62,6 @@ namespace Avalonia.FreeDesktop
                 {
                     if (e != null)
                         tcs.TrySetException(e);
-                    return Task.CompletedTask;
                 }
             });
             Process();
@@ -82,17 +81,29 @@ namespace Avalonia.FreeDesktop
                     try
                     {
                         await item.Callback();
-                        await item.OnFinish(null);
+                        item.OnFinish?.Invoke(null);
                     }
                     catch(Exception e)
                     {
-                        await item.OnFinish(e);
+                        if (item.OnFinish != null)
+                            item.OnFinish(e);
+                        else
+                            await _errorHandler(e);
                     }
                 }
             }
             finally
             {
                 _processing = false;
+            }
+        }
+
+        public void FailAll()
+        {
+            while (_q.Count>0)
+            {
+                var item = _q.Dequeue();
+                item.OnFinish?.Invoke(new OperationCanceledException());
             }
         }
     }

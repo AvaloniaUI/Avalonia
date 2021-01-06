@@ -13,6 +13,12 @@ namespace Avalonia.Controls
         public event EventHandler CursorRectangleChanged;
         public IVisual TextViewVisual => _presenter;
         public event EventHandler TextViewVisualChanged;
+        public bool SupportsPreedit => false;
+        public void SetPreeditText(string text) => throw new NotSupportedException();
+
+        public bool SupportsSurroundingText => false;
+        public TextInputMethodSurroundingText SurroundingText => throw new NotSupportedException();
+        public event EventHandler SurroundingTextChanged;
 
         private void OnCaretIndexChanged(int index) => CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
         

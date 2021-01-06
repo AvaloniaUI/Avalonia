@@ -10,7 +10,8 @@ namespace Avalonia.FreeDesktop.DBusIme
         private static readonly Dictionary<string, Func<Connection, IX11InputMethodFactory>> KnownMethods =
             new Dictionary<string, Func<Connection, IX11InputMethodFactory>>
             {
-                ["fcitx"] = conn => new FcitxIx11TextInputMethodFactory(conn)
+                ["fcitx"] = conn =>
+                    new DBusInputMethodFactory<FcitxX11TextInputMethod>(_ => new FcitxX11TextInputMethod(conn))
             };
         
         static bool IsCjkLocale(string lang)

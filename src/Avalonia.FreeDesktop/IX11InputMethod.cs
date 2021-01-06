@@ -23,8 +23,8 @@ namespace Avalonia.FreeDesktop
         void SetWindowActive(bool active);
         bool IsEnabled { get; }
         ValueTask<bool> HandleEventAsync(RawKeyEventArgs args, int keyVal, int keyCode);
-        event Action<string> OnCommit;
-        event Action<X11InputMethodForwardedKey> OnForwardKey;
+        event Action<string> Commit;
+        event Action<X11InputMethodForwardedKey> ForwardKey;
         
         void UpdateWindowInfo(PixelPoint position, double scaling);
     }

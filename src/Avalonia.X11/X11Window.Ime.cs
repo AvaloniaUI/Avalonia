@@ -80,10 +80,10 @@ namespace Avalonia.X11
             if (ime != null)
             {
                 (_ime, _imeControl) = ime.Value;
-                _imeControl.OnCommit += s =>
+                _imeControl.Commit += s =>
                     ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(),
                         _inputRoot, s));
-                _imeControl.OnForwardKey += ev =>
+                _imeControl.ForwardKey += ev =>
                 {
                     ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)_x11.LastActivityTimestamp.ToInt64(),
                         _inputRoot, ev.Type, X11KeyTransform.ConvertKey((X11Key)ev.KeyVal),
