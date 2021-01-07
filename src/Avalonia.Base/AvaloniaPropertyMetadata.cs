@@ -5,15 +5,15 @@ namespace Avalonia
     /// <summary>
     /// Base class for avalonia property metadata.
     /// </summary>
-    public class PropertyMetadata
+    public class AvaloniaPropertyMetadata
     {
         private BindingMode _defaultBindingMode;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyMetadata"/> class.
+        /// Initializes a new instance of the <see cref="AvaloniaPropertyMetadata"/> class.
         /// </summary>
         /// <param name="defaultBindingMode">The default binding mode.</param>
-        public PropertyMetadata(
+        public AvaloniaPropertyMetadata(
             BindingMode defaultBindingMode = BindingMode.Default)
         {
             _defaultBindingMode = defaultBindingMode;
@@ -37,7 +37,7 @@ namespace Avalonia
         /// <param name="baseMetadata">The base metadata to merge.</param>
         /// <param name="property">The property to which the metadata is being applied.</param>
         public virtual void Merge(
-            PropertyMetadata baseMetadata, 
+            AvaloniaPropertyMetadata baseMetadata, 
             AvaloniaProperty property)
         {
             if (_defaultBindingMode == BindingMode.Default)

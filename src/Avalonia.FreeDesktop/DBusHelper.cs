@@ -44,7 +44,7 @@ namespace Avalonia.FreeDesktop
             public void Initialized()
             {
                 lock (_lock)
-                    _ctx = new AvaloniaSynchronizationContext(null);
+                    _ctx = new AvaloniaSynchronizationContext();
             }
         }
         public static Connection Connection { get; private set; }
