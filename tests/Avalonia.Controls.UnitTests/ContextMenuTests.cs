@@ -45,6 +45,55 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Open_Should_Use_Default_Control()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                bool opened = false;
+
+                sut.MenuOpened += (sender, args) =>
+                {
+                    opened = true;
+                };
+
+                sut.Open();
+
+                Assert.True(opened);
+            }
+        }
+
+        [Fact]
+        public void Open_Should_Raise_Exception_If_AlreadyDetached()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                target.ContextMenu = null;
+
+               Assert.ThrowsAny<Exception>(()=> sut.Open());
+            }
+        }
+
+        [Fact]
         public void Closing_Raises_Single_Closed_Event()
         {
             using (Application())
