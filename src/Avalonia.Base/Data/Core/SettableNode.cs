@@ -15,7 +15,8 @@ namespace Avalonia.Data.Core
 
         private bool ShouldNotSet(object value)
         {
-            if (PropertyType == null)
+            var propertyType = PropertyType;
+            if (propertyType == null)
             {
                 return false;
             }
@@ -37,7 +38,7 @@ namespace Avalonia.Data.Core
                 return false;
             }
 
-            if (PropertyType.IsValueType)
+            if (propertyType.IsValueType)
             {
                 return lastValue.Equals(value);
             }
