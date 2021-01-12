@@ -1870,7 +1870,7 @@ namespace Avalonia.X11 {
 		public const string XNFontSet = "fontSet";
 	}
 	
-    struct XRRMonitorInfo {
+    unsafe struct XRRMonitorInfo {
         public IntPtr Name;
         public int Primary;
         public int Automatic;
@@ -1881,6 +1881,6 @@ namespace Avalonia.X11 {
         public int Height;
         public int MWidth;
         public int MHeight;
-        public IntPtr Outputs;
+        public IntPtr* Outputs;
     } 
 }
