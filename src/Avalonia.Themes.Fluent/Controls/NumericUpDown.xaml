@@ -1,8 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
-    <Border Padding="20"
-            Background="Black">
+    <Border Padding="20">
       <StackPanel Spacing="20">
         <NumericUpDown Minimum="0"
                        Maximum="10"
@@ -13,6 +12,8 @@
                        Maximum="10"
                        Increment="0.5"
                        Width="150"
+                       VerticalContentAlignment="Center"
+                       HorizontalContentAlignment="Center"
                        ButtonSpinnerLocation="Left"
                        Watermark="Enter text" />
       </StackPanel>
@@ -48,6 +49,8 @@
                    Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
                    IsReadOnly="{TemplateBinding IsReadOnly}"
+                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                    Text="{TemplateBinding Text}"
                    AcceptsReturn="False"
                    TextWrapping="NoWrap" />
