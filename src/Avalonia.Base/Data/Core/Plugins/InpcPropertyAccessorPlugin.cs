@@ -14,7 +14,7 @@ namespace Avalonia.Data.Core.Plugins
     {
         private readonly Dictionary<(Type, string), PropertyInfo> _propertyLookup =
             new Dictionary<(Type, string), PropertyInfo>();
-        
+
         /// <inheritdoc/>
         public bool Match(object obj, string propertyName) => GetFirstPropertyWithName(obj.GetType(), propertyName) != null;
 
@@ -51,7 +51,7 @@ namespace Avalonia.Data.Core.Plugins
         private PropertyInfo GetFirstPropertyWithName(Type type, string propertyName)
         {
             var key = (type, propertyName);
-            
+
             if (!_propertyLookup.TryGetValue(key, out PropertyInfo propertyInfo))
             {
                 propertyInfo = TryFindAndCacheProperty(type, propertyName);
@@ -59,7 +59,7 @@ namespace Avalonia.Data.Core.Plugins
 
             return propertyInfo;
         }
-        
+
         private PropertyInfo TryFindAndCacheProperty(Type type, string propertyName)
         {
             PropertyInfo found = null;
@@ -90,7 +90,7 @@ namespace Avalonia.Data.Core.Plugins
             private readonly PropertyInfo _property;
             private bool _eventRaised;
 
-            public Accessor(WeakReference<object> reference,  PropertyInfo property)
+            public Accessor(WeakReference<object> reference, PropertyInfo property)
             {
                 Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(property != null);
