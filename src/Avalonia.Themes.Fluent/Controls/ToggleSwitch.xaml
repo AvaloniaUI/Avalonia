@@ -56,7 +56,7 @@
             VerticalAlignment="Top"/>
 
           <Grid Grid.Row="1"
-            MinWidth="{StaticResource ToggleSwitchThemeMinWidth}"
+            MinWidth="{DynamicResource ToggleSwitchThemeMinWidth}"
             HorizontalAlignment="Left"
             VerticalAlignment="Top">
 
