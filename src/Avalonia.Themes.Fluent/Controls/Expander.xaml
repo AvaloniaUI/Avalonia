@@ -108,7 +108,7 @@
     </Setter>
   </Style>
   <Style Selector="Expander /template/ ToggleButton#PART_toggle:pointerover /template/ Border">
-    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlTransientBorderBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumBrush}" />
   </Style>
   <Style Selector="Expander:down:expanded /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">
