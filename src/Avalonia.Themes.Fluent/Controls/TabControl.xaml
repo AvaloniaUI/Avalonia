@@ -60,6 +60,6 @@
     <Setter Property="Orientation" Value="Vertical" />
   </Style>
   <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter#PART_ItemsPresenter">
-    <Setter Property="Margin" Value="{StaticResource TabControlTopPlacementItemMargin}" />
+    <Setter Property="Margin" Value="{DynamicResource TabControlTopPlacementItemMargin}" />
   </Style>
 </Styles>
