@@ -1,8 +1,10 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -31,6 +33,7 @@ namespace Avalonia.Controls
         ICloseable,
         IStyleHost,
         ILogicalRoot,
+        ITextInputMethodRoot,
         IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
@@ -489,5 +492,8 @@ namespace Avalonia.Controls
             if (focused == this)
                 KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
+
+        ITextInputMethodImpl ITextInputMethodRoot.InputMethod =>
+            (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
     }
 }
