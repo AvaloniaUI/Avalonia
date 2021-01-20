@@ -39,17 +39,17 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the name of the element to use as the binding source.
         /// </summary>
-        public string ElementName { get; set; }
+        public string? ElementName { get; set; }
 
         /// <summary>
         /// Gets or sets the relative source for the binding.
         /// </summary>
-        public RelativeSource RelativeSource { get; set; }
+        public RelativeSource? RelativeSource { get; set; }
 
         /// <summary>
         /// Gets or sets the source for the binding.
         /// </summary>
-        public object Source { get; set; }
+        public object? Source { get; set; }
 
         /// <summary>
         /// Gets or sets the binding path.
@@ -59,20 +59,21 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets a function used to resolve types from names in the binding path.
         /// </summary>
-        public Func<string, string, Type> TypeResolver { get; set; }
+        public Func<string, string, Type>? TypeResolver { get; set; }
 
-        protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
+        protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty targetProperty, object? anchor, bool enableDataValidation)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            Contract.Requires<ArgumentNullException>(target is not null);
             anchor = anchor ?? DefaultAnchor?.Target;
             
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
 
-            INameScope nameScope = null;
+            INameScope? nameScope = null;
             NameScope?.TryGetTarget(out nameScope);
 
             var (node, mode) = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver, nameScope);
 
+#nullable disable
             if (ElementName != null)
             {
                 return CreateElementObserver(
@@ -138,5 +139,6 @@ namespace Avalonia.Data
                 throw new NotSupportedException();
             }
         }
+#nullable enable
     }
 }

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Avalonia</RootNamespace>
+    <Nullable>Enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Markup\Parsers\Nodes\ExpressionGrammer" />

@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Parsers
             var parsed = new List<ISyntax>();
             while (state != State.End)
             {
-                ISyntax syntax = null;
+                ISyntax? syntax = null;
                 if (state == State.Start)
                     (state, syntax) = ParseStart(ref r);
                 else if (state == State.Next)
@@ -53,7 +53,7 @@ namespace Avalonia.Markup.Parsers
             return parsed;
         }
         
-        private static (State, ISyntax) ParseNext(ref CharacterReader r)
+        private static (State, ISyntax?) ParseNext(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.End)
@@ -106,7 +106,7 @@ namespace Avalonia.Markup.Parsers
                 });
         }
 
-        static (string ns, string name) ParseXamlIdentifier(ref CharacterReader r)
+        static (string? ns, string name) ParseXamlIdentifier(ref CharacterReader r)
         {
             var ident = r.ParseIdentifier();
             if (ident.IsEmpty)
@@ -147,7 +147,7 @@ namespace Avalonia.Markup.Parsers
             return true;
         }
         
-        private static (State, ISyntax) ParseAfterProperty(ref CharacterReader r)
+        private static (State, ISyntax?) ParseAfterProperty(ref CharacterReader r)
         {
             if (TryParseCasts(ref r, out var rv))
                 return rv;
@@ -184,7 +184,7 @@ namespace Avalonia.Markup.Parsers
 
         public class PropertySyntax : ISyntax
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
 
             public override bool Equals(object obj)
                 => obj is PropertySyntax other
@@ -193,9 +193,9 @@ namespace Avalonia.Markup.Parsers
         
         public class TypeQualifiedPropertySyntax : ISyntax
         {
-            public string Name { get; set; }
-            public string TypeName { get; set; }
-            public string TypeNamespace { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string TypeName { get; set; } = string.Empty;
+            public string? TypeNamespace { get; set; }
 
             public override bool Equals(object obj)
                 => obj is TypeQualifiedPropertySyntax other
@@ -212,8 +212,8 @@ namespace Avalonia.Markup.Parsers
         
         public class EnsureTypeSyntax : ISyntax
         {
-            public string TypeName { get; set; }
-            public string TypeNamespace { get; set; }
+            public string TypeName { get; set; } = string.Empty;
+            public string? TypeNamespace { get; set; }
             public override bool Equals(object obj)
                 => obj is EnsureTypeSyntax other
                    && other.TypeName == TypeName
@@ -222,8 +222,8 @@ namespace Avalonia.Markup.Parsers
         
         public class CastTypeSyntax : ISyntax
         {
-            public string TypeName { get; set; }
-            public string TypeNamespace { get; set; }
+            public string TypeName { get; set; } = string.Empty;
+            public string? TypeNamespace { get; set; }
             public override bool Equals(object obj)
                 => obj is CastTypeSyntax other
                    && other.TypeName == TypeName

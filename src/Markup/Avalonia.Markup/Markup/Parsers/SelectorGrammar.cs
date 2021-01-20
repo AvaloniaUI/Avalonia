@@ -39,7 +39,7 @@ namespace Avalonia.Markup.Parsers
             var selector = new List<ISyntax>();
             while (!r.End && state != State.End)
             {
-                ISyntax syntax = null;
+                ISyntax? syntax = null;
                 switch (state)
                 {
                     case State.Start:
@@ -110,7 +110,7 @@ namespace Avalonia.Markup.Parsers
             return State.TypeName;
         }
 
-        private static (State, ISyntax) ParseMiddle(ref CharacterReader r, char? end)
+        private static (State, ISyntax?) ParseMiddle(ref CharacterReader r, char? end)
         {
             if (r.TakeIf(':'))
             {
@@ -190,7 +190,7 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private static (State, ISyntax) ParseTraversal(ref CharacterReader r)
+        private static (State, ISyntax?) ParseTraversal(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.TakeIf('>'))
@@ -325,7 +325,7 @@ namespace Avalonia.Markup.Parsers
 
         public class OfTypeSyntax : ISyntax, ITypeSyntax
         {
-            public string TypeName { get; set; }
+            public string TypeName { get; set; } = string.Empty;
 
             public string Xmlns { get; set; } = string.Empty;
 
@@ -338,7 +338,7 @@ namespace Avalonia.Markup.Parsers
 
         public class IsSyntax : ISyntax, ITypeSyntax
         {
-            public string TypeName { get; set; }
+            public string TypeName { get; set; } = string.Empty;
 
             public string Xmlns { get; set; } = string.Empty;
 
@@ -351,7 +351,7 @@ namespace Avalonia.Markup.Parsers
 
         public class ClassSyntax : ISyntax
         {
-            public string Class { get; set; }
+            public string Class { get; set; } = string.Empty;
 
             public override bool Equals(object obj)
             {
@@ -361,7 +361,7 @@ namespace Avalonia.Markup.Parsers
 
         public class NameSyntax : ISyntax
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
 
             public override bool Equals(object obj)
             {
@@ -371,9 +371,9 @@ namespace Avalonia.Markup.Parsers
 
         public class PropertySyntax : ISyntax
         {
-            public string Property { get; set; }
+            public string Property { get; set; } = string.Empty;
 
-            public string Value { get; set; }
+            public string Value { get; set; } = string.Empty;
 
             public override bool Equals(object obj)
             {
@@ -409,7 +409,7 @@ namespace Avalonia.Markup.Parsers
 
         public class NotSyntax : ISyntax
         {
-            public IEnumerable<ISyntax> Argument { get; set; }
+            public IEnumerable<ISyntax> Argument { get; set; } = Enumerable.Empty<ISyntax>();
 
             public override bool Equals(object obj)
             {

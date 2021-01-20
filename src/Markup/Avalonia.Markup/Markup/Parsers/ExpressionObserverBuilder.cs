@@ -8,8 +8,8 @@ namespace Avalonia.Markup.Parsers
 {
     public static class ExpressionObserverBuilder
     {
-        internal static (ExpressionNode Node, SourceMode Mode) Parse(string expression, bool enableValidation = false, Func<string, string, Type> typeResolver = null,
-            INameScope nameScope = null)
+        internal static (ExpressionNode? Node, SourceMode Mode) Parse(string expression, bool enableValidation = false, Func<string, string, Type>? typeResolver = null,
+            INameScope? nameScope = null)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -32,8 +32,8 @@ namespace Avalonia.Markup.Parsers
             object root,
             string expression,
             bool enableDataValidation = false,
-            string description = null,
-            Func<string, string, Type> typeResolver = null)
+            string? description = null,
+            Func<string, string, Type>? typeResolver = null)
         {
             return new ExpressionObserver(
                 root,
@@ -45,8 +45,8 @@ namespace Avalonia.Markup.Parsers
             IObservable<object> rootObservable,
             string expression,
             bool enableDataValidation = false,
-            string description = null,
-            Func<string, string, Type> typeResolver = null)
+            string? description = null,
+            Func<string, string, Type>? typeResolver = null)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
             return new ExpressionObserver(
@@ -61,8 +61,8 @@ namespace Avalonia.Markup.Parsers
             string expression,
             IObservable<Unit> update,
             bool enableDataValidation = false,
-            string description = null,
-            Func<string, string, Type> typeResolver = null)
+            string? description = null,
+            Func<string, string, Type>? typeResolver = null)
         {
             Contract.Requires<ArgumentNullException>(rootGetter != null);
 

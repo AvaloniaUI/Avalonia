@@ -94,7 +94,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the type of ancestor to look for when in <see cref="RelativeSourceMode.FindAncestor"/>  mode.
         /// </summary>
-        public Type AncestorType { get; set; }
+        public Type? AncestorType { get; set; }
 
         /// <summary>
         /// Gets or sets a value that describes the type of relative source lookup.
