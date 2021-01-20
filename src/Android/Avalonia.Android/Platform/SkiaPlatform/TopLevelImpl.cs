@@ -6,6 +6,7 @@ using Android.Views;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -196,7 +197,17 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IPopupImpl CreatePopup() => null;
         
         public Action LostFocus { get; set; }
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
+
+        ILockedFramebuffer IFramebufferPlatformSurface.Lock() => new AndroidFramebuffer(_view.Holder.Surface);
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
