@@ -1,5 +1,5 @@
 ﻿using System.Windows.Input;
-
+#nullable enable
 namespace Avalonia.Input
 {
     ///<summary>
@@ -12,13 +12,13 @@ namespace Avalonia.Input
         /// Classes that implement this interface should enable or disable based on the command's CanExecute return value.
         /// The property may be implemented as read-write if desired.
         /// </summary>
-        ICommand Command { get; }
+        ICommand? Command { get; }
 
         /// <summary>
         /// The parameter that will be passed to the command when executing the command.
         /// The property may be implemented as read-write if desired.
         /// </summary>
-        object CommandParameter { get; }
+        object? CommandParameter { get; }
 
 
         /// <summary>
