@@ -129,7 +129,10 @@ namespace Avalonia.Markup.Parsers.Nodes
         {
             get
             {
-                Target.TryGetTarget(out object target);
+                if (!Target.TryGetTarget(out object target))
+                {
+                    return null;
+                }
 
                 return GetIndexer(target.GetType().GetTypeInfo())?.PropertyType;
             }

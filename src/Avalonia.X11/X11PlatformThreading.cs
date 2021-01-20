@@ -13,7 +13,9 @@ namespace Avalonia.X11
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IntPtr _display;
-        private readonly Dictionary<IntPtr, Action<XEvent>> _eventHandlers;
+
+        public delegate void EventHandler(ref XEvent xev);
+        private readonly Dictionary<IntPtr, EventHandler> _eventHandlers;
         private Thread _mainThread;
 
         [StructLayout(LayoutKind.Explicit)]
@@ -162,13 +164,16 @@ namespace Avalonia.X11
             Signaled?.Invoke(prio);
         }
 
-        void HandleX11(CancellationToken cancellationToken)
+        unsafe void HandleX11(CancellationToken cancellationToken)
         {
             while (XPending(_display) != 0)
             {
                 if (cancellationToken.IsCancellationRequested)
                     return;
                 XNextEvent(_display, out var xev);
+                if(XFilterEvent(ref xev, IntPtr.Zero))
+                    continue;
+
                 if (xev.type == XEventName.GenericEvent)
                     XGetEventData(_display, &xev.GenericEventCookie);
                 try
@@ -182,7 +187,7 @@ namespace Avalonia.X11
                         }
                     }
                     else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
-                        handler(xev);
+                        handler(ref xev);
                 }
                 finally
                 {
