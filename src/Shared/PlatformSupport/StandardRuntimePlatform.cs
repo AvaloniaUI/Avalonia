@@ -60,7 +60,7 @@ namespace Avalonia.Shared.PlatformSupport
                 }
                 catch
                 {
-                    GC.SuppressFinalize();
+                    GC.SuppressFinalize(this);
                     throw;
                 }
 #if DEBUG
