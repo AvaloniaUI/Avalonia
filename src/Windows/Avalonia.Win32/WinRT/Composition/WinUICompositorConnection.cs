@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.MicroCom;
-using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
@@ -17,7 +16,6 @@ namespace Avalonia.Win32.WinRT.Composition
     class WinUICompositorConnection : IRenderTimer
     {
         private readonly EglContext _syncContext;
-        private IntPtr _queue;
         private ICompositor _compositor;
         private ICompositor2 _compositor2;
         private ICompositor5 _compositor5;
