@@ -43,11 +43,13 @@ namespace Avalonia.Android
             }
         }
 
+        [Obsolete]
         public override void Invalidate(global::Android.Graphics.Rect dirty)
         {
             Invalidate();
         }
 
+        [Obsolete]
         public override void Invalidate(int l, int t, int r, int b)
         {
             Invalidate();
