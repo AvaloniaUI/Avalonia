@@ -86,7 +86,9 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                         mouseEventType.Value, _point, RawInputModifiers.LeftMouseButton);
                     _view.Input(mouseEvent);
 
+#pragma warning disable CS0618 // Type or member is obsolete
                     if (e.Action == MotionEventActions.Move && mouseDevice.Captured == null)
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                         if (_lastTouchMovePoint != null)
                         {
