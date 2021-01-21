@@ -80,7 +80,7 @@ namespace Avalonia.Markup.Xaml.HotReload
                 (x.Operand is IXamlLocal || x.Operand is RecordingIlEmitter.LocalInfo));
 
             IReadOnlyList<RecordingIlEmitter.RecordedInstruction> contextInitializationInstructions = hasContext
-                ? _contextInitializationInstructions
+                ? (IReadOnlyList<RecordingIlEmitter.RecordedInstruction>)_contextInitializationInstructions
                 : Array.Empty<RecordingIlEmitter.RecordedInstruction>();
 
             return new SetPropertyAction(

@@ -127,7 +127,7 @@ namespace Avalonia.Markup.Xaml.HotReload
             TransformerConfiguration configuration,
             bool strict)
         {
-            return new(configuration, doc.NamespaceAliases, strict);
+            return new AstTransformationContext(configuration, doc.NamespaceAliases, strict);
         }
         
         private static void Patch(Type xamlType, Action<object> buildAction)

@@ -52,7 +52,7 @@ namespace Avalonia.Markup.Xaml.HotReload
         
         private static bool IsXamlMarker(this RecordingIlEmitter.RecordedInstruction instruction, string methodName)
         {
-            if (instruction.Operand is not IXamlMethod method)
+            if (!(instruction.Operand is IXamlMethod method))
             {
                 return false;
             }

@@ -6,7 +6,7 @@ namespace Avalonia.Markup.Xaml.HotReload
     // TODO: This class can be injected while compiling the xaml.
     public class ObjectStorage
     {
-        private static readonly Dictionary<string, List<WeakReference<object>>> _liveObjects = new();
+        private static readonly Dictionary<string, List<WeakReference<object>>> _liveObjects = new Dictionary<string, List<WeakReference<object>>>();
 
         public static void RegisterLiveObject(object obj, string file)
         {
