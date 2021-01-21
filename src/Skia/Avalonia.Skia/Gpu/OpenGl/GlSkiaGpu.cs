@@ -47,7 +47,7 @@ namespace Avalonia.Skia
             return null;
         }
 
-        public ISkiaSurface TryCreateSurface(PixelSize size)
+        public ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
         {
             // Only windows platform needs our FBO trickery
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -62,7 +62,7 @@ namespace Avalonia.Skia
                 return null;
             try
             {
-                var surface = new FboSkiaSurface(_grContext, _glContext, size);
+                var surface = new FboSkiaSurface(_grContext, _glContext, size, session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft);
                 _canCreateSurfaces = true;
                 return surface;
             }

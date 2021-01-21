@@ -1,3 +1,0 @@
-Compat issues with assembly Avalonia.Base:
-CannotAddAbstractMembers : Member 'protected System.IObservable<Avalonia.AvaloniaPropertyChangedEventArgs> Avalonia.AvaloniaProperty.GetChanged()' is abstract in the implementation but is missing in the contract.
-Total Issues: 1

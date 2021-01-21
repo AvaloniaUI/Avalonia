@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             if (provideValueTarget.TargetProperty is IPropertyInfo property) 
                 value.OnCompleted(() => property.Set(target, value.GetResult()));
 
-            return null;
+            return AvaloniaProperty.UnsetValue;
         }
     }
 }

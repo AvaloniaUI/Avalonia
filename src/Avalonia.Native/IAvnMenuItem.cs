@@ -7,37 +7,35 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
 {
-    public partial class IAvnMenuItem
+    partial interface IAvnMenuItem
     {
-        private IAvnMenu _subMenu;
+        
+    }
+}
+namespace Avalonia.Native.Interop.Impl
+{
+    partial class __MicroComIAvnMenuItemProxy
+    {
+        private __MicroComIAvnMenuProxy _subMenu;
         private CompositeDisposable _propertyDisposables = new CompositeDisposable();
         private IDisposable _currentActionDisposable;
 
         public NativeMenuItemBase ManagedMenuItem { get; set; }
 
-        private void UpdateTitle(string title)
-        {
-            using (var buffer = new Utf8Buffer(string.IsNullOrWhiteSpace(title) ? "" : title))
-            {
-                Title = buffer.DangerousGetHandle();
-            }
-        }
+        private void UpdateTitle(string title) => SetTitle(title ?? "");
 
-        private void UpdateIsChecked(bool isChecked)
-        {
-            IsChecked = isChecked;
-        }
+        private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
 
         private void UpdateToggleType(NativeMenuItemToggleType toggleType)
         {
-            ToggleType = (AvnMenuItemToggleType)toggleType;
+            SetToggleType((AvnMenuItemToggleType)toggleType);
         }
 
         private unsafe void UpdateIcon (IBitmap icon)
         {
             if(icon is null)
             {
-                SetIcon(IntPtr.Zero, 0);
+                SetIcon(null, IntPtr.Zero);
             }
             else
             {
@@ -49,7 +47,7 @@ namespace Avalonia.Native.Interop
 
                     fixed(void* ptr = imageData)
                     {
-                        SetIcon(new IntPtr(ptr), imageData.Length);
+                        SetIcon(ptr, new IntPtr(imageData.Length));
                     }
                 }
             }
@@ -57,12 +55,9 @@ namespace Avalonia.Native.Interop
 
         private void UpdateGesture(Input.KeyGesture gesture)
         {
-            // todo ensure backend can cope with setting null gesture.
-            using (var buffer = new Utf8Buffer(gesture == null ? "" : OsxUnicodeKeys.ConvertOSXSpecialKeyCodes(gesture.Key)))
-            {
-                var modifiers = gesture == null ? AvnInputModifiers.AvnInputModifiersNone : (AvnInputModifiers)gesture.KeyModifiers;
-                SetGesture(buffer.DangerousGetHandle(), modifiers);
-            }
+            var modifiers = gesture == null ? AvnInputModifiers.AvnInputModifiersNone : (AvnInputModifiers)gesture.KeyModifiers;
+            var key = gesture == null ? AvnKey.AvnKeyNone : (AvnKey)gesture.Key;
+            SetGesture(key, modifiers);
         }
 
         private void UpdateAction(NativeMenuItem item)
@@ -153,7 +148,7 @@ namespace Avalonia.Native.Interop
             {
                 if (_subMenu == null)
                 {
-                    _subMenu = IAvnMenu.Create(factory);
+                    _subMenu = __MicroComIAvnMenuProxy.Create(factory);
 
                     _subMenu.Initialise(exporter, item.Menu, item.Header);
 

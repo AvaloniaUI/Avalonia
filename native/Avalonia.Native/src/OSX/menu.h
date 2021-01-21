@@ -43,9 +43,9 @@ public:
     
     virtual HRESULT SetSubMenu (IAvnMenu* menu) override;
     
-    virtual HRESULT SetTitle (void* utf8String) override;
+    virtual HRESULT SetTitle (char* utf8String) override;
     
-    virtual HRESULT SetGesture (void* key, AvnInputModifiers modifiers) override;
+    virtual HRESULT SetGesture (AvnKey key, AvnInputModifiers modifiers) override;
     
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override;
     
@@ -80,7 +80,7 @@ public:
     
     virtual HRESULT RemoveItem (IAvnMenuItem* item) override;
     
-    virtual HRESULT SetTitle (void* utf8String) override;
+    virtual HRESULT SetTitle (char* utf8String) override;
     
     virtual HRESULT Clear () override;
 };

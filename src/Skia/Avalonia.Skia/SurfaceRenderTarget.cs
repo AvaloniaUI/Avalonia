@@ -51,7 +51,8 @@ namespace Avalonia.Skia
             _grContext = createInfo.GrContext;
             _gpu = createInfo.Gpu;
 
-            _surface = _gpu?.TryCreateSurface(PixelSize);
+            if (!createInfo.DisableManualFbo)
+                _surface = _gpu?.TryCreateSurface(PixelSize, createInfo.Session);
             if (_surface == null)
                 _surface = new SkiaSurfaceWrapper(CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height,
                     createInfo.Format));
@@ -100,7 +101,7 @@ namespace Avalonia.Skia
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = _disableLcdRendering,
                 GrContext = _grContext,
-                Gpu = _gpu
+                Gpu = _gpu,
             };
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
@@ -218,6 +219,10 @@ namespace Avalonia.Skia
             public GRContext GrContext;
 
             public ISkiaGpu Gpu;
+
+            public ISkiaGpuRenderSession Session;
+
+            public bool DisableManualFbo;
         }
     }
 }

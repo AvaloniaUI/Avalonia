@@ -4,18 +4,18 @@ using System.Linq;
 using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.Selection;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    public class ListBoxPageViewModel : ReactiveObject
+    public class ListBoxPageViewModel : ViewModelBase
     {
         private bool _multiple;
         private bool _toggle;
         private bool _alwaysSelected;
         private bool _autoScrollToSelectedItem = true;
         private int _counter;
-        private ObservableAsPropertyHelper<SelectionMode> _selectionMode;
+        private IObservable<SelectionMode> _selectionMode;
 
         public ListBoxPageViewModel()
         {
@@ -29,14 +29,13 @@ namespace ControlCatalog.ViewModels
                 x => x.Toggle,
                 x => x.AlwaysSelected,
                 (m, t, a) =>
-                    (m ? SelectionMode.Multiple : 0) |
-                    (t ? SelectionMode.Toggle : 0) |
-                    (a ? SelectionMode.AlwaysSelected : 0))
-                .ToProperty(this, x => x.SelectionMode);
+                    (m ? Avalonia.Controls.SelectionMode.Multiple : 0) |
+                    (t ? Avalonia.Controls.SelectionMode.Toggle : 0) |
+                    (a ? Avalonia.Controls.SelectionMode.AlwaysSelected : 0));
 
-            AddItemCommand = ReactiveCommand.Create(() => Items.Add(GenerateItem()));
+            AddItemCommand = MiniCommand.Create(() => Items.Add(GenerateItem()));
 
-            RemoveItemCommand = ReactiveCommand.Create(() =>
+            RemoveItemCommand = MiniCommand.Create(() =>
             {
                 var items = Selection.SelectedItems.ToList();
 
@@ -46,7 +45,7 @@ namespace ControlCatalog.ViewModels
                 }
             });
 
-            SelectRandomItemCommand = ReactiveCommand.Create(() =>
+            SelectRandomItemCommand = MiniCommand.Create(() =>
             {
                 var random = new Random();
 
@@ -60,7 +59,7 @@ namespace ControlCatalog.ViewModels
 
         public ObservableCollection<string> Items { get; }
         public SelectionModel<string> Selection { get; }
-        public SelectionMode SelectionMode => _selectionMode.Value;
+        public IObservable<SelectionMode> SelectionMode => _selectionMode;
 
         public bool Multiple
         {
@@ -86,9 +85,9 @@ namespace ControlCatalog.ViewModels
             set => this.RaiseAndSetIfChanged(ref _autoScrollToSelectedItem, value);
         }
 
-        public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
-        public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
-        public ReactiveCommand<Unit, Unit> SelectRandomItemCommand { get; }
+        public MiniCommand AddItemCommand { get; }
+        public MiniCommand RemoveItemCommand { get; }
+        public MiniCommand SelectRandomItemCommand { get; }
 
         private string GenerateItem() => $"Item {_counter++.ToString()}";
     }

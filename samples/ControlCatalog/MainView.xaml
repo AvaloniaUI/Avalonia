@@ -48,6 +48,7 @@
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <pages:ItemsRepeaterPage/>
       </TabItem>
+      <TabItem Header="Label"><pages:LabelsPage/></TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
       <TabItem Header="ListBox"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">

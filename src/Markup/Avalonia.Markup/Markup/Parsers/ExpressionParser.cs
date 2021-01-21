@@ -59,6 +59,9 @@ namespace Avalonia.Markup.Parsers
                     case BindingExpressionGrammar.NameNode elementName:
                         nextNode = new ElementNameNode(_nameScope, elementName.Name);
                         break;
+                    case BindingExpressionGrammar.TypeCastNode typeCast:
+                        nextNode = ParseTypeCastNode(typeCast);
+                        break;
                 }
                 if (rootNode is null)
                 {
@@ -90,6 +93,22 @@ namespace Avalonia.Markup.Parsers
             }
 
             return new FindAncestorNode(ancestorType, ancestorLevel);
+        }
+
+        private TypeCastNode ParseTypeCastNode(BindingExpressionGrammar.TypeCastNode node)
+        {
+            Type castType = null;
+            if (!(node.Namespace is null) && !(node.TypeName is null))
+            {
+                if (_typeResolver == null)
+                {
+                    throw new InvalidOperationException("Cannot parse a binding path with a typed Cast without a type resolver. Maybe you can use a LINQ Expression binding path instead?");
+                }
+
+                castType = _typeResolver(node.Namespace, node.TypeName);
+            }
+
+            return new TypeCastNode(castType);
         }
 
         private AvaloniaPropertyAccessorNode ParseAttachedProperty(BindingExpressionGrammar.AttachedPropertyNameNode node)

@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="0.24.0" />
+    <PackageReference Include="Nuke.Common" Version="5.0.0" />
     <PackageReference Include="xunit.runner.console" Version="2.3.1" />
     <PackageReference Include="JetBrains.dotMemoryUnit" Version="3.0.20171219.105559" />
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
@@ -37,6 +37,10 @@
     <None Include="..\GitVersion.yml" Condition="Exists('..\GitVersion.yml')" />
     <Compile Remove="Numerge/**/*.*" />
     <Compile Include="Numerge/Numerge/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\tools\MicroComGenerator\MicroComGenerator.csproj" />
   </ItemGroup>
 
 </Project>

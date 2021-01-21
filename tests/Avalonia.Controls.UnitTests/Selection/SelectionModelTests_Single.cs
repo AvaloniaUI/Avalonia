@@ -1040,6 +1040,7 @@ namespace Avalonia.Controls.UnitTests.Selection
                 var data = (AvaloniaList<string>)target.Source!;
                 var selectionChangedRaised = 0;
                 var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
 
                 target.Source = data;
                 target.Select(1);
@@ -1049,6 +1050,11 @@ namespace Avalonia.Controls.UnitTests.Selection
                     if (e.PropertyName == nameof(target.SelectedIndex))
                     {
                         ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
                     }
                 };
 
@@ -1070,6 +1076,7 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal(-1, target.AnchorIndex);
                 Assert.Equal(1, selectionChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
             }
 
             [Fact]

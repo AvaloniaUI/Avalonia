@@ -442,7 +442,9 @@ namespace Avalonia.Controls.Selection
                 RaisePropertyChanged(nameof(SelectedIndex));
             }
 
-            if (e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex)
+            if ((e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex) ||
+                (e.Action == NotifyCollectionChangedAction.Replace && e.OldStartingIndex == oldSelectedIndex) ||
+                e.Action == NotifyCollectionChangedAction.Reset)
             {
                 RaisePropertyChanged(nameof(SelectedItem));
             }

@@ -63,6 +63,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
 
         /// <summary>
+        /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty  =
+            Popup.WindowManagerAddShadowHintProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
         /// Defines the <see cref="PlacementTarget"/> property.
         /// </summary>
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
@@ -158,6 +164,12 @@ namespace Avalonia.Controls
             set { SetValue(PlacementModeProperty, value); }
         }
 
+        public bool WindowManagerAddShadowHint
+        {
+            get { return GetValue(WindowManagerAddShadowHintProperty); }
+            set { SetValue(WindowManagerAddShadowHintProperty, value); }
+        }
+
         /// <summary>
         /// Gets or sets the the anchor rectangle within the parent that the context menu will be placed
         /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
@@ -221,6 +233,16 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == WindowManagerAddShadowHintProperty && _popup != null)
+            {
+                _popup.WindowManagerAddShadowHint = change.NewValue.GetValueOrDefault<bool>();
+            }
+        }
+
         /// <summary>
         /// Opens the menu.
         /// </summary>
@@ -267,6 +289,7 @@ namespace Avalonia.Controls
                     PlacementTarget = PlacementTarget ?? control,
                     IsLightDismissEnabled = true,
                     OverlayDismissEventPassThrough = true,
+                    WindowManagerAddShadowHint = WindowManagerAddShadowHint,
                 };
 
                 _popup.Opened += PopupOpened;

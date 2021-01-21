@@ -5,9 +5,9 @@ namespace Avalonia.Platform
     public interface IWindowBaseImpl : ITopLevelImpl
     {
         /// <summary>
-        /// Shows the top level.
+        /// Shows the window.
         /// </summary>
-        void Show();
+        void Show(bool activate);
 
         /// <summary>
         /// Hides the window.
