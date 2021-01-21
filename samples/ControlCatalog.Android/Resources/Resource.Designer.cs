@@ -40,11 +40,30 @@ namespace ControlCatalog.Android
 			}
 		}
 		
-		public partial class Drawable
+		public partial class Color
 		{
 			
 			// aapt resource value: 0x7F010000
-			public const int Icon = 2130771968;
+			public const int splash_background = 2130771968;
+			
+			static Color()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Color()
+			{
+			}
+		}
+		
+		public partial class Drawable
+		{
+			
+			// aapt resource value: 0x7F020000
+			public const int Icon = 2130837504;
+			
+			// aapt resource value: 0x7F020001
+			public const int splash_screen = 2130837505;
 			
 			static Drawable()
 			{
@@ -56,53 +75,24 @@ namespace ControlCatalog.Android
 			}
 		}
 		
-		public partial class Id
-		{
-			
-			// aapt resource value: 0x7F020000
-			public const int MyButton = 2130837504;
-			
-			static Id()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private Id()
-			{
-			}
-		}
-		
-		public partial class Layout
+		public partial class Style
 		{
 			
 			// aapt resource value: 0x7F030000
-			public const int Main = 2130903040;
+			public const int MyTheme = 2130903040;
 			
-			static Layout()
+			// aapt resource value: 0x7F030001
+			public const int MyTheme_NoActionBar = 2130903041;
+			
+			// aapt resource value: 0x7F030002
+			public const int MyTheme_Splash = 2130903042;
+			
+			static Style()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
 			}
 			
-			private Layout()
-			{
-			}
-		}
-		
-		public partial class String
-		{
-			
-			// aapt resource value: 0x7F040000
-			public const int ApplicationName = 2130968576;
-			
-			// aapt resource value: 0x7F040001
-			public const int Hello = 2130968577;
-			
-			static String()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private String()
+			private Style()
 			{
 			}
 		}
