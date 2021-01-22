@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using Android.Content;
 using Android.Graphics;
+using Android.Runtime;
 using Android.Views;
+
+using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
@@ -10,13 +13,18 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl,  IFramebufferPlatformSurface
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo
     {
+        private readonly IGlPlatformSurface _gl;
+        private readonly IFramebufferPlatformSurface _framebuffer;
+
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
 
@@ -29,7 +37,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
                 p => GetAvaloniaPointFromEvent(p));
 
-            Surfaces = new object[] { this };
+            _gl = GlPlatformSurface.TryCreate(this);
+            _framebuffer = new FramebufferManager(this);
 
             MaxClientSize = new Size(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels);
@@ -48,7 +57,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _keyboardHelper.HandleEvents = _handleEvents;
             }
         }
-        
+
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e) => new Point(e.GetX(), e.GetY());
 
         public IInputRoot InputRoot { get; private set; }
@@ -63,7 +72,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
             set
             {
-                
+
             }
         }
 
@@ -83,9 +92,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public View View => _view;
 
+        internal InvalidationAwareSurfaceView InternalView => _view;
+
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces { get; }
+        public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer };
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
@@ -96,7 +107,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             _view.Visibility = ViewStates.Invisible;
         }
-        
+
         public void Invalidate(Rect rect)
         {
             if (_view.Holder?.Surface?.IsValid == true) _view.Invalidate();
@@ -203,7 +214,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
-        ILockedFramebuffer IFramebufferPlatformSurface.Lock() => new AndroidFramebuffer(_view.Holder.Surface);
+        IntPtr EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo.Handle =>
+            AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, _view.Holder.Surface.Handle);
+
+        public PixelSize Size => new PixelSize(_view.Holder.SurfaceFrame.Width(), _view.Holder.SurfaceFrame.Height());
+
+        public double Scaling => RenderScaling;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
