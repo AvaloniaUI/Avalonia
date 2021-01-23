@@ -3,11 +3,20 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Represents an icon that uses a glyph from the specified font.
+    /// </summary>
     public class FontIcon : IconElement
     {
+        /// <summary>
+        /// Gets the identifier for the <see cref="Glyph"/> dependency property.
+        /// </summary>
         public static readonly StyledProperty<string> GlyphProperty =
             AvaloniaProperty.Register<FontIcon, string>(nameof(Glyph));
-        
+
+        /// <summary>
+        /// Gets or sets the character code that identifies the icon glyph.
+        /// </summary>
         public string Glyph
         {
             get => GetValue(GlyphProperty);
@@ -15,71 +24,60 @@ namespace Avalonia.Controls
         }
     }
 
+    /// <summary>
+    /// Represents an icon source that uses a glyph from the specified font.
+    /// </summary>
     public class FontIconSource : IconSource
     {
+        /// <inheritdoc cref="FontIcon.GlyphProperty" />
         public static readonly StyledProperty<string> GlyphProperty =
             FontIcon.GlyphProperty.AddOwner<FontIconSource>();
 
-        /// <summary>
-        /// Defines the <see cref="FontFamily"/> property.
-        /// </summary>
+        /// <inheritdoc cref="TextBlock.FontFamilyProperty" />
         public static readonly StyledProperty<FontFamily> FontFamilyProperty =
             TextBlock.FontFamilyProperty.AddOwner<FontIconSource>();
 
-        /// <summary>
-        /// Defines the <see cref="FontSize"/> property.
-        /// </summary>
+        /// <inheritdoc cref="TextBlock.FontSizeProperty" />
         public static readonly StyledProperty<double> FontSizeProperty =
             TextBlock.FontSizeProperty.AddOwner<FontIconSource>();
 
-        /// <summary>
-        /// Defines the <see cref="FontStyle"/> property.
-        /// </summary>
+        /// <inheritdoc cref="TextBlock.FontStyleProperty" />
         public static readonly StyledProperty<FontStyle> FontStyleProperty =
             TextBlock.FontStyleProperty.AddOwner<FontIconSource>();
 
-        /// <summary>
-        /// Defines the <see cref="FontWeight"/> property.
-        /// </summary>
+        /// <inheritdoc cref="TextBlock.FontWeightProperty" />
         public static readonly StyledProperty<FontWeight> FontWeightProperty =
             TextBlock.FontWeightProperty.AddOwner<FontIconSource>();
 
+        /// <inheritdoc cref="FontIcon.Glyph" />
         public string Glyph
         {
             get => GetValue(GlyphProperty);
             set => SetValue(GlyphProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the font family used to draw the control's text.
-        /// </summary>
+        /// <inheritdoc cref="TextBlock.FontFamily" />
         public FontFamily FontFamily
         {
             get => GetValue(FontFamilyProperty);
             set => SetValue(FontFamilyProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the size of the control's text in points.
-        /// </summary>
+        /// <inheritdoc cref="TextBlock.FontSize" />
         public double FontSize
         {
             get => GetValue(FontSizeProperty);
             set => SetValue(FontSizeProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the font style used to draw the control's text.
-        /// </summary>
+        /// <inheritdoc cref="TextBlock.FontStyle" />
         public FontStyle FontStyle
         {
             get => GetValue(FontStyleProperty);
             set => SetValue(FontStyleProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the font weight used to draw the control's text.
-        /// </summary>
+        /// <inheritdoc cref="TextBlock.FontWeight" />
         public FontWeight FontWeight
         {
             get => GetValue(FontWeightProperty);

@@ -11,9 +11,11 @@ namespace Avalonia.Controls
             AffectsRender<PathIcon>(DataProperty);
         }
 
+        /// <inheritdoc cref="Path.DataProperty" />
         public static readonly StyledProperty<Geometry> DataProperty =
             Path.DataProperty.AddOwner<PathIcon>();
 
+        /// <inheritdoc cref="Path.Data" />
         public Geometry Data
         {
             get => GetValue(DataProperty);
@@ -23,9 +25,11 @@ namespace Avalonia.Controls
 
     public class PathIconSource : IconSource
     {
+        /// <inheritdoc cref="Path.DataProperty" />
         public static readonly StyledProperty<Geometry> DataProperty =
             Path.DataProperty.AddOwner<PathIcon>();
 
+        /// <inheritdoc cref="Path.Data" />
         public Geometry Data
         {
             get => GetValue(DataProperty);
