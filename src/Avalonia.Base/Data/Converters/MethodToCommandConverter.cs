@@ -1,12 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Windows.Input;
 using Avalonia.Utilities;
-
+#nullable enable
 namespace Avalonia.Data.Converters
 {
     class MethodToCommandConverter : ICommand
@@ -18,11 +19,11 @@ namespace Avalonia.Data.Converters
             .GetProperty(nameof(CultureInfo.CurrentCulture), BindingFlags.Public | BindingFlags.Static);
         readonly Func<object, bool> canExecute;
         readonly Action<object> execute;
-        readonly WeakPropertyChangedProxy weakPropertyChanged;
-        readonly PropertyChangedEventHandler propertyChangedEventHandler;
-        readonly string[] dependencyProperties;
+        readonly WeakPropertyChangedProxy? weakPropertyChanged;
+        readonly PropertyChangedEventHandler? propertyChangedEventHandler;
+        readonly string[]? dependencyProperties;
 
-        public MethodToCommandConverter(Delegate action)
+        public MethodToCommandConverter([DisallowNull] Delegate action)
         {
             var target = action.Target;
             var canExecuteMethodName = "Can" + action.Method.Name;
@@ -74,7 +75,7 @@ namespace Avalonia.Data.Converters
         }
 
 #pragma warning disable 0067
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 #pragma warning restore 0067
 
         public bool CanExecute(object parameter) => canExecute(parameter);
@@ -140,7 +141,7 @@ namespace Avalonia.Data.Converters
                     );
 
             }
-            Action<object> action = null;
+            Action<object> action;
             try
             {
                 action = Expression
@@ -173,6 +174,7 @@ namespace Avalonia.Data.Converters
         private static Expression? ConvertTarget(object? target, MethodInfo method) =>
             target is null ? null : Expression.Convert(Expression.Constant(target), method.DeclaringType);
 
+#nullable disable
         internal class WeakPropertyChangedProxy
         {
             readonly WeakReference<PropertyChangedEventHandler> _listener = new WeakReference<PropertyChangedEventHandler>(null);
@@ -215,5 +217,6 @@ namespace Avalonia.Data.Converters
             }
 
         }
+#nullable restore
     }
 }
