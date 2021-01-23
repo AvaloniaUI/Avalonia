@@ -99,7 +99,7 @@
       </StackPanel>
      </StackPanel> 
     <StackPanel VerticalAlignment="Bottom" Margin="10">
-      <TextBlock Text="© 2020 The Avalonia Project" TextWrapping="Wrap" HorizontalAlignment="Center" />
+      <TextBlock Text="© 2021 The Avalonia Project" TextWrapping="Wrap" HorizontalAlignment="Center" />
     </StackPanel>
   </Grid>
 </Window>
