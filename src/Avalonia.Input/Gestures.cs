@@ -11,12 +11,12 @@ namespace Avalonia.Input
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        public static readonly RoutedEvent<DoubleTappedEventArgs> DoubleTappedEvent = RoutedEvent.Register<DoubleTappedEventArgs>(
+        public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "DoubleTapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        public static readonly RoutedEvent<RightTappedEventArgs> RightTappedEvent = RoutedEvent.Register<RightTappedEventArgs>(
+        public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "RightTapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
@@ -89,7 +89,7 @@ namespace Avalonia.Input
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
-                        e.Source.RaiseEvent(new DoubleTappedEventArgs(e));
+                        e.Source.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
                     }
                 }
             }
@@ -107,11 +107,11 @@ namespace Avalonia.Input
                     {
                         if (e.InitialPressMouseButton != MouseButton.Right)
                         {
-                            e.Source.RaiseEvent(new RightTappedEventArgs(e));
+                            e.Source.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
                         }
                         else
                         {
-                            e.Source.RaiseEvent(new TappedEventArgs(e));
+                            e.Source.RaiseEvent(new TappedEventArgs(TappedEvent, e));
                         }
                     }
                 }

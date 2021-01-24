@@ -181,7 +181,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
-        public static readonly RoutedEvent<DoubleTappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
+        public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
@@ -355,7 +355,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a double-tap gesture occurs on the control.
         /// </summary>
-        public event EventHandler<DoubleTappedEventArgs> DoubleTapped
+        public event EventHandler<TappedEventArgs> DoubleTapped
         {
             add { AddHandler(DoubleTappedEvent, value); }
             remove { RemoveHandler(DoubleTappedEvent, value); }
