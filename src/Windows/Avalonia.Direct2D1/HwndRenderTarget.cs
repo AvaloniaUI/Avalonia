@@ -21,7 +21,10 @@ namespace Avalonia.Direct2D1
 
         protected override Size2F GetWindowDpi()
         {
-            if (UnmanagedMethods.ShCoreAvailable)
+			var osVersion = System.Environment.OSVersion.Version;
+            if (UnmanagedMethods.ShCoreAvailable &&
+                (osVersion.Major > 6 || 
+                 osVersion.Major == 6 && osVersion.Minor >= 3))
             {
                 uint dpix, dpiy;
 
