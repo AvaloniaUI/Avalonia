@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Product>Avalonia</Product>
     <Version>0.10.999</Version>
-    <Copyright>Copyright 2020 &#169; The AvaloniaUI Project</Copyright>
+    <Copyright>Copyright 2021 &#169; The AvaloniaUI Project</Copyright>
     <PackageProjectUrl>https://avaloniaui.net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -21,6 +21,6 @@
   </PropertyGroup>
 
   <ItemGroup Label="PackageIcon">
-    <None Include="$(MSBuildThisFileDirectory)/Assets/Icon.png" Pack="true" PackagePath=""/>
+    <None Include="$(MSBuildThisFileDirectory)/Assets/Icon.png" Pack="true" Visible="false" PackagePath=""/>
   </ItemGroup>
 </Project>

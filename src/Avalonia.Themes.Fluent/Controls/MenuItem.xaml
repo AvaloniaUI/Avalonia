@@ -112,7 +112,7 @@
           <Popup Name="PART_Popup"
                  WindowManagerAddShadowHint="False"
                  PlacementMode="Right"
-                 HorizontalOffset="{StaticResource MenuFlyoutSubItemPopupHorizontalOffset}"
+                 HorizontalOffset="{DynamicResource MenuFlyoutSubItemPopupHorizontalOffset}"
                  IsLightDismissEnabled="True"
                  IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
             <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
@@ -189,12 +189,12 @@
 
   <Style Selector="MenuItem">
     <!--  Narrow padding should be used for mouse input, when non-narrow one should be used for touch input in future.  -->
-    <Setter Property="Padding" Value="{StaticResource MenuFlyoutItemThemePaddingNarrow}" />
+    <Setter Property="Padding" Value="{DynamicResource MenuFlyoutItemThemePaddingNarrow}" />
   </Style>
 
   <Style Selector="Menu > MenuItem">
     <!--  Custom padding for Menu > MenuItem  -->
-    <Setter Property="Padding" Value="{StaticResource MenuBarItemPadding}" />
+    <Setter Property="Padding" Value="{DynamicResource MenuBarItemPadding}" />
   </Style>
 
   <Style Selector="MenuItem /template/ ContentPresenter#PART_IconPresenter">
