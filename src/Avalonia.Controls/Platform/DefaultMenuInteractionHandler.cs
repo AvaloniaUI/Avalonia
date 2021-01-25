@@ -231,7 +231,7 @@ namespace Avalonia.Controls.Platform
                 {
                     var direction = e.Key.ToNavigationDirection();
 
-                    if (direction.HasValue)
+                    if (direction?.IsDirectional() == true)
                     {
                         if (item == null && _isContextMenu)
                         {
@@ -355,7 +355,13 @@ namespace Avalonia.Controls.Platform
                 }
                 else if (!item.IsPointerOverSubMenu)
                 {
-                    item.IsSubMenuOpen = false;
+                    DelayRun(() =>
+                    {
+                        if (!item.IsPointerOverSubMenu)
+                        {
+                            item.IsSubMenuOpen = false;
+                        }
+                    }, MenuShowDelay);
                 }
             }
         }

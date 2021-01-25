@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -29,7 +30,7 @@ namespace Avalonia.Native
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            var result =  new AvaloniaNativePlatform(new IAvaloniaNativeFactory(factory));
+            var result =  new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
             result.DoInitialize(options);
 
             return result;
@@ -65,10 +66,7 @@ namespace Avalonia.Native
         {
             if(!string.IsNullOrWhiteSpace(Application.Current.Name))
             {
-                using (var buffer = new Utf8Buffer(Application.Current.Name))
-                {
-                    _factory.MacOptions.SetApplicationTitle(buffer.DangerousGetHandle());
-                }
+                _factory.MacOptions.SetApplicationTitle(Application.Current.Name);
             }
         }
 
@@ -93,7 +91,7 @@ namespace Avalonia.Native
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
-                _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
+                _factory.MacOptions.SetShowInDock(macOpts?.ShowInDock != false ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
@@ -153,7 +151,7 @@ namespace Avalonia.Native
             set
             {
                 _showInDock = value;
-                _opts.ShowInDock = value ? 1 : 0;
+                _opts.SetShowInDock(value ? 1 : 0);
             }
         }
     }

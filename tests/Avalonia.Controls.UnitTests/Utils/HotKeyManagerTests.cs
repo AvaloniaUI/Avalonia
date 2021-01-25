@@ -10,6 +10,9 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
+using System;
+using Avalonia.Input.Raw;
+using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
@@ -167,6 +170,126 @@ namespace Avalonia.Controls.UnitTests.Utils
             }
         }
 
+        [Theory]
+        [MemberData(nameof(ElementsFactory))]
+        public void HotKeyManager_Should_Use_CommandParameter(string factoryName, Factory factory)
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                var styler = new Mock<Styler>();
+                var target = new KeyboardDevice();
+                var commandResult = 0;
+                var expectedParameter = 1;
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
+                    .Bind<IStyler>().ToConstant(styler.Object);
+
+                var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                var action = new Action<object>(parameter =>
+                {
+                    if (parameter is int value)
+                    {
+                        commandResult = value;
+                    }
+                });
+
+                var root = new Window();
+                var element = factory(expectedParameter, action, root);
+
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter.ApplyTemplate();
+
+                HotKeyManager.SetHotKey(element, gesture);
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                Assert.True(expectedParameter == commandResult, $"{factoryName} HotKey did not carry the CommandParameter.");
+            }
+        }
+
+
+        [Theory]
+        [MemberData(nameof(ElementsFactory))]
+        public void HotKeyManager_Should_Do_Not_Executed_When_IsEnabled_False(string factoryName, Factory factory)
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                var styler = new Mock<Styler>();
+                var target = new KeyboardDevice();
+                var isExecuted = false;
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
+                    .Bind<IStyler>().ToConstant(styler.Object);
+
+                var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                var action = new Action<object>(parameter =>
+                {
+                    isExecuted = true;
+                });
+
+                var root = new Window();
+                var element = factory(0, action, root) as InputElement;
+
+                element.IsEnabled = false;
+
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter.ApplyTemplate();
+
+                HotKeyManager.SetHotKey(element, gesture);
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                Assert.True(isExecuted == false, $"{factoryName} Execution raised when IsEnabled is false.");
+            }
+        }
+
+        public static TheoryData<string, Factory> ElementsFactory =>
+            new TheoryData<string, Factory>()
+            {
+                {nameof(Button), MakeButton},
+                {nameof(MenuItem),MakeMenu},
+            };
+
+        private static AvaloniaObject MakeMenu(int expectedParameter, Action<object> action, Window root)
+        {
+            var menuitem = new MenuItem()
+            {
+                Command = new Command(action),
+                CommandParameter = expectedParameter,
+            };
+            var rootMenu = new Menu();
+
+            rootMenu.Items = new[] { menuitem };
+
+            root.Content = rootMenu;
+            return menuitem;
+        }
+
+        private static AvaloniaObject MakeButton(int expectedParameter, Action<object> action, Window root)
+        {
+            var button = new Button()
+            {
+                Command = new Command(action),
+                CommandParameter = expectedParameter,
+            };
+
+            root.Content = button;
+            return button;
+        }
 
         private FuncControlTemplate CreateWindowTemplate()
         {
@@ -178,6 +301,23 @@ namespace Avalonia.Controls.UnitTests.Utils
                     [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                 }.RegisterInNameScope(scope);
             });
+        }
+
+        class Command : System.Windows.Input.ICommand
+        {
+            private readonly Action<object> _execeute;
+
+#pragma warning disable 67 // Event not used
+            public event EventHandler CanExecuteChanged;
+#pragma warning restore 67 // Event not used
+
+            public Command(Action<object> execeute)
+            {
+                _execeute = execeute;
+            }
+            public bool CanExecute(object parameter) => true;
+
+            public void Execute(object parameter) => _execeute?.Invoke(parameter);
         }
     }
 }

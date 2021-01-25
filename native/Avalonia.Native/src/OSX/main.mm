@@ -104,9 +104,9 @@ class MacOptions : public ComSingleObject<IAvnMacOptions, &IID_IAvnMacOptions>
 public:
     FORWARD_IUNKNOWN()
     
-    virtual HRESULT SetApplicationTitle(void* utf8String) override
+    virtual HRESULT SetApplicationTitle(char* utf8String) override
     {
-        auto appTitle = [NSString stringWithUTF8String:(const char*)utf8String];
+        auto appTitle = [NSString stringWithUTF8String: utf8String];
         
         [[NSProcessInfo processInfo] setProcessName:appTitle];
         

@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -8,11 +10,16 @@ namespace Avalonia
     /// <summary>
     /// Describes the thickness of a frame around a rectangle.
     /// </summary>
-    public readonly struct Thickness : IEquatable<Thickness>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Thickness : IEquatable<Thickness>
     {
         static Thickness()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<ThicknessAnimator>(prop => typeof(Thickness).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>

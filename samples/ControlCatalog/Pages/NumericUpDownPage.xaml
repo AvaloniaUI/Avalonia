@@ -1,5 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
              x:Class="ControlCatalog.Pages.NumericUpDownPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Margin="2" Classes="h1">Numeric up-down control</TextBlock>
@@ -75,6 +76,15 @@
       <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
                      CultureInfo="en-US" VerticalAlignment="Center"
                      Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+      
+      <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown with Validation Errors:</TextBlock>
+      <NumericUpDown Minimum="0" Maximum="10" Increment="0.5"
+                     CultureInfo="en-US" VerticalAlignment="Center"
+                     Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}">
+        <DataValidationErrors.Error>
+          <sys:Exception /> 
+        </DataValidationErrors.Error>
+      </NumericUpDown>
     </StackPanel>
 
   </StackPanel>

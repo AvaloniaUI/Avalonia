@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="Visibility"/> property.
         /// </summary>
         public static readonly StyledProperty<ScrollBarVisibility> VisibilityProperty =
-            AvaloniaProperty.Register<ScrollBar, ScrollBarVisibility>(nameof(Visibility));
+            AvaloniaProperty.Register<ScrollBar, ScrollBarVisibility>(nameof(Visibility), ScrollBarVisibility.Visible);
 
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.

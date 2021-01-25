@@ -22,7 +22,7 @@ namespace Avalonia.Controls
     /// A menu item control.
     /// </summary>
     [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -621,6 +621,8 @@ namespace Avalonia.Controls
         {
             SelectedItem = null;
         }
+
+        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.

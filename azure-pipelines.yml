@@ -4,13 +4,6 @@ jobs:
     vmImage: 'ubuntu-16.04'
   steps:
   - task: CmdLine@2
-    displayName: 'Install CastXML'
-    inputs:
-      script: |
-        sudo apt-get update
-        sudo apt-get install castxml
-
-  - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
@@ -34,7 +27,7 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
   steps:
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.1.401'
@@ -48,14 +41,20 @@ jobs:
         curl -o ./mono.pkg https://download.mono-project.com/archive/5.18.0/macos-10-universal/MonoFramework-MDK-5.18.0.225.macos10.xamarin.universal.pkg 
         sudo installer -verbose -pkg ./mono.pkg -target /
 
+  - task: CmdLine@2
+    displayName: 'Generate avalonia-native'
+    inputs:
+      script: |
+        cd src/tools/MicroComGenerator; dotnet run -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
+
   - task: Xcode@5
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx10.14'
+      sdk: 'macosx11.1'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
-      xcodeVersion: '10' # Options: 8, 9, default, specifyPath
+      xcodeVersion: '12' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
