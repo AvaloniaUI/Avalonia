@@ -105,7 +105,7 @@ namespace Avalonia.Input
                 {
                     if (e.InitialPressMouseButton == MouseButton.Left || e.InitialPressMouseButton == MouseButton.Right)
                     {
-                        if (e.InitialPressMouseButton != MouseButton.Right)
+                        if (e.InitialPressMouseButton == MouseButton.Right)
                         {
                             e.Source.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
                         }
