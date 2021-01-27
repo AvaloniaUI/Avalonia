@@ -72,7 +72,6 @@ namespace Avalonia.Controls.Primitives
                 {
                     rv = new LightDismissOverlayLayer
                     {
-                        Background = Brushes.Transparent,
                         IsVisible = false
                     };
 

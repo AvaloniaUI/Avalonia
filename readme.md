@@ -12,8 +12,6 @@ Avalonia is a cross-platform XAML-based UI framework providing a flexible stylin
 
 ([Xaml Control Gallery](https://github.com/AvaloniaUI/xamlcontrolsgallery))
 
-> **Note:** The UI theme you see in the picture above is still work-in-progress and will be available in the upcoming Avalonia 0.10.0 release. However, you can connect to our nightly build feed and install latest pre-release versions of Avalonia NuGet packages, if you are willing to help out with the development and testing. See [Using nightly build feed](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed) for more info.
-
 To see the status of some of our features, please see our [Roadmap](https://github.com/AvaloniaUI/Avalonia/issues/2239). You can also see what [breaking changes](https://github.com/AvaloniaUI/Avalonia/issues/3538) we have planned and what our [past breaking changes](https://github.com/AvaloniaUI/Avalonia/wiki/Breaking-Changes) have been. [Awesome Avalonia](https://github.com/AvaloniaCommunity/awesome-avalonia) is community-curated list of awesome Avalonia UI tools, libraries, projects and resources. Go and see what people are building with Avalonia!
 
 ## 🚀 Getting Started
