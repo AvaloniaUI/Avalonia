@@ -5,14 +5,14 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.Input;
+using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    public class AndroidKeyboardEventsHelper<TView> : IDisposable where TView :ITopLevelImpl, IAndroidView
+    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView
     {
         private TView _view;
         private IInputElement _lastFocusedElement;
@@ -46,9 +46,11 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
             var rawKeyEvent = new RawKeyEventArgs(
                           AndroidKeyboardDevice.Instance,
-                          Convert.ToUInt32(e.EventTime),
+                          Convert.ToUInt64(e.EventTime),
+                          _view.InputRoot,
                           e.Action == KeyEventActions.Down ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-            AndroidKeyboardDevice.ConvertKey(e.KeyCode), GetModifierKeys(e));
+                          AndroidKeyboardDevice.ConvertKey(e.KeyCode), GetModifierKeys(e));
+
             _view.Input(rawKeyEvent);
 
             if (e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
@@ -56,6 +58,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 var rawTextEvent = new RawTextInputEventArgs(
                   AndroidKeyboardDevice.Instance,
                   Convert.ToUInt32(e.EventTime),
+                  _view.InputRoot,
                   Convert.ToChar(e.UnicodeChar).ToString()
                   );
                 _view.Input(rawTextEvent);
