@@ -181,10 +181,10 @@ namespace Avalonia.Controls.UnitTests
             {
             }
 
-            public TestCommand(Func<object, bool> canExecute, Action<object> execute)
+            public TestCommand(Func<object, bool> canExecute, Action<object> execute = null)
             {
                 _canExecute = canExecute;
-                _execute = execute;
+                _execute = execute ?? (_ => { });
             }
 
             public int SubscriptionCount { get; private set; }
