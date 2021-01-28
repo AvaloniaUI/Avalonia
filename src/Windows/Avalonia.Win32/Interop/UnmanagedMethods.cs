@@ -1432,15 +1432,15 @@ namespace Avalonia.Win32.Interop
         }
 
         [DllImport("ntdll")]
-        private static extern int RtlGetVersion(out RTL_OSVERSIONINFOEX lpVersionInformation);
+        private static extern int RtlGetVersion(ref RTL_OSVERSIONINFOEX lpVersionInformation);
 
         internal static Version RtlGetVersion()
         {
             RTL_OSVERSIONINFOEX v = new RTL_OSVERSIONINFOEX();
             v.dwOSVersionInfoSize = (uint)Marshal.SizeOf(v);
-            if (RtlGetVersion(out v) == 0)
+            if (RtlGetVersion(ref v) == 0)
             {
-                return new Version((int)v.dwMajorVersion, (int)v.dwMinorVersion, (int)v.dwBuildNumber, (int)v.dwPlatformId);
+                return new Version((int)v.dwMajorVersion, (int)v.dwMinorVersion, (int)v.dwBuildNumber);
             }
             else
             {
