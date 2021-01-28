@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -102,6 +103,22 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<TextInputEventArgs> TextInputEvent =
             RoutedEvent.Register<InputElement, TextInputEventArgs>(
                 "TextInput",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="TextInputMethodClientRequested"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputMethodClientRequestedEventArgs> TextInputMethodClientRequestedEvent =
+            RoutedEvent.Register<InputElement, TextInputMethodClientRequestedEventArgs>(
+                "TextInputMethodClientRequested",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="TextInputOptionsQuery"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputOptionsQueryEventArgs> TextInputOptionsQueryEvent =
+            RoutedEvent.Register<InputElement, TextInputOptionsQueryEventArgs>(
+                "TextInputOptionsQuery",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -242,6 +259,24 @@ namespace Avalonia.Input
         {
             add { AddHandler(TextInputEvent, value); }
             remove { RemoveHandler(TextInputEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when an input element gains input focus and input method is looking for the corresponding client
+        /// </summary>
+        public event EventHandler<TextInputMethodClientRequestedEventArgs> TextInputMethodClientRequested
+        {
+            add { AddHandler(TextInputMethodClientRequestedEvent, value); }
+            remove { RemoveHandler(TextInputMethodClientRequestedEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when an input element gains input focus and input method is asking for required content options
+        /// </summary>
+        public event EventHandler<TextInputOptionsQueryEventArgs> TextInputOptionsQuery
+        {
+            add { AddHandler(TextInputOptionsQueryEvent, value); }
+            remove { RemoveHandler(TextInputOptionsQueryEvent, value); }
         }
 
         /// <summary>

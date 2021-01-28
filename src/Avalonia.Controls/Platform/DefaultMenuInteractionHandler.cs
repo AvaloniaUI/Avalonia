@@ -355,7 +355,13 @@ namespace Avalonia.Controls.Platform
                 }
                 else if (!item.IsPointerOverSubMenu)
                 {
-                    item.IsSubMenuOpen = false;
+                    DelayRun(() =>
+                    {
+                        if (!item.IsPointerOverSubMenu)
+                        {
+                            item.IsSubMenuOpen = false;
+                        }
+                    }, MenuShowDelay);
                 }
             }
         }
