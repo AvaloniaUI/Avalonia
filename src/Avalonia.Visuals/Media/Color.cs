@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
@@ -20,6 +21,8 @@ namespace Avalonia.Media
             Animation.Animation.RegisterAnimator<ColorAnimator>(prop => typeof(Color).IsAssignableFrom(prop.PropertyType));
 #endif
         }
+
+        private const string DefaultAccentColor = "#FF0078D7";
 
         /// <summary>
         /// Gets the Alpha component of the color.
@@ -305,6 +308,73 @@ namespace Avalonia.Media
         public static bool operator !=(Color left, Color right)
         {
             return !left.Equals(right);
+        }
+#if !BUILDTASK
+        /// <summary>
+        /// Get the System Accent Color, if the Operating System is not supported, returns #FF0078D7
+        /// </summary>
+        /// <returns>The accent color</returns>
+        public static Color GetSystemAccentColor()
+        {
+            var isWindows10_8 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) & 
+                            !(Environment.OSVersion == new OperatingSystem(PlatformID.Win32NT, new Version(10,0)) ||
+                             Environment.OSVersion == new OperatingSystem(PlatformID.Win32NT, new Version(6,3))); //check if the OS is Windows 10 or Windows 8
+            var defaultValue = Color.DefaultAccentColor;// default Avalonia Accent Color
+
+            //TODO: Add Support for MacOS X Accent color and Linux Desktop Envs with this feature
+            if(isWindows10_8)
+            {
+                return GetAccentColorWin("ImmersiveSystemAccent");
+            }
+            else
+            {
+                return Color.Parse(defaultValue);
+            }
+        }
+
+
+        private static Color GetAccentColorWin(string name)
+        {
+            var colorSet = Avalonia.Win32.Interop.UnmanagedMethods.GetImmersiveUserColorSetPreference(false, false);
+            var colorType = Avalonia.Win32.Interop.UnmanagedMethods.GetImmersiveColorTypeFromName(name);
+            var rawColor = Avalonia.Win32.Interop.UnmanagedMethods.GetImmersiveColorFromColorSetEx(colorSet, colorType, false, 0);
+
+            var bytes = BitConverter.GetBytes(rawColor);
+            return Color.FromArgb(bytes[3], bytes[0], bytes[1], bytes[2]);
+        }
+#endif
+
+        /// <summary>
+        /// Change the luminosity of a color.
+        /// </summary>
+        /// <param name="color">The color to change its luminosity</param>
+        /// <param name="newluminosityFactor">The new Luminosity for the Color</param>
+        /// <returns>A new Color with the Luminosity Factor applied.</returns>
+        public static Color ChangeColorLuminosity(Color color, double newluminosityFactor)
+        {
+            var red = (double)color.R;
+            var green = (double)color.G;
+            var blue = (double)color.B;
+
+            if (newluminosityFactor < 0)//applies darkness
+            {
+                newluminosityFactor = 1 + newluminosityFactor;
+                red *= newluminosityFactor;
+                green *= newluminosityFactor;
+                blue *= newluminosityFactor;
+            }
+            else if(newluminosityFactor >= 0) //applies lightness
+            {
+                red = (255 - red) * newluminosityFactor + red;
+                green = (255 - green) * newluminosityFactor + green;
+                blue = (255 - blue) * newluminosityFactor + blue;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("The Luminosity Factor must be a finite number.");
+            }
+
+            return new Color(color.A, (byte)red, (byte)green, (byte)blue);
         }
     }
 }
