@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Avalonia.Logging;
 using Avalonia.Threading;
 using XamlX.IL;
 
@@ -81,7 +81,9 @@ namespace Avalonia.Markup.Xaml.HotReload
                 }
                 catch (System.Exception exception)
                 {
-                    Debug.WriteLine(exception);
+                    Logger
+                        .TryGet(LogEventLevel.Error, "HotReload")
+                        ?.Log(null, "Exception occured during HotReload. {Exception}", exception);
                 }
             };
         }

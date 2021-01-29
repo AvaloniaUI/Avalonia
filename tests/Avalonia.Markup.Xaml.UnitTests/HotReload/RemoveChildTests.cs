@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -7,7 +6,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.HotReload
     public class RemoveChildTests : HotReloadTestBase
     {
         [Fact]
-        public void Binding_To_DataContext_Works()
+        public void RemoveOnlyChildFromCollection()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -15,46 +14,120 @@ namespace Avalonia.Markup.Xaml.UnitTests.HotReload
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
              x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
-  <Border>
-    <StackPanel>
-      <Border Padding='40' />
-      <Border Padding='40' Margin='20' />
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20'>
+      <TextBlock Text='Text' />
     </StackPanel>
   </Border>
 </UserControl>";
-                
+
                 var modifiedXaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
              x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
-  <Border>
-    <StackPanel>
-      <Border Padding='40' />
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20' />
+  </Border>
+</UserControl>";
+
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(Border)
+  Child(StackPanel)
+    Children.Count");
+            }
+        }
+
+        [Fact]
+        public void RemoveChildDirectProperty()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20' />
+  </Border>
+</UserControl>";
+
+                var modifiedXaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <Border Padding='20' HorizontalAlignment='Center' />
+</UserControl>";
+
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(Border)
+  Child");
+            }
+        }
+
+        [Fact]
+        public void RemoveFirstChildWithSameTypeSiblings()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20'>
+      <TextBlock Text='TintOpacity' Foreground='Black' />
+      <TextBlock Text='Text' />
     </StackPanel>
   </Border>
 </UserControl>";
-                
-                var (original, modified) = ParseAndApplyHotReload<TestControl>(xaml, modifiedXaml);
 
-                var originalBorder = (Border)original.Content;
-                var modifiedBorder = (Border)modified.Content;
-                
-                var originalPanel = (StackPanel)originalBorder.Child;
-                var modifiedPanel = (StackPanel)modifiedBorder.Child;
-                
-                Assert.Equal(originalBorder.Padding, modifiedBorder.Padding);
-                Assert.Equal(originalBorder.HorizontalAlignment, modifiedBorder.HorizontalAlignment);
-                
-                Assert.Equal(originalPanel.Spacing, modifiedPanel.Spacing);
-                Assert.Equal(originalPanel.Orientation, modifiedPanel.Orientation);
-                
-                Assert.Equal(originalPanel.Children.Count, modifiedPanel.Children.Count);
+                var modifiedXaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20'>
+      <TextBlock Text='Text' />
+    </StackPanel>
+  </Border>
+</UserControl>";
 
-                var originalChild = ((Border) originalPanel.Children[0]);
-                var modifiedChild = ((Border)modifiedPanel.Children[0]);
-                
-                Assert.Equal(originalChild.Padding, modifiedChild.Padding);
-                Assert.Equal(originalChild.Margin, modifiedChild.Margin);
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(Border)
+  Child(StackPanel)
+    Children.Count
+    Children#0(TextBlock)
+      Text");
+            }
+        }
+
+        [Fact]
+        public void RemoveChildThatHasChildren()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <StackPanel HorizontalAlignment='Center'>
+    <StackPanel Spacing='20'>
+      <TextBlock Text='Text' />
+      <TextBlock Text='Text' />
+    </StackPanel>
+  </StackPanel>
+</UserControl>";
+
+                var modifiedXaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <StackPanel HorizontalAlignment='Center' />
+</UserControl>";
+
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(StackPanel)
+  Children.Count");
             }
         }
     }

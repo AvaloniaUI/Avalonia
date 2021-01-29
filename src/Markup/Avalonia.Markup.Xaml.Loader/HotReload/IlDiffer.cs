@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
+using Avalonia.Logging;
 using Avalonia.Markup.Xaml.HotReload.Actions;
 using Avalonia.Markup.Xaml.HotReload.Blocks;
 using XamlX.IL;
@@ -75,7 +76,9 @@ namespace Avalonia.Markup.Xaml.HotReload
                 newBlocks.Remove(newBlock);
                 oldBlocks.Remove(oldBlock);
 
-                Debug.WriteLine($"{newBlock.Type} - {oldBlock.Type}: {var.Score}");
+                Logger
+                    .TryGet(LogEventLevel.Verbose, "HotReload")
+                    ?.Log(this, "{New} - {Old}: {Score}", newBlock.Type, oldBlock.Type, var.Score);
 
                 var newProperties = newBlock.Properties.ToList();
                 var oldProperties = oldBlock.Properties.ToList();
@@ -114,7 +117,10 @@ namespace Avalonia.Markup.Xaml.HotReload
                         continue;
                     }
 
-                    Debug.WriteLine($"Added Property: {newProperty.Name}");
+                    Logger
+                        .TryGet(LogEventLevel.Verbose, "HotReload")
+                        ?.Log(this, "Added Property: {Property}", newProperty.Name);
+                    
                     diff.AddedProperties.Add(newProperty);
                 }
 
@@ -125,7 +131,10 @@ namespace Avalonia.Markup.Xaml.HotReload
                         continue;
                     }
 
-                    Debug.WriteLine($"Removed Property: {oldProperty.Name}");
+                    Logger
+                        .TryGet(LogEventLevel.Verbose, "HotReload")
+                        ?.Log(this, "Removed Property: {Property}", oldProperty.Name);
+                    
                     diff.RemovedProperties.Add(oldProperty);
                 }
 
@@ -141,7 +150,10 @@ namespace Avalonia.Markup.Xaml.HotReload
 
             foreach (var newBlock in newBlocks)
             {
-                Debug.WriteLine($"Added: {newBlock.Type}");
+                Logger
+                    .TryGet(LogEventLevel.Verbose, "HotReload")
+                    ?.Log(this, "Added Object: {Type}", newBlock.Type);
+                
                 diff.AddedBlocks.Add(newBlock);
             }
 
@@ -151,7 +163,10 @@ namespace Avalonia.Markup.Xaml.HotReload
                 // as removed property while handling properties.
                 if (oldBlock.ParentProperty.IsList)
                 {
-                    Debug.WriteLine($"Removed: {oldBlock.Type}");
+                    Logger
+                        .TryGet(LogEventLevel.Verbose, "HotReload")
+                        ?.Log(this, "Removed Object: {Type}", oldBlock.Type);
+                    
                     diff.RemovedBlocks.Add(oldBlock);
                 }
             }

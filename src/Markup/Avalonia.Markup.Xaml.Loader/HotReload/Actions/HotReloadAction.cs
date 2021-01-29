@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Avalonia.Logging;
 using Avalonia.Markup.Xaml.HotReload.Blocks;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Mono.Reflection;
@@ -82,7 +82,7 @@ namespace Avalonia.Markup.Xaml.HotReload.Actions
             bool printObjects = false)
         {
             // Load the object that is sent to the method as the second parameter.
-            // (First one is the context.)
+            // (First one is the service provider.)
             IlEmitter.Emit(OpCodes.Ldarg_1);
 
             foreach (var property in propertyChain)
@@ -169,9 +169,14 @@ namespace Avalonia.Markup.Xaml.HotReload.Actions
             {
                 _method = _typeBuilder.CreateTypeInfo().AsType().GetMethod(_methodBuilder.Name);
 
-                foreach (var instruction in _method.GetInstructions())
+                var logger = Logger.TryGet(LogEventLevel.Debug, "HotReload");
+
+                if (logger != null)
                 {
-                    Debug.WriteLine(instruction);
+                    foreach (var instruction in _method.GetInstructions())
+                    {
+                        logger.Value.Log(null, "{Instruction}", instruction);
+                    }
                 }
             }
 

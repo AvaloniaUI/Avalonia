@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -7,7 +6,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.HotReload
     public class RemovePropertyTests : HotReloadTestBase
     {
         [Fact]
-        public void Binding_To_DataContext_Works()
+        public void RemoveSingleProperty()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -15,33 +14,81 @@ namespace Avalonia.Markup.Xaml.UnitTests.HotReload
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
              x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
-  <Border Padding='20' HorizontalAlignment='Center'>
-    <StackPanel Spacing='20' />
-  </Border>
+  <Border Background='Yellow' />
 </UserControl>";
-                
+
                 var modifiedXaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
              x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
-  <Border>
-    <StackPanel />
-  </Border>
+  <Border />
 </UserControl>";
                 
-                var (original, modified) = ParseAndApplyHotReload<TestControl>(xaml, modifiedXaml);
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(Border)
+  Background");
+            }
+        }
+        
+        [Fact]
+        public void RemoveMultipleProperties()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <Border Background='Yellow' Padding='20' />
+</UserControl>";
 
-                var originalBorder = (Border)original.Content;
-                var modifiedBorder = (Border)modified.Content;
-                
-                var originalPanel = (StackPanel)originalBorder.Child;
-                var modifiedPanel = (StackPanel)modifiedBorder.Child;
-                
-                Assert.Equal(originalBorder.Padding, modifiedBorder.Padding);
-                Assert.Equal(originalBorder.HorizontalAlignment, modifiedBorder.HorizontalAlignment);
-                
-                Assert.Equal(originalPanel.Spacing, modifiedPanel.Spacing);
-                Assert.Equal(originalPanel.Orientation, modifiedPanel.Orientation);
+                var modifiedXaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <Border />
+</UserControl>";
+
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(Border)
+  Background
+  Padding");
+            }
+        }
+        
+        [Fact]
+        public void RemovePropertyWithSameTypeSiblings()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <StackPanel>
+    <TextBlock Text='Text' Foreground='Yellow' />
+    <TextBlock Text='Text' Foreground='Yellow' />
+  </StackPanel>
+</UserControl>";
+
+                var modifiedXaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <StackPanel>
+    <TextBlock Text='Text' />
+    <TextBlock Text='Text' Foreground='Yellow' />
+  </StackPanel>
+</UserControl>";
+
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(StackPanel)
+  Children#0(TextBlock)
+    Text
+    Foreground
+  Children#1(TextBlock)
+    Text
+    Foreground");
             }
         }
     }

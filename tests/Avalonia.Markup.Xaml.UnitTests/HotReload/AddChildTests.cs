@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Logging;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -14,43 +15,86 @@ namespace Avalonia.Markup.Xaml.UnitTests.HotReload
                 var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
-  <Border>
-    <StackPanel />
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'
+             Padding='10' Margin='5'>
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20' Orientation='Vertical' />
   </Border>
 </UserControl>";
                 
                 var modifiedXaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
-  <Border>
-    <StackPanel>
-      <Border Padding='40' />
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'
+             Padding='10' Margin='5'>
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20' Orientation='Vertical'>
+      <TextBlock Text='TintOpacity' Foreground='Black' />
     </StackPanel>
   </Border>
 </UserControl>";
                 
-                var (original, modified) = ParseAndApplyHotReload<TestControl>(xaml, modifiedXaml);
-
-                var originalBorder = (Border)original.Content;
-                var modifiedBorder = (Border)modified.Content;
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(Border)
+  Padding
+  HorizontalAlignment
+  Child(StackPanel)
+    Spacing
+    Orientation
+    Children.Count
+    Children#0(TextBlock)
+      Text
+      Foreground
+Padding
+Margin");
+            }
+        }
+        
+        [Fact]
+        public void AddChildToNonEmptyParentWithDifferentProperties()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'
+             Padding='10' Margin='5'>
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20'>
+      <TextBlock Text='TintOpacity' Foreground='Black' />
+    </StackPanel>
+  </Border>
+</UserControl>";
                 
-                var originalPanel = (StackPanel)originalBorder.Child;
-                var modifiedPanel = (StackPanel)modifiedBorder.Child;
+                var modifiedXaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'
+             Padding='10' Margin='5'>
+  <Border Padding='20' HorizontalAlignment='Center'>
+    <StackPanel Spacing='20'>
+      <TextBlock Text='TintOpacity' Foreground='Black' />
+      <TextBlock Text='TintOpacity' />
+    </StackPanel>
+  </Border>
+</UserControl>";
                 
-                Assert.Equal(originalBorder.Padding, modifiedBorder.Padding);
-                Assert.Equal(originalBorder.HorizontalAlignment, modifiedBorder.HorizontalAlignment);
-                
-                Assert.Equal(originalPanel.Spacing, modifiedPanel.Spacing);
-                Assert.Equal(originalPanel.Orientation, modifiedPanel.Orientation);
-                
-                Assert.Equal(originalPanel.Children.Count, modifiedPanel.Children.Count);
-
-                var originalChild = ((Border) originalPanel.Children[0]);
-                var modifiedChild = ((Border)modifiedPanel.Children[0]);
-                
-                Assert.Equal(originalChild.Padding, modifiedChild.Padding);
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(Border)
+  Padding
+  HorizontalAlignment
+  Child(StackPanel)
+    Spacing
+    Orientation
+    Children.Count
+    Children#0(TextBlock)
+      Text
+      Foreground
+    Children#1(TextBlock)
+      Text
+Padding
+Margin");
             }
         }
     }

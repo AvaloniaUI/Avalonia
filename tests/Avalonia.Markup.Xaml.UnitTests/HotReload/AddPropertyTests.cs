@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -7,7 +6,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.HotReload
     public class AddPropertyTests : HotReloadTestBase
     {
         [Fact]
-        public void Added_Properties_Are_Set_On_Object()
+        public void AddSimpleProperties()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -15,33 +14,96 @@ namespace Avalonia.Markup.Xaml.UnitTests.HotReload
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
              x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
-  <Border>
-    <StackPanel />
-  </Border>
+  <Border Background='Yellow' />
 </UserControl>";
                 
                 var modifiedXaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
              x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
-  <Border Padding='40'>
-    <StackPanel Spacing='40' Orientation='Horizontal' />
-  </Border>
+  <Border Padding='20' HorizontalAlignment='Center' Background='Yellow' />
 </UserControl>";
                 
-                var (original, modified) = ParseAndApplyHotReload<TestControl>(xaml, modifiedXaml);
-
-                var originalBorder = (Border)original.Content;
-                var modifiedBorder = (Border)modified.Content;
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(Border)
+  Padding
+  HorizontalAlignment
+  Background");
+            }
+        }
+        
+        [Fact]
+        public void AddPropertiesWithSameTypeSiblings()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <StackPanel>
+    <TextBlock Foreground='Yellow' />
+    <TextBlock />
+  </StackPanel>
+</UserControl>";
                 
-                var originalPanel = (StackPanel)originalBorder.Child;
-                var modifiedPanel = (StackPanel)modifiedBorder.Child;
+                var modifiedXaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <StackPanel>
+    <TextBlock Foreground='Yellow' Text='Text' />
+    <TextBlock Foreground='Green' />
+  </StackPanel>
+</UserControl>";
                 
-                Assert.Equal(originalBorder.Padding, modifiedBorder.Padding);
-                Assert.Equal(originalBorder.HorizontalAlignment, modifiedBorder.HorizontalAlignment);
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(StackPanel)
+  Children#0(TextBlock)
+    Foreground
+    Text
+  Children#1(TextBlock)
+    Foreground");
+            }
+        }
+        
+        [Fact]
+        public void AddExpandedProperty()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <StackPanel>
+    <TextBlock />
+  </StackPanel>
+</UserControl>";
                 
-                Assert.Equal(originalPanel.Spacing, modifiedPanel.Spacing);
-                Assert.Equal(originalPanel.Orientation, modifiedPanel.Orientation);
+                var modifiedXaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.HotReload.TestControl'>
+  <StackPanel>
+    <TextBlock>
+      <TextBlock.Styles>
+        <Style Selector='TextBlock.h1'>
+          <Setter Property='Margin' Value='50' />
+        </Style>
+      </TextBlock.Styles>
+    </TextBlock>
+  </StackPanel>
+</UserControl>";
+                
+                Compare<TestControl>(xaml, modifiedXaml, @"
+Content(StackPanel)
+  Children#0(TextBlock)
+    Styles.Count
+    Styles#0
+      Setters#0
+        Property
+        Value");
             }
         }
     }

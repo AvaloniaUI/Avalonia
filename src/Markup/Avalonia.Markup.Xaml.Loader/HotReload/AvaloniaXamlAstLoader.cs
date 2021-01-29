@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using Avalonia.Logging;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using XamlX;
@@ -138,7 +139,10 @@ namespace Avalonia.Markup.Xaml.HotReload
 
             if (overrideField == null)
             {
-                Console.WriteLine("!XamlIlPopulateOverride field is not found. Ignoring patch request.");
+                Logger
+                    .TryGet(LogEventLevel.Warning, "HotReload")
+                    ?.Log(null, "!XamlIlPopulateOverride field is not found. Ignoring patch request.");
+                
                 return;
             }
 
