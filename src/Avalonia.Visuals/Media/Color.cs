@@ -324,23 +324,12 @@ namespace Avalonia.Media
             //TODO: Add Support for MacOS X Accent color and Linux Desktop Envs with this feature
             if(isWindows10_8)
             {
-                return GetAccentColorWin("ImmersiveSystemAccent");
+                return Avalonia.Win32.AccentColor.GetAccentColorWin("ImmersiveSystemAccent");
             }
             else
             {
                 return Color.Parse(defaultValue);
             }
-        }
-
-
-        private static Color GetAccentColorWin(string name)
-        {
-            var colorSet = Avalonia.Win32.Interop.UnmanagedMethods.GetImmersiveUserColorSetPreference(false, false);
-            var colorType = Avalonia.Win32.Interop.UnmanagedMethods.GetImmersiveColorTypeFromName(name);
-            var rawColor = Avalonia.Win32.Interop.UnmanagedMethods.GetImmersiveColorFromColorSetEx(colorSet, colorType, false, 0);
-
-            var bytes = BitConverter.GetBytes(rawColor);
-            return Color.FromArgb(bytes[3], bytes[0], bytes[1], bytes[2]);
         }
 #endif
 
