@@ -24,7 +24,7 @@ namespace Avalonia
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// - A collection of class strings for custom styling.
     /// </summary>
-    public class StyledElement : Animatable, IDataContextProvider, IStyledElement, ISetLogicalParent, ISetInheritanceParent
+    public class StyledElement : Animatable, IDataContextProvider, IStyledElement, ISetLogicalParent, ISetInheritanceParent, ILogicalParent
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -853,6 +853,16 @@ namespace Avalonia
                 result.Add(style);
                 RecurseStyles(style.Children, result);
             }
+        }
+
+        void ILogicalParent.AddChild(ILogical child)
+        {
+            _logicalChildren?.Add(child);
+        }
+
+        void ILogicalParent.RemoveChild(ILogical child)
+        {
+            _logicalChildren?.Remove(child);
         }
     }
 }

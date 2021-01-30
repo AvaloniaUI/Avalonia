@@ -856,6 +856,16 @@ namespace Avalonia
                 priority);
         }
 
+        public object ReadLocalValue(AvaloniaProperty property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public LocalValueEnumerator GetLocalValueEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
         private class DirectBindingSubscription<T> : IObserver<BindingValue<T>>, IDisposable
         {
             private readonly AvaloniaObject _owner;
