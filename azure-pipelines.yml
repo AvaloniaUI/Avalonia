@@ -1,6 +1,6 @@
 variables:
-  versionDotNetSdk: 5.0.102
-  versionDotNetRuntime3: 3.1.x
+  versionDotNetSdk5: 5.0.102
+  versionDotNetSdk3: 3.1.401
   versionNukeGlobalTool: 0.24.0
 
 jobs:
@@ -37,16 +37,16 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core Runtime ${{ variables.versionDotNetRuntime3 }}'
-    inputs:
-      packageType: 'runtime'
-      version: ${{ variables.versionDotNetRuntime3 }}
-
-  - task: UseDotNet@2
-    displayName: 'Use .NET SDK ${{ variables.versionDotNetSdk }}'
+    displayName: 'Use .NET Core SDK ${{ variables.versionDotNetSdk3 }}'
     inputs:
       packageType: 'sdk'
-      version: ${{ variables.versionDotNetSdk }}
+      version: ${{ variables.versionDotNetSdk3 }}
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK ${{ variables.versionDotNetSdk5 }}'
+    inputs:
+      packageType: 'sdk'
+      version: ${{ variables.versionDotNetSdk5 }}
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -117,16 +117,16 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core Runtime ${{ variables.versionDotNetRuntime3 }}'
-    inputs:
-      packageType: 'runtime'
-      version: ${{ variables.versionDotNetRuntime3 }}
-
-  - task: UseDotNet@2
-    displayName: 'Use .NET SDK ${{ variables.versionDotNetSdk }}'
+    displayName: 'Use .NET SDK Runtime ${{ variables.versionDotNetSdk3 }}'
     inputs:
       packageType: 'sdk'
-      version: ${{ variables.versionDotNetSdk }}
+      version: ${{ variables.versionDotNetSdk3 }}
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK ${{ variables.versionDotNetSdk5 }}'
+    inputs:
+      packageType: 'sdk'
+      version: ${{ variables.versionDotNetSdk5 }}
 
   - task: CmdLine@2
     displayName: 'Install Nuke'

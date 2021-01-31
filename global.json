@@ -1,7 +1,9 @@
 {
-	"sdk": {
-		"version": "5.0.102"
-	},
+  "sdk": {
+    "version": "3.1.401",
+    "rollForward": "latestFeature",
+    "allowPrerelease": false
+  },
     "msbuild-sdks": {
         "Microsoft.Build.Traversal": "1.0.43",
         "MSBuild.Sdk.Extras": "2.0.54",
