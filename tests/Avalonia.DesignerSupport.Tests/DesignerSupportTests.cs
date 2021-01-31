@@ -35,7 +35,7 @@ namespace Avalonia.DesignerSupport.Tests
             @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml",
             "win32"),
          InlineData(
-            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\netcoreapp3.1\",
+            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\net5.0\",
             "ControlCatalog.NetCore",
             "ControlCatalog.dll",
             @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml",
@@ -47,7 +47,7 @@ namespace Avalonia.DesignerSupport.Tests
             @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml",
             "avalonia-remote"),
         InlineData(
-            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\netcoreapp3.1\",
+            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\net5.0\",
             "ControlCatalog.NetCore",
             "ControlCatalog.dll",
             @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml",
