@@ -1,4 +1,10 @@
+variables:
+  versionDotNetSdk: 5.0.102
+  versionDotNetRuntime3: 3.1.x
+  versionNukeGlobalTool: 5.0.2
+
 jobs:
+
 - job: Linux
   pool:
     vmImage: 'ubuntu-16.04'
@@ -7,7 +13,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-         dotnet tool install --global Nuke.GlobalTool --version 0.24.0
+         dotnet tool install --global Nuke.GlobalTool --version ${{ variables.versionNukeGlobalTool }}
   - task: CmdLine@2
     displayName: 'Run Nuke'
     inputs:
@@ -29,10 +35,18 @@ jobs:
   pool:
     vmImage: 'macOS-10.15'
   steps:
+
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.401'
+    displayName: 'Use .NET Core Runtime ${{ variables.versionDotNetRuntime3 }}'
     inputs:
-      version: 3.1.401
+      packageType: runtime
+      version: ${{ variables.versionDotNetRuntime3 }}
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK ${{ variables.versionDotNetSdk }}'
+    inputs:
+      packageType: 'sdk'
+      version: ${{ variables.versionDotNetSdk }}
 
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -61,7 +75,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.24.0
+       dotnet tool install --global Nuke.GlobalTool --version ${{ variables.versionNukeGlobalTool }}
 
   - task: CmdLine@2
     displayName: 'Run Nuke'
@@ -101,16 +115,24 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
+
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.401'
+    displayName: 'Use .NET Core Runtime ${{ variables.versionDotNetRuntime3 }}'
     inputs:
-      version: 3.1.401
+      packageType: runtime
+      version: ${{ variables.versionDotNetRuntime3 }}
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK ${{ variables.versionDotNetSdk }}'
+    inputs:
+      packageType: 'sdk'
+      version: ${{ variables.versionDotNetSdk }}
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.24.0 
+       dotnet tool install --global Nuke.GlobalTool --version ${{ variables.versionNukeGlobalTool }}
 
   - task: CmdLine@2
     displayName: 'Run Nuke'
