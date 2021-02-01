@@ -215,11 +215,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
-            if (type.Equals(types.IBrush))
+            if (type.Equals(types.IBrush) || type.Equals(types.SolidColorBrush))
             {
                 try
                 {
-                    var brush = Brush.Parse(text);
+                    var brush = type.Equals(types.SolidColorBrush) ? SolidColorBrush.Parse(text) : Brush.Parse(text);
 
                     if (brush is SolidColorBrush solidColorBrush)
                     {

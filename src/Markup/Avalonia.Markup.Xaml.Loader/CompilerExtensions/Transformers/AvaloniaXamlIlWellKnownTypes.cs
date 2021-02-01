@@ -84,6 +84,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType KnownColor { get; }
         public IXamlType KnownColors { get; }
         public IXamlType ISolidColorBrush { get; }
+        public IXamlType SolidColorBrush { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -185,6 +186,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             KnownColor = cfg.TypeSystem.GetType("Avalonia.Media.KnownColor");
             KnownColors = cfg.TypeSystem.GetType("Avalonia.Media.KnownColors");
             ISolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.ISolidColorBrush");
+            SolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.SolidColorBrush");
         }
     }
 
