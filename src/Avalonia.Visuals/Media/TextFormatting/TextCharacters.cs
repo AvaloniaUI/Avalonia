@@ -16,6 +16,14 @@ namespace Avalonia.Media.TextFormatting
             Properties = properties;
         }
 
+        public TextCharacters(ReadOnlySlice<char> text, int offsetToFirstCharacter, int length,
+            TextRunProperties properties)
+        {
+            Text = text.Skip(offsetToFirstCharacter).Take(length);
+            TextSourceLength = length;
+            Properties = properties;
+        }
+
         /// <inheritdoc />
         public override int TextSourceLength { get; }
 

@@ -5,5 +5,13 @@
     /// </summary>
     public class TextEndOfParagraph : TextEndOfLine
     {
+        public TextEndOfParagraph() { }
+
+        public TextEndOfParagraph(int textSourceLength)
+        {
+            TextSourceLength = textSourceLength;
+        }
+
+        public override int TextSourceLength { get; }
     }
 }
