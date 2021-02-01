@@ -38,9 +38,16 @@ namespace Avalonia.Controls
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
             {
-                var tip = control.GetValue(ToolTip.ToolTipProperty);
+                if (e.NewValue is null)
+                {
+                    Close(control);
+                }
+                else
+                {
+                    var tip = control.GetValue(ToolTip.ToolTipProperty);
 
-                tip.Content = e.NewValue;
+                    tip.Content = e.NewValue;
+                }
             }
         }
 
