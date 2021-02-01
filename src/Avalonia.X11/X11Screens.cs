@@ -76,7 +76,7 @@ namespace Avalonia.X11
                 XRRSelectInput(_x11.Display, _window, RandrEventMask.RRScreenChangeNotify);
             }
 
-            private void OnEvent(XEvent ev)
+            private void OnEvent(ref XEvent ev)
             {
                 // Invalidate cache on RRScreenChangeNotify
                 if ((int)ev.type == _x11.RandrEventBase + (int)RandrEvent.RRScreenChangeNotify)
@@ -91,12 +91,12 @@ namespace Avalonia.X11
                 var hasEDID = false;
                 for(var pc = 0; pc < propertyCount; pc++)
                 {
-                    if(properties[pc] == _x11.Atoms.RR_PROPERTY_RANDR_EDID)
+                    if(properties[pc] == _x11.Atoms.EDID)
                         hasEDID = true;
                 }
                 if(!hasEDID)
                     return null;
-                XRRGetOutputProperty(_x11.Display, rrOutput, _x11.Atoms.RR_PROPERTY_RANDR_EDID, 0, EDIDStructureLength, false, false, _x11.Atoms.AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _, out IntPtr prop);
+                XRRGetOutputProperty(_x11.Display, rrOutput, _x11.Atoms.EDID, 0, EDIDStructureLength, false, false, _x11.Atoms.AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _, out IntPtr prop);
                 if(actualType != _x11.Atoms.XA_INTEGER)
                     return null;
                 if(actualFormat != 8) // Expecting an byte array
