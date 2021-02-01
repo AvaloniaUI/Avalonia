@@ -204,7 +204,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     var point = RelativePoint.Parse(text);
 
-                    result = new AvaloniaXamlIlRelativePointAstNode(node, types.RelativePoint,
+                    result = new AvaloniaXamlIlVisualElementAstNode<RelativePoint>(node, types.RelativePoint,
                         types.RelativePointConstructor, point);
 
                     return true;
