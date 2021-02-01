@@ -215,6 +215,36 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.IBrush))
+            {
+                try
+                {
+                    var brush = Brush.Parse(text);
+
+                    if (brush is SolidColorBrush solidColorBrush)
+                    {
+                        result = new AvaloniaXamlIlVisualElementAstNode<SolidColorBrush>(node, types.IBrush,
+                            types.SolidColorBrushConstructor, solidColorBrush);
+                    }
+                    else
+                    {
+                        var toBrushMethod = types.KnownColors.GetMethod(
+                            new FindMethodMethodSignature("ToBrush", types.ISolidColorBrush, types.KnownColor)
+                            {
+                                IsStatic = true
+                            });
+                        result = new AvaloniaXamlIlImmutableBrushAstNode(node, types.IBrush, KnownColors.GetKnownColor(text),
+                            toBrushMethod);
+                    }
+
+                    return true;
+                }
+                catch
+                {
+                    throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a {nameof(IBrush)}", node);
+                }
+            }
+
             result = null;
             return false;
         }

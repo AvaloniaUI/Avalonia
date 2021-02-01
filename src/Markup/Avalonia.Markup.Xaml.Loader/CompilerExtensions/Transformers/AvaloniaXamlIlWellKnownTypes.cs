@@ -79,6 +79,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ColumnDefinitions { get; }
         public IXamlType RelativePoint { get; }
         public IXamlConstructor RelativePointConstructor { get; }
+        public IXamlType IBrush { get; }
+        public IXamlConstructor SolidColorBrushConstructor { get; }
+        public IXamlType KnownColor { get; }
+        public IXamlType KnownColors { get; }
+        public IXamlType ISolidColorBrush { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -174,6 +179,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 XamlIlTypes.Double, XamlIlTypes.Double, cfg.TypeSystem.GetType("Avalonia.RelativeUnit")
             });
+            IBrush = cfg.TypeSystem.GetType("Avalonia.Media.IBrush");
+            SolidColorBrushConstructor = cfg.TypeSystem.GetType("Avalonia.Media.SolidColorBrush")
+                .GetConstructor(new List<IXamlType> { UInt });
+            KnownColor = cfg.TypeSystem.GetType("Avalonia.Media.KnownColor");
+            KnownColors = cfg.TypeSystem.GetType("Avalonia.Media.KnownColors");
+            ISolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.ISolidColorBrush");
         }
     }
 
