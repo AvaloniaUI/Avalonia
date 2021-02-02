@@ -24,11 +24,13 @@ namespace Avalonia.Controls.UnitTests
             _helper.Down(target);
             _helper.Up(target);
             Assert.True(target.IsDropDownOpen);
+            Assert.True(target.Classes.Contains(":dropdownopen"));
 
             _helper.Down(target);
             _helper.Up(target);
 
             Assert.False(target.IsDropDownOpen);
+            Assert.False(target.Classes.Contains(":dropdownopen"));
         }
 
         [Fact]

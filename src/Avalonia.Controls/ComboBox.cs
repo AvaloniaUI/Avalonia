@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
@@ -17,6 +18,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A drop-down list control.
     /// </summary>
+    [PseudoClasses(":dropdownopen")]
     public class ComboBox : SelectingItemsControl
     {
         /// <summary>
@@ -90,6 +92,11 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x,e) => x.SelectedItemChanged(e));
             KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
+        }
+
+        public ComboBox()
+        {
+            UpdatePseudoClasses(false);
         }
 
         /// <summary>
@@ -291,6 +298,17 @@ namespace Avalonia.Controls
             _popup.Opened += PopupOpened;
         }
 
+        /// <inheritdoc />
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsDropDownOpenProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>());
+            }
+        }
+
         internal void ItemFocused(ComboBoxItem dropDownItem)
         {
             if (IsDropDownOpen && dropDownItem.IsFocused && dropDownItem.IsArrangeValid)
@@ -425,6 +443,11 @@ namespace Avalonia.Controls
                 prev = ItemCount - 1;
 
             SelectedIndex = prev;
+        }
+
+        private void UpdatePseudoClasses(bool isDropDownOpen)
+        {
+            Classes.Set(":dropdownopen", isDropDownOpen);
         }
     }
 }
