@@ -10,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -76,6 +77,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
 
+        /// <summary>
+        /// Defines the <see cref="IsAutoSelectEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsAutoSelectEnabledProperty =
+            AvaloniaProperty.Register<ComboBox, bool>(nameof(IsAutoSelectEnabled));
+
+        private string _autoSelectTerm = string.Empty;
+        private DispatcherTimer _autoSelectTimer;
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
@@ -164,6 +173,17 @@ namespace Avalonia.Controls
             set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets value indicating whether auto-select is currently enabled.
+        /// If <c>true</c>, the control will try to find then select matched <see cref="ComboBoxItem"/>
+        /// based on current keyboard inputs.
+        /// </summary>
+        public bool IsAutoSelectEnabled
+        {
+            get { return GetValue(IsAutoSelectEnabledProperty); }
+            set { SetValue(IsAutoSelectEnabledProperty, value); }
+        }
+
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
@@ -227,6 +247,32 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
+        }
+
+        /// <inheritdoc />
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            if (!IsAutoSelectEnabled || e.Handled)
+                return;
+
+            StopAutoSelectTimer();
+
+            _autoSelectTerm += e.Text;
+
+            bool match(ItemContainerInfo info) => 
+                info.ContainerControl is IContentControl control &&
+                control.Content?.ToString()?.StartsWith(_autoSelectTerm, StringComparison.OrdinalIgnoreCase) == true;
+
+            var info = ItemContainerGenerator.Containers.FirstOrDefault(match);
+
+            if (info != null)
+            {
+                SelectedIndex = info.Index;
+            }
+
+            StartAutoSelectTimer();
+
+            e.Handled = true;
         }
 
         /// <inheritdoc/>
@@ -425,6 +471,32 @@ namespace Avalonia.Controls
                 prev = ItemCount - 1;
 
             SelectedIndex = prev;
+        }
+
+        private void StartAutoSelectTimer()
+        {
+            _autoSelectTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _autoSelectTimer.Tick += AutoSelectTimer_Tick;
+            _autoSelectTimer.Start();
+        }
+
+        private void StopAutoSelectTimer()
+        {
+            if (_autoSelectTimer == null)
+            {
+                return;
+            }
+
+            _autoSelectTimer.Stop();
+            _autoSelectTimer.Tick -= AutoSelectTimer_Tick;
+
+            _autoSelectTimer = null;
+        }
+
+        private void AutoSelectTimer_Tick(object sender, EventArgs e)
+        {
+            _autoSelectTerm = string.Empty;
+            StopAutoSelectTimer();
         }
     }
 }

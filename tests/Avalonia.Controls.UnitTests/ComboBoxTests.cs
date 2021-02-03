@@ -1,7 +1,9 @@
+using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -135,6 +137,41 @@ namespace Avalonia.Controls.UnitTests
                 panel.Children.Remove(target);
 
                 Assert.True(other.IsFocused);
+            }
+        }
+
+        [Theory]
+        [InlineData(-1, 2, "c", "A item", "B item", "C item")]
+        [InlineData(0, 1, "b", "A item", "B item", "C item")]
+        [InlineData(2, 2, "x", "A item", "B item", "C item")]
+        public void AutoSelect_Should_Have_Expected_SelectedIndex(
+            int initialSelectedIndex,
+            int expectedSelectedIndex,
+            string searchTerm,
+            params string[] items)
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    IsAutoSelectEnabled = true,
+                    Template = GetTemplate(),                    
+                    Items = items.Select(x => new ComboBoxItem { Content = x })
+                };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                target.SelectedIndex = initialSelectedIndex;
+
+                var args = new TextInputEventArgs
+                {
+                    Text = searchTerm,
+                    RoutedEvent = InputElement.TextInputEvent
+                };
+
+                target.RaiseEvent(args);
+
+                Assert.Equal(expectedSelectedIndex, target.SelectedIndex);
             }
         }
     }
