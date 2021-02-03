@@ -16,7 +16,6 @@ using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Tools.Npm;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
-using Pharmacist.Core;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -167,43 +166,7 @@ partial class Build : NukeBuild
                     .AddProperty("PackageVersion", Parameters.Version)
                     .SetConfiguration(Parameters.Configuration)
                 );
-
-            await CompileReactiveEvents();
         });
-
-    async Task CompileReactiveEvents()
-    {
-        var avaloniaBuildOutput = Path.Combine(RootDirectory, "packages", "Avalonia", "bin", Parameters.Configuration);
-        var avaloniaAssemblies = GlobFiles(avaloniaBuildOutput, "**/Avalonia*.dll")
-            .Where(file => !file.Contains("Avalonia.Build.Tasks") &&
-                            !file.Contains("Avalonia.Remote.Protocol"));
-
-        var eventsDirectory = GlobDirectories($"{RootDirectory}/src/**/Avalonia.ReactiveUI.Events").First();
-        var eventsBuildFile = Path.Combine(eventsDirectory, "Events_Avalonia.cs");
-        if (File.Exists(eventsBuildFile))
-            File.Delete(eventsBuildFile);
-
-        using (var stream = File.Create(eventsBuildFile))
-        using (var writer = new StreamWriter(stream))
-        {
-            await ObservablesForEventGenerator.ExtractEventsFromAssemblies(
-                writer, avaloniaAssemblies, new string[0], "netstandard2.0"
-            );
-        }
-
-        var eventsProject = Path.Combine(eventsDirectory, "Avalonia.ReactiveUI.Events.csproj");
-        if (Parameters.IsRunningOnWindows)
-            MsBuildCommon(eventsProject, c => c
-                .SetProcessArgumentConfigurator(a => a.Add("/r"))
-                .AddTargets("Build")
-            );
-        else
-            DotNetBuild(c => c
-                .SetProjectFile(eventsProject)
-                .AddProperty("PackageVersion", Parameters.Version)
-                .SetConfiguration(Parameters.Configuration)
-            );
-    }
 
     void RunCoreTest(string projectName)
     {
