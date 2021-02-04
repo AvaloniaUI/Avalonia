@@ -55,7 +55,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         [Fact]
         public void ForwardTextWithOuterWhitespace()
         {
-            var lineBreaker = new LineBreakAlgorithm(" Apples Pears Bananas   ".AsMemory());
+            var lineBreaker = new LineBreakEnumerator(" Apples Pears Bananas   ".AsMemory());
             var positionsF = GetBreaks(lineBreaker);
             Assert.Equal(1, positionsF[0].PositionWrap);
             Assert.Equal(0, positionsF[0].PositionMeasure);
@@ -67,7 +67,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             Assert.Equal(21, positionsF[3].PositionMeasure);
         }
 
-        private static List<LineBreak> GetBreaks(LineBreakAlgorithm lineBreaker)
+        private static List<LineBreak> GetBreaks(LineBreakEnumerator lineBreaker)
         {
             var breaks = new List<LineBreak>();
 
@@ -82,7 +82,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         [Fact]
         public void ForwardTest()
         {
-            var lineBreaker = new LineBreakAlgorithm("Apples Pears Bananas".AsMemory());
+            var lineBreaker = new LineBreakEnumerator("Apples Pears Bananas".AsMemory());
 
             var positionsF = GetBreaks(lineBreaker);
             Assert.Equal(7, positionsF[0].PositionWrap);
@@ -99,7 +99,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         {
             var text = string.Join(null, codePoints.Select(char.ConvertFromUtf32));
 
-            var lineBreaker = new LineBreakAlgorithm(text.AsMemory());
+            var lineBreaker = new LineBreakEnumerator(text.AsMemory());
 
             var foundBreaks = new List<int>();
             

@@ -201,7 +201,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 switch (_currentClass)
                 {
                     case LineBreakClass.MandatoryBreak:
-                    case LineBreakClass.CombiningMark:
+                    case LineBreakClass.ContingentBreak:
                     case LineBreakClass.Exclamation:
                     case LineBreakClass.LineFeed:
                     case LineBreakClass.NextLine:
