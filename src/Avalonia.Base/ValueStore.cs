@@ -37,7 +37,7 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                return slot?.Priority < BindingPriority.LocalValue;
+                return slot.Priority < BindingPriority.LocalValue;
             }
 
             return false;
@@ -47,7 +47,7 @@ namespace Avalonia
         {
             if (_values.TryGetValue(property, out var slot))
             {
-                return slot?.GetValue().HasValue == true;
+                return slot.GetValue().HasValue;
             }
 
             return false;
@@ -58,7 +58,7 @@ namespace Avalonia
             BindingPriority maxPriority,
             out T value)
         {
-            if (_values.TryGetValue(property, out var slot) && slot != null)
+            if (_values.TryGetValue(property, out var slot))
             {
                 var v = ((IValue<T>)slot).GetValue(maxPriority);
 
@@ -82,7 +82,7 @@ namespace Avalonia
 
             IDisposable? result = null;
 
-            if (_values.TryGetValue(property, out var slot) && slot != null)
+            if (_values.TryGetValue(property, out var slot))
             {
                 result = SetExisting(slot, property, value, priority);
             }
@@ -119,7 +119,7 @@ namespace Avalonia
             IObservable<BindingValue<T>> source,
             BindingPriority priority)
         {
-            if (_values.TryGetValue(property, out var slot) && slot != null)
+            if (_values.TryGetValue(property, out var slot))
             {
                 return BindExisting(slot, property, source, priority);
             }
@@ -183,7 +183,7 @@ namespace Avalonia
 
         public Diagnostics.AvaloniaPropertyValue? GetDiagnostic(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var slot) && slot != null)
+            if (_values.TryGetValue(property, out var slot))
             {
                 var slotValue = slot.GetValue();
                 return new Diagnostics.AvaloniaPropertyValue(
