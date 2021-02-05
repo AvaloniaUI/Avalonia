@@ -155,7 +155,7 @@ namespace Avalonia
 
         /// <inheritdoc/>
         bool IResourceNode.HasResources => (_resources?.HasResources ?? false) ||
-            (((IResourceNode?)_styles)?.HasResources ?? false);
+            (((IResourceNode)_styles)?.HasResources ?? false);
 
         /// <summary>
         /// Gets the styling parent of the application, which is null.

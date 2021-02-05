@@ -37,8 +37,8 @@ namespace Avalonia.Markup.Parsers
                     (state, syntax) = ParseNext(ref r);
                 else if (state == State.AfterProperty)
                     (state, syntax) = ParseAfterProperty(ref r);
-                
-                
+
+
                 if (syntax != null)
                 {
                     parsed.Add(syntax);
@@ -52,16 +52,16 @@ namespace Avalonia.Markup.Parsers
 
             return parsed;
         }
-        
+
         private static (State, ISyntax) ParseNext(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.End)
                 return (State.End, null);
-            
+
             return ParseStart(ref r);
         }
-        
+
         private static (State, ISyntax) ParseStart(ref CharacterReader r)
         {
             if (TryParseCasts(ref r, out var rv))
@@ -81,8 +81,8 @@ namespace Avalonia.Markup.Parsers
                 "Unable to parse qualified property name, expected `(ns:TypeName.PropertyName)` or `(TypeName.PropertyName)` after `(`";
 
             var typeName = ParseXamlIdentifier(ref r);
-            
-            
+
+
             if (!r.TakeIf('.'))
                 throw new ExpressionParseException(r.Position, error);
 
@@ -122,7 +122,7 @@ namespace Avalonia.Markup.Parsers
 
             return (null, ident.ToString());
         }
-        
+
         private static (State, ISyntax) ParseProperty(ref CharacterReader r)
         {
             r.SkipWhitespace();
@@ -146,20 +146,20 @@ namespace Avalonia.Markup.Parsers
 
             return true;
         }
-        
+
         private static (State, ISyntax) ParseAfterProperty(ref CharacterReader r)
         {
             if (TryParseCasts(ref r, out var rv))
                 return rv;
-            
+
             r.SkipWhitespace();
             if (r.End)
                 return (State.End, null);
             if (r.TakeIf('.'))
                 return (State.Next, ChildTraversalSyntax.Instance);
-            
 
-            
+
+
             throw new ExpressionParseException(r.Position, "Unexpected character " + r.Peek + " after property name");
         }
 
@@ -169,7 +169,7 @@ namespace Avalonia.Markup.Parsers
             var type = ParseXamlIdentifier(ref r);
             return (State.AfterProperty, new EnsureTypeSyntax {TypeName = type.name, TypeNamespace = type.ns});
         }
-        
+
         private static (State, ISyntax) ParseCastType(ref CharacterReader r)
         {
             r.SkipWhitespace();
@@ -179,7 +179,7 @@ namespace Avalonia.Markup.Parsers
 
         public interface ISyntax
         {
-            
+
         }
 
         public class PropertySyntax : ISyntax
@@ -189,8 +189,13 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object obj)
                 => obj is PropertySyntax other
                    && other.Name == Name;
+
+            public override int GetHashCode()
+            {
+                return 539060726 + EqualityComparer<string>.Default.GetHashCode(Name);
+            }
         }
-        
+
         public class TypeQualifiedPropertySyntax : ISyntax
         {
             public string Name { get; set; }
@@ -202,14 +207,28 @@ namespace Avalonia.Markup.Parsers
                    && other.Name == Name
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
+
+            public override int GetHashCode()
+            {
+                int hashCode = 30698940;
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeName);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeNamespace);
+                return hashCode;
+            }
         }
-        
+
         public class ChildTraversalSyntax : ISyntax
         {
             public static ChildTraversalSyntax Instance { get;  } = new ChildTraversalSyntax();
             public override bool Equals(object obj) => obj is ChildTraversalSyntax;
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
         }
-        
+
         public class EnsureTypeSyntax : ISyntax
         {
             public string TypeName { get; set; }
@@ -218,8 +237,16 @@ namespace Avalonia.Markup.Parsers
                 => obj is EnsureTypeSyntax other
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
+
+            public override int GetHashCode()
+            {
+                int hashCode = 127780694;
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeName);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeNamespace);
+                return hashCode;
+            }
         }
-        
+
         public class CastTypeSyntax : ISyntax
         {
             public string TypeName { get; set; }
@@ -228,6 +255,14 @@ namespace Avalonia.Markup.Parsers
                 => obj is CastTypeSyntax other
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
+
+            public override int GetHashCode()
+            {
+                int hashCode = 127780694;
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeName);
+                hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeNamespace);
+                return hashCode;
+            }
         }
     }
 }
