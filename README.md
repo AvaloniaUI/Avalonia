@@ -4,21 +4,16 @@
 
 ### C# `SourceGenerator` for Typed Avalonia `x:Name` References 
 
-This is a [C# `SourceGenerator`](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) built for generating strongly-typed references to controls with `x:Name` (or just `Name`) attributes declared in XAML (or, in `.axaml`). The sandbox app is targeting `net5` which is still in preview, so this source generator is an early proof-of-concept. The idea is that you include your Avalonia XAML files into your project via `<AdditionalFiles Include="**\*.xaml" />` and then decorate your view class with `[GenerateTypedNameReferences]` and the source generator will look for the `xaml` (or `axaml`) file with the same name as your C# class. The source generator then parses the XML markup, finds all XML tags with `x:Name` attributes and generates the C# code.
+<img src="https://hsto.org/webt/6a/j6/v5/6aj6v5vemc3g6zqcks0wm_irg1s.gif" />
+
+This is a [C# `SourceGenerator`](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) built for generating strongly-typed references to controls with `x:Name` (or just `Name`) attributes declared in XAML (or, in `.axaml`). The idea is that you include your Avalonia XAML files into your project via `<AdditionalFiles Include="**\*.xaml" />` and then decorate your view class with `[GenerateTypedNameReferences]` and the source generator will look for the `xaml` (or `axaml`) file with the same name as your C# class. The source generator then parses the XML markup, finds all XML tags with `x:Name` attributes and generates the C# code.
 
 ### Getting Started
 
-So in your project file you write the following code:
+So in your project file you paste the following code:
 
 ```xml
 <ItemGroup>
-    <Compile Update="**\*.xaml.cs">
-        <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <AvaloniaResource Include="**\*.xaml">
-        <SubType>Designer</SubType>
-    </AvaloniaResource>
-
     <!-- Note this AdditionalFiles directive. -->
     <AdditionalFiles Include="**\*.xaml" />
 </ItemGroup>
@@ -30,7 +25,7 @@ And then you reference the source generator by installing a NuGet package:
 dotnet add package XamlNameReferenceGenerator
 ```
 
-Or, if you are using submodules, reference the generator as such:
+Or, if you are using [submodules](https://git-scm.com/docs/git-submodule), you can reference the generator as such:
 
 ```xml
 <ItemGroup>
@@ -55,6 +50,8 @@ public partial class SignUpView : Window
     }
 }
 ```
+
+<img src="https://hsto.org/getpro/habr/post_images/d9f/4aa/a1e/d9f4aaa1eb450f5dd2fca66631bc16a0.gif" />
 
 ### What do the generated sources look like?
 
