@@ -41,7 +41,7 @@ public:
             ret->WorkingArea.Height = [screen visibleFrame].size.height;
             ret->WorkingArea.Width = [screen visibleFrame].size.width;
             ret->WorkingArea.X = [screen visibleFrame].origin.x;
-            ret->WorkingArea.Y = ret->Bounds.Height - [screen visibleFrame].origin.y - ret->WorkingArea.Height;
+            ret->WorkingArea.Y = PrimaryDisplayHeight() - [screen visibleFrame].origin.y - ret->WorkingArea.Height;
             
             ret->PixelDensity = [screen backingScaleFactor];
             
