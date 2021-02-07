@@ -22,8 +22,6 @@ namespace Avalonia.Media
 #endif
         }
 
-        private const string DefaultAccentColor = "#FF0078D7";
-
         /// <summary>
         /// Gets the Alpha component of the color.
         /// </summary>
@@ -309,29 +307,6 @@ namespace Avalonia.Media
         {
             return !left.Equals(right);
         }
-#if !BUILDTASK
-        /// <summary>
-        /// Get the System Accent Color, if the Operating System is not supported, returns #FF0078D7
-        /// </summary>
-        /// <returns>The accent color</returns>
-        public static Color GetSystemAccentColor()
-        {
-            var isWindows10_8 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) & 
-                            !(Environment.OSVersion == new OperatingSystem(PlatformID.Win32NT, new Version(10,0)) ||
-                             Environment.OSVersion == new OperatingSystem(PlatformID.Win32NT, new Version(6,3))); //check if the OS is Windows 10 or Windows 8
-            var defaultValue = Color.DefaultAccentColor;// default Avalonia Accent Color
-
-            //TODO: Add Support for MacOS X Accent color and Linux Desktop Envs with this feature
-            if(isWindows10_8)
-            {
-                return Avalonia.Win32.AccentColor.GetAccentColorWin("ImmersiveSystemAccent");
-            }
-            else
-            {
-                return Color.Parse(defaultValue);
-            }
-        }
-#endif
 
         /// <summary>
         /// Change the luminosity of a color.
@@ -339,6 +314,9 @@ namespace Avalonia.Media
         /// <param name="color">The color to change its luminosity</param>
         /// <param name="newluminosityFactor">The new Luminosity for the Color</param>
         /// <returns>A new Color with the Luminosity Factor applied.</returns>
+        /// <remarks>
+        /// See original code link: https://gist.github.com/zihotki/09fc41d52981fb6f93a81ebf20b35cd5
+        /// </remarks>
         public static Color ChangeColorLuminosity(Color color, double newluminosityFactor)
         {
             var red = (double)color.R;
