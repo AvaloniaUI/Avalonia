@@ -67,7 +67,7 @@ namespace ControlCatalog.Pages
                     context.DrawText(drawBrush, boundsRect.Position.WithY(boundsRect.Size.Height + 80), text);
                 }
 
-            context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(_leftMost), w.Position.Y / 10, w.Bounds.Width / 10, w.Bounds.Height / 10));
+            context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(_leftMost), w.Position.Y / 10f, w.Bounds.Width / 10, w.Bounds.Height / 10));
         }
     }
 }
