@@ -9,7 +9,8 @@ namespace Avalonia.NameGenerator.Sandbox
 
         public override void OnFrameworkInitializationCompleted()
         {
-            new SignUpView().Show();
+            var view = new SignUpView();
+            view.Show();
             base.OnFrameworkInitializationCompleted();
         }
     }

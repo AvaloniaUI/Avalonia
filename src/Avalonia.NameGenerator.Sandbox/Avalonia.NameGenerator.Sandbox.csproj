@@ -4,13 +4,8 @@
         <TargetFramework>net5</TargetFramework>
         <LangVersion>preview</LangVersion>
         <IsPackable>false</IsPackable>
+        <InstallAvalonia>true</InstallAvalonia>
     </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Avalonia" Version="0.10.0-preview5" />
-        <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview5" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0-preview5" />
-        <PackageReference Include="Citrus.Avalonia" Version="1.2.6" />
-    </ItemGroup>
     <ItemGroup>
         <Compile Update="**\*.xaml.cs">
             <DependentUpon>%(Filename)</DependentUpon>
@@ -18,11 +13,10 @@
         <EmbeddedResource Include="**\*.xaml">
             <SubType>Designer</SubType>
         </EmbeddedResource>
+        <!-- Note this AdditionalFiles directive. -->
         <AdditionalFiles Include="**\*.xaml" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj"
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>

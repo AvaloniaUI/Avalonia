@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
-using Avalonia.Controls;
+using Avalonia.NameGenerator.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Avalonia.NameGenerator.Infrastructure;
+using Avalonia.NameGenerator.Tests.Views;
 using XamlX;
 using XamlX.Parsers;
 using Xunit;
@@ -41,19 +41,15 @@ namespace Avalonia.NameGenerator.Tests
         public void Should_Resolve_Types_From_Simple_Avalonia_Markup()
         {
             var xaml = XDocumentXamlParser.Parse(AvaloniaXaml);
-            var compilation = CreateAvaloniaCompilation();
+            var compilation = View.CreateAvaloniaCompilation();
             MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation)).Transform(xaml);
 
             Assert.NotNull(xaml.Root);
         }
 
-        private static CSharpCompilation CreateAvaloniaCompilation(string name = "AvaloniaCompilation") =>
-            CreateBasicCompilation(string.Empty, name)
-                .AddReferences(MetadataReference.CreateFromFile(typeof(TextBlock).Assembly.Location));
-
-        private static CSharpCompilation CreateBasicCompilation(string source, string name = "BasicCompilation") =>
+        private static CSharpCompilation CreateBasicCompilation(string source) =>
             CSharpCompilation
-                .Create(name, options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
+                .Create("BasicLib", options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(string).Assembly.Location))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(IServiceProvider).Assembly.Location))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(ITypeDescriptorContext).Assembly.Location))

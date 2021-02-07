@@ -4,19 +4,19 @@
         <TargetFramework>net5</TargetFramework>
         <LangVersion>preview</LangVersion>
         <IsPackable>false</IsPackable>
+        <InstallAvalonia>true</InstallAvalonia>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0-3.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.0.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
         <PackageReference Include="xunit" Version="2.4.1" />
         <PackageReference Include="xunit.runner.console" Version="2.4.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
-        <PackageReference Include="Avalonia" Version="0.10.0-preview5" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0-preview5" />
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="Views/*.xml" />
+        <EmbeddedResource Include="GeneratedCode/*.txt" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj" />

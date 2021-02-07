@@ -1,7 +1,7 @@
 ﻿using XamlX.Ast;
 using XamlX.Transform;
 
-namespace Avalonia.NameGenerator.Infrastructure
+namespace Avalonia.NameGenerator.Compiler
 {
     internal class DataTemplateTransformer : IXamlAstTransformer
     {

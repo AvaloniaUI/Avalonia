@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using XamlX.TypeSystem;
 
-namespace Avalonia.NameGenerator.Infrastructure
+namespace Avalonia.NameGenerator.Compiler
 {
     public class RoslynTypeSystem : IXamlTypeSystem
     {

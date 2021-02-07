@@ -10,9 +10,11 @@
                                 UseFloatingWatermark="True" />
         <TextBlock Name="UserNameValidation"
                    Foreground="Red"
+                   x:FieldModifier="public"
                    FontSize="12" />
         <TextBox Margin="0 10 0 0"
                  Name="PasswordTextBox"
+                 x:FieldModifier="private"
                  Watermark="Please, enter your password..."
                  UseFloatingWatermark="True"
                  PasswordChar="*" />

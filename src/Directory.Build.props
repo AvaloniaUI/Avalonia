@@ -8,9 +8,19 @@
         <RepositoryUrl>https://github.com/avaloniaui/Avalonia.NameGenerator</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <InstallAvalonia>false</InstallAvalonia>
+        <RestoreSources>
+            https://nuget.avaloniaui.net/repository/avalonia-all/index.json;
+            https://api.nuget.org/v3/index.json;
+        </RestoreSources>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Nerdbank.GitVersioning" Version="3.3.37" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(InstallAvalonia)' == 'true'">
+        <PackageReference Include="Avalonia" Version="0.10.999-cibuild0012810-beta" />
+        <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0012810-beta" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0012810-beta" />
     </ItemGroup>
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="LICENSE" />

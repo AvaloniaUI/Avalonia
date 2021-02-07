@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using XamlX.Compiler;
 using XamlX.Emit;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
-namespace Avalonia.NameGenerator.Infrastructure
+namespace Avalonia.NameGenerator.Compiler
 {
     internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
     {

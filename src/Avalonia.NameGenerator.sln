@@ -6,6 +6,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.NameGenerator.Sand
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.NameGenerator.Tests", "Avalonia.NameGenerator.Tests\Avalonia.NameGenerator.Tests.csproj", "{B13A0A44-85BC-49A7-970F-6C9BF8BDFD54}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{56EF74A3-1D59-42BC-B7EC-2E07C08B9F95}"
+ProjectSection(SolutionItems) = preProject
+	..\version.json = ..\version.json
+	..\.gitignore = ..\.gitignore
+	..\.gitmodules = ..\.gitmodules
+	Directory.Build.props = Directory.Build.props
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
