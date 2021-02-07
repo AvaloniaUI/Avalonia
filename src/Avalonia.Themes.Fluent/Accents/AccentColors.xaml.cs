@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Styling;
 
 namespace Avalonia.Themes.Fluent.Accents
@@ -14,7 +15,10 @@ namespace Avalonia.Themes.Fluent.Accents
         {
             AvaloniaXamlLoader.Load(this);
 
-            var accentcolor = Color.GetSystemAccentColor();
+            var accentColor_prov = AvaloniaLocator.CurrentMutable.GetService<IPlatformAccentColorProvider>();
+
+            var accentcolor = accentColor_prov == null ? Color.Parse("#FF0078D7") : accentColor_prov.AccentColor;
+            
             var light1 = Color.ChangeColorLuminosity(accentcolor, 0.3);
             var light2 = Color.ChangeColorLuminosity(accentcolor, 0.5);
             var light3 = Color.ChangeColorLuminosity(accentcolor, 0.7);
