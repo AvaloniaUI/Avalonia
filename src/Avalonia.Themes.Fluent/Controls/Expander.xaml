@@ -26,6 +26,9 @@
       </ControlTemplate>
     </Setter>
   </Style>
+  <Style Selector="Expander[IsExpanded=true] /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ToggleButtonForeground}"/>
+  </Style>
   <Style Selector="Expander[ExpandDirection=Up]">
     <Setter Property="Template">
       <ControlTemplate>

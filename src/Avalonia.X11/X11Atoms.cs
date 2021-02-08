@@ -114,7 +114,7 @@ namespace Avalonia.X11
         public readonly IntPtr XA_WM_CLASS = (IntPtr)67;
         public readonly IntPtr XA_WM_TRANSIENT_FOR = (IntPtr)68;
 
-        public readonly IntPtr RR_PROPERTY_RANDR_EDID = (IntPtr)82;
+        public readonly IntPtr EDID;
 
         public readonly IntPtr WM_PROTOCOLS;
         public readonly IntPtr WM_DELETE_WINDOW;
