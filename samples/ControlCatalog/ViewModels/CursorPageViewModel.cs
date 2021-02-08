@@ -5,11 +5,11 @@ using Avalonia;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    public class CursorPageViewModel : ReactiveObject
+    public class CursorPageViewModel : ViewModelBase
     {
         public CursorPageViewModel()
         {
@@ -25,6 +25,7 @@ namespace ControlCatalog.ViewModels
         }
 
         public IEnumerable<StandardCursorModel> StandardCursors { get; }
+        
         public Cursor CustomCursor { get; }
 
         public class StandardCursorModel
@@ -36,6 +37,7 @@ namespace ControlCatalog.ViewModels
             }
 
             public StandardCursorType Type { get; }
+            
             public Cursor Cursor { get; }
         }
     }
