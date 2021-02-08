@@ -1,0 +1,4 @@
+Compat issues with assembly Avalonia.Input:
+MembersMustExist : Member 'public Avalonia.Platform.IPlatformHandle Avalonia.Input.Cursor.PlatformCursor.get()' does not exist in the implementation but it does exist in the contract.
+TypesMustExist : Type 'Avalonia.Platform.IStandardCursorFactory' does not exist in the implementation but it does exist in the contract.
+Total Issues: 2
