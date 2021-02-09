@@ -69,14 +69,14 @@ internal sealed class GenerateTypedNameReferencesAttribute : Attribute { }
                         Diagnostic.Create(
                             new DiagnosticDescriptor(
                                 "AXN0001",
-                                "Unable to discover the relevant Avalonia XAML file.",
+                                $"Unable to discover the relevant Avalonia XAML file for {typeSymbol.Name}.",
                                 "Unable to discover the relevant Avalonia XAML file " +
                                 $"neither at {xamlFileName} nor at {aXamlFileName}",
                                 "Usage",
-                                DiagnosticSeverity.Error,
+                                DiagnosticSeverity.Warning,
                                 true),
                             Location.None));
-                    return;
+                    continue;
                 }
 
                 try
@@ -93,13 +93,12 @@ internal sealed class GenerateTypedNameReferencesAttribute : Attribute { }
                         Diagnostic.Create(
                             new DiagnosticDescriptor(
                                 "AXN0002",
-                                "Unhandled exception occured while generating typed Name references.",
+                                $"Unhandled exception occured while generating typed Name references for {typeSymbol.Name}.",
                                 $"Unhandled exception occured while generating typed Name references: {exception}",
                                 "Usage",
-                                DiagnosticSeverity.Error,
+                                DiagnosticSeverity.Warning,
                                 true),
                             Location.None));
-                    return;
                 }
             }
         }
@@ -152,8 +151,13 @@ internal sealed class GenerateTypedNameReferencesAttribute : Attribute { }
                 else
                 {
                     var missingPartialKeywordMessage =
-                        $"The type {typeSymbol.Name} should be declared with the 'partial' keyword " +
-                        "as it is annotated with the [GenerateTypedNameReferences] attribute.";
+                        $"The type {typeSymbol?.Name} should be declared with the 'partial' keyword " +
+                        "as it is either annotated with the [GenerateTypedNameReferences] attribute, " +
+                        "or the <AvaloniaNameGenerator> property is set to 'true' in the C# project file (it is set " +
+                        "to 'true' by default). In order to skip the processing of irrelevant files, put " +
+                        "<AvaloniaNameGenerator>false</AvaloniaNameGenerator> into your .csproj file as " +
+                        "<PropertyGroup> descendant and decorate only relevant view classes with the " + 
+                        "[GenerateTypedNameReferences] attribute.";
 
                     context.ReportDiagnostic(
                         Diagnostic.Create(
@@ -162,10 +166,9 @@ internal sealed class GenerateTypedNameReferencesAttribute : Attribute { }
                                 missingPartialKeywordMessage,
                                 missingPartialKeywordMessage,
                                 "Usage",
-                                DiagnosticSeverity.Error,
+                                DiagnosticSeverity.Warning,
                                 true),
                             Location.None));
-                    return null;
                 }
             }
 

@@ -6,11 +6,11 @@
 
 <img src="https://hsto.org/webt/6a/j6/v5/6aj6v5vemc3g6zqcks0wm_irg1s.gif" />
 
-This is a [C# `SourceGenerator`](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) built for generating strongly-typed references to controls with `x:Name` (or just `Name`) attributes declared in XAML (or, in `.axaml`).The source generator will look for the `xaml` (or `axaml`) file with the same name as your partial C# class subclasse of `Avalonia.INambe` and parses the XML markup, finds all XML tags with `x:Name` attributes and generates the C# code.
+This is a [C# `SourceGenerator`](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) built for generating strongly-typed references to controls with `x:Name` (or just `Name`) attributes declared in XAML (or, in `.axaml`). The source generator will look for the `xaml` (or `axaml`) file with the same name as your partial C# class that is a subclass of `Avalonia.INamed` and parses the XAML markup, finds all XAML tags with `x:Name` attributes and generates the C# code.
 
 ### Getting Started
 
-Add reference the source generator by installing a NuGet package:
+In order to get started, just install the NuGet package:
 
 ```
 dotnet add package XamlNameReferenceGenerator
@@ -20,16 +20,28 @@ Or, if you are using [submodules](https://git-scm.com/docs/git-submodule), you c
 
 ```xml
 <ItemGroup>
+    <!-- Remember to include XAML files via <AdditionalFiles>,
+         otherwise C# source generators won't see the XAML files.
+         If you are using a NuGet package, this is done automatically. -->
+    <AdditionalFiles Include="**\*.xaml"/>
     <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
 </ItemGroup>
-<ItemGroup>
-   <AdditionalFiles Include="**\*.xaml"/>
-</ItemGroup>  
 ```
 
-Finally, you declare your view class as `partial`
+### Usage (Default)
+
+After installing the NuGet package, declare your view class as `partial`. Typed C# references to Avalonia controls declared in XAML files will be generated for all classes that inherit from the `Avalonia.INamed` interface (including those classes that inherit from `Window`, `UserControl`, `ReactiveWindow<T>`, `ReactiveUserControl<T>`). For example, for the following XAML markup:
+
+```xml
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TextBox x:Name="UserNameTextBox" x:FieldModifier="public" />
+</Window>
+```
+
+A new C# public property named `UserNameTextBox` of type `TextBox` will be generated:
 
 ```cs
 using Avalonia.Controls;
@@ -39,22 +51,22 @@ public partial class SignUpView : Window
     public SignUpView()
     {
         AvaloniaXamlLoader.Load(this);
-        UserNameTextBox.Text = "Joseph"; // Coolstuff!
+        UserNameTextBox.Text = "Joseph"; // Cool stuff!
     }
 }
 ```
 
-If you just want specific classes:
+### Usage (Opt-in)
 
-add at your csproj this lines:
+If you don't want to generate typed `x:Name` references for every window or user control in your assembly, you can always turn off this default behavior by setting the `AvaloniaNameGenerator` MsBuild property to `false` in your C# project file (`.csproj`). Just add the following property group to your `<Project />` tag:
 
 ```xml
-  <PropertyGroup>
+<PropertyGroup>
     <AvaloniaNameGenerator>false</AvaloniaNameGenerator>
-  </PropertyGroup>
+</PropertyGroup>
 ```
 
-Finally, decorate yours class with attribute `[GenerateTypedNameReferences]`:
+From now on, the source generator will process only those files that are decorated with the `[GenerateTypedNameReferences]` attribute. Other window or user control classes will be left unchanged, and you won't have to mark them as `partial`.
 
 ```cs
 using Avalonia.Controls;
@@ -65,7 +77,7 @@ public partial class SignUpView : Window
     public SignUpView()
     {
         AvaloniaXamlLoader.Load(this);
-        UserNameTextBox.Text = "Joseph"; // Coolstuff!
+        UserNameTextBox.Text = "Joseph"; // Cool stuff!
     }
 }
 ```
@@ -86,8 +98,8 @@ namespace Your.View.Namespace
     partial class SignUpView
     {
         internal global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox UserNameTextBox => this.FindControl<global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox>("UserNameTextBox");
-        internal global::Avalonia.Controls.TextBlock UserNameValidation => this.FindControl<global::Avalonia.Controls.TextBlock>("UserNameValidation");
-        internal global::Avalonia.Controls.TextBox PasswordTextBox => this.FindControl<global::Avalonia.Controls.TextBox>("PasswordTextBox");
+        public global::Avalonia.Controls.TextBlock UserNameValidation => this.FindControl<global::Avalonia.Controls.TextBlock>("UserNameValidation");
+        private global::Avalonia.Controls.TextBox PasswordTextBox => this.FindControl<global::Avalonia.Controls.TextBox>("PasswordTextBox");
         internal global::Avalonia.Controls.TextBlock PasswordValidation => this.FindControl<global::Avalonia.Controls.TextBlock>("PasswordValidation");
         internal global::Avalonia.Controls.TextBox ConfirmPasswordTextBox => this.FindControl<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
         internal global::Avalonia.Controls.TextBlock ConfirmPasswordValidation => this.FindControl<global::Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
