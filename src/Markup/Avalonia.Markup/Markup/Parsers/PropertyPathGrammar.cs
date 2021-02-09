@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Markup.Parsers
 {
 #if !BUILDTASK

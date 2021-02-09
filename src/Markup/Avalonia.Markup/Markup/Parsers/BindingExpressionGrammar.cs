@@ -6,6 +6,8 @@ using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Avalonia.Markup.Parsers
 {
     internal enum SourceMode

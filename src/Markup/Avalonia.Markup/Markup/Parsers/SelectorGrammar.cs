@@ -4,6 +4,8 @@ using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
+#nullable enable
+
 // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
 // only reason they have overridden Equals methods is for unit testing.
 #pragma warning disable 659
