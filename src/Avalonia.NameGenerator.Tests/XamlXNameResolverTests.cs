@@ -109,13 +109,13 @@ namespace Avalonia.NameGenerator.Tests
                 View.CreateAvaloniaCompilation()
                     .WithCustomTextBox();
 
-            var classResolver = new XamlXClassResolver(
+            var classResolver = new XamlXViewResolver(
                 new RoslynTypeSystem(compilation),
                 MiniCompiler.CreateDefault(
                     new RoslynTypeSystem(compilation),
                     MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
 
-            var classInfo = classResolver.ResolveClass(xaml);
+            var classInfo = classResolver.ResolveView(xaml);
             var nameResolver = new XamlXNameResolver();
             return nameResolver.ResolveNames(classInfo.Xaml);
         }

@@ -9,17 +9,17 @@ using XamlX.Parsers;
 
 namespace Avalonia.NameGenerator.Generator
 {
-    internal class XamlXClassResolver : IClassResolver, IXamlAstVisitor
+    internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
     {
         private readonly RoslynTypeSystem _typeSystem;
         private readonly MiniCompiler _compiler;
         private readonly bool _checkTypeValidity;
         private readonly Action<string> _onTypeInvalid;
 
-        private ResolvedClass _resolvedClass;
+        private ResolvedView _resolvedClass;
         private XamlDocument _xaml;
 
-        public XamlXClassResolver(
+        public XamlXViewResolver(
             RoslynTypeSystem typeSystem,
             MiniCompiler compiler,
             bool checkTypeValidity = false,
@@ -31,7 +31,7 @@ namespace Avalonia.NameGenerator.Generator
             _compiler = compiler;
         }
 
-        public ResolvedClass ResolveClass(string xaml)
+        public ResolvedView ResolveView(string xaml)
         {
             _resolvedClass = null;
             _xaml = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
@@ -79,7 +79,7 @@ namespace Avalonia.NameGenerator.Generator
                     var split = text.Text.Split('.');
                     var nameSpace = string.Join(".", split.Take(split.Length - 1));
                     var className = split.Last();
-                    _resolvedClass = new ResolvedClass(className, nameSpace, _xaml);
+                    _resolvedClass = new ResolvedView(className, nameSpace, _xaml);
                     return node;
                 }
             }

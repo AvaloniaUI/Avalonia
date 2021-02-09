@@ -2,18 +2,18 @@ using XamlX.Ast;
 
 namespace Avalonia.NameGenerator.Domain
 {
-    internal interface IClassResolver
+    internal interface IViewResolver
     {
-        ResolvedClass ResolveClass(string xaml);
+        ResolvedView ResolveView(string xaml);
     }
 
-    internal record ResolvedClass
+    internal record ResolvedView
     {
         public XamlDocument Xaml { get; }
         public string ClassName { get; }
         public string NameSpace { get; }
 
-        public ResolvedClass(string className, string nameSpace, XamlDocument xaml)
+        public ResolvedView(string className, string nameSpace, XamlDocument xaml)
         {
             ClassName = className;
             NameSpace = nameSpace;

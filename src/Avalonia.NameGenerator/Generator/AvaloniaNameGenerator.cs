@@ -7,11 +7,11 @@ namespace Avalonia.NameGenerator.Generator
 {
     internal class AvaloniaNameGenerator : INameGenerator
     {
-        private readonly IClassResolver _classes;
+        private readonly IViewResolver _classes;
         private readonly INameResolver _names;
         private readonly ICodeGenerator _code;
 
-        public AvaloniaNameGenerator(IClassResolver classes, INameResolver names, ICodeGenerator code)
+        public AvaloniaNameGenerator(IViewResolver classes, INameResolver names, ICodeGenerator code)
         {
             _classes = classes;
             _names = names;
@@ -26,7 +26,7 @@ namespace Avalonia.NameGenerator.Generator
                       file.Path.EndsWith(".paml") ||
                       file.Path.EndsWith(".axaml")
                 let xaml = file.GetText()!.ToString()
-                let type = _classes.ResolveClass(xaml)
+                let type = _classes.ResolveView(xaml)
                 where type != null
                 select type;
 

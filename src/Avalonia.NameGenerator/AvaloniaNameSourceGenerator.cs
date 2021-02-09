@@ -23,7 +23,7 @@ namespace Avalonia.NameGenerator
 
             INameGenerator avaloniaNameGenerator =
                 new AvaloniaNameGenerator(
-                    new XamlXClassResolver(types, compiler, true, type => ReportInvalidType(context, type)),
+                    new XamlXViewResolver(types, compiler, true, type => ReportInvalidType(context, type)),
                     new XamlXNameResolver(),
                     new FindControlCodeGenerator());
 

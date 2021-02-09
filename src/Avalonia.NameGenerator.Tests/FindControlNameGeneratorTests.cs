@@ -27,14 +27,14 @@ namespace Avalonia.NameGenerator.Tests
                 View.CreateAvaloniaCompilation()
                     .WithCustomTextBox();
 
-            var classResolver = new XamlXClassResolver(
+            var classResolver = new XamlXViewResolver(
                 new RoslynTypeSystem(compilation),
                 MiniCompiler.CreateDefault(
                     new RoslynTypeSystem(compilation),
                     MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
 
             var xaml = await View.Load(markup);
-            var classInfo = classResolver.ResolveClass(xaml);
+            var classInfo = classResolver.ResolveView(xaml);
             var nameResolver = new XamlXNameResolver();
             var names = nameResolver.ResolveNames(classInfo.Xaml);
 
