@@ -103,6 +103,7 @@ namespace Avalonia.Controls
         private bool _commandCanExecute = true;
         private Popup? _popup;
         private KeyGesture _hotkey;
+        private bool _isEmbeddedInMenu;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -147,7 +148,7 @@ namespace Avalonia.Controls
                 {
                     var parent = x as Control;
                     return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
-                        Observable.Return<DefinitionBase.SharedSizeScope?>(null);
+                           Observable.Return<DefinitionBase.SharedSizeScope?>(null);
                 });
 
             this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
@@ -275,7 +276,7 @@ namespace Avalonia.Controls
         public bool IsTopLevel => Parent is Menu;
 
         /// <inheritdoc/>
-        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
+        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false;
 
         /// <inheritdoc/>
         IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
@@ -310,7 +311,7 @@ namespace Avalonia.Controls
                     .Select(x => x.ContainerControl)
                     .OfType<IMenuItem>();
             }
-        }            
+        }
 
         /// <summary>
         /// Opens the submenu.
@@ -337,6 +338,18 @@ namespace Avalonia.Controls
             return new MenuItemContainerGenerator(this);
         }
 
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            if (!_isEmbeddedInMenu)
+            {
+                //Normally the Menu's IMenuInteractionHandler is sending the click events for us
+                //However when the item is not embedded into a menu we need to send them ourselves.
+                RaiseEvent(new RoutedEventArgs(ClickEvent));
+            }
+        }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             if (_hotkey != null) // Control attached again, set Hotkey to create a hotkey manager for this control
@@ -350,6 +363,15 @@ namespace Avalonia.Controls
             {
                 Command.CanExecuteChanged += CanExecuteChanged;
             }
+
+            var parent = Parent;
+
+            while (parent is MenuItem)
+            {
+                parent = parent.Parent;
+            }
+
+            _isEmbeddedInMenu = parent is IMenu;
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
