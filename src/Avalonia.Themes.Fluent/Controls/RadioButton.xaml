@@ -19,7 +19,6 @@
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-    <Setter Property="MinWidth" Value="120" />
     <Setter Property="Template">
       <ControlTemplate TargetType="RadioButton">
         <Border Name="RootBorder"
