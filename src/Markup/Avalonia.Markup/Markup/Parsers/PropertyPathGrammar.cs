@@ -188,7 +188,7 @@ namespace Avalonia.Markup.Parsers
         {
             public string Name { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => obj is PropertySyntax other
                    && other.Name == Name;
         }
@@ -199,7 +199,7 @@ namespace Avalonia.Markup.Parsers
             public string TypeName { get; set; } = string.Empty;
             public string? TypeNamespace { get; set; }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => obj is TypeQualifiedPropertySyntax other
                    && other.Name == Name
                    && other.TypeName == TypeName
@@ -209,14 +209,14 @@ namespace Avalonia.Markup.Parsers
         public class ChildTraversalSyntax : ISyntax
         {
             public static ChildTraversalSyntax Instance { get;  } = new ChildTraversalSyntax();
-            public override bool Equals(object obj) => obj is ChildTraversalSyntax;
+            public override bool Equals(object? obj) => obj is ChildTraversalSyntax;
         }
         
         public class EnsureTypeSyntax : ISyntax
         {
             public string TypeName { get; set; } = string.Empty;
             public string? TypeNamespace { get; set; }
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => obj is EnsureTypeSyntax other
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
@@ -226,7 +226,7 @@ namespace Avalonia.Markup.Parsers
         {
             public string TypeName { get; set; } = string.Empty;
             public string? TypeNamespace { get; set; }
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => obj is CastTypeSyntax other
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
