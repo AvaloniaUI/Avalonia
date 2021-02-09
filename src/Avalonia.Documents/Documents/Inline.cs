@@ -127,7 +127,7 @@ namespace System.Windows.Documents
         public static readonly StyledProperty<FlowDirection> FlowDirectionProperty =
             AvaloniaProperty.RegisterAttached<Inline, Inline, FlowDirection>(
                 "FlowDirection",
-                    System.Windows.FlowDirection.LeftToRight, // default value
+                    FlowDirection.LeftToRight, // default value
                     true);
 
         /// <summary>

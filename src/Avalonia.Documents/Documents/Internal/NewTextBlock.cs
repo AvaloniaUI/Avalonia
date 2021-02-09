@@ -17,11 +17,14 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 using Avalonia.Layout;
+using Avalonia.Threading;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 using MS.Internal;
 using MS.Internal.Documents;
 using MS.Internal.Text;
 using Line = MS.Internal.Text.Line;
+using TextRange = System.Windows.Documents.TextRange;
 
 namespace Avalonia.Documents.Internal
 {
@@ -233,7 +236,6 @@ namespace Avalonia.Documents.Internal
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
-        [Content]
         public string Text
         {
             get { return _text; }
@@ -450,65 +452,98 @@ namespace Avalonia.Documents.Internal
             control.SetValue(ForegroundProperty, value);
         }
 
-        /// <summary>
-        /// Renders the <see cref="NewTextBlock"/> to a drawing context.
-        /// </summary>
-        /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        //-------------------------------------------------------------------
+        //
+        //  Public Properties
+        //
+        //-------------------------------------------------------------------
+
+        #region Public Properties
+
+        /// <value>
+        /// Collection of Inline items contained in this TextBlock.
+        /// </value>
+        [Content]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        public InlineCollection Inlines
         {
-            var background = Background;
-
-            if (background != null)
+            get
             {
-                context.FillRectangle(background, new Rect(Bounds.Size));
-            }
-
-            if (TextLayout is null)
-            {
-                return;
-            }
-
-            var textAlignment = TextAlignment;
-
-            var width = Bounds.Size.Width;
-
-            var offsetX = 0.0;
-
-            switch (textAlignment)
-            {
-                case TextAlignment.Center:
-                    offsetX = (width - TextLayout.Size.Width) / 2;
-                    break;
-
-                case TextAlignment.Right:
-                    offsetX = width - TextLayout.Size.Width;
-                    break;
-            }
-
-            var padding = Padding;
-
-            var top = padding.Top;
-            var textSize = TextLayout.Size;
-
-            if (Bounds.Height < textSize.Height)
-            {
-                switch (VerticalAlignment)
-                {
-                    case VerticalAlignment.Center:
-                        top += (Bounds.Height - textSize.Height) / 2;
-                        break;
-
-                    case VerticalAlignment.Bottom:
-                        top += (Bounds.Height - textSize.Height);
-                        break;
-                }
-            }
-
-            using (context.PushPostTransform(Matrix.CreateTranslation(padding.Left + offsetX, top)))
-            {
-                TextLayout.Draw(context);
+                return new InlineCollection(this, /*isOwnerParent*/true);
             }
         }
+
+        /// <summary>
+        /// TextPointer preceding all content.
+        /// </summary>
+        /// <remarks>
+        /// The TextPointer returned always has its IsFrozen property set true
+        /// and LogicalDirection property set to LogicalDirection.Backward.
+        /// </remarks>
+        public TextPointer ContentStart
+        {
+            get
+            {
+                EnsureComplexContent();
+
+                return (TextPointer)_complexContent.TextContainer.Start;
+            }
+        }
+
+        /// <summary>
+        /// TextPointer following all content.
+        /// </summary>
+        /// <remarks>
+        /// The TextPointer returned always has its IsFrozen property set true
+        /// and LogicalDirection property set to LogicalDirection.Forward.
+        /// </remarks>
+        public TextPointer ContentEnd
+        {
+            get
+            {
+                EnsureComplexContent();
+
+                return (TextPointer)_complexContent.TextContainer.End;
+            }
+        }
+
+        /// <value>
+        /// A TextRange spanning the content of this element.
+        /// </value>
+        internal TextRange TextRange
+        {
+            get
+            {
+                // NOTE: We are creating a new instance of a TextRange on each request.
+                // We cannot cache the instance, because it may become incorrect
+                // after collapsing TextBlock's content and insertion a new one:
+                // the cached range would remain empty, which is incorrect.
+                return new TextRange(this.ContentStart, this.ContentEnd);
+            }
+        }
+
+        /// <summary>
+        /// Breaking condition before the Element.
+        /// </summary>
+        public LineBreakCondition BreakBefore { get { return LineBreakCondition.BreakDesired; } }
+
+        /// <summary>
+        /// Breaking condition after the Element.
+        /// </summary>
+        public LineBreakCondition BreakAfter { get { return LineBreakCondition.BreakDesired; } }
+
+        /// <summary>
+        /// Access to all text typography properties.
+        /// </summary>
+        // TODO public Typography Typography
+        // TODO {
+        // TODO     get
+        // TODO     {
+        // TODO         return new Typography(this);
+        // TODO     }
+        // TODO }
+
+        #endregion Public Properties
 
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
@@ -546,34 +581,6 @@ namespace Avalonia.Documents.Internal
             _textLayout = null;
         }
 
-        /// <summary>
-        /// Measures the control.
-        /// </summary>
-        /// <param name="availableSize">The available size for the control.</param>
-        /// <returns>The desired size.</returns>
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            if (string.IsNullOrEmpty(Text))
-            {
-                return new Size();
-            }
-
-            var padding = Padding;
-
-            availableSize = availableSize.Deflate(padding);
-
-            if (_constraint != availableSize)
-            {
-                _constraint = availableSize;
-
-                InvalidateTextLayout();
-            }
-
-            var measuredSize = TextLayout?.Size ?? Size.Empty;
-
-            return measuredSize.Inflate(padding);
-        }
-
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
@@ -587,6 +594,692 @@ namespace Avalonia.Documents.Internal
 
         private static bool IsValidLineHeight(double lineHeight) => double.IsNaN(lineHeight) || lineHeight > 0;
 
+        /// <value>
+        /// Collection of Blocks contained in this element
+        /// </value>
+        // TODO [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        // TODO public BlockCollection Blocks
+        // TODO {
+        // TODO     get
+        // TODO     {
+        // TODO         return new BlockCollection(this, /*isOwnerParent*/true);
+        // TODO     }
+        // TODO }
+
+
+        /// <summary>
+        /// Content measurement.
+        /// </summary>
+        /// <param name="constraint">Constraint size.</param>
+        /// <returns>Computed desired size.</returns>
+        protected sealed override Size MeasureOverride(Size constraint)
+        {
+            VerifyReentrancy();
+
+#if TEXTPANELLAYOUTDEBUG
+            MS.Internal.PtsHost.TextPanelDebug.BeginScope("TextBlock.MeasureOverride", MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+            MS.Internal.PtsHost.TextPanelDebug.StartTimer("TextBlock.MeasureOverride", MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+#endif
+
+            // Clear and repopulate our text block cache. (Handles multiple measure before arrange)
+            _textBlockCache = null;
+
+            EnsureTextBlockCache();
+            LineProperties lineProperties = _textBlockCache._lineProperties;
+
+            // Hook up our TextContainer event listeners if we haven't yet.
+            if (CheckFlags(Flags.PendingTextContainerEventInit))
+            {
+                Invariant.Assert(_complexContent != null);
+                InitializeTextContainerListeners();
+                SetFlags(false, Flags.PendingTextContainerEventInit);
+            }
+
+            // Find out if we can skip measure process. Measure cannot be skipped in following situations:
+            // a) content is dirty (properties or content)
+            // b) there are inline objects (they may be dynamically sized)
+            int lineCount = LineCount;
+            if ((lineCount > 0) && IsMeasureValid && InlineObjects == null)
+            {
+                // Assuming that all of above conditions are true, Measure can be
+                // skipped in following situations:
+                // 1) TextTrimming == None and:
+                //      a) Width is the same, or
+                //      b) TextWrapping == NoWrap
+                // 2) Width is the same and TextWrapping == NoWrap
+                bool bypassMeasure;
+                if (lineProperties.TextTrimming == TextTrimming.None)
+                {
+                    bypassMeasure = MathUtilities.AreClose(constraint.Width, _referenceSize.Width) || (lineProperties.TextWrapping == TextWrapping.NoWrap);
+                }
+                else
+                {
+                    bypassMeasure =
+                        MathUtilities.AreClose(constraint.Width, _referenceSize.Width) &&
+                        (lineProperties.TextWrapping == TextWrapping.NoWrap) &&
+                        (MathUtilities.AreClose(constraint.Height, _referenceSize.Height) || lineCount == 1);
+                }
+                if (bypassMeasure)
+                {
+                    _referenceSize = constraint;
+#if TEXTPANELLAYOUTDEBUG
+                    MS.Internal.PtsHost.TextPanelDebug.Log("MeasureOverride bypassed.", MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+                    MS.Internal.PtsHost.TextPanelDebug.StopTimer("TextBlock.MeasureOverride", MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+                    MS.Internal.PtsHost.TextPanelDebug.EndScope(MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+#endif
+                    return _previousDesiredSize;
+                }
+            }
+
+            // Store constraint size, it is used when measuring inline objects.
+            _referenceSize = constraint;
+
+            // Store previous ITextEmbeddable values
+            bool formattedOnce = CheckFlags(Flags.FormattedOnce);
+            double baselineOffsetPrevious = _baselineOffset;
+
+            // Reset inline objects cache and line metrics cache.
+            // They will be fully updated during lines formatting.
+            InlineObjects = null;
+
+            // before erasing the line metrics, keep track of how big it was last time
+            // so that we can initialize the metrics array to that size this time
+            int subsequentLinesInitialSize = (_subsequentLines == null) ? 1 : _subsequentLines.Count;
+
+            ClearLineMetrics();
+
+            if (_complexContent != null)
+            {
+                _complexContent.TextView.Invalidate();
+            }
+
+            // To determine natural size of the text TextAlignment has to be ignored.
+            // Since for rendering/hittesting lines are recreated, it can be done without
+            // any problems.
+            lineProperties.IgnoreTextAlignment = true;
+            SetFlags(true, Flags.RequiresAlignment); // Need to update LineMetrics.Start when FinalSize is known.
+            SetFlags(true, Flags.FormattedOnce);
+            SetFlags(false, Flags.HasParagraphEllipses);
+            SetFlags(true, Flags.MeasureInProgress | Flags.TreeInReadOnlyMode);
+            var desiredSizeWidth = 0.0;
+            var desiredSizeHeight = 0.0;
+            bool exceptionThrown = true;
+            try
+            {
+                // Create and format lines until end of paragraph is reached.
+                // Since we are disposing line object, it can be reused to format following lines.
+                Line line = CreateLine(lineProperties);
+                bool endOfParagraph = false;
+                int dcp = 0;
+                TextLineBreak textLineBreakIn = null;
+
+                Thickness padding = this.Padding;
+                Size contentSize = new Size(Math.Max(0.0, constraint.Width - (padding.Left + padding.Right)),
+                                            Math.Max(0.0, constraint.Height - (padding.Top + padding.Bottom)));
+
+                while (!endOfParagraph)
+                {
+                    using(line)
+                    {
+                        // Format line. Set showParagraphEllipsis flag to false because we do not know whether or not the line will have
+                        // paragraph ellipsis at this time. Since TextBlock is auto-sized we do not know the RenderSize until we finish Measure
+                        line.Format(dcp, contentSize.Width, GetLineProperties(dcp == 0, lineProperties), textLineBreakIn, /*Show paragraph ellipsis*/ false);
+
+                        double lineHeight = CalcLineAdvance(line.Height, lineProperties);
+
+    #if DEBUG
+                        LineMetrics metrics = new LineMetrics(contentSize.Width, line.Length, line.Width, lineHeight, line.BaselineOffset, line.HasInlineObjects(), textLineBreakIn);
+    #else
+                        LineMetrics metrics = new LineMetrics(line.Length, line.Width, lineHeight, line.BaselineOffset, line.HasInlineObjects(), textLineBreakIn);
+    #endif
+
+                        if (!CheckFlags(Flags.HasFirstLine))
+                        {
+                            SetFlags(true, Flags.HasFirstLine);
+                            _firstLine = metrics;
+                        }
+                        else
+                        {
+                            if (_subsequentLines == null)
+                            {
+                                _subsequentLines = new List<LineMetrics>(subsequentLinesInitialSize);
+                            }
+                            _subsequentLines.Add(metrics);
+                        }
+
+
+                        // Desired width is always max of calculated line widths.
+                        // Desired height is sum of all line heights. But if TextTrimming is on
+                        // do not overflow the requested height with the exception for the first line.
+                        desiredSizeWidth = Math.Max(desiredSizeWidth, line.GetCollapsedWidth());
+                        if ((lineProperties.TextTrimming == TextTrimming.None) ||
+                            (contentSize.Height >= (desiredSizeHeight + lineHeight)) ||
+                            (dcp == 0))
+                        {
+                            // BaselineOffset is always distance from the Text's top
+                            // to the baseline offset of the last line.
+                            _baselineOffset = desiredSizeHeight + line.BaselineOffset;
+
+                            desiredSizeHeight += lineHeight;
+                        }
+                        else
+                        {
+                            // Note the fact that there are paragraph ellipses
+                            SetFlags(true, Flags.HasParagraphEllipses);
+                        }
+
+                        textLineBreakIn = line.GetTextLineBreak();
+
+                        endOfParagraph = line.EndOfParagraph;
+                        dcp += line.Length;
+
+                        // don't wrap a line that was artificially broken because of excessive length
+                        // TODO I don't believe Avalonia has a concept of force-breaking lines
+                        // TODO if (!endOfParagraph &&
+                        // TODO     lineProperties.TextWrapping == TextWrapping.NoWrap &&
+                        // TODO     line.Length == TextStore.MaxCharactersPerLine)
+                        // TODO {
+                        // TODO     endOfParagraph = true;
+                        // TODO }
+                    }
+                }
+
+                desiredSizeWidth += (padding.Left + padding.Right);
+                desiredSizeHeight += (padding.Top + padding.Bottom);
+
+                Invariant.Assert(textLineBreakIn == null); // End of paragraph should have no line break record
+
+                exceptionThrown = false;
+            }
+            finally
+            {
+                // Restore original line properties
+                lineProperties.IgnoreTextAlignment = false;
+                SetFlags(false, Flags.MeasureInProgress | Flags.TreeInReadOnlyMode);
+
+                if(exceptionThrown)
+                {
+                    ClearLineMetrics();
+                }
+            }
+
+            // Notify ITextHost that ITextEmbeddable values have been changed, if necessary.
+            if (!MathUtilities.AreClose(baselineOffsetPrevious, _baselineOffset))
+            {
+                CoerceValue(BaselineOffsetProperty);
+            }
+
+#if TEXTPANELLAYOUTDEBUG
+            MS.Internal.PtsHost.TextPanelDebug.StopTimer("TextBlock.MeasureOverride", MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+            MS.Internal.PtsHost.TextPanelDebug.EndScope(MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+#endif
+            _previousDesiredSize = new Size(desiredSizeWidth, desiredSizeHeight);
+
+            return _previousDesiredSize;
+        }
+
+        /// <summary>
+        /// Content arrangement.
+        /// </summary>
+        /// <param name="arrangeSize">Size that element should use to arrange itself and its children.</param>
+        protected sealed override Size ArrangeOverride(Size arrangeSize)
+        {
+            VerifyReentrancy();
+
+#if TEXTPANELLAYOUTDEBUG
+            MS.Internal.PtsHost.TextPanelDebug.BeginScope("TextBlock.ArrangeOverride", MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+            MS.Internal.PtsHost.TextPanelDebug.StartTimer("TextBlock.ArrangeOverride", MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+#endif
+            // Remove all existing visuals. If there are inline objects, they will be added below.
+            if (_complexContent != null)
+            {
+                _complexContent.VisualChildren.Clear();
+            }
+
+            ArrayList inlineObjects = InlineObjects;
+            int lineCount = LineCount;
+            if (inlineObjects != null && lineCount > 0)
+            {
+                bool exceptionThrown = true;
+
+                SetFlags(true, Flags.TreeInReadOnlyMode);
+                SetFlags(true, Flags.ArrangeInProgress);
+
+                try
+                {
+                    EnsureTextBlockCache();
+                    LineProperties lineProperties = _textBlockCache._lineProperties;
+
+                    double wrappingWidth = CalcWrappingWidth(arrangeSize.Width);
+                    Vector contentOffset = CalcContentOffset(arrangeSize, wrappingWidth);
+
+                    // Position all inline objects. Recreate only lines that have inline objects
+                    // and call arrange on it. Line.Arrange enumerates all inline objects and
+                    // sets appropriate transform on them.
+                    Line line = CreateLine(lineProperties);
+                    int dcp = 0;
+                    Vector lineOffset = contentOffset;
+
+                    for (int i = 0; i < lineCount; i++)
+                    {
+Debug.Assert(lineCount == LineCount);
+                        LineMetrics lineMetrics = GetLine(i);
+
+                        if (lineMetrics.HasInlineObjects)
+                        {
+                            using (line)
+                            {
+                                // Check if paragraph ellipsis are added to this line
+                                bool ellipsis = ParagraphEllipsisShownOnLine(i, lineOffset.Y - contentOffset.Y);
+                                Format(line, lineMetrics.Length, dcp, wrappingWidth, GetLineProperties(dcp == 0, lineProperties), lineMetrics.TextLineBreak, ellipsis);
+
+                                // Check that lineMetrics length and line length are in sync
+                                // Workaround for (Crash when mouse over a Button with TextBlock). Re-enable this assert when MIL Text issue is fixed.
+                                // MS.Internal.Invariant.Assert(lineMetrics.Length == line.Length, "Line length is out of sync");
+
+                                // We shut off text alignment for measure, ensure we treat same here.
+                                // Workaround for (Crash when mouse over a Button with TextBlock). Re-enable this assert when MIL Text issue is fixed.
+                                //if(lineProperties.TextAlignment != TextAlignment.Justify)
+                                //{
+                                //    Debug.Assert(MathUtilities.AreClose(CalcLineAdvance(line.Height, lineProperties), lineMetrics.Height), "Line formatting is not consistent.");
+                                //}
+                                // Calculated line width might be different from measure width in following cases:
+                                // a) dynamically sized children, when FinalSize != AvailableSize
+                                // b) non-default horizontal alignment, when FinalSize != AvailableSize
+                                // Hence do not assert about matching line width with cached line metrics.
+
+                                // Add inline objects to visual children of the TextBlock visual and
+                                // set appropriate transforms.
+                                line.Arrange(_complexContent.VisualChildren, lineOffset);
+                            }
+                        }
+
+                        lineOffset = lineOffset.WithY(lineOffset.Y + lineMetrics.Height);
+                        dcp += lineMetrics.Length;
+                    }
+
+                    exceptionThrown = false;
+                }
+                finally
+                {
+                    SetFlags(false, Flags.TreeInReadOnlyMode);
+                    SetFlags(false, Flags.ArrangeInProgress);
+                    if(exceptionThrown)
+                    {
+                       ClearLineMetrics();
+                    }
+                }
+            }
+
+            if (_complexContent != null)
+            {
+                Dispatcher.UIThread.Post(OnValidateTextView);
+            }
+
+#if TEXTPANELLAYOUTDEBUG
+            MS.Internal.PtsHost.TextPanelDebug.StopTimer("TextBlock.ArrangeOverride", MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+            MS.Internal.PtsHost.TextPanelDebug.EndScope(MS.Internal.PtsHost.TextPanelDebug.Category.MeasureArrange);
+#endif
+            InvalidateVisual();
+            return arrangeSize;
+        }
+
+        /// <summary>
+        /// Render control's content.
+        /// </summary>
+        /// <param name="ctx">Drawing context.</param>
+        public sealed override void Render(DrawingContext ctx)
+        {
+            VerifyReentrancy();
+
+            if (ctx == null)
+            {
+                throw new ArgumentNullException(nameof(ctx));
+            }
+
+            // If layout data is not updated do not render the content.
+            if (!IsLayoutDataValid) { return; }
+
+            // Draw background in rectangle.
+            var background = this.Background;
+            if (background != null)
+            {
+                ctx.DrawRectangle(background, null, new Rect(0, 0, RenderSize.Width, RenderSize.Height));
+            }
+
+            SetFlags(false, Flags.RequiresAlignment);
+            SetFlags(true, Flags.TreeInReadOnlyMode);
+            try
+            {
+                // Line props may be invalid, even if Measure/Arrange is valid - rendering only props are changing.
+                EnsureTextBlockCache();
+                LineProperties lineProperties = _textBlockCache._lineProperties;
+
+
+                double wrappingWidth = CalcWrappingWidth(RenderSize.Width);
+                Vector contentOffset = CalcContentOffset(RenderSize, wrappingWidth);
+                Point lineOffset = new Point(contentOffset.X, contentOffset.Y);
+
+                // NOTE: All inline objects are UIElements and all of them are direct children of
+                // the TextBlock. Hence visuals for those inline objects are already attached.
+                // The only responsibility of OnRender is to render text, since transforms for inline
+                // objects are set during OnArrange.
+
+                // Create / format / render all lines.
+                // Since we are disposing line object, it can be reused to format following lines.
+                Line line = CreateLine(lineProperties);
+                int dcp = 0;
+                bool showParagraphEllipsis = false;
+                SetFlags(CheckFlags(Flags.HasParagraphEllipses), Flags.RequiresAlignment);
+
+
+                int lineCount = LineCount;
+                for (int i = 0; i < lineCount; i++)
+                {
+Debug.Assert(lineCount == LineCount);
+                    LineMetrics lineMetrics = GetLine(i);
+                    double contentBottom = Math.Max(0.0, RenderSize.Height - Padding.Bottom);
+
+                    // Find out if this is the last rendered line
+                    if (CheckFlags(Flags.HasParagraphEllipses))
+                    {
+                        if (i + 1 < lineCount)
+                        {
+                            // Calculate bottom offset for next line
+                            double nextLineBottomOffset = GetLine(i + 1).Height + lineMetrics.Height + lineOffset.Y;
+
+                            // If the next line will exceed render height by a large margin, we cannot render
+                            // it at all and so we should show ellipsis on this one. However if the next line
+                            // almost fits, we will render it and so there should be no ellipsis
+                            showParagraphEllipsis = MathUtilities.GreaterThan(nextLineBottomOffset, contentBottom) && !MathUtilities.AreClose(nextLineBottomOffset, contentBottom);
+                        }
+                    }
+
+                    // If paragraph ellipsis are enabled, do not render lines that
+                    // extend computed layout size. But if the first line does not fit completely,
+                    // render it anyway.
+                    if (!CheckFlags(Flags.HasParagraphEllipses) ||
+                        (MathUtilities.LessThanOrClose(lineMetrics.Height + lineOffset.Y, contentBottom) || i == 0))
+                    {
+                        using (line)
+                        {
+                            Format(line, lineMetrics.Length, dcp, wrappingWidth, GetLineProperties(dcp == 0, showParagraphEllipsis, lineProperties), lineMetrics.TextLineBreak, showParagraphEllipsis);
+
+                            // Workaround for (Crash when mouse over a Button with TextBlock). Re-enable this assert when MIL Text issue is fixed.
+                            //if (!showParagraphEllipsis)
+                            //{
+                            //    // Check consistency of line formatting
+                            //    Debug.Assert(line.Length == lineMetrics.Length, "Line length is out of sync");
+                            //    // We shut off text alignment for measure, ensure we treat same here.
+                            //    if(lineProperties.TextAlignment != TextAlignment.Justify)
+                            //    {
+                            //        Debug.Assert(MathUtilities.AreClose(CalcLineAdvance(line.Height, lineProperties), lineMetrics.Height), "Line height is out of sync.");
+                            //    }
+                            //    // Calculated line width might be different from measure width in following cases:
+                            //    // a) dynamically sized children, when FinalSize != AvailableSize
+                            //    // b) non-default horizontal alignment, when FinalSize != AvailableSize
+                            //    // Hence do not assert about matching line width with cached line metrics.
+                            //}
+                            if (!CheckFlags(Flags.HasParagraphEllipses))
+                            {
+                                lineMetrics = UpdateLine(i, lineMetrics, line.Start, line.Width);
+                            }
+
+                            line.Render(ctx, lineOffset);
+
+                            lineOffset = lineOffset.WithY(lineOffset.Y + lineMetrics.Height);
+                            dcp += lineMetrics.Length;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                SetFlags(false, Flags.TreeInReadOnlyMode);
+                _textBlockCache = null;
+            }
+        }
+
+        /// <summary>
+        /// Notification that a specified property has been invalidated
+        /// </summary>
+        /// <param name="e">EventArgs that contains the property, metadata, old value, and new value for this change</param>
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TextProperty)
+            {
+                OnTextChanged(Text);
+            }
+
+            // TODO Check for typography properties
+            // TODO SetFlags(true, Flags.IsTypographySet);
+
+            if (change.IsEffectiveValueChange)
+            {
+                if (CheckFlags(Flags.FormattedOnce))
+                {
+                    var fmetadata = change.Property;
+                    if (fmetadata != null)
+                    {
+                        var affectsRender = fmetadata.CanValueAffectRender();
+
+                        // TODO: Was previously checking for measure/arrange invalidation, might instead use specific events for that
+                        if (affectsRender)
+                        {
+                            // Will throw an exception, if during measure/arrange/render process.
+                            VerifyTreeIsUnlocked();
+
+                            // TextRunCache stores properties for every single run fetched so far.
+                            // If there are any property changes, which affect measure, arrange or
+                            // render, invalidate TextRunCache. It will force TextFormatter to refetch
+                            // runs and properties.
+                           // _lineProperties = null;
+                            _textBlockCache = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Hit tests to the correct ContentElement within the ContentHost
+        /// that the mouse is over.
+        /// </summary>
+        /// <param name="point">Mouse coordinates relative to the ContentHost.</param>
+        protected virtual IInputElement InputHitTestCore(Point point)
+        {
+            // If layout data is not updated return 'this'.
+            if (!IsLayoutDataValid) { return this; }
+
+            // Line props may be invalid, even if Measure/Arrange is valid - rendering only props are changing.
+            LineProperties lineProperties = GetLineProperties();
+
+            // If there is only one line and it is already cached, use it to do hit-testing.
+            // Otherwise, do following:
+            // a) use cached line information to find which line has been hit,
+            // b) re-create the line that has been hit,
+            // c) hit-test the line.
+            IInputElement ie = null;
+            double wrappingWidth = CalcWrappingWidth(RenderSize.Width);
+            Vector contentOffset = CalcContentOffset(RenderSize, wrappingWidth);
+            point -= contentOffset; // // Take into account content offset.
+
+            if (point.X < 0 || point.Y < 0) return this;
+
+            ie = null;
+            int dcp = 0;
+            double lineOffset = 0;
+
+            int lineCount = LineCount;
+            for (int i = 0; i < lineCount; i++)
+            {
+Debug.Assert(lineCount == LineCount);
+                LineMetrics lineMetrics = GetLine(i);
+
+                if (lineOffset + lineMetrics.Height > point.Y)
+                {
+                    // The current line has been hit. Format the line and
+                    // retrieve IInputElement from the hit position.
+                    Line line = CreateLine(lineProperties);
+                    using (line)
+                    {
+                        // Check if paragraph ellipsis are rendered
+                        bool ellipsis = ParagraphEllipsisShownOnLine(i, lineOffset);
+                        Format(line, lineMetrics.Length, dcp, wrappingWidth, GetLineProperties(dcp == 0, lineProperties), lineMetrics.TextLineBreak, ellipsis);
+
+                        // Verify consistency of line formatting
+                        // Check that lineMetrics.Length is in sync with line.Length
+                        // Workaround for (Crash when mouse over a Button with TextBlock). Re-enable this assert when MIL Text issue is fixed.
+                        //MS.Internal.Invariant.Assert(lineMetrics.Length == line.Length, "Line length is out of sync:");
+
+                        // Workaround for (Crash when mouse over a Button with TextBlock). Re-enable this assert when MIL Text issue is fixed.
+                        //Debug.Assert(MathUtilities.AreClose(CalcLineAdvance(line.Height, lineProperties), lineMetrics.Height), "Line height is out of sync.");
+                        // Calculated line width might be different from measure width in following cases:
+                        // a) dynamically sized children, when FinalSize != AvailableSize
+                        // b) non-default horizontal alignment, when FinalSize != AvailableSize
+                        // Hence do not assert about matching line width with cached line metrics.
+
+                        if ((line.Start <= point.X) && (line.Start + line.Width >= point.X))
+                        {
+                            ie = line.InputHitTest(point.X);
+                        }
+                    }
+                    break; // Line covering the point has been found; no need to continue.
+                }
+
+                dcp += lineMetrics.Length;
+                lineOffset += lineMetrics.Height;
+            }
+
+            // If nothing has been hit, assume that element itself has been hit.
+            return (ie != null) ? ie : this;
+        }
+
+        /// <summary>
+        /// Returns an ICollection of bounding rectangles for the given ContentElement
+        /// </summary>
+        /// <param name="child">
+        /// Content element for which rectangles are required
+        /// </param>
+        /// <remarks>
+        /// Looks at the ContentElement e line by line and gets rectangle bounds for each line
+        /// </remarks>
+        protected virtual ReadOnlyCollection<Rect> GetRectanglesCore(StyledElement child)
+        {
+            if (child == null)
+            {
+                throw new ArgumentNullException("child");
+            }
+
+            // If layout data is not updated we assume that we will not be able to find the element we need and throw excception
+            if (!IsLayoutDataValid)
+            {
+                // return empty collection
+                return new ReadOnlyCollection<Rect>(new List<Rect>(0));
+            }
+
+            // Line props may be invalid, even if Measure/Arrange is valid - rendering only props are changing.
+            LineProperties lineProperties = GetLineProperties();
+
+            // Check for complex content
+            if (_complexContent == null || !(_complexContent.TextContainer is TextContainer))
+            {
+                // return empty collection
+                return new ReadOnlyCollection<Rect>(new List<Rect>(0));
+            }
+
+            // First find the element start and end position
+            TextPointer start = FindElementPosition((IInputElement)child);
+            if (start == null)
+            {
+                return new ReadOnlyCollection<Rect>(new List<Rect>(0));
+            }
+
+            TextPointer end = null;
+            if (child is TextElement)
+            {
+                end = new TextPointer(((TextElement)child).ElementEnd);
+            }
+            // TODO else if (child is FrameworkContentElement)
+            // TODO {
+            // TODO     end = new TextPointer(start);
+            // TODO     end.MoveByOffset(+1);
+            // TODO }
+
+            if (end == null)
+            {
+                return new ReadOnlyCollection<Rect>(new List<Rect>(0));
+            }
+
+            int startOffset = _complexContent.TextContainer.Start.GetOffsetToPosition(start);
+            int endOffset = _complexContent.TextContainer.Start.GetOffsetToPosition(end);
+
+            int lineIndex = 0;
+            int lineOffset = 0;
+            double lineHeightOffset = 0;
+            int lineCount = LineCount;
+            while (startOffset >= (lineOffset + GetLine(lineIndex).Length) && lineIndex < lineCount)
+            {
+Debug.Assert(lineCount == LineCount);
+                lineOffset += GetLine(lineIndex).Length;
+                lineIndex++;
+                lineHeightOffset += GetLine(lineIndex).Height;
+            }
+            Debug.Assert(lineIndex < lineCount);
+
+            int lineStart = lineOffset;
+            List<Rect> rectangles = new List<Rect>();
+            double wrappingWidth = CalcWrappingWidth(RenderSize.Width);
+
+            Vector contentOffset = CalcContentOffset(RenderSize, wrappingWidth);
+            do
+            {
+Debug.Assert(lineCount == LineCount);
+                // Check that line index never exceeds line count
+                Debug.Assert(lineIndex < lineCount);
+
+                // Create lines as long as they are spanned by the element
+                LineMetrics lineMetrics = GetLine(lineIndex);
+
+                Line line = CreateLine(lineProperties);
+
+                using (line)
+                {
+                    // Check if paragraph ellipsis are rendered
+                    bool ellipsis = ParagraphEllipsisShownOnLine(lineIndex, lineOffset);
+                    Format(line, lineMetrics.Length, lineStart, wrappingWidth, GetLineProperties(lineIndex == 0, lineProperties), lineMetrics.TextLineBreak, ellipsis);
+
+                    // Verify consistency of line formatting
+                    // Workaround for (Crash when mouse over a Button with TextBlock). Re-enable this assert when MIL Text issue is fixed.
+                    if (lineMetrics.Length == line.Length)
+                    {
+                        //MS.Internal.Invariant.Assert(lineMetrics.Length == line.Length, "Line length is out of sync");
+                        //Debug.Assert(MathUtilities.AreClose(CalcLineAdvance(line.Height, lineProperties), lineMetrics.Height), "Line height is out of sync.");
+
+                        int boundStart = (startOffset >= lineStart) ? startOffset : lineStart;
+                        int boundEnd = (endOffset < lineStart + lineMetrics.Length) ? endOffset : lineStart + lineMetrics.Length;
+
+                        double xOffset = contentOffset.X;
+                        double yOffset = contentOffset.Y + lineHeightOffset;
+                        List<Rect> lineBounds = line.GetRangeBounds(boundStart, boundEnd - boundStart, xOffset, yOffset);
+                        Debug.Assert(lineBounds.Count > 0);
+                        rectangles.AddRange(lineBounds);
+                    }
+                }
+
+                lineStart += lineMetrics.Length;
+                lineHeightOffset += lineMetrics.Height;
+                lineIndex++;
+            }
+            while (endOffset > lineStart);
+
+            // Rectangles collection must be non-null
+            Invariant.Assert(rectangles != null);
+            return new ReadOnlyCollection<Rect>(rectangles);
+        }
+        
         //-------------------------------------------------------------------
         //
         //  Internal Methods
@@ -1314,6 +2007,18 @@ namespace Avalonia.Documents.Internal
         }
 
         //-------------------------------------------------------------------
+        // Highlights
+        //-------------------------------------------------------------------
+        internal Highlights Highlights
+        {
+            get
+            {
+                EnsureComplexContent();
+                return _complexContent.Highlights;
+            }
+        }
+
+        //-------------------------------------------------------------------
         // NewTextBlock paragraph properties.
         //-------------------------------------------------------------------
         internal LineProperties ParagraphProperties
@@ -1384,20 +2089,6 @@ namespace Avalonia.Documents.Internal
             set { SetFlags(value, Flags.IsContentPresenterContainer); }
         }
 
-        //  typography properties changed, no cache for this, just reset the flag
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == TextProperty)
-            {
-                OnTextChanged(Text);
-            }
-
-            // TODO Check for typography properties
-            // TODO SetFlags(true, Flags.IsTypographySet);
-        }
-
         #endregion Internal Properties
 
         //-------------------------------------------------------------------
@@ -1411,13 +2102,12 @@ namespace Avalonia.Documents.Internal
         /// <summary>
         /// Raise TextView.Updated event, if TextView is in a valid state.
         /// </summary>
-        private object OnValidateTextView(object arg)
+        private void OnValidateTextView()
         {
             if (IsLayoutDataValid && _complexContent != null)
             {
                 _complexContent.TextView.OnUpdated();
             }
-            return null;
         }
 
         // Inserts text run into NewTextBlock in a form consistent with flow schema requirements.
@@ -1547,6 +2237,28 @@ namespace Avalonia.Documents.Internal
                 // OnTextContainerEndChanging has to be received after this event.
                 SetFlags(true, Flags.ContentChangeInProgress);
             }
+        }
+
+        // ------------------------------------------------------------------
+        // Invalidates a portion of text affected by a highlight change.
+        // ------------------------------------------------------------------
+        private void OnHighlightChanged(object sender, HighlightChangedEventArgs args)
+        {
+            Invariant.Assert(args != null);
+            Invariant.Assert(args.Ranges != null);
+            Invariant.Assert(CheckFlags(Flags.FormattedOnce), "Unexpected Highlights.Changed callback before first format!");
+
+            // The only supported highlight type for TextBlock is SpellerHightlight.
+            // TextSelection and HighlightComponent are ignored, because they are handled by
+            // separate layer.
+            if (true /* TODO args.OwnerType != typeof(SpellerHighlightLayer)*/)
+            {
+                return;
+            }
+
+            // NOTE: Assuming that only rendering only properties are changeing
+            //       through highlights.
+            InvalidateVisual();
         }
 
         // ------------------------------------------------------------------
@@ -2255,7 +2967,7 @@ Debug.Assert(lineCount == LineCount);
         {
             _complexContent.TextContainer.Changing += new EventHandler(OnTextContainerChanging);
             _complexContent.TextContainer.Change += new TextContainerChangeEventHandler(OnTextContainerChange);
-            // TODO _complexContent.Highlights.Changed += new HighlightChangedEventHandler(OnHighlightChanged);
+            _complexContent.Highlights.Changed += new HighlightChangedEventHandler(OnHighlightChanged);
         }
 
         // ------------------------------------------------------------------
@@ -2397,7 +3109,7 @@ Debug.Assert(lineCount == LineCount);
                 Debug.Assert(owner != null);
                 Debug.Assert(textContainer != null);
 
-                VisualChildren = new AvaloniaList<Visual>();
+                VisualChildren = new AvaloniaList<IVisual>();
 
                 // Store TextContainer that contains content of the element.
                 TextContainer = textContainer;
@@ -2421,7 +3133,7 @@ Debug.Assert(lineCount == LineCount);
             //---------------------------------------------------------------
             internal void Detach(NewTextBlock owner)
             {
-                // TODO this.Highlights.Changed -= new HighlightChangedEventHandler(owner.OnHighlightChanged);
+                this.Highlights.Changed -= new HighlightChangedEventHandler(owner.OnHighlightChanged);
                 this.TextContainer.Changing -= new EventHandler(owner.OnTextContainerChanging);
                 this.TextContainer.Change -= new TextContainerChangeEventHandler(owner.OnTextContainerChange);
             }
@@ -2429,12 +3141,12 @@ Debug.Assert(lineCount == LineCount);
             //------------------------------------------------------------------
             // Internal Visual Children.
             //-------------------------------------------------------------------
-            internal AvaloniaList<Visual> VisualChildren;
+            internal AvaloniaList<IVisual> VisualChildren;
 
             //---------------------------------------------------------------
             // Highlights associated with TextContainer.
             //---------------------------------------------------------------
-            // TODO internal Highlights Highlights { get { return this.TextContainer.Highlights; } }
+            internal Highlights Highlights { get { return this.TextContainer.Highlights; } }
 
             //---------------------------------------------------------------
             // Text array exposing access to the content.

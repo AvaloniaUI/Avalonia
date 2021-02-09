@@ -31,6 +31,7 @@ namespace Avalonia.Media.TextFormatting
         )
         {
             _bounds = bounds;
+            _flowDirection = FlowDirection.LeftToRight;
             /* TODO _flowDirection = flowDirection; */
             _runBounds = runBounds;
         }
@@ -58,13 +59,13 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Text flow direction inside the boundary rectangle
         /// </summary>
-        /* TODO public FlowDirection FlowDirection
+        public FlowDirection FlowDirection
         {
             get { return _flowDirection; }
-        } */
+        }
 
 
-        //  TODO private FlowDirection _flowDirection;
+        private FlowDirection _flowDirection;
         private Rect _bounds;
         private IList<TextRunBounds> _runBounds;
     }

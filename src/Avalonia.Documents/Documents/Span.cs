@@ -10,6 +10,7 @@ using MS.Internal;                  // Invariant.Assert
 //using System.Windows.Controls;      // TextBlock
 //using System.Windows.Markup; // ContentProperty
 using System.ComponentModel;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata; // DesignerSerializationVisibility
 
 namespace System.Windows.Documents 

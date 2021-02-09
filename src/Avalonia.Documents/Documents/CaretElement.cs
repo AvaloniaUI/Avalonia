@@ -25,7 +25,7 @@ namespace System.Windows.Documents
                 }
                 else
                 {
-                    geometry = Geometry.Combine(geometry, addedGeometry, GeometryCombineMode.Union, null, CaretElement.c_geometryCombineTolerance, ToleranceType.Absolute);
+                   // TODO geometry = Geometry.Combine(geometry, addedGeometry, GeometryCombineMode.Union, null, CaretElement.c_geometryCombineTolerance, ToleranceType.Absolute);
                 }
             }
         }

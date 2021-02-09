@@ -229,17 +229,17 @@ namespace MS.Internal.Text
         //      paragraphOwner - Owner of paragraph (usually the parent of 'element').
         //
         // ------------------------------------------------------------------
-        internal static Brush GetBackgroundBrush(IAvaloniaObject element)
+        internal static IBrush GetBackgroundBrush(IAvaloniaObject element)
         {
             Debug.Assert(element != null);
-            Brush backgroundBrush = null;
+            IBrush backgroundBrush = null;
 
             // If 'element' is FrameworkElement, it is the host of the text content.
             // If 'element' is Block, the content is directly hosted by a block paragraph.
             // In such cases ignore background brush, because it is handled outside as paragraph's background.
             while (backgroundBrush == null && CanApplyBackgroundBrush(element))
             {
-                backgroundBrush = (Brush)element.GetValue(TextElement.BackgroundProperty);
+                backgroundBrush = element.GetValue(TextElement.BackgroundProperty);
                 Invariant.Assert(element is StyledElement);
                 element = ((StyledElement)element).Parent;
             }
@@ -251,22 +251,22 @@ namespace MS.Internal.Text
         //
         //      position - Exact position of the content.
         // ------------------------------------------------------------------
-        internal static Brush GetBackgroundBrushForInlineObject(StaticTextPointer position)
+        internal static IBrush GetBackgroundBrushForInlineObject(StaticTextPointer position)
         {
             object selected;
-            Brush backgroundBrush;
+            IBrush backgroundBrush;
 
             Debug.Assert(!position.IsNull);
 
-            // TODO selected = position.TextContainer.Highlights.GetHighlightValue(position, LogicalDirection.Forward, typeof(TextSelection));
+            selected = position.TextContainer.Highlights.GetHighlightValue(position, LogicalDirection.Forward, null /* TODO typeof(TextSelection)*/);
 
-            if (true /* TODO selected == DependencyProperty.UnsetValue*/)
+            if (selected == AvaloniaProperty.UnsetValue)
             {
-                backgroundBrush = (Brush)position.GetValue(TextElement.BackgroundProperty);
+                backgroundBrush = (IBrush) position.GetValue(TextElement.BackgroundProperty);
             }
             else
             {
-                // TODO backgroundBrush = SelectionHighlightInfo.BackgroundBrush;
+                backgroundBrush = SelectionHighlightInfo.BackgroundBrush;
             }
             return backgroundBrush;
         }

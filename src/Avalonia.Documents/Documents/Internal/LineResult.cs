@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Documents;
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 
 namespace MS.Internal.Documents
 {

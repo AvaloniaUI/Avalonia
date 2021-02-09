@@ -5,5 +5,15 @@
     /// </summary>
     public class TextEndOfLine : TextRun
     {
+        public TextEndOfLine() : this(DefaultTextSourceLength)
+        {
+        }
+
+        public TextEndOfLine(int textSourceLength)
+        {
+            TextSourceLength = textSourceLength;
+        }
+
+        public override int TextSourceLength { get; }
     }
 }

@@ -15,6 +15,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Documents.Internal;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 
 namespace MS.Internal.Documents
@@ -321,7 +322,9 @@ namespace MS.Internal.Documents
         /// </summary>
         internal override bool Validate()
         {
-            _owner.UpdateLayout();
+            _owner.InvalidateArrange();
+            _owner.InvalidateMeasure();
+            // TODO: This seemed to be instantaneous previously
             return this.IsValid;
         }
 

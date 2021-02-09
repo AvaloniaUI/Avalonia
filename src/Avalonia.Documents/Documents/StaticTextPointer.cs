@@ -6,6 +6,8 @@
 // Description: Optimized minimal version of TextPointer that gets stored on the stack.
 //
 
+using Avalonia.Media.TextFormatting;
+
 namespace System.Windows.Documents
 {
     using System;

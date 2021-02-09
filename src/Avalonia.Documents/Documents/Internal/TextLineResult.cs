@@ -18,6 +18,7 @@ using System.Windows.Documents;
 using Avalonia;
 using Avalonia.Documents.Internal;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using MS.Internal.Documents;
 
 namespace MS.Internal.Text

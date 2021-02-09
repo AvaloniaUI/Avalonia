@@ -16,6 +16,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives; // Point, Rect, ...
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 
 namespace MS.Internal.Documents
 {

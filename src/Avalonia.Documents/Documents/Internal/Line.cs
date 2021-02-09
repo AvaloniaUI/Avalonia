@@ -24,6 +24,7 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using FlowDirection = Avalonia.Media.FlowDirection;
 
 namespace MS.Internal.Text
 {
@@ -83,7 +84,8 @@ namespace MS.Internal.Text
         //      showParagraphEllipsis - true if paragraph ellipsis is shown 
         //                              at the end of the line
         // ------------------------------------------------------------------
-        internal void Format(int dcp, double width, TextParagraphProperties lineProperties, TextLineBreak textLineBreak, bool showParagraphEllipsis)
+        internal void Format(int dcp, double width, TextParagraphProperties lineProperties, TextLineBreak textLineBreak,
+            bool showParagraphEllipsis)
         {
 #if TEXTPANELLAYOUTDEBUG
             TextPanelDebug.IncrementCounter("Line.Format", TextPanelDebug.Category.TextView);
@@ -118,18 +120,16 @@ namespace MS.Internal.Text
 
             // Handle text trimming.
             var line = _line;
-            if (_line.LineMetrics.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
+            if (_line.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
             {
                 line = _line.Collapse(GetCollapsingProps(_wrappingWidth, _owner.ParagraphProperties));
                 Debug.Assert(line.HasCollapsed, "Line has not been collapsed");
             }
 
             double delta = CalculateXOffsetShift();
-            // TODO: Inefficient.
-            using (var _ = ctx.PushPreTransform(Matrix.CreateTranslation(lineOffset.X + delta, lineOffset.Y)))
-            {
-                line.Draw(ctx/* TODO , (_mirror ? InvertAxes.Horizontal : InvertAxes.None)*/);
-            }
+            line.Draw(ctx,
+                new Point(lineOffset.X + delta,
+                    lineOffset.Y) /*,  TODO (_mirror ? InvertAxes.Horizontal : InvertAxes.None)*/);
         }
 
         // ------------------------------------------------------------------
@@ -168,13 +168,13 @@ namespace MS.Internal.Text
         internal List<Rect> GetRangeBounds(int cp, int cch, double xOffset, double yOffset)
         {
             List<Rect> rectangles = new List<Rect>();
-            
+
             // Adjust x offset for trailing spaces
             double delta = CalculateXOffsetShift();
             double adjustedXOffset = xOffset + delta;
 
             IList<TextBounds> textBounds;
-            if (_line.LineMetrics.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
+            if (_line.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
             {
                 // We should not shift offset in this case
                 Invariant.Assert(MathUtilities.AreClose(delta, 0));
@@ -186,6 +186,7 @@ namespace MS.Internal.Text
             {
                 textBounds = _line.GetTextBounds(cp, cch);
             }
+
             Invariant.Assert(textBounds.Count > 0);
 
 
@@ -194,6 +195,7 @@ namespace MS.Internal.Text
                 Rect rect = textBounds[boundIndex].Rectangle.Translate(new Vector(adjustedXOffset, yOffset));
                 rectangles.Add(rect);
             }
+
             return rectangles;
         }
 
@@ -208,13 +210,14 @@ namespace MS.Internal.Text
         {
             // Adjust distance to account for a line shift due to rendering of trailing spaces
             double delta = CalculateXOffsetShift();
-            if (_line.LineMetrics.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
+            if (_line.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
             {
                 var line = _line.Collapse(GetCollapsingProps(_wrappingWidth, _owner.ParagraphProperties));
                 Invariant.Assert(MathUtilities.AreClose(delta, 0));
                 Invariant.Assert(line.HasCollapsed, "Line has not been collapsed");
                 return line.GetCharacterHitFromDistance(distance);
             }
+
             return _line.GetCharacterHitFromDistance(distance - delta);
         }
 
@@ -262,7 +265,8 @@ namespace MS.Internal.Text
         /// </param>
         internal bool IsAtCaretCharacterHit(CharacterHit charHit)
         {
-            return _line.IsAtCaretCharacterHit(charHit, _dcp);
+            // TODO return _line.IsAtCaretCharacterHit(charHit, _dcp);
+            throw new NotImplementedException();
         }
 
         // ------------------------------------------------------------------
@@ -290,7 +294,7 @@ namespace MS.Internal.Text
         /// </summary>
         internal TextLineBreak GetTextLineBreak()
         {
-            if(_line == null)
+            if (_line == null)
             {
                 return null;
             }
@@ -311,7 +315,8 @@ namespace MS.Internal.Text
             // There are no ellipses, if:
             // * there is no overflow in the line
             // * text trimming is turned off
-            if (!_line.LineMetrics.HasOverflowed) { return 0; }
+            if (!_line.HasOverflowed) { return 0; }
+
             if (_owner.ParagraphProperties.TextTrimming == TextTrimming.None) { return 0; }
 
             // Create collapsed text line to get length of collapsed content.
@@ -341,11 +346,12 @@ namespace MS.Internal.Text
             // There are no ellipses, if:
             // * there is no overflow in the line
             // * text trimming is turned off
-            if (!_line.LineMetrics.HasOverflowed) 
-            { 
-                return Width; 
+            if (!_line.HasOverflowed)
+            {
+                return Width;
             }
-            if (_owner.ParagraphProperties.TextTrimming == TextTrimming.None) 
+
+            if (_owner.ParagraphProperties.TextTrimming == TextTrimming.None)
             {
                 return Width;
             }
@@ -354,7 +360,7 @@ namespace MS.Internal.Text
             var collapsedLine = _line.Collapse(GetCollapsingProps(_wrappingWidth, _owner.ParagraphProperties));
             Debug.Assert(collapsedLine.HasCollapsed, "Line has not been collapsed");
 
-            return collapsedLine.LineMetrics.Size.Width;
+            return collapsedLine.Width;
         }
 
         #endregion Internal Methods
@@ -370,29 +376,28 @@ namespace MS.Internal.Text
         // ------------------------------------------------------------------
         // Calculated width of the line.
         // ------------------------------------------------------------------
-        internal double Width 
-        { 
-            get 
+        internal double Width
+        {
+            get
             {
                 if (IsWidthAdjusted)
                 {
                     // Trailing spaces add to width
-                    // TODO return _line.WidthIncludingTrailingWhitespace;
-                    return _line.LineMetrics.Size.Width;
+                    return _line.WidthIncludingTrailingWhitespace;
                 }
                 else
                 {
-                    return _line.LineMetrics.Size.Width;
+                    return _line.Width;
                 }
-            } 
+            }
         }
 
         // ------------------------------------------------------------------
         // Distance from the beginning of paragraph edge to the line edge.
         // ------------------------------------------------------------------
-        internal double Start 
-        { 
-            get 
+        internal double Start
+        {
+            get
             {
                 if (IsXOffsetAdjusted)
                 {
@@ -402,18 +407,18 @@ namespace MS.Internal.Text
                 {
                     return _line.Start;
                 }
-            } 
+            }
         }
 
         // ------------------------------------------------------------------
         // Height of the line; line advance distance.
         // ------------------------------------------------------------------
-        internal double Height { get { return _line.LineMetrics.Size.Height; } }
+        internal double Height { get { return _line.Height; } }
 
         // ------------------------------------------------------------------
         // Distance from top to baseline of this text line.
         // ------------------------------------------------------------------
-        internal double BaselineOffset { get { return _line.LineMetrics.TextBaseline; } }
+        internal double BaselineOffset { get { return _line.Baseline; } }
 
         // ------------------------------------------------------------------
         // Is this the last line of the paragraph?
@@ -423,23 +428,28 @@ namespace MS.Internal.Text
             get
             {
                 // If there are no Newline characters, it is not the end of paragraph.
-                if (_line.NewlineLength == 0) { return false; }
+                // TODO if (_line.NewLineLength == 0) { return false; }
+                if (_line.TextRuns.Count == 0)
+                {
+                    return false;
+                }
+
                 // Since there are Newline characters in the line, do more expensive and
                 // accurate check.
-                IList<TextSpan<TextRun>> runs = _line.GetTextRunSpans();
-                return (((TextSpan<TextRun>)runs[runs.Count-1]).Value is TextEndOfParagraph);
+                var runs = _line.TextRuns;
+                return runs[runs.Count - 1] is TextEndOfParagraph;
             }
         }
 
         // ------------------------------------------------------------------
         // Length of the line excluding any synthetic characters.
         // ------------------------------------------------------------------
-        internal int Length { get { return _line.Length - (EndOfParagraph ? _syntheticCharacterLength : 0); } }
+        internal int Length { get { return _line.TextRange.Length - (EndOfParagraph ? _syntheticCharacterLength : 0); } }
 
         // ------------------------------------------------------------------
         // Length of the line excluding any synthetic characters and line breaks.
         // ------------------------------------------------------------------
-        internal int ContentLength { get { return _line.Length - _line.NewlineLength; } }
+        internal int ContentLength { get { return _line.TextRange.Length - _line.NewLineLength; } }
 
         #endregion Internal Properties
 
@@ -463,11 +473,11 @@ namespace MS.Internal.Text
         protected Rect GetBoundsFromPosition(int cp, int cch, out FlowDirection flowDirection)
         {
             Rect rect;
-            
+
             // Adjust x offset for trailing spaces
             double delta = CalculateXOffsetShift();
             IList<TextBounds> textBounds;
-            if (_line.LineMetrics.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
+            if (_line.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
             {
                 // We should not shift offset in this case
                 Invariant.Assert(MathUtilities.AreClose(delta, 0));
@@ -479,9 +489,11 @@ namespace MS.Internal.Text
             {
                 textBounds = _line.GetTextBounds(cp, cch);
             }
-            Invariant.Assert(textBounds != null && textBounds.Count == 1, "Expecting exactly one TextBounds for a single text position.");
-            
-            IList<TextRunBounds> runBounds = textBounds[0].TextRunBounds;            
+
+            Invariant.Assert(textBounds != null && textBounds.Count == 1,
+                "Expecting exactly one TextBounds for a single text position.");
+
+            IList<TextRunBounds> runBounds = textBounds[0].TextRunBounds;
             if (runBounds != null)
             {
                 Debug.Assert(runBounds.Count == 1, "Expecting exactly one TextRunBounds for a single text position.");
@@ -492,7 +504,7 @@ namespace MS.Internal.Text
                 rect = textBounds[0].Rectangle;
             }
 
-            rect.X += delta;
+            rect = rect.WithX(rect.X + delta);
             flowDirection = textBounds[0].FlowDirection;
             return rect;
         }
@@ -511,7 +523,8 @@ namespace MS.Internal.Text
             TextCollapsingProperties collapsingProps;
             if (paraProperties.TextTrimming == TextTrimming.CharacterEllipsis)
             {
-                collapsingProps = new TextTrailingCharacterEllipsis(wrappingWidth, paraProperties.DefaultTextRunProperties);
+                collapsingProps =
+                    new TextTrailingCharacterEllipsis(wrappingWidth, paraProperties.DefaultTextRunProperties);
             }
             else
             {
@@ -564,15 +577,17 @@ namespace MS.Internal.Text
         protected bool ShowEllipsis
         {
             get
-            { 
+            {
                 if (_owner.ParagraphProperties.TextTrimming == TextTrimming.None)
                 {
                     return false;
                 }
-                if (_line.LineMetrics.HasOverflowed || _showParagraphEllipsis)
+
+                if (_line.HasOverflowed || _showParagraphEllipsis)
                 {
                     return true;
                 }
+
                 return false;
             }
         }
@@ -584,7 +599,7 @@ namespace MS.Internal.Text
         {
             get
             {
-                return (_line.NewlineLength > 0);
+                return (_line.NewLineLength > 0);
             }
         }
 
@@ -595,7 +610,8 @@ namespace MS.Internal.Text
         {
             get
             {
-                return ((_textAlignment == TextAlignment.Right || _textAlignment == TextAlignment.Center) && IsWidthAdjusted);
+                return ((_textAlignment == TextAlignment.Right || _textAlignment == TextAlignment.Center) &&
+                        IsWidthAdjusted);
             }
         }
 
@@ -618,10 +634,11 @@ namespace MS.Internal.Text
                         adjusted = true;
                     }
                 }
+
                 return adjusted;
             }
         }
-        
+
         #endregion Protected Properties
 
 
@@ -675,5 +692,24 @@ namespace MS.Internal.Text
         protected double _wrappingWidth;
 
         #endregion Private Fields
+    }
+
+    // TODO: Temporary hack to keep references to GetTextBounds, but not have to implement it
+    static class TextLineExtensions
+    {
+        /// <summary>
+        /// Client to get an array of bounding rectangles of a range of characters within a text line.
+        /// </summary>
+        /// <param name="firstTextSourceCharacterIndex">index of first character of specified range</param>
+        /// <param name="textLength">number of characters of the specified range</param>
+        /// <returns>an array of bounding rectangles.</returns>
+        public static IList<TextBounds> GetTextBounds(
+            this TextLine textLine,
+            int firstTextSourceCharacterIndex,
+            int textLength
+        )
+        {
+            throw new NotImplementedException();
+        }
     }
 }

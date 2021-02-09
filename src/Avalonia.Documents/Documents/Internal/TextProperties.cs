@@ -68,7 +68,7 @@ namespace MS.Internal.Text
         // ------------------------------------------------------------------
         // Text vertical alignment.
         // ------------------------------------------------------------------
-        // TODO public override BaselineAlignment BaselineAlignment { get { return _baselineAlignment; } }
+        public override BaselineAlignment BaselineAlignment { get { return _baselineAlignment; } }
 
         // ------------------------------------------------------------------
         // Text culture info.
@@ -117,7 +117,7 @@ namespace MS.Internal.Text
             _baselineAlignment = BaselineAlignment.Baseline;
         }
 
-        internal TextProperties(IStyledElement target, StaticTextPointer position, bool inlineObjects, bool getBackground, double pixelsPerDip)
+        internal TextProperties(IAvaloniaObject target, StaticTextPointer position, bool inlineObjects, bool getBackground, double pixelsPerDip)
         {
             // if none of the number substitution properties have changed, we may be able to
             // initialize the _numberSubstitution field to a known default value
@@ -182,12 +182,12 @@ namespace MS.Internal.Text
 
         // assigns values to all fields except for _typographyProperties, _baselineAlignment,
         // and _background, which are set appropriately in each constructor
-        private void InitCommon(IStyledElement target)
+        private void InitCommon(IAvaloniaObject target)
         {
             _typeface = DynamicPropertyReader.GetTypeface(target);
 
-            _fontSize = (double)target.GetValue(TextElement.FontSizeProperty);
-            _foreground = (Brush) target.GetValue(TextElement.ForegroundProperty);
+            _fontSize = target.GetValue(TextElement.FontSizeProperty);
+            _foreground = target.GetValue(TextElement.ForegroundProperty);
             // TODO _textEffects = DynamicPropertyReader.GetTextEffects(target);
 
             _cultureInfo = DynamicPropertyReader.GetCultureInfo(target);
@@ -206,30 +206,30 @@ namespace MS.Internal.Text
         private static TextDecorationCollection GetHighlightTextDecorations(StaticTextPointer highlightPosition)
         {
             TextDecorationCollection textDecorations = null;
-// TODO            Highlights highlights = highlightPosition.TextContainer.Highlights;
-// TODO
-// TODO            if (highlights == null)
-// TODO            {
+            Highlights highlights = highlightPosition.TextContainer.Highlights;
+
+            if (highlights == null)
+            {
                 return textDecorations;
-// TODO             }
-// TODO
-// TODO             //
-// TODO             // Speller
-// TODO             //
-// TODO             textDecorations = highlights.GetHighlightValue(highlightPosition, LogicalDirection.Forward, typeof(SpellerHighlightLayer)) as TextDecorationCollection;
-// TODO
-// TODO             //
-// TODO             // IME composition
-// TODO             //
-// TODO #if UNUSED_IME_HIGHLIGHT_LAYER
-// TODO             TextDecorationCollection imeTextDecorations = highlights.GetHighlightValue(highlightPosition, LogicalDirection.Forward, typeof(FrameworkTextComposition)) as TextDecorationCollection;
-// TODO             if (imeTextDecorations != null)
-// TODO             {
-// TODO                 textDecorations = imeTextDecorations;
-// TODO             }
-// TODO #endif
-// TODO
-// TODO             return textDecorations;
+             }
+
+             //
+             // Speller
+             //
+             textDecorations = highlights.GetHighlightValue(highlightPosition, LogicalDirection.Forward, typeof(SpellerHighlightLayer)) as TextDecorationCollection;
+
+             //
+             // IME composition
+             //
+ #if UNUSED_IME_HIGHLIGHT_LAYER
+             TextDecorationCollection imeTextDecorations = highlights.GetHighlightValue(highlightPosition, LogicalDirection.Forward, typeof(FrameworkTextComposition)) as TextDecorationCollection;
+             if (imeTextDecorations != null)
+             {
+                 textDecorations = imeTextDecorations;
+             }
+ #endif
+
+             return textDecorations;
         }
 
         // ------------------------------------------------------------------

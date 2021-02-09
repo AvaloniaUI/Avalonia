@@ -30,11 +30,43 @@ using MS.Internal.Documents;
 
 namespace MS.Internal.Text
 {
+
+    // Replacement for ContainerVisual
+    internal class VisualProxy : Visual
+    {
+        internal void RemoveChild(IControl visual) => VisualChildren.Remove(visual);
+
+        internal void AddChild(IControl visual)
+        {
+            VisualChildren.Add(visual);
+            // TODO: Unclear whether this is enough or not
+            if (!visual.IsMeasureValid && visual.PreviousMeasure.HasValue)
+            {
+                visual.Measure(visual.PreviousMeasure.Value);
+            }
+            Bounds = new Rect(Bounds.Position, visual.DesiredSize);
+        }
+
+        // TODO: Not sure where the proxy visual would get it's size
+        internal Vector Offset
+        {
+            get => Bounds.Position;
+            set
+            {
+                Bounds = new Rect(value.X, value.Y, Bounds.X, Bounds.Y);
+            }
+        }
+    }
+
     // ----------------------------------------------------------------------
     // Text line formatter.
     // ----------------------------------------------------------------------
     internal sealed class ComplexLine : Line
     {
+
+        // TODO: Figure out what to do with this
+        private double PixelsPerDip = 0;
+
         // ------------------------------------------------------------------
         //
         //  TextSource Implementation
@@ -123,20 +155,20 @@ namespace MS.Internal.Text
                     InlineObject inlineObject = run as InlineObject;
 
                     // Disconnect visual from its old parent, if necessary.
-                    Visual currentParent = VisualTreeHelper.GetParent(inlineObject.Element) as Visual;
+                    var currentParent = inlineObject.Element.GetVisualParent();
                     if (currentParent != null)
                     {
-                        ContainerVisual parent = currentParent as ContainerVisual;
-                        Invariant.Assert(parent != null, "parent should always derives from ContainerVisual");
-                        parent.Children.Remove(inlineObject.Element);
+                        var parent = currentParent as VisualProxy;
+                        Invariant.Assert(parent != null, "parent should always derives from VisualProxy");
+                        parent.RemoveChild(inlineObject.Element);
                     }
 
                     // Get position of inline object withing the text line.
                     FlowDirection flowDirection;
-                    Rect rect = GetBoundsFromPosition(runDcp, inlineObject.Length, out flowDirection);
+                    Rect rect = GetBoundsFromPosition(runDcp, inlineObject.TextSourceLength, out flowDirection);
                     Debug.Assert(MathUtilities.GreaterThanOrClose(rect.Width, 0), "Negative inline object's width.");
 
-                    ContainerVisual proxyVisual = new ContainerVisual();
+                    VisualProxy proxyVisual = new VisualProxy();
                     if (inlineObject.Element is Visual)
                     {
                         var parentFlowDirection = _owner.FlowDirection;
@@ -148,7 +180,7 @@ namespace MS.Internal.Text
                             parentFlowDirection = parent.GetValue(Inline.FlowDirectionProperty);
                         }
 
-                        PtsHelper.UpdateMirroringTransform(_owner.FlowDirection, parentFlowDirection, proxyVisual, rect.Width);
+                        UpdateMirroringTransform(_owner.FlowDirection, parentFlowDirection, proxyVisual, rect.Width);
                     }
                     vc.Add(proxyVisual);
 
@@ -163,7 +195,7 @@ namespace MS.Internal.Text
                     {
                         proxyVisual.Offset = new Vector(lineOffset.X + rect.Left, lineOffset.Y + rect.Top);
                     }
-                    proxyVisual.Children.Add(inlineObject.Element);
+                    proxyVisual.AddChild(inlineObject.Element);
 
                     // Combine text line offset (relative to the Text control) with inline object
                     // offset (relative to the line) and set transorm on the visual. Trailing spaces
@@ -175,6 +207,26 @@ namespace MS.Internal.Text
                 // So, if the run is broken between lines, it gives incorrect value.
                 // Use length of the TextSpan instead, which gives the correct length here.
                 runDcp += run.Text.Length;
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Update mirroring transform.  (Previously in PtsHelper)
+        // ------------------------------------------------------------------
+        private static void UpdateMirroringTransform(FlowDirection parentFD, FlowDirection childFD, Visual visualChild, double width)
+        {
+            // Set mirroring transform if necessary, or clear it just in case it was set in the previous
+            // format process.
+            if (parentFD != childFD)
+            {
+                var transform = new MatrixTransform(new Matrix(-1.0, 0.0, 0.0, 1.0, width, 0.0));
+                visualChild.RenderTransform = transform;
+                visualChild.SetValue(Inline.FlowDirectionProperty, childFD);
+            }
+            else
+            {
+                visualChild.RenderTransform = null;
+                visualChild.ClearValue(Inline.FlowDirectionProperty);
             }
         }
 
@@ -224,7 +276,7 @@ namespace MS.Internal.Text
             double delta = CalculateXOffsetShift();
             if (tree != null)
             {
-                if (_line.LineMetrics.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
+                if (_line.HasOverflowed && _owner.ParagraphProperties.TextTrimming != TextTrimming.None)
                 {
                     // We should not shift offset in this case
                     Invariant.Assert(MathUtilities.AreClose(delta, 0));
@@ -481,15 +533,14 @@ namespace MS.Internal.Text
             Debug.Assert(position.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.EmbeddedElement, "TextPointer does not point to embedded object.");
 
             TextRun run = null;
-            IAvaloniaObject element = position.GetAdjacentElement(LogicalDirection.Forward) as IAvaloniaObject;
-            if (element is Visual)
+            if (position.GetAdjacentElement(LogicalDirection.Forward) is IControl control)
             {
                 //  Need to Handle visibility collapsed.
 
-                TextRunProperties textProps = new TextProperties(element, position, true /* inline objects */, true /* get background */, PixelsPerDip);
+                TextRunProperties textProps = new TextProperties(control, position, true /* inline objects */, true /* get background */, PixelsPerDip);
 
                 // Create object run.
-                run = new InlineObject(dcp, TextContainerHelper.EmbeddedObjectLength, (Visual)element, textProps, _owner);
+                run = new InlineObject(dcp, TextContainerHelper.EmbeddedObjectLength, control, textProps, _owner);
             }
             else
             {

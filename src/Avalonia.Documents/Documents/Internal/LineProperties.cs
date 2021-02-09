@@ -76,7 +76,7 @@ namespace MS.Internal.Text
         /// This property specifies whether the primary text advance 
         /// direction shall be left-to-right, right-to-left, or top-to-bottom.
         /// </summary>
-        public /* TODO override */ FlowDirection FlowDirection { get { return _flowDirection; } }
+        public override FlowDirection FlowDirection { get { return _flowDirection; } }
 
         /// <summary>
         /// This property describes how inline content of a block is aligned.
@@ -106,7 +106,7 @@ namespace MS.Internal.Text
         /// <summary>
         /// Indicates the first line of the paragraph.
         /// </summary>
-        // TODO public override bool FirstLineInParagraph { get { return false; } }
+        public override bool FirstLineInParagraph { get { return false; } }
 
         /// <summary>
         /// Paragraph's default run properties
@@ -136,7 +136,7 @@ namespace MS.Internal.Text
         /// Line indentation. Line indent by default is always 0.
         /// Use FirstLineProperties class to return real value of this property.
         /// </remarks>
-        // TODO public override double Indent { get { return 0.0; } }
+        public override double Indent { get { return 0.0; } }
 
         #endregion TextParagraphProperties Implementation
 
@@ -320,7 +320,7 @@ namespace MS.Internal.Text
             // ------------------------------------------------------------------
             // Text flow direction (text advance + block advance direction).
             // ------------------------------------------------------------------
-            // TODO public override FlowDirection FlowDirection { get { return _lp.FlowDirection; } }
+            public override FlowDirection FlowDirection { get { return _lp.FlowDirection; } }
 
             // ------------------------------------------------------------------
             // Alignment of the line's content.
@@ -335,7 +335,7 @@ namespace MS.Internal.Text
             // ------------------------------------------------------------------
             // An instance of this class is always the first line in a paragraph.
             // ------------------------------------------------------------------
-            // TODO public override bool FirstLineInParagraph { get { return true; } }
+            public override bool FirstLineInParagraph { get { return true; } }
 
             // ------------------------------------------------------------------
             // Line's default text properties.
@@ -360,7 +360,7 @@ namespace MS.Internal.Text
             // ------------------------------------------------------------------
             // Line indentation.
             // ------------------------------------------------------------------
-            // TODO public override double Indent { get { return _lp._textIndent; } }
+            public override double Indent { get { return _lp._textIndent; } }
 
             #endregion TextParagraphProperties Implementation
 
@@ -396,7 +396,7 @@ namespace MS.Internal.Text
             // ------------------------------------------------------------------
             // Text flow direction (text advance + block advance direction).
             // ------------------------------------------------------------------
-            // TODO public override FlowDirection FlowDirection { get { return _lp.FlowDirection; } }
+            public override FlowDirection FlowDirection { get { return _lp.FlowDirection; } }
 
             // ------------------------------------------------------------------
             // Alignment of the line's content.
@@ -411,12 +411,12 @@ namespace MS.Internal.Text
             // ------------------------------------------------------------------
             // First line in paragraph option.
             // ------------------------------------------------------------------
-            // TODO public override bool FirstLineInParagraph { get { return _lp.FirstLineInParagraph; } }
+            public override bool FirstLineInParagraph { get { return _lp.FirstLineInParagraph; } }
 
             // ------------------------------------------------------------------
             // Always collapsible option.
             // ------------------------------------------------------------------
-            // TODO public override bool AlwaysCollapsible { get { return _lp.AlwaysCollapsible; } }
+            public override bool AlwaysCollapsible { get { return _lp.AlwaysCollapsible; } }
 
             // ------------------------------------------------------------------
             // Line's default text properties.
@@ -442,7 +442,7 @@ namespace MS.Internal.Text
             // ------------------------------------------------------------------
             // Line indentation.
             // ------------------------------------------------------------------
-            // TODO public override double Indent { get { return _lp.Indent; } }
+            public override double Indent { get { return _lp.Indent; } }
 
             #endregion TextParagraphProperties Implementation
 

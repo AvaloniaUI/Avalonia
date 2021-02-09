@@ -18,6 +18,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 using MS.Internal;
 
 namespace MS.Internal.Text
@@ -35,7 +36,7 @@ namespace MS.Internal.Text
         /// <param name="element">Control representing the inline object.</param>
         /// <param name="textProps">Text run properties for the inline object.</param>
         /// <param name="host">NewTextBlock element - the host of the inline object.</param>
-        internal InlineObject(int dcp, int cch, Control element, TextRunProperties textProps, NewTextBlock host)
+        internal InlineObject(int dcp, int cch, IControl element, TextRunProperties textProps, NewTextBlock host)
         {
             _dcp = dcp;
             _cch = cch;
@@ -130,7 +131,7 @@ namespace MS.Internal.Text
         /// <summary>
         /// UIElement representing the inline object.
         /// </summary>
-        internal Control Element { get { return _element; } }
+        internal IControl Element { get { return _element; } }
 
         /// <summary>
         /// Text position on the inline object in the text array.
@@ -145,7 +146,7 @@ namespace MS.Internal.Text
         /// <summary>
         /// UIElement representing the inline object.
         /// </summary>
-        private readonly Control _element;
+        private readonly IControl _element;
 
         /// <summary>
         /// Text run properties for the inline object.
