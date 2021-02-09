@@ -1,12 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.NameGenerator.Domain;
 
-namespace Avalonia.NameGenerator.Resolver
+namespace Avalonia.NameGenerator.Generator
 {
-    internal class FindControlNameGenerator : INameGenerator
+    internal class FindControlNameGenerator : ICodeGenerator
     {
-        public string GenerateNames(string className, string nameSpace, IEnumerable<ResolvedName> names)
+        public string GenerateCode(string className, string nameSpace, IEnumerable<ResolvedName> names)
         {
             var namedControls = names
                 .Select(info => "        " +

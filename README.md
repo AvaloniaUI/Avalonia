@@ -30,63 +30,32 @@ Or, if you are using [submodules](https://git-scm.com/docs/git-submodule), you c
 </ItemGroup>
 ```
 
-### Usage (Default)
+### Usage
 
-After installing the NuGet package, declare your view class as `partial`. Typed C# references to Avalonia controls declared in XAML files will be generated for all classes that inherit from the `Avalonia.INamed` interface (including those classes that inherit from `Window`, `UserControl`, `ReactiveWindow<T>`, `ReactiveUserControl<T>`). For example, for the following XAML markup:
+After installing the NuGet package, declare your view class as `partial`. Typed C# references to Avalonia controls declared in XAML files will be generated for classes referenced by the `x:Class` directive in XAML files. For example, for the following XAML markup:
 
 ```xml
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Sample.App.SignUpView">
     <TextBox x:Name="UserNameTextBox" x:FieldModifier="public" />
 </Window>
 ```
 
-A new C# public property named `UserNameTextBox` of type `TextBox` will be generated:
+A new C# partial class named `SignUpView` with a single `public` property named `UserNameTextBox` of type `TextBox` will be generated in the `Sample.App` namespace. We won't see the generated file, but we'll be able to access the generated property as shown below:
 
 ```cs
 using Avalonia.Controls;
 
-public partial class SignUpView : Window
+namespace Sample.App
 {
-    public SignUpView()
+    public partial class SignUpView : Window
     {
-        AvaloniaXamlLoader.Load(this);
-        UserNameTextBox.Text = "Joseph"; // Cool stuff!
-    }
-}
-```
-
-By default, the generator tries to generate `x:Name` references for every class implementing `INamed`, and this can result in a lot of warnings. In order to disable those warnings, either switch to opt-in attribute-based approach (see the documentation section below), or add the following to your `.csproj` file:
-
-```xml
-<PropertyGroup>
-    <NoWarn>AXN0001</NoWarn> <!-- Unable to discover a XAML file. -->
-    <NoWarn>AXN0003</NoWarn> <!-- The processed class isn't partial. -->
-</PropertyGroup>
-```
-
-### Usage (Opt-in)
-
-If you don't want to generate typed `x:Name` references for every window or user control in your assembly, you can always turn off this default behavior by setting the `AvaloniaNameGenerator` MsBuild property to `false` in your C# project file (`.csproj`). Just add the following property group to your `<Project />` tag:
-
-```xml
-<PropertyGroup>
-    <AvaloniaNameGenerator>false</AvaloniaNameGenerator>
-</PropertyGroup>
-```
-
-From now on, the source generator will process only those files that are decorated with the `[GenerateTypedNameReferences]` attribute. Other window or user control classes will be left unchanged, and you won't have to mark them as `partial`.
-
-```cs
-using Avalonia.Controls;
-
-[GenerateTypedNameReferences]
-public partial class SignUpView : Window
-{
-    public SignUpView()
-    {
-        AvaloniaXamlLoader.Load(this);
-        UserNameTextBox.Text = "Joseph"; // Cool stuff!
+        public SignUpView()
+        {
+            AvaloniaXamlLoader.Load(this);
+            UserNameTextBox.Text = "Joseph"; // Cool stuff!
+        }
     }
 }
 ```
@@ -102,7 +71,7 @@ For the [`SignUpView` view class](https://github.com/avaloniaui/Avalonia.NameGen
 
 using Avalonia.Controls;
 
-namespace Your.View.Namespace
+namespace Avalonia.NameGenerator.Sandbox.Views
 {
     partial class SignUpView
     {

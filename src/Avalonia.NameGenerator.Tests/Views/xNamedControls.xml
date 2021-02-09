@@ -1,5 +1,6 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Sample.App.xNamedControls">
     <StackPanel>
         <TextBox x:Name="UserNameTextBox"
                  Watermark="Username input"

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.NameGenerator.Resolver;
+using Avalonia.NameGenerator.Compiler;
+using Avalonia.NameGenerator.Generator;
 using Avalonia.ReactiveUI;
 using Avalonia.NameGenerator.Tests.Views;
 using Xunit;
@@ -17,7 +18,12 @@ namespace Avalonia.NameGenerator.Tests
         {
             var xaml = await View.Load(resource);
             var compilation = View.CreateAvaloniaCompilation();
-            var resolver = new XamlXNameResolver(compilation);
+
+            var resolver = new XamlXNameResolver(
+                MiniCompiler.CreateDefault(
+                    new RoslynTypeSystem(compilation),
+                    MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
+
             var controls = resolver.ResolveNames(xaml);
 
             Assert.NotEmpty(controls);
@@ -33,7 +39,12 @@ namespace Avalonia.NameGenerator.Tests
         {
             var xaml = await View.Load(resource);
             var compilation = View.CreateAvaloniaCompilation();
-            var resolver = new XamlXNameResolver(compilation);
+
+            var resolver = new XamlXNameResolver(
+                MiniCompiler.CreateDefault(
+                    new RoslynTypeSystem(compilation),
+                    MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
+
             var controls = resolver.ResolveNames(xaml);
 
             Assert.NotEmpty(controls);
@@ -54,7 +65,11 @@ namespace Avalonia.NameGenerator.Tests
                     .WithCustomTextBox();
 
             var xaml = await View.Load(View.CustomControls);
-            var resolver = new XamlXNameResolver(compilation);
+            var resolver = new XamlXNameResolver(
+                MiniCompiler.CreateDefault(
+                    new RoslynTypeSystem(compilation),
+                    MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
+
             var controls = resolver.ResolveNames(xaml);
 
             Assert.NotEmpty(controls);
@@ -72,7 +87,12 @@ namespace Avalonia.NameGenerator.Tests
         {
             var xaml = await View.Load(View.NoNamedControls);
             var compilation = View.CreateAvaloniaCompilation();
-            var resolver = new XamlXNameResolver(compilation);
+
+            var resolver = new XamlXNameResolver(
+                MiniCompiler.CreateDefault(
+                    new RoslynTypeSystem(compilation),
+                    MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
+
             var controls = resolver.ResolveNames(xaml);
 
             Assert.Empty(controls);
@@ -83,7 +103,12 @@ namespace Avalonia.NameGenerator.Tests
         {
             var xaml = await View.Load(View.DataTemplates);
             var compilation = View.CreateAvaloniaCompilation();
-            var resolver = new XamlXNameResolver(compilation);
+
+            var resolver = new XamlXNameResolver(
+                MiniCompiler.CreateDefault(
+                    new RoslynTypeSystem(compilation),
+                    MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
+
             var controls = resolver.ResolveNames(xaml);
 
             Assert.NotEmpty(controls);
@@ -102,7 +127,11 @@ namespace Avalonia.NameGenerator.Tests
                     .WithCustomTextBox();
 
             var xaml = await View.Load(View.SignUpView);
-            var resolver = new XamlXNameResolver(compilation);
+            var resolver = new XamlXNameResolver(
+                MiniCompiler.CreateDefault(
+                    new RoslynTypeSystem(compilation),
+                    MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
+
             var controls = resolver.ResolveNames(xaml);
 
             Assert.NotEmpty(controls);

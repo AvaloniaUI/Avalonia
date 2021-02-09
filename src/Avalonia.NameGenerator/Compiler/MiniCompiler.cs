@@ -9,6 +9,8 @@ namespace Avalonia.NameGenerator.Compiler
 {
     internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
     {
+        public const string AvaloniaXmlnsDefinitionAttribute = "Avalonia.Metadata.XmlnsDefinitionAttribute";
+
         public static MiniCompiler CreateDefault(RoslynTypeSystem typeSystem, params string[] additionalTypes)
         {
             var mappings = new XamlLanguageTypeMappings(typeSystem);
