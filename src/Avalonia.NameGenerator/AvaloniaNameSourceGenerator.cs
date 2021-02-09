@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Avalonia.NameGenerator
 {
     [Generator]
-    public class NameReferenceGenerator : ISourceGenerator
+    public class AvaloniaNameSourceGenerator : ISourceGenerator
     {
         public void Initialize(GeneratorInitializationContext context) { }
 
@@ -24,8 +24,8 @@ namespace Avalonia.NameGenerator
             INameGenerator avaloniaNameGenerator =
                 new AvaloniaNameGenerator(
                     new XamlXClassResolver(types, compiler, true, type => ReportInvalidType(context, type)),
-                    new XamlXNameResolver(compiler),
-                    new FindControlNameGenerator());
+                    new XamlXNameResolver(),
+                    new FindControlCodeGenerator());
 
             try
             {

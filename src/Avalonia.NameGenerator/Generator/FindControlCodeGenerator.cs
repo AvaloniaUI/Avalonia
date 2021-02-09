@@ -4,7 +4,7 @@ using Avalonia.NameGenerator.Domain;
 
 namespace Avalonia.NameGenerator.Generator
 {
-    internal class FindControlNameGenerator : ICodeGenerator
+    internal class FindControlCodeGenerator : ICodeGenerator
     {
         public string GenerateCode(string className, string nameSpace, IEnumerable<ResolvedName> names)
         {

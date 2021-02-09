@@ -1,30 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Avalonia.NameGenerator.Compiler;
 using Avalonia.NameGenerator.Domain;
 using XamlX;
 using XamlX.Ast;
-using XamlX.Parsers;
 
 namespace Avalonia.NameGenerator.Generator
 {
     internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
     {
         private readonly List<ResolvedName> _items = new();
-        private readonly MiniCompiler _compiler;
 
-        public XamlXNameResolver(MiniCompiler compiler) => _compiler = compiler;
-
-        public IReadOnlyList<ResolvedName> ResolveNames(string xaml)
+        public IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml)
         {
-            var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
-            {
-                {XamlNamespaces.Blend2008, XamlNamespaces.Blend2008}
-            });
-
-            _compiler.Transform(parsed);
-            parsed.Root.Visit(this);
-            parsed.Root.VisitChildren(this);
+            xaml.Root.Visit(this);
+            xaml.Root.VisitChildren(this);
             return _items;
         }
 

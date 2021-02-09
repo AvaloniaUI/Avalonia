@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using XamlX.Ast;
 
 namespace Avalonia.NameGenerator.Domain
 {
     internal interface INameResolver
     {
-        IReadOnlyList<ResolvedName> ResolveNames(string xaml);
+        IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml);
     }
 
     internal record ResolvedName

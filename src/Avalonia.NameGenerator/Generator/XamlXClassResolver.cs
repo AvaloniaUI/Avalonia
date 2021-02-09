@@ -15,7 +15,9 @@ namespace Avalonia.NameGenerator.Generator
         private readonly MiniCompiler _compiler;
         private readonly bool _checkTypeValidity;
         private readonly Action<string> _onTypeInvalid;
+
         private ResolvedClass _resolvedClass;
+        private XamlDocument _xaml;
 
         public XamlXClassResolver(
             RoslynTypeSystem typeSystem,
@@ -32,14 +34,14 @@ namespace Avalonia.NameGenerator.Generator
         public ResolvedClass ResolveClass(string xaml)
         {
             _resolvedClass = null;
-            var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
+            _xaml = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
             {
                 {XamlNamespaces.Blend2008, XamlNamespaces.Blend2008}
             });
 
-            _compiler.Transform(parsed);
-            parsed.Root.Visit(this);
-            parsed.Root.VisitChildren(this);
+            _compiler.Transform(_xaml);
+            _xaml.Root.Visit(this);
+            _xaml.Root.VisitChildren(this);
             return _resolvedClass;
         }
 
@@ -77,7 +79,7 @@ namespace Avalonia.NameGenerator.Generator
                     var split = text.Text.Split('.');
                     var nameSpace = string.Join(".", split.Take(split.Length - 1));
                     var className = split.Last();
-                    _resolvedClass = new ResolvedClass(className, nameSpace);
+                    _resolvedClass = new ResolvedClass(className, nameSpace, _xaml);
                     return node;
                 }
             }

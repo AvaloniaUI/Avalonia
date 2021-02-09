@@ -23,19 +23,24 @@ namespace Avalonia.NameGenerator.Tests
         [InlineData(Code.FieldModifier, View.FieldModifier)]
         public async Task Should_Generate_FindControl_Refs_From_Avalonia_Markup_File(string expectation, string markup)
         {
-            var xaml = await View.Load(markup);
             var compilation =
                 View.CreateAvaloniaCompilation()
                     .WithCustomTextBox();
 
-            var resolver = new XamlXNameResolver(
+            var classResolver = new XamlXClassResolver(
+                new RoslynTypeSystem(compilation),
                 MiniCompiler.CreateDefault(
                     new RoslynTypeSystem(compilation),
                     MiniCompiler.AvaloniaXmlnsDefinitionAttribute));
 
-            var generator = new FindControlNameGenerator();
+            var xaml = await View.Load(markup);
+            var classInfo = classResolver.ResolveClass(xaml);
+            var nameResolver = new XamlXNameResolver();
+            var names = nameResolver.ResolveNames(classInfo.Xaml);
+
+            var generator = new FindControlCodeGenerator();
             var code = generator
-                .GenerateCode("SampleView", "Sample.App", resolver.ResolveNames(xaml))
+                .GenerateCode("SampleView", "Sample.App", names)
                 .Replace("\r", string.Empty);
 
             var expected = await Code.Load(expectation);
