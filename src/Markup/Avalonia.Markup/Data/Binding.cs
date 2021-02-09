@@ -65,8 +65,7 @@ namespace Avalonia.Data
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
-            anchor = anchor ?? DefaultAnchor?.Target;
-            
+            anchor ??= DefaultAnchor?.Target;
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
 
             INameScope? nameScope = null;
@@ -74,11 +73,22 @@ namespace Avalonia.Data
 
             var (node, mode) = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver, nameScope);
 
-#nullable disable
+            if (node is null)
+            {
+                throw new InvalidOperationException("Could not parse binding expression.");
+            }
+
+            IStyledElement GetSource()
+            {
+                return target as IStyledElement ??
+                    anchor as IStyledElement ??
+                    throw new ArgumentException("Could not find binding source: either target or anchor must be an IStyledElement.");
+            }
+
             if (ElementName != null)
             {
                 return CreateElementObserver(
-                    (target as IStyledElement) ?? (anchor as IStyledElement),
+                    GetSource(),
                     ElementName,
                     node);
             }
@@ -98,9 +108,7 @@ namespace Avalonia.Data
                 }
                 else
                 {
-                    return CreateSourceObserver(
-                        (target as IStyledElement) ?? (anchor as IStyledElement),
-                        node);
+                    return CreateSourceObserver(GetSource(), node);
                 }
             }
             else if (RelativeSource.Mode == RelativeSourceMode.DataContext)
@@ -113,15 +121,11 @@ namespace Avalonia.Data
             }
             else if (RelativeSource.Mode == RelativeSourceMode.Self)
             {
-                return CreateSourceObserver(
-                    (target as IStyledElement) ?? (anchor as IStyledElement),
-                    node);
+                return CreateSourceObserver(GetSource(), node);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                return CreateTemplatedParentObserver(
-                    (target as IStyledElement) ?? (anchor as IStyledElement),
-                    node);
+                return CreateTemplatedParentObserver(GetSource(), node);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
             {
@@ -130,16 +134,12 @@ namespace Avalonia.Data
                     throw new InvalidOperationException("AncestorType must be set for RelativeSourceMode.FindAncestor when searching the visual tree.");
                 }
 
-                return CreateFindAncestorObserver(
-                    (target as IStyledElement) ?? (anchor as IStyledElement),
-                    RelativeSource,
-                    node);
+                return CreateFindAncestorObserver(GetSource(), RelativeSource, node);
             }
             else
             {
                 throw new NotSupportedException();
             }
         }
-#nullable enable
     }
 }
