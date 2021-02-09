@@ -112,6 +112,7 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             PressedMixin.Attach<MenuItem>();
             CommandProperty.Changed.Subscribe(CommandChanged);
+            CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             HeaderProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.HeaderChanged(e));
             IconProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IconChanged(e));
@@ -502,6 +503,18 @@ namespace Avalonia.Controls
                     }
                 }
 
+                menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="CommandParameter"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandParameterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is MenuItem menuItem)
+            {
                 menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
             }
         }
