@@ -92,7 +92,7 @@ namespace Avalonia.NameGenerator.Sandbox.Views
 The typed `x:Name` references might be useful if you decide to use e.g. [ReactiveUI code-behind bindings](https://www.reactiveui.net/docs/handbook/data-binding/):
 
 ```cs
-[GenerateTypedNameReferences] // UserNameValidation and PasswordValidation are auto generated.
+// UserNameValidation and PasswordValidation are auto generated.
 public partial class SignUpView : ReactiveWindow<SignUpViewModel>
 {
     public SignUpView()
