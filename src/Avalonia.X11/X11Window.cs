@@ -872,15 +872,13 @@ namespace Avalonia.X11
             UpdateSizeHints(null);
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             if (cursor == null)
                 XDefineCursor(_x11.Display, _handle, _x11.DefaultCursor);
-            else
+            else if (cursor is CursorImpl impl)
             {
-                if (cursor.HandleDescriptor != "XCURSOR")
-                    throw new ArgumentException("Expected XCURSOR handle type");
-                XDefineCursor(_x11.Display, _handle, cursor.Handle);
+                XDefineCursor(_x11.Display, _handle, impl.Handle);
             }
         }
 

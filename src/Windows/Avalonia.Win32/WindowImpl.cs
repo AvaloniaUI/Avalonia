@@ -608,14 +608,19 @@ namespace Avalonia.Win32
             SetWindowText(_hwnd, title);
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
-            var hCursor = cursor?.Handle ?? DefaultCursor;
-            SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
+            var impl = cursor as CursorImpl;
 
-            if (_owner.IsPointerOver)
+            if (cursor is null || impl is object)
             {
-                UnmanagedMethods.SetCursor(hCursor);
+                var hCursor = impl?.Handle ?? DefaultCursor;
+                SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
+
+                if (_owner.IsPointerOver)
+                {
+                    UnmanagedMethods.SetCursor(hCursor);
+                }
             }
         }
 
