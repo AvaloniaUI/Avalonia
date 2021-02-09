@@ -47,6 +47,8 @@ namespace Avalonia.Controls.Utils
 
             public void Dispose()
             {
+                _child?.Dispose();
+                _subject.Dispose();
                 _disposable.Dispose();
             }
         }

@@ -4,6 +4,8 @@ using System.Linq;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
+#nullable enable
+
 // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
 // only reason they have overridden Equals methods is for unit testing.
 #pragma warning disable 659
@@ -39,7 +41,7 @@ namespace Avalonia.Markup.Parsers
             var selector = new List<ISyntax>();
             while (!r.End && state != State.End)
             {
-                ISyntax syntax = null;
+                ISyntax? syntax = null;
                 switch (state)
                 {
                     case State.Start:
@@ -110,7 +112,7 @@ namespace Avalonia.Markup.Parsers
             return State.TypeName;
         }
 
-        private static (State, ISyntax) ParseMiddle(ref CharacterReader r, char? end)
+        private static (State, ISyntax?) ParseMiddle(ref CharacterReader r, char? end)
         {
             if (r.TakeIf(':'))
             {
@@ -190,7 +192,7 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private static (State, ISyntax) ParseTraversal(ref CharacterReader r)
+        private static (State, ISyntax?) ParseTraversal(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.TakeIf('>'))
@@ -325,11 +327,11 @@ namespace Avalonia.Markup.Parsers
 
         public class OfTypeSyntax : ISyntax, ITypeSyntax
         {
-            public string TypeName { get; set; }
+            public string TypeName { get; set; } = string.Empty;
 
             public string Xmlns { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 var other = obj as OfTypeSyntax;
                 return other != null && other.TypeName == TypeName && other.Xmlns == Xmlns;
@@ -338,11 +340,11 @@ namespace Avalonia.Markup.Parsers
 
         public class IsSyntax : ISyntax, ITypeSyntax
         {
-            public string TypeName { get; set; }
+            public string TypeName { get; set; } = string.Empty;
 
             public string Xmlns { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 var other = obj as IsSyntax;
                 return other != null && other.TypeName == TypeName && other.Xmlns == Xmlns;
@@ -351,9 +353,9 @@ namespace Avalonia.Markup.Parsers
 
         public class ClassSyntax : ISyntax
         {
-            public string Class { get; set; }
+            public string Class { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is ClassSyntax && ((ClassSyntax)obj).Class == Class;
             }
@@ -361,9 +363,9 @@ namespace Avalonia.Markup.Parsers
 
         public class NameSyntax : ISyntax
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is NameSyntax && ((NameSyntax)obj).Name == Name;
             }
@@ -371,11 +373,11 @@ namespace Avalonia.Markup.Parsers
 
         public class PropertySyntax : ISyntax
         {
-            public string Property { get; set; }
+            public string Property { get; set; } = string.Empty;
 
-            public string Value { get; set; }
+            public string Value { get; set; } = string.Empty;
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is PropertySyntax && 
                     ((PropertySyntax)obj).Property == Property && 
@@ -385,7 +387,7 @@ namespace Avalonia.Markup.Parsers
 
         public class ChildSyntax : ISyntax
         {
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is ChildSyntax;
             }
@@ -393,7 +395,7 @@ namespace Avalonia.Markup.Parsers
 
         public class DescendantSyntax : ISyntax
         {
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is DescendantSyntax;
             }
@@ -401,7 +403,7 @@ namespace Avalonia.Markup.Parsers
 
         public class TemplateSyntax : ISyntax
         {
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is TemplateSyntax;
             }
@@ -409,9 +411,9 @@ namespace Avalonia.Markup.Parsers
 
         public class NotSyntax : ISyntax
         {
-            public IEnumerable<ISyntax> Argument { get; set; }
+            public IEnumerable<ISyntax> Argument { get; set; } = Enumerable.Empty<ISyntax>();
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return (obj is NotSyntax not) && Argument.SequenceEqual(not.Argument);
             }
@@ -419,7 +421,7 @@ namespace Avalonia.Markup.Parsers
 
         public class CommaSyntax : ISyntax
         {
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is CommaSyntax or;
             }
