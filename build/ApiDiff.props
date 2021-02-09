@@ -1,6 +1,6 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ApiContractPackageVersion>0.10.0-preview6</ApiContractPackageVersion>
+    <ApiContractPackageVersion>0.10.0</ApiContractPackageVersion>
     <NugetPackageName Condition="'$(PackageId)' != ''">$(PackageId)</NugetPackageName>
     <NugetPackageName Condition="'$(PackageId)' == ''">Avalonia</NugetPackageName>
   </PropertyGroup>

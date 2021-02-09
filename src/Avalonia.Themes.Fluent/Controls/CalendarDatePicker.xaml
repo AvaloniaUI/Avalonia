@@ -9,8 +9,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Design.PreviewWith>
-    <Border Margin="20">
-      <CalendarDatePicker/>
+    <Border Margin="20, 20, 20, 200">
+      <CalendarDatePicker Width="200"
+                          VerticalContentAlignment="Center"
+                          HorizontalContentAlignment="Center" />
     </Border>
   </Design.PreviewWith>
 
@@ -74,7 +76,7 @@
                                Grid.Row="1"
                                Grid.ColumnSpan="4"
                                Grid.RowSpan="3"
-                               FontSize="{StaticResource CalendarDatePickerCurrentDayFontSize}"
+                               FontSize="{DynamicResource CalendarDatePickerCurrentDayFontSize}"
                                Text="{Binding Source={x:Static sys:DateTime.Today}, Path=Day}"/>
 
                     <Ellipse HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource SystemControlBackgroundChromeBlackHighBrush}" StrokeThickness="0" Grid.ColumnSpan="4" Width="3" Height="3"/>
@@ -104,6 +106,8 @@
                    Watermark="{TemplateBinding Watermark}"
                    UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                    Grid.Column="0"/>
 
           <Button Name="PART_Button"

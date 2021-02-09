@@ -45,6 +45,55 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Open_Should_Use_Default_Control()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                bool opened = false;
+
+                sut.MenuOpened += (sender, args) =>
+                {
+                    opened = true;
+                };
+
+                sut.Open();
+
+                Assert.True(opened);
+            }
+        }
+
+        [Fact]
+        public void Open_Should_Raise_Exception_If_AlreadyDetached()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                target.ContextMenu = null;
+
+               Assert.ThrowsAny<Exception>(()=> sut.Open());
+            }
+        }
+
+        [Fact]
         public void Closing_Raises_Single_Closed_Event()
         {
             using (Application())
@@ -79,7 +128,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show()).Verifiable();
+                popupImpl.Setup(x => x.Show(true)).Verifiable();
                 popupImpl.Setup(x => x.Hide()).Verifiable();
 
                 var sut = new ContextMenu();
@@ -99,7 +148,7 @@ namespace Avalonia.Controls.UnitTests
                 _mouse.Click(target);
 
                 Assert.False(sut.IsOpen);
-                popupImpl.Verify(x => x.Show(), Times.Once);
+                popupImpl.Verify(x => x.Show(true), Times.Once);
                 popupImpl.Verify(x => x.Hide(), Times.Once);
             }
         }
@@ -109,7 +158,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show()).Verifiable();
+                popupImpl.Setup(x => x.Show(true)).Verifiable();
                 popupImpl.Setup(x => x.Hide()).Verifiable();
 
                 var sut = new ContextMenu();
@@ -130,7 +179,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(sut.IsOpen);
                 popupImpl.Verify(x => x.Hide(), Times.Once);
-                popupImpl.Verify(x => x.Show(), Times.Exactly(2));
+                popupImpl.Verify(x => x.Show(true), Times.Exactly(2));
             }
         }
         
@@ -177,7 +226,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show()).Verifiable();
+                popupImpl.Setup(x => x.Show(true)).Verifiable();
 
                 bool eventCalled = false;
                 var sut = new ContextMenu();
@@ -193,7 +242,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(eventCalled);
                 Assert.False(sut.IsOpen);
-                popupImpl.Verify(x => x.Show(), Times.Never);
+                popupImpl.Verify(x => x.Show(true), Times.Never);
             }
         }
 
@@ -297,7 +346,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show()).Verifiable();
+                popupImpl.Setup(x => x.Show(true)).Verifiable();
                 popupImpl.Setup(x => x.Hide()).Verifiable();
 
                 bool eventCalled = false;
@@ -321,7 +370,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(eventCalled);
                 Assert.True(sut.IsOpen);
 
-                popupImpl.Verify(x => x.Show(), Times.Once());
+                popupImpl.Verify(x => x.Show(true), Times.Once());
                 popupImpl.Verify(x => x.Hide(), Times.Never);
             }
         }

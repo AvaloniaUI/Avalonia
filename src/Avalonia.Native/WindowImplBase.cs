@@ -351,9 +351,9 @@ namespace Avalonia.Native
         }
 
 
-        public virtual void Show()
+        public virtual void Show(bool activate)
         {
-            _native.Show();
+            _native.Show(activate.AsComBool());
         }
 
 
@@ -383,7 +383,7 @@ namespace Avalonia.Native
             _native.BeginMoveDrag();
         }
 
-        public Size MaxAutoSizeHint => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
+        public Size MaxAutoSizeHint => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(1))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
         public void SetTopmost(bool value)

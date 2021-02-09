@@ -80,19 +80,24 @@ namespace Avalonia.Controls.Utils
         {
             if (exception != null)
             {
-                var aggregate = exception as AggregateException;
-                var exceptions = aggregate == null ?
-                    (IEnumerable<Exception>)new[] { exception } :
-                    aggregate.InnerExceptions;
-                var filtered = exceptions.Where(x => !(x is BindingChainException)).ToList();
+                var exceptions = exception is AggregateException aggregate ?
+                    aggregate.InnerExceptions :
+                    (IEnumerable<Exception>)new[] { exception };
 
-                if (filtered.Count > 0)
-                {
-                    return filtered;
-                }
+                return exceptions.Where(x => !(x is BindingChainException)).ToList();
             }
 
-            return null;
+            return Array.Empty<Exception>();
+        }
+
+        public static object UnpackDataValidationException(Exception exception)
+        {
+            if (exception is DataValidationException dataValidationException)
+            {
+                return dataValidationException.ErrorData;
+            }
+
+            return exception;
         }
 
         /// <summary>

@@ -1,4 +1,0 @@
-Compat issues with assembly Avalonia.Themes.Fluent:
-CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Themes.Fluent.FluentTheme' does not inherit from base type 'Avalonia.Styling.Styles' in the implementation but it does in the contract.
-MembersMustExist : Member 'public void Avalonia.Themes.Fluent.FluentTheme..ctor()' does not exist in the implementation but it does exist in the contract.
-Total Issues: 2
