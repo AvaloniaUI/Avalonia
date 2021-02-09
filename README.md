@@ -56,6 +56,15 @@ public partial class SignUpView : Window
 }
 ```
 
+By default, the generator tries to generate `x:Name` references for every class implementing `INamed`, and this can result in a lot of warnings. In order to disable those warnings, either switch to opt-in attribute-based approach (see the documentation section below), or add the following to your `.csproj` file:
+
+```xml
+<PropertyGroup>
+    <NoWarn>AXN0001</NoWarn> <!-- Unable to discover a XAML file. -->
+    <NoWarn>AXN0003</NoWarn> <!-- The processed class isn't partial. -->
+</PropertyGroup>
+```
+
 ### Usage (Opt-in)
 
 If you don't want to generate typed `x:Name` references for every window or user control in your assembly, you can always turn off this default behavior by setting the `AvaloniaNameGenerator` MsBuild property to `false` in your C# project file (`.csproj`). Just add the following property group to your `<Project />` tag:
