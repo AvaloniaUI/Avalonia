@@ -105,7 +105,7 @@ namespace Avalonia.Data
             }
         }
 
-        private object ConvertValue(IList<object> values, Type targetType, IMultiValueConverter? converter)
+        private object ConvertValue(IList<object?> values, Type targetType, IMultiValueConverter? converter)
         {
             for (var i = 0; i < values.Count; ++i)
             {
@@ -116,7 +116,7 @@ namespace Avalonia.Data
             }
 
             var culture = CultureInfo.CurrentCulture;
-            values = new System.Collections.ObjectModel.ReadOnlyCollection<object>(values);
+            values = new System.Collections.ObjectModel.ReadOnlyCollection<object?>(values);
             object converted;
             if (converter != null)
             {
