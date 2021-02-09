@@ -21,6 +21,7 @@ namespace Avalonia.Direct2D1.Media
         private readonly ILayerFactory _layerFactory;
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
         private readonly DeviceContext _deviceContext;
+        private readonly bool _ownsDeviceContext;
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private readonly Action _finishedCallback;
 
@@ -51,10 +52,12 @@ namespace Avalonia.Direct2D1.Media
             if (_renderTarget is DeviceContext deviceContext)
             {
                 _deviceContext = deviceContext;
+                _ownsDeviceContext = false;
             }
             else
             {
                 _deviceContext = _renderTarget.QueryInterface<DeviceContext>();
+                _ownsDeviceContext = true;
             }
 
             _deviceContext.BeginDraw();
@@ -95,6 +98,13 @@ namespace Avalonia.Direct2D1.Media
             catch (SharpDXException ex) when ((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {
                 throw new RenderTargetCorruptedException(ex);
+            }
+            finally
+            {
+                if (_ownsDeviceContext)
+                {
+                    _deviceContext.Dispose();
+                }
             }
         }
 
@@ -151,7 +161,7 @@ namespace Avalonia.Direct2D1.Media
             using (var d2dSource = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             using (var sourceBrush = new BitmapBrush(_deviceContext, d2dSource.Value))
             using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
-            using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(_deviceContext.Factory, destRect.ToDirect2D()))
+            using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(Direct2D1Platform.Direct2D1Factory, destRect.ToDirect2D()))
             {
                 if (d2dOpacityMask.PlatformBrush != null)
                 {
