@@ -5,6 +5,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <PackageId>XamlNameReferenceGenerator</PackageId>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" PrivateAssets="all" />
@@ -13,6 +14,12 @@
     <ItemGroup>
         <Compile Link="XamlX\filename" Include="../../external/XamlX/src/XamlX/**/*.cs" />
         <Compile Remove="../../external/XamlX/src/XamlX/**/SreTypeSystem.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="Generator.props">
+         <Pack>true</Pack>
+         <PackagePath>buildTransitive\$(PackageId).props</PackagePath>
+      </None>
     </ItemGroup>
     <ItemGroup>
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />

@@ -6,20 +6,11 @@
 
 <img src="https://hsto.org/webt/6a/j6/v5/6aj6v5vemc3g6zqcks0wm_irg1s.gif" />
 
-This is a [C# `SourceGenerator`](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) built for generating strongly-typed references to controls with `x:Name` (or just `Name`) attributes declared in XAML (or, in `.axaml`). The idea is that you include your Avalonia XAML files into your project via `<AdditionalFiles Include="**\*.xaml" />` and then decorate your view class with `[GenerateTypedNameReferences]` and the source generator will look for the `xaml` (or `axaml`) file with the same name as your C# class. The source generator then parses the XML markup, finds all XML tags with `x:Name` attributes and generates the C# code.
+This is a [C# `SourceGenerator`](https://devblogs.microsoft.com/dotnet/introducing-c-source-generators/) built for generating strongly-typed references to controls with `x:Name` (or just `Name`) attributes declared in XAML (or, in `.axaml`).The source generator will look for the `xaml` (or `axaml`) file with the same name as your partial C# class subclasse of `Avalonia.INambe` and parses the XML markup, finds all XML tags with `x:Name` attributes and generates the C# code.
 
 ### Getting Started
 
-So in your project file you paste the following code:
-
-```xml
-<ItemGroup>
-    <!-- Note this AdditionalFiles directive. -->
-    <AdditionalFiles Include="**\*.xaml" />
-</ItemGroup>
-```
-
-And then you reference the source generator by installing a NuGet package:
+Add reference the source generator by installing a NuGet package:
 
 ```
 dotnet add package XamlNameReferenceGenerator
@@ -33,14 +24,42 @@ Or, if you are using [submodules](https://git-scm.com/docs/git-submodule), you c
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false" />
 </ItemGroup>
+<ItemGroup>
+   <AdditionalFiles Include="**\*.xaml"/>
+</ItemGroup>  
 ```
 
-Finally, you declare your view class as `partial` and decorate it with `[GenerateTypedNameReferences]`:
+Finally, you declare your view class as `partial`
 
 ```cs
 using Avalonia.Controls;
 
-[GenerateTypedNameReferences] // Note the 'partial' keyword.
+public partial class SignUpView : Window
+{
+    public SignUpView()
+    {
+        AvaloniaXamlLoader.Load(this);
+        UserNameTextBox.Text = "Joseph"; // Coolstuff!
+    }
+}
+```
+
+If you just want specific classes:
+
+add at your csproj this lines:
+
+```xml
+  <PropertyGroup>
+    <AvaloniaNameGenerator>false</AvaloniaNameGenerator>
+  </PropertyGroup>
+```
+
+Finally, decorate yours class with attribute `[GenerateTypedNameReferences]`:
+
+```cs
+using Avalonia.Controls;
+
+[GenerateTypedNameReferences]
 public partial class SignUpView : Window
 {
     public SignUpView()
