@@ -63,7 +63,8 @@ namespace Avalonia.Data
 
         protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty targetProperty, object? anchor, bool enableDataValidation)
         {
-            Contract.Requires<ArgumentNullException>(target is not null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
             anchor = anchor ?? DefaultAnchor?.Target;
             
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;

@@ -87,7 +87,8 @@ namespace Avalonia.Data
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
             anchor = anchor ?? DefaultAnchor?.Target;
 
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
@@ -135,7 +136,7 @@ namespace Avalonia.Data
             bool targetIsDataContext,
             object? anchor)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
             if (!(target is IDataContextProvider))
             {
@@ -166,7 +167,7 @@ namespace Avalonia.Data
             string elementName,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
             if (NameScope is null || !NameScope.TryGetTarget(out var scope) || scope is null)
                 throw new InvalidOperationException("Name scope is null or was already collected");
@@ -182,7 +183,7 @@ namespace Avalonia.Data
             RelativeSource relativeSource,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
             IObservable<object?> controlLocator;
 
@@ -214,7 +215,7 @@ namespace Avalonia.Data
             object source,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            _ = source ?? throw new ArgumentNullException(nameof(source));
 
             return new ExpressionObserver(source, node);
         }
@@ -223,7 +224,7 @@ namespace Avalonia.Data
             IAvaloniaObject target,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target is not null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
             var result = new ExpressionObserver(
                 () => target.GetValue(StyledElement.TemplatedParentProperty),
