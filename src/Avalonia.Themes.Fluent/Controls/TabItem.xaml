@@ -97,8 +97,8 @@
 
   <!-- TabStripPlacement States Group -->
   <Style Selector="TabItem[TabStripPlacement=Left] /template/ Border#PART_SelectedPipe">
-    <Setter Property="Width" Value="{StaticResource TabItemPipeThickness}" />
-    <Setter Property="Height" Value="{StaticResource TabItemVerticalPipeHeight}" />
+    <Setter Property="Width" Value="{DynamicResource TabItemPipeThickness}" />
+    <Setter Property="Height" Value="{DynamicResource TabItemVerticalPipeHeight}" />
     <Setter Property="Margin" Value="0,0,2,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -108,15 +108,15 @@
   </Style>
 
   <Style Selector="TabItem[TabStripPlacement=Top] /template/ Border#PART_SelectedPipe, TabItem[TabStripPlacement=Bottom] /template/ Border#PART_SelectedPipe">
-    <Setter Property="Height" Value="{StaticResource TabItemPipeThickness}" />
+    <Setter Property="Height" Value="{DynamicResource TabItemPipeThickness}" />
     <Setter Property="Margin" Value="0,0,0,2" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="VerticalAlignment" Value="Bottom" />
   </Style>
 
   <Style Selector="TabItem[TabStripPlacement=Right] /template/ Border#PART_SelectedPipe">
-    <Setter Property="Width" Value="{StaticResource TabItemPipeThickness}" />
-    <Setter Property="Height" Value="{StaticResource TabItemVerticalPipeHeight}" />
+    <Setter Property="Width" Value="{DynamicResource TabItemPipeThickness}" />
+    <Setter Property="Height" Value="{DynamicResource TabItemVerticalPipeHeight}" />
     <Setter Property="Margin" Value="2,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="VerticalAlignment" Value="Center" />
