@@ -63,7 +63,7 @@ namespace Avalonia.Data.Converters
             }
         }
 
-        void OnPropertyChanged(object sender,PropertyChangedEventArgs args)
+        void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
         {
             if (string.IsNullOrWhiteSpace(args.PropertyName)
                                || dependencyProperties?.Contains(args.PropertyName) == true)
@@ -88,12 +88,7 @@ namespace Avalonia.Data.Converters
 
             var parameter = Expression.Parameter(typeof(object), "parameter");
 
-            var instance = Expression.Convert
-            (
-                Expression.Constant(target),
-                method.DeclaringType
-            );
-
+            var instance = ConvertTarget(target, method);
 
             var call = Expression.Call
             (
@@ -114,11 +109,7 @@ namespace Avalonia.Data.Converters
 
             var parameter = Expression.Parameter(typeof(object), "parameter");
 
-            var instance = Expression.Convert
-            (
-                Expression.Constant(target),
-                method.DeclaringType
-            );
+            var instance = ConvertTarget(target, method);
 
             Expression body;
 
@@ -167,11 +158,7 @@ namespace Avalonia.Data.Converters
             , System.Reflection.MethodInfo method)
         {
             var parameter = Expression.Parameter(typeof(object), "parameter");
-            var instance = Expression.Convert
-            (
-                Expression.Constant(target),
-                method.DeclaringType
-            );
+            var instance = ConvertTarget(target, method);
             var call = Expression.Call
             (
                 instance,
@@ -183,6 +170,8 @@ namespace Avalonia.Data.Converters
                 .Compile();
         }
 
+        private static Expression? ConvertTarget(object? target, MethodInfo method) =>
+            target is null ? null : Expression.Convert(Expression.Constant(target), method.DeclaringType);
 
         internal class WeakPropertyChangedProxy
         {
@@ -224,7 +213,7 @@ namespace Avalonia.Data.Converters
                 else
                     Unsubscribe();
             }
-           
+
         }
     }
 }
