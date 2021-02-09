@@ -33,13 +33,13 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public IGeometryImpl Intersect(IGeometryImpl geometry)
         {
-            var result = new PathGeometry(Geometry.Factory);
-
+            var result = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
             using (var sink = result.Open())
             {
                 Geometry.Combine(((GeometryImpl)geometry).Geometry, CombineMode.Intersect, sink);
-                return new StreamGeometryImpl(result);
+                sink.Close();
             }
+            return new StreamGeometryImpl(result);
         }
 
         /// <inheritdoc/>
