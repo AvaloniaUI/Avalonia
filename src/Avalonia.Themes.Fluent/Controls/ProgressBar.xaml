@@ -12,7 +12,6 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightTransparentBrush}" />
-    <Setter Property="Maximum" Value="100" />
     <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
