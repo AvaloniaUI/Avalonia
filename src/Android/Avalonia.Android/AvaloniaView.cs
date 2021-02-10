@@ -15,6 +15,8 @@ namespace Avalonia.Android
         private readonly EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
 
+        private IDisposable? _timerSubscription;
+
         public AvaloniaView(Context context) : base(context)
         {
             _view = new ViewImpl(context);
@@ -50,11 +52,17 @@ namespace Avalonia.Android
         {
             if (isVisible)
             {
+                if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
+                {
+                    _timerSubscription = timer.SubscribeView(this);
+                }
+
                 _root.Renderer.Start();
             }
             else
             {
                 _root.Renderer.Stop();
+                _timerSubscription?.Dispose();
             }
         }
 

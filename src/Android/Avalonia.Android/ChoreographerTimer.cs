@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reactive.Disposables;
 using System.Threading.Tasks;
 
 using Android.OS;
@@ -16,6 +18,8 @@ namespace Avalonia.Android
 
         private readonly Thread _thread;
         private readonly TaskCompletionSource<Choreographer> _choreographer = new TaskCompletionSource<Choreographer>();
+
+        private readonly ISet<AvaloniaView> _views = new HashSet<AvaloniaView>();
 
         private Action<TimeSpan> _tick;
         private int _count;
@@ -51,6 +55,29 @@ namespace Avalonia.Android
             }
         }
 
+        internal IDisposable SubscribeView(AvaloniaView view)
+        {
+            lock (_lock)
+            {
+                _views.Add(view);
+
+                if (_views.Count == 1)
+                {
+                    _choreographer.Task.Result.PostFrameCallback(this);
+                }
+            }
+
+            return Disposable.Create(
+                () =>
+                {
+                    lock (_lock)
+                    {
+                        _views.Remove(view);
+                    }
+                }
+            );
+        }
+
         private void Loop()
         {
             Looper.Prepare();
@@ -64,7 +91,7 @@ namespace Avalonia.Android
 
             lock (_lock)
             {
-                if (_count > 0)
+                if (_count > 0 && _views.Count > 0)
                 {
                     Choreographer.Instance.PostFrameCallback(this);
                 }
