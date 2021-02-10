@@ -18,7 +18,6 @@ namespace System.Windows.Documents
     /// <summary>
     /// Span element used for grouping other Inline elements.
     /// </summary>
-    //[ContentProperty("Inlines")]
     public class Span : Inline
     {
         //-------------------------------------------------------------------

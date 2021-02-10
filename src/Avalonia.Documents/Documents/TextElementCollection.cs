@@ -7,6 +7,7 @@
 //
 
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Documents;
 using Avalonia.Documents.Internal;
 using Avalonia.Media.TextFormatting;

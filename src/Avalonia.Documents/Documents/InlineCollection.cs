@@ -26,7 +26,7 @@ namespace System.Windows.Documents
     [ContentWrapper(typeof(Run))]
     [ContentWrapper(typeof(InlineUIContainer))]
     [WhitespaceSignificantCollection]
-    public class InlineCollection : TextElementCollection<Inline>, IList
+    public class InlineCollection : TextElementCollection<Inline>
     {
         //-------------------------------------------------------------------
         //

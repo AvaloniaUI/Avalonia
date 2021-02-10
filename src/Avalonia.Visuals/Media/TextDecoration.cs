@@ -215,7 +215,7 @@ namespace Avalonia.Media
 
         public TextDecoration Clone()
         {
-            return new()
+            return new TextDecoration()
             {
                 Location = Location,
                 Stroke = Stroke,

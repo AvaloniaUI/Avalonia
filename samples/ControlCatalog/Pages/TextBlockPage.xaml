@@ -20,9 +20,21 @@
       </StackPanel.Styles>
       <Border>
         <internal:NewTextBlock Width="200">
-          <documents:Span>a</documents:Span>
-          <documents:Span>b</documents:Span>
-          <documents:Span>c</documents:Span>
+          <documents:Span Foreground="Red">Red</documents:Span>
+          <documents:Span Foreground="Green">Green</documents:Span>
+          <documents:Span Foreground="Blue">Blue</documents:Span>
+
+          <documents:Span FontWeight="Normal" FontStyle="Normal"
+                          FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro">
+            Custom font regular
+            <documents:Span FontWeight="Bold">Custom font bold</documents:Span>
+            <documents:Span FontStyle="Italic">
+              Custom font italic
+              <documents:Span FontWeight="Bold">
+                Custom font bold italic
+              </documents:Span>
+            </documents:Span>
+          </documents:Span>
         </internal:NewTextBlock>
       </Border>
       <Border>
