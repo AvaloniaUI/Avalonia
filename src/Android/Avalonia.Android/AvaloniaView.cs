@@ -1,11 +1,12 @@
 using System;
 using Android.Content;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
-using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.Android
 {
@@ -31,6 +32,30 @@ namespace Avalonia.Android
         public override bool DispatchKeyEvent(KeyEvent e)
         {
             return _view.View.DispatchKeyEvent(e);
+        }
+
+        public override void OnVisibilityAggregated(bool isVisible)
+        {
+            base.OnVisibilityAggregated(isVisible);
+            OnVisibilityChanged(isVisible);
+        }
+
+        protected override void OnVisibilityChanged(View changedView, [GeneratedEnum] ViewStates visibility)
+        {
+            base.OnVisibilityChanged(changedView, visibility);
+            OnVisibilityChanged(visibility == ViewStates.Visible);
+        }
+
+        private void OnVisibilityChanged(bool isVisible)
+        {
+            if (isVisible)
+            {
+                _root.Renderer.Start();
+            }
+            else
+            {
+                _root.Renderer.Stop();
+            }
         }
 
         class ViewImpl : TopLevelImpl

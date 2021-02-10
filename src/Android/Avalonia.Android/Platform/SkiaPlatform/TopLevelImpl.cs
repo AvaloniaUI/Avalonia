@@ -98,10 +98,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer };
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new ImmediateRenderer(root);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            AndroidPlatform.Options.UseDeferredRendering
+            ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
+            : new ImmediateRenderer(root);
 
         public virtual void Hide()
         {
