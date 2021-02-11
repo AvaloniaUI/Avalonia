@@ -123,7 +123,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             return PixelPoint.FromPoint(point, 1);
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             //still not implemented
         }

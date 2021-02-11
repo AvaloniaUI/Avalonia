@@ -51,7 +51,7 @@ namespace Avalonia.Android
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
-                .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
+                .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
