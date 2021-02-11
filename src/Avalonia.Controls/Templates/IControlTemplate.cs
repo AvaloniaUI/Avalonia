@@ -6,22 +6,22 @@ namespace Avalonia.Controls.Templates
     /// <summary>
     /// Interface representing a template used to build a <see cref="TemplatedControl"/>.
     /// </summary>
-    public interface IControlTemplate : ITemplate<ITemplatedControl, ControlTemplateResult>
+    public interface IControlTemplate : ITemplate<ITemplatedControl, TemplateResult<IControl>>
     {
     }
 
-    public class ControlTemplateResult
+    public class TemplateResult<T>
     {
-        public IControl Control { get; }
+        public T Control { get; }
         public INameScope NameScope { get; }
 
-        public ControlTemplateResult(IControl control, INameScope nameScope)
+        public TemplateResult(T control, INameScope nameScope)
         {
             Control = control;
             NameScope = nameScope;
         }
 
-        public void Deconstruct(out IControl control, out INameScope scope)
+        public void Deconstruct(out T control, out INameScope scope)
         {
             control = Control;
             scope = NameScope;
