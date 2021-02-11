@@ -12,18 +12,18 @@ namespace Avalonia.Controls.Templates
 
     public class TemplateResult<T>
     {
-        public T Control { get; }
+        public T Result { get; }
         public INameScope NameScope { get; }
 
-        public TemplateResult(T control, INameScope nameScope)
+        public TemplateResult(T result, INameScope nameScope)
         {
-            Control = control;
+            Result = result;
             NameScope = nameScope;
         }
 
-        public void Deconstruct(out T control, out INameScope scope)
+        public void Deconstruct(out T result, out INameScope scope)
         {
-            control = Control;
+            result = Result;
             scope = NameScope;
         }
     }

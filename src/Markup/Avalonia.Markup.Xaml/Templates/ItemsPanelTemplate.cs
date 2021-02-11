@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Xaml.Templates
         public object Content { get; set; }
 
         public IPanel Build()
-                => (IPanel)TemplateContent.Load(Content).Control;
+                => (IPanel)TemplateContent.Load(Content).Result;
 
         object ITemplate.Build() => Build();
     }
