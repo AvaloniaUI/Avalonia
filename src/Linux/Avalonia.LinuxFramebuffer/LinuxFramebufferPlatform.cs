@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using Avalonia.Controls;
@@ -79,6 +79,11 @@ namespace Avalonia.LinuxFramebuffer
                     tl.Prepare();
                     _topLevel = tl;
                     _topLevel.Renderer.Start();
+
+                    if (_topLevel is IFocusScope scope)
+                    {
+                        FocusManager.Instance?.SetFocusScope(scope);
+                    }
                 }
 
                 _topLevel.Content = value;
