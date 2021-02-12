@@ -47,7 +47,7 @@ namespace Avalonia.DesignerSupport.Remote
             var threading = new InternalPlatformThreadingInterface();
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardStub>()
-                .Bind<IStandardCursorFactory>().ToSingleton<CursorFactoryStub>()
+                .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IPlatformSettings>().ToConstant(instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(threading)

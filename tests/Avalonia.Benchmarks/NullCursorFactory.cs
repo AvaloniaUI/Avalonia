@@ -4,11 +4,14 @@ using Avalonia.Platform;
 
 namespace Avalonia.Benchmarks
 {
-    internal class NullCursorFactory : IStandardCursorFactory
+    internal class NullCursorFactory : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new NullCursorImpl();
+        ICursorImpl ICursorFactory.GetCursor(StandardCursorType cursorType) => new NullCursorImpl();
+
+        private class NullCursorImpl : ICursorImpl
         {
-            return new PlatformHandle(IntPtr.Zero, "null");
+            public void Dispose() { }
         }
     }
 }
