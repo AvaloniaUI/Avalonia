@@ -15,8 +15,9 @@
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Include="Views/*.xml" />
-        <EmbeddedResource Include="GeneratedCode/*.txt" />
+        <EmbeddedResource Include="Views\*.xml" />
+        <EmbeddedResource Include="OnlyProperties\GeneratedCode\*.txt" />
+        <EmbeddedResource Include="InitializeComponent\GeneratedCode\*.txt" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj" />

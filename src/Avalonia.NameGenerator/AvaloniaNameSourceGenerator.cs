@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Avalonia.NameGenerator.Compiler;
 using Avalonia.NameGenerator.Domain;
@@ -10,9 +11,21 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Avalonia.NameGenerator
 {
+    public enum BuildProperties
+    {
+        AvaloniaNameGeneratorBehavior = 0
+    }
+    
+    public enum Behaviors
+    {
+        OnlyProperties = 0,
+        InitializeComponent,
+    }
+    
     [Generator]
     public class AvaloniaNameSourceGenerator : ISourceGenerator
     {
+
         public void Initialize(GeneratorInitializationContext context) { }
 
         public void Execute(GeneratorExecutionContext context)
@@ -20,12 +33,26 @@ namespace Avalonia.NameGenerator
             var compilation = (CSharpCompilation)context.Compilation;
             var types = new RoslynTypeSystem(compilation);
             var compiler = MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
-
+            
+            var behaviorName = context.GetMSBuildProperty(nameof(BuildProperties.AvaloniaNameGeneratorBehavior), "");
+            
+            if(!Behaviors.TryParse(behaviorName, out Behaviors behavior))
+            {
+                behavior = Behaviors.OnlyProperties;
+            }
+            
+            ICodeGenerator generator = behavior switch {
+                Behaviors.OnlyProperties => new OnlyPropertiesCodeGenerator(),
+                Behaviors.InitializeComponent => new InitializeComponentCodeGenerator(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
+            
             INameGenerator avaloniaNameGenerator =
                 new AvaloniaNameGenerator(
                     new XamlXViewResolver(types, compiler, true, type => ReportInvalidType(context, type)),
                     new XamlXNameResolver(),
-                    new FindControlCodeGenerator());
+                    generator);
 
             try
             {

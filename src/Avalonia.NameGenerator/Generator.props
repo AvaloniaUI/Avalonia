@@ -1,8 +1,11 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup"/>
+    <CompilerVisibleProperty Include="AvaloniaNameGeneratorBehavior" />
   </ItemGroup>
-
+  <PropertyGroup>
+    <AvaloniaNameGeneratorBehavior Condition="'$(AvaloniaNameGeneratorBehavior)' == ''">OnlyProperties</AvaloniaNameGeneratorBehavior>
+  </PropertyGroup>
   <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
     <ItemGroup>
       <AdditionalFiles Include="@(AvaloniaXaml)" SourceItemGroup="AvaloniaXaml" />

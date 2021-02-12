@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
+
 namespace Avalonia.NameGenerator.Sandbox.Views
 {
     /// <summary>
@@ -15,6 +16,7 @@ namespace Avalonia.NameGenerator.Sandbox.Views
         public SignUpView()
         {
             AvaloniaXamlLoader.Load(this);
+            
             UserNameTextBox.Text = "Joseph!";
             UserNameValidation.Text = "User name is valid.";
             PasswordTextBox.Text = "qwerty";
