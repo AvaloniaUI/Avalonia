@@ -9,6 +9,12 @@ namespace Avalonia.NameGenerator.Generator
     internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
     {
         private readonly List<ResolvedName> _items = new();
+        private readonly string _defaultFieldModifier;
+
+        public XamlXNameResolver(string defaultFieldModifier = "internal")
+        {
+            _defaultFieldModifier = defaultFieldModifier;
+        }
 
         public IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml)
         {
@@ -55,7 +61,7 @@ namespace Avalonia.NameGenerator.Generator
 
         void IXamlAstVisitor.Pop() { }
 
-        private static string TryGetFieldModifier(XamlAstObjectNode objectNode)
+        private string TryGetFieldModifier(XamlAstObjectNode objectNode)
         {
             // We follow Xamarin.Forms API behavior in terms of x:FieldModifier here:
             // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/xaml/field-modifiers
@@ -78,7 +84,7 @@ namespace Avalonia.NameGenerator.Generator
                 "protected" => "protected",
                 "internal" => "internal",
                 "notpublic" => "internal",
-                _ => "internal"
+                _ => _defaultFieldModifier
             };
         }
     }

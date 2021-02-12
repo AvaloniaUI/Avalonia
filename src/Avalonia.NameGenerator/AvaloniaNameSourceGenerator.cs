@@ -17,26 +17,10 @@ namespace Avalonia.NameGenerator
 
         public void Execute(GeneratorExecutionContext context)
         {
-            var compilation = (CSharpCompilation)context.Compilation;
-            var types = new RoslynTypeSystem(compilation);
-            var compiler = MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
-
-            var options = new GeneratorOptions(context);
-            ICodeGenerator generator = options.AvaloniaNameGeneratorBehavior switch {
-                Behavior.OnlyProperties => new OnlyPropertiesCodeGenerator(),
-                Behavior.InitializeComponent => new InitializeComponentCodeGenerator(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-
-            INameGenerator avaloniaNameGenerator =
-                new AvaloniaNameGenerator(
-                    new XamlXViewResolver(types, compiler, true, type => ReportInvalidType(context, type)),
-                    new XamlXNameResolver(),
-                    generator);
-
+            var generator = CreateNameGenerator(context);
             try
             {
-                var partials = avaloniaNameGenerator.GenerateNameReferences(context.AdditionalFiles);
+                var partials = generator.GenerateNameReferences(context.AdditionalFiles);
                 foreach (var partial in partials) context.AddSource(partial.FileName, partial.Content);
             }
             catch (Exception exception)
@@ -45,10 +29,29 @@ namespace Avalonia.NameGenerator
             }
         }
 
+        private static INameGenerator CreateNameGenerator(GeneratorExecutionContext context)
+        {
+            var options = new GeneratorOptions(context);
+            var defaultFieldModifier = options.AvaloniaNameGeneratorDefaultFieldModifier.ToString().ToLowerInvariant();
+            ICodeGenerator generator = options.AvaloniaNameGeneratorBehavior switch {
+                Behavior.OnlyProperties => new OnlyPropertiesCodeGenerator(),
+                Behavior.InitializeComponent => new InitializeComponentCodeGenerator(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            var types = new RoslynTypeSystem((CSharpCompilation)context.Compilation);
+            var compiler = MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
+            return new AvaloniaNameGenerator(
+                new XamlXViewResolver(types, compiler, true, type => ReportInvalidType(context, type)),
+                new XamlXNameResolver(defaultFieldModifier),
+                generator);
+        }
+
         private static void ReportUnhandledError(GeneratorExecutionContext context, Exception error)
         {
-            const string message = "Unhandled exception occured while generating typed Name references. " +
-                                   "Please file an issue: https://github.com/avaloniaui/avalonia.namegenerator";
+            const string message =
+                "Unhandled exception occured while generating typed Name references. " +
+                "Please file an issue: https://github.com/avaloniaui/avalonia.namegenerator";
             context.ReportDiagnostic(
                 Diagnostic.Create(
                     new DiagnosticDescriptor(
@@ -63,8 +66,9 @@ namespace Avalonia.NameGenerator
 
         private static void ReportInvalidType(GeneratorExecutionContext context, string typeName)
         {
-            var message = $"Avalonia x:Name generator was unable to generate names for type '{typeName}'. " +
-                          $"The type '{typeName}' does not exist in the assembly.";
+            var message =
+                $"Avalonia x:Name generator was unable to generate names for type '{typeName}'. " +
+                $"The type '{typeName}' does not exist in the assembly.";
             context.ReportDiagnostic(
                 Diagnostic.Create(
                     new DiagnosticDescriptor(

@@ -5,7 +5,16 @@ namespace Avalonia.NameGenerator
 {
     public enum BuildProperties
     {
-        AvaloniaNameGeneratorBehavior = 0
+        AvaloniaNameGeneratorBehavior = 0,
+        AvaloniaNameGeneratorDefaultFieldModifier = 1,
+    }
+
+    public enum DefaultFieldModifier
+    {
+        Public = 0,
+        Private = 1,
+        Internal = 2,
+        Protected = 3,
     }
 
     public enum Behavior
@@ -29,9 +38,24 @@ namespace Avalonia.NameGenerator
                         nameof(BuildProperties.AvaloniaNameGeneratorBehavior),
                         nameof(Behavior.OnlyProperties));
 
-                if (!Enum.TryParse(propertyValue, out Behavior behavior))
+                if (!Enum.TryParse(propertyValue, true, out Behavior behavior))
                     return Behavior.OnlyProperties;
                 return behavior;
+            }
+        }
+
+        public DefaultFieldModifier AvaloniaNameGeneratorDefaultFieldModifier
+        {
+            get
+            {
+                var propertyValue = _context
+                    .GetMSBuildProperty(
+                        nameof(BuildProperties.AvaloniaNameGeneratorDefaultFieldModifier),
+                        nameof(DefaultFieldModifier.Internal));
+
+                if (!Enum.TryParse(propertyValue, true, out DefaultFieldModifier modifier))
+                    return DefaultFieldModifier.Internal;
+                return modifier;
             }
         }
     }
