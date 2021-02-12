@@ -7,12 +7,18 @@ namespace Avalonia.NameGenerator.Generator
 {
     internal class AvaloniaNameGenerator : INameGenerator
     {
+        private readonly IGlobPattern _pathPattern;
         private readonly IViewResolver _classes;
         private readonly INameResolver _names;
         private readonly ICodeGenerator _code;
 
-        public AvaloniaNameGenerator(IViewResolver classes, INameResolver names, ICodeGenerator code)
+        public AvaloniaNameGenerator(
+            IGlobPattern pathPattern,
+            IViewResolver classes,
+            INameResolver names,
+            ICodeGenerator code)
         {
+            _pathPattern = pathPattern;
             _classes = classes;
             _names = names;
             _code = code;
@@ -22,6 +28,7 @@ namespace Avalonia.NameGenerator.Generator
         {
             var resolveViewsQuery =
                 from file in additionalFiles
+                where _pathPattern.Matches(file.Path)
                 where file.Path.EndsWith(".xaml") ||
                       file.Path.EndsWith(".paml") ||
                       file.Path.EndsWith(".axaml")

@@ -42,6 +42,7 @@ namespace Avalonia.NameGenerator
             var types = new RoslynTypeSystem((CSharpCompilation)context.Compilation);
             var compiler = MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
             return new AvaloniaNameGenerator(
+                new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByPath),
                 new XamlXViewResolver(types, compiler, true, type => ReportInvalidType(context, type)),
                 new XamlXNameResolver(defaultFieldModifier),
                 generator);

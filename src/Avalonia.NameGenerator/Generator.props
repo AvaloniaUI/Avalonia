@@ -2,11 +2,13 @@
   <PropertyGroup>
     <AvaloniaNameGeneratorBehavior Condition="'$(AvaloniaNameGeneratorBehavior)' == ''">OnlyProperties</AvaloniaNameGeneratorBehavior>
     <AvaloniaNameGeneratorDefaultFieldModifier Condition="'$(AvaloniaNameGeneratorDefaultFieldModifier)' == ''">internal</AvaloniaNameGeneratorDefaultFieldModifier>
+    <AvaloniaNameGeneratorFilterByPath Condition="'$(AvaloniaNameGeneratorFilterByPath)' == ''">*</AvaloniaNameGeneratorFilterByPath>
   </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup"/>
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorBehavior" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorDefaultFieldModifier" />
+    <CompilerVisibleProperty Include="AvaloniaNameGeneratorFilterByPath" />
   </ItemGroup>
   <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
     <ItemGroup>
