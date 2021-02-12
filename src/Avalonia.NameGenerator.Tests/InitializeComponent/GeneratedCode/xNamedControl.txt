@@ -7,7 +7,7 @@ namespace Sample.App
 {
     partial class SampleView
     {
-        internal global::Avalonia.Controls.TextBox UserNameTextBox {get; set;}
+        internal global::Avalonia.Controls.TextBox UserNameTextBox { get; set; }
 
         public void InitializeComponent(bool loadXaml = true)
         {

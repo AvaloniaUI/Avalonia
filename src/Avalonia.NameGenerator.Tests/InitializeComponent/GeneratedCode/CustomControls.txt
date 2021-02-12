@@ -7,9 +7,9 @@ namespace Sample.App
 {
     partial class SampleView
     {
-        internal global::Avalonia.ReactiveUI.RoutedViewHost ClrNamespaceRoutedViewHost {get; set;}
-        internal global::Avalonia.ReactiveUI.RoutedViewHost UriRoutedViewHost {get; set;}
-        internal global::Controls.CustomTextBox UserNameTextBox {get; set;}
+        internal global::Avalonia.ReactiveUI.RoutedViewHost ClrNamespaceRoutedViewHost { get; set; }
+        internal global::Avalonia.ReactiveUI.RoutedViewHost UriRoutedViewHost { get; set; }
+        internal global::Controls.CustomTextBox UserNameTextBox { get; set; }
 
         public void InitializeComponent(bool loadXaml = true)
         {

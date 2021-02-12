@@ -12,7 +12,7 @@ namespace Avalonia.NameGenerator.Generator
             var initializations = new List<string>();
             foreach (var info in names)
             {
-                properties.Add($"        {info.FieldModifier} global::{info.TypeName} {info.Name} {{get; set;}}");
+                properties.Add($"        {info.FieldModifier} global::{info.TypeName} {info.Name} {{ get; set; }}");
                 initializations.Add($"            {info.Name} = this.FindControl<global::{info.TypeName}>(\"{info.Name}\");");
             }
             

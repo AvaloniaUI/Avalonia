@@ -7,8 +7,8 @@ namespace Sample.App
 {
     partial class SampleView
     {
-        internal global::Avalonia.Controls.TextBox UserNameTextBox {get; set;}
-        internal global::Avalonia.Controls.ListBox NamedListBox {get; set;}
+        internal global::Avalonia.Controls.TextBox UserNameTextBox { get; set; }
+        internal global::Avalonia.Controls.ListBox NamedListBox { get; set; }
 
         public void InitializeComponent(bool loadXaml = true)
         {
