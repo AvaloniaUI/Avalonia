@@ -8,7 +8,7 @@ namespace Avalonia.NameGenerator
         AvaloniaNameGeneratorBehavior = 0,
         AvaloniaNameGeneratorDefaultFieldModifier = 1,
         AvaloniaNameGeneratorFilterByPath = 2,
-        AvaloniaNameGeneratorFilterByNamespace = 2,
+        AvaloniaNameGeneratorFilterByNamespace = 3,
     }
 
     public enum DefaultFieldModifier
