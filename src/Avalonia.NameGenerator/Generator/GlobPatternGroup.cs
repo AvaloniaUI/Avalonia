@@ -13,6 +13,6 @@ namespace Avalonia.NameGenerator.Generator
                 .Select(pattern => new GlobPattern(pattern))
                 .ToArray();
 
-        public bool Matches(string str) => _patterns.All(pattern => pattern.Matches(str));
+        public bool Matches(string str) => _patterns.Any(pattern => pattern.Matches(str));
     }
 }

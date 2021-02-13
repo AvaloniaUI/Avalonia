@@ -8,6 +8,7 @@ namespace Avalonia.NameGenerator
         AvaloniaNameGeneratorBehavior = 0,
         AvaloniaNameGeneratorDefaultFieldModifier = 1,
         AvaloniaNameGeneratorFilterByPath = 2,
+        AvaloniaNameGeneratorFilterByNamespace = 2,
     }
 
     public enum DefaultFieldModifier
@@ -66,6 +67,20 @@ namespace Avalonia.NameGenerator
             {
                 var propertyValue = _context.GetMSBuildProperty(
                     nameof(BuildProperties.AvaloniaNameGeneratorFilterByPath),
+                    "*");
+
+                if (propertyValue.Contains(";"))
+                    return propertyValue.Split(';');
+                return new[] {propertyValue};
+            }
+        }
+
+        public string[] AvaloniaNameGeneratorFilterByNamespace
+        {
+            get
+            {
+                var propertyValue = _context.GetMSBuildProperty(
+                    nameof(BuildProperties.AvaloniaNameGeneratorFilterByNamespace),
                     "*");
 
                 if (propertyValue.Contains(";"))

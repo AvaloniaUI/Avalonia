@@ -33,7 +33,7 @@ namespace Avalonia.NameGenerator.Tests
 
             var resolvedClass = resolver.ResolveView(xaml);
             Assert.Equal(className, resolvedClass.ClassName);
-            Assert.Equal(nameSpace, resolvedClass.NameSpace);
+            Assert.Equal(nameSpace, resolvedClass.Namespace);
         }
     }
 }

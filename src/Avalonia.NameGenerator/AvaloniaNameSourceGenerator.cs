@@ -43,6 +43,7 @@ namespace Avalonia.NameGenerator
             var compiler = MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
             return new AvaloniaNameGenerator(
                 new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByPath),
+                new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByNamespace),
                 new XamlXViewResolver(types, compiler, true, type => ReportInvalidType(context, type)),
                 new XamlXNameResolver(defaultFieldModifier),
                 generator);

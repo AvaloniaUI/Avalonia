@@ -11,12 +11,12 @@ namespace Avalonia.NameGenerator.Domain
     {
         public XamlDocument Xaml { get; }
         public string ClassName { get; }
-        public string NameSpace { get; }
+        public string Namespace { get; }
 
         public ResolvedView(string className, string nameSpace, XamlDocument xaml)
         {
             ClassName = className;
-            NameSpace = nameSpace;
+            Namespace = nameSpace;
             Xaml = xaml;
         }
     }

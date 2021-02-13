@@ -19,8 +19,8 @@ namespace Avalonia.NameGenerator.Tests
         }
 
         [Theory]
-        [InlineData("Views/SignUpView.xaml", true, new[] { "*.xaml", "Views/*" })]
-        [InlineData("Views/SignUpView.paml", false, new[] { "*.xaml", "Views/*" })]
+        [InlineData("Views/SignUpView.xaml", true, new[] { "*.xaml", "Extensions/*" })]
+        [InlineData("Extensions/SignUpView.paml", true, new[] { "*.xaml", "Extensions/*" })]
         [InlineData("Extensions/SignUpView.paml", false, new[] { "*.xaml", "Views/*" })]
         [InlineData("anything", true, new[] { "*", "*" })]
         [InlineData("anything", false, new[] { "", "" })]
