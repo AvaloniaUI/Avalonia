@@ -836,7 +836,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            bool wantsTitleBar = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
+            bool wantsTitleBar = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
 
             if (!wantsTitleBar)
             {
@@ -853,7 +853,7 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
             }
 
-            margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
 
             if (WindowState == WindowState.Maximized)
             {
@@ -901,8 +901,8 @@ namespace Avalonia.Win32
                 _extendedMargins = new Thickness();
             }
 
-            if(!_isClientAreaExtended || (_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) &&
-                !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome)))
+            if(!_isClientAreaExtended || (_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) &&
+                !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome)))
             {
                 EnableCloseButton(_hwnd);
             }
@@ -1239,7 +1239,7 @@ namespace Avalonia.Win32
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome);
+        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome);
 
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;
