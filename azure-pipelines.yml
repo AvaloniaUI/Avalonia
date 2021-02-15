@@ -35,10 +35,10 @@ jobs:
       version: 3.1.401
 
   - task: CmdLine@2
-    displayName: 'Install Mono 5.18'
+    displayName: 'Install Mono 6.12'
     inputs:
       script: |
-        curl -o ./mono.pkg https://download.mono-project.com/archive/5.18.0/macos-10-universal/MonoFramework-MDK-5.18.0.225.macos10.xamarin.universal.pkg 
+        curl -o ./mono.pkg https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.107.macos10.xamarin.universal.pkg 
         sudo installer -verbose -pkg ./mono.pkg -target /
 
   - task: CmdLine@2
