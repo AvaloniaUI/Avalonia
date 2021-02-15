@@ -269,7 +269,7 @@ namespace Avalonia.Controls
             }
 
             control ??= _attachedControls![0];
-            Open(control, control);
+            Open(control, PlacementTarget ?? control);
         }
 
         /// <summary>
