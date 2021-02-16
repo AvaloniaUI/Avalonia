@@ -201,7 +201,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             if (type.Equals(types.Classes))
             {
                 var classes = text.Split(' ');
-                var classNodes = classes.Select(c => new XamlConstantNode(node, types.XamlIlTypes.String, c)).ToArray();
+                var classNodes = classes.Select(c => new XamlAstTextNode(node, c)).ToArray();
 
                 result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, types.Classes, types.XamlIlTypes.String, classNodes);
                 return true;
