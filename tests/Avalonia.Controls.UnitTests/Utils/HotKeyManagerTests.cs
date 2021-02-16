@@ -95,10 +95,13 @@ namespace Avalonia.Controls.UnitTests.Utils
 
 
                 // The button should be collected since it's detached from the listbox
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+                for (var i = 0; i < 3; i++)
+                {
+                    if (reference?.Target is null)
+                        break;
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
 
                 Assert.Null(reference?.Target);
             }
