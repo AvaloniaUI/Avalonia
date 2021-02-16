@@ -11,6 +11,7 @@ using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 using System;
+using System.Diagnostics;
 using Avalonia.Input.Raw;
 using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
 
@@ -95,7 +96,10 @@ namespace Avalonia.Controls.UnitTests.Utils
 
 
                 // The button should be collected since it's detached from the listbox
-                for (var i = 0; i < 3; i++)
+                
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+                while (stopWatch.ElapsedMilliseconds < 5000)
                 {
                     if (reference?.Target is null)
                         break;
