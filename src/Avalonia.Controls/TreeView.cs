@@ -412,7 +412,7 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.KeyModifiers & KeyModifiers.Shift) != 0);
+                    e.KeyModifiers.HasFlagCustom(KeyModifiers.Shift));
             }
         }
 
@@ -521,8 +521,8 @@ namespace Avalonia.Controls
                     e.Handled = UpdateSelectionFromEventSource(
                         e.Source,
                         true,
-                        (e.KeyModifiers & KeyModifiers.Shift) != 0,
-                        (e.KeyModifiers & KeyModifiers.Control) != 0,
+                        e.KeyModifiers.HasFlagCustom(KeyModifiers.Shift),
+                        e.KeyModifiers.HasFlagCustom(KeyModifiers.Control),
                         point.Properties.IsRightButtonPressed);
                 }
             }
@@ -558,9 +558,9 @@ namespace Avalonia.Controls
             }
 
             var mode = SelectionMode;
-            var toggle = toggleModifier || (mode & SelectionMode.Toggle) != 0;
-            var multi = (mode & SelectionMode.Multiple) != 0;
-            var range = multi && selectedContainer != null && rangeModifier;
+            var toggle = toggleModifier || mode.HasFlagCustom(SelectionMode.Toggle);
+            var multi = mode.HasFlagCustom(SelectionMode.Multiple);
+            var range = multi && rangeModifier && selectedContainer != null;
 
             if (rightButton)
             {

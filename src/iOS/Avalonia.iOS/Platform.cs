@@ -27,7 +27,7 @@ namespace Avalonia.iOS
             var softKeyboard = new SoftKeyboardHelper();
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformOpenGlInterface>().ToConstant(GlFeature)
-                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactoryStub())
+                .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl())
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
