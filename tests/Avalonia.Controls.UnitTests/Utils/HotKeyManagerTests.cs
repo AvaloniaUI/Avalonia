@@ -99,10 +99,8 @@ namespace Avalonia.Controls.UnitTests.Utils
                 
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
-                while (stopWatch.ElapsedMilliseconds < 5000)
+                while (stopWatch.ElapsedMilliseconds < 1000)
                 {
-                    if (reference?.Target is null)
-                        break;
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                 }
