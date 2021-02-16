@@ -109,12 +109,12 @@ namespace ControlCatalog.NetCore
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    UseDBusMenu = true
+                    UseDBusMenu = true,
+                    EnableIme = true,
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true,
-                    AllowEglInitialization = true
+                    EnableMultitouch = true
                 })
                 .UseSkia()
                 .UseManagedSystemDialogs()

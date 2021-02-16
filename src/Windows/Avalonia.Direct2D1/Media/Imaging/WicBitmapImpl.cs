@@ -13,7 +13,7 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class WicBitmapImpl : BitmapImpl
     {
-        private BitmapDecoder _decoder;
+        private readonly BitmapDecoder _decoder;
 
         private static BitmapInterpolationMode ConvertInterpolationMode(Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
         {
@@ -41,7 +41,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="fileName">The filename of the bitmap to load.</param>
         public WicBitmapImpl(string fileName)
         {
-            using (BitmapDecoder decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, fileName, DecodeOptions.CacheOnDemand))
+            using (var decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, fileName, DecodeOptions.CacheOnDemand))
             {
                 WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
                 Dpi = new Vector(96, 96);
@@ -177,7 +177,7 @@ namespace Avalonia.Direct2D1.Media
         /// <returns>The Direct2D bitmap.</returns>
         public override OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget renderTarget)
         {
-            FormatConverter converter = new FormatConverter(Direct2D1Platform.ImagingFactory);
+            using var converter = new FormatConverter(Direct2D1Platform.ImagingFactory);
             converter.Initialize(WicImpl, SharpDX.WIC.PixelFormat.Format32bppPBGRA);
             return new OptionalDispose<D2DBitmap>(D2DBitmap.FromWicBitmap(renderTarget, converter), true);
         }

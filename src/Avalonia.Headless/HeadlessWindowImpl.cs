@@ -67,7 +67,7 @@ namespace Avalonia.Headless
 
         public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
 
         }

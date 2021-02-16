@@ -72,15 +72,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     v.Property is AvaloniaSyntheticCompiledBindingProperty prop
                     && prop.Name == SyntheticCompiledBindingPropertyName.ElementName);
 
-            var sourceProperty = syntheticCompiledBindingProperties
-                .FirstOrDefault(v =>
-                    v.Property is AvaloniaSyntheticCompiledBindingProperty prop
-                    && prop.Name == SyntheticCompiledBindingPropertyName.Source);
-
             var relativeSourceProperty = syntheticCompiledBindingProperties
                 .FirstOrDefault(v =>
                     v.Property is AvaloniaSyntheticCompiledBindingProperty prop
                     && prop.Name == SyntheticCompiledBindingPropertyName.RelativeSource);
+
+            var sourceProperty = binding.Children.OfType<XamlAstXamlPropertyValueNode>()
+                .FirstOrDefault(v =>
+                    v.Property is XamlAstClrProperty prop
+                    && prop.Name == "Source");
 
             if (elementNameProperty?.Values[0] is XamlAstTextNode elementName)
             {
@@ -91,14 +91,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlParseException($"Invalid ElementName '{elementNameProperty.Values[0]}'.", elementNameProperty.Values[0]);
             }
 
-            if (sourceProperty?.Values[0] != null)
+            if (sourceProperty != null && convertedNode != null)
             {
-                if (convertedNode != null)
-                {
-                    throw new XamlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
-                }
-
-                convertedNode = new RawSourceBindingExpressionNode(sourceProperty?.Values[0]);
+                throw new XamlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
             }
 
             if (GetRelativeSourceObjectFromAssignment(
@@ -222,10 +217,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (elementNameProperty != null)
             {
                 binding.Children.Remove(elementNameProperty);
-            }
-            if (sourceProperty != null)
-            {
-                binding.Children.Remove(sourceProperty);
             }
             if (relativeSourceProperty != null)
             {

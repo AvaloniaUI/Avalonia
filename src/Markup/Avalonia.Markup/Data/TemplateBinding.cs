@@ -17,8 +17,8 @@ namespace Avalonia.Data
         ISetterValue
     {
         private bool _isSetterValue;
-        private IStyledElement _target;
-        private Type _targetType;
+        private IStyledElement _target = default!;
+        private Type? _targetType;
 
         public TemplateBinding()
         {
@@ -33,7 +33,7 @@ namespace Avalonia.Data
         public InstancedBinding Initiate(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
-            object anchor = null,
+            object? anchor = null,
             bool enableDataValidation = false)
         {
             // Usually each `TemplateBinding` will only be instantiated once; in this case we can
@@ -68,12 +68,12 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
-        public IValueConverter Converter { get; set; }
+        public IValueConverter? Converter { get; set; }
 
         /// <summary>
         /// Gets or sets a parameter to pass to <see cref="Converter"/>.
         /// </summary>
-        public object ConverterParameter { get; set; }
+        public object? ConverterParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the binding mode.
@@ -83,7 +83,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the name of the source property on the templated parent.
         /// </summary>
-        public AvaloniaProperty Property { get; set; }
+        public AvaloniaProperty? Property { get; set; }
 
         /// <inheritdoc/>
         public string Description => "TemplateBinding: " + Property;
@@ -164,10 +164,7 @@ namespace Avalonia.Data
         {
             if (e.Property == StyledElement.TemplatedParentProperty)
             {
-                var oldValue = (IAvaloniaObject)e.OldValue;
-                var newValue = (IAvaloniaObject)e.OldValue;
-
-                if (oldValue != null)
+                if (e.OldValue is IAvaloniaObject oldValue)
                 {
                     oldValue.PropertyChanged -= TemplatedParentPropertyChanged;
                 }
