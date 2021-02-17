@@ -17,9 +17,9 @@ namespace Avalonia.NameGenerator
 
         public void Execute(GeneratorExecutionContext context)
         {
-            var generator = CreateNameGenerator(context);
             try
             {
+                var generator = CreateNameGenerator(context);
                 var partials = generator.GenerateNameReferences(context.AdditionalFiles);
                 foreach (var partial in partials) context.AddSource(partial.FileName, partial.Content);
             }
@@ -61,7 +61,7 @@ namespace Avalonia.NameGenerator
                         message,
                         error.ToString(),
                         "Usage",
-                        DiagnosticSeverity.Warning,
+                        DiagnosticSeverity.Error,
                         true),
                     Location.None));
         }

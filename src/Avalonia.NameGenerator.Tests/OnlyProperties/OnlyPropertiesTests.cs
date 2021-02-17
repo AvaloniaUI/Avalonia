@@ -1,27 +1,26 @@
 using System.Threading.Tasks;
 using Avalonia.NameGenerator.Compiler;
 using Avalonia.NameGenerator.Generator;
-using Avalonia.NameGenerator.Tests.InitializeComponent.GeneratedCode;
 using Avalonia.NameGenerator.Tests.OnlyProperties.GeneratedCode;
 using Avalonia.NameGenerator.Tests.Views;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace Avalonia.NameGenerator.Tests.InitializeComponent
+namespace Avalonia.NameGenerator.Tests.OnlyProperties
 {
-    public class InitializeComponentCodeGeneratorTests
+    public class OnlyPropertiesTests
     {
         [Theory]
-        [InlineData(InitializeComponentCode.NamedControl, View.NamedControl)]
-        [InlineData(InitializeComponentCode.NamedControls, View.NamedControls)]
-        [InlineData(InitializeComponentCode.XNamedControl, View.XNamedControl)]
-        [InlineData(InitializeComponentCode.XNamedControls, View.XNamedControls)]
-        [InlineData(InitializeComponentCode.NoNamedControls, View.NoNamedControls)]
-        [InlineData(InitializeComponentCode.CustomControls, View.CustomControls)]
-        [InlineData(InitializeComponentCode.DataTemplates, View.DataTemplates)]
-        [InlineData(InitializeComponentCode.SignUpView, View.SignUpView)]
-        [InlineData(InitializeComponentCode.AttachedProps, View.AttachedProps)]
-        [InlineData(InitializeComponentCode.FieldModifier, View.FieldModifier)]
+        [InlineData(OnlyPropertiesCode.NamedControl, View.NamedControl)]
+        [InlineData(OnlyPropertiesCode.NamedControls, View.NamedControls)]
+        [InlineData(OnlyPropertiesCode.XNamedControl, View.XNamedControl)]
+        [InlineData(OnlyPropertiesCode.XNamedControls, View.XNamedControls)]
+        [InlineData(OnlyPropertiesCode.NoNamedControls, View.NoNamedControls)]
+        [InlineData(OnlyPropertiesCode.CustomControls, View.CustomControls)]
+        [InlineData(OnlyPropertiesCode.DataTemplates, View.DataTemplates)]
+        [InlineData(OnlyPropertiesCode.SignUpView, View.SignUpView)]
+        [InlineData(OnlyPropertiesCode.AttachedProps, View.AttachedProps)]
+        [InlineData(OnlyPropertiesCode.FieldModifier, View.FieldModifier)]
         public async Task Should_Generate_FindControl_Refs_From_Avalonia_Markup_File(string expectation, string markup)
         {
             var compilation =
@@ -39,12 +38,12 @@ namespace Avalonia.NameGenerator.Tests.InitializeComponent
             var nameResolver = new XamlXNameResolver();
             var names = nameResolver.ResolveNames(classInfo.Xaml);
 
-            var generator = new InitializeComponentCodeGenerator();
+            var generator = new OnlyPropertiesCodeGenerator();
             var code = generator
                 .GenerateCode("SampleView", "Sample.App", names)
                 .Replace("\r", string.Empty);
 
-            var expected = await InitializeComponentCode.Load(expectation);
+            var expected = await OnlyPropertiesCode.Load(expectation);
             CSharpSyntaxTree.ParseText(code);
             Assert.Equal(expected.Replace("\r", string.Empty), code);
         }
