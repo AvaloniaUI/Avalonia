@@ -60,15 +60,10 @@ git submodule update --init --recursive
 
 ### Build native libraries (macOS only)
 
-On macOS it is necessary to build and manually install the respective native libraries using [Xcode](https://developer.apple.com/xcode/).  The steps to get this working correctly are:
-- (for revisions after 2 Nov 2020) Run `./build.sh GenerateCppHeaders` to generate `avalonia-native.h` from `avn.idl`
-- Navigate to the Avalonia/native/Avalonia.Native/src/OSX folder and open the `Avalonia.Native.OSX.xcodeproj` project
-- Build the library via the Product->Build menu.  This will generate binaries in your local path under ~/Library/Developer/Xcode/DerivedData/Avalonia.Native.OSX-*guid* where "guid" is uniquely generated every time you build.
-- Manually install the native library by copying it from the build artifacts folder into the shared dynamic library path:
+On macOS it is necessary to build and manually install the respective native libraries using [Xcode](https://developer.apple.com/xcode/). Execute the build script in the root project with the `CompileNative` task. It will build the headers, build the libraries, and place them in the appropriate place to allow .NET to find them at compilation and run time.
 
-```
-cd ~/Library/Developer/Xcode/DerivedData/Avalonia.Native.OSX-[guid]/Build/Products/Debug
-cp libAvalonia.Native.OSX.dylib /usr/local/lib/libAvaloniaNative.dylib
+```bash
+./build.sh CompileNative
 ```
 
 ###  Build and Run Avalonia

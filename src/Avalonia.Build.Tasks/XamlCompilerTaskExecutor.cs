@@ -46,7 +46,9 @@ namespace Avalonia.Build.Tasks
             string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
             bool skipXamlCompilation)
         {
-            var typeSystem = new CecilTypeSystem(references.Concat(new[] { input }), input);
+            var typeSystem = new CecilTypeSystem(references
+                .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
+                .Concat(new[] { input }), input);
             
             var asm = typeSystem.TargetAssemblyDefinition;
 

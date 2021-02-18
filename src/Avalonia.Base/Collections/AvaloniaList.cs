@@ -64,6 +64,15 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AvaloniaList{T}"/>.
+        /// </summary>
+        /// <param name="capacity">Initial list capacity.</param>
+        public AvaloniaList(int capacity)
+        {
+            _inner = new List<T>(capacity);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaList{T}"/> class.
         /// </summary>
         /// <param name="items">The initial items for the collection.</param>
@@ -173,6 +182,15 @@ namespace Avalonia.Collections
         {
             get { return this[index]; }
             set { this[index] = (T)value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the total number of elements the internal data structure can hold without resizing.
+        /// </summary>
+        public int Capacity
+        {
+            get => _inner.Capacity;
+            set => _inner.Capacity = value;
         }
 
         /// <summary>

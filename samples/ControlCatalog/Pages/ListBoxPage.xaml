@@ -20,6 +20,6 @@
     <ListBox Items="{Binding Items}"
              Selection="{Binding Selection}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
-             SelectionMode="{Binding SelectionMode}"/>
+             SelectionMode="{Binding SelectionMode^}"/>
   </DockPanel>
 </UserControl>

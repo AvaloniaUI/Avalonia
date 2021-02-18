@@ -13,7 +13,8 @@ namespace MicroComGenerator
             while (!parser.Eof)
             {
                 var attrs = ParseLocalAttributes(ref parser);
-
+                if (parser.TryConsume(";"))
+                    continue;
                 if (parser.TryParseKeyword("enum"))
                     idl.Enums.Add(ParseEnum(attrs, ref parser));
                 else if (parser.TryParseKeyword("struct"))
@@ -64,7 +65,7 @@ namespace MicroComGenerator
         static AstAttributes ParseLocalAttributes(ref TokenParser parser)
         {
             var rv = new AstAttributes();
-            if (parser.TryConsume("["))
+            while (parser.TryConsume("["))
             {
                 while (!parser.TryConsume("]") && !parser.Eof)
                 {
@@ -78,7 +79,7 @@ namespace MicroComGenerator
                     if (parser.TryConsume(']'))
                     {
                         rv.Add(new AstAttributeNode(ident, null));
-                        return rv;
+                        break;
                     }
                     // No value, next attribute
                     else if (parser.TryConsume(','))

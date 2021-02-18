@@ -7,10 +7,10 @@ namespace Avalonia.MicroCom
     public unsafe class MicroComVtblBase
     {
         private List<IntPtr> _methods = new List<IntPtr>();
-        [UnmanagedFunctionPointerAttribute(CallingConvention.ThisCall)]
+        [UnmanagedFunctionPointerAttribute(CallingConvention.StdCall)]
         private delegate int AddRefDelegate(Ccw* ccw);
 
-        [UnmanagedFunctionPointerAttribute(CallingConvention.ThisCall)]
+        [UnmanagedFunctionPointerAttribute(CallingConvention.StdCall)]
         private delegate int QueryInterfaceDelegate(Ccw* ccw, Guid* guid, void** ppv);
 
         public static IntPtr Vtable { get; } = new MicroComVtblBase().CreateVTable();

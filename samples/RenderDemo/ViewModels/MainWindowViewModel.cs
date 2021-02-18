@@ -1,11 +1,10 @@
 ﻿using System.Reactive;
 using System.Threading.Tasks;
-
-using ReactiveUI;
+using MiniMvvm;
 
 namespace RenderDemo.ViewModels
 {
-    public class MainWindowViewModel : ReactiveObject
+    public class MainWindowViewModel : ViewModelBase
     {
         private bool drawDirtyRects = false;
         private bool drawFps = true;
@@ -14,9 +13,9 @@ namespace RenderDemo.ViewModels
 
         public MainWindowViewModel()
         {
-            ToggleDrawDirtyRects = ReactiveCommand.Create(() => DrawDirtyRects = !DrawDirtyRects);
-            ToggleDrawFps = ReactiveCommand.Create(() => DrawFps = !DrawFps);
-            ResizeWindow = ReactiveCommand.CreateFromTask(ResizeWindowAsync);
+            ToggleDrawDirtyRects = MiniCommand.Create(() => DrawDirtyRects = !DrawDirtyRects);
+            ToggleDrawFps = MiniCommand.Create(() => DrawFps = !DrawFps);
+            ResizeWindow = MiniCommand.CreateFromTask(ResizeWindowAsync);
         }
 
         public bool DrawDirtyRects
@@ -43,9 +42,9 @@ namespace RenderDemo.ViewModels
             set => this.RaiseAndSetIfChanged(ref height, value);
         }
 
-        public ReactiveCommand<Unit, bool> ToggleDrawDirtyRects { get; }
-        public ReactiveCommand<Unit, bool> ToggleDrawFps { get; }
-        public ReactiveCommand<Unit, Unit> ResizeWindow { get; }
+        public MiniCommand ToggleDrawDirtyRects { get; }
+        public MiniCommand ToggleDrawFps { get; }
+        public MiniCommand ResizeWindow { get; }
 
         private async Task ResizeWindowAsync()
         {

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using XamlX.Emit;
 using XamlX.IL;
 using XamlX.Transform;
@@ -47,6 +49,35 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ReflectionBindingExtension { get; }
 
         public IXamlType RelativeSource { get; }
+        public IXamlType UInt { get; }
+        public IXamlType Int { get; }
+        public IXamlType Long { get; }
+        public IXamlType Uri { get; }
+        public IXamlType FontFamily { get; }
+        public IXamlConstructor FontFamilyConstructorUriName { get; }
+        public IXamlType Thickness { get; }
+        public IXamlConstructor ThicknessFullConstructor { get; }
+        public IXamlType Point { get; }
+        public IXamlConstructor PointFullConstructor { get; }
+        public IXamlType Vector { get; }
+        public IXamlConstructor VectorFullConstructor { get; }
+        public IXamlType Size { get; }
+        public IXamlConstructor SizeFullConstructor { get; }
+        public IXamlType Matrix { get; }
+        public IXamlConstructor MatrixFullConstructor { get; }
+        public IXamlType CornerRadius { get; }
+        public IXamlConstructor CornerRadiusFullConstructor { get; }
+        public IXamlType GridLength { get; }
+        public IXamlConstructor GridLengthConstructorValueType { get; }
+        public IXamlType Color { get; }
+        public IXamlType StandardCursorType { get; }
+        public IXamlType Cursor { get; }
+        public IXamlConstructor CursorTypeConstructor { get; }
+        public IXamlType RowDefinition { get; }
+        public IXamlType RowDefinitions { get; }
+        public IXamlType ColumnDefinition { get; }
+        public IXamlType ColumnDefinitions { get; }
+        public IXamlType Classes { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -104,6 +135,39 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ItemsRepeater = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsRepeater");
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
             RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");
+            UInt = cfg.TypeSystem.GetType("System.UInt32");
+            Int = cfg.TypeSystem.GetType("System.Int32");
+            Long = cfg.TypeSystem.GetType("System.Int64");
+            Uri = cfg.TypeSystem.GetType("System.Uri");
+            FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
+            FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
+
+            (IXamlType, IXamlConstructor) GetNumericTypeInfo(string name, IXamlType componentType, int componentCount)
+            {
+                var type = cfg.TypeSystem.GetType(name);
+                var ctor = type.GetConstructor(Enumerable.Range(0, componentCount).Select(_ => componentType).ToList());
+
+                return (type, ctor);
+            }
+
+            (Thickness, ThicknessFullConstructor) = GetNumericTypeInfo("Avalonia.Thickness", XamlIlTypes.Double, 4);
+            (Point, PointFullConstructor) = GetNumericTypeInfo("Avalonia.Point", XamlIlTypes.Double, 2);
+            (Vector, VectorFullConstructor) = GetNumericTypeInfo("Avalonia.Vector", XamlIlTypes.Double, 2);
+            (Size, SizeFullConstructor) = GetNumericTypeInfo("Avalonia.Size", XamlIlTypes.Double, 2);
+            (Matrix, MatrixFullConstructor) = GetNumericTypeInfo("Avalonia.Matrix", XamlIlTypes.Double, 6);
+            (CornerRadius, CornerRadiusFullConstructor) = GetNumericTypeInfo("Avalonia.CornerRadius", XamlIlTypes.Double, 4);
+
+            GridLength = cfg.TypeSystem.GetType("Avalonia.Controls.GridLength");
+            GridLengthConstructorValueType = GridLength.GetConstructor(new List<IXamlType> { XamlIlTypes.Double, cfg.TypeSystem.GetType("Avalonia.Controls.GridUnitType") });
+            Color = cfg.TypeSystem.GetType("Avalonia.Media.Color");
+            StandardCursorType = cfg.TypeSystem.GetType("Avalonia.Input.StandardCursorType");
+            Cursor = cfg.TypeSystem.GetType("Avalonia.Input.Cursor");
+            CursorTypeConstructor = Cursor.GetConstructor(new List<IXamlType> { StandardCursorType });
+            ColumnDefinition = cfg.TypeSystem.GetType("Avalonia.Controls.ColumnDefinition");
+            ColumnDefinitions = cfg.TypeSystem.GetType("Avalonia.Controls.ColumnDefinitions");
+            RowDefinition = cfg.TypeSystem.GetType("Avalonia.Controls.RowDefinition");
+            RowDefinitions = cfg.TypeSystem.GetType("Avalonia.Controls.RowDefinitions");
+            Classes = cfg.TypeSystem.GetType("Avalonia.Controls.Classes");
         }
     }
 

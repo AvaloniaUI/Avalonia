@@ -14,7 +14,10 @@ namespace MicroComGenerator
                 name = "unsigned char";
             else if(name == "uint")
                 name = "unsigned int";
-            return name + new string('*', type.PointerLevel);
+
+            type = type.Clone();
+            type.Name = name;
+            return type.Format();
         }
         
         public static string GenerateCpp(AstIdlNode idl)
