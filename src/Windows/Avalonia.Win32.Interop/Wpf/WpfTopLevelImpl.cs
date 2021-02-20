@@ -147,13 +147,13 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             var state = Keyboard.Modifiers;
             var rv = default(RawInputModifiers);
-            if (state.HasFlag(ModifierKeys.Windows))
+            if (state.HasFlagCustom(ModifierKeys.Windows))
                 rv |= RawInputModifiers.Meta;
-            if (state.HasFlag(ModifierKeys.Alt))
+            if (state.HasFlagCustom(ModifierKeys.Alt))
                 rv |= RawInputModifiers.Alt;
-            if (state.HasFlag(ModifierKeys.Control))
+            if (state.HasFlagCustom(ModifierKeys.Control))
                 rv |= RawInputModifiers.Control;
-            if (state.HasFlag(ModifierKeys.Shift))
+            if (state.HasFlagCustom(ModifierKeys.Shift))
                 rv |= RawInputModifiers.Shift;
             if (e != null)
             {
@@ -225,12 +225,12 @@ namespace Avalonia.Win32.Interop.Wpf
         protected override void OnTextInput(TextCompositionEventArgs e) 
             => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot, e.Text));
 
-        void ITopLevelImpl.SetCursor(IPlatformHandle cursor)
+        void ITopLevelImpl.SetCursor(ICursorImpl cursor)
         {
             if (cursor == null)
                 Cursor = Cursors.Arrow;
-            else if (cursor.HandleDescriptor == "HCURSOR")
-                Cursor = CursorShim.FromHCursor(cursor.Handle);
+            else if (cursor is IPlatformHandle handle)
+                Cursor = CursorShim.FromHCursor(handle.Handle);
         }
 
         Action<RawInputEventArgs> ITopLevelImpl.Input { get; set; } //TODO

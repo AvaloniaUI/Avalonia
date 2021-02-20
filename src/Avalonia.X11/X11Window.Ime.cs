@@ -96,14 +96,14 @@ namespace Avalonia.X11
 
         void HandleKeyEvent(ref XEvent ev)
         {
-            var index = ev.KeyEvent.state.HasFlag(XModifierMask.ShiftMask);
+            var index = ev.KeyEvent.state.HasFlagCustom(XModifierMask.ShiftMask);
 
             // We need the latin key, since it's mainly used for hotkeys, we use a different API for text anyway
             var key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 1 : 0).ToInt32();
                 
             // Manually switch the Shift index for the keypad,
             // there should be a proper way to do this
-            if (ev.KeyEvent.state.HasFlag(XModifierMask.Mod2Mask)
+            if (ev.KeyEvent.state.HasFlagCustom(XModifierMask.Mod2Mask)
                 && key > X11Key.Num_Lock && key <= X11Key.KP_9)
                 key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
             
