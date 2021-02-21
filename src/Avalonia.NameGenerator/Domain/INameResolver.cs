@@ -8,17 +8,5 @@ namespace Avalonia.NameGenerator.Domain
         IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml);
     }
 
-    internal record ResolvedName
-    {
-        public string TypeName { get; }
-        public string Name { get; }
-        public string FieldModifier { get; }
-
-        public ResolvedName(string typeName, string name, string fieldModifier)
-        {
-            TypeName = typeName;
-            Name = name;
-            FieldModifier = fieldModifier;
-        }
-    }
+    internal record ResolvedName(string TypeName, string Name, string FieldModifier);
 }

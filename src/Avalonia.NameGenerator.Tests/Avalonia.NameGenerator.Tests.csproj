@@ -8,6 +8,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.8.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
         <PackageReference Include="xunit" Version="2.4.1" />
@@ -17,7 +18,8 @@
     <ItemGroup>
         <EmbeddedResource Include="Views\*.xml" />
         <EmbeddedResource Include="OnlyProperties\GeneratedCode\*.txt" />
-        <EmbeddedResource Include="InitializeComponent\GeneratedCode\*.txt" />
+        <EmbeddedResource Include="InitializeComponent\GeneratedInitializeComponent\*.txt" />
+        <EmbeddedResource Include="InitializeComponent\GeneratedDevTools\*.txt" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj" />

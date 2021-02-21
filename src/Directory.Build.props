@@ -21,6 +21,7 @@
         <PackageReference Include="Avalonia" Version="0.10.999-cibuild0012810-beta" />
         <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0012810-beta" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0012810-beta" />
+        <PackageReference Include="Avalonia.Diagnostics" Version="0.10.999-cibuild0012810-beta" />
     </ItemGroup>
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="LICENSE" />

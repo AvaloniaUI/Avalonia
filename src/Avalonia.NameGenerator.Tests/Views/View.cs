@@ -34,7 +34,7 @@ namespace Avalonia.NameGenerator.Tests.Views
             return await reader.ReadToEndAsync();
         }
 
-        public static CSharpCompilation CreateAvaloniaCompilation()
+        public static CSharpCompilation CreateAvaloniaCompilation(string excludedPattern = null)
         {
             var compilation = CSharpCompilation
                 .Create("AvaloniaLib", options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
@@ -48,7 +48,9 @@ namespace Avalonia.NameGenerator.Tests.Views
             var avaloniaAssemblyDirectory = Path.GetDirectoryName(avaloniaAssemblyLocation);
             var avaloniaAssemblyReferences = Directory
                 .EnumerateFiles(avaloniaAssemblyDirectory!)
-                .Where(file => file.EndsWith(".dll") && file.Contains("Avalonia"))
+                .Where(file => file.EndsWith(".dll") &&
+                               file.Contains("Avalonia") &&
+                               (string.IsNullOrWhiteSpace(excludedPattern) || !file.Contains(excludedPattern)))
                 .Select(file => MetadataReference.CreateFromFile(file))
                 .ToList();
 

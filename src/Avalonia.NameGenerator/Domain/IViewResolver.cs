@@ -7,17 +7,5 @@ namespace Avalonia.NameGenerator.Domain
         ResolvedView ResolveView(string xaml);
     }
 
-    internal record ResolvedView
-    {
-        public XamlDocument Xaml { get; }
-        public string ClassName { get; }
-        public string Namespace { get; }
-
-        public ResolvedView(string className, string nameSpace, XamlDocument xaml)
-        {
-            ClassName = className;
-            Namespace = nameSpace;
-            Xaml = xaml;
-        }
-    }
+    internal record ResolvedView(string ClassName, string Namespace, XamlDocument Xaml);
 }

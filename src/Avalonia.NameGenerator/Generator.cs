@@ -32,14 +32,14 @@ namespace Avalonia.NameGenerator
         private static INameGenerator CreateNameGenerator(GeneratorExecutionContext context)
         {
             var options = new GeneratorOptions(context);
+            var types = new RoslynTypeSystem((CSharpCompilation)context.Compilation);
             var defaultFieldModifier = options.AvaloniaNameGeneratorDefaultFieldModifier.ToString().ToLowerInvariant();
             ICodeGenerator generator = options.AvaloniaNameGeneratorBehavior switch {
                 Behavior.OnlyProperties => new OnlyPropertiesCodeGenerator(),
-                Behavior.InitializeComponent => new InitializeComponentCodeGenerator(),
+                Behavior.InitializeComponent => new InitializeComponentCodeGenerator(types),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            var types = new RoslynTypeSystem((CSharpCompilation)context.Compilation);
             var compiler = MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
             return new AvaloniaNameGenerator(
                 new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByPath),

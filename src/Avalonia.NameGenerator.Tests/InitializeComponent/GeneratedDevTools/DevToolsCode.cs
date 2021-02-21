@@ -2,9 +2,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Avalonia.NameGenerator.Tests.InitializeComponent.GeneratedCode
+namespace Avalonia.NameGenerator.Tests.InitializeComponent.GeneratedDevTools
 {
-    public static class InitializeComponentCode
+    public static class DevToolsCode
     {
         public const string NamedControl = "NamedControl.txt";
         public const string NamedControls = "NamedControls.txt";
@@ -22,7 +22,9 @@ namespace Avalonia.NameGenerator.Tests.InitializeComponent.GeneratedCode
             var assembly = typeof(XamlXNameResolverTests).Assembly;
             var fullResourceName = assembly
                 .GetManifestResourceNames()
-                .First(name => name.Contains("InitializeComponent") && name.EndsWith(generatedCodeResourceName));
+                .First(name => name.Contains("InitializeComponent") &&
+                               name.Contains("GeneratedDevTools") &&
+                               name.EndsWith(generatedCodeResourceName));
 
             await using var stream = assembly.GetManifestResourceStream(fullResourceName);
             using var reader = new StreamReader(stream!);

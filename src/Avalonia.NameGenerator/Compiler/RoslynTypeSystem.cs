@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -26,31 +27,19 @@ namespace Avalonia.NameGenerator.Compiler
 
         public IReadOnlyList<IXamlAssembly> Assemblies => _assemblies;
 
-        public IXamlAssembly FindAssembly(string substring) => _assemblies[0];
+        public IXamlAssembly FindAssembly(string name) =>
+            Assemblies
+                .FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.OrdinalIgnoreCase));
 
-        public IXamlType FindType(string name)
-        {
-            foreach (var assembly in _assemblies)
-            {
-                var type = assembly.FindType(name);
-                if (type != null)
-                    return type;
-            }
-            
-            return null;
-        }
+        public IXamlType FindType(string name) =>
+            _assemblies
+                .Select(assembly => assembly.FindType(name))
+                .FirstOrDefault(type => type != null);
 
-        public IXamlType FindType(string name, string assembly)
-        {
-            foreach (var assemblyInstance in _assemblies)
-            {
-                var type = assemblyInstance.FindType(name);
-                if (type != null)
-                    return type;
-            }
-
-            return null;
-        }
+        public IXamlType FindType(string name, string assembly) =>
+            _assemblies
+                .Select(assemblyInstance => assemblyInstance.FindType(name))
+                .FirstOrDefault(type => type != null);
     }
     
     public class RoslynAssembly : IXamlAssembly
