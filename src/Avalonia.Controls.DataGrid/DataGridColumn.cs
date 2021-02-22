@@ -12,6 +12,7 @@ using System;
 using System.Linq;
 using System.Diagnostics;
 using Avalonia.Controls.Utils;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Controls
 {
@@ -1033,13 +1034,16 @@ namespace Avalonia.Controls
 
             if (String.IsNullOrEmpty(result))
             {
-
-                if(this is DataGridBoundColumn boundColumn && 
-                    boundColumn.Binding != null &&
-                    boundColumn.Binding is Binding binding &&
-                    binding.Path != null)
+                if (this is DataGridBoundColumn boundColumn)
                 {
-                    result = binding.Path;
+                    if (boundColumn.Binding is Binding binding)
+                    {
+                        result = binding.Path;
+                    }
+                    else if (boundColumn.Binding is CompiledBindingExtension compiledBinding)
+                    {
+                        result = compiledBinding.Path.ToString();
+                    }
                 }
             }
 
