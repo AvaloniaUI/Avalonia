@@ -171,6 +171,11 @@ namespace Sample.App
                 AvaloniaXamlLoader.Load(this);
             }
 
+#if DEBUG
+            // This will be added only if you install Avalonia.Diagnostics.
+            this.AttachDevTools(); 
+#endif
+
             UserNameTextBox = this.FindControl<global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox>("UserNameTextBox");
             UserNameValidation = this.FindControl<global::Avalonia.Controls.TextBlock>("UserNameValidation");
             PasswordTextBox = this.FindControl<global::Avalonia.Controls.TextBox>("PasswordTextBox");
