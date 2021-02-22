@@ -16,6 +16,24 @@ using Avalonia.Styling;
 
 namespace Avalonia
 {
+    public class StyleDiagnostics
+    {
+        public IReadOnlyList<IStyleInstance> AppliedStyles { get; }
+
+        public StyleDiagnostics(IReadOnlyList<IStyleInstance> appliedStyles)
+        {
+            AppliedStyles = appliedStyles;
+        }
+    }
+
+    public static class StyledElementExtensions
+    {
+        public static StyleDiagnostics GetStyleDiagnostics(this StyledElement styledElement)
+        {
+            return styledElement.GetStyleDiagnosticsInternal();
+        }
+    }
+
     /// <summary>
     /// Extends an <see cref="Animatable"/> with the following features:
     /// 
@@ -354,6 +372,18 @@ namespace Avalonia
                 OnInitialized();
                 Initialized?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        internal StyleDiagnostics GetStyleDiagnosticsInternal()
+        {
+            IReadOnlyList<IStyleInstance>? appliedStyles = _appliedStyles;
+
+            if (appliedStyles is null)
+            {
+                appliedStyles = Array.Empty<IStyleInstance>();
+            }
+
+            return new StyleDiagnostics(appliedStyles);
         }
 
         /// <inheritdoc/>

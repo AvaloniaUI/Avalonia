@@ -105,7 +105,7 @@
 
     <GridSplitter Grid.Column="1" />
 
-    <Grid Grid.Column="2" RowDefinitions="Auto,*" >
+    <Grid Grid.Column="2" RowDefinitions="Auto,*, Auto,*,Auto" >
       <TextBlock Grid.Row="0" Text="Layout Visualizer" Margin="4" />
       
       <Grid Grid.Row="1" x:Name="LayoutRoot" Margin="8,0,8,8" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
@@ -148,7 +148,52 @@
           <Rectangle x:Name="VerticalSizeEnd" />
         </Canvas>
       </Grid>
-      
+
+      <TextBlock Grid.Row="2" Text="Styles" Margin="4" />
+
+      <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl Items="{Binding AppliedStyles}" >
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border BorderThickness="0,0,0,1" BorderBrush="#6C6C6C">
+                <Expander IsExpanded="True" Margin="0" Padding="8,0" ContentTransition="{x:Null}" IsVisible="{Binding IsActive}" >
+                  <Expander.Header>
+                    <TextBlock Grid.Row="0" Text="{Binding Name}" />
+                  </Expander.Header>
+                  <ItemsControl Margin="20,0,0,0" Grid.Row="1" Items="{Binding Setters}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                          <TextBlock Text=":" />
+                          <Border IsVisible="{Binding IsSpecialKind}" Height="8" Width="8" VerticalAlignment="Center" Background="{Binding KindColor}"/>
+                          <TextBlock Text="{Binding Value}" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Expander>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <Expander Header="Pseudo Classes" Grid.Row="4">
+        <ItemsControl Items="{Binding PseudoClasses}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <CheckBox Margin="2" Content="{Binding Name}" IsChecked="{Binding IsActive, Mode=TwoWay}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Expander>
+
     </Grid>
   </Grid>
 

@@ -1,12 +1,131 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
+    internal class StyleViewModel : ViewModelBase
+    {
+        private readonly IStyleInstance _styleInstance;
+        private bool _isActive;
+
+        public StyleViewModel(IStyleInstance styleInstance, string name, List<SetterViewModel> setters)
+        {
+            _styleInstance = styleInstance;
+            IsActive = styleInstance.IsActive;
+            Name = name;
+            Setters = setters;
+        }
+
+        public bool IsActive
+        {
+            get => _isActive;
+            set => RaiseAndSetIfChanged(ref _isActive, value);
+        }
+
+        public string Name { get; }
+
+        public List<SetterViewModel> Setters { get; }
+
+        public void Update()
+        {
+            IsActive = _styleInstance.IsActive;
+        }
+    }
+
+    internal enum ValueKind
+    {
+        Regular,
+        Resource
+    }
+
+    internal class SetterViewModel : ViewModelBase
+    {
+        public string Name { get; }
+
+        public object Value { get; }
+
+        public ValueKind Kind { get; }
+
+        public bool IsSpecialKind => Kind != ValueKind.Regular;
+
+        public IBrush KindColor { get; }
+
+        public SetterViewModel(string name, object value, ValueKind kind)
+        {
+            Name = name;
+            Value = value;
+            Kind = kind;
+
+            if (Kind == ValueKind.Resource)
+            {
+                KindColor = Brushes.Brown;
+            }
+            else
+            {
+                KindColor = Brushes.Transparent;
+            }
+        }
+    }
+
+    internal class PseudoClassesViewModel : ViewModelBase
+    {
+        private readonly StyledElement _source;
+        private readonly IPseudoClasses _pseudoClasses;
+        private bool _isActive;
+        private bool _isUpdating;
+
+        public PseudoClassesViewModel(string name, StyledElement source)
+        {
+            Name = name;
+            _source = source;
+            _pseudoClasses = _source.Classes;
+
+            Update();
+        }
+
+        public string Name { get; }
+
+        public bool IsActive
+        {
+            get => _isActive;
+            set
+            {
+                RaiseAndSetIfChanged(ref _isActive, value);
+
+                if (!_isUpdating)
+                {
+                    _pseudoClasses.Set(Name, value);
+                }
+            }
+        }
+
+        public void Update()
+        {
+            try
+            {
+                _isUpdating = true;
+
+                IsActive = _source.Classes.Contains(Name);
+            }
+            finally
+            {
+                _isUpdating = false;
+            }
+        }
+    }
+
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
         private readonly IVisual _control;
@@ -43,11 +162,75 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 ao.PropertyChanged += ControlPropertyChanged;
             }
+
+            AppliedStyles = new ObservableCollection<StyleViewModel>();
+            PseudoClasses = new ObservableCollection<PseudoClassesViewModel>();
+
+            if (control is StyledElement styledElement)
+            {
+                styledElement.Classes.CollectionChanged += OnClassesChanged;
+
+                var pseudoClassAttributes = styledElement.GetType().GetCustomAttributes<PseudoClassesAttribute>(true);
+
+                foreach (var classAttribute in pseudoClassAttributes)
+                {
+                    foreach (var className in classAttribute.PseudoClasses)
+                    {
+                        PseudoClasses.Add(new PseudoClassesViewModel(className, styledElement));
+                    }
+                }
+
+                var styleDiagnostics = styledElement.GetStyleDiagnostics();
+
+                foreach (var appliedStyle in styleDiagnostics.AppliedStyles)
+                {
+                    var styleSource = appliedStyle.Source;
+
+                    var setters = new List<SetterViewModel>();
+
+                    if (styleSource is Style style)
+                    {
+                        foreach (var setter in style.Setters)
+                        {
+                            if (setter is Setter regularSetter)
+                            {
+                                var setterValue = regularSetter.Value;
+
+                                ValueKind kind = ValueKind.Regular;
+
+                                if (setterValue is DynamicResourceExtension dynResource)
+                                {
+                                    var resolved = styledElement.FindResource(dynResource.ResourceKey);
+
+                                    if (resolved != null)
+                                    {
+                                        setterValue = $"{resolved} ({dynResource.ResourceKey})";
+                                    }
+                                    else
+                                    {
+                                        setterValue = dynResource.ResourceKey;
+                                    }
+
+                                    kind = ValueKind.Resource;
+                                }
+
+                                setters.Add(new SetterViewModel(regularSetter.Property?.Name ?? "?", setterValue, kind));
+                            }
+                        }
+
+                        AppliedStyles.Add(new StyleViewModel(appliedStyle, style.Selector?.ToString() ?? "No selector", setters));
+                    }
+                }
+            }
         }
 
         public TreePageViewModel TreePage { get; }
 
         public DataGridCollectionView PropertiesView { get; }
+
+        public ObservableCollection<StyleViewModel> AppliedStyles { get; }
+
+        public ObservableCollection<PseudoClassesViewModel> PseudoClasses { get; }
 
         public AvaloniaPropertyViewModel SelectedProperty
         {
@@ -67,6 +250,11 @@ namespace Avalonia.Diagnostics.ViewModels
             if (_control is AvaloniaObject ao)
             {
                 ao.PropertyChanged -= ControlPropertyChanged;
+            }
+
+            if (_control is StyledElement se)
+            {
+                se.Classes.CollectionChanged -= OnClassesChanged;
             }
         }
 
@@ -128,6 +316,26 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     property.Update();
                 }
+            }
+
+            UpdateStyles();
+        }
+
+        private void OnClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            UpdateStyles();
+        }
+
+        private void UpdateStyles()
+        {
+            foreach (var style in AppliedStyles)
+            {
+                style.Update();
+            }
+
+            foreach (var pseudoClass in PseudoClasses)
+            {
+                pseudoClass.Update();
             }
         }
 
