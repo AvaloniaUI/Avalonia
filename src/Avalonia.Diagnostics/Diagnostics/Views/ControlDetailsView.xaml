@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:conv="clr-namespace:Avalonia.Diagnostics.Converters"
              xmlns:local="clr-namespace:Avalonia.Diagnostics.Views"
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
              x:Class="Avalonia.Diagnostics.Views.ControlDetailsView">
 
   <UserControl.Resources>
@@ -11,6 +12,7 @@
     <SolidColorBrush x:Key="BorderBackgroundBrush" Color="#E3C381" />
     <SolidColorBrush x:Key="PaddingBackgroundBrush" Color="#B8C47F" />
     <SolidColorBrush x:Key="SizeBackgroundBrush" Color="#88B2BD" />
+    <conv:BoolToOpacityConverter x:Key="BoolToOpacity" Opacity="0.6"/>
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -149,29 +151,77 @@
         </Canvas>
       </Grid>
 
-      <TextBlock Grid.Row="2" Text="Styles" Margin="4" />
+      <Grid Grid.Row="2" Margin="4" RowDefinitions="Auto,Auto">
+        <TextBlock Grid.Row="0" Text="Styles"  />
+        <TextBox Grid.Row="1" Margin="2" Watermark="Filter" Text="{Binding StyleFilter}" />
+      </Grid>
 
-      <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Disabled">
         <ItemsControl Items="{Binding AppliedStyles}" >
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <Border BorderThickness="0,0,0,1" BorderBrush="#6C6C6C">
-                <Expander IsExpanded="True" Margin="0" Padding="8,0" ContentTransition="{x:Null}" IsVisible="{Binding IsActive}" >
+                <Border.IsVisible>
+                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsActive" />
+                    <Binding Path="IsVisible" />
+                  </MultiBinding>
+                </Border.IsVisible>
+                <Expander IsExpanded="True" Margin="0" Padding="8,0" ContentTransition="{x:Null}" >
                   <Expander.Header>
                     <TextBlock Grid.Row="0" Text="{Binding Name}" />
                   </Expander.Header>
+
                   <ItemsControl Margin="20,0,0,0" Grid.Row="1" Items="{Binding Setters}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate>
+                    <ItemsControl.DataTemplates>
+
+                      <DataTemplate DataType="IBrush">
                         <StackPanel Orientation="Horizontal" Spacing="2">
-                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                          <TextBlock Text=":" />
-                          <Border IsVisible="{Binding IsSpecialKind}" Height="8" Width="8" VerticalAlignment="Center" Background="{Binding KindColor}"/>
-                          <TextBlock Text="{Binding Value}" />
+                          <Border BorderThickness="1" BorderBrush="Black" Background="{Binding}" Width="8" Height="8"/>
+                          <TextBlock Text="{Binding}" />
                         </StackPanel>
                       </DataTemplate>
-                    </ItemsControl.ItemTemplate>
+
+                      <DataTemplate DataType="Color">
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                          <Border BorderThickness="1" BorderBrush="Black" Width="8" Height="8">
+                            <Border.Background>
+                              <SolidColorBrush Color="{Binding}" />
+                            </Border.Background>
+                          </Border>
+                          <TextBlock Text="{Binding}" />
+                        </StackPanel>
+                      </DataTemplate>
+
+                      <DataTemplate DataType="vm:ResourceSetterViewModel">
+                        <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
+                          <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Left">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                            <TextBlock Text=":" />
+                            <ContentControl Content="{Binding Value}"/>
+                            <TextBlock>(</TextBlock>
+                            <Ellipse Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}"/>
+                            <TextBlock FontStyle="Italic" Text="{Binding Key}" />
+                            <TextBlock>)</TextBlock>
+                          </StackPanel>
+                          <Rectangle Height="1" Fill="#6C6C6C" IsVisible="{Binding !IsActive}" />
+                        </Panel>
+                      </DataTemplate>
+
+                      <DataTemplate DataType="vm:SetterViewModel">
+                        <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
+                          <StackPanel Orientation="Horizontal" Spacing="2">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                            <TextBlock Text=":" />
+                            <ContentControl Content="{Binding Value}"/>
+                          </StackPanel>
+                          <Rectangle Height="1" Fill="#6C6C6C" VerticalAlignment="Center" IsVisible="{Binding !IsActive}" />
+                        </Panel>
+                      </DataTemplate>
+
+                    </ItemsControl.DataTemplates>
                   </ItemsControl>
+
                 </Expander>
               </Border>
             </DataTemplate>

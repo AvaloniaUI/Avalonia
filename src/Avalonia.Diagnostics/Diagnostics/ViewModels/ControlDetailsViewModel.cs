@@ -9,128 +9,17 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Markup.Xaml.MarkupExtensions;
-using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class StyleViewModel : ViewModelBase
-    {
-        private readonly IStyleInstance _styleInstance;
-        private bool _isActive;
-
-        public StyleViewModel(IStyleInstance styleInstance, string name, List<SetterViewModel> setters)
-        {
-            _styleInstance = styleInstance;
-            IsActive = styleInstance.IsActive;
-            Name = name;
-            Setters = setters;
-        }
-
-        public bool IsActive
-        {
-            get => _isActive;
-            set => RaiseAndSetIfChanged(ref _isActive, value);
-        }
-
-        public string Name { get; }
-
-        public List<SetterViewModel> Setters { get; }
-
-        public void Update()
-        {
-            IsActive = _styleInstance.IsActive;
-        }
-    }
-
-    internal enum ValueKind
-    {
-        Regular,
-        Resource
-    }
-
-    internal class SetterViewModel : ViewModelBase
-    {
-        public string Name { get; }
-
-        public object Value { get; }
-
-        public ValueKind Kind { get; }
-
-        public bool IsSpecialKind => Kind != ValueKind.Regular;
-
-        public IBrush KindColor { get; }
-
-        public SetterViewModel(string name, object value, ValueKind kind)
-        {
-            Name = name;
-            Value = value;
-            Kind = kind;
-
-            if (Kind == ValueKind.Resource)
-            {
-                KindColor = Brushes.Brown;
-            }
-            else
-            {
-                KindColor = Brushes.Transparent;
-            }
-        }
-    }
-
-    internal class PseudoClassesViewModel : ViewModelBase
-    {
-        private readonly StyledElement _source;
-        private readonly IPseudoClasses _pseudoClasses;
-        private bool _isActive;
-        private bool _isUpdating;
-
-        public PseudoClassesViewModel(string name, StyledElement source)
-        {
-            Name = name;
-            _source = source;
-            _pseudoClasses = _source.Classes;
-
-            Update();
-        }
-
-        public string Name { get; }
-
-        public bool IsActive
-        {
-            get => _isActive;
-            set
-            {
-                RaiseAndSetIfChanged(ref _isActive, value);
-
-                if (!_isUpdating)
-                {
-                    _pseudoClasses.Set(Name, value);
-                }
-            }
-        }
-
-        public void Update()
-        {
-            try
-            {
-                _isUpdating = true;
-
-                IsActive = _source.Classes.Contains(Name);
-            }
-            finally
-            {
-                _isUpdating = false;
-            }
-        }
-    }
-
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
         private readonly IVisual _control;
         private readonly IDictionary<object, List<PropertyViewModel>> _propertyIndex;
         private AvaloniaPropertyViewModel _selectedProperty;
+        private string _styleFilter;
 
         public ControlDetailsViewModel(TreePageViewModel treePage, IVisual control)
         {
@@ -196,32 +85,46 @@ namespace Avalonia.Diagnostics.ViewModels
                             {
                                 var setterValue = regularSetter.Value;
 
-                                ValueKind kind = ValueKind.Regular;
+                                var resourceInfo = GetResourceInfo(setterValue);
 
-                                if (setterValue is DynamicResourceExtension dynResource)
+                                SetterViewModel setterVm;
+
+                                if (resourceInfo.HasValue)
                                 {
-                                    var resolved = styledElement.FindResource(dynResource.ResourceKey);
+                                    var resourceKey = resourceInfo.Value.resourceKey;
+                                    var resourceValue = styledElement.FindResource(resourceKey);
 
-                                    if (resolved != null)
-                                    {
-                                        setterValue = $"{resolved} ({dynResource.ResourceKey})";
-                                    }
-                                    else
-                                    {
-                                        setterValue = dynResource.ResourceKey;
-                                    }
-
-                                    kind = ValueKind.Resource;
+                                    setterVm = new ResourceSetterViewModel(regularSetter.Property, resourceKey, resourceValue, resourceInfo.Value.isDynamic);
+                                }
+                                else
+                                {
+                                    setterVm = new SetterViewModel(regularSetter.Property, setterValue);
                                 }
 
-                                setters.Add(new SetterViewModel(regularSetter.Property?.Name ?? "?", setterValue, kind));
+                                setters.Add(setterVm);
                             }
                         }
 
                         AppliedStyles.Add(new StyleViewModel(appliedStyle, style.Selector?.ToString() ?? "No selector", setters));
                     }
                 }
+
+                UpdateStyles();
             }
+        }
+
+        private (object resourceKey, bool isDynamic)? GetResourceInfo(object value)
+        {
+            if (value is StaticResourceExtension staticResource)
+            {
+                return (staticResource.ResourceKey, false);
+            }
+            else if (value is DynamicResourceExtension dynamicResource)
+            {
+                return (dynamicResource.ResourceKey, true);
+            }
+
+            return null;
         }
 
         public TreePageViewModel TreePage { get; }
@@ -237,8 +140,45 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _selectedProperty;
             set => RaiseAndSetIfChanged(ref _selectedProperty, value);
         }
+
+        public string StyleFilter
+        {
+            get => _styleFilter;
+            set => RaiseAndSetIfChanged(ref _styleFilter, value);
+        }
         
         public ControlLayoutViewModel Layout { get; }
+
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+
+            if (e.PropertyName == nameof(StyleFilter))
+            {
+                UpdateStyleFilters();
+            }
+        }
+
+        private void UpdateStyleFilters()
+        {
+            var filter = StyleFilter;
+            bool hasFilter = !string.IsNullOrEmpty(filter);
+
+            foreach (var style in AppliedStyles)
+            {
+                var hasVisibleSetter = false;
+
+                foreach (var setter in style.Setters)
+                {
+                    setter.IsVisible =
+                        !hasFilter || setter.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                    hasVisibleSetter |= setter.IsVisible;
+                }
+
+                style.IsVisible = hasVisibleSetter;
+            }
+        }
 
         public void Dispose()
         {
@@ -331,6 +271,39 @@ namespace Avalonia.Diagnostics.ViewModels
             foreach (var style in AppliedStyles)
             {
                 style.Update();
+            }
+
+            var propertyBuckets = new Dictionary<AvaloniaProperty, List<SetterViewModel>>();
+
+            foreach (var style in AppliedStyles)
+            {
+                if (!style.IsActive)
+                {
+                    continue;
+                }
+
+                foreach (var setter in style.Setters)
+                {
+                    if (propertyBuckets.TryGetValue(setter.Property, out var setters))
+                    {
+                        foreach (var otherSetter in setters)
+                        {
+                            otherSetter.IsActive = false;
+                        }
+
+                        setter.IsActive = true;
+
+                        setters.Add(setter);
+                    }
+                    else
+                    {
+                        setter.IsActive = true;
+
+                        setters = new List<SetterViewModel> { setter };
+
+                        propertyBuckets.Add(setter.Property, setters);
+                    }
+                }
             }
 
             foreach (var pseudoClass in PseudoClasses)
