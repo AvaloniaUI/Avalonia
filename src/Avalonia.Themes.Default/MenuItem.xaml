@@ -60,7 +60,6 @@
             <Popup Name="PART_Popup"
                    PlacementMode="Right"
                    IsLightDismissEnabled="False"
-                   OverlayInputPassThroughElement="{Binding $parent[MenuItem]}"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
