@@ -50,6 +50,12 @@ namespace Avalonia.Controls
             ScrollBar.OrientationProperty.AddOwner<Slider>();
 
         /// <summary>
+        /// Defines the <see cref="IsDirectionReversed"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsDirectionReversedProperty =
+            Track.IsDirectionReversedProperty.AddOwner<Slider>();
+
+        /// <summary>
         /// Defines the <see cref="IsSnapToTickEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSnapToTickEnabledProperty =
@@ -128,6 +134,19 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the direction of increasing value.
+        /// </summary>
+        /// <value>
+        /// true if the direction of increasing value is to the left for a horizontal slider or
+        /// down for a vertical slider; otherwise, false. The default is false.
+        /// </value>
+        public bool IsDirectionReversed
+        {
+            get { return GetValue(IsDirectionReversedProperty); }
+            set { SetValue(IsDirectionReversedProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets a value that indicates whether the <see cref="Slider"/> automatically moves the <see cref="Thumb"/> to the closest tick mark.
         /// </summary>
         public bool IsSnapToTickEnabled
@@ -202,20 +221,20 @@ namespace Avalonia.Controls
             {
                 case Key.Down:
                 case Key.Left:
-                    MoveToNextTick(-SmallChange);
+                    MoveToNextTick(IsDirectionReversed ? SmallChange : -SmallChange);
                     break;
 
                 case Key.Up:
                 case Key.Right:
-                    MoveToNextTick(SmallChange);
+                    MoveToNextTick(IsDirectionReversed ? -SmallChange : SmallChange);
                     break;
 
                 case Key.PageUp:
-                    MoveToNextTick(LargeChange);
+                    MoveToNextTick(IsDirectionReversed ? -LargeChange : LargeChange);
                     break;
 
                 case Key.PageDown:
-                    MoveToNextTick(-LargeChange);
+                    MoveToNextTick(IsDirectionReversed ? LargeChange : -LargeChange);
                     break;
 
                 case Key.Home:
