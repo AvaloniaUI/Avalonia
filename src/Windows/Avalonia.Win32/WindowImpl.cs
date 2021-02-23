@@ -958,7 +958,7 @@ namespace Avalonia.Win32
                 MaximizeWithoutCoveringTaskbar();
             }
 
-            if (!Design.IsDesignMode)
+            if (!Design.IsDesignMode && activate)
             {
                 SetFocus(_hwnd);
             }
