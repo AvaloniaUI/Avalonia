@@ -83,7 +83,6 @@ namespace Avalonia.Controls
         private IDisposable _increaseButtonSubscription;
         private IDisposable _increaseButtonReleaseDispose;
         private IDisposable _pointerMovedDispose;
-        private IDisposable _trackOnKeyDownDispose;
 
         private const double Tolerance = 0.0001;
 
@@ -166,7 +165,6 @@ namespace Avalonia.Controls
             _increaseButtonSubscription?.Dispose();
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
-            _trackOnKeyDownDispose?.Dispose();
             
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
@@ -175,7 +173,6 @@ namespace Avalonia.Controls
             if (_track != null)
             {
                 _track.IsThumbDragHandled = true;
-                _trackOnKeyDownDispose = _track.AddDisposableHandler(KeyDownEvent, TrackOnKeyDown);
             }
 
             if (_decreaseButton != null)
@@ -193,26 +190,32 @@ namespace Avalonia.Controls
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
         }
 
-        private void TrackOnKeyDown(object sender, KeyEventArgs e)
+        protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.KeyModifiers != KeyModifiers.None) return;
+            base.OnKeyDown(e);
+
+            if (e.Handled || e.KeyModifiers != KeyModifiers.None) return;
+
+            var handled = true;
 
             switch (e.Key)
             {
+                case Key.Down:
                 case Key.Left:
                     MoveToNextTick(-SmallChange);
                     break;
 
+                case Key.Up:
                 case Key.Right:
                     MoveToNextTick(SmallChange);
                     break;
 
                 case Key.PageUp:
-                    MoveToNextTick(-LargeChange);
+                    MoveToNextTick(LargeChange);
                     break;
 
                 case Key.PageDown:
-                    MoveToNextTick(LargeChange);
+                    MoveToNextTick(-LargeChange);
                     break;
 
                 case Key.Home:
@@ -222,7 +225,13 @@ namespace Avalonia.Controls
                 case Key.End:
                     Value = Maximum;
                     break;
+
+                default:
+                    handled = false;
+                    break;
             }
+
+            e.Handled = handled;
         }
             
         private void MoveToNextTick(double direction)
