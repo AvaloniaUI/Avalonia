@@ -71,6 +71,10 @@ namespace Avalonia.Dialogs
                        {
                            return null;
                        }
+                       catch (DirectoryNotFoundException _)
+                       {
+                           return null;
+                       }
 
                        return new ManagedFileChooserNavigationItem
                        {
