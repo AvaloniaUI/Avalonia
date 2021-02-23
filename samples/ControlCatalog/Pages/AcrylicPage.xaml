@@ -16,13 +16,13 @@
         <StackPanel Spacing="5" Margin="40 10">
           <StackPanel Orientation="Horizontal">
             <TextBlock Text="TintOpacity" Foreground="Black" />
-            <Slider Name="TintOpacitySlider" Minimum="0" Maximum="1" Value="0.9" Width="400" />
-            <TextBlock Text="{Binding #TintOpacitySlider.Value}" Foreground="Black" />
+            <Slider Name="TintOpacitySlider" Minimum="0" Maximum="1" Value="0.9" SmallChange="0.1" LargeChange="0.2" Width="400" />
+            <TextBlock Text="{Binding #TintOpacitySlider.Value, StringFormat=\{0:0.#\}}" Foreground="Black" />
           </StackPanel>
           <StackPanel Orientation="Horizontal">
             <TextBlock Text="MaterialOpacity" Foreground="Black" />
-            <Slider Name="MaterialOpacitySlider" Minimum="0" Maximum="1" Value="0.8" Width="400" />
-            <TextBlock Text="{Binding #MaterialOpacitySlider.Value}" Foreground="Black" />
+            <Slider Name="MaterialOpacitySlider" Minimum="0" Maximum="1" Value="0.8" SmallChange="0.1" LargeChange="0.2" Width="400" />
+            <TextBlock Text="{Binding #MaterialOpacitySlider.Value, StringFormat=\{0:0.#\}}" Foreground="Black" />
           </StackPanel>
         </StackPanel>
       </ExperimentalAcrylicBorder>
