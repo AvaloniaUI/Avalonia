@@ -93,6 +93,7 @@ namespace Avalonia.Controls
         static Slider()
         {
             PressedMixin.Attach<Slider>();
+            FocusableProperty.OverrideDefaultValue<Slider>(true);
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
