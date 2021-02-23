@@ -42,8 +42,9 @@ namespace Avalonia.Direct2D1.Media
         public WicBitmapImpl(string fileName)
         {
             using (var decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, fileName, DecodeOptions.CacheOnDemand))
+            using (var frame = decoder.GetFrame(0))
             {
-                WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
+                WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnDemand);
                 Dpi = new Vector(96, 96);
             }
         }
@@ -63,7 +64,8 @@ namespace Avalonia.Direct2D1.Media
             // https://stackoverflow.com/questions/48982749/decoding-image-from-stream-using-wic/48982889#48982889
             _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
 
-            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, _decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
+            using var frame = _decoder.GetFrame(0);
+            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnLoad);
             Dpi = new Vector(96, 96);
         }
 
@@ -120,7 +122,7 @@ namespace Avalonia.Direct2D1.Media
         {
             _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
 
-            var frame = _decoder.GetFrame(0);
+            using var frame = _decoder.GetFrame(0);
 
             // now scale that to the size that we want
             var realScale = horizontal ? ((double)frame.Size.Height / frame.Size.Width) : ((double)frame.Size.Width / frame.Size.Height);
