@@ -67,7 +67,7 @@ namespace Avalonia.Dialogs
                        {
                            Directory.GetFiles(x.VolumePath);
                        }
-                       catch (UnauthorizedAccessException _)
+                       catch (Exception _)
                        {
                            return null;
                        }

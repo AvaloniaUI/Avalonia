@@ -22,6 +22,10 @@
       <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
       <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
       <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
+      <TabItem Header="Cursor"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CursorPage/>
+      </TabItem>
       <TabItem Header="DataGrid" 
                ScrollViewer.VerticalScrollBarVisibility="Disabled"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">

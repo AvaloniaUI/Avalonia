@@ -619,6 +619,7 @@ interface IAvnCursor : IUnknown
 interface IAvnCursorFactory : IUnknown
 {
      HRESULT GetCursor(AvnStandardCursorType cursorType, IAvnCursor** retOut);
+     HRESULT CreateCustomCursor (void* bitmapData, size_t length, AvnPixelSize hotPixel, IAvnCursor** retOut);
 }
 
 [uuid(60452465-8616-40af-bc00-042e69828ce7)]

@@ -156,15 +156,35 @@ namespace Avalonia.Controls.UnitTests
             root.Child = null;
             Assert.Equal(0, command.SubscriptionCount);
         }
+        
+        [Fact]
+        public void MenuItem_Invokes_CanExecute_When_CommandParameter_Changed()
+        {
+            var command = new TestCommand(p => p is bool value && value);
+            var target = new MenuItem { Command = command };
+
+            target.CommandParameter = true;
+            Assert.True(target.IsEffectivelyEnabled);
+
+            target.CommandParameter = false;
+            Assert.False(target.IsEffectivelyEnabled);
+        }
 
         private class TestCommand : ICommand
         {
-            private bool _enabled;
+            private readonly Func<object, bool> _canExecute;
+            private readonly Action<object> _execute;
             private EventHandler _canExecuteChanged;
 
             public TestCommand(bool enabled = true)
+                : this(_ => enabled, _ => { })
             {
-                _enabled = enabled;
+            }
+
+            public TestCommand(Func<object, bool> canExecute, Action<object> execute = null)
+            {
+                _canExecute = canExecute;
+                _execute = execute ?? (_ => { });
             }
 
             public int SubscriptionCount { get; private set; }
@@ -175,11 +195,9 @@ namespace Avalonia.Controls.UnitTests
                 remove { _canExecuteChanged -= value; --SubscriptionCount; }
             }
 
-            public bool CanExecute(object parameter) => _enabled;
+            public bool CanExecute(object parameter) => _canExecute(parameter);
 
-            public void Execute(object parameter)
-            {
-            }
+            public void Execute(object parameter) => _execute(parameter);
         }
     }
 }

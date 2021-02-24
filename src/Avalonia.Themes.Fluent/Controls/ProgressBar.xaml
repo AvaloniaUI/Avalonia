@@ -1,8 +1,11 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Padding="20">
-      <StackPanel>
+      <StackPanel Spacing="10">
         <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" />
+        <ProgressBar VerticalAlignment="Center" Value="5" Maximum="10" />
+        <ProgressBar VerticalAlignment="Center" Value="50" />
+        <ProgressBar VerticalAlignment="Center" Value="50" Minimum="25" Maximum="75" />
         <ProgressBar HorizontalAlignment="Left" IsIndeterminate="True" Orientation="Vertical" />
       </StackPanel>
     </Border>
@@ -12,7 +15,6 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ProgressBarBorderThemeThickness}" />
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightTransparentBrush}" />
-    <Setter Property="Maximum" Value="100" />
     <Setter Property="MinHeight" Value="{DynamicResource ProgressBarThemeMinHeight}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
