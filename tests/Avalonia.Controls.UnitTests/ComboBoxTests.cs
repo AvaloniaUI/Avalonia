@@ -144,7 +144,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(-1, 2, "c", "A item", "B item", "C item")]
         [InlineData(0, 1, "b", "A item", "B item", "C item")]
         [InlineData(2, 2, "x", "A item", "B item", "C item")]
-        public void AutoSelect_Should_Have_Expected_SelectedIndex(
+        public void TextSearch_Should_Have_Expected_SelectedIndex(
             int initialSelectedIndex,
             int expectedSelectedIndex,
             string searchTerm,
@@ -154,7 +154,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new ComboBox
                 {
-                    IsAutoSelectEnabled = true,
+                    IsTextSearchEnabled = true,
                     Template = GetTemplate(),                    
                     Items = items.Select(x => new ComboBoxItem { Content = x })
                 };
