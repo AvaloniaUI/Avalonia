@@ -81,7 +81,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsTextSearchEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
-            AvaloniaProperty.Register<ComboBox, bool>(nameof(IsTextSearchEnabled));
+            AvaloniaProperty.Register<ComboBox, bool>(nameof(IsTextSearchEnabled), true);
 
         private string _textSearchTerm = string.Empty;
         private DispatcherTimer _textSearchTimer;
