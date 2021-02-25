@@ -21,6 +21,7 @@ namespace Avalonia.NameGenerator.Tests.OnlyProperties
         [InlineData(OnlyPropertiesCode.SignUpView, View.SignUpView)]
         [InlineData(OnlyPropertiesCode.AttachedProps, View.AttachedProps)]
         [InlineData(OnlyPropertiesCode.FieldModifier, View.FieldModifier)]
+        [InlineData(OnlyPropertiesCode.ControlWithoutWindow, View.ControlWithoutWindow)]
         public async Task Should_Generate_FindControl_Refs_From_Avalonia_Markup_File(string expectation, string markup)
         {
             var compilation =
@@ -40,7 +41,7 @@ namespace Avalonia.NameGenerator.Tests.OnlyProperties
 
             var generator = new OnlyPropertiesCodeGenerator();
             var code = generator
-                .GenerateCode("SampleView", "Sample.App", names)
+                .GenerateCode("SampleView", "Sample.App",  classInfo.XamlType, names)
                 .Replace("\r", string.Empty);
 
             var expected = await OnlyPropertiesCode.Load(expectation);

@@ -7,8 +7,7 @@ namespace Sample.App
 {
     partial class SampleView
     {
-        internal global::Avalonia.Controls.TextBox UserNameTextBox { get; set; }
-        internal global::Avalonia.Controls.ListBox NamedListBox { get; set; }
+        internal global::Avalonia.Controls.TextBox UserNameTextBox;
 
         public void InitializeComponent(bool loadXaml = true)
         {
@@ -17,12 +16,7 @@ namespace Sample.App
                 AvaloniaXamlLoader.Load(this);
             }
 
-#if DEBUG
-            this.AttachDevTools();
-#endif
-
             UserNameTextBox = this.FindControl<global::Avalonia.Controls.TextBox>("UserNameTextBox");
-            NamedListBox = this.FindControl<global::Avalonia.Controls.ListBox>("NamedListBox");
         }
     }
 }

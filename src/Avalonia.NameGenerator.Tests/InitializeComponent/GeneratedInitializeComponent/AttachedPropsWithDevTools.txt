@@ -7,9 +7,9 @@ namespace Sample.App
 {
     partial class SampleView
     {
-        internal global::Avalonia.Controls.TextBox UserNameTextBox { get; set; }
+        internal global::Avalonia.Controls.TextBox UserNameTextBox;
 
-        public void InitializeComponent(bool loadXaml = true)
+        public void InitializeComponent(bool loadXaml = true, bool attachDevTools = true)
         {
             if (loadXaml)
             {
@@ -17,7 +17,10 @@ namespace Sample.App
             }
 
 #if DEBUG
-            this.AttachDevTools();
+            if (attachDevTools)
+            {
+                this.AttachDevTools();
+            }          
 #endif
 
             UserNameTextBox = this.FindControl<global::Avalonia.Controls.TextBox>("UserNameTextBox");

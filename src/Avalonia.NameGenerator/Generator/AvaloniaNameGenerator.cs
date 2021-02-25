@@ -43,7 +43,7 @@ namespace Avalonia.NameGenerator.Generator
             var query =
                 from view in resolveViews
                 let names = _names.ResolveNames(view.Xaml)
-                let code = _code.GenerateCode(view.ClassName, view.Namespace, names)
+                let code = _code.GenerateCode(view.ClassName, view.Namespace, view.XamlType, names)
                 let fileName = $"{view.ClassName}.g.cs"
                 select new GeneratedPartialClass(fileName, code);
 

@@ -35,13 +35,15 @@ namespace Avalonia.NameGenerator
         {
             get
             {
+                var defaultBehavior = Behavior.OnlyProperties;
+
                 var propertyValue = _context
                     .GetMSBuildProperty(
                         nameof(BuildProperties.AvaloniaNameGeneratorBehavior),
-                        nameof(Behavior.OnlyProperties));
+                        defaultBehavior.ToString());
 
                 if (!Enum.TryParse(propertyValue, true, out Behavior behavior))
-                    return Behavior.OnlyProperties;
+                    return defaultBehavior;
                 return behavior;
             }
         }
@@ -50,13 +52,14 @@ namespace Avalonia.NameGenerator
         {
             get
             {
+                var defaultFieldModifier = DefaultFieldModifier.Internal;
                 var propertyValue = _context
                     .GetMSBuildProperty(
                         nameof(BuildProperties.AvaloniaNameGeneratorDefaultFieldModifier),
-                        nameof(DefaultFieldModifier.Internal));
+                        defaultFieldModifier.ToString());
 
                 if (!Enum.TryParse(propertyValue, true, out DefaultFieldModifier modifier))
-                    return DefaultFieldModifier.Internal;
+                    return defaultFieldModifier;
                 return modifier;
             }
         }

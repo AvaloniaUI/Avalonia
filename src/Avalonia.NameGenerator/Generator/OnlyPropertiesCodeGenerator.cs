@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.NameGenerator.Domain;
+using XamlX.TypeSystem;
 
 namespace Avalonia.NameGenerator.Generator
 {
     internal class OnlyPropertiesCodeGenerator : ICodeGenerator
     {
-        public string GenerateCode(string className, string nameSpace, IEnumerable<ResolvedName> names)
+        public string GenerateCode(string className, string nameSpace, IXamlType XamlType, IEnumerable<ResolvedName> names)
         {
             var namedControls = names
                 .Select(info => "        " +

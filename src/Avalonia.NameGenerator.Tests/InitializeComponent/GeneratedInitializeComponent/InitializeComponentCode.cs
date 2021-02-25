@@ -14,9 +14,11 @@ namespace Avalonia.NameGenerator.Tests.InitializeComponent.GeneratedInitializeCo
         public const string CustomControls = "CustomControls.txt";
         public const string DataTemplates = "DataTemplates.txt";
         public const string SignUpView = "SignUpView.txt";
-        public const string AttachedProps = "AttachedProps.txt";
         public const string FieldModifier = "FieldModifier.txt";
-
+        public const string AttachedProps = "AttachedProps.txt";
+        public const string AttachedPropsWithDevTools = "AttachedPropsWithDevTools.txt";
+        public const string ControlWithoutWindow = "ControlWithoutWindow.txt";
+        
         public static async Task<string> Load(string generatedCodeResourceName)
         {
             var assembly = typeof(XamlXNameResolverTests).Assembly;

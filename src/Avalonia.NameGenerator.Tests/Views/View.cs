@@ -21,7 +21,8 @@ namespace Avalonia.NameGenerator.Tests.Views
         public const string SignUpView = "SignUpView.xml";
         public const string AttachedProps = "AttachedProps.xml";
         public const string FieldModifier = "FieldModifier.xml";
-
+        public const string ControlWithoutWindow = "ControlWithoutWindow.xml";
+        
         public static async Task<string> Load(string viewName)
         {
             var assembly = typeof(XamlXNameResolverTests).Assembly;

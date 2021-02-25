@@ -7,12 +7,12 @@ namespace Sample.App
 {
     partial class SampleView
     {
-        public global::Avalonia.Controls.TextBox FirstNameTextBox { get; set; }
-        public global::Avalonia.Controls.TextBox LastNameTextBox { get; set; }
-        protected global::Avalonia.Controls.TextBox PasswordTextBox { get; set; }
-        private global::Avalonia.Controls.TextBox ConfirmPasswordTextBox { get; set; }
-        internal global::Avalonia.Controls.Button SignUpButton { get; set; }
-        internal global::Avalonia.Controls.Button RegisterButton { get; set; }
+        public global::Avalonia.Controls.TextBox FirstNameTextBox;
+        public global::Avalonia.Controls.TextBox LastNameTextBox;
+        protected global::Avalonia.Controls.TextBox PasswordTextBox;
+        private global::Avalonia.Controls.TextBox ConfirmPasswordTextBox;
+        internal global::Avalonia.Controls.Button SignUpButton;
+        internal global::Avalonia.Controls.Button RegisterButton;
 
         public void InitializeComponent(bool loadXaml = true)
         {
