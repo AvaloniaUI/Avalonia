@@ -152,8 +152,13 @@
       </Grid>
 
       <Grid Grid.Row="2" Margin="4" RowDefinitions="Auto,Auto">
-        <TextBlock Grid.Row="0" Text="Styles"  />
-        <TextBox Grid.Row="1" Margin="2" Watermark="Filter" Text="{Binding StyleFilter}" />
+
+        <Grid Grid.Row="0" Margin="2" ColumnDefinitions="Auto,*,Auto">
+          <TextBlock Grid.Column="0" Text="Styles"  />
+          <ToggleButton Margin="2,0,0,0" Grid.Column="2" ToolTip.Tip="Snapshot current styles (Alt+S/Alt+D to enable/disable within debugged window)" Content="Snapshot" IsChecked="{Binding SnapshotStyles}" />
+        </Grid>
+
+        <TextBox Grid.Row="1" Margin="2" Grid.Column="0" Watermark="Filter" Text="{Binding StyleFilter}" />
       </Grid>
 
         <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Disabled">
@@ -195,6 +200,13 @@
 
                       <DataTemplate DataType="vm:ResourceSetterViewModel">
                         <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
+                          <Panel.ContextMenu>
+                            <ContextMenu>
+                              <MenuItem Header="Copy property name" Command="{Binding CopyPropertyName} "/>
+                              <MenuItem Header="Copy value" Command="{Binding CopyValue} "/>
+                              <MenuItem Header="Copy resource key" Command="{Binding CopyResourceKey}" />
+                            </ContextMenu>
+                          </Panel.ContextMenu>
                           <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Left">
                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
                             <TextBlock Text=":" />
@@ -210,6 +222,12 @@
 
                       <DataTemplate DataType="vm:SetterViewModel">
                         <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
+                          <Panel.ContextMenu>
+                            <ContextMenu>
+                              <MenuItem Header="Copy property name" Command="{Binding CopyPropertyName} "/>
+                              <MenuItem Header="Copy value" Command="{Binding CopyValue} "/>
+                            </ContextMenu>
+                          </Panel.ContextMenu>
                           <StackPanel Orientation="Horizontal" Spacing="2">
                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
                             <TextBlock Text=":" />

@@ -13,5 +13,15 @@ namespace Avalonia.Diagnostics.ViewModels
             Key = resourceKey;
             Tint = isDynamic ? Brushes.Orange : Brushes.Brown;
         }
+
+        public void CopyResourceKey()
+        {
+            if (Key is null)
+            {
+                return;
+            }
+
+            CopyToClipboard(Key.ToString());
+        }
     }
 }
