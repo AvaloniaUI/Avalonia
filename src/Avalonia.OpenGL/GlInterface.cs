@@ -82,6 +82,9 @@ namespace Avalonia.OpenGL
         
         [GlEntryPoint("glFlush")]
         public Action Flush { get; }
+        
+        [GlEntryPoint("glFinish")]
+        public Action Finish { get; }
 
         public delegate IntPtr GlGetString(int v);
         [GlEntryPoint("glGetString")]
@@ -114,6 +117,19 @@ namespace Avalonia.OpenGL
         public delegate int GlCheckFramebufferStatus(int target);
         [GlEntryPoint("glCheckFramebufferStatus")]
         public GlCheckFramebufferStatus CheckFramebufferStatus { get; }
+
+        public delegate void GlBlitFramebuffer(int srcX0,
+            int srcY0,
+            int srcX1,
+            int srcY1,
+            int dstX0,
+            int dstY0,
+            int dstX1,
+            int dstY1,
+            int mask,
+            int filter);
+        [GlMinVersionEntryPoint("glBlitFramebuffer", 3, 0), GlOptionalEntryPoint]
+        public GlBlitFramebuffer BlitFramebuffer { get; }
         
         public delegate void GlGenRenderbuffers(int count, int[] res);
         [GlEntryPoint("glGenRenderbuffers")]
@@ -144,6 +160,10 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glBindTexture")]
         public GlBindTexture BindTexture { get; }
         
+        public delegate void GlActiveTexture(int texture);
+        [GlEntryPoint("glActiveTexture")]
+        public GlActiveTexture ActiveTexture { get; }
+        
         public delegate void GlDeleteTextures(int count, int[] textures);
         [GlEntryPoint("glDeleteTextures")]
         public GlDeleteTextures DeleteTextures { get; }
@@ -153,6 +173,12 @@ namespace Avalonia.OpenGL
             int format, int type, IntPtr data);
         [GlEntryPoint("glTexImage2D")]
         public GlTexImage2D TexImage2D { get; }
+
+        public delegate void GlCopyTexSubImage2D(int target, int level, int xoffset, int yoffset, int x, int y,
+            int width, int height);
+        
+        [GlEntryPoint("glCopyTexSubImage2D")]
+        public GlCopyTexSubImage2D CopyTexSubImage2D { get; }
 
         public delegate void GlTexParameteri(int target, int name, int value);
         [GlEntryPoint("glTexParameteri")]

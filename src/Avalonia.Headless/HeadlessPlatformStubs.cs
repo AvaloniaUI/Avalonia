@@ -52,12 +52,14 @@ namespace Avalonia.Headless
         }
     }
 
-    class HeadlessCursorFactoryStub : IStandardCursorFactory
+    class HeadlessCursorFactoryStub : ICursorFactory
     {
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
 
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
+        private class CursorStub : ICursorImpl
         {
-            return new PlatformHandle(new IntPtr((int)cursorType), "STUB");
+            public void Dispose() { }
         }
     }
 
@@ -155,9 +157,9 @@ namespace Avalonia.Headless
             return new List<string> { "Arial" };
         }
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
         {
-            fontKey = new FontKey("Arial", fontStyle, fontWeight);
+            typeface = new Typeface("Arial", fontStyle, fontWeight);
             return true;
         }
     }

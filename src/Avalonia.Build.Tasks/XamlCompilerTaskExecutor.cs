@@ -40,17 +40,50 @@ namespace Avalonia.Build.Tasks
                 WrittenFile = writtenFile;
             }
         }
-        
-        public static CompileResult Compile(IBuildEngine engine, string input, string[] references, string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance)
+
+        public static CompileResult Compile(IBuildEngine engine, string input, string[] references,
+            string projectDirectory,
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
+            bool skipXamlCompilation)
         {
-            var typeSystem = new CecilTypeSystem(references.Concat(new[] {input}), input);
+            var typeSystem = new CecilTypeSystem(references
+                .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
+                .Concat(new[] { input }), input);
+            
+            var asm = typeSystem.TargetAssemblyDefinition;
+
+            if (!skipXamlCompilation)
+            {
+                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance);
+                if (compileRes == null && !patchCom)
+                    return new CompileResult(true);
+                if (compileRes == false)
+                    return new CompileResult(false);
+            }
+
+            if (patchCom)
+                ComInteropHelper.PatchAssembly(asm, typeSystem);
+            
+            var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
+            if (!string.IsNullOrWhiteSpace(strongNameKey))
+                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+
+            asm.Write(output, writerParameters);
+
+            return new CompileResult(true, true);
+            
+        }
+        
+        static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
+            string projectDirectory, bool verifyIl, 
+            MessageImportance logImportance)
+        {
             var asm = typeSystem.TargetAssemblyDefinition;
             var emres = new EmbeddedResources(asm);
             var avares = new AvaloniaResources(asm, projectDirectory);
             if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
-                return new CompileResult(true);
+                return null;
 
             var clrPropertiesDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlHelpers",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
@@ -345,28 +378,36 @@ namespace Avalonia.Build.Tasks
                     }
                     res.Remove();
                 }
+                
+                
+                // Technically that's a hack, but it fixes corert incompatibility caused by deterministic builds
+                int dupeCounter = 1;
+                foreach (var grp in typeDef.NestedTypes.GroupBy(x => x.Name))
+                {
+                    if (grp.Count() > 1)
+                    {
+                        foreach (var dupe in grp)
+                            dupe.Name += "_dup" + dupeCounter++;
+                    }
+                }
+                
+                
                 return true;
             }
             
             if (emres.Resources.Count(CheckXamlName) != 0)
                 if (!CompileGroup(emres))
-                    return new CompileResult(false);
+                    return false;
             if (avares.Resources.Count(CheckXamlName) != 0)
             {
                 if (!CompileGroup(avares))
-                    return new CompileResult(false);
+                    return false;
                 avares.Save();
             }
             
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-            
-            asm.Write(output, new WriterParameters
-            {
-                WriteSymbols = asm.MainModule.HasSymbols
-            });
-
-            return new CompileResult(true, true);
+            return true;
         }
         
     }

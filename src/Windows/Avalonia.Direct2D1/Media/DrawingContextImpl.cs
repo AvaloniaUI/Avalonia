@@ -21,6 +21,7 @@ namespace Avalonia.Direct2D1.Media
         private readonly ILayerFactory _layerFactory;
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
         private readonly DeviceContext _deviceContext;
+        private readonly bool _ownsDeviceContext;
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private readonly Action _finishedCallback;
 
@@ -51,10 +52,12 @@ namespace Avalonia.Direct2D1.Media
             if (_renderTarget is DeviceContext deviceContext)
             {
                 _deviceContext = deviceContext;
+                _ownsDeviceContext = false;
             }
             else
             {
                 _deviceContext = _renderTarget.QueryInterface<DeviceContext>();
+                _ownsDeviceContext = true;
             }
 
             _deviceContext.BeginDraw();
@@ -95,6 +98,13 @@ namespace Avalonia.Direct2D1.Media
             catch (SharpDXException ex) when ((uint)ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
             {
                 throw new RenderTargetCorruptedException(ex);
+            }
+            finally
+            {
+                if (_ownsDeviceContext)
+                {
+                    _deviceContext.Dispose();
+                }
             }
         }
 
@@ -151,7 +161,7 @@ namespace Avalonia.Direct2D1.Media
             using (var d2dSource = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             using (var sourceBrush = new BitmapBrush(_deviceContext, d2dSource.Value))
             using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
-            using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(_deviceContext.Factory, destRect.ToDirect2D()))
+            using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(Direct2D1Platform.Direct2D1Factory, destRect.ToDirect2D()))
             {
                 if (d2dOpacityMask.PlatformBrush != null)
                 {
@@ -323,18 +333,18 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="baselineOrigin"></param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Bounds.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
 
-                _renderTarget.DrawGlyphRun(baselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun, brush.PlatformBrush, MeasuringMode.Natural);
+                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun,
+                    brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             if (_layerFactory != null)
             {
@@ -345,7 +355,7 @@ namespace Avalonia.Direct2D1.Media
                 var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
                 var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
                 var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
-                return platform.CreateRenderTargetBitmap(pixelSize, dpi);
+                return (IDrawingContextLayerImpl)platform.CreateRenderTargetBitmap(pixelSize, dpi);
             }
         }
 
@@ -423,6 +433,7 @@ namespace Avalonia.Direct2D1.Media
             var solidColorBrush = brush as ISolidColorBrush;
             var linearGradientBrush = brush as ILinearGradientBrush;
             var radialGradientBrush = brush as IRadialGradientBrush;
+            var conicGradientBrush = brush as IConicGradientBrush;
             var imageBrush = brush as IImageBrush;
             var visualBrush = brush as IVisualBrush;
 
@@ -437,6 +448,11 @@ namespace Avalonia.Direct2D1.Media
             else if (radialGradientBrush != null)
             {
                 return new RadialGradientBrushImpl(radialGradientBrush, _deviceContext, destinationSize);
+            }
+            else if (conicGradientBrush != null)
+            {
+                // there is no Direct2D implementation of Conic Gradients so use Radial as a stand-in
+                return new SolidColorBrushImpl(conicGradientBrush, _deviceContext);
             }
             else if (imageBrush?.Source != null)
             {

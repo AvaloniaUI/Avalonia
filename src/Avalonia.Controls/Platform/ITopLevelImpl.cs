@@ -98,7 +98,7 @@ namespace Avalonia.Platform
         /// Sets the cursor associated with the toplevel.
         /// </summary>
         /// <param name="cursor">The cursor. Use null for default cursor</param>
-        void SetCursor(IPlatformHandle cursor);
+        void SetCursor(ICursorImpl cursor);
 
         /// <summary>
         /// Gets or sets a method called when the underlying implementation is destroyed.

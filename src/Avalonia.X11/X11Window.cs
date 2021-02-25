@@ -5,13 +5,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -21,9 +24,10 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
+    unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
         ITopLevelImplWithNativeMenuExporter,
-        ITopLevelImplWithNativeControlHost
+        ITopLevelImplWithNativeControlHost,
+        ITopLevelImplWithTextInputMethod
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IWindowImpl _popupParent;
@@ -65,7 +69,7 @@ namespace Avalonia.X11
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
 
-            var glfeature = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
+            var glfeature = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
             XSetWindowAttributes attr = new XSetWindowAttributes();
             var valueMask = default(SetWindowValuemask);
 
@@ -78,7 +82,7 @@ namespace Avalonia.X11
 
             if (_popup)
             {
-                attr.override_redirect = true;
+                attr.override_redirect = 1;
                 valueMask |= SetWindowValuemask.OverrideRedirect;
             }
 
@@ -87,13 +91,13 @@ namespace Avalonia.X11
             // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
             _useRenderWindow = glfeature != null;
             
-            var glx = glfeature as GlxGlPlatformFeature;
+            var glx = glfeature as GlxPlatformOpenGlInterface;
             if (glx != null)
                 visualInfo = *glx.Display.VisualInfo;
             else if (glfeature == null)
                 visualInfo = _x11.TransparentVisualInfo;
 
-            var egl = glfeature as EglGlPlatformFeature;
+            var egl = glfeature as EglPlatformOpenGlInterface;
             
             var visual = IntPtr.Zero;
             var depth = 24;
@@ -168,7 +172,7 @@ namespace Avalonia.X11
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface(egl.DeferredContext,
+                    new EglGlPlatformSurface(egl,
                         new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             if (glx != null)
                 surfaces.Insert(0, new GlxGlPlatformSurface(glx.Display, glx.DeferredContext,
@@ -177,10 +181,11 @@ namespace Avalonia.X11
             Surfaces = surfaces.ToArray();
             UpdateMotifHints();
             UpdateSizeHints(null);
-            _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
-                XNames.XNClientWindow, _handle, IntPtr.Zero);
+
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
+
+            CreateIC();
 
             XFlush(_x11.Display);
             if(_popup)
@@ -188,6 +193,12 @@ namespace Avalonia.X11
             if (platform.Options.UseDBusMenu)
                 NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
             NativeControlHost = new X11NativeControlHost(_platform, this);
+            DispatcherTimer.Run(() =>
+            {
+                Paint?.Invoke(default);
+                return _handle != IntPtr.Zero;
+            }, TimeSpan.FromMilliseconds(100));
+            InitializeIme();
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -337,19 +348,20 @@ namespace Avalonia.X11
                 return customRendererFactory.Create(root, loop);
             
             return _platform.Options.UseDeferredRendering ?
-                new DeferredRenderer(root, loop) :
+                new DeferredRenderer(root, loop)
+                {
+                    RenderOnlyOnRenderThread = true
+                } :
                 (IRenderer)new X11ImmediateRendererProxy(root, loop);
         }
 
-        void OnEvent(XEvent ev)
+        void OnEvent(ref XEvent ev)
         {
             lock (SyncRoot)
-                OnEventSync(ev);
+                OnEventSync(ref ev);
         }
-        void OnEventSync(XEvent ev)
+        void OnEventSync(ref XEvent ev)
         {
-            if(XFilterEvent(ref ev, _handle))
-                return;
             if (ev.type == XEventName.MapNotify)
             {
                 _mapped = true;
@@ -377,9 +389,13 @@ namespace Avalonia.X11
                 if (ActivateTransientChildIfNeeded())
                     return;
                 Activated?.Invoke();
+                _imeControl?.SetWindowActive(true);
             }
             else if (ev.type == XEventName.FocusOut)
+            {
+                _imeControl?.SetWindowActive(false);
                 Deactivated?.Invoke();
+            }
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
@@ -438,7 +454,7 @@ namespace Avalonia.X11
                     return;
                 var needEnqueue = (_configure == null);
                 _configure = ev.ConfigureEvent;
-                if (ev.ConfigureEvent.override_redirect || ev.ConfigureEvent.send_event)
+                if (ev.ConfigureEvent.override_redirect != 0  || ev.ConfigureEvent.send_event != 0)
                     _configurePoint = new PixelPoint(ev.ConfigureEvent.x, ev.ConfigureEvent.y);
                 else
                 {
@@ -468,6 +484,7 @@ namespace Avalonia.X11
                             PositionChanged?.Invoke(npos);
                             updatedSizeViaScaling = UpdateScaling();
                         }
+                        UpdateImePosition();
 
                         if (changedSize && !updatedSizeViaScaling && !_popup)
                             Resized?.Invoke(ClientSize);
@@ -478,7 +495,8 @@ namespace Avalonia.X11
                     XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
                         ev.ConfigureEvent.height);
             }
-            else if (ev.type == XEventName.DestroyNotify && ev.AnyEvent.window == _handle)
+            else if (ev.type == XEventName.DestroyNotify 
+                     && ev.DestroyWindowEvent.window == _handle)
             {
                 Cleanup();
             }
@@ -498,39 +516,7 @@ namespace Avalonia.X11
             {
                 if (ActivateTransientChildIfNeeded())
                     return;
-                var buffer = stackalloc byte[40];
-
-                var index = ev.KeyEvent.state.HasFlag(XModifierMask.ShiftMask);
-                
-                // We need the latin key, since it's mainly used for hotkeys, we use a different API for text anyway
-                var key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 1 : 0).ToInt32();
-                
-                // Manually switch the Shift index for the keypad,
-                // there should be a proper way to do this
-                if (ev.KeyEvent.state.HasFlag(XModifierMask.Mod2Mask)
-                    && key > X11Key.Num_Lock && key <= X11Key.KP_9)
-                    key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
-                
-                
-                ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot,
-                    ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                    X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev);
-
-                if (ev.type == XEventName.KeyPress)
-                {
-                    var len = Xutf8LookupString(_xic, ref ev, buffer, 40, out _, out _);
-                    if (len != 0)
-                    {
-                        var text = Encoding.UTF8.GetString(buffer, len);
-                        if (text.Length == 1)
-                        {
-                            if (text[0] < ' ' || text[0] == 0x7f) //Control codes or DEL
-                                return;
-                        }
-                        ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot, text),
-                            ref ev);
-                    }
-                }
+                HandleKeyEvent(ref ev);
             }
         }
 
@@ -553,6 +539,7 @@ namespace Avalonia.X11
                     var oldScaledSize = ClientSize;
                     RenderScaling = newScaling;
                     ScalingChanged?.Invoke(RenderScaling);
+                    UpdateImePosition();
                     SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
                     if(!skipResize)
                         Resize(oldScaledSize, true);
@@ -652,23 +639,23 @@ namespace Avalonia.X11
         RawInputModifiers TranslateModifiers(XModifierMask state)
         {
             var rv = default(RawInputModifiers);
-            if (state.HasFlag(XModifierMask.Button1Mask))
+            if (state.HasFlagCustom(XModifierMask.Button1Mask))
                 rv |= RawInputModifiers.LeftMouseButton;
-            if (state.HasFlag(XModifierMask.Button2Mask))
+            if (state.HasFlagCustom(XModifierMask.Button2Mask))
                 rv |= RawInputModifiers.RightMouseButton;
-            if (state.HasFlag(XModifierMask.Button3Mask))
+            if (state.HasFlagCustom(XModifierMask.Button3Mask))
                 rv |= RawInputModifiers.MiddleMouseButton;
-            if (state.HasFlag(XModifierMask.Button4Mask))
+            if (state.HasFlagCustom(XModifierMask.Button4Mask))
                 rv |= RawInputModifiers.XButton1MouseButton;
-            if (state.HasFlag(XModifierMask.Button5Mask))
+            if (state.HasFlagCustom(XModifierMask.Button5Mask))
                 rv |= RawInputModifiers.XButton2MouseButton;
-            if (state.HasFlag(XModifierMask.ShiftMask))
+            if (state.HasFlagCustom(XModifierMask.ShiftMask))
                 rv |= RawInputModifiers.Shift;
-            if (state.HasFlag(XModifierMask.ControlMask))
+            if (state.HasFlagCustom(XModifierMask.ControlMask))
                 rv |= RawInputModifiers.Control;
-            if (state.HasFlag(XModifierMask.Mod1Mask))
+            if (state.HasFlagCustom(XModifierMask.Mod1Mask))
                 rv |= RawInputModifiers.Alt;
-            if (state.HasFlag(XModifierMask.Mod4Mask))
+            if (state.HasFlagCustom(XModifierMask.Mod4Mask))
                 rv |= RawInputModifiers.Meta;
             return rv;
         }
@@ -690,6 +677,7 @@ namespace Avalonia.X11
             _x11.LastActivityTimestamp = xev.ButtonEvent.time;
             ScheduleInput(args);
         }
+        
 
         public void ScheduleXI2Input(RawInputEventArgs args)
         {
@@ -772,6 +760,13 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            if (_imeControl != null)
+            {
+                _imeControl.Dispose();
+                _imeControl = null;
+                _ime = null;
+            }
+            
             if (_xic != IntPtr.Zero)
             {
                 XDestroyIC(_xic);
@@ -814,7 +809,7 @@ namespace Avalonia.X11
                 XSetTransientForHint(_x11.Display, _handle, parent.Handle.Handle);
         }
 
-        public void Show()
+        public void Show(bool activate)
         {
             _wasMappedAtLeastOnce = true;
             XMapWindow(_x11.Display, _handle);
@@ -877,15 +872,13 @@ namespace Avalonia.X11
             UpdateSizeHints(null);
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             if (cursor == null)
                 XDefineCursor(_x11.Display, _handle, _x11.DefaultCursor);
-            else
+            else if (cursor is CursorImpl impl)
             {
-                if (cursor.HandleDescriptor != "XCURSOR")
-                    throw new ArgumentException("Expected XCURSOR handle type");
-                XDefineCursor(_x11.Display, _handle, cursor.Handle);
+                XDefineCursor(_x11.Display, _handle, impl.Handle);
             }
         }
 
@@ -948,7 +941,7 @@ namespace Avalonia.X11
                 ClientMessageEvent =
                 {
                     type = XEventName.ClientMessage,
-                    send_event = true,
+                    send_event = 1,
                     window = _handle,
                     message_type = message_type,
                     format = 32,
@@ -1121,6 +1114,8 @@ namespace Avalonia.X11
         public IPopupPositioner PopupPositioner { get; }
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
         public INativeControlHostImpl NativeControlHost { get; }
+        public ITextInputMethodImpl TextInputMethod => _ime;
+
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
             _transparencyHelper.SetTransparencyRequest(transparencyLevel);
 

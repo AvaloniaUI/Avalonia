@@ -13,8 +13,8 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class FontManager
     {
-        private readonly ConcurrentDictionary<FontKey, Typeface> _typefaceCache =
-            new ConcurrentDictionary<FontKey, Typeface>();
+        private readonly ConcurrentDictionary<Typeface, GlyphTypeface> _glyphTypefaceCache =
+            new ConcurrentDictionary<Typeface, GlyphTypeface>();
         private readonly FontFamily _defaultFontFamily;
 
         public FontManager(IFontManagerImpl platformImpl)
@@ -76,79 +76,52 @@ namespace Avalonia.Media
             PlatformImpl.GetInstalledFontFamilyNames(checkForUpdates);
 
         /// <summary>
-        ///     Returns a new typeface, or an existing one if a matching typeface exists.
+        ///     Returns a new <see cref="GlyphTypeface"/>, or an existing one if a matching <see cref="GlyphTypeface"/> exists.
         /// </summary>
-        /// <param name="fontFamily">The font family.</param>
-        /// <param name="fontStyle">The font style.</param>
-        /// <param name="fontWeight">The font weight.</param>
+        /// <param name="typeface">The typeface.</param>
         /// <returns>
-        ///     The typeface.
+        ///     The <see cref="GlyphTypeface"/>.
         /// </returns>
-        public Typeface GetOrAddTypeface(FontFamily fontFamily, FontStyle fontStyle = FontStyle.Normal,
-            FontWeight fontWeight = FontWeight.Normal)
+        public GlyphTypeface GetOrAddGlyphTypeface(Typeface typeface)
         {
             while (true)
             {
-                if (fontFamily.IsDefault)
+                if (_glyphTypefaceCache.TryGetValue(typeface, out var glyphTypeface))
                 {
-                    fontFamily = _defaultFontFamily;
+                    return glyphTypeface;
                 }
 
-                var key = new FontKey(fontFamily.Name, fontStyle, fontWeight);
+                glyphTypeface = new GlyphTypeface(typeface);
 
-                if (_typefaceCache.TryGetValue(key, out var typeface))
+                if (_glyphTypefaceCache.TryAdd(typeface, glyphTypeface))
                 {
-                    return typeface;
+                    return glyphTypeface;
                 }
 
-                typeface = new Typeface(fontFamily, fontStyle, fontWeight);
-
-                if (_typefaceCache.TryAdd(key, typeface))
-                {
-                    return typeface;
-                }
-
-                if (fontFamily == _defaultFontFamily)
+                if (typeface.FontFamily == _defaultFontFamily)
                 {
                     return null;
                 }
 
-                fontFamily = _defaultFontFamily;
+                typeface = new Typeface(_defaultFontFamily, typeface.Style, typeface.Weight);
             }
         }
 
         /// <summary>
-        ///     Tries to match a specified character to a typeface that supports specified font properties.
-        ///     Returns <c>null</c> if no fallback was found.
+        ///     Tries to match a specified character to a <see cref="Typeface"/> that supports specified font properties.
         /// </summary>
         /// <param name="codepoint">The codepoint to match against.</param>
         /// <param name="fontStyle">The font style.</param>
         /// <param name="fontWeight">The font weight.</param>
         /// <param name="fontFamily">The font family. This is optional and used for fallback lookup.</param>
         /// <param name="culture">The culture.</param>
+        /// <param name="typeface">The matching <see cref="Typeface"/>.</param>
         /// <returns>
-        ///     The matched typeface.
+        ///     <c>True</c>, if the <see cref="FontManager"/> could match the character to specified parameters, <c>False</c> otherwise.
         /// </returns>
-        public Typeface MatchCharacter(int codepoint,
-            FontStyle fontStyle = FontStyle.Normal,
-            FontWeight fontWeight = FontWeight.Normal,
-            FontFamily fontFamily = null, CultureInfo culture = null)
-        {
-            foreach (var cachedTypeface in _typefaceCache.Values)
-            {
-                // First try to find a cached typeface by style and weight to avoid redundant glyph index lookup.
-                if (cachedTypeface.Style == fontStyle && cachedTypeface.Weight == fontWeight
-                                                      && cachedTypeface.GlyphTypeface.GetGlyph((uint)codepoint) != 0)
-                {
-                    return cachedTypeface;
-                }
-            }
-
-            var matchedTypeface = PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontFamily, culture, out var key) ?
-                _typefaceCache.GetOrAdd(key, new Typeface(key.FamilyName, key.Style, key.Weight)) :
-                null;
-
-            return matchedTypeface;
-        }
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontFamily fontFamily, CultureInfo culture, out Typeface typeface) =>
+            PlatformImpl.TryMatchCharacter(codepoint, fontStyle, fontWeight, fontFamily, culture, out typeface);
     }
 }

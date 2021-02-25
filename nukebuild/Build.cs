@@ -107,7 +107,7 @@ partial class Build : NukeBuild
                 .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
             .AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
-            .SetToolPath(MsBuildExe.Value)
+            .SetProcessToolPath(MsBuildExe.Value)
             .SetConfiguration(Parameters.Configuration)
             .SetVerbosity(MSBuildVerbosity.Minimal)
             .Apply(configurator));
@@ -126,26 +126,38 @@ partial class Build : NukeBuild
 
     Target CompileHtmlPreviewer => _ => _
         .DependsOn(Clean)
+        .OnlyWhenStatic(() => !Parameters.SkipPreviewer)
         .Executes(() =>
         {
             var webappDir = RootDirectory / "src" / "Avalonia.DesignerSupport" / "Remote" / "HtmlTransport" / "webapp";
 
             NpmTasks.NpmInstall(c => c
-                .SetWorkingDirectory(webappDir)
-                .SetArgumentConfigurator(a => a.Add("--silent")));
+                .SetProcessWorkingDirectory(webappDir)
+                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
             NpmTasks.NpmRun(c => c
-                .SetWorkingDirectory(webappDir)
+                .SetProcessWorkingDirectory(webappDir)
                 .SetCommand("dist"));
         });
-    
-    Target Compile => _ => _
+
+    Target CompileNative => _ => _
         .DependsOn(Clean)
+        .DependsOn(GenerateCppHeaders)
+        .OnlyWhenStatic(() => EnvironmentInfo.IsOsx)
+        .Executes(() =>
+        {
+            var project = $"{RootDirectory}/native/Avalonia.Native/src/OSX/Avalonia.Native.OSX.xcodeproj/";
+            var args = $"-project {project} -configuration {Parameters.Configuration} CONFIGURATION_BUILD_DIR={RootDirectory}/Build/Products/Release";
+            ProcessTasks.StartProcess("xcodebuild", args).AssertZeroExitCode();
+        });
+
+    Target Compile => _ => _
+        .DependsOn(Clean, CompileNative)
         .DependsOn(CompileHtmlPreviewer)
         .Executes(async () =>
         {
             if (Parameters.IsRunningOnWindows)
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .SetArgumentConfigurator(a => a.Add("/r"))
+                    .SetProcessArgumentConfigurator(a => a.Add("/r"))
                     .AddTargets("Build")
                 );
 
@@ -182,7 +194,7 @@ partial class Build : NukeBuild
         var eventsProject = Path.Combine(eventsDirectory, "Avalonia.ReactiveUI.Events.csproj");
         if (Parameters.IsRunningOnWindows)
             MsBuildCommon(eventsProject, c => c
-                .SetArgumentConfigurator(a => a.Add("/r"))
+                .SetProcessArgumentConfigurator(a => a.Add("/r"))
                 .AddTargets("Build")
             );
         else
@@ -222,6 +234,21 @@ partial class Build : NukeBuild
         }
     }
 
+    Target RunHtmlPreviewerTests => _ => _
+        .DependsOn(CompileHtmlPreviewer)
+        .OnlyWhenStatic(() => !(Parameters.SkipPreviewer || Parameters.SkipTests))
+        .Executes(() =>
+        {
+            var webappTestDir = RootDirectory / "tests" / "Avalonia.DesignerSupport.Tests" / "Remote" / "HtmlTransport" / "webapp";
+
+            NpmTasks.NpmInstall(c => c
+                .SetProcessWorkingDirectory(webappTestDir)
+                .SetProcessArgumentConfigurator(a => a.Add("--silent")));
+            NpmTasks.NpmRun(c => c
+                .SetProcessWorkingDirectory(webappTestDir)
+                .SetCommand("test"));
+        });
+
     Target RunCoreLibsTests => _ => _
         .OnlyWhenStatic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
@@ -240,7 +267,6 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.Visuals.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
-            RunCoreTest("Avalonia.ReactiveUI.Events.UnitTests");
         });
 
     Target RunRenderTests => _ => _
@@ -322,6 +348,7 @@ partial class Build : NukeBuild
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
         .DependsOn(RunDesignerTests)
+        .DependsOn(RunHtmlPreviewerTests)
         .DependsOn(RunLeakTests);
 
     Target Package => _ => _

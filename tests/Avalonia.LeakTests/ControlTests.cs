@@ -460,7 +460,7 @@ namespace Avalonia.LeakTests
                 
                 AttachShowAndDetachContextMenu(window);
 
-                Mock.Get(window.PlatformImpl).ResetCalls();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -505,7 +505,7 @@ namespace Avalonia.LeakTests
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
-                Mock.Get(window.PlatformImpl).ResetCalls();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -552,6 +552,37 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void ItemsRepeater_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new ItemsRepeater(),
+                    };
+
+                    window.Show();
+
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<ItemsRepeater>(window.Presenter.Child);
+
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
+            }
+        }
+
         private IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
@@ -570,8 +601,9 @@ namespace Avalonia.LeakTests
         {
             public bool DrawFps { get; set; }
             public bool DrawDirtyRects { get; set; }
+#pragma warning disable CS0067
             public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
-
+#pragma warning restore CS0067
             public void AddDirty(IVisual visual)
             {
             }

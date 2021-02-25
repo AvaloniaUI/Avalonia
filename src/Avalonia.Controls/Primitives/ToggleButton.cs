@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 
@@ -7,6 +8,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Represents a control that a user can select (check) or clear (uncheck). Base class for controls that can switch states.
     /// </summary>
+    [PseudoClasses(":checked", ":unchecked", ":indeterminate")]
     public class ToggleButton : Button
     {
         /// <summary>
@@ -92,7 +94,7 @@ namespace Avalonia.Controls.Primitives
             set 
             { 
                 SetAndRaise(IsCheckedProperty, ref _isChecked, value);
-                UpdatePseudoClasses(value);
+                UpdatePseudoClasses(IsChecked);
             }
         }
 

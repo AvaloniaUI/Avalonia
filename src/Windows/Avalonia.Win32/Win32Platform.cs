@@ -11,9 +11,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.Utilities;
+using Avalonia.Win32;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -36,9 +40,26 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         public bool UseDeferredRendering { get; set; } = true;
-        public bool AllowEglInitialization { get; set; } = true;
+        
+        public bool? AllowEglInitialization { get; set; }
+        
         public bool? EnableMultitouch { get; set; }
         public bool OverlayPopups { get; set; }
+        public bool UseWgl { get; set; }
+        public IList<GlVersion> WglProfiles { get; set; } = new List<GlVersion>
+        {
+            new GlVersion(GlProfileType.OpenGL, 4, 0),
+            new GlVersion(GlProfileType.OpenGL, 3, 2),
+        };
+
+        /// <summary>
+        /// Render Avalonia to a Texture inside the Windows.UI.Composition tree.
+        /// </summary>
+        /// <remarks>
+        /// Supported on Windows 10 build 16299 and above. Ignored on other versions.
+        /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
+        /// </remarks>
+        public bool UseWindowsUIComposition { get; set; } = true;
     }
 }
 
@@ -83,7 +104,7 @@ namespace Avalonia.Win32
             Options = options;
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
-                .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
+                .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
@@ -93,12 +114,11 @@ namespace Avalonia.Win32
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
-                .Bind<AvaloniaSynchronizationContext.INonPumpingPlatformWaitProvider>().ToConstant(new NonPumpingWaitProvider())
+                .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
 
-            if (options.AllowEglInitialization)
-                Win32GlManager.Initialize();
-            
+            Win32GlManager.Initialize();
+
             _uiThread = Thread.CurrentThread;
 
             if (OleContext.Current != null)
@@ -113,20 +133,33 @@ namespace Avalonia.Win32
 
         public void ProcessMessage()
         {
-            UnmanagedMethods.MSG msg;
-            UnmanagedMethods.GetMessage(out msg, IntPtr.Zero, 0, 0);
-            UnmanagedMethods.TranslateMessage(ref msg);
-            UnmanagedMethods.DispatchMessage(ref msg);
+
+            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
+            {
+                UnmanagedMethods.TranslateMessage(ref msg);
+                UnmanagedMethods.DispatchMessage(ref msg);
+            }
+            else
+            {
+                Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
+                    ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(ProcessMessage), Marshal.GetLastWin32Error());
+
+            }
         }
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var result = 0;
+            while (!cancellationToken.IsCancellationRequested 
+                && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
             {
-                UnmanagedMethods.MSG msg;
-                UnmanagedMethods.GetMessage(out msg, IntPtr.Zero, 0, 0);
                 UnmanagedMethods.TranslateMessage(ref msg);
                 UnmanagedMethods.DispatchMessage(ref msg);
+            }
+            if (result < 0)
+            {
+                Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.Win32Platform)
+                    ?.Log(this, "Unmanaged error in {0}. Error Code: {1}", nameof(RunLoop), Marshal.GetLastWin32Error());
             }
         }
 
@@ -213,7 +246,7 @@ namespace Avalonia.Win32
         public IWindowImpl CreateEmbeddableWindow()
         {
             var embedded = new EmbeddedWindowImpl();
-            embedded.Show();
+            embedded.Show(true);
             return embedded;
         }
 

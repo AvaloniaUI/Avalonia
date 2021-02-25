@@ -104,9 +104,9 @@ class MacOptions : public ComSingleObject<IAvnMacOptions, &IID_IAvnMacOptions>
 public:
     FORWARD_IUNKNOWN()
     
-    virtual HRESULT SetApplicationTitle(void* utf8String) override
+    virtual HRESULT SetApplicationTitle(char* utf8String) override
     {
-        auto appTitle = [NSString stringWithUTF8String:(const char*)utf8String];
+        auto appTitle = [NSString stringWithUTF8String: utf8String];
         
         [[NSProcessInfo processInfo] setProcessName:appTitle];
         
@@ -299,10 +299,14 @@ AvnPoint ToAvnPoint (NSPoint p)
 
 AvnPoint ConvertPointY (AvnPoint p)
 {
-    auto sw = [NSScreen.screens objectAtIndex:0].frame;
+    auto primaryDisplayHeight = NSMaxY([[[NSScreen screens] firstObject] frame]);
     
-    auto t = MAX(sw.origin.y, sw.origin.y + sw.size.height);
-    p.Y = t - p.Y;
+    p.Y = primaryDisplayHeight - p.Y;
     
     return p;
+}
+
+CGFloat PrimaryDisplayHeight()
+{
+  return NSMaxY([[[NSScreen screens] firstObject] frame]);
 }

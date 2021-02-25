@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -8,6 +9,8 @@ using Avalonia.Platform;
 using Avalonia.VisualTree;
 using System;
 using System.Reactive.Disposables;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 
 namespace Avalonia.Controls
 {
@@ -73,7 +76,11 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control with two views: A collapsible pane and an area for content
     /// </summary>
-    public class SplitView : TemplatedControl
+    [PseudoClasses(":open", ":closed")]
+    [PseudoClasses(":compactoverlay", ":compactinline", ":overlay", ":inline")]
+    [PseudoClasses(":left", ":right")]
+    [PseudoClasses(":lightdismiss")]
+    public class SplitView : ContentControl
     {
         /*
             Pseudo classes & combos
@@ -81,12 +88,6 @@ namespace Avalonia.Controls
             :compactoverlay :compactinline :overlay :inline
             :left :right
         */
-
-        /// <summary>
-        /// Defines the <see cref="Content"/> property
-        /// </summary>
-        public static readonly StyledProperty<IControl> ContentProperty =
-            AvaloniaProperty.Register<SplitView, IControl>(nameof(Content));
 
         /// <summary>
         /// Defines the <see cref="CompactPaneLength"/> property
@@ -128,8 +129,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Pane"/> property
         /// </summary>
-        public static readonly StyledProperty<IControl> PaneProperty =
-            AvaloniaProperty.Register<SplitView, IControl>(nameof(Pane));
+        public static readonly StyledProperty<object?> PaneProperty =
+            AvaloniaProperty.Register<SplitView, object?>(nameof(Pane));
+
+        /// <summary>
+        /// Defines the <see cref="HeaderTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> PaneTemplateProperty =
+            AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate?>(nameof(PaneTemplate));
 
         /// <summary>
         /// Defines the <see cref="UseLightDismissOverlayMode"/> property
@@ -161,16 +168,7 @@ namespace Avalonia.Controls
             CompactPaneLengthProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnCompactPaneLengthChanged(v));
             PanePlacementProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnPanePlacementChanged(v));
             DisplayModeProperty.Changed.AddClassHandler<SplitView>((x, v) => x.OnDisplayModeChanged(v));
-        }
-
-        /// <summary>
-        /// Gets or sets the content of the SplitView
-        /// </summary>
-        [Content]
-        public IControl Content
-        {
-            get => GetValue(ContentProperty);
-            set => SetValue(ContentProperty, value);
+            
         }
 
         /// <summary>
@@ -260,10 +258,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the Pane for the SplitView
         /// </summary>
-        public IControl Pane
+        public object Pane
         {
             get => GetValue(PaneProperty);
             set => SetValue(PaneProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets or sets the data template used to display the header content of the control.
+        /// </summary>
+        public IDataTemplate? PaneTemplate
+        {
+            get => GetValue(PaneTemplateProperty);
+            set => SetValue(PaneTemplateProperty, value);
         }
 
         /// <summary>
@@ -306,6 +313,18 @@ namespace Avalonia.Controls
         /// Fired when the pane is opening
         /// </summary>
         public event EventHandler<EventArgs> PaneOpening;
+
+        protected override bool RegisterContentPresenter(IContentPresenter presenter)
+        {
+            var result = base.RegisterContentPresenter(presenter);
+
+            if (presenter.Name == "PART_PanePresenter")
+            {
+                return true;
+            }
+            
+            return result;
+        }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

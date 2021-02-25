@@ -17,9 +17,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridCheckBoxColumn : DataGridBoundColumn
     {
-
         private bool _beganEditWithKeyboard;
-        private bool _isThreeState;
         private CheckBox _currentCheckBox;
         private DataGrid _owningGrid;
 
@@ -32,6 +30,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Defines the <see cref="IsThreeState"/> property.
+        /// </summary>
+        public static StyledProperty<bool> IsThreeStateProperty =
+            CheckBox.IsThreeStateProperty.AddOwner<DataGridCheckBoxColumn>();
+
+        /// <summary>
         /// Gets or sets a value that indicates whether the hosted <see cref="T:System.Windows.Controls.CheckBox" /> controls allow three states or two. 
         /// </summary>
         /// <returns>
@@ -39,17 +43,17 @@ namespace Avalonia.Controls
         /// </returns>
         public bool IsThreeState
         {
-            get
+            get => GetValue(IsThreeStateProperty);
+            set => SetValue(IsThreeStateProperty, value);
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsThreeStateProperty)
             {
-                return _isThreeState;
-            }
-            set
-            {
-                if (_isThreeState != value)
-                {
-                    _isThreeState = value;
-                    NotifyPropertyChanged(nameof(IsThreeState));
-                }
+                NotifyPropertyChanged(change.Property.Name);
             }
         }
 
@@ -203,9 +207,9 @@ namespace Avalonia.Controls
             {
                 throw new ArgumentNullException("element");
             }
-            if(element is CheckBox checkBox)
+            if (element is CheckBox checkBox)
             {
-                checkBox.IsThreeState = IsThreeState;
+                DataGridHelper.SyncColumnProperty(this, checkBox, IsThreeStateProperty);
             }
             else
             {
@@ -229,7 +233,7 @@ namespace Avalonia.Controls
         {
             checkBox.HorizontalAlignment = HorizontalAlignment.Center;
             checkBox.VerticalAlignment = VerticalAlignment.Center;
-            checkBox.IsThreeState = IsThreeState;
+            DataGridHelper.SyncColumnProperty(this, checkBox, IsThreeStateProperty);
         }
 
         private bool EnsureOwningGrid()

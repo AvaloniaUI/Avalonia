@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Disposables;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
@@ -38,6 +39,8 @@ namespace Avalonia.Skia
                 _backendRenderTarget = backendRenderTarget;
                 _surface = surface;
                 _glSession = glSession;
+                
+                SurfaceOrigin = glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft;
             }
             public void Dispose()
             {
@@ -47,6 +50,8 @@ namespace Avalonia.Skia
                 GrContext.Flush();
                 _glSession.Dispose();
             }
+            
+            public GRSurfaceOrigin SurfaceOrigin { get; }
 
             public GRContext GrContext { get; }
             public SKSurface SkSurface => _surface;
@@ -72,10 +77,6 @@ namespace Avalonia.Skia
                         $"Can't create drawing context for surface with {size} size and {scaling} scaling");
                 }
 
-                gl.Viewport(0, 0, size.Width, size.Height);
-                gl.ClearStencil(0);
-                gl.ClearColor(0, 0, 0, 0);
-                gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 lock (_grContext)
                 {
                     _grContext.ResetContext();
@@ -88,6 +89,7 @@ namespace Avalonia.Skia
                         SKColorType.Rgba8888);
 
                     success = true;
+
                     return new GlGpuSession(_grContext, renderTarget, surface, glSession);
                 }
             }

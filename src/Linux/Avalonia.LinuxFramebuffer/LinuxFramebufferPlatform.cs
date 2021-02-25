@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using Avalonia.Controls;
@@ -32,13 +32,13 @@ namespace Avalonia.LinuxFramebuffer
         void Initialize()
         {
             Threading = new InternalPlatformThreadingInterface();
-            if (_fb is IWindowingPlatformGlFeature glFeature)
-                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToConstant(glFeature);
+            if (_fb is IGlOutputBackend gl)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(gl.PlatformOpenGlInterface);
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
+                .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
@@ -79,6 +79,11 @@ namespace Avalonia.LinuxFramebuffer
                     tl.Prepare();
                     _topLevel = tl;
                     _topLevel.Renderer.Start();
+
+                    if (_topLevel is IFocusScope scope)
+                    {
+                        FocusManager.Instance?.SetFocusScope(scope);
+                    }
                 }
 
                 _topLevel.Content = value;

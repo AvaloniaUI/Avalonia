@@ -1,5 +1,0 @@
-Compat issues with assembly Avalonia.Visuals:
-CannotAddAbstractMembers : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.TextLineBreak' is abstract in the implementation but is missing in the contract.
-MembersMustExist : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.LineBreak.get()' does not exist in the implementation but it does exist in the contract.
-CannotAddAbstractMembers : Member 'public Avalonia.Media.TextFormatting.TextLineBreak Avalonia.Media.TextFormatting.TextLine.TextLineBreak.get()' is abstract in the implementation but is missing in the contract.
-Total Issues: 3

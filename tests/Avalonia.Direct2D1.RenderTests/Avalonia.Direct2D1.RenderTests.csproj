@@ -27,4 +27,5 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Magick.NET-Q16-AnyCPU.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
 </Project>

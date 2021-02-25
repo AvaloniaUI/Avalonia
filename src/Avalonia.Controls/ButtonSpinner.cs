@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -15,6 +16,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a spinner control that includes two Buttons.
     /// </summary>
+    [PseudoClasses(":left", ":right")]
     public class ButtonSpinner : Spinner
     {
         /// <summary>

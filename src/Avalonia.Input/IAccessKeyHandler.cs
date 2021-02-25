@@ -8,7 +8,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets the window's main menu.
         /// </summary>
-        IMainMenu MainMenu { get; set; }
+        IMainMenu? MainMenu { get; set; }
 
         /// <summary>
         /// Sets the owner of the access key handler.

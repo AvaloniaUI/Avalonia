@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -12,6 +14,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Implements input-related functionality for a control.
     /// </summary>
+    [PseudoClasses(":disabled", ":focus", ":focus-visible", ":pointerover")]
     public class InputElement : Interactive, IInputElement
     {
         /// <summary>
@@ -37,9 +40,17 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets associated mouse cursor.
         /// </summary>
-        public static readonly StyledProperty<Cursor> CursorProperty =
-            AvaloniaProperty.Register<InputElement, Cursor>(nameof(Cursor), null, true);
+        public static readonly StyledProperty<Cursor?> CursorProperty =
+            AvaloniaProperty.Register<InputElement, Cursor?>(nameof(Cursor), null, true);
 
+        /// <summary>
+        /// Defines the <see cref="IsKeyboardFocusWithin"/> property.
+        /// </summary>
+        public static readonly DirectProperty<InputElement, bool> IsKeyboardFocusWithinProperty =
+            AvaloniaProperty.RegisterDirect<InputElement, bool>(
+                nameof(IsKeyboardFocusWithin),
+                o => o.IsKeyboardFocusWithin);
+        
         /// <summary>
         /// Defines the <see cref="IsFocused"/> property.
         /// </summary>
@@ -92,6 +103,22 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<TextInputEventArgs> TextInputEvent =
             RoutedEvent.Register<InputElement, TextInputEventArgs>(
                 "TextInput",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="TextInputMethodClientRequested"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputMethodClientRequestedEventArgs> TextInputMethodClientRequestedEvent =
+            RoutedEvent.Register<InputElement, TextInputMethodClientRequestedEventArgs>(
+                "TextInputMethodClientRequested",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="TextInputOptionsQuery"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputOptionsQueryEventArgs> TextInputOptionsQueryEvent =
+            RoutedEvent.Register<InputElement, TextInputOptionsQueryEventArgs>(
+                "TextInputOptionsQuery",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -158,9 +185,10 @@ namespace Avalonia.Input
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
+        private bool _isKeyboardFocusWithin;
         private bool _isFocusVisible;
         private bool _isPointerOver;
-        private GestureRecognizerCollection _gestureRecognizers;
+        private GestureRecognizerCollection? _gestureRecognizers;
 
         /// <summary>
         /// Initializes static members of the <see cref="InputElement"/> class.
@@ -231,6 +259,24 @@ namespace Avalonia.Input
         {
             add { AddHandler(TextInputEvent, value); }
             remove { RemoveHandler(TextInputEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when an input element gains input focus and input method is looking for the corresponding client
+        /// </summary>
+        public event EventHandler<TextInputMethodClientRequestedEventArgs> TextInputMethodClientRequested
+        {
+            add { AddHandler(TextInputMethodClientRequestedEvent, value); }
+            remove { RemoveHandler(TextInputMethodClientRequestedEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when an input element gains input focus and input method is asking for required content options
+        /// </summary>
+        public event EventHandler<TextInputOptionsQueryEventArgs> TextInputOptionsQuery
+        {
+            add { AddHandler(TextInputOptionsQueryEvent, value); }
+            remove { RemoveHandler(TextInputOptionsQueryEvent, value); }
         }
 
         /// <summary>
@@ -336,10 +382,19 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets associated mouse cursor.
         /// </summary>
-        public Cursor Cursor
+        public Cursor? Cursor
         {
             get { return GetValue(CursorProperty); }
             set { SetValue(CursorProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets a value indicating whether keyboard focus is anywhere within the element or its visual tree child elements.
+        /// </summary>
+        public bool IsKeyboardFocusWithin
+        {
+            get => _isKeyboardFocusWithin;
+            internal set => SetAndRaise(IsKeyboardFocusWithinProperty, ref _isKeyboardFocusWithin, value); 
         }
 
         /// <summary>
@@ -541,6 +596,10 @@ namespace Avalonia.Input
             else if (change.Property == IsPointerOverProperty)
             {
                 UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
+            }
+            else if (change.Property == IsKeyboardFocusWithinProperty)
+            {
+                PseudoClasses.Set(":focus-within", _isKeyboardFocusWithin);
             }
         }
 

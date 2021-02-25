@@ -7,10 +7,16 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Angle;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.OpenGl;
+using Avalonia.Win32.WinRT;
+using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -45,6 +51,8 @@ namespace Avalonia.Win32
         private Thickness _extendedMargins;
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
+        private bool _isUsingComposition;
+        private IBlurHost _blurHost;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -75,6 +83,7 @@ namespace Avalonia.Win32
         private POINT _maxTrackSize;
         private WindowImpl _parent;        
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
+        private bool _isCloseRequested;
 
         public WindowImpl()
         {
@@ -99,12 +108,37 @@ namespace Avalonia.Win32
             };
             _rendererLock = new ManagedDeferredRendererLock();
 
+            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+
+            var compositionConnector = AvaloniaLocator.Current.GetService<WinUICompositorConnection>();
+
+            _isUsingComposition = compositionConnector is { } &&
+                glPlatform is EglPlatformOpenGlInterface egl &&
+                    egl.Display is AngleWin32EglDisplay angleDisplay &&
+                    angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
+            
+            if (glPlatform != null)
+            {
+                if (_isUsingComposition)
+                {
+                    var cgl = new WinUiCompositedWindowSurface(compositionConnector, this);
+                    _blurHost = cgl;
 
-            if (Win32GlManager.EglFeature != null)
-                _gl = new EglGlPlatformSurface(Win32GlManager.EglFeature.DeferredContext, this);
+                    _gl = cgl;
+
+                    _isUsingComposition = true;
+                }
+                else
+                {
+                    if (glPlatform is EglPlatformOpenGlInterface egl2)
+                        _gl = new EglGlPlatformSurface(egl2, this);
+                    else if (glPlatform is WglPlatformOpenGlInterface wgl)
+                        _gl = new WglGlPlatformSurface(wgl.PrimaryContext, this);
+                }
+            }
 
             Screen = new ScreenImpl();
 
@@ -209,7 +243,7 @@ namespace Avalonia.Win32
             {
                 if (IsWindowVisible(_hwnd))
                 {
-                    ShowWindow(value);
+                    ShowWindow(value, true);
                 }
                 else
                 {
@@ -321,54 +355,63 @@ namespace Avalonia.Win32
 
         private WindowTransparencyLevel Win10EnableBlur(WindowTransparencyLevel transparencyLevel)
         {
-            bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
-
-            var accent = new AccentPolicy();
-            var accentStructSize = Marshal.SizeOf(accent);
-
-            if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+            if (_isUsingComposition)
             {
-                transparencyLevel = WindowTransparencyLevel.Blur;
-            }
+                _blurHost?.SetBlur(transparencyLevel >= WindowTransparencyLevel.Blur);
 
-            switch (transparencyLevel)
+                return transparencyLevel;
+            }
+            else
             {
-                default:
-                case WindowTransparencyLevel.None:
-                    accent.AccentState = AccentState.ACCENT_DISABLED;
-                    break;
+                bool canUseAcrylic = Win32Platform.WindowsVersion.Major > 10 || Win32Platform.WindowsVersion.Build >= 19628;
 
-                case WindowTransparencyLevel.Transparent:
-                    accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
-                    break;
+                var accent = new AccentPolicy();
+                var accentStructSize = Marshal.SizeOf(accent);
 
-                case WindowTransparencyLevel.Blur:
-                    accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
-                    break;
+                if (transparencyLevel == WindowTransparencyLevel.AcrylicBlur && !canUseAcrylic)
+                {
+                    transparencyLevel = WindowTransparencyLevel.Blur;
+                }
 
-                case WindowTransparencyLevel.AcrylicBlur:
-                case (WindowTransparencyLevel.AcrylicBlur + 1): // hack-force acrylic.
-                    accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
-                    transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
-                    break;
+                switch (transparencyLevel)
+                {
+                    default:
+                    case WindowTransparencyLevel.None:
+                        accent.AccentState = AccentState.ACCENT_DISABLED;
+                        break;
+
+                    case WindowTransparencyLevel.Transparent:
+                        accent.AccentState = AccentState.ACCENT_ENABLE_TRANSPARENTGRADIENT;
+                        break;
+
+                    case WindowTransparencyLevel.Blur:
+                        accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+                        break;
+
+                    case WindowTransparencyLevel.AcrylicBlur:
+                    case (WindowTransparencyLevel.AcrylicBlur + 1): // hack-force acrylic.
+                        accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLIC;
+                        transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
+                        break;
+                }
+
+                accent.AccentFlags = 2;
+                accent.GradientColor = 0x01000000;
+
+                var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+                Marshal.StructureToPtr(accent, accentPtr, false);
+
+                var data = new WindowCompositionAttributeData();
+                data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+                data.SizeOfData = accentStructSize;
+                data.Data = accentPtr;
+
+                SetWindowCompositionAttribute(_hwnd, ref data);
+
+                Marshal.FreeHGlobal(accentPtr);
+
+                return transparencyLevel;
             }
-
-            accent.AccentFlags = 2;
-            accent.GradientColor = 0x01000000;
-
-            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
-            Marshal.StructureToPtr(accent, accentPtr, false);
-
-            var data = new WindowCompositionAttributeData();
-            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
-            data.SizeOfData = accentStructSize;
-            data.Data = accentPtr;
-
-            SetWindowCompositionAttribute(_hwnd, ref data);
-
-            Marshal.FreeHGlobal(accentPtr);
-
-            return transparencyLevel;
         }
 
         public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
@@ -412,9 +455,14 @@ namespace Avalonia.Win32
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
-            return Win32Platform.UseDeferredRendering ?
-                (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock) :
-                new ImmediateRenderer(root);
+            return Win32Platform.UseDeferredRendering 
+                ?  _isUsingComposition 
+                    ? new DeferredRenderer(root, loop)
+                    {
+                        RenderOnlyOnRenderThread = true
+                    } 
+                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
+                : new ImmediateRenderer(root);
         }
 
         public void Resize(Size value)
@@ -449,6 +497,8 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
+            (_gl as IDisposable)?.Dispose();
+
             if (_dropTarget != null)
             {
                 OleContext.Current?.UnregisterDragDrop(Handle);
@@ -457,6 +507,13 @@ namespace Avalonia.Win32
 
             if (_hwnd != IntPtr.Zero)
             {
+                // Detect if we are being closed programmatically - this would mean that WM_CLOSE was not called
+                // and we didn't prepare this window for destruction.
+                if (!_isCloseRequested)
+                {
+                    BeforeCloseCleanup(true);
+                }
+                
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
             }
@@ -510,10 +567,11 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
         }
 
-        public virtual void Show()
+        public virtual void Show(bool activate)
         {
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
-            ShowWindow(_showWindowState);
+
+            ShowWindow(_showWindowState, activate);
         }
 
         public Action GotInputWhenDisabled { get; set; }
@@ -550,14 +608,19 @@ namespace Avalonia.Win32
             SetWindowText(_hwnd, title);
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
-            var hCursor = cursor?.Handle ?? DefaultCursor;
-            SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
+            var impl = cursor as CursorImpl;
 
-            if (_owner.IsPointerOver)
+            if (cursor is null || impl is object)
             {
-                UnmanagedMethods.SetCursor(hCursor);
+                var hCursor = impl?.Handle ?? DefaultCursor;
+                SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
+
+                if (_owner.IsPointerOver)
+                {
+                    UnmanagedMethods.SetCursor(hCursor);
+                }
             }
         }
 
@@ -615,7 +678,7 @@ namespace Avalonia.Win32
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(
-                0,
+                _isUsingComposition ? (int)WindowStyles.WS_EX_NOREDIRECTIONBITMAP : 0,
                 atom,
                 null,
                 (int)WindowStyles.WS_OVERLAPPEDWINDOW | (int) WindowStyles.WS_CLIPCHILDREN,
@@ -773,7 +836,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            bool wantsTitleBar = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
+            bool wantsTitleBar = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
 
             if (!wantsTitleBar)
             {
@@ -790,7 +853,7 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
             }
 
-            margins.cyTopHeight = _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
 
             if (WindowState == WindowState.Maximized)
             {
@@ -838,8 +901,8 @@ namespace Avalonia.Win32
                 _extendedMargins = new Thickness();
             }
 
-            if(!_isClientAreaExtended || (_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.SystemChrome) &&
-                !_extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome)))
+            if(!_isClientAreaExtended || (_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) &&
+                !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome)))
             {
                 EnableCloseButton(_hwnd);
             }
@@ -851,9 +914,9 @@ namespace Avalonia.Win32
             ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
         }
 
-        private void ShowWindow(WindowState state)
+        private void ShowWindow(WindowState state, bool activate)
         {
-            ShowWindowCommand command;
+            ShowWindowCommand? command;
 
             var newWindowProperties = _windowProperties;
 
@@ -861,7 +924,7 @@ namespace Avalonia.Win32
             {
                 case WindowState.Minimized:
                     newWindowProperties.IsFullScreen = false;
-                    command = ShowWindowCommand.Minimize;
+                    command = activate ? ShowWindowCommand.Minimize : ShowWindowCommand.ShowMinNoActive;
                     break;
                 case WindowState.Maximized:
                     newWindowProperties.IsFullScreen = false;
@@ -870,13 +933,14 @@ namespace Avalonia.Win32
 
                 case WindowState.Normal:
                     newWindowProperties.IsFullScreen = false;
-                    command = ShowWindowCommand.Restore;
+                    command = IsWindowVisible(_hwnd) ? ShowWindowCommand.Restore : 
+                        activate ? ShowWindowCommand.Normal : ShowWindowCommand.ShowNoActivate;
                     break;
 
                 case WindowState.FullScreen:
                     newWindowProperties.IsFullScreen = true;
-                    UpdateWindowProperties(newWindowProperties);
-                    return;
+                    command = IsWindowVisible(_hwnd) ? (ShowWindowCommand?)null : ShowWindowCommand.Restore;
+                    break;
 
                 default:
                     throw new ArgumentException("Invalid WindowState.");
@@ -884,16 +948,45 @@ namespace Avalonia.Win32
 
             UpdateWindowProperties(newWindowProperties);
 
-            UnmanagedMethods.ShowWindow(_hwnd, command);
+            if (command.HasValue)
+            {
+                UnmanagedMethods.ShowWindow(_hwnd, command.Value);
+            }
 
             if (state == WindowState.Maximized)
             {
                 MaximizeWithoutCoveringTaskbar();
             }
 
-            if (!Design.IsDesignMode)
+            if (!Design.IsDesignMode && activate)
             {
                 SetFocus(_hwnd);
+            }
+        }
+        
+        private void BeforeCloseCleanup(bool isDisposing)
+        {
+            // Based on https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Window.cs#L4270-L4337
+            // We need to enable parent window before destroying child window to prevent OS from activating a random window behind us (or last active window).
+            // This is described here: https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enablewindow#remarks
+            // We need to verify if parent is still alive (perhaps it got destroyed somehow).
+            if (_parent != null && IsWindow(_parent._hwnd))
+            {
+                var wasActive = GetActiveWindow() == _hwnd;
+
+                // We can only set enabled state if we are not disposing - generally Dispose happens after enabled state has been set.
+                // Ignoring this would cause us to enable a window that might be disabled.
+                if (!isDisposing)
+                {
+                    // Our window closed callback will set enabled state to a correct value after child window gets destroyed.
+                    _parent.SetEnabled(true);
+                }
+                
+                // We also need to activate our parent window since again OS might try to activate a window behind if it is not set.
+                if (wasActive)
+                {
+                    SetActiveWindow(_parent._hwnd);
+                }
             }
         }
 
@@ -1007,10 +1100,12 @@ namespace Avalonia.Win32
                 if (newProperties.IsResizable)
                 {
                     style |= WindowStyles.WS_SIZEFRAME;
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
                 }
                 else
                 {
                     style &= ~WindowStyles.WS_SIZEFRAME;
+                    style &= ~WindowStyles.WS_MAXIMIZEBOX;
                 }
 
                 SetStyle(style);
@@ -1144,7 +1239,7 @@ namespace Avalonia.Win32
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlag(ExtendClientAreaChromeHints.PreferSystemChrome);
+        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome);
 
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;

@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -16,7 +17,7 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
-        private GlPlatformFeature _glFeature;
+        private AvaloniaNativePlatformOpenGlInterface _platformGl;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
@@ -29,7 +30,7 @@ namespace Avalonia.Native
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            var result =  new AvaloniaNativePlatform(new IAvaloniaNativeFactory(factory));
+            var result =  new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
             result.DoInitialize(options);
 
             return result;
@@ -65,10 +66,7 @@ namespace Avalonia.Native
         {
             if(!string.IsNullOrWhiteSpace(Application.Current.Name))
             {
-                using (var buffer = new Utf8Buffer(Application.Current.Name))
-                {
-                    _factory.MacOptions.SetApplicationTitle(buffer.DangerousGetHandle());
-                }
+                _factory.MacOptions.SetApplicationTitle(Application.Current.Name);
             }
         }
 
@@ -93,13 +91,13 @@ namespace Avalonia.Native
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
-                _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
+                _factory.MacOptions.SetShowInDock(macOpts?.ShowInDock != false ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
-                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
+                .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
@@ -116,8 +114,8 @@ namespace Avalonia.Native
             {
                 try
                 {
-                    AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>()
-                        .ToConstant(_glFeature = new GlPlatformFeature(_factory.ObtainGlDisplay()));
+                    AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>()
+                        .ToConstant(_platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay()));
                 }
                 catch (Exception)
                 {
@@ -128,7 +126,7 @@ namespace Avalonia.Native
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options, _glFeature);
+            return new WindowImpl(_factory, _options, _platformGl);
         }
 
         public IWindowImpl CreateEmbeddableWindow()
@@ -153,7 +151,7 @@ namespace Avalonia.Native
             set
             {
                 _showInDock = value;
-                _opts.ShowInDock = value ? 1 : 0;
+                _opts.SetShowInDock(value ? 1 : 0);
             }
         }
     }

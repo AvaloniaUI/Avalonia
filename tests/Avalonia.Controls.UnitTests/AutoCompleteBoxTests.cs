@@ -363,6 +363,40 @@ namespace Avalonia.Controls.UnitTests
             });
         }
         
+        [Fact]
+        public void Custom_TextSelector()
+        {
+            RunTest((control, textbox) =>
+            {
+                object selectedItem = control.Items.Cast<object>().First();
+                string input = "42";
+
+                control.TextSelector = (text, item) => text + item;
+                Assert.Equal(control.TextSelector("4", "2"), "42");
+
+                control.Text = input;
+                control.SelectedItem = selectedItem;
+                Assert.Equal(control.Text, control.TextSelector(input, selectedItem.ToString()));
+            });
+        }
+        
+        [Fact]
+        public void Custom_ItemSelector()
+        {
+            RunTest((control, textbox) =>
+            {
+                object selectedItem = control.Items.Cast<object>().First();
+                string input = "42";
+
+                control.ItemSelector = (text, item) => text + item;
+                Assert.Equal(control.ItemSelector("4", 2), "42");
+
+                control.Text = input;
+                control.SelectedItem = selectedItem;
+                Assert.Equal(control.Text, control.ItemSelector(input, selectedItem));
+            });
+        }
+
         /// <summary>
         /// Retrieves a defined predicate filter through a new AutoCompleteBox 
         /// control instance.

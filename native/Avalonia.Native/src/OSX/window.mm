@@ -106,13 +106,13 @@ public:
         return Window;
     }
     
-    virtual HRESULT Show() override
+    virtual HRESULT Show(bool activate) override
     {
         @autoreleasepool
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
-            if(ShouldTakeFocusOnShow())
+            if(ShouldTakeFocusOnShow() && activate)
             {
                 [Window makeKeyAndOrderFront:Window];
                 [NSApp activateIgnoringOtherApps:YES];
@@ -561,11 +561,11 @@ private:
         }
     }
     
-    virtual HRESULT Show () override
+    virtual HRESULT Show (bool activate) override
     {
         @autoreleasepool
         {            
-            WindowBaseImpl::Show();
+            WindowBaseImpl::Show(activate);
             
             HideOrShowTrafficLights();
             
@@ -768,7 +768,7 @@ private:
         }
     }
     
-    virtual HRESULT SetTitle (void* utf8title) override
+    virtual HRESULT SetTitle (char* utf8title) override
     {
         @autoreleasepool
         {
@@ -1338,6 +1338,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     _parent->BaseEvents->RunRenderPriorityJobs();
+    
+    if (_parent == nullptr)
+    {
+        return;
+    }
+        
     _parent->BaseEvents->Paint();
 }
 
@@ -1385,17 +1391,20 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [super viewDidChangeBackingProperties];
 }
 
-- (bool) ignoreUserInput
+- (bool) ignoreUserInput:(bool)trigerInputWhenDisabled
 {
     auto parentWindow = objc_cast<AvnWindow>([self window]);
     
     if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
     {
-        auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
-        
-        if(window != nullptr)
+        if(trigerInputWhenDisabled)
         {
-            window->WindowEvents->GotInputWhenDisabled();
+            auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
+            
+            if(window != nullptr)
+            {
+                window->WindowEvents->GotInputWhenDisabled();
+            }
         }
         
         return TRUE;
@@ -1406,7 +1415,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
-    if([self ignoreUserInput])
+    bool triggerInputWhenDisabled = type != Move;
+    
+    if([self ignoreUserInput: triggerInputWhenDisabled])
     {
         return;
     }
@@ -1572,7 +1583,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput])
+    if([self ignoreUserInput: false])
     {
         return;
     }
@@ -2057,17 +2068,17 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void)becomeKeyWindow
 {
+    [self showWindowMenuWithAppMenu];
+    
     if([self activateAppropriateChild: true])
     {
-        [self showWindowMenuWithAppMenu];
-        
         if(_parent != nullptr)
         {
             _parent->BaseEvents->Activated();
         }
-        
-        [super becomeKeyWindow];
     }
+    
+    [super becomeKeyWindow];
 }
 
 -(void) restoreParentWindow;

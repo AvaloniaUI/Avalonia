@@ -22,6 +22,10 @@
       <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
       <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
       <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
+      <TabItem Header="Cursor"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CursorPage/>
+      </TabItem>
       <TabItem Header="DataGrid" 
                ScrollViewer.VerticalScrollBarVisibility="Disabled"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -44,8 +48,12 @@
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <pages:ItemsRepeaterPage/>
       </TabItem>
+      <TabItem Header="Label"><pages:LabelsPage/></TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
-      <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
+      <TabItem Header="ListBox"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ListBoxPage/>
+      </TabItem>
       <TabItem Header="Menu"><pages:MenuPage/></TabItem>
       <TabItem Header="Notifications"><pages:NotificationsPage/></TabItem>
 	    <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
@@ -74,8 +82,8 @@
             <ComboBoxItem>Full Decorations</ComboBoxItem>
           </ComboBox>
           <ComboBox x:Name="Themes" SelectedIndex="0">
-            <ComboBoxItem>Fluent - Dark</ComboBoxItem>
             <ComboBoxItem>Fluent - Light</ComboBoxItem>
+            <ComboBoxItem>Fluent - Dark</ComboBoxItem>
             <ComboBoxItem>Simple - Light</ComboBoxItem>
             <ComboBoxItem>Simple - Dark</ComboBoxItem>
           </ComboBox>

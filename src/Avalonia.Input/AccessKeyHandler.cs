@@ -28,7 +28,7 @@ namespace Avalonia.Input
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot _owner;
+        private IInputRoot? _owner;
 
         /// <summary>
         /// Whether access keys are currently being shown;
@@ -48,17 +48,17 @@ namespace Avalonia.Input
         /// <summary>
         /// Element to restore following AltKey taking focus.
         /// </summary>
-        private IInputElement _restoreFocusElement;
+        private IInputElement? _restoreFocusElement;
 
         /// <summary>
         /// The window's main menu.
         /// </summary>
-        private IMainMenu _mainMenu;
+        private IMainMenu? _mainMenu;
 
         /// <summary>
         /// Gets or sets the window's main menu.
         /// </summary>
-        public IMainMenu MainMenu
+        public IMainMenu? MainMenu
         {
             get => _mainMenu;
             set
@@ -86,14 +86,12 @@ namespace Avalonia.Input
         /// </remarks>
         public void SetOwner(IInputRoot owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
-
             if (_owner != null)
             {
                 throw new InvalidOperationException("AccessKeyHandler owner has already been set.");
             }
 
-            _owner = owner;
+            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
             _owner.AddHandler(InputElement.KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
             _owner.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Bubble);
@@ -149,7 +147,7 @@ namespace Avalonia.Input
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
-                    _owner.ShowAccessKeys = _showingAccessKeys = true;
+                    _owner!.ShowAccessKeys = _showingAccessKeys = true;
                 }
                 else
                 {
@@ -179,7 +177,7 @@ namespace Avalonia.Input
         {
             bool menuIsOpen = MainMenu?.IsOpen == true;
 
-            if ((e.KeyModifiers & KeyModifiers.Alt) != 0 || menuIsOpen)
+            if (e.KeyModifiers.HasFlagCustom(KeyModifiers.Alt) || menuIsOpen)
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
@@ -241,7 +239,7 @@ namespace Avalonia.Input
         {
             if (_showingAccessKeys)
             {
-                _owner.ShowAccessKeys = false;
+                _owner!.ShowAccessKeys = false;
             }
         }
 
@@ -250,13 +248,13 @@ namespace Avalonia.Input
         /// </summary>
         private void CloseMenu()
         {
-            MainMenu.Close();
-            _owner.ShowAccessKeys = _showingAccessKeys = false;
+            MainMenu!.Close();
+            _owner!.ShowAccessKeys = _showingAccessKeys = false;
         }
 
         private void MainMenuClosed(object sender, EventArgs e)
         {
-            _owner.ShowAccessKeys = false;
+            _owner!.ShowAccessKeys = false;
         }
     }
 }

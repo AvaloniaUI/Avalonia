@@ -2,7 +2,7 @@
 
 namespace Avalonia.Native
 {
-    public static class Helpers
+    internal static class Helpers
     {
         public static Point ToAvaloniaPoint (this AvnPoint pt)
         {
