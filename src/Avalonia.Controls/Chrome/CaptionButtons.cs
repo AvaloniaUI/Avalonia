@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Chrome
             }
         }
 
-        private void OnToggleFullScreen()
+        protected virtual void OnToggleFullScreen()
         {
             if (HostWindow != null)
             {
