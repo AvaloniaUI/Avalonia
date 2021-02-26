@@ -3,7 +3,8 @@
              xmlns:conv="clr-namespace:Avalonia.Diagnostics.Converters"
              xmlns:local="clr-namespace:Avalonia.Diagnostics.Views"
              xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
-             x:Class="Avalonia.Diagnostics.Views.ControlDetailsView">
+             x:Class="Avalonia.Diagnostics.Views.ControlDetailsView"
+             x:Name="Main">
 
   <UserControl.Resources>
     <SolidColorBrush x:Key="ThicknessBorderBrush" Color="#666666" />
@@ -153,9 +154,10 @@
 
       <Grid Grid.Row="2" Margin="4" RowDefinitions="Auto,Auto">
 
-        <Grid Grid.Row="0" Margin="2" ColumnDefinitions="Auto,*,Auto">
-          <TextBlock Grid.Column="0" Text="Styles"  />
-          <ToggleButton Margin="2,0,0,0" Grid.Column="2" ToolTip.Tip="Snapshot current styles (Alt+S/Alt+D to enable/disable within debugged window)" Content="Snapshot" IsChecked="{Binding SnapshotStyles}" />
+        <Grid Grid.Row="0" Margin="2" ColumnDefinitions="Auto,*,Auto,Auto">
+          <TextBlock FontWeight="Bold" Grid.Column="0" Text="{Binding StyleStatus}" VerticalAlignment="Center" />
+          <CheckBox Margin="2,0,0,0" Grid.Column="2" Content="Show inactive" IsChecked="{Binding ShowInactiveStyles}" ToolTip.Tip="Show styles that are currently inactive" />
+          <ToggleButton Margin="2,0,0,0" Grid.Column="3" ToolTip.Tip="Snapshot current styles (Alt+S/Alt+D to enable/disable within debugged window)" Content="Snapshot" IsChecked="{Binding SnapshotStyles}" />
         </Grid>
 
         <TextBox Grid.Row="1" Margin="2" Grid.Column="0" Watermark="Filter" Text="{Binding StyleFilter}" />
@@ -165,10 +167,13 @@
         <ItemsControl Items="{Binding AppliedStyles}" >
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <Border BorderThickness="0,0,0,1" BorderBrush="#6C6C6C">
+              <Border BorderThickness="0,0,0,1" BorderBrush="#6C6C6C" Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}">
                 <Border.IsVisible>
                   <MultiBinding Converter="{x:Static BoolConverters.And}">
-                    <Binding Path="IsActive" />
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}" >
+                      <Binding Path="IsActive" />
+                      <Binding Path="#Main.DataContext.ShowInactiveStyles" />
+                    </MultiBinding>
                     <Binding Path="IsVisible" />
                   </MultiBinding>
                 </Border.IsVisible>
