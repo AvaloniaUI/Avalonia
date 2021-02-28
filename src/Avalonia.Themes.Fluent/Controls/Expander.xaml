@@ -1,6 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Styles.Resources>
-    <Thickness x:Key="ExpanderHeaderPadding">16,0,0,0</Thickness>
+    <Thickness x:Key="ExpanderHeaderPadding">16</Thickness>
     <Thickness x:Key="ExpanderContentPadding">16</Thickness>
 
     <Thickness x:Key="ExpanderBorderThickness">1</Thickness>
@@ -65,8 +65,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border x:Name="ToggleButtonBackground"
-                CornerRadius="{DynamicResource ControlCornerRadius}"
-                Padding="{TemplateBinding Padding}">
+                CornerRadius="{DynamicResource ControlCornerRadius}">
           <Grid ColumnDefinitions="*,Auto">
             <ContentPresenter x:Name="PART_ContentPresenter"
                               Content="{TemplateBinding Content}"
@@ -76,7 +75,8 @@
                               TextBlock.Foreground="{DynamicResource ExpanderForeground}"
                               Background="Transparent"
                               BorderBrush="Transparent"
-                              BorderThickness="0"/>
+                              BorderThickness="0"
+                              Margin="{TemplateBinding Padding}"/>
             <Border x:Name="ExpandCollapseChevronBorder"
                     Grid.Column="1"
                     Width="32"
