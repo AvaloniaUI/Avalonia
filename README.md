@@ -154,26 +154,29 @@ namespace Sample.App
 {
     partial class SampleView
     {
-        internal global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox UserNameTextBox { get; set; }
-        public global::Avalonia.Controls.TextBlock UserNameValidation { get; set; }
-        private global::Avalonia.Controls.TextBox PasswordTextBox { get; set; }
-        internal global::Avalonia.Controls.TextBlock PasswordValidation { get; set; }
-        internal global::Avalonia.Controls.ListBox AwesomeListView { get; set; }
-        internal global::Avalonia.Controls.TextBox ConfirmPasswordTextBox { get; set; }
-        internal global::Avalonia.Controls.TextBlock ConfirmPasswordValidation { get; set; }
-        internal global::Avalonia.Controls.Button SignUpButton { get; set; }
-        internal global::Avalonia.Controls.TextBlock CompoundValidation { get; set; }
+        internal global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox UserNameTextBox;
+        public global::Avalonia.Controls.TextBlock UserNameValidation;
+        private global::Avalonia.Controls.TextBox PasswordTextBox;
+        internal global::Avalonia.Controls.TextBlock PasswordValidation;
+        internal global::Avalonia.Controls.ListBox AwesomeListView;
+        internal global::Avalonia.Controls.TextBox ConfirmPasswordTextBox;
+        internal global::Avalonia.Controls.TextBlock ConfirmPasswordValidation;
+        internal global::Avalonia.Controls.Button SignUpButton;
+        internal global::Avalonia.Controls.TextBlock CompoundValidation;
 
-        public void InitializeComponent(bool loadXaml = true)
+        public void InitializeComponent(bool loadXaml = true, bool attachDevTools = true)
         {
             if (loadXaml)
             {
                 AvaloniaXamlLoader.Load(this);
             }
 
+// This will be added only if you install Avalonia.Diagnostics.
 #if DEBUG
-            // This will be added only if you install Avalonia.Diagnostics.
-            this.AttachDevTools(); 
+            if (attachDevTools)
+            {
+                this.AttachDevTools();
+            } 
 #endif
 
             UserNameTextBox = this.FindControl<global::Avalonia.NameGenerator.Sandbox.Controls.CustomTextBox>("UserNameTextBox");
