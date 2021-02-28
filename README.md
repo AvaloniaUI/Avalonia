@@ -48,8 +48,11 @@ namespace Sample.App
     {
         public SignUpView()
         {
-            AvaloniaXamlLoader.Load(this);
-            UserNameTextBox.Text = "Joseph"; // Cool stuff!
+            // This method is generated. Call it before accessing any
+            // of the generated properties. The 'UserNameTextBox'
+            // property is also generated.
+            InitializeComponent();
+            UserNameTextBox.Text = "Joseph";
         }
     }
 }
@@ -67,7 +70,7 @@ public partial class SignUpView : ReactiveWindow<SignUpViewModel>
 {
     public SignUpView()
     {
-        AvaloniaXamlLoader.Load(this);
+        InitializeComponent();
         this.WhenActivated(disposables =>
         {
             this.BindValidation(ViewModel, x => x.UserName, x => x.UserNameValidation.Text)
