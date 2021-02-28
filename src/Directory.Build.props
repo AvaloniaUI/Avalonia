@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <Product>Avalonia.NameGenerator</Product>
+        <Product>XamlNameReferenceGenerator</Product>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/avaloniaui/Avalonia.NameGenerator/</PackageProjectUrl>
         <Description>Generates typed x:Name references to Avalonia controls declared in XAML.</Description>
