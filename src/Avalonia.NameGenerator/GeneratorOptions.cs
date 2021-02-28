@@ -35,8 +35,7 @@ namespace Avalonia.NameGenerator
         {
             get
             {
-                var defaultBehavior = Behavior.OnlyProperties;
-
+                const Behavior defaultBehavior = Behavior.InitializeComponent;
                 var propertyValue = _context
                     .GetMSBuildProperty(
                         nameof(BuildProperties.AvaloniaNameGeneratorBehavior),
@@ -52,7 +51,7 @@ namespace Avalonia.NameGenerator
         {
             get
             {
-                var defaultFieldModifier = DefaultFieldModifier.Internal;
+                const DefaultFieldModifier defaultFieldModifier = DefaultFieldModifier.Internal;
                 var propertyValue = _context
                     .GetMSBuildProperty(
                         nameof(BuildProperties.AvaloniaNameGeneratorDefaultFieldModifier),
