@@ -57,7 +57,7 @@
     <Setter Property="IsVisible" Value="False" />
   </Style>
   <Style Selector="TabStripItem /template/ Border#PART_SelectedPipe, TabItem[TabStripPlacement=Bottom] /template/ Border#PART_SelectedPipe">
-    <Setter Property="Height" Value="{StaticResource TabStripItemPipeThickness}" />
+    <Setter Property="Height" Value="{DynamicResource TabStripItemPipeThickness}" />
     <Setter Property="Margin" Value="0,0,0,2" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="VerticalAlignment" Value="Bottom" />

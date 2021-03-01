@@ -26,6 +26,9 @@
       </ControlTemplate>
     </Setter>
   </Style>
+  <Style Selector="Expander[IsExpanded=true] /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ToggleButtonForeground}"/>
+  </Style>
   <Style Selector="Expander[ExpandDirection=Up]">
     <Setter Property="Template">
       <ControlTemplate>
@@ -108,7 +111,7 @@
     </Setter>
   </Style>
   <Style Selector="Expander /template/ ToggleButton#PART_toggle:pointerover /template/ Border">
-    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlTransientBorderBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumBrush}" />
   </Style>
   <Style Selector="Expander:down:expanded /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">

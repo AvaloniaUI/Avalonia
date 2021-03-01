@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:local="clr-namespace:ControlCatalog.Models;assembly=ControlCatalog"
+             xmlns:local="using:ControlCatalog.Models"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.DataGridPage">
   <UserControl.Resources>
@@ -26,7 +26,8 @@
         <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" />
-            <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" />
+            <!-- CompiledBinding example of usage. -->
+            <DataGridTextColumn Header="Region" Binding="{CompiledBinding Region}" Width="4*" x:DataType="local:Country" />
             <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />
             <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" />
             <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" CellStyleClasses="gdp" />
@@ -38,8 +39,8 @@
           <DataGrid.Columns>
             <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" />
             <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" />
-            <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />
-            <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" />
+            <DataGridTextColumn DisplayIndex="3" Header="Population" Binding="{Binding Population}" Width="3*" />
+            <DataGridTextColumn DisplayIndex="2" Header="Area" Binding="{Binding Area}" Width="3*" />
             <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" />
           </DataGrid.Columns>
         </DataGrid>

@@ -58,7 +58,7 @@ namespace Avalonia.Headless
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>().ToConstant(new HeadlessPlatformThreadingInterface())
                 .Bind<IClipboard>().ToSingleton<HeadlessClipboardStub>()
-                .Bind<IStandardCursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
+                .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
                 .Bind<IPlatformSettings>().ToConstant(new HeadlessPlatformSettingsStub())
                 .Bind<ISystemDialogImpl>().ToSingleton<HeadlessSystemDialogsStub>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()

@@ -4,11 +4,14 @@ using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    internal class CursorFactoryStub : IStandardCursorFactory
+    internal class CursorFactoryStub : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
+
+        private class CursorStub : ICursorImpl
         {
-            return new PlatformHandle(IntPtr.Zero, null);
+            public void Dispose() { }
         }
     }
     internal class PlatformSettings : IPlatformSettings
