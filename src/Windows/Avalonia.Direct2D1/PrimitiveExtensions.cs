@@ -111,7 +111,7 @@ namespace Avalonia.Direct2D1
         /// <returns>The Direct2D brush.</returns>
         public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.IPen pen, SharpDX.Direct2D1.RenderTarget renderTarget)
         {
-            return pen.ToDirect2DStrokeStyle(renderTarget.Factory);
+            return pen.ToDirect2DStrokeStyle(Direct2D1Platform.Direct2D1Factory);
         }
 
         /// <summary>

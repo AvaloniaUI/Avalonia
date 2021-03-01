@@ -45,8 +45,23 @@
             <sys:Exception /> 
           </DataValidationErrors.Error>
         </Slider>
+        <Slider Value="0"
+                IsDirectionReversed="True"
+                Minimum="0"
+                Maximum="100"
+                TickFrequency="10"
+                Width="300" />
       </StackPanel>
       <Slider Value="0"
+              Minimum="0"
+              Maximum="100"
+              Orientation="Vertical"
+              IsSnapToTickEnabled="True"
+              TickPlacement="Outside"
+              TickFrequency="10"
+              Height="300"/>
+      <Slider Value="0"
+              IsDirectionReversed="True"
               Minimum="0"
               Maximum="100"
               Orientation="Vertical"

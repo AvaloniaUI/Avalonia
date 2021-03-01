@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Utilities;
+
+#nullable enable
 
 namespace Avalonia.X11
 {
-    class X11CursorFactory : IStandardCursorFactory
+    class X11CursorFactory : ICursorFactory
     {
         private static readonly byte[] NullCursorData = new byte[] { 0 };
 
@@ -51,7 +56,7 @@ namespace Avalonia.X11
                 .ToDictionary(id => id, id => XLib.XCreateFontCursor(_display, id));
         }
 
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
+        public ICursorImpl GetCursor(StandardCursorType cursorType)
         {
             IntPtr handle;
             if (cursorType == StandardCursorType.None)
@@ -64,7 +69,12 @@ namespace Avalonia.X11
                 ? _cursors[shape]
                 : _cursors[CursorFontShape.XC_top_left_arrow];
             }
-            return new PlatformHandle(handle, "XCURSOR");
+            return new CursorImpl(handle);
+        }
+
+        public unsafe ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        {
+            return new XImageCursor(_display, cursor, hotSpot);
         }
 
         private static IntPtr GetNullCursor(IntPtr display)
@@ -74,5 +84,62 @@ namespace Avalonia.X11
             IntPtr pixmap = XLib.XCreateBitmapFromData(display, window, NullCursorData, 1, 1);
             return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);
         }
+
+        private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface, IPlatformHandle
+        {
+            private readonly PixelSize _pixelSize;
+            private readonly IUnmanagedBlob _blob;
+
+            public XImageCursor(IntPtr display, IBitmapImpl bitmap, PixelPoint hotSpot)
+            {
+                var size = Marshal.SizeOf<XcursorImage>() +
+                    (bitmap.PixelSize.Width * bitmap.PixelSize.Height * 4);
+
+                _pixelSize = bitmap.PixelSize;
+                _blob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(size);
+                
+                var image = (XcursorImage*)_blob.Address;
+                image->version = 1;
+                image->size = Marshal.SizeOf<XcursorImage>();
+                image->width = bitmap.PixelSize.Width;
+                image->height = bitmap.PixelSize.Height;
+                image->xhot = hotSpot.X;
+                image->yhot = hotSpot.Y;
+                image->pixels = (IntPtr)(image + 1);
+               
+                using (var renderTarget = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateRenderTarget(new[] { this }))
+                using (var ctx = renderTarget.CreateDrawingContext(null))
+                {
+                    var r = new Rect(_pixelSize.ToSize(1)); 
+                    ctx.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, r, r);
+                }
+
+                Handle = XLib.XcursorImageLoadCursor(display, _blob.Address);
+            }
+
+            public string HandleDescriptor => "XCURSOR";
+
+            public override void Dispose()
+            {
+                XLib.XcursorImageDestroy(Handle);
+                _blob.Dispose();
+            }
+
+            public ILockedFramebuffer Lock()
+            {
+                return new LockedFramebuffer(
+                    _blob.Address + Marshal.SizeOf<XcursorImage>(),
+                    _pixelSize, _pixelSize.Width * 4,
+                    new Vector(96, 96), PixelFormat.Bgra8888, null);
+            }
+        }
+    }
+
+    class CursorImpl : ICursorImpl
+    {
+        public CursorImpl() { }
+        public CursorImpl(IntPtr handle) => Handle = handle;
+        public IntPtr Handle { get; protected set; }
+        public virtual void Dispose() { }
     }
 }

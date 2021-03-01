@@ -2068,17 +2068,17 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void)becomeKeyWindow
 {
+    [self showWindowMenuWithAppMenu];
+    
     if([self activateAppropriateChild: true])
     {
-        [self showWindowMenuWithAppMenu];
-        
         if(_parent != nullptr)
         {
             _parent->BaseEvents->Activated();
         }
-        
-        [super becomeKeyWindow];
     }
+    
+    [super becomeKeyWindow];
 }
 
 -(void) restoreParentWindow;

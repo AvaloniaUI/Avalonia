@@ -9,37 +9,40 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         public static readonly Codepoint ReplacementCodepoint = new Codepoint('\uFFFD');
 
-        private readonly int _value;
-
         public Codepoint(int value)
         {
-            _value = value;
+            Value = value;
         }
+
+        /// <summary>
+        /// Get the codepoint's value.
+        /// </summary>
+        public int Value { get; }
 
         /// <summary>
         /// Gets the <see cref="Unicode.GeneralCategory"/>.
         /// </summary>
-        public GeneralCategory GeneralCategory => UnicodeData.GetGeneralCategory(_value);
+        public GeneralCategory GeneralCategory => UnicodeData.GetGeneralCategory(Value);
 
         /// <summary>
         /// Gets the <see cref="Unicode.Script"/>.
         /// </summary>
-        public Script Script => UnicodeData.GetScript(_value);
+        public Script Script => UnicodeData.GetScript(Value);
 
         /// <summary>
         /// Gets the <see cref="Unicode.BiDiClass"/>.
         /// </summary>
-        public BiDiClass BiDiClass => UnicodeData.GetBiDiClass(_value);
+        public BiDiClass BiDiClass => UnicodeData.GetBiDiClass(Value);
 
         /// <summary>
         /// Gets the <see cref="Unicode.LineBreakClass"/>.
         /// </summary>
-        public LineBreakClass LineBreakClass => UnicodeData.GetLineBreakClass(_value);
+        public LineBreakClass LineBreakClass => UnicodeData.GetLineBreakClass(Value);
 
         /// <summary>
         /// Gets the <see cref="GraphemeBreakClass"/>.
         /// </summary>
-        public GraphemeBreakClass GraphemeBreakClass => UnicodeData.GetGraphemeClusterBreak(_value);
+        public GraphemeBreakClass GraphemeBreakClass => UnicodeData.GetGraphemeClusterBreak(Value);
 
         /// <summary>
         /// Determines whether this <see cref="Codepoint"/> is a break char.
@@ -51,7 +54,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             get
             {
-                switch (_value)
+                switch (Value)
                 {
                     case '\u000A':
                     case '\u000B':
@@ -93,12 +96,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         public static implicit operator int(Codepoint codepoint)
         {
-            return codepoint._value;
+            return codepoint.Value;
         }
 
         public static implicit operator uint(Codepoint codepoint)
         {
-            return (uint)codepoint._value;
+            return (uint)codepoint.Value;
         }
 
         /// <summary>
@@ -112,7 +115,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             count = 1;
 
-            if (index > text.Length)
+            if (index >= text.Length)
             {
                 return ReplacementCodepoint;
             }

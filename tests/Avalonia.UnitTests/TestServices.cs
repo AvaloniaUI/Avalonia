@@ -23,7 +23,7 @@ namespace Avalonia.UnitTests
             assetLoader: new AssetLoader(),
             platform: new AppBuilder().RuntimePlatform,
             renderInterface: new MockPlatformRenderInterface(),
-            standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
             styler: new Styler(),
             theme: () => CreateDefaultTheme(),
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
@@ -70,7 +70,7 @@ namespace Avalonia.UnitTests
             IPlatformRenderInterface renderInterface = null,
             IRenderTimer renderLoop = null,
             IScheduler scheduler = null,
-            IStandardCursorFactory standardCursorFactory = null,
+            ICursorFactory standardCursorFactory = null,
             IStyler styler = null,
             Func<Styles> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
@@ -111,7 +111,7 @@ namespace Avalonia.UnitTests
         public IFontManagerImpl FontManagerImpl { get; }
         public ITextShaperImpl TextShaperImpl { get; }
         public IScheduler Scheduler { get; }
-        public IStandardCursorFactory StandardCursorFactory { get; }
+        public ICursorFactory StandardCursorFactory { get; }
         public IStyler Styler { get; }
         public Func<Styles> Theme { get; }
         public IPlatformThreadingInterface ThreadingInterface { get; }
@@ -130,7 +130,7 @@ namespace Avalonia.UnitTests
             IPlatformRenderInterface renderInterface = null,
             IRenderTimer renderLoop = null,
             IScheduler scheduler = null,
-            IStandardCursorFactory standardCursorFactory = null,
+            ICursorFactory standardCursorFactory = null,
             IStyler styler = null,
             Func<Styles> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
