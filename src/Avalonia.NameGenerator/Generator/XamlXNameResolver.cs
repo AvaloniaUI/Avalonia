@@ -18,6 +18,7 @@ namespace Avalonia.NameGenerator.Generator
 
         public IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml)
         {
+            _items.Clear();
             xaml.Root.Visit(this);
             xaml.Root.VisitChildren(this);
             return _items;

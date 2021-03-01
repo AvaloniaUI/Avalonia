@@ -79,8 +79,7 @@ namespace Avalonia.NameGenerator.Generator
                     var split = text.Text.Split('.');
                     var nameSpace = string.Join(".", split.Take(split.Length - 1));
                     var className = split.Last();
-                    
-                    
+
                     _resolvedClass = new ResolvedView(className, clrType, nameSpace, _xaml);
                     return node;
                 }
