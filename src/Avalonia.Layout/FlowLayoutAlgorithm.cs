@@ -345,9 +345,10 @@ namespace Avalonia.Layout
                                 for (int i = 0; i < countInLine; i++)
                                 {
                                     var dataIndex = currentIndex - 1 - i;
-                                    var bounds = _elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                                    var elementIndex = _elementManager.GetRealizedRangeIndexFromDataIndex(dataIndex);
+                                    var bounds = _elementManager.GetLayoutBoundsForRealizedIndex(elementIndex);
                                     _orientation.SetMajorSize(ref bounds, lineMajorSize);
-                                    _elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
+                                    _elementManager.SetLayoutBoundsForRealizedIndex(elementIndex, bounds);
                                 }
                             }
 
@@ -388,10 +389,11 @@ namespace Avalonia.Layout
                                     var dataIndex = currentIndex + 1 + i;
                                     if (dataIndex != anchorIndex)
                                     {
-                                        var bounds = _elementManager.GetLayoutBoundsForDataIndex(dataIndex);
+                                        var elementIndex = _elementManager.GetRealizedRangeIndexFromDataIndex(dataIndex);
+                                        var bounds = _elementManager.GetLayoutBoundsForRealizedIndex(elementIndex);
                                         _orientation.SetMajorStart(ref bounds, previousLineOffset - lineMajorSize - lineSpacing);
                                         _orientation.SetMajorSize(ref bounds, lineMajorSize);
-                                        _elementManager.SetLayoutBoundsForDataIndex(dataIndex, bounds);
+                                        _elementManager.SetLayoutBoundsForRealizedIndex(elementIndex, bounds);
                                         Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Corrected Layout bounds of element {Index} are ({Bounds})",
                                             layoutId,
                                             dataIndex,

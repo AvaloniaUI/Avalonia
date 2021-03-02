@@ -341,7 +341,7 @@ namespace Avalonia.Layout
             return IsVirtualizingContext ? rangeIndex + _firstRealizedDataIndex : rangeIndex;
         }
 
-        private int GetRealizedRangeIndexFromDataIndex(int dataIndex)
+        public int GetRealizedRangeIndexFromDataIndex(int dataIndex)
         {
             return IsVirtualizingContext ? dataIndex - _firstRealizedDataIndex : dataIndex;
         }
