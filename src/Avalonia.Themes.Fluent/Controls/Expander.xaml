@@ -1,4 +1,4 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:conv="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
   <Styles.Resources>
     <Thickness x:Key="ExpanderHeaderPadding">16</Thickness>
     <Thickness x:Key="ExpanderContentPadding">16</Thickness>
@@ -13,12 +13,15 @@
     <SolidColorBrush x:Key="ExpanderBackground" Color="{DynamicResource SystemAltMediumHighColor}"/>
     <SolidColorBrush x:Key="ExpanderBorderBrush" Color="{DynamicResource SystemBaseLowColor}"/>
 
-    <SolidColorBrush x:Key="ExpanderDropDownBackground" Color="{DynamicResource SystemAltMediumHighColor}"/>
+    <SolidColorBrush x:Key="ExpanderDropDownBackground" Color="{DynamicResource SystemChromeMediumLowColor}"/>
     <SolidColorBrush x:Key="ExpanderDropDownBorderBrush" Color="{DynamicResource SystemBaseLowColor}"/>
 
     <SolidColorBrush x:Key="ExpanderForeground" Color="{DynamicResource SystemBaseHighColor}"/>
 
     <SolidColorBrush x:Key="ExpanderChevronForeground" Color="{DynamicResource SystemBaseHighColor}"/>
+
+    <conv:TopCornerRadiusFilterConverter x:Key="TopCornerRadiusFilterConverter"/>
+    <conv:BottomCornerRadiusFilterConverter x:Key="BottomCornerRadiusFilterConverter"/>
   </Styles.Resources>
   <Style Selector="Expander">
     <Setter Property="Background" Value="{DynamicResource ExpanderBackground}" />
@@ -47,7 +50,7 @@
                     IsVisible="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                     Background="{DynamicResource ExpanderDropDownBackground}"
                     BorderBrush="{DynamicResource ExpanderDropDownBorderBrush}"
-                    CornerRadius="{DynamicResource ControlCornerRadius}"
+                    CornerRadius="{Binding $parent[Expander].ExpandDirection, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
                     Padding="{DynamicResource ExpanderContentPadding}">
                 <ContentPresenter x:Name="PART_ContentPresenter"
                                   Content="{TemplateBinding Content}"
@@ -64,8 +67,7 @@
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Border x:Name="ToggleButtonBackground"
-                CornerRadius="{DynamicResource ControlCornerRadius}">
+        <Border x:Name="ToggleButtonBackground">
           <Grid ColumnDefinitions="*,Auto">
             <ContentPresenter x:Name="PART_ContentPresenter"
                               Content="{TemplateBinding Content}"
@@ -110,6 +112,13 @@
     <Setter Property="Background" Value="{TemplateBinding Background}"/>
     <Setter Property="BorderBrush" Value="{TemplateBinding BorderBrush}"/>
     <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness}"/>
+  </Style>
+
+  <Style Selector="Expander:not(:expanded) /template/ ToggleButton#ExpanderHeader /template/ Border#ToggleButtonBackground">
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+  </Style>
+  <Style Selector="Expander:expanded /template/ ToggleButton#ExpanderHeader /template/ Border#ToggleButtonBackground">
+    <Setter Property="CornerRadius" Value="{Binding $parent[Expander].ExpandDirection, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
   </Style>
 
 
