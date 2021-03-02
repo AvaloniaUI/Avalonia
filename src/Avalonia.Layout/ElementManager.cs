@@ -71,34 +71,26 @@ namespace Avalonia.Layout
 
         public ILayoutable GetAt(int realizedIndex)
         {
-            ILayoutable element;
-
             if (IsVirtualizingContext)
             {
-                if (_realizedElements[realizedIndex] == null)
+                if (_realizedElements[realizedIndex] is { } element)
                 {
-                    // Sentinel. Create the element now since we need it.
-                    int dataIndex = GetDataIndexFromRealizedRangeIndex(realizedIndex);
-                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "Creating element for sentinal with data index {Index}", dataIndex);
-                    element = _context.GetOrCreateElementAt(
-                        dataIndex,
-                        ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
-                    _realizedElements[realizedIndex] = element;
+                    return element;
                 }
-                else
-                {
-                    element = _realizedElements[realizedIndex];
-                }
+
+                // Sentinel. Create the element now since we need it.
+                int dataIndex = GetDataIndexFromRealizedRangeIndex(realizedIndex);
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "Creating element for sentinal with data index {Index}", dataIndex);
+
+                return _realizedElements[realizedIndex] = _context.GetOrCreateElementAt(
+                    dataIndex, ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
             }
             else
             {
                 // realizedIndex and dataIndex are the same (everything is realized)
-                element = _context.GetOrCreateElementAt(
-                    realizedIndex,
-                    ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
+                return _context.GetOrCreateElementAt(
+                    realizedIndex, ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
             }
-
-            return element;
         }
 
         public void Add(ILayoutable element, int dataIndex)
