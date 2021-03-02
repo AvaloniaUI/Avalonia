@@ -528,6 +528,7 @@ interface IAvnMacOptions : IUnknown
 {
      HRESULT SetShowInDock(int show);
      HRESULT SetApplicationTitle(char* utf8string);
+     HRESULT SetDisableDefaultApplicationMenuItems(bool enabled);
 }
 
 [uuid(04c1b049-1f43-418a-9159-cae627ec1367)]
