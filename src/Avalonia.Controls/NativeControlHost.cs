@@ -157,10 +157,14 @@ namespace Avalonia.Controls
             var needsShow = IsEffectivelyVisible && bounds.HasValue;
 
             if (needsShow)
+            {
+                if (bounds.Value.IsEmpty)
+                    return false;
                 _attachment?.ShowInBounds(bounds.Value);
+            }
             else
                 _attachment?.HideWithSize(Bounds.Size);
-            return false;
+            return true;
         }
 
         private void CheckDestruction()
