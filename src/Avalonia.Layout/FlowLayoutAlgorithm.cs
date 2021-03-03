@@ -100,15 +100,15 @@ namespace Avalonia.Layout
             _elementManager.OnBeginMeasure(orientation);
 
             int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, layoutId);
-            Generate(GenerateDirection.Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
-            Generate(GenerateDirection.Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
+            Generate(forward: true, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
+            Generate(forward: false, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
             if (isWrapping && IsReflowRequired())
             {
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Reflow Pass", layoutId);
                 var firstElementBounds = _elementManager.GetLayoutBoundsForRealizedIndex(0);
                 _orientation.SetMinorStart(ref firstElementBounds, 0);
                 _elementManager.SetLayoutBoundsForRealizedIndex(0, firstElementBounds);
-                Generate(GenerateDirection.Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
+                Generate(forward: false, anchorIndex: 0, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
             }
 
             RaiseLineArranged();
@@ -289,7 +289,7 @@ namespace Avalonia.Layout
         }
 
         private void Generate(
-            GenerateDirection direction,
+            bool forward,
             int anchorIndex,
             Size availableSize,
             double minItemSpacing,
@@ -300,13 +300,12 @@ namespace Avalonia.Layout
         {
             if (anchorIndex != -1)
             {
-                int step = (direction == GenerateDirection.Forward) ? 1 : -1;
-
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Generating {Direction} from anchor {Anchor}",
                     layoutId,
-                    direction,
+                    forward,
                     anchorIndex);
 
+                int step = forward ? 1 : -1;
                 int previousIndex = anchorIndex;
                 int currentIndex = anchorIndex + step;
                 var anchorBounds = _elementManager.GetLayoutBoundsForDataIndex(anchorIndex);
@@ -317,10 +316,10 @@ namespace Avalonia.Layout
                 bool lineNeedsReposition = false;
 
                 while (_elementManager.IsIndexValidInData(currentIndex) &&
-                    (disableVirtualization || ShouldContinueFillingUpSpace(previousIndex, direction)))
+                    (disableVirtualization || ShouldContinueFillingUpSpace(previousIndex, forward)))
                 {
                     // Ensure layout element.
-                    _elementManager.EnsureElementRealized(direction == GenerateDirection.Forward, currentIndex, layoutId);
+                    _elementManager.EnsureElementRealized(forward, currentIndex, layoutId);
                     var currentElement = _elementManager.GetRealizedElement(currentIndex);
                     var desiredSize = MeasureElement(currentElement, currentIndex, availableSize, _context);
                     ++count;
@@ -330,7 +329,7 @@ namespace Avalonia.Layout
                     var currentBounds = new Rect(0, 0, desiredSize.Width, desiredSize.Height);
                     var previousElementBounds = _elementManager.GetLayoutBoundsForDataIndex(previousIndex);
 
-                    if (direction == GenerateDirection.Forward)
+                    if (forward)
                     {
                         double remainingSpace = _orientation.Minor(availableSize) - (_orientation.MinorStart(previousElementBounds) + _orientation.MinorSize(previousElementBounds) + minItemSpacing + _orientation.Minor(desiredSize));
                         if (countInLine >= maxItemsPerLine || _algorithmCallbacks.Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
@@ -430,7 +429,7 @@ namespace Avalonia.Layout
                 // If we did not reach the top or bottom of the extent, we realized one 
                 // extra item before we knew we were outside the realization window. Do not
                 // account for that element in the indicies inside the realization window.
-                if (direction == GenerateDirection.Forward)
+                if (forward)
                 {
                     int dataCount = _context.ItemCount;
                     _lastRealizedDataIndexInsideRealizationWindow = previousIndex == dataCount - 1 ? dataCount - 1 : previousIndex - 1;
@@ -443,7 +442,7 @@ namespace Avalonia.Layout
                     _firstRealizedDataIndexInsideRealizationWindow = Math.Min(dataCount - 1, _firstRealizedDataIndexInsideRealizationWindow);
                 }
 
-                _elementManager.DiscardElementsOutsideWindow(direction == GenerateDirection.Forward, currentIndex);
+                _elementManager.DiscardElementsOutsideWindow(forward, currentIndex);
             }
         }
 
@@ -478,7 +477,7 @@ namespace Avalonia.Layout
 
         private bool ShouldContinueFillingUpSpace(
             int index,
-            GenerateDirection direction)
+            bool forward)
         {
             bool shouldContinue = false;
             if (!IsVirtualizingContext)
@@ -502,9 +501,9 @@ namespace Avalonia.Layout
 
                 // Ensure that both minor and major directions are taken into consideration so that if the scrolling direction
                 // is the same as the flow direction we still stop at the end of the viewport rectangle.
-                shouldContinue =
-                    (direction == GenerateDirection.Forward && elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd) ||
-                    (direction == GenerateDirection.Backward && elementMajorEnd > rectMajorStart && elementMinorEnd > rectMinorStart);
+                shouldContinue = forward
+                    ? elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd
+                    : elementMajorEnd > rectMajorStart && elementMinorEnd > rectMinorStart;
             }
 
             return shouldContinue;
@@ -756,12 +755,6 @@ namespace Avalonia.Layout
             SpaceAround,
             SpaceBetween,
             SpaceEvenly,
-        }
-
-        private enum GenerateDirection
-        {
-            Forward,
-            Backward,
         }
     }
 }
