@@ -4,10 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -531,7 +528,7 @@ namespace Avalonia.Controls
         private bool ShouldCancelClose()
         {
             bool canClose = true;
-            
+
             foreach (var (child, _) in _children.ToList())
             {
                 if (child.ShouldCancelClose())
