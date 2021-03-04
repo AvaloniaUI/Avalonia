@@ -48,7 +48,7 @@ namespace Avalonia.Benchmarks.Themes
                 globalClock: new MockGlobalClock(),
                 platform: new AppBuilder().RuntimePlatform,
                 renderInterface: new MockPlatformRenderInterface(),
-                standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
+                standardCursorFactory: Mock.Of<ICursorFactory>(),
                 styler: new Styler(),
                 theme: () => LoadFluentTheme(),
                 threadingInterface: new NullThreadingPlatform(),
