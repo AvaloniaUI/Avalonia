@@ -112,9 +112,8 @@
           <Popup Name="PART_Popup"
                  WindowManagerAddShadowHint="False"
                  PlacementMode="Right"
-                 OverlayInputPassThroughElement="{Binding $parent[MenuItem]}"
                  HorizontalOffset="{DynamicResource MenuFlyoutSubItemPopupHorizontalOffset}"
-                 IsLightDismissEnabled="True"
+                 IsLightDismissEnabled="False"
                  IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
             <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                     BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"

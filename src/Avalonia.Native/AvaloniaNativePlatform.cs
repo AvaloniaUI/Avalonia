@@ -92,6 +92,8 @@ namespace Avalonia.Native
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
                 _factory.MacOptions.SetShowInDock(macOpts?.ShowInDock != false ? 1 : 0);
+                _factory.MacOptions.SetDisableDefaultApplicationMenuItems(
+                    macOpts?.DisableDefaultApplicationMenuItems == true ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
