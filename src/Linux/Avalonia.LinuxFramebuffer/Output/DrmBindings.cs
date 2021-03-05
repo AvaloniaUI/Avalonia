@@ -139,6 +139,7 @@ namespace Avalonia.LinuxFramebuffer.Output
     
     public unsafe class DrmCard : IDisposable
     {
+        private IntPtr _gbmDevice;
         public int Fd { get; private set; }
         public DrmCard(string path = null)
         {
@@ -149,8 +150,24 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         public DrmResources GetResources() => new DrmResources(Fd);
+
+        /// <summary>
+        /// Pointer to the Graphics Buffer Management (GBM) Device for the DrmCard.  
+        /// </summary>
+        internal IntPtr GbmDevice
+        {
+            get
+            {
+                if (_gbmDevice == IntPtr.Zero)
+                    _gbmDevice = gbm_create_device(Fd);
+
+                return _gbmDevice;
+            }
+        }
+
         public void Dispose()
         {
+            gbm_device_destroy(_gbmDevice);
             close(Fd);
             Fd = -1;
         }
