@@ -397,7 +397,7 @@ enum AvnExtendClientAreaChromeHints
     AvnSystemChrome = 0x01,
     AvnPreferSystemChrome = 0x02,
     AvnOSXThickTitleBar = 0x08,
-    AvnDefaultChrome = AvnSystemChrome,
+    AvnDefaultChrome = AvnPreferSystemChrome,
 }
 
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
