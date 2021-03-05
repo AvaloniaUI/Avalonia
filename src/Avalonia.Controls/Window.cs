@@ -499,7 +499,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual bool HandleClosing()
         {
-            if (ShouldCancelClose())
+            if (!ShouldCancelClose())
             {
                 CloseInternal();
                 return true;
