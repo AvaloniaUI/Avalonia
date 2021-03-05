@@ -90,6 +90,16 @@ namespace Avalonia.Diagnostics.Views
                     var vm = (MainViewModel)DataContext;
                     vm.SelectControl((IControl)control);
                 }
+            } 
+            else if (e.Modifiers == RawInputModifiers.Alt)
+            {
+                if (e.Key == Key.S || e.Key == Key.D)
+                {
+                    var enable = e.Key == Key.S;
+
+                    var vm = (MainViewModel)DataContext;
+                    vm.EnableSnapshotStyles(enable);
+                }
             }
         }
 

@@ -80,7 +80,9 @@ namespace Avalonia.Controls.Presenters
         static TextPresenter()
         {
             AffectsRender<TextPresenter>(SelectionBrushProperty, TextBlock.ForegroundProperty, 
-                                         SelectionForegroundBrushProperty, CaretBrushProperty);
+                                         SelectionForegroundBrushProperty, CaretBrushProperty,
+                                         SelectionStartProperty, SelectionEndProperty);
+            
             AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, RevealPasswordProperty, 
                 TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
                 TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
