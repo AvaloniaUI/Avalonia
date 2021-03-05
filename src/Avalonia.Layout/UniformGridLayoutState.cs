@@ -155,7 +155,7 @@ namespace Avalonia.Layout
 
         internal void EnsureFirstElementOwnership(VirtualizingLayoutContext context)
         {
-            if (_cachedFirstElement != null && IsDataIndexRealized(0))
+            if (_cachedFirstElement != null && FlowAlgorithm.IsDataIndexRealized(0))
             {
                 // We created the element, but then flowlayout algorithm took ownership, so we can clear it and
                 // let flowlayout algorithm do its thing.

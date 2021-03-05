@@ -727,6 +727,11 @@ namespace Avalonia.Layout
             }
         }
 
+        public bool IsDataIndexRealized(int dataIndex)
+        {
+            return _elementManager.IsDataIndexRealized(dataIndex);
+        }
+
         public ILayoutable GetElementIfRealized(int dataIndex)
         {
             if (_elementManager.IsDataIndexRealized(dataIndex))
