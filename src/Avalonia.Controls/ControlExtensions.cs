@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Data;
 using Avalonia.LogicalTree;
@@ -64,6 +65,31 @@ namespace Avalonia.Controls
             }
 
             return nameScope.Find<T>(name);
+        }
+
+        /// <summary>
+        /// Finds the named child control in the scope of the specified control.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="control"></param>
+        /// <param name="name"></param>
+        /// <returns>List of controls, The control or null if not found</returns>
+        public static IList<T>? FindChildren<T>(this IControl control, string name) where T : class, IControl
+        {
+            Contract.Requires<ArgumentNullException>(control != null);
+            Contract.Requires<ArgumentNullException>(name != null);
+
+            List<T> result = new List<T>();
+
+            foreach (IControl item in control.LogicalChildren)
+            {
+                if (item.Name == name && item is T t)
+                {
+                    result.Add(t);
+                }
+            }
+
+            return result.Count == 0 ? null : result;
         }
 
         /// <summary>
