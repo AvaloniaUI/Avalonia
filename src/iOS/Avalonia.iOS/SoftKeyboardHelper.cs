@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 
 namespace Avalonia.iOS
 {
@@ -16,7 +17,7 @@ namespace Avalonia.iOS
             //TODO: Raise a routed event to determine if any control wants to become the text input handler 
             if (focusedElement is TextBox textBox)
             {
-                var view = ((textBox.VisualRoot as TopLevel)?.PlatformImpl as AvaloniaView.TopLevelImpl)?.View;
+                var view = ((((IVisual) textBox).VisualRoot as TopLevel)?.PlatformImpl as AvaloniaView.TopLevelImpl)?.View;
                 view?.BecomeFirstResponder();
             }
         }
