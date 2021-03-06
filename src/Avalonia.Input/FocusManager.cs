@@ -169,7 +169,7 @@ namespace Avalonia.Input
 
             while (c != null)
             {
-                if (c is IFocusScope scope && (!(c is IVisual visual) || visual.VisualRoot.IsVisible))
+                if (c is IFocusScope scope && (!(c is IVisual visual) || visual.VisualRoot?.IsVisible == true))
                 {
                     yield return scope;
                 }

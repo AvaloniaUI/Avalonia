@@ -229,7 +229,7 @@ namespace Avalonia.Input.Navigation
                         return customNext.next;
                     }
 
-                    if (sibling.CanFocus() && parent.IsTabFocusable)
+                    if (sibling.CanFocus() && sibling.IsTabFocusable)
                     {
                         return sibling;
                     }

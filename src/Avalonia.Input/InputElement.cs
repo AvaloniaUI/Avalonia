@@ -405,13 +405,13 @@ namespace Avalonia.Input
         }
 
         /// <inheritdoc/>
-        public bool IsTabFocusable => Input.KeyboardNavigation.GetIsTabStop(this);
+        public bool IsTabFocusable => KeyboardNavigation.GetIsTabStop(this);
 
         /// <inheritdoc/>
-        public KeyboardNavigationMode TabNavigation => Input.KeyboardNavigation.GetTabNavigation(this);
+        public KeyboardNavigationMode TabNavigation => KeyboardNavigation.GetTabNavigation(this);
 
         /// <inheritdoc/>
-        public IInputElement? TabOnceActiveElement => Input.KeyboardNavigation.GetTabOnceActiveElement(this);
+        public IInputElement? TabOnceActiveElement => KeyboardNavigation.GetTabOnceActiveElement(this);
 
         /// <summary>
         /// Gets or sets a value indicating whether the control is considered for hit testing.
