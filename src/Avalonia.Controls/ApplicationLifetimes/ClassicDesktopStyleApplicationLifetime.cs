@@ -5,6 +5,7 @@ using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls.ApplicationLifetimes
@@ -102,6 +103,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         public int Start(string[] args)
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
+            ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
             _cts = new CancellationTokenSource();
             MainWindow?.Show();
             Dispatcher.UIThread.MainLoop(_cts.Token);
