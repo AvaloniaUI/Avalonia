@@ -55,6 +55,8 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
+        public event EventHandler<UrlOpenedEventArgs> UrlOpened; 
+
         /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
         /// </summary>
@@ -247,7 +249,17 @@ namespace Avalonia
 
         public virtual void OnFrameworkInitializationCompleted()
         {
-            
+            var applicationPlatform = AvaloniaLocator.Current.GetService<IApplicationPlatform>();
+
+            if (applicationPlatform != null)
+            {
+                applicationPlatform.FilesOpened = OnFilesOpened;
+            }
+        }
+
+        private void OnFilesOpened(string[] urls)
+        {
+            UrlOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
         }
 
         private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
