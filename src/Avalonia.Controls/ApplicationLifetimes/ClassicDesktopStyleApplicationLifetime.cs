@@ -103,7 +103,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
         public int Start(string[] args)
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
-            ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
+
+            if (args.Length > 0)
+            {
+                ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
+            }
+
             _cts = new CancellationTokenSource();
             MainWindow?.Show();
             Dispatcher.UIThread.MainLoop(_cts.Token);
