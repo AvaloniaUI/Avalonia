@@ -17,20 +17,20 @@ namespace Avalonia.LinuxFramebuffer.Output
     /// </remarks>
     internal class DrmPlatform
     {
-        public DrmPlatform(string path = null, double scaling = 1.0)
-            : this(new DrmCard(path), scaling)
+        public DrmPlatform(string path = null, double defaultScaling = 1.0)
+            : this(new DrmCard(path), defaultScaling)
         {
         }
 
-        public DrmPlatform(DrmCard card, double scaling = 1.0)
+        public DrmPlatform(DrmCard card, double defaultScaling = 1.0)
         {
-            Scaling = scaling;
+            DefaultScaling = defaultScaling;
             Card = card;
             EglPlatformInterface = new EglPlatformOpenGlInterface(new EglDisplay(new EglInterface(eglGetProcAddress),
                 false, 0x31D7, Card.GbmDevice.Handle, null));
         }
 
-        public double Scaling { get; set; }
+        public double DefaultScaling { get; set; }
 
         public DrmCard Card { get; }
 
@@ -52,12 +52,38 @@ namespace Avalonia.LinuxFramebuffer.Output
             if (mode == null)
                 throw new InvalidOperationException("Unable to find a usable DRM mode");
 
-            return CreateOutput(resources, connector, mode);
+            return CreateOutput(connector, mode, resources);
         }
 
-        public DrmOutput CreateOutput(DrmResources resources, DrmConnector connector, DrmModeInfo mode)
+        /// <summary>
+        /// Create a DRM display output instance.
+        /// </summary>
+        /// <param name="connector">The DRM connector the display output is to use.</param>
+        /// <param name="mode">The display mode to use.</param>
+        /// <param name="resources">All DRM resources for the card.</param>
+        /// <returns>A <see cref="DrmOutput"/> instance for the provided configuration.</returns>
+        public DrmOutput CreateOutput(DrmConnector connector, DrmModeInfo mode, DrmResources resources)
         {
-            return new DrmOutput(this, resources, connector, mode) { Scaling = Scaling };
+            return new DrmOutput(this, resources, connector, mode)
+            {
+                Scaling = DefaultScaling
+            };
+        }
+
+        /// <summary>
+        /// Create a DRM display output instance.
+        /// </summary>
+        /// <param name="connector">The DRM connector the display output is to use.</param>
+        /// <param name="mode">The display mode to use.</param>
+        /// <param name="resources">All DRM resources for the card.</param>
+        /// <param name="scaling">The sale to use for this DRM display output.</param>
+        /// <returns>A <see cref="DrmOutput"/> instance for the provided configuration.</returns>
+        public DrmOutput CreateOutput(DrmConnector connector, DrmModeInfo mode, DrmResources resources, double scaling)
+        {
+            return new DrmOutput(this, resources, connector, mode)
+            {
+                Scaling = scaling
+            };
         }
 
         [DllImport("libEGL.so.1")]
