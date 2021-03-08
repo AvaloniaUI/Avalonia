@@ -356,6 +356,18 @@ namespace Avalonia
             }
         }
 
+        internal StyleDiagnostics GetStyleDiagnosticsInternal()
+        {
+            IReadOnlyList<IStyleInstance>? appliedStyles = _appliedStyles;
+
+            if (appliedStyles is null)
+            {
+                appliedStyles = Array.Empty<IStyleInstance>();
+            }
+
+            return new StyleDiagnostics(appliedStyles);
+        }
+
         /// <inheritdoc/>
         void ILogical.NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
