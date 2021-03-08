@@ -27,7 +27,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             Scaling = scaling;
             Card = card;
             EglPlatformInterface = new EglPlatformOpenGlInterface(new EglDisplay(new EglInterface(eglGetProcAddress),
-                false, 0x31D7, Card.GbmDevice, null));
+                false, 0x31D7, Card.GbmDevice.Handle, null));
         }
 
         public double Scaling { get; set; }

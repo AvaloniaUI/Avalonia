@@ -41,12 +41,12 @@ namespace Avalonia.LinuxFramebuffer.Output
         /// <inheritdoc />
         public string Name => "drm";
 
-        void FbDestroyCallback(IntPtr bo, IntPtr userData)
+        private void FbDestroyCallback(IntPtr bo, IntPtr userData)
         {
             drmModeRmFB(_card.Fd, userData.ToInt32());
         }
 
-        uint GetFbIdForBo(IntPtr bo)
+        private uint GetFbIdForBo(IntPtr bo)
         {
             if (bo == IntPtr.Zero)
                 throw new ArgumentException("bo is 0");
@@ -85,7 +85,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
         
         
-        void Init(DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
+        private void Init(DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
         {
             FbDestroyDelegate = FbDestroyCallback;
             
@@ -111,7 +111,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             _crtcId = GetCrtc();
 
-            _gbmTargetSurface = gbm_surface_create(_card.GbmDevice, modeInfo.Resolution.Width, modeInfo.Resolution.Height,
+            _gbmTargetSurface = _card.GbmDevice.CreateSurface(modeInfo.Resolution.Width, modeInfo.Resolution.Height,
                 GbmColorFormats.GBM_FORMAT_XRGB8888, GbmBoFlags.GBM_BO_USE_SCANOUT | GbmBoFlags.GBM_BO_USE_RENDERING);
             
             if(_gbmTargetSurface == null)
@@ -155,7 +155,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             return new RenderTarget(this);
         }
 
-        class RenderTarget : IGlPlatformSurfaceRenderTarget
+        private class RenderTarget : IGlPlatformSurfaceRenderTarget
         {
             private readonly DrmOutput _parent;
 
@@ -168,7 +168,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 // We are wrapping GBM buffer chain associated with CRTC, and don't free it on a whim
             }
 
-            class RenderSession : IGlPlatformSurfaceRenderingSession
+            private class RenderSession : IGlPlatformSurfaceRenderingSession
             {
                 private readonly DrmOutput _parent;
                 private readonly IDisposable _clearContext;
