@@ -43,6 +43,13 @@ ComPtr<IAvnApplicationEvents> _events;
     
     _events->FilesOpened(array);
 }
+
+- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
+{
+    auto array = CreateAvnStringArray(urls);
+    
+    _events->FilesOpened(array);
+}
 @end
 
 @interface AvnApplication : NSApplication
