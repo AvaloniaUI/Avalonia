@@ -4,13 +4,11 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    internal class AvaloniaNativeApplicationPlatform : CallbackBase, IApplicationPlatform, IAvnApplicationEvents
+    internal class AvaloniaNativeApplicationPlatform : CallbackBase, IAvnApplicationEvents
     {
-        public Action<string[]> FilesOpened { get; set; }
-        
         void IAvnApplicationEvents.FilesOpened(IAvnStringArray urls)
         {
-            FilesOpened?.Invoke(urls.ToStringArray());
+            ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
         }
     }
 }

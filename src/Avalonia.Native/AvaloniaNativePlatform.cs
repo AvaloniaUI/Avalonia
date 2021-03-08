@@ -98,7 +98,6 @@ namespace Avalonia.Native
             }
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IApplicationPlatform>().ToConstant(applicationPlatform)
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
