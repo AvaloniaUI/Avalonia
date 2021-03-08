@@ -9,7 +9,7 @@ namespace Avalonia.Media
     /// <summary>
     /// An <see cref="IImage"/> that uses a <see cref="Drawing"/> for content.
     /// </summary>
-    public class DrawingImage : AvaloniaObject, IImage, IAffectsRender
+    public class DrawingImage : StyledElement, IImage, IAffectsRender
     {
         /// <summary>
         /// Defines the <see cref="Drawing"/> property.
