@@ -55,7 +55,7 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
-        public event EventHandler<UrlOpenedEventArgs> UrlOpened; 
+        public event EventHandler<UrlOpenedEventArgs> UrlsOpened; 
 
         /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
@@ -259,7 +259,7 @@ namespace Avalonia
 
         private void OnFilesOpened(string[] urls)
         {
-            UrlOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
+            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
         }
 
         private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
