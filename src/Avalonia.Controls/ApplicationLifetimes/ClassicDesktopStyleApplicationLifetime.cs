@@ -104,7 +104,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
-            if (args.Length > 0)
+            if (args.Length > 0 && Uri.TryCreate(args[0], UriKind.Absolute, out _))
             {
                 ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
             }
