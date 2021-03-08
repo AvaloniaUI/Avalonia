@@ -13,13 +13,8 @@ namespace Avalonia.LinuxFramebuffer.Output
 {
     public unsafe class DrmOutput : IOutputBackend, IGlPlatformSurface, IDisposable
     {
-        private DrmCard _card;
-        
-        public PixelSize PixelSize => _mode.Resolution;
-        
-        public double Scaling { get; set; }
-
-        public IPlatformOpenGlInterface PlatformOpenGlInterface => _drmPlatform.EglPlatformInterface;
+        private readonly DrmPlatform _drmPlatform;
+        private readonly DrmCard _card;
 
         private GbmBoUserDataDestroyCallbackDelegate FbDestroyDelegate;
         private drmModeModeInfo _mode;
@@ -28,13 +23,23 @@ namespace Avalonia.LinuxFramebuffer.Output
         private IntPtr _currentBo;
         private IntPtr _gbmTargetSurface;
         private uint _crtcId;
-        private DrmPlatform _drmPlatform;
 
         internal DrmOutput(DrmPlatform drmPlatform, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
         {
             _drmPlatform = drmPlatform;
-            Init(drmPlatform.Card, resources, connector, modeInfo);
+            _card = drmPlatform.Card;
+            
+            Init(resources, connector, modeInfo);
         }
+        
+        /// <inheritdoc />
+        public PixelSize PixelSize => _mode.Resolution;
+        
+        /// <inheritdoc />
+        public double Scaling { get; set; }
+        
+        /// <inheritdoc />
+        public string Name => "drm";
 
         void FbDestroyCallback(IntPtr bo, IntPtr userData)
         {
@@ -80,10 +85,10 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
         
         
-        void Init(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
+        void Init(DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
         {
             FbDestroyDelegate = FbDestroyCallback;
-            _card = card;
+            
             uint GetCrtc()
             {
                 if (resources.Encoders.TryGetValue(connector.EncoderId, out var encoder))
@@ -244,6 +249,4 @@ namespace Avalonia.LinuxFramebuffer.Output
             _card?.Dispose();
         }
     }
-
-
 }

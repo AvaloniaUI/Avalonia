@@ -44,7 +44,6 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
         }
-
        
         internal static LinuxFramebufferLifetime Initialize<T>(T builder, IOutputBackend outputBackend) where T : AppBuilderBase<T>, new()
         {
@@ -52,19 +51,9 @@ namespace Avalonia.LinuxFramebuffer
             
             builder
                 .UseSkia()
-                .UseWindowingSubsystem(platform.Initialize, OutputPlatformName(outputBackend));
+                .UseWindowingSubsystem(platform.Initialize, outputBackend.Name);
             
             return new LinuxFramebufferLifetime(outputBackend);
-        }
-
-        private static string OutputPlatformName(IOutputBackend outputBackend)
-        {
-            var name = outputBackend.GetType().Name.ToLowerInvariant();
-            
-            if (name.EndsWith("output"))
-                name = name.Substring(0, name.Length - "output".Length);
-            
-            return name;
         }
     }
 
@@ -154,4 +143,3 @@ public static class LinuxFramebufferPlatformExtensions
         return lifetime.ExitCode;
     }
 }
-
