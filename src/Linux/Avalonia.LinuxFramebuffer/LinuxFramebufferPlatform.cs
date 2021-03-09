@@ -127,9 +127,6 @@ public static class LinuxFramebufferPlatformExtensions
         where T : AppBuilderBase<T>, new()
     {
         var drmOutput = new DrmPlatform(card, scaling);
-        
-        AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(drmOutput.EglPlatformInterface);
-        
         return StartLinuxDirect(builder, args, drmOutput.CreateOutput());
     }
 

@@ -28,6 +28,9 @@ namespace Avalonia.LinuxFramebuffer.Output
             Card = card;
             EglPlatformInterface = new EglPlatformOpenGlInterface(new EglDisplay(new EglInterface(eglGetProcAddress),
                 false, 0x31D7, Card.GbmDevice.Handle, null));
+            
+            // Register the platform OpenGL interface.
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(EglPlatformInterface);
         }
 
         public double DefaultScaling { get; set; }
@@ -40,8 +43,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         {
             var resources = Card.GetResources();
 
-            var connector =
-                resources.Connectors.LastOrDefault(x => x.Connection == DrmModeConnection.DRM_MODE_CONNECTED);
+            var connector = resources.Connectors.FirstOrDefault(x => x.IsConnected);
             if (connector == null)
                 throw new InvalidOperationException("Unable to find connected DRM connector");
 

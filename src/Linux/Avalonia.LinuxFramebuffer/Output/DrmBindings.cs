@@ -16,6 +16,9 @@ namespace Avalonia.LinuxFramebuffer.Output
         };
 
         public DrmModeConnection Connection { get; }
+
+        public bool IsConnected => Connection == DrmModeConnection.DRM_MODE_CONNECTED;
+        
         public uint Id { get; }
         public string Name { get; }
         public Size SizeMm { get; }
