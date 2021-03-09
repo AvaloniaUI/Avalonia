@@ -140,8 +140,10 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
     }
     
-    public unsafe class DrmCard : IDisposable
+    public class DrmCard : IDisposable
     {
+        private bool _disposed;
+        
         public DrmCard(string path = null)
         {
             Path = path ?? "/dev/dri/card0";
@@ -153,10 +155,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             GbmDevice = new GbmDevice(this);
         }
 
-        ~DrmCard()
-        {
-            ReleaseUnmanagedResources();
-        }
+        ~DrmCard() => Dispose(false);
 
         public int Fd { get; private set; }
 
@@ -168,11 +167,26 @@ namespace Avalonia.LinuxFramebuffer.Output
 
         public void Dispose()
         {
-            GbmDevice.Dispose();
-            ReleaseUnmanagedResources();
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
-        
+
+        private void Dispose(bool disposing)
+        { 
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                GbmDevice.Dispose();
+            }
+
+            ReleaseUnmanagedResources();
+            _disposed = true;
+        }
+
         private void ReleaseUnmanagedResources()
         {
             if (Fd != -1)

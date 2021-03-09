@@ -23,6 +23,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         private IntPtr _currentBo;
         private IntPtr _gbmTargetSurface;
         private uint _crtcId;
+        private bool _disposed;
 
         internal DrmOutput(DrmPlatform drmPlatform, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
         {
@@ -31,6 +32,8 @@ namespace Avalonia.LinuxFramebuffer.Output
             
             Init(resources, connector, modeInfo);
         }
+
+        ~DrmOutput() => Dispose(false);
         
         /// <inheritdoc />
         public PixelSize PixelSize => _mode.Resolution;
@@ -79,7 +82,6 @@ namespace Avalonia.LinuxFramebuffer.Output
             }
 
             gbm_bo_set_user_data(bo, new IntPtr((int)fbHandle), FbDestroyDelegate);
-            
             
             return fbHandle;
         }
@@ -240,13 +242,22 @@ namespace Avalonia.LinuxFramebuffer.Output
 
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        
+        private  void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+            
             if (_currentBo != IntPtr.Zero) 
                 gbm_surface_release_buffer(_gbmTargetSurface, _currentBo);
             
             gbm_bo_destroy(_currentBo);
             gbm_surface_destroy(_gbmTargetSurface);
-            
-            _card?.Dispose();
+
+            _disposed = true;
         }
     }
 }
