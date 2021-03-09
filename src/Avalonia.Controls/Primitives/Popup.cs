@@ -516,6 +516,11 @@ namespace Avalonia.Controls.Primitives
             Close();
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        {
+            return new PopupAutomationPeer(factory, this);
+        }
+
         private static IDisposable SubscribeToEventHandler<T, TEventHandler>(T target, TEventHandler handler, Action<T, TEventHandler> subscribe, Action<T, TEventHandler> unsubscribe)
         {
             subscribe(target, handler);

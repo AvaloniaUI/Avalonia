@@ -8,6 +8,9 @@
   <TabControl TabStripPlacement="Left" AutomationProperties.AutomationId="MainTabs">
     <TabItem Header="Button">
       <StackPanel>
+        <Button AutomationProperties.AutomationId="DisabledButton" IsEnabled="False">
+            Disabled Button
+        </Button>
         <Button AutomationProperties.AutomationId="BasicButton">
             Basic Button
         </Button>
@@ -17,6 +20,20 @@
       </StackPanel>
     </TabItem>
     <TabItem Header="ComboBox">
+        <StackPanel>
+            <ComboBox AutomationProperties.AutomationId="UnselectedComboBox">
+                <ComboBoxItem>Foo</ComboBoxItem>
+                <ComboBoxItem>Bar</ComboBoxItem>
+            </ComboBox>
+            <ComboBox AutomationProperties.AutomationId="SelectedIndex0ComboBox" SelectedIndex="0">
+                <ComboBoxItem>Foo</ComboBoxItem>
+                <ComboBoxItem>Bar</ComboBoxItem>
+            </ComboBox>
+            <ComboBox AutomationProperties.AutomationId="SelectedIndex1ComboBox" SelectedIndex="1">
+                <ComboBoxItem>Foo</ComboBoxItem>
+                <ComboBoxItem>Bar</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
     </TabItem>
   </TabControl>
 </Window>

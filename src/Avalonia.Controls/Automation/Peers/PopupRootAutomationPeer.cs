@@ -21,6 +21,13 @@ namespace Avalonia.Automation.Peers
         protected override bool IsContentElementCore() => false;
         protected override bool IsControlElementCore() => false;
 
+
+        protected override AutomationPeer? GetParentCore()
+        {
+            var parent = base.GetParentCore();
+            return parent;
+        }
+
         private void OnOpened(object sender, EventArgs e)
         {
             ((PopupRoot)Owner).Opened -= OnOpened;

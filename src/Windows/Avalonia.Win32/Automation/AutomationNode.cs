@@ -82,8 +82,8 @@ namespace Avalonia.Win32.Automation
             UiaCoreProviderApi.UiaRaiseStructureChangedEvent(
                 this,
                 StructureChangeType.ChildrenInvalidated,
-                _runtimeId,
-                _runtimeId.Length);
+                null,
+                0);
         }
 
         public void PropertyChanged(AutomationProperty property, object? oldValue, object? newValue) 
@@ -154,6 +154,11 @@ namespace Avalonia.Win32.Automation
                 }
 
                 return null;
+            }
+
+            if (Peer.GetType().Name == "PopupAutomationPeer")
+            {
+                System.Diagnostics.Debug.WriteLine("Popup automation node navigate " + direction);
             }
 
             return InvokeSync(() =>
@@ -269,7 +274,7 @@ namespace Avalonia.Win32.Automation
             var peer = Peer;
             var parent = peer.GetParent();
 
-            while (parent is object)
+            while (peer is not AAP.IRootProvider && parent is object)
             {
                 peer = parent;
                 parent = peer.GetParent();

@@ -78,5 +78,8 @@ namespace Avalonia.Automation.Peers
         {
             return AutomationControlType.ListItem;
         }
+
+        protected override bool IsContentElementCore() => true;
+        protected override bool IsControlElementCore() => true;
     }
 }

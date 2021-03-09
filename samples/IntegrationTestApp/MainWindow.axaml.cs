@@ -9,6 +9,7 @@ namespace IntegrationTestApp
         public MainWindow()
         {
             InitializeComponent();
+            this.AttachDevTools();
         }
 
         private void InitializeComponent()
