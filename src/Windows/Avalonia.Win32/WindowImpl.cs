@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Platform;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -12,6 +14,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl;
@@ -24,7 +27,8 @@ namespace Avalonia.Win32
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
+    public partial class WindowImpl : IWindowImpl,
+        EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
         ITopLevelImplWithNativeControlHost
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
@@ -83,6 +87,7 @@ namespace Avalonia.Win32
         private POINT _maxTrackSize;
         private WindowImpl _parent;        
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
+        private AutomationNode _automationProvider;
         private bool _isCloseRequested;
 
         public WindowImpl()
@@ -727,7 +732,7 @@ namespace Avalonia.Win32
                 throw new Win32Exception();
             }
 
-            Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
+            Handle = new WindowImplPlatformHandle(this);
 
             _multitouch = Win32Platform.Options.EnableMultitouch ?? true;
 
@@ -1250,6 +1255,17 @@ namespace Avalonia.Win32
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
 
+        internal AutomationNode GetOrCreateAutomationProvider()
+        {
+            if (_automationProvider is null)
+            {
+                var peer = ControlAutomationPeer.GetOrCreatePeer(AutomationNodeFactory.Instance, (Control)_owner);
+                _automationProvider = peer.Node as AutomationNode;
+            }
+
+            return _automationProvider;
+        }
+
         private struct SavedWindowInfo
         {
             public WindowStyles Style { get; set; }
@@ -1263,6 +1279,14 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
+        }
+
+        private class WindowImplPlatformHandle : IPlatformHandle
+        {
+            private readonly WindowImpl _owner;
+            public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;
+            public IntPtr Handle => _owner.Hwnd;
+            public string HandleDescriptor => PlatformConstants.WindowHandleType;
         }
     }
 }

@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Platform;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -964,6 +966,11 @@ namespace Avalonia.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        {
+            return new WindowAutomationPeer(factory, this);
         }
     }
 }

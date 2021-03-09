@@ -2,10 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -17,6 +17,7 @@ namespace Avalonia.Win32
         protected virtual unsafe IntPtr AppWndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             const double wheelDelta = 120.0;
+            const long UiaRootObjectId = -25;
             uint timestamp = unchecked((uint)GetMessageTime());
 
             RawInputEventArgs e = null;
@@ -452,6 +453,19 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_KILLFOCUS:
                     LostFocus?.Invoke();
+                    break;
+
+                case WindowsMessage.WM_GETOBJECT:
+                    if ((long)lParam == UiaRootObjectId)
+                    {
+                        var provider = GetOrCreateAutomationProvider();
+
+                        if (provider is object)
+                        {
+                            var r = UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, provider);
+                            return r;
+                        }
+                    }
                     break;
             }
 

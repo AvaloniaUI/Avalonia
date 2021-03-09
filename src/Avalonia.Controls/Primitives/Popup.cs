@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
@@ -596,7 +598,17 @@ namespace Avalonia.Controls.Primitives
             {
                 if (PlacementTarget != null)
                 {
-                    FocusManager.Instance?.Focus(PlacementTarget);
+                    var e = (IControl?)PlacementTarget;
+
+                    while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
+                    {
+                        e = e.Parent;
+                    }
+
+                    if (e is object)
+                    {
+                        FocusManager.Instance?.Focus(e);
+                    }
                 }
                 else
                 {

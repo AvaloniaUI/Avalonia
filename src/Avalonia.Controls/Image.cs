@@ -1,3 +1,5 @@
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Platform;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 
@@ -121,6 +123,11 @@ namespace Avalonia.Controls
             {
                 return new Size();
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        {
+            return new ImageAutomationPeer(factory, this);
         }
     }
 }
