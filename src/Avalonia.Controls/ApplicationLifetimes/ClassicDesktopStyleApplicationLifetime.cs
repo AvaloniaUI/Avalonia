@@ -104,7 +104,9 @@ namespace Avalonia.Controls.ApplicationLifetimes
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
 
-            if (args.Length > 0)
+            var options = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetimeOptions>();
+            
+            if(options != null && options.ProcessUrlActivationCommandLine && args.Length > 0)
             {
                 ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
             }
@@ -121,6 +123,13 @@ namespace Avalonia.Controls.ApplicationLifetimes
             if (_activeLifetime == this)
                 _activeLifetime = null;
         }
+    }
+    
+    public class ClassicDesktopStyleApplicationLifetimeOptions
+    {
+        public bool ProcessUrlActivationCommandLine { get; set; }
+        
+        public bool IsSingleInstance { get; set; }
     }
 }
 
