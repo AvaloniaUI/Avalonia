@@ -9,31 +9,40 @@
     <TabItem Header="Button">
       <StackPanel>
         <Button AutomationProperties.AutomationId="DisabledButton" IsEnabled="False">
-            Disabled Button
+          Disabled Button
         </Button>
         <Button AutomationProperties.AutomationId="BasicButton">
-            Basic Button
+          Basic Button
         </Button>
         <Button AutomationProperties.AutomationId="ButtonWithTextBlock">
-            <TextBlock>Button with TextBlock</TextBlock>
+          <TextBlock>Button with TextBlock</TextBlock>
         </Button>
       </StackPanel>
     </TabItem>
+
+    <TabItem Header="CheckBox">
+      <StackPanel>
+        <CheckBox AutomationProperties.AutomationId="UncheckedCheckBox">Unchecked</CheckBox>
+        <CheckBox AutomationProperties.AutomationId="CheckedCheckBox" IsChecked="True">Checked</CheckBox>
+        <CheckBox AutomationProperties.AutomationId="ThreeStateCheckBox" IsThreeState="True" IsChecked="{x:Null}">ThreeState</CheckBox>
+      </StackPanel>
+    </TabItem>
+      
     <TabItem Header="ComboBox">
-        <StackPanel>
-            <ComboBox AutomationProperties.AutomationId="UnselectedComboBox">
-                <ComboBoxItem>Foo</ComboBoxItem>
-                <ComboBoxItem>Bar</ComboBoxItem>
-            </ComboBox>
-            <ComboBox AutomationProperties.AutomationId="SelectedIndex0ComboBox" SelectedIndex="0">
-                <ComboBoxItem>Foo</ComboBoxItem>
-                <ComboBoxItem>Bar</ComboBoxItem>
-            </ComboBox>
-            <ComboBox AutomationProperties.AutomationId="SelectedIndex1ComboBox" SelectedIndex="1">
-                <ComboBoxItem>Foo</ComboBoxItem>
-                <ComboBoxItem>Bar</ComboBoxItem>
-            </ComboBox>
-        </StackPanel>
+      <StackPanel>
+        <ComboBox AutomationProperties.AutomationId="UnselectedComboBox">
+          <ComboBoxItem>Foo</ComboBoxItem>
+          <ComboBoxItem>Bar</ComboBoxItem>
+        </ComboBox>
+        <ComboBox AutomationProperties.AutomationId="SelectedIndex0ComboBox" SelectedIndex="0">
+          <ComboBoxItem>Foo</ComboBoxItem>
+          <ComboBoxItem>Bar</ComboBoxItem>
+        </ComboBox>
+        <ComboBox AutomationProperties.AutomationId="SelectedIndex1ComboBox" SelectedIndex="1">
+          <ComboBoxItem>Foo</ComboBoxItem>
+          <ComboBoxItem>Bar</ComboBoxItem>
+        </ComboBox>
+      </StackPanel>
     </TabItem>
   </TabControl>
 </Window>

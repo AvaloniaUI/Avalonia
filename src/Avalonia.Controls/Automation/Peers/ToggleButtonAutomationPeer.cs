@@ -35,5 +35,8 @@ namespace Avalonia.Automation.Peers
         {
             return AutomationControlType.Button;
         }
+
+        protected override bool IsContentElementCore() => true;
+        protected override bool IsControlElementCore() => true;
     }
 }
