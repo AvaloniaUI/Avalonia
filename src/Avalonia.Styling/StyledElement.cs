@@ -334,7 +334,16 @@ namespace Avalonia
         {
             if (_initCount == 0 && !_styled)
             {
-                AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+                try
+                {
+                    BeginBatchUpdate();
+                    AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+                }
+                finally
+                {
+                    EndBatchUpdate();
+                }
+
                 _styled = true;
             }
 
@@ -748,12 +757,21 @@ namespace Avalonia
         {
             if (_appliedStyles is object)
             {
-                foreach (var i in _appliedStyles)
-                {
-                    i.Dispose();
-                }
+                BeginBatchUpdate();
 
-                _appliedStyles.Clear();
+                try
+                {
+                    foreach (var i in _appliedStyles)
+                    {
+                        i.Dispose();
+                    }
+
+                    _appliedStyles.Clear();
+                }
+                finally
+                {
+                    EndBatchUpdate();
+                }
             }
 
             _styled = false;
