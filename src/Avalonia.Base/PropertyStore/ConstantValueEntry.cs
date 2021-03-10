@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 
 #nullable enable
@@ -17,7 +18,7 @@ namespace Avalonia.PropertyStore
 
         public ConstantValueEntry(
             StyledPropertyBase<T> property,
-            T value,
+            [AllowNull] T value,
             BindingPriority priority,
             IValueSink sink)
         {
@@ -28,7 +29,7 @@ namespace Avalonia.PropertyStore
         }
 
         public StyledPropertyBase<T> Property { get; }
-        public BindingPriority Priority { get; }
+        public BindingPriority Priority { get; private set; }
         Optional<object> IValue.GetValue() => _value.ToObject();
 
         public Optional<T> GetValue(BindingPriority maxPriority = BindingPriority.Animation)
@@ -36,7 +37,30 @@ namespace Avalonia.PropertyStore
             return Priority >= maxPriority ? _value : Optional<T>.Empty;
         }
 
-        public void Dispose() => _sink.Completed(Property, this, _value);
+        public void Dispose()
+        {
+            var oldValue = _value;
+            _value = default;
+            Priority = BindingPriority.Unset;
+            _sink.Completed(Property, this, oldValue);
+        }
+
         public void Reparent(IValueSink sink) => _sink = sink;
+        public void Start() { }
+
+        public void RaiseValueChanged(
+            IValueSink sink,
+            IAvaloniaObject owner,
+            AvaloniaProperty property,
+            Optional<object> oldValue,
+            Optional<object> newValue)
+        {
+            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                owner,
+                (AvaloniaProperty<T>)property,
+                oldValue.GetValueOrDefault<T>(),
+                newValue.GetValueOrDefault<T>(),
+                Priority));
+        }
     }
 }
