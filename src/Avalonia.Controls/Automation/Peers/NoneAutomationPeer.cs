@@ -18,7 +18,7 @@ namespace Avalonia.Automation.Peers
 
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
-            return AutomationControlType.Pane;
+            return AutomationControlType.Group;
         }
 
         protected override bool IsContentElementCore() => false;
