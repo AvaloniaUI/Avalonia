@@ -94,6 +94,7 @@ namespace Avalonia.Automation.Peers
 
             protected override string? GetAutomationIdCore() => null;
             protected override string GetClassNameCore() => typeof(ComboBoxItem).Name;
+            protected override AutomationPeer? GetLabeledByCore() => null;
             protected override AutomationPeer? GetParentCore() => _owner;
             protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.ListItem;
 

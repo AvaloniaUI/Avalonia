@@ -102,6 +102,12 @@ namespace Avalonia.Automation.Peers
         public string GetClassName() => GetClassNameCore() ?? string.Empty;
 
         /// <summary>
+        /// Gets the automation peer for the label that is targeted to the element.
+        /// </summary>
+        /// <returns></returns>
+        public AutomationPeer? GetLabeledBy() => GetLabeledByCore();
+
+        /// <summary>
         /// Gets a human-readable localized string that represents the type of the control that is
         /// associated with this automation peer.
         /// </summary>
@@ -207,6 +213,7 @@ namespace Avalonia.Automation.Peers
         protected abstract Rect GetBoundingRectangleCore();
         protected abstract IReadOnlyList<AutomationPeer> GetOrCreateChildrenCore();
         protected abstract string GetClassNameCore();
+        protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();

@@ -5,19 +5,21 @@ using Avalonia.Controls;
 
 namespace Avalonia.Automation.Peers
 {
-    public class TextAutomationPeer : ControlAutomationPeer
+    public class TextBlockAutomationPeer : ControlAutomationPeer
     {
-        public TextAutomationPeer(IAutomationNodeFactory factory, Control owner)
+        public TextBlockAutomationPeer(IAutomationNodeFactory factory, TextBlock owner)
             : base(factory, owner)
         {
         }
+
+        public new TextBlock Owner => (TextBlock)base.Owner;
 
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.Text;
         }
 
-        protected override string? GetNameCore() => Owner.GetValue(TextBlock.TextProperty);
+        protected override string? GetNameCore() => Owner.Text;
 
         protected override bool IsControlElementCore()
         {

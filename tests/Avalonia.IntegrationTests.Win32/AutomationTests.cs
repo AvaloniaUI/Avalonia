@@ -25,5 +25,15 @@ namespace Avalonia.IntegrationTests.Win32
             var byName = _session.FindElementByAccessibilityId("TextBlockWithName");
             var byAutomationId = _session.FindElementByAccessibilityId("TextBlockWithNameAndAutomationId");
         }
+
+        [Fact]
+        public void LabeledBy()
+        {
+            var label = _session.FindElementByAccessibilityId("TextBlockAsLabel");
+            var labeledTextBox = _session.FindElementByAccessibilityId("LabeledByTextBox");
+
+            Assert.Equal("Label for TextBox", label.Text);
+            Assert.Equal("Label for TextBox", labeledTextBox.GetAttribute("Name"));
+        }
     }
 }

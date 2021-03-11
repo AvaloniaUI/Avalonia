@@ -43,8 +43,24 @@ namespace Avalonia.Automation.Peers
         }
 
         protected override void BringIntoViewCore() => Owner.BringIntoView();
-        protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
-        protected override Rect GetBoundingRectangleCore() => GetBounds(Owner.TransformedBounds);
+
+        protected override IReadOnlyList<AutomationPeer> GetOrCreateChildrenCore()
+        {
+            var children = _children ?? Array.Empty<AutomationPeer>();
+
+            if (_childrenValid)
+                return children;
+
+            var newChildren = GetChildrenCore() ?? Array.Empty<AutomationPeer>();
+
+            foreach (var peer in children.Except(newChildren))
+                peer.TrySetParent(null);
+            foreach (var peer in newChildren)
+                peer.TrySetParent(this);
+
+            _childrenValid = true;
+            return _children = newChildren;
+        }
 
         protected virtual IReadOnlyList<AutomationPeer>? GetChildrenCore()
         {
@@ -64,6 +80,24 @@ namespace Avalonia.Automation.Peers
             }
 
             return result;
+        }
+
+        protected override AutomationPeer? GetLabeledByCore()
+        {
+            var label = AutomationProperties.GetLabeledBy(Owner);
+            return label is Control c ? GetOrCreatePeer(c) : null;
+        }
+
+        protected override string? GetNameCore()
+        {
+            var result = AutomationProperties.GetName(Owner);
+
+            if (string.IsNullOrWhiteSpace(result) && GetLabeledBy() is AutomationPeer labeledBy)
+            {
+                return labeledBy.GetName();
+            }
+
+            return null;
         }
 
         protected override AutomationPeer? GetParentCore()
@@ -90,34 +124,6 @@ namespace Avalonia.Automation.Peers
             _parentValid = false;
         }
 
-        protected override IReadOnlyList<AutomationPeer> GetOrCreateChildrenCore()
-        {
-            var children = _children ?? Array.Empty<AutomationPeer>();
-
-            if (_childrenValid)
-                return children;
-
-            var newChildren = GetChildrenCore() ?? Array.Empty<AutomationPeer>();
-
-            foreach (var peer in children.Except(newChildren))
-                peer.TrySetParent(null);
-            foreach (var peer in newChildren)
-                peer.TrySetParent(this);
-
-            _childrenValid = true;
-            return _children = newChildren;
-        }
-
-        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
-        protected override string GetClassNameCore() => Owner.GetType().Name;
-        protected override string? GetNameCore() => AutomationProperties.GetName(Owner);
-        protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
-        protected override bool IsContentElementCore() => true;
-        protected override bool IsControlElementCore() => true;
-        protected override bool IsEnabledCore() => Owner.IsEnabled;
-        protected override bool IsKeyboardFocusableCore() => Owner.Focusable;
-        protected override void SetFocusCore() => Owner.Focus();
-
         protected override bool ShowContextMenuCore()
         {
             var c = Owner;
@@ -141,6 +147,17 @@ namespace Avalonia.Automation.Peers
             _parent = parent;
             return true;
         }
+
+        protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
+        protected override Rect GetBoundingRectangleCore() => GetBounds(Owner.TransformedBounds);
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
+        protected override string GetClassNameCore() => Owner.GetType().Name;
+        protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
+        protected override bool IsContentElementCore() => true;
+        protected override bool IsControlElementCore() => true;
+        protected override bool IsEnabledCore() => Owner.IsEnabled;
+        protected override bool IsKeyboardFocusableCore() => Owner.Focusable;
+        protected override void SetFocusCore() => Owner.Focus();
 
         private Rect GetBounds(TransformedBounds? bounds)
         {

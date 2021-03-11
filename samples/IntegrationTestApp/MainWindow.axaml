@@ -12,6 +12,10 @@
         <TextBlock Name="NotTheAutomationId" AutomationProperties.AutomationId="TextBlockWithNameAndAutomationId">
           TextBlockWithNameAndAutomationId
         </TextBlock>
+        <TextBlock Name="TextBlockAsLabel">Label for TextBox</TextBlock>
+        <TextBox Name="LabeledByTextBox" AutomationProperties.LabeledBy="{Binding #TextBlockAsLabel}">
+          Foo
+        </TextBox>
       </StackPanel>
     </TabItem>
     <TabItem Header="Button">

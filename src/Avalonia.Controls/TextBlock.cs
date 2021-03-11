@@ -536,7 +536,7 @@ namespace Avalonia.Controls
 
         protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
         {
-            return new TextAutomationPeer(factory, this);
+            return new TextBlockAutomationPeer(factory, this);
         }
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;

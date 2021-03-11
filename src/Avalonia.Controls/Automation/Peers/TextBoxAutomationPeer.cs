@@ -6,7 +6,7 @@ using Avalonia.Controls;
 
 namespace Avalonia.Automation.Peers
 {
-    public class TextBoxAutomationPeer : TextAutomationPeer, IValueProvider
+    public class TextBoxAutomationPeer : ControlAutomationPeer, IValueProvider
     {
         public TextBoxAutomationPeer(IAutomationNodeFactory factory, TextBox owner)
             : base(factory, owner)
@@ -17,5 +17,10 @@ namespace Avalonia.Automation.Peers
         public bool IsReadOnly => Owner.IsReadOnly;
         public string? Value => Owner.Text;
         public void SetValue(string? value) => Owner.Text = value;
+
+        protected override AutomationControlType GetAutomationControlTypeCore()
+        {
+            return AutomationControlType.Edit;
+        }
     }
 }
