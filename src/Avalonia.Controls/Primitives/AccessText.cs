@@ -1,4 +1,6 @@
 using System;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Platform;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -74,6 +76,37 @@ namespace Avalonia.Controls.Primitives
                     rect.BottomLeft + offset,
                     rect.BottomRight + offset);
             }
+        }
+
+        internal static string RemoveAccessKeyMarker(string text)
+        {
+            if (!string.IsNullOrEmpty(text))
+            {
+                var accessKeyMarker = "_";
+                var doubleAccessKeyMarker = accessKeyMarker + accessKeyMarker;
+                int index = FindAccessKeyMarker(text);
+                if (index >= 0 && index < text.Length - 1)
+                    text = text.Remove(index, 1);
+                text = text.Replace(doubleAccessKeyMarker, accessKeyMarker);
+            }
+            return text;
+        }
+
+        private static int FindAccessKeyMarker(string text)
+        {
+            var length = text.Length;
+            var startIndex = 0;
+            while (startIndex < length)
+            {
+                int index = text.IndexOf('_', startIndex);
+                if (index == -1)
+                    return -1;
+                if (index + 1 < length && text[index + 1] != '_')
+                    return index;
+                startIndex = index + 2;
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -178,6 +211,11 @@ namespace Avalonia.Controls.Primitives
                 _accessKeys.Unregister(this);
                 _accessKeys = null;
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        {
+            return new NoneAutomationPeer(factory, this);
         }
 
         /// <summary>

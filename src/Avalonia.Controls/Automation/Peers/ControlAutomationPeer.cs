@@ -148,6 +148,8 @@ namespace Avalonia.Automation.Peers
             return true;
         }
 
+        protected override string? GetAcceleratorKeyCore() => AutomationProperties.GetAcceleratorKey(Owner);
+        protected override string? GetAccessKeyCore() => AutomationProperties.GetAccessKey(Owner);
         protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
         protected override Rect GetBoundingRectangleCore() => GetBounds(Owner.TransformedBounds);
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;

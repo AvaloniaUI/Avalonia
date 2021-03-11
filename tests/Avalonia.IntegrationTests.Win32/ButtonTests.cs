@@ -42,5 +42,13 @@ namespace Avalonia.IntegrationTests.Win32
 
             Assert.Equal("Button with TextBlock", button.Text);
         }
+
+        [Fact]
+        public void ButtonWithAcceleratorKey()
+        {
+            var button = _session.FindElementByAccessibilityId("ButtonWithAcceleratorKey");
+
+            Assert.Equal("Ctrl+B", button.GetAttribute("AcceleratorKey"));
+        }
     }
 }

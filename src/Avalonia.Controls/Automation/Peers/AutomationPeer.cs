@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Automation.Platform;
 
@@ -74,6 +75,17 @@ namespace Avalonia.Automation.Peers
         /// Attempts to bring the element associated with the automation peer into view.
         /// </summary>
         public void BringIntoView() => BringIntoViewCore();
+
+        /// <summary>
+        /// Gets the accelerator key combinations for the element that is associated with the UI
+        /// Automation peer.
+        /// </summary>
+        public string? GetAcceleratorKey() => GetAcceleratorKeyCore();
+
+        /// <summary>
+        /// Gets the access key for the element that is associated with the automation peer.
+        /// </summary>
+        public string? GetAccessKey() => GetAccessKeyCore();
 
         /// <summary>
         /// Gets the control type for the element that is associated with the UI Automation peer.
@@ -208,6 +220,8 @@ namespace Avalonia.Automation.Peers
         }
 
         protected abstract void BringIntoViewCore();
+        protected abstract string? GetAcceleratorKeyCore();
+        protected abstract string? GetAccessKeyCore();
         protected abstract AutomationControlType GetAutomationControlTypeCore();
         protected abstract string? GetAutomationIdCore();
         protected abstract Rect GetBoundingRectangleCore();

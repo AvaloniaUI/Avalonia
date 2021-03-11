@@ -116,6 +116,8 @@ namespace Avalonia.Win32.Automation
         {
             return (UiaPropertyId)propertyId switch
             {
+                UiaPropertyId.AcceleratorKey => InvokeSync(() => Peer.GetAcceleratorKey()),
+                UiaPropertyId.AccessKey => InvokeSync(() => Peer.GetAccessKey()),
                 UiaPropertyId.AutomationId => InvokeSync(() => Peer.GetAutomationId()),
                 UiaPropertyId.ClassName => InvokeSync(() => Peer.GetClassName()),
                 UiaPropertyId.ClickablePoint => new[] { BoundingRectangle.Center.X, BoundingRectangle.Center.Y },
