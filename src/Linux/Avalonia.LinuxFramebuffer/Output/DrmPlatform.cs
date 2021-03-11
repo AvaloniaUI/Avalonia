@@ -15,7 +15,7 @@ namespace Avalonia.LinuxFramebuffer.Output
     ///     Shared resource creates a separation of the <see cref="IPlatformOpenGlInterface" /> instance, and
     ///     the <see cref="DrmOutput" /> instances, which provide the <see cref="IGlPlatformSurface" /> for each DRM connector.
     /// </remarks>
-    internal class DrmPlatform
+    public class DrmPlatform
     {
         public DrmPlatform(string path = null, double defaultScaling = 1.0)
             : this(new DrmCard(path), defaultScaling)

@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
@@ -9,15 +8,15 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.LinuxFramebuffer;
+using Avalonia.LinuxFramebuffer.Input;
 using Avalonia.LinuxFramebuffer.Input.LibInput;
 using Avalonia.LinuxFramebuffer.Output;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    internal class LinuxFramebufferPlatform
+    public class LinuxFramebufferPlatform
     {
         private static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
         private static readonly MouseDevice MouseDevice = new MouseDevice();
@@ -44,19 +43,38 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
         }
-       
+
         internal static LinuxFramebufferLifetime Initialize<T>(T builder, IOutputBackend outputBackend) where T : AppBuilderBase<T>, new()
         {
+            return Initialize(builder, outputBackend.Name, _ => new LinuxFramebufferLifetime(outputBackend));
+        }
+
+        public static ITopLevelImpl CreateTopLevelImpl(IOutputBackend output, IInputBackend input)
+        {
+            if (output == null)
+                throw new ArgumentNullException(nameof(output));
+
+            if (input == null)
+                throw new ArgumentNullException(nameof(input));
+
+            return new FramebufferToplevelImpl(output, input);
+        }
+
+        public static TLifetime Initialize<T, TLifetime>(T builder, string displaySubsystemName,
+            Func<LinuxFramebufferPlatform, TLifetime> lifetimeFactory)
+            where T : AppBuilderBase<T>, new() 
+            where TLifetime : IControlledApplicationLifetime
+        {
             var platform = new LinuxFramebufferPlatform();
-            
+
             builder
                 .UseSkia()
-                .UseWindowingSubsystem(platform.Initialize, outputBackend.Name);
-            
-            return new LinuxFramebufferLifetime(outputBackend);
+                .UseWindowingSubsystem(platform.Initialize, displaySubsystemName);
+
+            return lifetimeFactory(platform);
         }
     }
-
+    
     internal class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
     {
         private readonly IOutputBackend _fb;
@@ -77,7 +95,7 @@ namespace Avalonia.LinuxFramebuffer
                 if (_topLevel == null)
                 {
 
-                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, new LibInputBackend()));
+                    var tl = new EmbeddableControlRoot(LinuxFramebufferPlatform.CreateTopLevelImpl(_fb, new LibInputBackend()));
                     tl.Prepare();
                     _topLevel = tl;
                     _topLevel.Renderer.Start();
@@ -97,7 +115,7 @@ namespace Avalonia.LinuxFramebuffer
         public event EventHandler<ControlledApplicationLifetimeStartupEventArgs> Startup;
 
         public event EventHandler<ControlledApplicationLifetimeExitEventArgs> Exit;
-        
+
         public void Start(string[] args)
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
@@ -126,8 +144,8 @@ public static class LinuxFramebufferPlatformExtensions
     public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, double scaling = 1)
         where T : AppBuilderBase<T>, new()
     {
-        var drmOutput = new DrmPlatform(card, scaling);
-        return StartLinuxDirect(builder, args, drmOutput.CreateOutput());
+        var platform = new DrmPlatform(card, scaling);
+        return StartLinuxDirect(builder, args, platform.CreateOutput());
     }
 
     public static int StartLinuxDirect<T>(this T builder, string[] args, IOutputBackend backend)
