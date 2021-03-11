@@ -9,6 +9,8 @@ namespace Avalonia.Win32
 {
     static class Win32GlManager
     {
+        private static readonly Version Windows7 = new Version(6, 1);
+
         public static void Initialize()
         {
             AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToLazy<IPlatformOpenGlInterface>(() =>
@@ -20,13 +22,11 @@ namespace Avalonia.Win32
                     return wgl;
                 }
 
-                if (opts?.AllowEglInitialization == true ||
-                    ((!opts?.AllowEglInitialization.HasValue ?? false) &&
-                     Win32Platform.WindowsVersion > new Version(6, 1)))
+                if (opts?.AllowEglInitialization ?? Win32Platform.WindowsVersion > Windows7)
                 {
                     var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
 
-                    if (egl is { } &&
+                    if (egl != null &&
                         opts?.UseWindowsUIComposition == true)
                     {
                         WinUICompositorConnection.TryCreateAndRegister(egl);

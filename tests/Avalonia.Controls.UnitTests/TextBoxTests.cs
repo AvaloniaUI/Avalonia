@@ -698,10 +698,10 @@ namespace Avalonia.Controls.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private IControlTemplate CreateTemplate()
         {

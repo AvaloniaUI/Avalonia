@@ -22,6 +22,20 @@
                 IsSnapToTickEnabled="True"
                 Ticks="0,20,25,40,75,100"
                 Width="300" />
+        <Slider Name="SliderWithTooltip"
+                Value="0"
+                Minimum="0"
+                Maximum="100"
+                Width="300">
+          <Slider.Styles>
+            <Style Selector="Slider /template/ Thumb">
+              <Setter Property="ToolTip.Tip" Value="{Binding $parent[Slider].Value, Mode=OneWay, StringFormat='Value \{0:f\}'}" />
+              <Setter Property="ToolTip.Placement" Value="Top" />
+              <Setter Property="ToolTip.VerticalOffset" Value="-10" />
+              <Setter Property="ToolTip.HorizontalOffset" Value="-30" />
+            </Style>
+          </Slider.Styles>
+        </Slider>
         <Slider Value="0"
                 Minimum="0"
                 Maximum="100"
@@ -31,8 +45,23 @@
             <sys:Exception /> 
           </DataValidationErrors.Error>
         </Slider>
+        <Slider Value="0"
+                IsDirectionReversed="True"
+                Minimum="0"
+                Maximum="100"
+                TickFrequency="10"
+                Width="300" />
       </StackPanel>
       <Slider Value="0"
+              Minimum="0"
+              Maximum="100"
+              Orientation="Vertical"
+              IsSnapToTickEnabled="True"
+              TickPlacement="Outside"
+              TickFrequency="10"
+              Height="300"/>
+      <Slider Value="0"
+              IsDirectionReversed="True"
               Minimum="0"
               Maximum="100"
               Orientation="Vertical"

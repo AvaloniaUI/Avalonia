@@ -53,7 +53,7 @@ namespace Avalonia.Native
         private bool _gpu = false;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
-        private readonly IStandardCursorFactory _cursorFactory;
+        private readonly ICursorFactory _cursorFactory;
         private Size _savedLogicalSize;
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
@@ -68,7 +68,7 @@ namespace Avalonia.Native
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
-            _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
+            _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
@@ -383,7 +383,7 @@ namespace Avalonia.Native
             _native.BeginMoveDrag();
         }
 
-        public Size MaxAutoSizeHint => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
+        public Size MaxAutoSizeHint => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(1))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
         public void SetTopmost(bool value)
@@ -398,7 +398,7 @@ namespace Avalonia.Native
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             if (_native == null)
             {
