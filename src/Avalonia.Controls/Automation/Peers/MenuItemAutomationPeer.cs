@@ -21,7 +21,7 @@ namespace Avalonia.Automation.Peers
 
             if (string.IsNullOrWhiteSpace(result))
             {
-                if (Owner.HeaderPresenter.Child is AccessText accessText)
+                if (Owner.HeaderPresenter?.Child is AccessText accessText)
                 {
                     result = accessText.AccessKey.ToString();
                 }
