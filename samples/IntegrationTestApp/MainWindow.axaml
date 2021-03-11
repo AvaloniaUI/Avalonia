@@ -5,16 +5,24 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
         Title="IntegrationTestApp">
-  <TabControl TabStripPlacement="Left" AutomationProperties.AutomationId="MainTabs">
+  <TabControl TabStripPlacement="Left" Name="MainTabs">
+    <TabItem Header="Automation">
+      <StackPanel>
+        <TextBlock Name="TextBlockWithName">TextBlockWithName</TextBlock>
+        <TextBlock Name="NotTheAutomationId" AutomationProperties.AutomationId="TextBlockWithNameAndAutomationId">
+          TextBlockWithNameAndAutomationId
+        </TextBlock>
+      </StackPanel>
+    </TabItem>
     <TabItem Header="Button">
       <StackPanel>
-        <Button AutomationProperties.AutomationId="DisabledButton" IsEnabled="False">
+        <Button Name="DisabledButton" IsEnabled="False">
           Disabled Button
         </Button>
-        <Button AutomationProperties.AutomationId="BasicButton">
+        <Button Name="BasicButton">
           Basic Button
         </Button>
-        <Button AutomationProperties.AutomationId="ButtonWithTextBlock">
+        <Button Name="ButtonWithTextBlock">
           <TextBlock>Button with TextBlock</TextBlock>
         </Button>
       </StackPanel>
@@ -22,23 +30,23 @@
 
     <TabItem Header="CheckBox">
       <StackPanel>
-        <CheckBox AutomationProperties.AutomationId="UncheckedCheckBox">Unchecked</CheckBox>
-        <CheckBox AutomationProperties.AutomationId="CheckedCheckBox" IsChecked="True">Checked</CheckBox>
-        <CheckBox AutomationProperties.AutomationId="ThreeStateCheckBox" IsThreeState="True" IsChecked="{x:Null}">ThreeState</CheckBox>
+        <CheckBox Name="UncheckedCheckBox">Unchecked</CheckBox>
+        <CheckBox Name="CheckedCheckBox" IsChecked="True">Checked</CheckBox>
+        <CheckBox Name="ThreeStateCheckBox" IsThreeState="True" IsChecked="{x:Null}">ThreeState</CheckBox>
       </StackPanel>
     </TabItem>
-      
+
     <TabItem Header="ComboBox">
       <StackPanel>
-        <ComboBox AutomationProperties.AutomationId="UnselectedComboBox">
+        <ComboBox Name="UnselectedComboBox">
           <ComboBoxItem>Foo</ComboBoxItem>
           <ComboBoxItem>Bar</ComboBoxItem>
         </ComboBox>
-        <ComboBox AutomationProperties.AutomationId="SelectedIndex0ComboBox" SelectedIndex="0">
+        <ComboBox Name="SelectedIndex0ComboBox" SelectedIndex="0">
           <ComboBoxItem>Foo</ComboBoxItem>
           <ComboBoxItem>Bar</ComboBoxItem>
         </ComboBox>
-        <ComboBox AutomationProperties.AutomationId="SelectedIndex1ComboBox" SelectedIndex="1">
+        <ComboBox Name="SelectedIndex1ComboBox" SelectedIndex="1">
           <ComboBoxItem>Foo</ComboBoxItem>
           <ComboBoxItem>Bar</ComboBoxItem>
         </ComboBox>

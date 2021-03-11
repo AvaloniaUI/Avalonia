@@ -43,7 +43,7 @@ namespace Avalonia.Automation.Peers
         }
 
         protected override void BringIntoViewCore() => Owner.BringIntoView();
-        protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner);
+        protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
         protected override Rect GetBoundingRectangleCore() => GetBounds(Owner.TransformedBounds);
 
         protected virtual IReadOnlyList<AutomationPeer>? GetChildrenCore()
