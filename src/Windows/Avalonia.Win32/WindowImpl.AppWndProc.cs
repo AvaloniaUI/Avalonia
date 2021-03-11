@@ -76,6 +76,9 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DESTROY:
                     {
+                        if (_automationProvider is object)
+                            UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
+
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
                         //Remove root reference to this class, so unmanaged delegate can be collected
