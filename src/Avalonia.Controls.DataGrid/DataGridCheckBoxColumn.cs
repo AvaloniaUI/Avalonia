@@ -17,7 +17,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridCheckBoxColumn : DataGridBoundColumn
     {
-        private bool _beganEditWithKeyboard;
         private CheckBox _currentCheckBox;
         private DataGrid _owningGrid;
 
@@ -173,6 +172,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
+                        System.Diagnostics.Debug.WriteLine($"InitialValue: {editingCheckBox.IsChecked}");
                         editingCheckBox.IsChecked = !editingCheckBox.IsChecked;
                     }
                 }
@@ -208,12 +208,6 @@ namespace Avalonia.Controls
                     {
                         ProcessPointerArgs();
                     }
-                }
-                else if (_beganEditWithKeyboard)
-                {
-                    // Editing began by a user pressing spacebar
-                    _beganEditWithKeyboard = false;
-                    EditValue();
                 }
 
                 return uneditedValue;
@@ -308,13 +302,10 @@ namespace Avalonia.Controls
                     CheckBox checkBox = GetCellContent(row) as CheckBox;
                     if (checkBox == _currentCheckBox)
                     {
-                        _beganEditWithKeyboard = true;
                         OwningGrid.BeginEdit();
-                        return;
                     }
                 }
             }
-            _beganEditWithKeyboard = false;
         }
 
         private void OwningGrid_LoadingRow(object sender, DataGridRowEventArgs e)
