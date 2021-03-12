@@ -172,7 +172,6 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"InitialValue: {editingCheckBox.IsChecked}");
                         editingCheckBox.IsChecked = !editingCheckBox.IsChecked;
                     }
                 }
