@@ -1,10 +1,14 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -16,12 +20,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new Carousel
             {
-                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = new[]
-                {
-                    "Foo",
-                    "Bar"
-                }
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate), Items = new[] { "Foo", "Bar" }
             };
 
             target.ApplyTemplate();
@@ -35,12 +34,7 @@ namespace Avalonia.Controls.UnitTests
         {
             var target = new Carousel
             {
-                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = new[]
-                {
-                    "Foo",
-                    "Bar"
-                }
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate), Items = new[] { "Foo", "Bar" }
             };
 
             target.ApplyTemplate();
@@ -75,18 +69,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Selected_Item_Changes_To_First_Item_When_Items_Property_Changes()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "FooBar"
-            };
+            var items = new ObservableCollection<string> { "Foo", "Bar", "FooBar" };
 
             var target = new Carousel
             {
-                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = items,
-                IsVirtualized = false
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate), Items = items, IsVirtualized = false
             };
 
             target.ApplyTemplate();
@@ -111,18 +98,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Selected_Item_Changes_To_First_Item_When_Items_Property_Changes_And_Virtualized()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "FooBar"
-            };
+            var items = new ObservableCollection<string> { "Foo", "Bar", "FooBar" };
 
             var target = new Carousel
             {
-                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = items,
-                IsVirtualized = true,
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate), Items = items, IsVirtualized = true,
             };
 
             target.ApplyTemplate();
@@ -150,9 +130,7 @@ namespace Avalonia.Controls.UnitTests
             var items = new ObservableCollection<string>();
             var target = new Carousel
             {
-                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = items,
-                IsVirtualized = false
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate), Items = items, IsVirtualized = false
             };
 
             target.ApplyTemplate();
@@ -170,18 +148,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Selected_Index_Changes_To_None_When_Items_Assigned_Null()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "FooBar"
-            };
+            var items = new ObservableCollection<string> { "Foo", "Bar", "FooBar" };
 
             var target = new Carousel
             {
-                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = items,
-                IsVirtualized = false
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate), Items = items, IsVirtualized = false
             };
 
             target.ApplyTemplate();
@@ -204,12 +175,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Selected_Index_Is_Maintained_Carousel_Created_With_Non_Zero_SelectedIndex()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "FooBar"
-            };
+            var items = new ObservableCollection<string> { "Foo", "Bar", "FooBar" };
 
             var target = new Carousel
             {
@@ -233,18 +199,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Selected_Item_Changes_To_Next_First_Item_When_Item_Removed_From_Beggining_Of_List()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "FooBar"
-            };
+            var items = new ObservableCollection<string> { "Foo", "Bar", "FooBar" };
 
             var target = new Carousel
             {
-                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = items,
-                IsVirtualized = false
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate), Items = items, IsVirtualized = false
             };
 
             target.ApplyTemplate();
@@ -267,18 +226,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Selected_Item_Changes_To_First_Item_If_SelectedItem_Is_Removed_From_Middle()
         {
-            var items = new ObservableCollection<string>
-            {
-               "Foo",
-               "Bar",
-               "FooBar"
-            };
+            var items = new ObservableCollection<string> { "Foo", "Bar", "FooBar" };
 
             var target = new Carousel
             {
-                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = items,
-                IsVirtualized = false
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate), Items = items, IsVirtualized = false
             };
 
             target.ApplyTemplate();
@@ -310,6 +262,32 @@ namespace Avalonia.Controls.UnitTests
             var contentPresenter = Assert.IsType<ContentPresenter>(control);
             contentPresenter.UpdateChild();
             return Assert.IsType<TextBlock>(contentPresenter.Child);
+        }
+
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new Carousel
+                {
+                    Template = new FuncControlTemplate<Carousel>(CreateTemplate), IsVirtualized = false
+                };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable =
+                    new BehaviorSubject<BindingNotification>(new BindingNotification(exception,
+                        BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.SelectedItemProperty, textObservable);
+
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+            }
         }
     }
 }

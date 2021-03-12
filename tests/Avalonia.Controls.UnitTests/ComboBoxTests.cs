@@ -1,11 +1,14 @@
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -173,5 +176,67 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(expectedSelectedIndex, target.SelectedIndex);
             }
         }
+        
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate()
+                };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.SelectedItemProperty, textObservable);
+                
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+                
+            }
+            
+        }
+        private ComboBox CreateControl()
+        {
+            var control = new ComboBox()
+            {
+                Template = GetTemplate()
+            };
+
+            control.ApplyTemplate();
+            return control;
+        }
+        
+        private TextBox GetTextBox(ComboBox control)
+        {
+            return control.GetTemplateChildren()
+                // .OfType<ButtonSpinner>()
+                // .Select(b => b.Content)
+                .OfType<TextBox>()
+                .First();
+        }
+        // private IControlTemplate CreateTemplate()
+        // {
+        //     return new FuncControlTemplate<ComboBox>((control, scope) =>
+        //     {
+        //         var textBox =
+        //             new TextBox
+        //             {
+        //                 Name = "PART_TextBox"
+        //             }.RegisterInNameScope(scope);
+        //         return new ButtonSpinner
+        //         {
+        //             Name = "PART_Spinner",
+        //             Content = textBox,
+        //         }.RegisterInNameScope(scope);
+        //     });
+        // }
     }
 }

@@ -559,5 +559,12 @@ namespace Avalonia.Controls.UnitTests
 
             public string Value { get; }
         }
+
+
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+            
+        }
     }
 }
