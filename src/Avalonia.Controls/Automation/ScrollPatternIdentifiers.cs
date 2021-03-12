@@ -15,31 +15,31 @@ namespace Avalonia.Automation
         /// <summary>
         /// Identifies <see cref="IScrollProvider.HorizontallyScrollable"/> automation property.
         /// </summary>
-        public static AutomationProperty HorizontallyScrollableProperty { get; } = new();
+        public static AutomationProperty HorizontallyScrollableProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="IScrollProvider.HorizontalScrollPercent"/> automation property.
         /// </summary>
-        public static AutomationProperty HorizontalScrollPercentProperty { get; } = new();
+        public static AutomationProperty HorizontalScrollPercentProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="IScrollProvider.HorizontalViewSize"/> automation property.
         /// </summary>
-        public static AutomationProperty HorizontalViewSizeProperty { get; } = new();
+        public static AutomationProperty HorizontalViewSizeProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="IScrollProvider.VerticallyScrollable"/> automation property.
         /// </summary>
-        public static AutomationProperty VerticallyScrollableProperty { get; } = new();
+        public static AutomationProperty VerticallyScrollableProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="IScrollProvider.VerticalScrollPercent"/> automation property.
         /// </summary>
-        public static AutomationProperty VerticalScrollPercentProperty { get; } = new();
+        public static AutomationProperty VerticalScrollPercentProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="IScrollProvider.VerticalViewSize"/> automation property.
         /// </summary>
-        public static AutomationProperty VerticalViewSizeProperty { get; } = new();
+        public static AutomationProperty VerticalViewSizeProperty { get; } = new AutomationProperty();
     }
 }

@@ -25,7 +25,7 @@ namespace Avalonia.Win32.Automation
         IRawElementProviderAdviseEvents,
         IInvokeProvider
     {
-        private static Dictionary<AutomationProperty, UiaPropertyId> s_propertyMap = new()
+        private static Dictionary<AutomationProperty, UiaPropertyId> s_propertyMap = new Dictionary<AutomationProperty, UiaPropertyId>()
         {
             { AutomationElementIdentifiers.BoundingRectangleProperty, UiaPropertyId.BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, UiaPropertyId.ClassName },
@@ -276,7 +276,7 @@ namespace Avalonia.Win32.Automation
             var peer = Peer;
             var parent = peer.GetParent();
 
-            while (peer is not AAP.IRootProvider && parent is object)
+            while (!(peer is AAP.IRootProvider) && parent is object)
             {
                 peer = parent;
                 parent = peer.GetParent();

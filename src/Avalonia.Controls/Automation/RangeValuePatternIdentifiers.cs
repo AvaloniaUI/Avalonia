@@ -10,21 +10,21 @@ namespace Avalonia.Automation
         /// <summary>
         /// Identifies <see cref="IRangeValueProvider.IsReadOnly"/> automation property.
         /// </summary>
-        public static AutomationProperty IsReadOnlyProperty { get; } = new();
+        public static AutomationProperty IsReadOnlyProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="IRangeValueProvider.Minimum"/> automation property.
         /// </summary>
-        public static AutomationProperty MinimumProperty { get; } = new();
+        public static AutomationProperty MinimumProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="IRangeValueProvider.Maximum"/> automation property.
         /// </summary>
-        public static AutomationProperty MaximumProperty { get; } = new();
+        public static AutomationProperty MaximumProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="IRangeValueProvider.Value"/> automation property.
         /// </summary>
-        public static AutomationProperty ValueProperty { get; } = new();
+        public static AutomationProperty ValueProperty { get; } = new AutomationProperty();
     }
 }

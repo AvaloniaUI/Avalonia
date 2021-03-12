@@ -10,6 +10,6 @@ namespace Avalonia.Automation
         /// <summary>
         /// Identifies <see cref="IExpandCollapseProvider.ExpandCollapseState"/> automation property.
         /// </summary>
-        public static AutomationProperty ExpandCollapseStateProperty { get; } = new();
+        public static AutomationProperty ExpandCollapseStateProperty { get; } = new AutomationProperty();
     }
 }

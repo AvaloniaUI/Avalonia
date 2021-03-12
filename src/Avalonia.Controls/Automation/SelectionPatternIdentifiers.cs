@@ -10,16 +10,16 @@ namespace Avalonia.Automation
         /// <summary>
         /// Identifies <see cref="ISelectionProvider.CanSelectMultiple"/> automation property.
         /// </summary>
-        public static AutomationProperty CanSelectMultipleProperty { get; } = new();
+        public static AutomationProperty CanSelectMultipleProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies <see cref="ISelectionProvider.IsSelectionRequired"/> automation property.
         /// </summary>
-        public static AutomationProperty IsSelectionRequiredProperty { get; } = new();
+        public static AutomationProperty IsSelectionRequiredProperty { get; } = new AutomationProperty();
 
         /// <summary>
         /// Identifies the property that gets the selected items in a container.
         /// </summary>
-        public static AutomationProperty SelectionProperty { get; } = new();
+        public static AutomationProperty SelectionProperty { get; } = new AutomationProperty();
     }
 }
