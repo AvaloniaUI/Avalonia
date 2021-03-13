@@ -163,13 +163,13 @@ class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAval
     
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator) override
+    virtual HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator, IAvnApplicationEvents* events) override
     {
         _deallocator = deallocator;
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
-        InitializeAvnApp();
+        InitializeAvnApp(events);
         return S_OK;
     };
     

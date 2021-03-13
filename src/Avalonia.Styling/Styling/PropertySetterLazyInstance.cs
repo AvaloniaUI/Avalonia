@@ -7,62 +7,53 @@ using Avalonia.Reactive;
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// A <see cref="Setter"/> which has been instanced on a control.
+    /// A <see cref="Setter"/> which has been instanced on a control and whose value is lazily
+    /// evaluated.
     /// </summary>
     /// <typeparam name="T">The target property type.</typeparam>
-    internal class PropertySetterInstance<T> : SingleSubscriberObservableBase<BindingValue<T>>,
+    internal class PropertySetterLazyInstance<T> : SingleSubscriberObservableBase<BindingValue<T>>,
         ISetterInstance
     {
         private readonly IStyleable _target;
         private readonly StyledPropertyBase<T>? _styledProperty;
         private readonly DirectPropertyBase<T>? _directProperty;
-        private readonly T _value;
+        private readonly Func<T> _valueFactory;
+        private BindingValue<T> _value;
         private IDisposable? _subscription;
         private bool _isActive;
 
-        public PropertySetterInstance(
+        public PropertySetterLazyInstance(
             IStyleable target,
             StyledPropertyBase<T> property,
-            T value)
+            Func<T> valueFactory)
         {
             _target = target;
             _styledProperty = property;
-            _value = value;
+            _valueFactory = valueFactory;
         }
 
-        public PropertySetterInstance(
+        public PropertySetterLazyInstance(
             IStyleable target,
             DirectPropertyBase<T> property,
-            T value)
+            Func<T> valueFactory)
         {
             _target = target;
             _directProperty = property;
-            _value = value;
+            _valueFactory = valueFactory;
         }
 
         public void Start(bool hasActivator)
         {
-            if (hasActivator)
+            _isActive = !hasActivator;
+
+            if (_styledProperty is object)
             {
-                if (_styledProperty is object)
-                {
-                    _subscription = _target.Bind(_styledProperty, this, BindingPriority.StyleTrigger);
-                }
-                else
-                {
-                    _subscription = _target.Bind(_directProperty, this);
-                }
+                var priority = hasActivator ? BindingPriority.StyleTrigger : BindingPriority.Style;
+                _subscription = _target.Bind(_styledProperty, this, priority);
             }
             else
             {
-                if (_styledProperty is object)
-                {
-                    _subscription = _target.SetValue(_styledProperty, _value, BindingPriority.Style);
-                }
-                else
-                {
-                    _target.SetValue(_directProperty!, _value);
-                }
+                _subscription = _target.Bind(_directProperty, this);
             }
         }
 
@@ -110,9 +101,28 @@ namespace Avalonia.Styling
         protected override void Subscribed() => PublishNext();
         protected override void Unsubscribed() { }
 
+        private T GetValue()
+        {
+            if (_value.HasValue)
+            {
+                return _value.Value;
+            }
+
+            _value = _valueFactory();
+            return _value.Value;
+        }
+
         private void PublishNext()
         {
-            PublishNext(_isActive ? new BindingValue<T>(_value) : default);
+            if (_isActive)
+            {
+                GetValue();
+                PublishNext(_value);
+            }
+            else
+            {
+                PublishNext(default);
+            }
         }
     }
 }

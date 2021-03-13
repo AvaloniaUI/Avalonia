@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
@@ -135,6 +134,129 @@ namespace Avalonia.Controls.UnitTests
                 window.Close();
 
                 Assert.Equal(1, count);
+            }
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Child_windows_should_be_closed_before_parent(bool programaticClose)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var child = new Window();
+
+                int count = 0;
+                int windowClosing = 0;
+                int childClosing = 0;
+                int windowClosed = 0;
+                int childClosed = 0;
+
+                window.Closing += (sender, e) =>
+                {
+                    count++;
+                    windowClosing = count;
+                };
+                
+                child.Closing += (sender, e) =>
+                {
+                    count++;
+                    childClosing = count;
+                };
+                
+                window.Closed += (sender, e) =>
+                {
+                    count++;
+                    windowClosed = count;
+                };
+                
+                child.Closed += (sender, e) =>
+                {
+                    count++;
+                    childClosed = count;
+                };
+
+                window.Show();
+                child.Show(window);
+
+                if (programaticClose)
+                {
+                    window.Close();
+                }
+                else
+                {
+                    var cancel = window.PlatformImpl.Closing();
+
+                    Assert.Equal(false, cancel);
+                }
+
+                Assert.Equal(2, windowClosing);
+                Assert.Equal(1, childClosing);
+                Assert.Equal(4, windowClosed);
+                Assert.Equal(3, childClosed);
+            }
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Child_windows_must_not_close_before_parent_has_chance_to_Cancel_OSCloseButton(bool programaticClose)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var child = new Window();
+
+                int count = 0;
+                int windowClosing = 0;
+                int childClosing = 0;
+                int windowClosed = 0;
+                int childClosed = 0;
+
+                window.Closing += (sender, e) =>
+                {
+                    count++;
+                    windowClosing = count;
+                    e.Cancel = true;
+                };
+                
+                child.Closing += (sender, e) =>
+                {
+                    count++;
+                    childClosing = count;
+                };
+                
+                window.Closed += (sender, e) =>
+                {
+                    count++;
+                    windowClosed = count;
+                };
+                
+                child.Closed += (sender, e) =>
+                {
+                    count++;
+                    childClosed = count;
+                };
+
+                window.Show();
+                child.Show(window);
+                
+                if (programaticClose)
+                {
+                    window.Close();
+                }
+                else
+                {
+                    var cancel = window.PlatformImpl.Closing();
+
+                    Assert.Equal(true, cancel);
+                }
+
+                Assert.Equal(2, windowClosing);
+                Assert.Equal(1, childClosing);
+                Assert.Equal(0, windowClosed);
+                Assert.Equal(0, childClosed);
             }
         }
 
