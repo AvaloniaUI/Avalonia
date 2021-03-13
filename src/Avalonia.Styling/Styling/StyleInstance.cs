@@ -17,7 +17,6 @@ namespace Avalonia.Styling
         private readonly List<IDisposable>? _animations;
         private readonly IStyleActivator? _activator;
         private readonly Subject<bool>? _animationTrigger;
-        private bool _active;
 
         public StyleInstance(
             IStyle source,
@@ -29,6 +28,7 @@ namespace Avalonia.Styling
             Source = source ?? throw new ArgumentNullException(nameof(source));
             Target = target ?? throw new ArgumentNullException(nameof(target));
             _activator = activator;
+            IsActive = _activator is null;
 
             if (setters is object)
             {
@@ -56,6 +56,7 @@ namespace Avalonia.Styling
             }
         }
 
+        public bool IsActive { get; private set; }
         public IStyle Source { get; }
         public IStyleable Target { get; }
 
@@ -104,15 +105,15 @@ namespace Avalonia.Styling
 
         private void ActivatorChanged(bool value)
         {
-            if (_active != value)
+            if (IsActive != value)
             {
-                _active = value;
+                IsActive = value;
 
                 _animationTrigger?.OnNext(value);
 
                 if (_setters is object)
                 {
-                    if (_active)
+                    if (IsActive)
                     {
                         foreach (var setter in _setters)
                         {

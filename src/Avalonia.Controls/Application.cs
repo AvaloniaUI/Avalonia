@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceHost
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceHost, IApplicationPlatformEvents
     {
         /// <summary>
         /// The application-global data templates.
@@ -54,6 +54,8 @@ namespace Avalonia
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        public event EventHandler<UrlOpenedEventArgs> UrlsOpened; 
 
         /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
@@ -247,7 +249,11 @@ namespace Avalonia
 
         public virtual void OnFrameworkInitializationCompleted()
         {
-            
+        }
+        
+        void  IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
+        {
+            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
         }
 
         private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
@@ -288,5 +294,6 @@ namespace Avalonia
             get => _name;
             set => SetAndRaise(NameProperty, ref _name, value);
         }
+        
     }
 }
