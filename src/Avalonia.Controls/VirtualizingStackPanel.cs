@@ -84,7 +84,6 @@ namespace Avalonia.Controls
             {
                 _forceRemeasure = false;
                 _availableSpace = availableSize;
-                Controller?.UpdateControls();
             }
 
             return base.MeasureOverride(availableSize);
@@ -92,6 +91,11 @@ namespace Avalonia.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            if (_availableSpace != finalSize)
+            {
+                Controller?.UpdateControls();
+            }
+
             _availableSpace = finalSize;
             _canBeRemoved = 0;
             _takenSpace = 0;
