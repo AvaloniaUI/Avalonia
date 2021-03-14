@@ -1,6 +1,8 @@
 using System;
 using System.Reactive.Disposables;
 using System.Threading;
+using Avalonia.Platform.Interop;
+using Silk.NET.OpenGL;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
@@ -24,13 +26,17 @@ namespace Avalonia.OpenGL.Egl
             SampleCount = sampleCount;
             StencilSize = stencilSize;
             using (MakeCurrent())
-                GlInterface = GlInterface.FromNativeUtf8GetProcAddress(version, b => _egl.GetProcAddress(b));
+                GL = GL.GetApi(s =>
+                {
+                    using var b = new Utf8Buffer(s);
+                    return _egl.GetProcAddress(b);
+                });
         }
 
         public IntPtr Context { get; }
         public EglSurface OffscreenSurface { get; }
         public GlVersion Version { get; }
-        public GlInterface GlInterface { get; }
+        public GL GL { get; }
         public int SampleCount { get; }
         public int StencilSize { get; }
         public EglDisplay Display => _disp;

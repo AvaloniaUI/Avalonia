@@ -4,8 +4,8 @@ using System.IO;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Utilities;
+using Silk.NET.OpenGL;
 using SkiaSharp;
-using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
@@ -39,7 +39,7 @@ namespace Avalonia.Skia
                 {
                     using (var backendTexture = new GRBackendTexture(PixelSize.Width, PixelSize.Height, false,
                         new GRGlTextureInfo(
-                            GlConsts.GL_TEXTURE_2D, (uint)_surface.GetTextureId(),
+                            (uint)GLEnum.Texture2D, (uint)_surface.GetTextureId(),
                             (uint)_surface.InternalFormat)))
                     using (var surface = SKSurface.Create(context.GrContext, backendTexture, GRSurfaceOrigin.TopLeft,
                         SKColorType.Rgba8888))
@@ -95,13 +95,13 @@ namespace Avalonia.Skia
         private readonly GlOpenGlBitmapImpl _bitmap;
         private readonly IGlContext _context;
         private readonly Action _presentCallback;
-        private readonly int _fbo;
-        private readonly int _texture;
-        private readonly int _frontBuffer;
+        private readonly uint _fbo;
+        private readonly uint _texture;
+        private readonly uint _frontBuffer;
         private bool _disposed;
         private readonly DisposableLock _lock = new DisposableLock();
 
-        public SharedOpenGlBitmapAttachment(GlOpenGlBitmapImpl bitmap, IGlContext context, Action presentCallback)
+        public unsafe SharedOpenGlBitmapAttachment(GlOpenGlBitmapImpl bitmap, IGlContext context, Action presentCallback)
         {
             _bitmap = bitmap;
             _context = context;
@@ -109,35 +109,36 @@ namespace Avalonia.Skia
             using (_context.EnsureCurrent())
             {
                 var glVersion = _context.Version;
-                InternalFormat = glVersion.Type == GlProfileType.OpenGLES ? GL_RGBA : GL_RGBA8;
+                InternalFormat = glVersion.Type == GlProfileType.OpenGLES ? (int)GLEnum.Rgba : (int)GLEnum.Rgba8;
                 
-                _context.GlInterface.GetIntegerv(GL_FRAMEBUFFER_BINDING, out _fbo);
-                if (_fbo == 0)
+                _context.GL.GetInteger(GLEnum.FramebufferBinding, out var fbo);
+                if (fbo == 0)
                     throw new OpenGlException("Current FBO is 0");
+                _fbo = (uint)fbo;
 
                 {
-                    var gl = _context.GlInterface;
+                    var gl = _context.GL;
                     
-                    var textures = new int[2];
+                    var textures = new uint[2];
                     gl.GenTextures(2, textures);
                     _texture = textures[0];
                     _frontBuffer = textures[1];
 
-                    gl.GetIntegerv(GL_TEXTURE_BINDING_2D, out var oldTexture);
+                    gl.GetInteger(GetPName.TextureBinding2D, out var oldTexture);
                     foreach (var t in textures)
                     {
-                        gl.BindTexture(GL_TEXTURE_2D, t);
-                        gl.TexImage2D(GL_TEXTURE_2D, 0,
-                            InternalFormat,
-                            _bitmap.PixelSize.Width, _bitmap.PixelSize.Height,
-                            0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
+                        gl.BindTexture(TextureTarget.Texture2D, t);
+                        gl.TexImage2D(TextureTarget.Texture2D, 0,
+                            (int)InternalFormat,
+                            (uint)_bitmap.PixelSize.Width, (uint)_bitmap.PixelSize.Height,
+                            0, GLEnum.Rgba, PixelType.UnsignedByte, null);
 
-                        gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                        gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Nearest);
+                        gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Nearest);
                     }
 
-                    gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
-                    gl.BindTexture(GL_TEXTURE_2D, oldTexture);
+                    gl.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, _texture, 0);
+                    gl.BindTexture(TextureTarget.Texture2D, (uint)oldTexture);
                     
                 }
             }
@@ -150,25 +151,25 @@ namespace Avalonia.Skia
                 if (_disposed)
                     throw new ObjectDisposedException(nameof(SharedOpenGlBitmapAttachment));
                 
-                var gl = _context.GlInterface;
+                var gl = _context.GL;
                
                 gl.Finish();
                 using (Lock())
                 {
-                    gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var oldFbo);
-                    gl.GetIntegerv(GL_TEXTURE_BINDING_2D, out var oldTexture);
-                    gl.GetIntegerv(GL_ACTIVE_TEXTURE, out var oldActive);
+                    gl.GetInteger(GLEnum.FramebufferBinding, out var oldFbo);
+                    gl.GetInteger(GetPName.TextureBinding2D, out var oldTexture);
+                    gl.GetInteger(GetPName.ActiveTexture, out var oldActive);
                     
-                    gl.BindFramebuffer(GL_FRAMEBUFFER, _fbo);
-                    gl.BindTexture(GL_TEXTURE_2D, _frontBuffer);
-                    gl.ActiveTexture(GL_TEXTURE0);
+                    gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
+                    gl.BindTexture(TextureTarget.Texture2D, _frontBuffer);
+                    gl.ActiveTexture(TextureUnit.Texture0);
 
-                    gl.CopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, _bitmap.PixelSize.Width,
-                        _bitmap.PixelSize.Height);
+                    gl.CopyTexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, 0, 0, (uint)_bitmap.PixelSize.Width,
+                        (uint)_bitmap.PixelSize.Height);
 
-                    gl.BindFramebuffer(GL_FRAMEBUFFER, oldFbo);
-                    gl.BindTexture(GL_TEXTURE_2D, oldTexture);
-                    gl.ActiveTexture(oldActive);
+                    gl.BindFramebuffer(FramebufferTarget.Framebuffer, (uint)oldFbo);
+                    gl.BindTexture(TextureTarget.Texture2D, (uint)oldTexture);
+                    gl.ActiveTexture((GLEnum)oldActive);
                     
                     gl.Finish();
                 }
@@ -180,7 +181,7 @@ namespace Avalonia.Skia
 
         public void Dispose()
         {
-            var gl = _context.GlInterface;
+            var gl = _context.GL;
             _bitmap.Present(null);
             
             if(_disposed)
@@ -197,7 +198,7 @@ namespace Avalonia.Skia
 
         int IGlPresentableOpenGlSurface.GetTextureId()
         {
-            return _frontBuffer;
+            return (int)_frontBuffer;
         }
 
         public int InternalFormat { get; }

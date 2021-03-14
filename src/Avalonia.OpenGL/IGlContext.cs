@@ -1,11 +1,12 @@
 using System;
+using Silk.NET.OpenGL;
 
 namespace Avalonia.OpenGL
 {
     public interface IGlContext : IDisposable
     {
         GlVersion Version { get; }
-        GlInterface GlInterface { get; }
+        GL GL { get; }
         int SampleCount { get; }
         int StencilSize { get; }
         IDisposable MakeCurrent();

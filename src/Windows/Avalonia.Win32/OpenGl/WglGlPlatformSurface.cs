@@ -1,11 +1,10 @@
 using System;
-using System.Diagnostics;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Win32.Interop;
-using static Avalonia.OpenGL.GlConsts;
-using static Avalonia.Win32.Interop.UnmanagedMethods;
+using Silk.NET.OpenGL;
+
 namespace Avalonia.Win32.OpenGl
 {
     class WglGlPlatformSurface: IGlPlatformSurface
@@ -47,7 +46,7 @@ namespace Avalonia.Win32.OpenGl
                 var oldContext = _context.MakeCurrent(_hdc);
                 
                 // Reset to default FBO first
-                _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, 0);
+                _context.GL.BindFramebuffer(GLEnum.Framebuffer, 0);
 
                 return new Session(_context, _hdc, _info, oldContext);
             }
@@ -71,7 +70,7 @@ namespace Avalonia.Win32.OpenGl
 
                 public void Dispose()
                 {
-                    _context.GlInterface.Flush();
+                    _context.GL.Flush();
                     UnmanagedMethods.SwapBuffers(_hdc);
                     _clearContext.Dispose();
                 }

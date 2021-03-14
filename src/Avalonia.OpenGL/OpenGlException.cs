@@ -1,5 +1,6 @@
 using System;
 using Avalonia.OpenGL.Egl;
+using Silk.NET.OpenGL;
 
 namespace Avalonia.OpenGL
 {
@@ -21,9 +22,9 @@ namespace Avalonia.OpenGL
             return GetFormattedException(typeof(EglErrors), funcName, egl.GetError());
         }
 
-        public static OpenGlException GetFormattedException(string funcName, GlInterface gl)
+        public static OpenGlException GetFormattedException(string funcName, GL gl)
         {
-            return GetFormattedException(typeof(GlErrors), funcName, gl.GetError());
+            return GetFormattedException(typeof(GLEnum), funcName, (int)gl.GetError());
         }
 
         private static OpenGlException GetFormattedException(Type consts, string funcName, int errorCode)

@@ -7,6 +7,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform.Interop;
+using Silk.NET.OpenGL;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
@@ -145,8 +146,8 @@ namespace Avalonia.LinuxFramebuffer.Output
 
             using (_deferredContext.MakeCurrent(_eglSurface))
             {
-                _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
-                _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                _deferredContext.GL.ClearColor(0, 0, 0, 0);
+                _deferredContext.GL.Clear((uint) (GLEnum.ColorBufferBit | GLEnum.StencilBufferBit));
                 _eglSurface.SwapBuffers();
             }
 
@@ -167,8 +168,8 @@ namespace Avalonia.LinuxFramebuffer.Output
             for(var c=0;c<2;c++)
                 using (CreateGlRenderTarget().BeginDraw())
                 {
-                    _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
-                    _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                    _deferredContext.GL.ClearColor(0, 0, 0, 0);
+                    _deferredContext.GL.Clear((uint) (GLEnum.ColorBufferBit | GLEnum.StencilBufferBit));
                 }
             
         }
@@ -204,7 +205,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
                 public void Dispose()
                 {
-                    _parent._deferredContext.GlInterface.Flush();
+                    _parent._deferredContext.GL.Flush();
                     _parent._eglSurface.SwapBuffers();
                     
                     var nextBo = gbm_surface_lock_front_buffer(_parent._gbmTargetSurface);

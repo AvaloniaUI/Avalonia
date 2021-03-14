@@ -2,7 +2,7 @@ using System;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
-using static Avalonia.OpenGL.GlConsts;
+using Silk.NET.OpenGL;
 
 namespace Avalonia.X11.Glx
 {
@@ -46,7 +46,7 @@ namespace Avalonia.X11.Glx
                 var oldContext = _context.MakeCurrent(_info.Handle);
                 
                 // Reset to default FBO first
-                _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, 0);
+                _context.GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
                     
                 return new Session(_context, _info, oldContext);
             }
@@ -68,7 +68,7 @@ namespace Avalonia.X11.Glx
 
                 public void Dispose()
                 {
-                    _context.GlInterface.Flush();
+                    _context.GL.Flush();
                     _context.Glx.WaitGL();
                     _context.Display.SwapBuffers(_info.Handle);
                     _context.Glx.WaitX();

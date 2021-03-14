@@ -85,25 +85,27 @@ namespace Avalonia.X11.Glx
 
             DeferredContext = CreateContext(CreatePBuffer(), null,
                 sampleCount, stencilSize, true);
-            using (DeferredContext.MakeCurrent())
-            {
-                var glInterface = DeferredContext.GlInterface;
-                if (glInterface.Version == null)
-                    throw new OpenGlException("GL version string is null, aborting");
-                if (glInterface.Renderer == null)
-                    throw new OpenGlException("GL renderer string is null, aborting");
-
-                if (Environment.GetEnvironmentVariable("AVALONIA_GLX_IGNORE_RENDERER_BLACKLIST") != "1")
-                {
-                    var blacklist = AvaloniaLocator.Current.GetService<X11PlatformOptions>()
-                        ?.GlxRendererBlacklist;
-                    if (blacklist != null)
-                        foreach (var item in blacklist)
-                            if (glInterface.Renderer.Contains(item))
-                                throw new OpenGlException(
-                                    $"Renderer '{glInterface.Renderer}' is blacklisted by '{item}'");
-                }
-            }
+            
+            // TODO: re-enable version/renderer checks
+            // using (DeferredContext.MakeCurrent())
+            // {
+            //     var glInterface = DeferredContext.GL;
+            //     if (glInterface.Version == null)
+            //         throw new OpenGlException("GL version string is null, aborting");
+            //     if (glInterface.Renderer == null)
+            //         throw new OpenGlException("GL renderer string is null, aborting");
+            // 
+            //     if (Environment.GetEnvironmentVariable("AVALONIA_GLX_IGNORE_RENDERER_BLACKLIST") != "1")
+            //     {
+            //         var blacklist = AvaloniaLocator.Current.GetService<X11PlatformOptions>()
+            //             ?.GlxRendererBlacklist;
+            //         if (blacklist != null)
+            //             foreach (var item in blacklist)
+            //                 if (glInterface.Renderer.Contains(item))
+            //                     throw new OpenGlException(
+            //                         $"Renderer '{glInterface.Renderer}' is blacklisted by '{item}'");
+            //     }
+            // }
 
         }
 

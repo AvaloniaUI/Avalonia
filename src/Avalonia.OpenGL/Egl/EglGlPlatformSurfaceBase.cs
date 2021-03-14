@@ -1,5 +1,6 @@
 using System;
 using Avalonia.OpenGL.Surfaces;
+using Silk.NET.OpenGL;
 
 namespace Avalonia.OpenGL.Egl
 {
@@ -44,7 +45,7 @@ namespace Avalonia.OpenGL.Egl
                 egli.WaitGL();
                 egli.WaitNative(EglConsts.EGL_CORE_NATIVE_ENGINE);
                 
-                _egl.PrimaryContext.GlInterface.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
+                _egl.PrimaryContext.GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
                 
                 success = true;
                 return new Session(_egl.Display, _egl.PrimaryEglContext, surface, info,  restoreContext, onFinish, isYFlipped);
@@ -81,7 +82,7 @@ namespace Avalonia.OpenGL.Egl
 
             public void Dispose()
             {
-                _context.GlInterface.Flush();
+                _context.GL.Flush();
                 _display.EglInterface.WaitGL();
                 _glSurface.SwapBuffers();
                 _display.EglInterface.WaitClient();

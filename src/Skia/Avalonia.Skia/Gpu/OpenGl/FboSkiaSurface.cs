@@ -1,7 +1,8 @@
 using System;
 using Avalonia.OpenGL;
+using Silk.NET.OpenGL;
 using SkiaSharp;
-using static Avalonia.OpenGL.GlConsts;
+
 namespace Avalonia.Skia
 {
     public class FboSkiaSurface : ISkiaSurface
@@ -9,84 +10,79 @@ namespace Avalonia.Skia
         private readonly GRContext _grContext;
         private readonly IGlContext _glContext;
         private readonly PixelSize _pixelSize;
-        private int _fbo;
-        private int _depthStencil;
-        private int _texture;
+        private uint _fbo;
+        private uint _depthStencil;
+        private uint _texture;
 
         private static readonly bool[] TrueFalse = new[] { true, false };
-        public FboSkiaSurface(GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
+        public unsafe FboSkiaSurface(GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
         {
             _grContext = grContext;
             _glContext = glContext;
             _pixelSize = pixelSize;
-            var InternalFormat = glContext.Version.Type == GlProfileType.OpenGLES ? GL_RGBA : GL_RGBA8;
-            var gl = glContext.GlInterface;
+            var internalFormat = glContext.Version.Type == GlProfileType.OpenGLES ?
+                GLEnum.Rgba :
+                GLEnum.Rgba8;
+            var gl = glContext.GL;
             
             // Save old bindings
-            gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var oldFbo);
-            gl.GetIntegerv(GL_RENDERBUFFER_BINDING, out var oldRenderbuffer);
-            gl.GetIntegerv(GL_TEXTURE_BINDING_2D, out var oldTexture);
-
-            var arr = new int[2];
+            gl.GetInteger(GLEnum.FramebufferBinding, out var oldFbo);
+            gl.GetInteger(GLEnum.RenderbufferBinding, out var oldRenderbuffer);
+            gl.GetInteger(GLEnum.TextureBinding2D, out var oldTexture);
 
             // Generate FBO
-            gl.GenFramebuffers(1, arr);
-            _fbo = arr[0];
-            gl.BindFramebuffer(GL_FRAMEBUFFER, _fbo);
+            _fbo = gl.GenFramebuffer();
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fbo);
 
             // Create a texture to render into
-            gl.GenTextures(1, arr);
-            _texture = arr[0];
-            gl.BindTexture(GL_TEXTURE_2D, _texture);
-            gl.TexImage2D(GL_TEXTURE_2D, 0,
-                InternalFormat, pixelSize.Width, pixelSize.Height,
-                0, GL_RGBA, GL_UNSIGNED_BYTE, IntPtr.Zero);
-            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            gl.TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+            _texture = gl.GenTexture();
+            gl.BindTexture(TextureTarget.Texture2D, _texture);
+            gl.TexImage2D(TextureTarget.Texture2D, 0, (int)internalFormat, (uint)pixelSize.Width,
+                (uint)pixelSize.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Nearest);
+            gl.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)GLEnum.Nearest);
+            gl.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D, _texture, 0);
 
             var success = false;
             foreach (var useStencil8 in TrueFalse)
             {
-                gl.GenRenderbuffers(1, arr);
-                _depthStencil = arr[0];
-                gl.BindRenderbuffer(GL_RENDERBUFFER, _depthStencil);
+                _depthStencil = gl.GenRenderbuffer();
+                gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _depthStencil);
 
                 if (useStencil8)
                 {
-                    gl.RenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, pixelSize.Width, pixelSize.Height);
-                    gl.FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _depthStencil);
+                    gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.StencilIndex8, (uint)pixelSize.Width, (uint)pixelSize.Height);
+                    gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.StencilAttachment, RenderbufferTarget.Renderbuffer, _depthStencil);
                 }
                 else
                 {
-                    gl.RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, pixelSize.Width, pixelSize.Height);
-                    gl.FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthStencil);
-                    gl.FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _depthStencil);
+                    gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer, InternalFormat.Depth24Stencil8, (uint)pixelSize.Width, (uint)pixelSize.Height);
+                    gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, _depthStencil);
+                    gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.StencilAttachment, RenderbufferTarget.Renderbuffer, _depthStencil);
                 }
 
-                var status = gl.CheckFramebufferStatus(GL_FRAMEBUFFER);
-                if (status == GL_FRAMEBUFFER_COMPLETE)
+                var status = gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+                if (status == GLEnum.FramebufferComplete)
                 {
                     success = true;
                     break;
                 }
                 else
                 {
-                    gl.BindRenderbuffer(GL_RENDERBUFFER, oldRenderbuffer);
-                    gl.DeleteRenderbuffers(1, arr);
+                    gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, (uint)oldRenderbuffer);
+                    gl.DeleteRenderbuffer(_depthStencil);
                 }
             }
             
-            gl.BindRenderbuffer(GL_RENDERBUFFER, oldRenderbuffer);
-            gl.BindTexture(GL_TEXTURE_2D, oldTexture);
-            gl.BindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+            gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, (uint)oldRenderbuffer);
+            gl.BindTexture(TextureTarget.Texture2D, (uint)oldTexture);
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, (uint)oldFbo);
 
             if (!success)
             {
-                arr[0] = _fbo;
-                gl.DeleteFramebuffers(1, arr);
-                arr[0] = _texture;
-                gl.DeleteTextures(1, arr);
+                gl.DeleteFramebuffer(_fbo);
+                gl.DeleteTexture(_texture);
                 throw new OpenGlException("Unable to create FBO with stencil");
             }
 
@@ -94,7 +90,7 @@ namespace Avalonia.Skia
                 new GRGlFramebufferInfo((uint)_fbo, SKColorType.Rgba8888.ToGlSizedFormat()));
             Surface = SKSurface.Create(_grContext, target,
                 surfaceOrigin, SKColorType.Rgba8888);
-            CanBlit = gl.BlitFramebuffer != null;
+            CanBlit = gl.Context.GetProcAddress("glBlitFramebuffer") != 0;
         }
         
         public void Dispose()
@@ -103,7 +99,7 @@ namespace Avalonia.Skia
             {
                 Surface?.Dispose();
                 Surface = null;
-                var gl = _glContext.GlInterface;
+                var gl = _glContext.GL;
                 if (_fbo != 0)
                 {
                     gl.DeleteFramebuffers(1, new[] { _fbo });
@@ -123,12 +119,12 @@ namespace Avalonia.Skia
             canvas.Clear();
             canvas.Flush();
             
-            var gl = _glContext.GlInterface;
-            gl.GetIntegerv(GL_READ_FRAMEBUFFER_BINDING, out var oldRead);
-            gl.BindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
+            var gl = _glContext.GL;
+            gl.GetInteger(GetPName.ReadFramebufferBinding, out var oldRead);
+            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _fbo);
             gl.BlitFramebuffer(0, 0, _pixelSize.Width, _pixelSize.Height, 0, 0, _pixelSize.Width, _pixelSize.Height,
-                GL_COLOR_BUFFER_BIT, GL_LINEAR);
-            gl.BindFramebuffer(GL_READ_FRAMEBUFFER, oldRead);
+                (uint) GLEnum.ColorBufferBit, BlitFramebufferFilter.Linear);
+            gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, (uint)oldRead);
         }
     }
 }

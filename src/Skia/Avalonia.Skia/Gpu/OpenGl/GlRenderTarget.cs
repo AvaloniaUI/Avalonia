@@ -4,8 +4,8 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Silk.NET.OpenGL;
 using SkiaSharp;
-using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
@@ -65,8 +65,8 @@ namespace Avalonia.Skia
             try
             {
                 var disp = glSession.Context;
-                var gl = disp.GlInterface;
-                gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
+                var gl = disp.GL;
+                gl.GetInteger(GLEnum.FramebufferBinding, out var fb);
 
                 var size = glSession.Size;
                 var scaling = glSession.Scaling;

@@ -2,6 +2,7 @@ using System;
 using System.Reactive.Disposables;
 using Avalonia.OpenGL;
 using Avalonia.Win32.Interop;
+using Silk.NET.OpenGL;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.OpenGl.WglConsts;
 
@@ -30,7 +31,7 @@ namespace Avalonia.Win32.OpenGl
             _formatDescriptor = formatDescriptor;
             StencilSize = formatDescriptor.StencilBits;
             using (MakeCurrent())
-                GlInterface = new GlInterface(version, proc =>
+                GL = GL.GetApi(proc =>
                 {
                     var ext = wglGetProcAddress(proc);
                     if (ext != IntPtr.Zero)
@@ -48,7 +49,7 @@ namespace Avalonia.Win32.OpenGl
         }
 
         public GlVersion Version { get; }
-        public GlInterface GlInterface { get; }
+        public GL GL { get; }
         public int SampleCount { get; }
         public int StencilSize { get; }
 

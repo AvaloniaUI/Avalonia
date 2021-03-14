@@ -4,6 +4,7 @@ using Avalonia.Native.Interop;
 using System.Drawing;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Threading;
+using Silk.NET.OpenGL;
 
 namespace Avalonia.Native
 {
@@ -17,14 +18,14 @@ namespace Avalonia.Native
             var immediate = display.CreateContext(null);
             
             int major, minor;
-            GlInterface glInterface;
+            GL glInterface;
             using (immediate.MakeCurrent())
             {
-                var basic = new GlBasicInfoInterface(display.GetProcAddress);
-                basic.GetIntegerv(GlConsts.GL_MAJOR_VERSION, out major);
-                basic.GetIntegerv(GlConsts.GL_MINOR_VERSION, out minor);
+                var basic = GL.GetApi(display.GetProcAddress);
+                basic.GetInteger(GetPName.MajorVersion, out major);
+                basic.GetInteger(GetPName.MinorVersion, out minor);
                 _version = new GlVersion(GlProfileType.OpenGL, major, minor);
-                glInterface = new GlInterface(_version, (name) =>
+                glInterface = GL.GetApi((name) =>
                 {
                     var rv = _display.GetProcAddress(name);
                     return rv;
@@ -54,15 +55,15 @@ namespace Avalonia.Native
     {
         private readonly IAvnGlDisplay _display;
 
-        public GlDisplay(IAvnGlDisplay display, GlInterface glInterface, int sampleCount, int stencilSize)
+        public GlDisplay(IAvnGlDisplay display, GL gl, int sampleCount, int stencilSize)
         {
             _display = display;
             SampleCount = sampleCount;
             StencilSize = stencilSize;
-            GlInterface = glInterface;
+            GL = gl;
         }
 
-        public GlInterface GlInterface { get; }
+        public GL GL { get; }
 
         public int SampleCount { get; }
 
@@ -86,7 +87,7 @@ namespace Avalonia.Native
         }
 
         public GlVersion Version { get; }
-        public GlInterface GlInterface => _display.GlInterface;
+        public GL GL => _display.GL;
         public int SampleCount => _display.SampleCount;
         public int StencilSize => _display.StencilSize;
         public IDisposable MakeCurrent() => Context.MakeCurrent();

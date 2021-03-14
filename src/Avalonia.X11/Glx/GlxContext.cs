@@ -2,6 +2,8 @@ using System;
 using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.OpenGL;
+using Silk.NET.OpenGL;
+
 namespace Avalonia.X11.Glx
 {
     class GlxContext : IGlContext
@@ -31,12 +33,12 @@ namespace Avalonia.X11.Glx
             SampleCount = sampleCount;
             StencilSize = stencilSize;
             using (MakeCurrent())
-                GlInterface = new GlInterface(version, GlxInterface.SafeGetProcAddress);
+                GL = GL.GetApi(GlxInterface.SafeGetProcAddress);
         }
         
         public GlxDisplay Display { get; }
         public GlVersion Version { get; }
-        public GlInterface GlInterface { get; }
+        public GL GL { get; }
         public int SampleCount { get; }
         public int StencilSize { get; }
         

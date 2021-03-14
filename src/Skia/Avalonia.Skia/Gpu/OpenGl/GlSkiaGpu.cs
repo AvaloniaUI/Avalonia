@@ -22,8 +22,8 @@ namespace Avalonia.Skia
             using (context.MakeCurrent())
             {
                 using (var iface = context.Version.Type == GlProfileType.OpenGL ?
-                    GRGlInterface.CreateOpenGl(proc => context.GlInterface.GetProcAddress(proc)) :
-                    GRGlInterface.CreateGles(proc => context.GlInterface.GetProcAddress(proc)))
+                    GRGlInterface.CreateOpenGl(proc => context.GL.Context.GetProcAddress(proc)) :
+                    GRGlInterface.CreateGles(proc => context.GL.Context.GetProcAddress(proc)))
                 {
                     _grContext = GRContext.CreateGl(iface);
                     if (maxResourceBytes.HasValue)
@@ -54,7 +54,7 @@ namespace Avalonia.Skia
                 return null;
 
             // Blit feature requires glBlitFramebuffer
-            if (_glContext.GlInterface.BlitFramebuffer == null)
+            if (_glContext.GL.Context.GetProcAddress("glBlitFramebuffer") == 0)
                 return null;
             
             size = new PixelSize(Math.Max(size.Width, 1), Math.Max(size.Height, 1));

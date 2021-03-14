@@ -3,14 +3,14 @@ using Avalonia.Controls;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.OpenGL.Imaging;
-using static Avalonia.OpenGL.GlConsts;
+using Silk.NET.OpenGL;
 
 namespace Avalonia.OpenGL.Controls
 {
     public abstract class OpenGlControlBase : Control
     {
         private IGlContext _context;
-        private int _fb, _depthBuffer;
+        private uint _fb, _depthBuffer;
         private OpenGlBitmap _bitmap;
         private IOpenGlBitmapAttachment _attachment;
         private PixelSize _depthBufferSize;
@@ -24,13 +24,13 @@ namespace Avalonia.OpenGL.Controls
             
             using (_context.MakeCurrent())
             {
-                _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, _fb);
+                _context.GL.BindFramebuffer(GLEnum.Framebuffer, _fb);
                 EnsureTextureAttachment();
-                EnsureDepthBufferAttachment(_context.GlInterface);
-                if(!CheckFramebufferStatus(_context.GlInterface))
+                EnsureDepthBufferAttachment(_context.GL);
+                if(!CheckFramebufferStatus(_context.GL))
                     return;
                 
-                OnOpenGlRender(_context.GlInterface, _fb);
+                OnOpenGlRender(_context.GL, _fb);
                 _attachment.Present();
             }
 
@@ -38,16 +38,16 @@ namespace Avalonia.OpenGL.Controls
             base.Render(context);
         }
         
-        private void CheckError(GlInterface gl)
+        private void CheckError(GL gl)
         {
-            int err;
-            while ((err = gl.GetError()) != GL_NO_ERROR)
+            GLEnum err;
+            while ((err = gl.GetError()) != GLEnum.NoError)
                 Console.WriteLine(err);
         }
 
         void EnsureTextureAttachment()
         {
-            _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, _fb);
+            _context.GL.BindFramebuffer(FramebufferTarget.Framebuffer, _fb);
             if (_bitmap == null || _attachment == null || _bitmap.PixelSize != GetPixelSize())
             {
                 _attachment?.Dispose();
@@ -59,24 +59,22 @@ namespace Avalonia.OpenGL.Controls
             }
         }
         
-        void EnsureDepthBufferAttachment(GlInterface gl)
+        void EnsureDepthBufferAttachment(GL gl)
         {
             var size = GetPixelSize();
             if (size == _depthBufferSize && _depthBuffer != 0)
                 return;
                     
-            gl.GetIntegerv(GL_RENDERBUFFER_BINDING, out var oldRenderBuffer);
+            gl.GetInteger(GetPName.RenderbufferBinding, out var oldRenderBuffer);
             if (_depthBuffer != 0) gl.DeleteRenderbuffers(1, new[] { _depthBuffer });
 
-            var oneArr = new int[1];
-            gl.GenRenderbuffers(1, oneArr);
-            _depthBuffer = oneArr[0];
-            gl.BindRenderbuffer(GL_RENDERBUFFER, _depthBuffer);
-            gl.RenderbufferStorage(GL_RENDERBUFFER,
-                GlVersion.Type == GlProfileType.OpenGLES ? GL_DEPTH_COMPONENT16 : GL_DEPTH_COMPONENT,
-                size.Width, size.Height);
-            gl.FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBuffer);
-            gl.BindRenderbuffer(GL_RENDERBUFFER, oldRenderBuffer);
+            _depthBuffer = gl.GenRenderbuffer();
+            gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, _depthBuffer);
+            gl.RenderbufferStorage(RenderbufferTarget.Renderbuffer,
+                GlVersion.Type == GlProfileType.OpenGLES ? InternalFormat.DepthComponent16 : InternalFormat.DepthComponent,
+                (uint)size.Width, (uint)size.Height);
+            gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, _depthBuffer);
+            gl.BindRenderbuffer(RenderbufferTarget.Renderbuffer, (uint)oldRenderBuffer);
         }
 
         void DoCleanup()
@@ -85,9 +83,9 @@ namespace Avalonia.OpenGL.Controls
             {
                 using (_context.MakeCurrent())
                 {
-                    var gl = _context.GlInterface;
-                    gl.BindTexture(GL_TEXTURE_2D, 0);
-                    gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
+                    var gl = _context.GL;
+                    gl.BindTexture(TextureTarget.Texture2D, 0);
+                    gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
                     gl.DeleteFramebuffers(1, new[] { _fb });
                     gl.DeleteRenderbuffers(1, new[] { _depthBuffer });
                     _attachment?.Dispose();
@@ -100,7 +98,7 @@ namespace Avalonia.OpenGL.Controls
                         if (_initialized)
                         {
                             _initialized = false;
-                            OnOpenGlDeinit(_context.GlInterface, _fb);
+                            OnOpenGlDeinit(_context.GL, _fb);
                         }
                     }
                     finally
@@ -171,11 +169,9 @@ namespace Avalonia.OpenGL.Controls
                 try
                 {
                     _depthBufferSize = GetPixelSize();
-                    var gl = _context.GlInterface;
-                    var oneArr = new int[1];
-                    gl.GenFramebuffers(1, oneArr);
-                    _fb = oneArr[0];
-                    gl.BindFramebuffer(GL_FRAMEBUFFER, _fb);
+                    var gl = _context.GL;
+                    _fb = gl.GenFramebuffer();
+                    gl.BindFramebuffer(FramebufferTarget.Framebuffer, _fb);
                     
                     EnsureDepthBufferAttachment(gl);
                     EnsureTextureAttachment();
@@ -191,12 +187,12 @@ namespace Avalonia.OpenGL.Controls
             }
         }
 
-        private bool CheckFramebufferStatus(GlInterface gl)
+        private bool CheckFramebufferStatus(GL gl)
         {
-            var status = gl.CheckFramebufferStatus(GL_FRAMEBUFFER);
-            if (status != GL_FRAMEBUFFER_COMPLETE)
+            var status = gl.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+            if (status != GLEnum.FramebufferComplete)
             {
-                int code;
+                GLEnum code;
                 while ((code = gl.GetError()) != 0)
                     Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
                         "Unable to initialize OpenGL FBO: {code}", code);
@@ -214,7 +210,7 @@ namespace Avalonia.OpenGL.Controls
             if (_glFailed)
                 return false;
             using (_context.MakeCurrent())
-                OnOpenGlInit(_context.GlInterface, _fb);
+                OnOpenGlInit(_context.GL, _fb);
             return true;
         }
         
@@ -226,16 +222,16 @@ namespace Avalonia.OpenGL.Controls
         }
 
 
-        protected virtual void OnOpenGlInit(GlInterface gl, int fb)
+        protected virtual void OnOpenGlInit(GL gl, uint fb)
         {
             
         }
 
-        protected virtual void OnOpenGlDeinit(GlInterface gl, int fb)
+        protected virtual void OnOpenGlDeinit(GL gl, uint fb)
         {
             
         }
         
-        protected abstract void OnOpenGlRender(GlInterface gl, int fb);
+        protected abstract void OnOpenGlRender(GL gl, uint fb);
     }
 }
