@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Win32.WinRT.Composition;
 
 namespace Sandbox
 {
@@ -11,6 +10,13 @@ namespace Sandbox
         {
             this.InitializeComponent();
             this.AttachDevTools();
+            this.Activated += MainWindow_Activated;
+        }
+
+        private void MainWindow_Activated(object sender, System.EventArgs e)
+        {
+            Program.sw.Stop();
+            Title = Program.sw.Elapsed.ToString();
         }
 
         private void InitializeComponent()

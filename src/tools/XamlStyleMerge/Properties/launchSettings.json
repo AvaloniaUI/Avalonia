@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "XamlStyleMerge": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\projects\\AvaloniaUI\\Avalonia\\src\\Avalonia.Themes.Fluent\\FluentDark.xaml\""
+    }
+  }
+}

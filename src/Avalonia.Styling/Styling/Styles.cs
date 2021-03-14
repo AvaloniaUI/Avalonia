@@ -286,7 +286,15 @@ namespace Avalonia.Styling
 
                     if (Owner is object && style is IResourceProvider resourceProvider)
                     {
+                        var profile = Owner.GetType().Name == "App";
+
+                        if (profile)
+                            JetBrains.Profiler.Api.MeasureProfiler.StartCollectingData();
+
                         resourceProvider.AddOwner(Owner);
+
+                        if (profile)
+                            JetBrains.Profiler.Api.MeasureProfiler.SaveData();
                     }
 
                     _cache = null;

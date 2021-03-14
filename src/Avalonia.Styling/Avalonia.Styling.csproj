@@ -5,6 +5,9 @@
     <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="JetBrains.Profiler.Api" Version="1.1.7" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
