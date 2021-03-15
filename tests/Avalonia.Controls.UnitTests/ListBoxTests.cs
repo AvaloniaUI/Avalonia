@@ -1,11 +1,14 @@
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -564,7 +567,23 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectedItem_Validation()
         {
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = new[] { "Foo" },
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+            };
+
+            Prepare(target);
             
+            var exception = new System.InvalidCastException("failed validation");
+            var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+            target.Bind(ComboBox.SelectedItemProperty, textObservable);
+                
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(DataValidationErrors.GetHasErrors(target));
+            Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }
     }
 }

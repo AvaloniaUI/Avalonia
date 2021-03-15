@@ -517,7 +517,6 @@ namespace Avalonia.Controls.Primitives
             {
                 AutoScrollToSelectedItemIfNecessary();
             }
-
             if (change.Property == ItemsProperty && _updateState is null && _selection is object)
             {
                 var newValue = change.NewValue.GetValueOrDefault<IEnumerable>();
@@ -868,7 +867,10 @@ namespace Avalonia.Controls.Primitives
 
         private ISelectionModel CreateDefaultSelectionModel()
         {
-            return new InternalSelectionModel { SingleSelect = !SelectionMode.HasFlagCustom(SelectionMode.Multiple), };
+            return new InternalSelectionModel
+            {
+                SingleSelect = !SelectionMode.HasFlagCustom(SelectionMode.Multiple),
+            };
         }
 
         private void InitializeSelectionModel(ISelectionModel model)

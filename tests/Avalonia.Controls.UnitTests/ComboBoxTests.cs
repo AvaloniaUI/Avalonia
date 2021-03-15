@@ -202,41 +202,6 @@ namespace Avalonia.Controls.UnitTests
                 
             }
             
-        }
-        private ComboBox CreateControl()
-        {
-            var control = new ComboBox()
-            {
-                Template = GetTemplate()
-            };
-
-            control.ApplyTemplate();
-            return control;
-        }
-        
-        private TextBox GetTextBox(ComboBox control)
-        {
-            return control.GetTemplateChildren()
-                // .OfType<ButtonSpinner>()
-                // .Select(b => b.Content)
-                .OfType<TextBox>()
-                .First();
-        }
-        // private IControlTemplate CreateTemplate()
-        // {
-        //     return new FuncControlTemplate<ComboBox>((control, scope) =>
-        //     {
-        //         var textBox =
-        //             new TextBox
-        //             {
-        //                 Name = "PART_TextBox"
-        //             }.RegisterInNameScope(scope);
-        //         return new ButtonSpinner
-        //         {
-        //             Name = "PART_Spinner",
-        //             Content = textBox,
-        //         }.RegisterInNameScope(scope);
-        //     });
-        // }
+        } 
     }
 }
