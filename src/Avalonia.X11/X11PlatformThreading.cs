@@ -49,7 +49,7 @@ namespace Avalonia.X11
         extern static int epoll_ctl(int epfd, int op, int fd, ref epoll_event __event);
 
         [DllImport("libc")]
-        extern static int epoll_wait(int epfd, epoll_event* events, int maxevents, int timeout);
+        extern static int epoll_wait(int epfd, out epoll_event events, int maxevents, int timeout);
 
         [DllImport("libc")]
         extern static int pipe2(int* fds, int flags);
@@ -235,10 +235,15 @@ namespace Avalonia.X11
                     return;
                 //Flush whatever requests were made to XServer
                 XFlush(_display);
-                epoll_event ev;
                 if (XPending(_display) == 0)
-                    epoll_wait(_epoll, &ev, 1,
-                        nextTick == null ? -1 : Math.Max(1, (int)(nextTick.Value - _clock.Elapsed).TotalMilliseconds));
+                {
+                    var epollWaitTimeout = nextTick == null ? -1 : Math.Max(1, (int)(nextTick.Value - _clock.Elapsed).TotalMilliseconds);
+                    var epollWaitStatus = epoll_wait(_epoll, out _, 1, epollWaitTimeout);
+                    if (epollWaitStatus == -1)
+                    {
+                        throw new X11Exception("epoll_wait failed");
+                    }
+                }
                 if (cancellationToken.IsCancellationRequested)
                     return;
                 CheckSignaled();
