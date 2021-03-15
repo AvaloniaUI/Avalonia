@@ -15,6 +15,7 @@ namespace Sandbox
 
         private void MainWindow_Activated(object sender, System.EventArgs e)
         {
+            JetBrains.Profiler.Api.MeasureProfiler.SaveData();
             Program.sw.Stop();
             Title = Program.sw.Elapsed.ToString();
         }

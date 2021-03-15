@@ -8,6 +8,7 @@ namespace Sandbox
         static void Main(string[] args)
         {
             sw.Start();
+            JetBrains.Profiler.Api.MeasureProfiler.StartCollectingData();
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToTrace()

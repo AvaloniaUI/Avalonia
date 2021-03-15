@@ -101,8 +101,12 @@ namespace Avalonia.Controls
 
         public event EventHandler? OwnerChanged;
 
+        public static int TryGetResourceCount;
+
         public bool TryGetResource(object key, out object? value)
         {
+            ++TryGetResourceCount;
+
             if (TryGetValue(key, out value))
             {
                 return true;
