@@ -17,15 +17,6 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
-  <Styles.Resources>
-    <Thickness x:Key="ComboBoxTopHeaderMargin">0,0,0,4</Thickness>
-    <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItems">15</x:Int32>
-    <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItemsThatCanBeShownOnOneSide">7</x:Int32>
-
-    <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
-    <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
-    <x:Double x:Key="ComboBoxMinHeight">32</x:Double>
-  </Styles.Resources>
   <Style Selector="ComboBox">
     <Setter Property="Padding" Value="{DynamicResource ComboBoxPadding}" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />

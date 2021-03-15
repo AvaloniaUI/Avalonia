@@ -8,10 +8,6 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
-  <Styles.Resources>
-    <x:Double x:Key="TabStripItemMinHeight">48</x:Double>
-    <x:Double x:Key="TabStripItemPipeThickness">2</x:Double>
-  </Styles.Resources>
 
   <Style Selector="TabStripItem">
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />

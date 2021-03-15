@@ -16,10 +16,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <Styles.Resources>
-    <sys:Double x:Key="CalendarDatePickerCurrentDayFontSize">12</sys:Double>
-  </Styles.Resources>
-  
   <Style Selector="CalendarDatePicker">
 
     <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackground}"/>

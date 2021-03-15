@@ -7,9 +7,6 @@
       </StackPanel>      
     </Border>
   </Design.PreviewWith>
-  <Styles.Resources>
-    <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
-  </Styles.Resources>
   <Style Selector="Button">
     <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
     <!--<Setter Property="BackgroundSizing" Value="OuterBorderEdge" />-->

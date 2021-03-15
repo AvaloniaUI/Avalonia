@@ -2,61 +2,61 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Avalonia.Themes.Fluent.Controls.FluentControls">
   <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->  
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToolTip.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Button.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CaptionButtons.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Carousel.xaml"/>  
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CheckBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBoxItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Label.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/GridSplitter.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ItemsControl.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBoxItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Menu.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContextMenu.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ProgressBar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/RadioButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/RepeatButton.xaml" />
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Separator.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Slider.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollViewer.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStrip.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStripItem.xaml"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToolTip.xaml" Filter="{x:Type ToolTip}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DataValidationErrors.xaml" Filter="{x:Type DataValidationErrors}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Button.xaml" Filter="{x:Type Button}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CaptionButtons.xaml" Filter="{x:Type CaptionButtons}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Carousel.xaml" Filter="{x:Type Carousel}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CheckBox.xaml" Filter="{x:Type CheckBox}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBox.xaml" Filter="{x:Type ComboBox}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ComboBoxItem.xaml" Filter="{x:Type ComboBoxItem}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentControl.xaml" Filter="{x:Type ContentControl}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Label.xaml" Filter="{x:Type Label}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/GridSplitter.xaml" Filter="{x:Type GridSplitter}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ItemsControl.xaml" Filter="{x:Type ItemsControl}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBox.xaml" Filter="{x:Type ListBox}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ListBoxItem.xaml" Filter="{x:Type ListBoxItem}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Menu.xaml" Filter="{x:Type Menu}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContextMenu.xaml" Filter="{x:Type ContextMenu}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuItem.xaml" Filter="{x:Type MenuItem}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml" Filter="{x:Type OverlayPopupHost}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" Filter="{x:Type PathIcon}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml" Filter="{x:Type PopupRoot}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ProgressBar.xaml" Filter="{x:Type ProgressBar}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/RadioButton.xaml" Filter="{x:Type RadioButton}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/RepeatButton.xaml" Filter="{x:Type RepeatButton}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Separator.xaml" Filter="{x:Type Separator}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Slider.xaml" Filter="{x:Type Slider}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml" Filter="{x:Type ScrollBar}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollViewer.xaml" Filter="{x:Type ScrollViewer}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStrip.xaml" Filter="{x:Type TabStrip}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabStripItem.xaml" Filter="{x:Type TabStripItem}"/>
   <!-- TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel-->
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabControl.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Expander.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Window.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/EmbeddableControlRoot.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDayButton.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarItem.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Calendar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDatePicker.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ButtonSpinner.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NumericUpDown.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/AutoCompleteBox.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/WindowNotificationManager.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NotificationCard.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NativeMenuBar.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleSwitch.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml"/>
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DatePicker.xaml"/>  
-  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml"/>  
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabControl.xaml" Filter="{x:Type TabControl}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TabItem.xaml" Filter="{x:Type TabItem}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TextBox.xaml" Filter="{x:Type TextBox}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleButton.xaml" Filter="{x:Type ToggleButton}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Expander.xaml" Filter="{x:Type Expander}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TitleBar.xaml" Filter="{x:Type TitleBar}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeView.xaml" Filter="{x:Type TreeView}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TreeViewItem.xaml" Filter="{x:Type TreeViewItem}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Window.xaml"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/EmbeddableControlRoot.xaml" Filter="{x:Type EmbeddableControlRoot}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarButton.xaml" Filter="{x:Type CalendarButton}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDayButton.xaml" Filter="{x:Type CalendarDayButton}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarItem.xaml" Filter="{x:Type CalendarItem}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Calendar.xaml" Filter="{x:Type Calendar}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDatePicker.xaml" Filter="{x:Type CalendarDatePicker}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ButtonSpinner.xaml" Filter="{x:Type ButtonSpinner}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NumericUpDown.xaml" Filter="{x:Type NumericUpDown}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/AutoCompleteBox.xaml" Filter="{x:Type AutoCompleteBox}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/WindowNotificationManager.xaml" Filter="{x:Type WindowNotificationManager}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NotificationCard.xaml" Filter="{x:Type NotificationCard}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/NativeMenuBar.xaml" Filter="{x:Type NativeMenuBar}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/ToggleSwitch.xaml" Filter="{x:Type ToggleSwitch}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml" Filter="{x:Type SplitView}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DatePicker.xaml" Filter="{x:Type DatePicker}"/>
+  <FluentStyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml" Filter="{x:Type TimePicker}"/>  
 </Styles>

@@ -19,10 +19,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <Styles.Resources>
-    <Thickness x:Key="TabControlTopPlacementItemMargin">0 0 0 2</Thickness>
-  </Styles.Resources>
-  
   <Style Selector="TabControl">
     <Setter Property="Margin" Value="0" />
     <Setter Property="Padding" Value="{DynamicResource TabItemMargin}" />

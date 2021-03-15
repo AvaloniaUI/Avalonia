@@ -1,12 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=netstandard">
-  <Styles.Resources>
-    <Thickness x:Key="ToggleSwitchTopHeaderMargin">0,0,0,6</Thickness>
-    <GridLength x:Key="ToggleSwitchPreContentMargin">6</GridLength>
-    <GridLength x:Key="ToggleSwitchPostContentMargin">6</GridLength>
-    <x:Double x:Key="ToggleSwitchThemeMinWidth">0</x:Double>
-  </Styles.Resources>
   <Design.PreviewWith>
     <StackPanel Margin="20" Width="250" Spacing="24" >
       <StackPanel Spacing="12" >

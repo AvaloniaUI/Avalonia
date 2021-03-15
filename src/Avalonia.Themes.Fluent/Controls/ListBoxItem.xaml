@@ -12,9 +12,6 @@
       </ListBox>
     </Border>
   </Design.PreviewWith>
-  <Styles.Resources>
-    <Thickness x:Key="ListBoxItemPadding">12,9,12,12</Thickness>
-  </Styles.Resources>
   <Style Selector="ListBoxItem">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />

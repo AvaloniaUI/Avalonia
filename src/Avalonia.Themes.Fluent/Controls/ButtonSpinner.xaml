@@ -21,18 +21,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <Styles.Resources>
-    <converters:MarginMultiplierConverter x:Key="ButtonSpinner_OnlyLeftThinknessConverter"
-                                          Indent="1"
-                                          Left="True" />
-    <converters:MarginMultiplierConverter x:Key="ButtonSpinner_OnlyRightThinknessConverter"
-                                          Indent="1"
-                                          Right="True" />
-
-    <StreamGeometry x:Key="ButtonSpinnerIncreaseButtonIcon">M0,9 L10,0 20,9 19,10 10,2 1,10 z</StreamGeometry>
-    <StreamGeometry x:Key="ButtonSpinnerDecreaseButtonIcon">M0,1 L10,10 20,1 19,0 10,8 1,0 z</StreamGeometry>
-  </Styles.Resources>
-
   <!--  RepeatButton.ButtonSpinnerRepeatButton  -->
   <Style Selector="RepeatButton.ButtonSpinnerRepeatButton">
     <Setter Property="MinWidth" Value="34" />

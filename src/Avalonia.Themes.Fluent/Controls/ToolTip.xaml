@@ -37,10 +37,6 @@
     </Grid>
   </Design.PreviewWith>
 
-  <Styles.Resources>
-    <sys:Double x:Key="ToolTipContentMaxWidth">320</sys:Double>
-  </Styles.Resources>
-
   <Style Selector="ToolTip">
     <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
     <Setter Property="Background" Value="{DynamicResource ToolTipBackground}" />
