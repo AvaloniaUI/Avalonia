@@ -198,6 +198,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return ConvertDefinitionList(node, text, types, types.RowDefinitions, types.RowDefinition, "row definitions", out result);
             }
 
+            if (type.Equals(types.Classes))
+            {
+                var classes = text.Split(' ');
+                var classNodes = classes.Select(c => new XamlAstTextNode(node, c, types.XamlIlTypes.String)).ToArray();
+
+                result = new AvaloniaXamlIlAvaloniaListConstantAstNode(node, types, types.Classes, types.XamlIlTypes.String, classNodes);
+                return true;
+            }
+
             result = null;
             return false;
         }
