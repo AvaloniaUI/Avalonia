@@ -126,7 +126,8 @@ namespace Avalonia.X11
                 throw new X11Exception("Unable to attach X11 connection handle to epoll");
 
             var fds = stackalloc int[2];
-            pipe2(fds, O_NONBLOCK);
+            if(pipe2(fds, O_NONBLOCK) == -1)
+                throw new X11Exception("Unable to create X11 pipe");
             _sigread = fds[0];
             _sigwrite = fds[1];
             
