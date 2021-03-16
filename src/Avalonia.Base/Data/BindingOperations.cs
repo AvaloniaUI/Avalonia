@@ -45,7 +45,7 @@ namespace Avalonia.Data
                 case BindingMode.OneWay:
                     return target.Bind(property, binding.Observable ?? binding.Subject, binding.Priority);
                 case BindingMode.TwoWay:
-                    return new CompositeDisposable(
+                    return new TwoWayBindingDisposable(
                         target.Bind(property, binding.Subject, binding.Priority),
                         target.GetObservable(property).Subscribe(binding.Subject));
                 case BindingMode.OneTime:
@@ -86,6 +86,32 @@ namespace Avalonia.Data
 
                 default:
                     throw new ArgumentException("Invalid binding mode.");
+            }
+        }
+
+        private sealed class TwoWayBindingDisposable : IDisposable
+        {
+            private readonly IDisposable _first;
+            private readonly IDisposable _second;
+            private bool _isDisposed;
+
+            public TwoWayBindingDisposable(IDisposable first, IDisposable second)
+            {
+                _first = first;
+                _second = second;
+            }
+
+            public void Dispose()
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                _first.Dispose();
+                _second.Dispose();
+
+                _isDisposed = true;
             }
         }
     }

@@ -1,15 +1,11 @@
 using System;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+
+#nullable enable
 
 namespace Avalonia.Input
 {
-    /*
-    =========================================================================================
-        NOTE: Cursors are NOT disposable and are cached in platform implementation.
-        To support loading custom cursors some measures about that should be taken beforehand
-    =========================================================================================
-    */
-
     public enum StandardCursorType
     {
         Arrow,
@@ -46,21 +42,28 @@ namespace Avalonia.Input
         // SizeNorthEastSouthWest,
     }
 
-    public class Cursor
+    public class Cursor : IDisposable
     {
         public static readonly Cursor Default = new Cursor(StandardCursorType.Arrow);
 
-        internal Cursor(IPlatformHandle platformCursor)
+        internal Cursor(ICursorImpl platformImpl)
         {
-            PlatformCursor = platformCursor;
+            PlatformImpl = platformImpl;
         }
 
         public Cursor(StandardCursorType cursorType)
-            : this(GetCursor(cursorType))
+            : this(GetCursorFactory().GetCursor(cursorType))
         {
         }
 
-        public IPlatformHandle PlatformCursor { get; }
+        public Cursor(IBitmap cursor, PixelPoint hotSpot)
+            : this(GetCursorFactory().CreateCursor(cursor.PlatformImpl.Item, hotSpot))
+        {
+        }
+
+        public ICursorImpl PlatformImpl { get; }
+
+        public void Dispose() => PlatformImpl.Dispose();
 
         public static Cursor Parse(string s)
         {
@@ -69,16 +72,10 @@ namespace Avalonia.Input
                 throw new ArgumentException($"Unrecognized cursor type '{s}'.");
         }
 
-        private static IPlatformHandle GetCursor(StandardCursorType type)
+        private static ICursorFactory GetCursorFactory()
         {
-            var platform = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
-
-            if (platform == null)
-            {
-                throw new Exception("Could not create Cursor: IStandardCursorFactory not registered.");
-            }
-
-            return platform.GetCursor(type);
+            return AvaloniaLocator.Current.GetService<ICursorFactory>() ??
+                throw new Exception("Could not create Cursor: ICursorFactory not registered.");
         }
     }
 }

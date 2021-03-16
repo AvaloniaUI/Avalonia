@@ -62,9 +62,9 @@
                   <TickBar Name="TopTickBar" Placement="Top" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Bottom" Margin="0,0,0,4" Grid.ColumnSpan="3" />
                   <!-- <TickBar Name="HorizontalInlineTickBar" Placement="Top" Fill="{DynamicResource SliderInlineTickBarFill}" Height="{DynamicResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" /> -->
                   <TickBar Name="BottomTickBar" Placement="Bottom" Height="{DynamicResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
-                  <Track Name="PART_Track" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
+                  <Track Name="PART_Track" Grid.Row="1" Grid.ColumnSpan="3" IsDirectionReversed="{TemplateBinding IsDirectionReversed}" Orientation="Horizontal">
                     <Track.DecreaseButton>
-                      <RepeatButton Name="PART_DecreaseButton" Background="{TemplateBinding Foreground}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                      <RepeatButton Name="PART_DecreaseButton" Background="{TemplateBinding Foreground}" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <RepeatButton.Template>
                           <ControlTemplate>
                             <Grid>
@@ -76,7 +76,7 @@
                       </RepeatButton>
                     </Track.DecreaseButton>
                     <Track.IncreaseButton>
-                      <RepeatButton Name="PART_IncreaseButton" Background="{TemplateBinding Background}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                      <RepeatButton Name="PART_IncreaseButton" Background="{TemplateBinding Background}" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <RepeatButton.Template>
                           <ControlTemplate>
                             <Grid>
@@ -124,9 +124,9 @@
                   <TickBar Name="LeftTickBar" Placement="Left" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Right" Margin="0,0,4,0" Grid.RowSpan="3" />
                   <!-- <TickBar Name="VerticalInlineTickBar" Placement="Inline" Fill="{DynamicResource SliderInlineTickBarFill}" Width="{DynamicResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" /> -->
                   <TickBar Name="RightTickBar" Placement="Right" Width="{DynamicResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" />
-                  <Track Name="PART_Track" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="3" Orientation="Vertical">
+                  <Track Name="PART_Track" Grid.Column="1" Grid.ColumnSpan="1" Grid.RowSpan="3" IsDirectionReversed="{TemplateBinding IsDirectionReversed}" Orientation="Vertical">
                     <Track.DecreaseButton>
-                      <RepeatButton Name="PART_DecreaseButton" Background="{TemplateBinding Foreground}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                      <RepeatButton Name="PART_DecreaseButton" Background="{TemplateBinding Foreground}" Focusable="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <RepeatButton.Template>
                           <ControlTemplate>
                             <Grid>
@@ -138,7 +138,7 @@
                       </RepeatButton>
                     </Track.DecreaseButton>
                     <Track.IncreaseButton>
-                      <RepeatButton Name="PART_IncreaseButton" Background="{TemplateBinding Background}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                      <RepeatButton Name="PART_IncreaseButton" Background="{TemplateBinding Background}" Focusable="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <RepeatButton.Template>
                           <ControlTemplate>
                             <Grid>

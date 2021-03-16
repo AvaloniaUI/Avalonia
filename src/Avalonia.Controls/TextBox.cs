@@ -514,21 +514,36 @@ namespace Avalonia.Controls
 
         private void HandleTextInput(string input)
         {
-            if (!IsReadOnly)
+            if (IsReadOnly)
             {
-                input = RemoveInvalidCharacters(input);
-                string text = Text ?? string.Empty;
-                int caretIndex = CaretIndex;
-                if (!string.IsNullOrEmpty(input) && (MaxLength == 0 || input.Length + text.Length - (Math.Abs(SelectionStart - SelectionEnd)) <= MaxLength))
-                {
-                    DeleteSelection();
-                    caretIndex = CaretIndex;
-                    text = Text ?? string.Empty;
-                    SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
-                    CaretIndex += input.Length;
-                    ClearSelection();
-                    _undoRedoHelper.DiscardRedo();
-                }
+                return;
+            }
+            
+            input = RemoveInvalidCharacters(input);
+            
+            if (string.IsNullOrEmpty(input))
+            {
+                return;
+            }
+            
+            string text = Text ?? string.Empty;
+            int caretIndex = CaretIndex;
+            int newLength = input.Length + text.Length - Math.Abs(SelectionStart - SelectionEnd);
+            
+            if (MaxLength > 0 && newLength > MaxLength)
+            {
+                input = input.Remove(Math.Max(0, input.Length - (newLength - MaxLength)));
+            }
+            
+            if (!string.IsNullOrEmpty(input))
+            {
+                DeleteSelection();
+                caretIndex = CaretIndex;
+                text = Text ?? string.Empty;
+                SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
+                CaretIndex += input.Length;
+                ClearSelection();
+                _undoRedoHelper.DiscardRedo();
             }
         }
 
@@ -585,7 +600,7 @@ namespace Avalonia.Controls
             var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
-            bool DetectSelection() => e.KeyModifiers.HasFlag(keymap.SelectionModifiers);
+            bool DetectSelection() => e.KeyModifiers.HasFlagCustom(keymap.SelectionModifiers);
 
             if (Match(keymap.SelectAll))
             {
@@ -703,7 +718,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                bool hasWholeWordModifiers = modifiers.HasFlag(keymap.WholeWordTextActionModifiers);
+                bool hasWholeWordModifiers = modifiers.HasFlagCustom(keymap.WholeWordTextActionModifiers);
                 switch (e.Key)
                 {
                     case Key.Left:

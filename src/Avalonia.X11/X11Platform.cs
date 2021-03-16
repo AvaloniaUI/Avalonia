@@ -71,7 +71,7 @@ namespace Avalonia.X11
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
-                .Bind<IStandardCursorFactory>().ToConstant(new X11CursorFactory(Display))
+                .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
