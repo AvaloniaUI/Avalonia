@@ -528,11 +528,11 @@ namespace Avalonia.Controls
             
             string text = Text ?? string.Empty;
             int caretIndex = CaretIndex;
-            int estimatedLength = input.Length + text.Length - Math.Abs(SelectionStart - SelectionEnd);
+            int newLength = input.Length + text.Length - Math.Abs(SelectionStart - SelectionEnd);
             
-            if (MaxLength > 0 && estimatedLength > MaxLength)
+            if (MaxLength > 0 && newLength > MaxLength)
             {
-                input = input.Remove(Math.Max(0, input.Length - (estimatedLength - MaxLength)));
+                input = input.Remove(Math.Max(0, input.Length - (newLength - MaxLength)));
             }
             
             if (!string.IsNullOrEmpty(input))
