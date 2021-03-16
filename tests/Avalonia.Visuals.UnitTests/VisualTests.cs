@@ -236,6 +236,25 @@ namespace Avalonia.Visuals.UnitTests
         }
 
         [Fact]
+        public void TransformToVisual_With_NonInvertible_RenderTransform_Should_Work()
+        {
+            var child = new Decorator
+            {
+                Width = 100,
+                Height = 100,
+                RenderTransform = new ScaleTransform() { ScaleX = 0, ScaleY = 0 }
+            };
+            var root = new TestRoot() { Child = child, Width = 400, Height = 400 };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(new Point(), root.DesiredSize));
+
+            var tr = root.TransformToVisual(child);
+
+            Assert.Null(tr);
+        }
+
+        [Fact]
         public void Should_Not_Log_Binding_Error_When_Not_Attached_To_Logical_Tree()
         {
             var target = new Decorator { DataContext = "foo" };

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using Avalonia.Media;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -175,37 +177,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             var text = textNode.Text;
-            
             var types = context.GetAvaloniaTypes();
 
-            if (type.FullName == "System.TimeSpan")
+            if (AvaloniaXamlIlLanguageParseIntrinsics.TryConvert(context, node, text, type, types, out result))
             {
-                var tsText = text.Trim();
-
-                if (!TimeSpan.TryParse(tsText, CultureInfo.InvariantCulture, out var timeSpan))
-                {
-                    // // shorthand seconds format (ie. "0.25")
-                    if (!tsText.Contains(":") && double.TryParse(tsText,
-                        NumberStyles.Float | NumberStyles.AllowThousands,
-                        CultureInfo.InvariantCulture, out var seconds))
-                        timeSpan = TimeSpan.FromSeconds(seconds);
-                    else
-                        throw new XamlX.XamlLoadException($"Unable to parse {text} as a time span", node);
-                }
-
-
-                result = new XamlStaticOrTargetedReturnMethodCallNode(node,
-                    type.FindMethod("FromTicks", type, false, types.Long),
-                    new[] { new XamlConstantNode(node, types.Long, timeSpan.Ticks) });
                 return true;
             }
-
-            if (type.Equals(types.FontFamily))
-            {
-                result = new AvaloniaXamlIlFontFamilyAstNode(types, text, node);
-                return true;
-            }
-
+            
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();

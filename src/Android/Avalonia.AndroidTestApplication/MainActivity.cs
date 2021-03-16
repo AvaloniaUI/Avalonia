@@ -4,7 +4,6 @@ using Android.Content.PM;
 using Android.OS;
 using Avalonia.Android;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -38,8 +37,7 @@ namespace Avalonia.AndroidTestApplication
         {
             Styles.Add(new DefaultTheme());
 
-            var loader = new AvaloniaXamlLoader();
-            var baseLight = (IStyle)loader.Load(
+            var baseLight = (IStyle)AvaloniaXamlLoader.Load(
                 new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
             Styles.Add(baseLight);
 

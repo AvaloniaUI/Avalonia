@@ -931,8 +931,8 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", EntryPoint = "MapVirtualKeyW")]
         public static extern uint MapVirtualKey(uint uCode, uint uMapType);
 
-        [DllImport("user32.dll", EntryPoint = "GetMessageW")]
-        public static extern sbyte GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+        [DllImport("user32.dll", EntryPoint = "GetMessageW", SetLastError = true)]
+        public static extern int GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 
         [DllImport("user32.dll")]
         public static extern int GetMessageTime();
@@ -1034,6 +1034,12 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr CreateIconIndirect([In] ref ICONINFO iconInfo);
+
+        [DllImport("user32.dll")]
+        public static extern bool DestroyIcon(IntPtr hIcon);
 
         [DllImport("user32.dll")]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
@@ -1225,6 +1231,9 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr LoadLibrary(string fileName);
+        
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr LoadLibraryEx(string fileName, IntPtr hFile, int flags);
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         public static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
@@ -1383,6 +1392,9 @@ namespace Avalonia.Win32.Interop
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
         [DllImport("dwmapi.dll")]
+        public static extern void DwmFlush();
+        
+        [DllImport("dwmapi.dll")]
         public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
         
         [DllImport("dwmapi.dll")]
@@ -1426,15 +1438,15 @@ namespace Avalonia.Win32.Interop
         }
 
         [DllImport("ntdll")]
-        private static extern int RtlGetVersion(out RTL_OSVERSIONINFOEX lpVersionInformation);
+        private static extern int RtlGetVersion(ref RTL_OSVERSIONINFOEX lpVersionInformation);
 
         internal static Version RtlGetVersion()
         {
             RTL_OSVERSIONINFOEX v = new RTL_OSVERSIONINFOEX();
             v.dwOSVersionInfoSize = (uint)Marshal.SizeOf(v);
-            if (RtlGetVersion(out v) == 0)
+            if (RtlGetVersion(ref v) == 0)
             {
-                return new Version((int)v.dwMajorVersion, (int)v.dwMinorVersion, (int)v.dwBuildNumber, (int)v.dwPlatformId);
+                return new Version((int)v.dwMajorVersion, (int)v.dwMinorVersion, (int)v.dwBuildNumber);
             }
             else
             {
@@ -1613,6 +1625,12 @@ namespace Avalonia.Win32.Interop
             public int X;
             public int Y;
         }
+        
+        public struct SIZE
+        {
+            public int X;
+            public int Y;
+        }
 
         public struct RECT
         {
@@ -1749,6 +1767,16 @@ namespace Avalonia.Win32.Interop
             public int CxContact;
             public int CyContact;
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct ICONINFO
+        {
+            public bool IsIcon;
+            public int xHotspot;
+            public int yHotspot;
+            public IntPtr MaskBitmap;
+            public IntPtr ColorBitmap;
+        };
 
         [Flags]
         public enum TouchInputFlags

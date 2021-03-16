@@ -15,8 +15,8 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="ViewModel"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<object> ViewModelProperty =
-            AvaloniaProperty.Register<ViewModelViewHost, object>(nameof(ViewModel));
+        public static readonly AvaloniaProperty<object?> ViewModelProperty =
+            AvaloniaProperty.Register<ViewModelViewHost, object?>(nameof(ViewModel));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewModelViewHost"/> class.
@@ -34,7 +34,7 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// Gets or sets the ViewModel to display.
         /// </summary>
-        public object ViewModel
+        public object? ViewModel
         {
             get => GetValue(ViewModelProperty);
             set => SetValue(ViewModelProperty, value);
@@ -43,13 +43,13 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// Gets or sets the view locator.
         /// </summary>
-        public IViewLocator ViewLocator { get; set; }
+        public IViewLocator? ViewLocator { get; set; }
 
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.
         /// </summary>
         /// <param name="viewModel">ViewModel to which the user navigates.</param>
-        private void NavigateToViewModel(object viewModel)
+        private void NavigateToViewModel(object? viewModel)
         {
             if (viewModel == null)
             {

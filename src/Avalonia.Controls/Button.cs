@@ -30,7 +30,7 @@ namespace Avalonia.Controls
     /// A button control.
     /// </summary>
     [PseudoClasses(":pressed")]
-    public class Button : ContentControl
+    public class Button : ContentControl, ICommandSource
     {
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.
@@ -80,6 +80,7 @@ namespace Avalonia.Controls
 
         private ICommand _command;
         private bool _commandCanExecute = true;
+        private KeyGesture _hotkey;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -207,6 +208,11 @@ namespace Avalonia.Controls
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            if (_hotkey != null) // Control attached again, set Hotkey to create a hotkey manager for this control
+            {
+                HotKey = _hotkey;
+            }
+            
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
@@ -217,6 +223,13 @@ namespace Avalonia.Controls
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            // This will cause the hotkey manager to dispose the observer and the reference to this control
+            if (HotKey != null)
+            {
+                _hotkey = HotKey;
+                HotKey = null;
+            }
+
             base.OnDetachedFromLogicalTree(e);
 
             if (Command != null)
@@ -492,5 +505,7 @@ namespace Avalonia.Controls
         {
             PseudoClasses.Set(":pressed", isPressed);
         }
+
+        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
     }
 }

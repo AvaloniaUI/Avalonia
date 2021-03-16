@@ -1,0 +1,72 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="CaptionButtons">    
+    <Setter Property="MaxHeight" Value="30" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Spacing="2" VerticalAlignment="Stretch" TextBlock.FontSize="10" Orientation="Horizontal">
+          <StackPanel.Styles>
+            <Style Selector="Panel">
+              <Setter Property="Width" Value="45" />
+              <Setter Property="Background" Value="Transparent" />
+            </Style>
+            <Style Selector="Panel:pointerover">
+              <Setter Property="Background" Value="#7F7f7f7f" />
+            </Style>
+            <Style Selector="Panel#PART_CloseButton:pointerover">
+              <Setter Property="Background" Value="#7FFF0000" />
+            </Style>
+            <Style Selector="Viewbox">
+              <Setter Property="Width" Value="11" />
+              <Setter Property="Margin" Value="2" />
+            </Style>
+          </StackPanel.Styles>
+          <Panel x:Name="PART_FullScreenButton">
+            <Viewbox>
+              <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}" />
+            </Viewbox>
+          </Panel>
+
+          <Panel x:Name="PART_MinimiseButton">
+            <Viewbox>
+              <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}" Data="M2048 1229v-205h-2048v205h2048z" />
+            </Viewbox>
+          </Panel>
+
+          <Panel x:Name="PART_RestoreButton">
+            <Viewbox>
+              <Viewbox.RenderTransform>
+                <RotateTransform Angle="-90" />
+              </Viewbox.RenderTransform>
+              <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}"/>
+            </Viewbox>
+          </Panel>
+
+          <Panel x:Name="PART_CloseButton">
+            <Viewbox>
+              <Path Stretch="UniformToFill" Fill="{TemplateBinding Foreground}" Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z" />
+            </Viewbox>
+          </Panel>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="CaptionButtons Panel#PART_RestoreButton Path">
+    <Setter Property="Data" Value="M2048 2048v-2048h-2048v2048h2048zM1843 1843h-1638v-1638h1638v1638z" />
+  </Style>
+  <Style Selector="CaptionButtons:maximized Panel#PART_RestoreButton Path">
+    <Setter Property="Data" Value="M2048 410h-410v-410h-1638v1638h410v410h1638v-1638zM1434 1434h-1229v-1229h1229v1229zM1843 1843h-1229v-205h1024v-1024h205v1229z" />
+  </Style>
+  <Style Selector="CaptionButtons Panel#PART_FullScreenButton">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="CaptionButtons Panel#PART_FullScreenButton Path">
+    <Setter Property="Data" Value="M2048 2048v-819h-205v469l-1493 -1493h469v-205h-819v819h205v-469l1493 1493h-469v205h819z" />
+  </Style>
+  <Style Selector="CaptionButtons:fullscreen Panel#PART_FullScreenButton Path">
+    <Setter Property="IsVisible" Value="True" />
+    <Setter Property="Data" Value="M205 1024h819v-819h-205v469l-674 -674l-145 145l674 674h-469v205zM1374 1229h469v-205h-819v819h205v-469l674 674l145 -145z" />
+  </Style>
+  <Style Selector="CaptionButtons:fullscreen Panel#PART_RestoreButton, CaptionButtons:fullscreen Panel#PART_MinimiseButton">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+ </Styles>

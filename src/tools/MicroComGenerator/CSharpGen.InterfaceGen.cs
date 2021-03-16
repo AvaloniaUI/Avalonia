@@ -21,7 +21,7 @@ namespace MicroComGenerator
         {
             public string Name;
             public string NativeType;
-
+            public AstAttributes Attributes { get; set; }
             public virtual StatementSyntax CreateFixed(StatementSyntax inner) => inner;
 
             public virtual void PreMarshal(List<StatementSyntax> body)
@@ -161,6 +161,13 @@ namespace MicroComGenerator
             return type;
         }
 
+        Arg ConvertArg(AstInterfaceMemberArgumentNode node)
+        {
+            var arg = ConvertArg(node.Name, node.Type);
+            arg.Attributes = node.Attributes.Clone();
+            return arg;
+        }
+        
         Arg ConvertArg(string name, AstTypeNode type)
         {
             type = new AstTypeNode { Name = ConvertNativeType(type.Name), PointerLevel = type.PointerLevel };
@@ -190,12 +197,19 @@ namespace MicroComGenerator
             List<StatementSyntax> vtblCtor, int num)
         {
             // Prepare method information
-            var args = member.Select(a => ConvertArg(a.Name, a.Type)).ToList();
+            if (member.Name == "GetRenderingDevice")
+                Console.WriteLine();
+            var args = member.Select(ConvertArg).ToList();
             var returnArg = ConvertArg("__result", member.ReturnType);
             bool isHresult = member.ReturnType.Name == "HRESULT";
             bool isHresultLastArgumentReturn = isHresult
                                                && args.Count > 0
-                                               && (args.Last().Name == "ppv" || args.Last().Name == "retOut" || args.Last().Name == "ret")
+                                               && (args.Last().Name == "ppv" 
+                                                   || args.Last().Name == "retOut" 
+                                                   || args.Last().Name == "ret"
+                                                   || args.Last().Attributes.HasAttribute("out")
+                                                   || args.Last().Attributes.HasAttribute("retval")
+                                                   )
                                                && ((member.Last().Type.PointerLevel > 0
                                                     && !IsInterface(member.Last().Type))
                                                    || member.Last().Type.PointerLevel == 2);
@@ -334,16 +348,27 @@ namespace MicroComGenerator
             BlockSyntax backBodyBlock = Block().AddStatements(backPreMarshal.ToArray()).AddStatements(backCallStatement);
 
 
+            var exceptions = new List<CatchClauseSyntax>()
+            {
+                CatchClause(
+                    CatchDeclaration(ParseTypeName("System.Exception"), Identifier("__exception__")), null,
+                    Block(
+                        ParseStatement(
+                            "Avalonia.MicroCom.MicroComRuntime.UnhandledException(__target, __exception__);"),
+                        isHresult ? ParseStatement("return unchecked((int)0x80004005u);")
+                        : isVoidReturn ? EmptyStatement() : ParseStatement("return default;")
+                    ))
+            };
+            
+            if (isHresult)
+                exceptions.Insert(0, CatchClause(
+                    CatchDeclaration(ParseTypeName("System.Runtime.InteropServices.COMException"),
+                        Identifier("__com_exception__")),
+                    null, Block(ParseStatement("return __com_exception__.ErrorCode;"))));
+
             backBodyBlock = Block(
                 TryStatement(
-                        SingletonList(CatchClause(
-                            CatchDeclaration(ParseTypeName("System.Exception"), Identifier("__exception__")), null,
-                            Block(
-                                ParseStatement(
-                                    "Avalonia.MicroCom.MicroComRuntime.UnhandledException(__target, __exception__);"),
-                                isHresult ? ParseStatement("return unchecked((int)0x80004005u);")
-                                : isVoidReturn ? EmptyStatement() : ParseStatement("return default;")
-                            ))))
+                        List(exceptions))
                     .WithBlock(Block(backBodyBlock))
             );
             if (isHresult)
