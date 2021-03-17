@@ -71,12 +71,12 @@
 }
 @end
 
-AvnAppMenuItem::AvnAppMenuItem(bool isSeperator)
+AvnAppMenuItem::AvnAppMenuItem(bool isSeparator)
 {
     _isCheckable = false;
-    _isSeperator = isSeperator;
+    _isSeparator = isSeparator;
     
-    if(isSeperator)
+    if(isSeparator)
     {
         _native = [NSMenuItem separatorItem];
     }
@@ -401,7 +401,7 @@ extern IAvnMenuItem* CreateAppMenuItem()
     }
 }
 
-extern IAvnMenuItem* CreateAppMenuItemSeperator()
+extern IAvnMenuItem* CreateAppMenuItemSeparator()
 {
     @autoreleasepool
     {
