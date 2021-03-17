@@ -1,4 +1,49 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        x:Class="Sandbox.MainWindow"
+        Padding="100">
+    <Button Content="Hello" DataContext="World">
+        <FlyoutBase.AttachedFlyout>
+            <MenuFlyout>
+                <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
+                <MenuItem Header="_Disabled Menu Item" IsEnabled="False" InputGesture="Ctrl+D" />
+                <Separator/>
+                <MenuItem Header="Menu with _Submenu">
+                    <MenuItem Header="Submenu _1"/>
+                    <MenuItem Header="Submenu _2"/>
+                </MenuItem>
+                <MenuItem Header="Menu Item with _Icon" InputGesture="Ctrl+Shift+B">
+                    <MenuItem.Icon>
+                        <Image Source="resm:Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png?assembly=Avalonia.Skia" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Menu Item with _Checkbox">
+                    <MenuItem.Icon>
+                        <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuFlyout>
+        </FlyoutBase.AttachedFlyout>
+        <Button.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Standard _Menu Item" InputGesture="Ctrl+A" />
+                <MenuItem Header="_Disabled Menu Item" IsEnabled="False" InputGesture="Ctrl+D" />
+                <Separator/>
+                <MenuItem Header="Menu with _Submenu">
+                    <MenuItem Header="Submenu _1"/>
+                    <MenuItem Header="Submenu _2"/>
+                </MenuItem>
+                <MenuItem Header="Menu Item with _Icon" InputGesture="Ctrl+Shift+B">
+                    <MenuItem.Icon>
+                        <Image Source="resm:Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png?assembly=Avalonia.Skia" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Menu Item with _Checkbox">
+                    <MenuItem.Icon>
+                        <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </ContextMenu>
+        </Button.ContextMenu>
+    </Button>
 </Window>

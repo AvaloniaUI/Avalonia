@@ -6,10 +6,17 @@ namespace Sandbox
     {
         static void Main(string[] args)
         {
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+
+        public static AppBuilder BuildAvaloniaApp() =>
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToTrace()
-                .StartWithClassicDesktopLifetime(args);
-        }
+                .With(new Win32PlatformOptions
+                {
+                    OverlayPopups = false
+                });
     }
 }
