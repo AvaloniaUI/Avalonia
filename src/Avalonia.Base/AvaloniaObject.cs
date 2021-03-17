@@ -23,7 +23,7 @@ namespace Avalonia
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
         private List<IAvaloniaObject> _inheritanceChildren;
         private ValueStore _values;
-        private ValueStore Values => _values ?? (_values = new ValueStore(this));
+        private bool _batchUpdate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
@@ -115,6 +115,22 @@ namespace Avalonia
         {
             get { return new IndexerBinding(this, binding.Property, binding.Mode); }
             set { this.Bind(binding.Property, value); }
+        }
+
+        private ValueStore Values
+        {
+            get
+            {
+                if (_values is null)
+                {
+                    _values = new ValueStore(this);
+
+                    if (_batchUpdate)
+                        _values.BeginBatchUpdate();
+                }
+
+                return _values;
+            }
         }
 
         public bool CheckAccess() => Dispatcher.UIThread.CheckAccess();
@@ -432,6 +448,28 @@ namespace Avalonia
         public void CoerceValue<T>(StyledPropertyBase<T> property)
         {
             _values?.CoerceValue(property);
+        }
+
+        public void BeginBatchUpdate()
+        {
+            if (_batchUpdate)
+            {
+                throw new InvalidOperationException("Batch update already in progress.");
+            }
+
+            _batchUpdate = true;
+            _values?.BeginBatchUpdate();
+        }
+
+        public void EndBatchUpdate()
+        {
+            if (!_batchUpdate)
+            {
+                throw new InvalidOperationException("No batch update in progress.");
+            }
+
+            _batchUpdate = false;
+            _values?.EndBatchUpdate();
         }
 
         /// <inheritdoc/>
