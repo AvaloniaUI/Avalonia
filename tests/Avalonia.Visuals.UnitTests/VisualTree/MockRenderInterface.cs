@@ -112,6 +112,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 }
             }
 
+            public double ContourLength { get; }
+
             public IStreamGeometryImpl Clone()
             {
                 return this;
@@ -147,6 +149,16 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             }
 
             public ITransformedGeometryImpl WithTransform(Matrix transform)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryGetPointAtDistance(double distance, out Point point)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
             {
                 throw new NotImplementedException();
             }
