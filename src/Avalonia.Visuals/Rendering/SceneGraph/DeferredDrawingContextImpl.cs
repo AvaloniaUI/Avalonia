@@ -112,13 +112,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode, BitmapBlendingMode bitmapBlendingMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             var next = NextDrawAs<ImageNode>();
 
-            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode, bitmapBlendingMode))
+            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode))
             {
-                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode, bitmapBlendingMode));
+                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode));
             }
             else
             {
@@ -178,6 +178,7 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
+
 
         public void Custom(ICustomDrawOperation custom)
         {
@@ -253,6 +254,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
+        public void PopBitmapBlendMode()
+        {
+            var next = NextDrawAs<OpacityNode>();
+
+            if (next == null || !next.Item.Equals(null))
+            {
+                Add(new BitmapBlendModeNode());
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
         /// <inheritdoc/>
         public void PopOpacity()
         {
@@ -358,6 +374,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            var next = NextDrawAs<OpacityNode>();
+
+            if (next == null || !next.Item.Equals(blendingMode))
+            {
+                Add(new BitmapBlendModeNode(blendingMode));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
         public readonly struct UpdateState : IDisposable
         {
             public UpdateState(
