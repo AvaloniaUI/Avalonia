@@ -117,7 +117,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode, BitmapBlendingMode bitmapBlendingMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             {
@@ -555,6 +555,16 @@ namespace Avalonia.Direct2D1.Media
         public void PopGeometryClip()
         {
             PopLayer();
+        }
+
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            // Stubs for now
+        }
+
+        public void PopBitmapBlendMode()
+        {
+            // Stubs for now
         }
 
         public void PushOpacityMask(IBrush mask, Rect bounds)

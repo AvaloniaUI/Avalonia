@@ -31,7 +31,7 @@ namespace Avalonia.Platform
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         /// <param name="bitmapBlendMode">The bitmap blending mode.</param>
-        void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default, BitmapBlendingMode bitmapBlendMode = BitmapBlendingMode.SourceOver);
+        void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -149,6 +149,17 @@ namespace Avalonia.Platform
         /// Pops the latest pushed geometry clip.
         /// </summary>
         void PopGeometryClip();
+        
+        /// <summary>
+        /// Pushes an bitmap blending value.
+        /// </summary>
+        /// <param name="opacity">The opacity.</param>
+        void PushBitmapBlendMode(BitmapBlendingMode blendingMode);
+
+        /// <summary>
+        /// Pops the latest pushed bitmap blending value.
+        /// </summary>
+        void PopBitmapBlendMode();
 
         /// <summary>
         /// Adds a custom draw operation

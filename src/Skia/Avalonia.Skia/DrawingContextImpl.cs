@@ -23,9 +23,11 @@ namespace Avalonia.Skia
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new Stack<PaintWrapper>();
         private readonly Stack<double> _opacityStack = new Stack<double>();
+        private readonly Stack<BitmapBlendingMode> _blendingModeStack = new Stack<BitmapBlendingMode>();
         private readonly Matrix? _postTransform;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private double _currentOpacity = 1.0f;
+        private BitmapBlendingMode _currentBlendingMode = BitmapBlendingMode.SourceOver;
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
         private bool _disposed;
@@ -132,7 +134,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode, BitmapBlendingMode bitmapBlendingMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
@@ -145,7 +147,7 @@ namespace Avalonia.Skia
                 })
             {
                 paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
-                paint.BlendMode = bitmapBlendingMode.ToSKBlendMode();
+                paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
 
                 drawableImage.Draw(this, s, d, paint);
             }
@@ -155,7 +157,7 @@ namespace Avalonia.Skia
         public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default, BitmapBlendingMode.SourceOver);
+            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
             PopOpacityMask();
         }
 
@@ -507,6 +509,19 @@ namespace Avalonia.Skia
         public void PopGeometryClip()
         {
             Canvas.Restore();
+        }
+
+        /// <inheritdoc />
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            _blendingModeStack.Push(_currentBlendingMode);
+            _currentBlendingMode = blendingMode;
+        }
+
+        /// <inheritdoc />
+        public void PopBitmapBlendMode()
+        {
+            _currentBlendingMode = _blendingModeStack.Pop();
         }
 
         public void Custom(ICustomDrawOperation custom) => custom.Render(this);
