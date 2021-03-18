@@ -11,9 +11,20 @@ namespace Avalonia.Skia
     internal abstract class GeometryImpl : IGeometryImpl
     {
         private PathCache _pathCache;
-        
+  
         /// <inheritdoc />
         public abstract Rect Bounds { get; }
+        
+        /// <inheritdoc />
+        public double ContourLength
+        {
+            get
+            {
+                if (EffectivePath is null) return 0;
+                return new SKPathMeasure(EffectivePath).Length;
+            }
+        }
+
         public abstract SKPath EffectivePath { get; }
 
         /// <inheritdoc />
@@ -102,6 +113,36 @@ namespace Avalonia.Skia
         public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
             return new TransformedGeometryImpl(this, transform);
+        }
+        
+        /// <inheritdoc />
+        public bool TryGetPointAtDistance(double distance, out Point point)
+        {
+            if (EffectivePath is null)
+            {
+                point = new Point();
+                return false;
+            }
+            
+            var res = new SKPathMeasure(EffectivePath).GetPosition((float)distance, out var skPoint);
+            point = new Point(skPoint.X, skPoint.Y);
+            return res;
+        }
+        
+        /// <inheritdoc />
+        public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
+        {
+            if (EffectivePath is null)
+            {
+                point = new Point();
+                tangent = new Point();
+                return false;
+            }
+            
+            var res = new SKPathMeasure(EffectivePath).GetPositionAndTangent((float)distance, out var skPoint, out var skTangent);
+            point = new Point(skPoint.X, skPoint.Y);
+            tangent = new Point(skTangent.X, skTangent.Y);
+            return res;
         }
 
         /// <summary>
