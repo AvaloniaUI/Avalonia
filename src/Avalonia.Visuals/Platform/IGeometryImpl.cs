@@ -72,6 +72,6 @@ namespace Avalonia.Platform
         /// <param name="point">The point in the specified distance.</param>
         /// <param name="tangent">The tangent in the specified distance.</param>
         /// <returns>If there's valid point and tangent at the specified distance.</returns>
-        bool TryGetPositionAndTangentAtDistance (double distance, out Point position, out Point tangent); 
+        bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent);
     }
 }
