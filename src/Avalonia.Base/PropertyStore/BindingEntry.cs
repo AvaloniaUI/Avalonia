@@ -9,8 +9,9 @@ namespace Avalonia.PropertyStore
     /// <summary>
     /// Represents an untyped interface to <see cref="BindingEntry{T}"/>.
     /// </summary>
-    internal interface IBindingEntry : IPriorityValueEntry, IDisposable
+    internal interface IBindingEntry : IBatchUpdate, IPriorityValueEntry, IDisposable
     {
+        void Start(bool ignoreBatchUpdate);
     }
 
     /// <summary>
@@ -22,6 +23,8 @@ namespace Avalonia.PropertyStore
         private readonly IAvaloniaObject _owner;
         private IValueSink _sink;
         private IDisposable? _subscription;
+        private bool _isSubscribed;
+        private bool _batchUpdate;
         private Optional<T> _value;
 
         public BindingEntry(
@@ -39,9 +42,19 @@ namespace Avalonia.PropertyStore
         }
 
         public StyledPropertyBase<T> Property { get; }
-        public BindingPriority Priority { get; }
+        public BindingPriority Priority { get; private set; }
         public IObservable<BindingValue<T>> Source { get; }
         Optional<object> IValue.GetValue() => _value.ToObject();
+
+        public void BeginBatchUpdate() => _batchUpdate = true;
+
+        public void EndBatchUpdate()
+        {
+            _batchUpdate = false;
+
+            if (_sink is ValueStore)
+                Start();
+        }
 
         public Optional<T> GetValue(BindingPriority maxPriority)
         {
@@ -52,10 +65,17 @@ namespace Avalonia.PropertyStore
         {
             _subscription?.Dispose();
             _subscription = null;
-            _sink.Completed(Property, this, _value);
+            _isSubscribed = false;
+            OnCompleted();
         }
 
-        public void OnCompleted() => _sink.Completed(Property, this, _value);
+        public void OnCompleted()
+        {
+            var oldValue = _value;
+            _value = default;
+            Priority = BindingPriority.Unset;
+            _sink.Completed(Property, this, oldValue);
+        }
 
         public void OnError(Exception error)
         {
@@ -79,13 +99,36 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public void Start()
+        public void Start() => Start(false);
+
+        public void Start(bool ignoreBatchUpdate)
         {
-            _subscription = Source.Subscribe(this);
+            // We can't use _subscription to check whether we're subscribed because it won't be set
+            // until Subscribe has finished, which will be too late to prevent reentrancy.
+            if (!_isSubscribed && (!_batchUpdate || ignoreBatchUpdate))
+            {
+                _isSubscribed = true;
+                _subscription = Source.Subscribe(this);
+            }
         }
 
         public void Reparent(IValueSink sink) => _sink = sink;
-        
+
+        public void RaiseValueChanged(
+            IValueSink sink,
+            IAvaloniaObject owner,
+            AvaloniaProperty property,
+            Optional<object> oldValue,
+            Optional<object> newValue)
+        {
+            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                owner,
+                (AvaloniaProperty<T>)property,
+                oldValue.GetValueOrDefault<T>(),
+                newValue.GetValueOrDefault<T>(),
+                Priority));
+        }
+
         private void UpdateValue(BindingValue<T> value)
         {
             if (value.HasValue && Property.ValidateValue?.Invoke(value.Value) == false)

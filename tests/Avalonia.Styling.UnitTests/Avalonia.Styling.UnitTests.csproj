@@ -4,6 +4,7 @@
     <OutputType>Library</OutputType>
     <NoWarn>CS0067</NoWarn>
     <IsTestProject>true</IsTestProject>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />
