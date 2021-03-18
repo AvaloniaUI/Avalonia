@@ -1,9 +1,8 @@
 Compat issues with assembly Avalonia.Visuals:
-InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.DrawBitmap(Avalonia.Utilities.IRef<Avalonia.Platform.IBitmapImpl>, System.Double, Avalonia.Rect, Avalonia.Rect, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the contract but not in the implementation.
-MembersMustExist : Member 'public void Avalonia.Platform.IDrawingContextImpl.DrawBitmap(Avalonia.Utilities.IRef<Avalonia.Platform.IBitmapImpl>, System.Double, Avalonia.Rect, Avalonia.Rect, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' does not exist in the implementation but it does exist in the contract.
-InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.DrawBitmap(Avalonia.Utilities.IRef<Avalonia.Platform.IBitmapImpl>, System.Double, Avalonia.Rect, Avalonia.Rect, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode, Avalonia.Visuals.Media.Imaging.BitmapBlendingMode)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.PopBitmapBlendMode()' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IDrawingContextImpl.PushBitmapBlendMode(Avalonia.Visuals.Media.Imaging.BitmapBlendingMode)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Double Avalonia.Platform.IGeometryImpl.ContourLength' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Double Avalonia.Platform.IGeometryImpl.ContourLength.get()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IGeometryImpl.TryGetPointAndTangentAtDistance(System.Double, Avalonia.Point, Avalonia.Point)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IGeometryImpl.TryGetPointAtDistance(System.Double, Avalonia.Point)' is present in the implementation but not in the contract.
-Total Issues: 7
+Total Issues: 6
