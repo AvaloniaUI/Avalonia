@@ -375,6 +375,16 @@ namespace Avalonia.Headless
 
             }
 
+            public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+            {
+                
+            }
+
+            public void PopBitmapBlendMode()
+            {
+                
+            }
+
             public void Custom(ICustomDrawOperation custom)
             {
 
