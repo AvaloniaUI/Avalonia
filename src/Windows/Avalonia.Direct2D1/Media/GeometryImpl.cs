@@ -1,3 +1,4 @@
+using Avalonia.Logging;
 using Avalonia.Platform;
 using SharpDX.Direct2D1;
 
@@ -8,6 +9,8 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public abstract class GeometryImpl : IGeometryImpl
     {
+        private const float ContourApproximation = 0.0001f;
+
         public GeometryImpl(Geometry geometry)
         {
             Geometry = geometry;
@@ -15,6 +18,9 @@ namespace Avalonia.Direct2D1.Media
 
         /// <inheritdoc/>
         public Rect Bounds => Geometry.GetWidenedBounds(0).ToAvalonia();
+
+        /// <inheritdoc />
+        public double ContourLength => Geometry.ComputeLength(null, ContourApproximation);
 
         public Geometry Geometry { get; }
 
@@ -56,6 +62,24 @@ namespace Avalonia.Direct2D1.Media
                     GetSourceGeometry(),
                     transform.ToDirect2D()),
                 this);
+        }
+        
+        /// <inheritdoc />
+        public bool TryGetPointAtDistance(double distance, out Point point)
+        {
+            Geometry.ComputePointAtLength((float)distance, ContourApproximation, out var tangentVector);
+            point = new Point(tangentVector.X, tangentVector.Y);
+            return true;
+        }
+        
+        /// <inheritdoc />
+        public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
+        {
+            // Direct2D doesnt have this sadly.
+            Logger.TryGet(LogEventLevel.Warning, LogArea.Visual)?.Log(this, "TryGetPointAndTangentAtDistance is not available in Direct2D.");
+            point = new Point();
+            tangent = new Point();
+            return false;
         }
 
         protected virtual Geometry GetSourceGeometry() => Geometry;
