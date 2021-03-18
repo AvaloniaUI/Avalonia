@@ -104,6 +104,9 @@ namespace Avalonia.Headless
             }
 
             public Rect Bounds { get; set; }
+            
+            public double ContourLength { get; } = 0;
+            
             public virtual bool FillContains(Point point) => Bounds.Contains(point);
 
             public Rect GetRenderBounds(IPen pen)
@@ -126,6 +129,19 @@ namespace Avalonia.Headless
 
             public ITransformedGeometryImpl WithTransform(Matrix transform) =>
                 new HeadlessTransformedGeometryStub(this, transform);
+
+            public bool TryGetPointAtDistance(double distance, out Point point)
+            {
+                point = new Point();
+                return false;
+            }
+
+            public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
+            {
+                point = new Point();
+                tangent = new Point();
+                return false;
+            }
         }
 
         class HeadlessTransformedGeometryStub : HeadlessGeometryStub, ITransformedGeometryImpl

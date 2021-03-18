@@ -30,6 +30,8 @@ namespace Avalonia.UnitTests
         public IGeometryImpl SourceGeometry { get; }
 
         public Rect Bounds => _context.CalculateBounds();
+        
+        public double ContourLength { get; }
 
         public Matrix Transform { get; }
 
@@ -67,6 +69,19 @@ namespace Avalonia.UnitTests
         public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
             return new MockStreamGeometryImpl(transform, _context);
+        }
+
+        public bool TryGetPointAtDistance(double distance, out Point point)
+        {
+            point = new Point();
+            return false;
+        }
+
+        public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
+        {
+            point = new Point();
+            tangent = new Point();
+            return false;
         }
 
         class MockStreamGeometryContext : IStreamGeometryContextImpl
