@@ -184,8 +184,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType)), 
                 new DeterministicIdGenerator()),
                 _sreEmitMappings,
-                _sreContextType) { EnableIlVerification = true };
-            
+                _sreContextType) { EnableIlVerification = true }
 
             IXamlType overrideType = null;
             if (rootInstance != null)
