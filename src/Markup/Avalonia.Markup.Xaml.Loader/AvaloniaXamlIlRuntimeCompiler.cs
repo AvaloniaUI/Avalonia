@@ -22,6 +22,13 @@ using XamlX.IL.Cecil;
 #endif
 namespace Avalonia.Markup.Xaml.XamlIl
 {
+    public class DeterministicIdGenerator : IXamlIdentifierGenerator
+    {
+        private int _nextId = 1;
+        
+        public string GenerateIdentifierPart() => (_nextId++).ToString();
+    }
+    
     static class AvaloniaXamlIlRuntimeCompiler
     {
 #if !RUNTIME_XAML_CECIL
