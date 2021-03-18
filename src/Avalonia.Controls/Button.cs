@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -78,9 +79,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
 
+        public static readonly DirectProperty<Button, FlyoutBase> FlyoutProperty =
+            AvaloniaProperty.RegisterDirect<Button, FlyoutBase>(nameof(Flyout),
+                x => x.Flyout, (x, v) => x.Flyout = v);
+
         private ICommand _command;
         private bool _commandCanExecute = true;
         private KeyGesture _hotkey;
+        private FlyoutBase _flyout;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -167,6 +173,12 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IsPressedProperty); }
             private set { SetValue(IsPressedProperty, value); }
+        }
+
+        public FlyoutBase Flyout
+        {
+            get => _flyout;
+            set => SetAndRaise(FlyoutProperty, ref _flyout, value);
         }
 
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
@@ -278,6 +290,8 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void OnClick()
         {
+            OpenFlyout();
+
             var e = new RoutedEventArgs(ClickEvent);
             RaiseEvent(e);
 
@@ -286,6 +300,11 @@ namespace Avalonia.Controls
                 Command.Execute(CommandParameter);
                 e.Handled = true;
             }
+        }
+
+        protected virtual void OpenFlyout()
+        {
+            _flyout?.ShowAt(this);
         }
 
         /// <inheritdoc/>
