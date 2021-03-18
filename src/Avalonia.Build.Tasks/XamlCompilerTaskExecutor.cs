@@ -26,7 +26,7 @@ namespace Avalonia.Build.Tasks
     {
         static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
                                                || r.Name.ToLowerInvariant().EndsWith(".paml")
-                                                  || r.Name.ToLowerInvariant().EndsWith(".axaml");
+                                               || r.Name.ToLowerInvariant().EndsWith(".axaml");
         
         public class CompileResult
         {
