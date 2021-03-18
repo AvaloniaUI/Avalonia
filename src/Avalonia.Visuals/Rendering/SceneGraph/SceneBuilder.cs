@@ -49,6 +49,11 @@ namespace Avalonia.Rendering.SceneGraph
                 UpdateSize(scene);
             }
 
+            if (visual is IRenderTimeCriticalVisual criticalVisual)
+            {
+                ForceUpdateCriticalRender(scene, visual);
+            }
+
             if (visual.VisualRoot == scene.Root.Visual)
             {
                 if (node?.Parent != null &&
@@ -297,11 +302,20 @@ namespace Avalonia.Rendering.SceneGraph
                 }
             }
         }
-
+        
+        // TODO: Im clueless so im just copying the above method to force a dirty rect.
+        private void ForceUpdateCriticalRender(Scene scene, IVisual visual)
+        {
+         }
+        
         private static VisualNode CreateNode(Scene scene, IVisual visual, VisualNode parent)
         {
             var node = new VisualNode(visual, parent);
             node.LayerRoot = parent.LayerRoot;
+            if (visual is IRenderTimeCriticalVisual)
+            {
+                scene.HasCriticalVisual = true;
+            }
             scene.Add(node);
             return node;
         }
@@ -315,6 +329,12 @@ namespace Avalonia.Rendering.SceneGraph
                     Deindex(scene, visual);
                 }
             }
+            
+            if (node.Visual is IRenderTimeCriticalVisual)
+            {
+                scene.HasCriticalVisual = false;
+            }
+            
             scene.Remove(node);
 
             node.SubTreeUpdated = true;

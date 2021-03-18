@@ -21,7 +21,7 @@ namespace ControlCatalog.Pages
 
         private Typeface _typeface = Typeface.Default;
 
-        public void ThreadSafeRender(DrawingContext context, Size logicalSize, double scaling)
+        public override void Render(DrawingContext context)
         {
             var nowTs = _st.Elapsed;
             var now = DateTime.Now;
@@ -43,9 +43,14 @@ namespace ControlCatalog.Pages
             };
             var back = new ImmutableSolidColorBrush(Colors.LightGray);
             var textBrush = new ImmutableSolidColorBrush(Colors.Black);
-            context.FillRectangle(back, new Rect(logicalSize));
+            context.FillRectangle(back, new Rect(0,0,12,12));
             context.DrawText(textBrush, new Point(5, 5), fmt);
             _frame++;
+        }
+
+        public void ThreadSafeRender(DrawingContext context, Size logicalSize, double scaling)
+        {
+           
         }
     }
 }

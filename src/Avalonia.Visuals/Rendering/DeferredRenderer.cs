@@ -250,7 +250,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        bool NeedsUpdate => _dirty == null || _dirty.Count > 0;
+        private bool NeedsUpdate => _dirty == null || _dirty.Count > 0 || (_scene?.Item?.HasCriticalVisual ?? false);
         bool IRenderLoopTask.NeedsUpdate => NeedsUpdate;
 
         void IRenderLoopTask.Update(TimeSpan time) => UpdateScene();
@@ -631,6 +631,7 @@ namespace Avalonia.Rendering
                     foreach (var visual in _recalculateChildren)
                     {
                         var node = scene.FindNode(visual);
+                        
                         ((VisualNode)node)?.SortChildren(scene);
                     }
 

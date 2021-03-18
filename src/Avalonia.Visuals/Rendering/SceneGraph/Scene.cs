@@ -25,12 +25,14 @@ namespace Avalonia.Rendering.SceneGraph
                 new VisualNode(rootVisual, null),
                 new Dictionary<IVisual, IVisualNode>(),
                 new SceneLayers(rootVisual),
-                0)
+                0,
+                false)
         {
             _index.Add(rootVisual, Root);
         }
 
-        private Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index, SceneLayers layers, int generation)
+        private Scene(VisualNode root, Dictionary<IVisual, IVisualNode> index, SceneLayers layers, int generation,
+            bool hasCriticalVisual)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
@@ -41,6 +43,7 @@ namespace Avalonia.Rendering.SceneGraph
             Layers = layers;
             Generation = generation;
             root.LayerRoot = root.Visual;
+            HasCriticalVisual = hasCriticalVisual;
         }
 
         public Task Rendered => _rendered.Task;
@@ -70,6 +73,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public double Scaling { get; set; } = 1;
 
+        public bool HasCriticalVisual { get;
+            set; }
+
         /// <summary>
         /// Adds a node to the scene index.
         /// </summary>
@@ -90,7 +96,7 @@ namespace Avalonia.Rendering.SceneGraph
             var index = new Dictionary<IVisual, IVisualNode>(_index.Count);
             var root = Clone((VisualNode)Root, null, index);
 
-            var result = new Scene(root, index, Layers.Clone(), Generation + 1)
+            var result = new Scene(root, index, Layers.Clone(), Generation + 1, HasCriticalVisual)
             {
                 Size = Size,
                 Scaling = Scaling,
