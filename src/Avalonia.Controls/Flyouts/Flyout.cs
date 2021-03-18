@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using Avalonia.Controls.Primitives;
+using Avalonia.Metadata;
 using Avalonia.Styling;
 
 #nullable enable
@@ -31,6 +32,7 @@ namespace Avalonia.Controls
         private Styles? _styles;
         private bool _stylesDirty;
 
+        [Content]
         public object Content
         {
             get => GetValue(ContentProperty);
