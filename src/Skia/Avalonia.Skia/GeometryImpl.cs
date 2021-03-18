@@ -11,19 +11,12 @@ namespace Avalonia.Skia
     internal abstract class GeometryImpl : IGeometryImpl
     {
         private PathCache _pathCache;
-  
+        
         /// <inheritdoc />
         public abstract Rect Bounds { get; }
         
         /// <inheritdoc />
-        public double ContourLength
-        {
-            get
-            {
-                if (EffectivePath is null) return 0;
-                return new SKPathMeasure(EffectivePath).Length;
-            }
-        }
+        public double ContourLength =>  _pathCache.CachePathMeasure?.Length ?? 0;
 
         public abstract SKPath EffectivePath { get; }
 
@@ -118,13 +111,13 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool TryGetPointAtDistance(double distance, out Point point)
         {
-            if (EffectivePath is null)
+            if (_pathCache.CachePathMeasure is null)
             {
                 point = new Point();
                 return false;
             }
             
-            var res = new SKPathMeasure(EffectivePath).GetPosition((float)distance, out var skPoint);
+            var res = _pathCache.CachePathMeasure.GetPosition((float)distance, out var skPoint);
             point = new Point(skPoint.X, skPoint.Y);
             return res;
         }
@@ -132,14 +125,14 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
         {
-            if (EffectivePath is null)
+            if (_pathCache.CachePathMeasure is null)
             {
                 point = new Point();
                 tangent = new Point();
                 return false;
             }
             
-            var res = new SKPathMeasure(EffectivePath).GetPositionAndTangent((float)distance, out var skPoint, out var skTangent);
+            var res = _pathCache.CachePathMeasure.GetPositionAndTangent((float)distance, out var skPoint, out var skTangent);
             point = new Point(skPoint.X, skPoint.Y);
             tangent = new Point(skTangent.X, skTangent.Y);
             return res;
@@ -156,7 +149,7 @@ namespace Avalonia.Skia
         private struct PathCache
         {
             private float _cachedStrokeWidth;
-            
+
             /// <summary>
             /// Tolerance for two stroke widths to be deemed equal
             /// </summary>
@@ -171,6 +164,11 @@ namespace Avalonia.Skia
             /// Cached geometry render bounds.
             /// </summary>
             public Rect CachedGeometryRenderBounds { get; private set; }
+            
+            /// <summary>
+            /// Cached path measurement helper.
+            /// </summary>
+            public SKPathMeasure CachePathMeasure { get; private set; }
 
             /// <summary>
             /// Is cached valid for given stroke width.
@@ -196,7 +194,8 @@ namespace Avalonia.Skia
                 }
 
                 CachedStrokePath = path;
-                CachedGeometryRenderBounds = geometryRenderBounds;
+                CachedGeometryRenderBounds = geometryRenderBounds;             
+                CachePathMeasure = new SKPathMeasure(path);
                 _cachedStrokeWidth = strokeWidth;
             }
 
@@ -206,6 +205,7 @@ namespace Avalonia.Skia
             public void Invalidate()
             {
                 CachedStrokePath?.Dispose();
+                CachePathMeasure?.Dispose();
                 CachedGeometryRenderBounds = Rect.Empty;
                 _cachedStrokeWidth = default(float);
             }
