@@ -393,7 +393,7 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+            public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default, BitmapBlendingMode bitmapBlendingMode = BitmapBlendingMode.SourceOver)
             {
                 
             }

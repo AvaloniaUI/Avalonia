@@ -132,7 +132,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode, BitmapBlendingMode bitmapBlendingMode)
         {
             var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
@@ -145,6 +145,7 @@ namespace Avalonia.Skia
                 })
             {
                 paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
+                paint.BlendMode = bitmapBlendingMode.ToSKBlendMode();
 
                 drawableImage.Draw(this, s, d, paint);
             }
@@ -154,7 +155,7 @@ namespace Avalonia.Skia
         public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
+            DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default, BitmapBlendingMode.SourceOver);
             PopOpacityMask();
         }
 

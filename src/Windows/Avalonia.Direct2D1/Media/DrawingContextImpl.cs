@@ -5,6 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -116,12 +117,14 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode, BitmapBlendingMode bitmapBlendingMode)
         {
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             {
                 var interpolationMode = GetInterpolationMode(bitmapInterpolationMode);
-
+                
+                // TODO: How to implement CompositeMode here?
+                
                 _deviceContext.DrawBitmap(
                     d2d.Value,
                     destRect.ToSharpDX(),
@@ -146,6 +149,35 @@ namespace Avalonia.Direct2D1.Media
                     return InterpolationMode.Linear;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
+            }
+        }
+
+        public static CompositeMode GetCompositeMode(BitmapBlendingMode blendingMode)
+        {
+            switch (blendingMode)
+            {  
+                case BitmapBlendingMode.SourceIn:
+                    return CompositeMode.SourceIn;
+                case BitmapBlendingMode.SourceOut:
+                    return CompositeMode.SourceOut;
+                case BitmapBlendingMode.SourceOver:
+                    return CompositeMode.SourceOver;
+                case BitmapBlendingMode.SourceAtop:
+                    return CompositeMode.SourceAtop; 
+                case BitmapBlendingMode.DestinationIn:
+                    return CompositeMode.DestinationIn;
+                case BitmapBlendingMode.DestinationOut:
+                    return CompositeMode.DestinationOut;
+                case BitmapBlendingMode.DestinationOver:
+                    return CompositeMode.DestinationOver;
+                case BitmapBlendingMode.DestinationAtop:
+                    return CompositeMode.DestinationAtop;
+                case BitmapBlendingMode.Xor:
+                    return CompositeMode.Xor;
+                case BitmapBlendingMode.Plus:
+                    return CompositeMode.Plus;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(blendingMode), blendingMode, null);
             }
         }
 

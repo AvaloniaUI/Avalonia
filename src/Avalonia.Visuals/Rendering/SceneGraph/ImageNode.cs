@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode, BitmapBlendingMode bitmapBlendingMode)
             : base(destRect, transform)
         {
             Transform = transform;
@@ -27,6 +27,7 @@ namespace Avalonia.Rendering.SceneGraph
             SourceRect = sourceRect;
             DestRect = destRect;
             BitmapInterpolationMode = bitmapInterpolationMode;
+            BitmapBlendingMode = bitmapBlendingMode;
             SourceVersion = Source.Item.Version;
         }        
 
@@ -67,6 +68,14 @@ namespace Avalonia.Rendering.SceneGraph
         /// The scaling mode.
         /// </value>
         public BitmapInterpolationMode BitmapInterpolationMode { get; }
+        
+        /// <summary>
+        /// The bitmap blending mode.
+        /// </summary>
+        /// <value>
+        /// The blending mode.
+        /// </value>
+        public BitmapBlendingMode BitmapBlendingMode { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -82,22 +91,23 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode, BitmapBlendingMode bitmapBlendingMode)
         {
             return transform == Transform &&
-                Equals(source.Item, Source.Item) &&
-                source.Item.Version == SourceVersion &&
-                opacity == Opacity &&
-                sourceRect == SourceRect &&
-                destRect == DestRect &&
-                bitmapInterpolationMode == BitmapInterpolationMode;
+                   Equals(source.Item, Source.Item) &&
+                   source.Item.Version == SourceVersion &&
+                   opacity == Opacity &&
+                   sourceRect == SourceRect &&
+                   destRect == DestRect &&
+                   bitmapInterpolationMode == BitmapInterpolationMode &&
+                   bitmapBlendingMode == BitmapBlendingMode;
         }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawBitmap(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
+            context.DrawBitmap(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode, BitmapBlendingMode);
         }
 
         /// <inheritdoc/>
