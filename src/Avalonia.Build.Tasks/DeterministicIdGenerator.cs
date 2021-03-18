@@ -5,7 +5,7 @@ namespace Avalonia.Build.Tasks
 {
     public class DeterministicIdGenerator : IXamlIdentifierGenerator
     {
-        // Seed is a part of MD5 Hash of our repo.
+        // Seed is a part of MD5 Hash of our repo URL.
         private readonly Random _randomGen = new Random(0x9b94b93);
         
         public string GenerateIdentifierPart()
