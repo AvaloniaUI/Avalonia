@@ -24,12 +24,9 @@ namespace Avalonia.Build.Tasks
 {
     public static partial class XamlCompilerTaskExecutor
     {
-        private static readonly IXamlIdentifierGenerator _deterministicIdentifierGenerator 
-            = new DeterministicIdGenerator();
-        
         static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".paml")
-                                               || r.Name.ToLowerInvariant().EndsWith(".axaml");
+                                                  || r.Name.ToLowerInvariant().EndsWith(".paml")
+                                                  || r.Name.ToLowerInvariant().EndsWith(".axaml");
         
         public class CompileResult
         {
@@ -102,7 +99,7 @@ namespace Avalonia.Build.Tasks
                 AvaloniaXamlIlLanguage.CustomValueConverter,
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
-                _deterministicIdentifierGenerator);
+                new DeterministicIdGenerator());
 
 
             var contextDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlContext", 
