@@ -11,6 +11,12 @@ namespace Avalonia.Platform
         /// Gets the geometry's bounding rectangle.
         /// </summary>
         Rect Bounds { get; }
+        
+        /// <summary>
+        /// Gets the geometry's total length as if all its contours are placed
+        /// in a straight line.
+        /// </summary>
+        double ContourLength { get; }
 
         /// <summary>
         /// Gets the geometry's bounding rectangle with the specified pen.
@@ -47,5 +53,25 @@ namespace Avalonia.Platform
         /// <param name="transform">The transform.</param>
         /// <returns>The cloned geometry.</returns>
         ITransformedGeometryImpl WithTransform(Matrix transform);
+
+        /// <summary>
+        /// Attempts to get the corresponding point from the
+        /// specified distance
+        /// </summary>
+        /// <param name="distance">The contour distance to get from.</param>
+        /// <param name="point">The point in the specified distance.</param>
+        /// <returns>If there's valid point at the specified distance.</returns>
+        bool TryGetPointAtDistance(double distance, out Point point);
+
+        /// <summary>
+        /// Attempts to get the corresponding point and
+        /// tangent from the specified distance along the
+        /// contour of the geometry.
+        /// </summary>
+        /// <param name="distance">The contour distance to get from.</param>
+        /// <param name="point">The point in the specified distance.</param>
+        /// <param name="tangent">The tangent in the specified distance.</param>
+        /// <returns>If there's valid point and tangent at the specified distance.</returns>
+        bool TryGetPositionAndTangentAtDistance (double distance, out Point position, out Point tangent); 
     }
 }
