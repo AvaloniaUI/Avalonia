@@ -276,6 +276,8 @@ namespace Avalonia.Rendering
 
         internal void UnitTestUpdateScene() => UpdateScene();
 
+        internal void UnitTestRender() => Render(false);
+
         internal Scene UnitTestScene() => _scene.Item;
 
         private void EnsureCanHitTest()
@@ -354,7 +356,7 @@ namespace Avalonia.Rendering
 
                     Layers.Update(scene, context);
 
-                    RenderToLayers(scene, false);
+                    RenderToLayers(scene);
 
                     if (DebugFramesPath != null)
                     {
@@ -387,37 +389,13 @@ namespace Avalonia.Rendering
                     // Indicate that we have updated the layers
                     return (sceneRef.Clone(), true);
                 }
- 
-                var hasCriticalRenderTimeVisualUpdates = Layers.Any(l =>
-                    l.LayerRoot is IRenderTimeCriticalVisual critical && critical.ThreadSafeHasNewFrame);
-                if (hasCriticalRenderTimeVisualUpdates)
-                {
-                    Layers.Update(scene, contextFactory());
-                    // Render only layers with critical-time visual roots
-                    RenderToLayers(scene, true);
-                    if (DebugFramesPath != null)
-                    {
-                        SaveDebugFrames(scene.Generation);
-                    }
-                    // Indicate that we have updated the layers
-                    return (sceneRef.Clone(), true);
-                } else
-                    return (sceneRef.Clone(), false);
+
+                // Just return scene, layers weren't updated
+                return (sceneRef.Clone(), false);
             }
 
         }
 
-
-        private void RenderTimeCriticalVisual(IDrawingContextImpl context,  VisualNode node,
-            IRenderTimeCriticalVisual critical, double scaling)
-        {
-            var savedTransform = context.Transform;
-            using (var fullCtx = new DrawingContext(context, false))
-            using (fullCtx.PushPostTransform(node.Transform))
-            using (fullCtx.PushTransformContainer())
-                critical.ThreadSafeRender(fullCtx, node.VisualSize, scaling);
-            context.Transform = savedTransform;
-        }
 
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
         {
@@ -454,7 +432,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderToLayers(Scene scene,  bool criticalTimeRenderOnly)
+        private void RenderToLayers(Scene scene)
         {
             foreach (var layer in scene.Layers)
             {
@@ -464,18 +442,12 @@ namespace Avalonia.Rendering
                 var renderTarget = renderLayer.Bitmap;
                 var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                var critical = node.Visual as IRenderTimeCriticalVisual;
-                if (criticalTimeRenderOnly && critical?.HasNewFrame != true)
-                    continue;
-                
                 if (node != null)
                 {
                     using (var context = renderTarget.Item.CreateDrawingContext(this))
-                        if (criticalTimeRenderOnly && critical?.ThreadSafeHasNewFrame != true)
-                            continue; 
                     {
                         if (renderLayer.IsEmpty)
-                        { 
+                        {
                             // Render entire layer root node
                             context.Clear(Colors.Transparent);
                             context.Transform = Matrix.Identity;
@@ -497,19 +469,12 @@ namespace Avalonia.Rendering
                             {
                                 var snappedRect = SnapToDevicePixels(rect, scale);
                                 context.Transform = Matrix.Identity;
-                                 context.PushClip(snappedRect);
+                                context.PushClip(snappedRect);
                                 context.Clear(Colors.Transparent);
                                 Render(context, node, layer.LayerRoot, snappedRect);
-                                if (critical != null)
-                                    RenderTimeCriticalVisual(context, node, critical, scene.Scaling);
                                 context.PopClip();
 
                                 if (DrawDirtyRects)
-                                    _dirtyRectsDisplay.Add(node.Bounds);
-                            }
-                            else
-                            {
-                                foreach (var rect in layer.Dirty)
                                 {
                                     _dirtyRectsDisplay.Add(snappedRect);
                                 }

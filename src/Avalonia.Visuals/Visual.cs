@@ -90,18 +90,10 @@ namespace Avalonia
         public static readonly StyledProperty<int> ZIndexProperty =
             AvaloniaProperty.Register<Visual, int>(nameof(ZIndex));
 
-        /// <summary>
-        /// Defines the <see cref="WantsLayer"/> property.
-        /// </summary>
-        public static readonly DirectProperty<Visual, bool> WantsLayerProperty =
-            AvaloniaProperty.RegisterDirect<Visual, bool>("WantsLayer", o => o._wantsLayer,
-                (o, v) => o._wantsLayer = v);
-
         private Rect _bounds;
         private TransformedBounds? _transformedBounds;
         private IRenderRoot _visualRoot;
         private IVisual _visualParent;
-        private bool _wantsLayer;
 
         /// <summary>
         /// Initializes static members of the <see cref="Visual"/> class.
@@ -113,8 +105,7 @@ namespace Avalonia
                 ClipProperty,
                 ClipToBoundsProperty,
                 IsVisibleProperty,
-                OpacityProperty,
-                WantsLayerProperty);
+                OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
             ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
@@ -265,15 +256,6 @@ namespace Avalonia
         {
             get;
             private set;
-        }
-
-        /// <summary>
-        /// Allows to explicitly force a rendering layer for a particular visual. Use with caution.
-        /// </summary>
-        public bool WantsLayer
-        {
-            get => GetValue(WantsLayerProperty);
-            set => SetValue(WantsLayerProperty, value);
         }
 
         /// <summary>
