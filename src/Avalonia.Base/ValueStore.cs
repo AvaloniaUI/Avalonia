@@ -138,7 +138,7 @@ namespace Avalonia
             IObservable<BindingValue<T>> source,
             BindingPriority priority)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (_values.TryGetValue(property, out var slot) && !IsRemoveSentinel<T>(slot))
             {
                 return BindExisting(slot, property, source, priority);
             }
@@ -338,7 +338,7 @@ namespace Avalonia
         private void AddValue(AvaloniaProperty property, IValue value)
         {
             _values.AddValue(property, value);
-            if (_batchUpdate is object && value is IBatchUpdate batch)
+            if (_batchUpdate?.IsBatchUpdating == true && value is IBatchUpdate batch)
                 batch.BeginBatchUpdate();
             value.Start();
         }
@@ -380,6 +380,8 @@ namespace Avalonia
             private int _iterator = -1;
 
             public BatchUpdate(ValueStore owner) => _owner = owner;
+
+            public bool IsBatchUpdating => _batchUpdateCount > 0;
 
             public void Begin()
             {

@@ -478,6 +478,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new TestClass();
             var raised = 0;
+            var notifications = new List<AvaloniaPropertyChangedEventArgs>();
 
             target.Foo = "foo";
 
@@ -490,11 +491,16 @@ namespace Avalonia.Base.UnitTests
                     target.Bind(TestClass.FooProperty, new TestObservable<string>("bar"));
                     ++raised;
                 }
+
+                notifications.Add(e);
             };
             target.EndBatchUpdate();
 
             Assert.Equal("bar", target.Foo);
             Assert.Equal(1, raised);
+            Assert.Equal(2, notifications.Count);
+            Assert.Equal(null, notifications[0].NewValue);
+            Assert.Equal("bar", notifications[1].NewValue);
         }
 
         public class TestClass : AvaloniaObject
