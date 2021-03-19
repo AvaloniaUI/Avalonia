@@ -646,22 +646,49 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Null(target.Text);
             }
         }
-
-        [Fact]
-        public void Text_Box_MaxLength_Work_Properly()
+        
+        [Theory]
+        [InlineData("abc", "d", 3, 0, 0, false, "abc")]
+        [InlineData("abc", "dd", 4, 3, 3, false, "abcd")]
+        [InlineData("abc", "ddd", 3, 0, 2, true, "ddc")]
+        [InlineData("abc", "dddd", 4, 1, 3, true, "addd")]
+        [InlineData("abc", "ddddd", 5, 3, 3, true, "abcdd")]
+        public void MaxLength_Works_Properly(
+            string initalText,
+            string textInput,
+            int maxLength,
+            int selectionStart,
+            int selectionEnd,
+            bool fromClipboard,
+            string expected)
         {
             using (UnitTestApplication.Start(Services))
             {
                 var target = new TextBox
                 {
                     Template = CreateTemplate(),
-                    Text = "abc",
-                    MaxLength = 3,
+                    Text = initalText,
+                    MaxLength = maxLength,
+                    SelectionStart = selectionStart,
+                    SelectionEnd = selectionEnd
                 };
-
-                RaiseKeyEvent(target, Key.D, KeyModifiers.None);
-
-                Assert.Equal("abc", target.Text);
+                
+                if (fromClipboard)
+                {
+                    AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
+                    
+                    var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                    clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
+                    
+                    RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
+                    clipboard.ClearAsync().GetAwaiter().GetResult();
+                }
+                else
+                {
+                    RaiseTextEvent(target, textInput);
+                }
+                
+                Assert.Equal(expected, target.Text);
             }
         }
 
@@ -758,11 +785,22 @@ namespace Avalonia.Controls.UnitTests
 
         private class ClipboardStub : IClipboard // in order to get tests working that use the clipboard
         {
-            public Task<string> GetTextAsync() => Task.FromResult("");
+            private string _text;
 
-            public Task SetTextAsync(string text) => Task.CompletedTask;
+            public Task<string> GetTextAsync() => Task.FromResult(_text);
 
-            public Task ClearAsync() => Task.CompletedTask;
+            public Task SetTextAsync(string text)
+            {
+                _text = text;
+                return Task.CompletedTask;
+            }
+
+            public Task ClearAsync()
+            {
+                _text = null;
+                return Task.CompletedTask;
+            }
+            
             public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
             public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
