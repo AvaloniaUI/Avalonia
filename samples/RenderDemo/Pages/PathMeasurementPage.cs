@@ -1,5 +1,7 @@
+using System;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Security.Cryptography;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
@@ -19,6 +21,7 @@ namespace RenderDemo.Pages
         {
             _bitmap = new RenderTargetBitmap(new PixelSize(500, 500), new Vector(96, 96));
             base.OnAttachedToLogicalTree(e);
+            AffectsRender<PathMeasurementPage>(BoundsProperty);
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -28,91 +31,54 @@ namespace RenderDemo.Pages
             base.OnDetachedFromLogicalTree(e);
         }
 
-        readonly Stopwatch _st = Stopwatch.StartNew();
-
-
         readonly IPen strokePen = new ImmutablePen(Brushes.DarkBlue, 10d, null, PenLineCap.Round, PenLineJoin.Round);
         readonly IPen strokePen1 = new ImmutablePen(Brushes.Purple, 10d, null, PenLineCap.Round, PenLineJoin.Round);
         readonly IPen strokePen2 = new ImmutablePen(Brushes.Green, 10d, null, PenLineCap.Round, PenLineJoin.Round);
         readonly IPen strokePen3 = new ImmutablePen(Brushes.LightBlue, 10d, null, PenLineCap.Round, PenLineJoin.Round);
+        readonly IPen strokePen4 = new ImmutablePen(Brushes.Red, 1d, null, PenLineCap.Round, PenLineJoin.Round);
 
         public override void Render(DrawingContext context)
         {
             using (var ctxi = _bitmap.CreateDrawingContext(null))
-            using (var ctx = new DrawingContext(ctxi, false))
+            using (var bitmapCtx = new DrawingContext(ctxi, false))
             {
                 ctxi.Clear(default);
 
-                var x = new PathGeometry();
+                var basePath = new PathGeometry();
 
-                using (var xsad = x.Open())
+                using (var basePathCtx = basePath.Open())
                 {
-                    xsad.BeginFigure(new Point(20, 20), false);
-                    xsad.LineTo(new Point(400, 50));
-                    xsad.LineTo(new Point(80, 100));
-                    xsad.LineTo(new Point(300, 150));
-                    xsad.EndFigure(false);
+                    basePathCtx.BeginFigure(new Point(20, 20), false);
+                    basePathCtx.LineTo(new Point(400, 50));
+                    basePathCtx.LineTo(new Point(80, 100));
+                    basePathCtx.LineTo(new Point(300, 150));
+                    basePathCtx.EndFigure(false);
                 }
 
-                ctx.DrawGeometry(null, strokePen, x);
+                bitmapCtx.DrawGeometry(null, strokePen, basePath);
 
 
-                var length = x.PlatformImpl.ContourLength;
+                var length = basePath.PlatformImpl.ContourLength;
 
+                if (basePath.PlatformImpl.TryGetSegment(length * 0.05, length * 0.2, true, out var dst1))
+                    bitmapCtx.DrawGeometry(null, strokePen1, dst1);
 
-                if (x.PlatformImpl.TryGetSegment(length * 0.05, length * 0.2, true, out var dst1))
-                    ctx.DrawGeometry(null, strokePen1, (Geometry)dst1);
+                if (basePath.PlatformImpl.TryGetSegment(length * 0.2, length * 0.8, true, out var dst2))
+                    bitmapCtx.DrawGeometry(null, strokePen2, dst2);
 
-                if (x.PlatformImpl.TryGetSegment(length * 0.2, length * 0.8, true, out var dst2))
-                    ctx.DrawGeometry(null, strokePen2, (Geometry)dst2);
+                if (basePath.PlatformImpl.TryGetSegment(length * 0.8, length * 0.95, true, out var dst3))
+                    bitmapCtx.DrawGeometry(null, strokePen3, dst3);
                 
-                if (x.PlatformImpl.TryGetSegment(length * 0.8, length * 0.95, true, out var dst3))
-                    ctx.DrawGeometry(null, strokePen3, (Geometry)dst3);
-
-                /*
-                 * paint.Style = SKPaintStyle.Stroke;z
-				paint.StrokeWidth = 10;z
-				paint.IsAntialias = true;z
-				paint.StrokeCap = SKStrokeCap.Round;z
-				paint.StrokeJoin = SKStrokeJoin.Round;x
-
-				path.MoveTo(20, 20);
-				path.LineTo(400, 50);
-				path.LineTo(80, 100);
-				path.LineTo(300, 150);
-
-				paint.Color = SampleMedia.Colors.XamarinDarkBlue;
-				canvas.DrawPath(path, paint);
-
-				using (var measure = new SKPathMeasure(path, false))
-				using (var dst = new SKPath())
-				{
-					var length = measure.Length;
-
-					dst.Reset();
-					measure.GetSegment(length * 0.05f, length * 0.2f, dst, true);
-					paint.Color = SampleMedia.Colors.XamarinPurple;
-					canvas.DrawPath(dst, paint);
-
-					dst.Reset();
-					measure.GetSegment( dst, true);
-					paint.Color = SampleMedia.Colors.XamarinGreen;
-					canvas.DrawPath(dst, paint);
-
-					dst.Reset();
-					measure.GetSegment(length * 0.8f, length * 0.95f, dst, true);
-					paint.Color = SampleMedia.Colors.XamarinLightBlue;
-					canvas.DrawPath(dst, paint);
-				}
-                 */
-                //  
-                // ctx.FillRectangle(Brushes.Fuchsia, new Rect(50, 50, 100, 100));
+                var pathBounds = basePath.GetRenderBounds(strokePen);
+                
+                bitmapCtx.DrawRectangle(null, strokePen4, pathBounds);
             }
+
 
             context.DrawImage(_bitmap,
                 new Rect(0, 0, 500, 500),
                 new Rect(0, 0, 500, 500));
-            Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
+             
             base.Render(context);
         }
     }
