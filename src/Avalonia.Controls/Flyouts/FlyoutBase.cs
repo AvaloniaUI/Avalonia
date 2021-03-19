@@ -389,15 +389,15 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private static void OnContextFlyoutPropertyChanged(AvaloniaPropertyChangedEventArgs<FlyoutBase> args)
+        private static void OnContextFlyoutPropertyChanged(AvaloniaPropertyChangedEventArgs args)
         {
             if (args.Sender is Control c)
             {
-                if (args.OldValue.GetValueOrDefault() is FlyoutBase)
+                if (args.OldValue is FlyoutBase)
                 {
                     c.PointerReleased -= OnControlWithContextFlyoutPointerReleased;
                 }
-                if (args.NewValue.GetValueOrDefault() is FlyoutBase)
+                if (args.NewValue is FlyoutBase)
                 {
                     c.PointerReleased += OnControlWithContextFlyoutPointerReleased;
                 }
