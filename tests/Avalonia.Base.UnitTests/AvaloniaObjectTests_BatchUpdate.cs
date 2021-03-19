@@ -449,6 +449,29 @@ namespace Avalonia.Base.UnitTests
             Assert.Null(raised[1].NewValue);
         }
 
+        [Fact]
+        public void Can_Set_Cleared_Value_When_Ending_Batch_Update()
+        {
+            var target = new TestClass();
+            var raised = 0;
+
+            target.Foo = "foo";
+
+            target.BeginBatchUpdate();
+            target.ClearValue(TestClass.FooProperty);
+            target.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == TestClass.FooProperty && e.NewValue is null)
+                {
+                    target.Foo = "bar";
+                    ++raised;
+                }
+            };
+            target.EndBatchUpdate();
+
+            Assert.Equal(1, raised);
+        }
+
         public class TestClass : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
