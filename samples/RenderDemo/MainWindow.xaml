@@ -57,6 +57,9 @@
       <TabItem Header="LineBounds">
         <pages:LineBoundsPage />
       </TabItem>
+      <TabItem Header="Path Measurement">
+        <pages:PathMeasurementPage />
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>
