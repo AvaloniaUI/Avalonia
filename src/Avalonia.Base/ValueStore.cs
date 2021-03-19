@@ -103,7 +103,7 @@ namespace Avalonia
 
             IDisposable? result = null;
 
-            if (_values.TryGetValue(property, out var slot))
+            if (_values.TryGetValue(property, out var slot) && !IsRemoveSentinel<T>(slot))
             {
                 result = SetExisting(slot, property, value, priority);
             }
@@ -362,6 +362,14 @@ namespace Avalonia
             {
                 _batchUpdate.ValueChanged(property, oldValue.ToObject());
             }
+        }
+
+        private static bool IsRemoveSentinel<T>(IValue value)
+        {
+            // Local value entries are optimized and contain only a single value field to save space,
+            // so there's no way to mark them for removal at the end of a batch update. Instead a
+            // ConstantValueEntry with a priority of Unset is used as a sentinel value.
+            return value is ConstantValueEntry<T> t && t.Priority == BindingPriority.Unset;
         }
 
         private class BatchUpdate
