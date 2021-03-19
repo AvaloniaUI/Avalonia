@@ -143,7 +143,7 @@ namespace Avalonia.Headless
                 return false;
             }
 
-            public bool TryGetSegment(float startDistance, float stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
+            public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
             {
                 segmentGeometry = null;
                 return false;

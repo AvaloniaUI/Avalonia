@@ -163,7 +163,7 @@ namespace Avalonia.Skia
             return res;
         }
 
-        public bool TryGetSegment(float startDistance, float stopDistance, bool startOnBeginFigure,
+        public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure,
             out IGeometryImpl segmentGeometry)
         {
             if (EffectivePath is null)
@@ -181,7 +181,7 @@ namespace Avalonia.Skia
 
             SKPath _skPathSegment = null;
 
-            var res = _pathMeasureCache.GetSegment(startDistance, stopDistance, _skPathSegment, startOnBeginFigure);
+            var res = _pathMeasureCache.GetSegment((float)startDistance, (float)stopDistance, _skPathSegment, startOnBeginFigure);
 
             if (res)
             {

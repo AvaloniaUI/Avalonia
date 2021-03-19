@@ -85,6 +85,6 @@ namespace Avalonia.Platform
         /// <param name="startOnBeginFigure">If ture, the resulting snipped path will start with a BeginFigure call.</param>
         /// <param name="segmentGeometry">The resulting snipped path.</param>
         /// <returns>If the snipping operation is successful.</returns>
-        bool TryGetSegment (float startDistance, float stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry);
+        bool TryGetSegment (double startDistance, double stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry);
     }
 }
