@@ -5,5 +5,5 @@ InterfacesShouldHaveSameMembers : Interface member 'public System.Double Avaloni
 InterfacesShouldHaveSameMembers : Interface member 'public System.Double Avalonia.Platform.IGeometryImpl.ContourLength.get()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IGeometryImpl.TryGetPointAndTangentAtDistance(System.Double, Avalonia.Point, Avalonia.Point)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IGeometryImpl.TryGetPointAtDistance(System.Double, Avalonia.Point)' is present in the implementation but not in the contract.
-InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IGeometryImpl.TryGetSegment(System.Single, System.Single, System.Boolean, Avalonia.Platform.IGeometryImpl)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Platform.IGeometryImpl.TryGetSegment(System.Double, System.Double, System.Boolean, Avalonia.Platform.IGeometryImpl)' is present in the implementation but not in the contract.
 Total Issues: 7
