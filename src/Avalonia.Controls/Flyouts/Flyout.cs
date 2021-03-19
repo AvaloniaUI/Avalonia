@@ -15,22 +15,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object> ContentProperty =
             AvaloniaProperty.Register<Flyout, object>(nameof(Content));
 
-        public Styles? FlyoutPresenterStyle
-        {
-            get
-            {
-                if (_styles == null)
-                {
-                    _styles = new Styles();
-                    _styles.CollectionChanged += OnFlyoutPresenterStylesChanged;
-                }
+        public Classes? FlyoutPresenterClasses => _classes ??= new Classes();
 
-                return _styles;
-            }
-        }
-
-        private Styles? _styles;
-        private bool _stylesDirty;
+        private Classes? _classes;
 
         [Content]
         public object Content
@@ -49,19 +36,21 @@ namespace Avalonia.Controls
 
         protected override void OnOpened()
         {
-            if (_styles != null && _stylesDirty)
+            if (FlyoutPresenterClasses != null)
             {
-                // Presenter for flyout generally shouldn't be public, so
-                // we should be ok to just reset the styles
-                _popup.Child.Styles.Clear();
-                _popup.Child.Styles.Add(_styles);
+                //Remove any classes no longer in use
+                for (int i = _popup.Child.Classes.Count - 1; i >= 0; i--)
+                {
+                    if (!FlyoutPresenterClasses.Contains(_popup.Child.Classes[i]))
+                    {
+                        _popup.Child.Classes.RemoveAt(i);
+                    }
+                }
+
+                //Add new classes
+                _popup.Child.Classes.AddRange(FlyoutPresenterClasses);
             }
             base.OnOpened();
-        }
-
-        private void OnFlyoutPresenterStylesChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            _stylesDirty = true;
         }
     }
 }
