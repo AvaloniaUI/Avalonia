@@ -138,6 +138,28 @@ namespace Avalonia.Skia
             return res;
         }
 
+        public bool TryGetSegment(float startDistance, float stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
+        {
+            if (_pathCache.CachePathMeasure is null)
+            {
+                segmentGeometry = null;
+                return false;
+            }
+            
+            segmentGeometry = null;
+
+            SKPath _skPathSegment = null;
+
+            var res = _pathCache.CachePathMeasure.GetSegment(startDistance, stopDistance, _skPathSegment, startOnBeginFigure);
+
+            if (res)
+            {
+                segmentGeometry = new StreamGeometryImpl(_skPathSegment);
+            }
+            
+            return res;
+        }
+
         /// <summary>
         /// Invalidate all caches. Call after chaining path contents.
         /// </summary>

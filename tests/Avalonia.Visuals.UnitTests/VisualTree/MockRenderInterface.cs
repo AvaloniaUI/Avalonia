@@ -163,6 +163,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 throw new NotImplementedException();
             }
 
+            public bool TryGetSegment(float startDistance, float stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
+            {
+                throw new NotImplementedException();
+            }
+
             class MockStreamGeometryContext : IStreamGeometryContextImpl
             {
                 private List<Point> points = new List<Point>();

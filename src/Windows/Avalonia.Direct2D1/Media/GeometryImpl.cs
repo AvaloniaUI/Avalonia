@@ -82,6 +82,15 @@ namespace Avalonia.Direct2D1.Media
             return false;
         }
 
+        public bool TryGetSegment(float startDistance, float stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
+        {
+            // Direct2D doesnt have this too sadly.
+            Logger.TryGet(LogEventLevel.Warning, LogArea.Visual)?.Log(this, "TryGetSegment is not available in Direct2D.");
+
+            segmentGeometry = null;
+            return false;
+        }
+
         protected virtual Geometry GetSourceGeometry() => Geometry;
     }
 }

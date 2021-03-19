@@ -73,5 +73,18 @@ namespace Avalonia.Platform
         /// <param name="tangent">The tangent in the specified distance.</param>
         /// <returns>If there's valid point and tangent at the specified distance.</returns>
         bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent);
+        
+        /// <summary>
+        /// Attempts to get the corresponding path segment
+        /// given by the two distances specified.
+        /// Imagine it like snipping a part of the current
+        /// geometry.
+        /// </summary>
+        /// <param name="startDistance">The contour distance to start snipping from.</param>
+        /// <param name="stopDistance">The contour distance to stop snipping to.</param>
+        /// <param name="startOnBeginFigure">If ture, the resulting snipped path will start with a BeginFigure call.</param>
+        /// <param name="segmentGeometry">The resulting snipped path.</param>
+        /// <returns>If the snipping operation is successful.</returns>
+        bool TryGetSegment (float startDistance, float stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry);
     }
 }

@@ -142,6 +142,12 @@ namespace Avalonia.Headless
                 tangent = new Point();
                 return false;
             }
+
+            public bool TryGetSegment(float startDistance, float stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
+            {
+                segmentGeometry = null;
+                return false;
+            }
         }
 
         class HeadlessTransformedGeometryStub : HeadlessGeometryStub, ITransformedGeometryImpl

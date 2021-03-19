@@ -84,6 +84,12 @@ namespace Avalonia.UnitTests
             return false;
         }
 
+        public bool TryGetSegment(float startDistance, float stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
+        {
+            segmentGeometry = null;
+            return false;
+        }
+
         class MockStreamGeometryContext : IStreamGeometryContextImpl
         {
             private List<Point> points = new List<Point>();
