@@ -10,6 +10,11 @@ namespace Avalonia.Controls.Primitives
 {
     public abstract class FlyoutBase : AvaloniaObject
     {
+        static FlyoutBase()
+        {
+            Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
+        }
+
         private static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
            AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
                x => x.IsOpen);
@@ -382,6 +387,37 @@ namespace Avalonia.Controls.Primitives
                     _popup.PlacementGravity = PopupPositioning.PopupGravity.Top;
                     break;
             }
+        }
+
+        private static void OnContextFlyoutPropertyChanged(AvaloniaPropertyChangedEventArgs<FlyoutBase> args)
+        {
+            if (args.Sender is Control c)
+            {
+                if (args.OldValue.GetValueOrDefault() is FlyoutBase)
+                {
+                    c.PointerReleased -= OnControlWithContextFlyoutPointerReleased;
+                }
+                if (args.NewValue.GetValueOrDefault() is FlyoutBase)
+                {
+                    c.PointerReleased += OnControlWithContextFlyoutPointerReleased;
+                }
+            }
+        }
+
+        private static void OnControlWithContextFlyoutPointerReleased(object sender, PointerReleasedEventArgs e)
+        {
+            if (sender is Control c)
+            {
+                if (e.InitialPressMouseButton == MouseButton.Right &&
+                e.GetCurrentPoint(c).Properties.PointerUpdateKind == PointerUpdateKind.RightButtonReleased)
+                {
+                    if (c.ContextFlyout != null)
+                    {
+                        c.ContextFlyout.ShowAt(c, true);
+                    }
+                }
+            }
+            
         }
     }
 }
