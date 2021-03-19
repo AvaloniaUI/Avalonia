@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
-using Avalonia.Metadata;
+using Avalonia.Controls.Templates;
 
 #nullable enable
 
@@ -101,6 +101,11 @@ namespace Avalonia.Controls
 
         public event EventHandler? OwnerChanged;
 
+        public void Add(object key, Func<IServiceProvider?, object> loader)
+        {
+            Add(key, new LazyItem(loader));
+        }
+
         public bool TryGetResource(object key, out object? value)
         {
             if (TryGetValue(key, out value))
@@ -176,9 +181,52 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override object? GetItemCore(object key)
+        {
+            var item = base.GetItemCore(key);
+
+            if (item is LazyItem lazy)
+            {
+                var value = lazy.Load();
+                this[key] = value;
+                return value;
+            }
+            else
+            {
+                return item;
+            }
+        }
+
+        protected override bool TryGetValueCore(object key, out object? value)
+        {
+            if (base.TryGetValueCore(key, out value))
+            {
+                if (value is LazyItem lazy)
+                {
+                    value = lazy.Load();
+                    this[key] = value;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+        }
+
+        private class LazyItem
+        {
+            private Func<IServiceProvider?, object?> _load;
+            public LazyItem(Func<IServiceProvider?, object?> load) => _load = load;
+            public object? Load()
+            {
+                var result = _load(null);
+                return result is TemplateResult<object> t ? t.Result : result;
+            }
         }
     }
 }

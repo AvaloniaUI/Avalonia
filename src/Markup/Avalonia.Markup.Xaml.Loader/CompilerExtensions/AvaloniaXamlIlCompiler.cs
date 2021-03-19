@@ -57,13 +57,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
             );
 
+            InsertBefore<DeferredContentTransformer>(
+                new AvaloniaXamlIlLazyResourceTransformer()
+            );
+
             // After everything else
             InsertBefore<NewObjectTransformer>(
                 new AddNameScopeRegistration(),
                 new AvaloniaXamlIlDataContextTypeTransformer(),
                 new AvaloniaXamlIlBindingPathTransformer(),
                 new AvaloniaXamlIlCompiledBindingsMetadataRemover()
-                );
+            );
 
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());

@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Avalonia.Build.Tasks": {
+      "commandName": "Executable",
+      "executablePath": "$(SolutionDir)\\src\\Avalonia.Build.Tasks\\bin\\Debug\\netcoreapp3.1\\Avalonia.Build.Tasks.exe",
+      "commandLineArgs": "D:\\projects\\AvaloniaUI\\Avalonia\\src\\Avalonia.Themes.Fluent\\obj\\Debug\\netstandard2.0\\Avalonia\\original.dll \"D:\\projects\\AvaloniaUI\\Avalonia\\src\\Avalonia.Themes.Fluent\\obj\\Debug\\netstandard2.0\\Avalonia\\references\" $(SolutionDir)\\out.dll"
+    }
+  }
+}

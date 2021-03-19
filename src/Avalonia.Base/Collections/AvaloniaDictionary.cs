@@ -67,11 +67,7 @@ namespace Avalonia.Collections
         /// <returns>The resource, or null if not found.</returns>
         public TValue this[TKey key]
         {
-            get
-            {
-                return _inner[key];
-            }
-
+            get => GetItemCore(key);
             set
             {
                 TValue old;
@@ -98,7 +94,11 @@ namespace Avalonia.Collections
             }
         }
 
-        object IDictionary.this[object key] { get => ((IDictionary)_inner)[key]; set => ((IDictionary)_inner)[key] = value; }
+        object IDictionary.this[object key] 
+        { 
+            get => GetItemCore((TKey)key); 
+            set => this[(TKey)key] = (TValue)value; 
+        }
 
         /// <inheritdoc/>
         public void Add(TKey key, TValue value)
@@ -166,7 +166,7 @@ namespace Avalonia.Collections
         }
 
         /// <inheritdoc/>
-        public bool TryGetValue(TKey key, out TValue value) => _inner.TryGetValue(key, out value);
+        public bool TryGetValue(TKey key, out TValue value) => TryGetValueCore(key, out value);
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
@@ -203,6 +203,9 @@ namespace Avalonia.Collections
 
         /// <inheritdoc/>
         void IDictionary.Remove(object key) => Remove((TKey)key);
+
+        protected virtual TValue GetItemCore(TKey key) => _inner[key];
+        protected virtual bool TryGetValueCore(TKey key, out TValue value) => _inner.TryGetValue(key, out value);
 
         private void NotifyAdd(TKey key, TValue value)
         {

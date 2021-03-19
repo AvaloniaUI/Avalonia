@@ -78,6 +78,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ColumnDefinition { get; }
         public IXamlType ColumnDefinitions { get; }
         public IXamlType Classes { get; }
+        public IXamlType ResourceDictionary { get; }
+        public IXamlMethod ResourceDictionaryLazyAdd { get; }
+        public IXamlType Style { get; }
+        public IXamlType Styles { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -168,6 +172,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             RowDefinition = cfg.TypeSystem.GetType("Avalonia.Controls.RowDefinition");
             RowDefinitions = cfg.TypeSystem.GetType("Avalonia.Controls.RowDefinitions");
             Classes = cfg.TypeSystem.GetType("Avalonia.Controls.Classes");
+            ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
+            ResourceDictionaryLazyAdd = ResourceDictionary.FindMethod(
+                "Add",
+                XamlIlTypes.Void,
+                true,
+                XamlIlTypes.Object,
+                cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
+                    cfg.TypeSystem.GetType("System.IServiceProvider"),
+                    XamlIlTypes.Object));
+            Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
+            Styles = cfg.TypeSystem.GetType("Avalonia.Styling.Styles");
         }
     }
 
