@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Diagnostics;
+using Avalonia;
 
 namespace Sandbox
 {
@@ -6,10 +7,13 @@ namespace Sandbox
     {
         static void Main(string[] args)
         {
+            sw = Stopwatch.StartNew();
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToTrace()
                 .StartWithClassicDesktopLifetime(args);
         }
+
+        public static Stopwatch sw;
     }
 }
