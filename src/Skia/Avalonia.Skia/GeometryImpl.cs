@@ -179,7 +179,7 @@ namespace Avalonia.Skia
             
             segmentGeometry = null;
 
-            SKPath _skPathSegment = null;
+            var _skPathSegment = new SKPath();
 
             var res = _pathMeasureCache.GetSegment((float)startDistance, (float)stopDistance, _skPathSegment, startOnBeginFigure);
 
