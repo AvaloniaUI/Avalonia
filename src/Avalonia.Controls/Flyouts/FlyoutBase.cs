@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Layout;
 
 #nullable enable
@@ -20,12 +20,19 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<FlyoutPlacementMode> PlacementProperty =
             AvaloniaProperty.Register<FlyoutBase, FlyoutPlacementMode>(nameof(Placement));
 
+        public static readonly DirectProperty<FlyoutBase, FlyoutShowMode> ShowModeProperty =
+            AvaloniaProperty.RegisterDirect<FlyoutBase, FlyoutShowMode>(nameof(ShowMode),
+                x => x.ShowMode, (x, v) => x.ShowMode = v);
+
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
             AvaloniaProperty.RegisterAttached<FlyoutBase, Control, FlyoutBase?>("AttachedFlyout", null);
 
         private bool _isOpen;
         private Control? _target;
         protected Popup? _popup;
+        private FlyoutShowMode _showMode = FlyoutShowMode.Standard;
+        Rect? enlargedPopupRect;
+        IDisposable? transientDisposable;
 
         public bool IsOpen
         {
@@ -37,6 +44,12 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(PlacementProperty);
             set => SetValue(PlacementProperty, value);
+        }
+
+        public FlyoutShowMode ShowMode
+        {
+            get => _showMode;
+            set => SetAndRaise(ShowModeProperty, ref _showMode, value);
         }
 
         public Control? Target
@@ -96,7 +109,11 @@ namespace Avalonia.Controls.Primitives
             }
 
             IsOpen = _popup.IsOpen = false;
-            
+
+            // Ensure this isn't active
+            transientDisposable?.Dispose();
+            transientDisposable = null;
+
             OnClosed();
         }
 
@@ -142,6 +159,72 @@ namespace Avalonia.Controls.Primitives
             PositionPopup(showAtPointer);
             IsOpen = _popup.IsOpen = true;            
             OnOpened();
+                        
+            if (ShowMode == FlyoutShowMode.Standard)
+            {
+                // Try and focus content inside Flyout
+                if (_popup.Child.Focusable)
+                {
+                    FocusManager.Instance?.Focus(_popup.Child);
+                }
+                else
+                {
+                    var nextFocus = KeyboardNavigationHandler.GetNext(_popup.Child, NavigationDirection.Next);
+                    if (nextFocus != null)
+                    {
+                        FocusManager.Instance?.Focus(nextFocus);
+                    }
+                }
+            }
+            else if (ShowMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)
+            {
+                transientDisposable = InputManager.Instance?.Process.Subscribe(HandleTransientDismiss);
+            }
+        }
+
+        private void HandleTransientDismiss(RawInputEventArgs args)
+        {
+            if (args is RawPointerEventArgs pArgs && pArgs.Type == RawPointerEventType.Move)
+            {
+                if (enlargedPopupRect == null)
+                {
+                    if (_popup?.Host is PopupRoot root)
+                    { 
+                        var tmp = root.Bounds.Inflate(100);
+                        var scPt = root.PointToScreen(tmp.TopLeft);
+                        enlargedPopupRect = new Rect(scPt.X, scPt.Y, tmp.Width, tmp.Height);
+                    }
+                    else if (_popup?.Host is OverlayPopupHost host)
+                    {
+                        // Overlay popups are in Window client coordinates, just use that
+                        enlargedPopupRect = host.Bounds.Inflate(100);
+                    }
+
+                    return;
+                }
+
+                if (_popup?.Host is PopupRoot)
+                {
+                    var pt = pArgs.Root.PointToScreen(pArgs.Position);
+                    if (!enlargedPopupRect?.Contains(new Point(pt.X, pt.Y)) ?? false)
+                    {
+                        Hide(false);
+                        enlargedPopupRect = null;
+                        transientDisposable?.Dispose();
+                        transientDisposable = null;
+                    }
+                }
+                else if (_popup?.Host is OverlayPopupHost)
+                {
+                    if (!enlargedPopupRect?.Contains(pArgs.Position) ?? false)
+                    {
+                        Hide(false);
+                        enlargedPopupRect = null;
+                        transientDisposable?.Dispose();
+                        transientDisposable = null;
+                    }
+                }
+            }
         }
 
         protected virtual void OnOpening()
