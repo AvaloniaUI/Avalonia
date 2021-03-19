@@ -469,6 +469,31 @@ namespace Avalonia.Base.UnitTests
             };
             target.EndBatchUpdate();
 
+            Assert.Equal("bar", target.Foo);
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void Can_Bind_Cleared_Value_When_Ending_Batch_Update()
+        {
+            var target = new TestClass();
+            var raised = 0;
+
+            target.Foo = "foo";
+
+            target.BeginBatchUpdate();
+            target.ClearValue(TestClass.FooProperty);
+            target.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == TestClass.FooProperty && e.NewValue is null)
+                {
+                    target.Bind(TestClass.FooProperty, new TestObservable<string>("bar"));
+                    ++raised;
+                }
+            };
+            target.EndBatchUpdate();
+
+            Assert.Equal("bar", target.Foo);
             Assert.Equal(1, raised);
         }
 
