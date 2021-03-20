@@ -29,21 +29,12 @@ namespace Avalonia
 
 namespace Avalonia.Android
 {
-    class AndroidPlatform : IPlatformSettings, IWindowingPlatform
+    class AndroidPlatform : IPlatformSettings
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public static AndroidPlatformOptions Options { get; private set; }
         public Size DoubleClickSize => new Size(4, 4);
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(200);
-        public double RenderScalingFactor => _scalingFactor;
-        public double LayoutScalingFactor => _scalingFactor;
-
-        private readonly double _scalingFactor = 1;
-
-        public AndroidPlatform()
-        {
-            _scalingFactor = global::Android.App.Application.Context.Resources.DisplayMetrics.ScaledDensity;
-        }
 
         public static void Initialize(Type appType, AndroidPlatformOptions options)
         {
@@ -56,7 +47,6 @@ namespace Avalonia.Android
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
-                .Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
@@ -69,16 +59,6 @@ namespace Avalonia.Android
             {
                 EglPlatformOpenGlInterface.TryInitialize();
             }
-        }
-
-        public IWindowImpl CreateWindow()
-        {
-            throw new NotSupportedException();
-        }
-
-        public IWindowImpl CreateEmbeddableWindow()
-        {
-            throw new NotSupportedException();
         }
     }
 
