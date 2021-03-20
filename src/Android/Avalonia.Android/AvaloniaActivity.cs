@@ -13,9 +13,8 @@ namespace Avalonia.Android
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            RequestWindowFeature(WindowFeatures.NoTitle);
             View = new AvaloniaView(this);
-            if(_content != null)
+            if (_content != null)
                 View.Content = _content;
             SetContentView(View);
             TakeKeyEvents(true);
