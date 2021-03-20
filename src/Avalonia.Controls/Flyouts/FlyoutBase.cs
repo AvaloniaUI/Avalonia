@@ -113,7 +113,8 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            IsOpen = _popup.IsOpen = false;
+            IsOpen = false;
+            _popup.IsOpen = false;
 
             // Ensure this isn't active
             transientDisposable?.Dispose();
@@ -267,7 +268,6 @@ namespace Avalonia.Controls.Primitives
         private void OnPopupOpened(object sender, EventArgs e)
         {
             IsOpen = true;
-            OnOpened();
         }
 
         private void OnPopupClosed(object sender, EventArgs e)
