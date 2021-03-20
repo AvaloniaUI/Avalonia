@@ -79,6 +79,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
 
+        /// <summary>
+        /// Defines the <see cref="Flyout"/> property
+        /// </summary>
         public static readonly DirectProperty<Button, FlyoutBase> FlyoutProperty =
             AvaloniaProperty.RegisterDirect<Button, FlyoutBase>(nameof(Flyout),
                 x => x.Flyout, (x, v) => x.Flyout = v);
@@ -175,6 +178,9 @@ namespace Avalonia.Controls
             private set { SetValue(IsPressedProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the Flyout that should be shown with this button
+        /// </summary>
         public FlyoutBase Flyout
         {
             get => _flyout;

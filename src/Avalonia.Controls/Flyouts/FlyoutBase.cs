@@ -15,20 +15,35 @@ namespace Avalonia.Controls.Primitives
             Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
         }
 
+        /// <summary>
+        /// Defines the <see cref="IsOpen"/> property
+        /// </summary>
         private static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
            AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
                x => x.IsOpen);
 
+        /// <summary>
+        /// Defines the <see cref="Target"/> property
+        /// </summary>
         public static readonly DirectProperty<FlyoutBase, Control?> TargetProperty =
             AvaloniaProperty.RegisterDirect<FlyoutBase, Control?>(nameof(Target), x => x.Target);
 
+        /// <summary>
+        /// Defines the <see cref="Placement"/> property
+        /// </summary>
         public static readonly StyledProperty<FlyoutPlacementMode> PlacementProperty =
             AvaloniaProperty.Register<FlyoutBase, FlyoutPlacementMode>(nameof(Placement));
 
+        /// <summary>
+        /// Defines the <see cref="ShowMode"/> property
+        /// </summary>
         public static readonly DirectProperty<FlyoutBase, FlyoutShowMode> ShowModeProperty =
             AvaloniaProperty.RegisterDirect<FlyoutBase, FlyoutShowMode>(nameof(ShowMode),
                 x => x.ShowMode, (x, v) => x.ShowMode = v);
 
+        /// <summary>
+        /// Defines the AttachedFlyout property
+        /// </summary>
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
             AvaloniaProperty.RegisterAttached<FlyoutBase, Control, FlyoutBase?>("AttachedFlyout", null);
 
@@ -39,24 +54,36 @@ namespace Avalonia.Controls.Primitives
         Rect? enlargedPopupRect;
         IDisposable? transientDisposable;
 
+        /// <summary>
+        /// Gets whether this Flyout is currently Open
+        /// </summary>
         public bool IsOpen
         {
             get => _isOpen;
             private set => SetAndRaise(IsOpenProperty, ref _isOpen, value);
         }
 
+        /// <summary>
+        /// Gets or sets the desired placement
+        /// </summary>
         public FlyoutPlacementMode Placement
         {
             get => GetValue(PlacementProperty);
             set => SetValue(PlacementProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the desired ShowMode
+        /// </summary>
         public FlyoutShowMode ShowMode
         {
             get => _showMode;
             set => SetAndRaise(ShowModeProperty, ref _showMode, value);
         }
 
+        /// <summary>
+        /// Gets the Target used for showing the Flyout
+        /// </summary>
         public Control? Target
         {
             get => _target;
@@ -84,16 +111,29 @@ namespace Avalonia.Controls.Primitives
             flyout?.ShowAt(flyoutOwner);
         }
 
+        /// <summary>
+        /// Shows the Flyout at the given Control
+        /// </summary>
+        /// <param name="placementTarget">The control to show the Flyout at</param>
         public void ShowAt(Control placementTarget)
         {
             ShowAtCore(placementTarget);
         }
 
+        /// <summary>
+        /// Shows the Flyout for the given control at the current pointer location, as in a ContextFlyout
+        /// </summary>
+        /// <param name="placementTarget">The target control</param>
+        /// <param name="showAtPointer">True to show at pointer</param>
         public void ShowAt(Control placementTarget, bool showAtPointer)
         {
             ShowAtCore(placementTarget, showAtPointer);
         }
 
+        /// <summary>
+        /// Hides the Flyout
+        /// </summary>
+        /// <param name="canCancel">Whether or not this closing action can be cancelled</param>
         public void Hide(bool canCancel = true)
         {
             if (!IsOpen)
@@ -253,6 +293,10 @@ namespace Avalonia.Controls.Primitives
             Closed?.Invoke(this, null);
         }
 
+        /// <summary>
+        /// Used to create the content the Flyout displays
+        /// </summary>
+        /// <returns></returns>
         protected abstract Control CreatePresenter();
 
         private void InitPopup()
@@ -416,8 +460,7 @@ namespace Avalonia.Controls.Primitives
                         c.ContextFlyout.ShowAt(c, true);
                     }
                 }
-            }
-            
+            }            
         }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using System.Collections;
-using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Input;
 using Avalonia.Metadata;
-using Avalonia.Styling;
 
 #nullable enable
 
@@ -18,16 +15,25 @@ namespace Avalonia.Controls
             _items = new AvaloniaList<object>();
         }
 
+        /// <summary>
+        /// Defines the <see cref="Items"/> property
+        /// </summary>
         public static readonly DirectProperty<MenuFlyout, IEnumerable> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<MenuFlyout>(x => x.Items,
                 (x, v) => x.Items = v);
 
+        /// <summary>
+        /// Defines the <see cref="ItemTemplate"/> property
+        /// </summary>
         public static readonly DirectProperty<MenuFlyout, IDataTemplate?> ItemTemplateProperty =
             AvaloniaProperty.RegisterDirect<MenuFlyout, IDataTemplate?>(nameof(ItemTemplate),
                 x => x.ItemTemplate, (x, v) => x.ItemTemplate = v);
 
         public Classes? FlyoutPresenterClasses => _classes ??= new Classes();
 
+        /// <summary>
+        /// Gets or sets the items of the MenuFlyout
+        /// </summary>
         [Content]
         public IEnumerable Items
         {
@@ -35,6 +41,9 @@ namespace Avalonia.Controls
             set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
+        /// <summary>
+        /// Gets or sets the template used for the items
+        /// </summary>
         public IDataTemplate? ItemTemplate
         {
             get => _itemTemplate;
