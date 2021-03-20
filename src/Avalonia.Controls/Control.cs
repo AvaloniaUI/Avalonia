@@ -110,6 +110,11 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void ISetterValue.Initialize(ISetter setter)
         {
+            if (setter is Setter s && s.Property == ContextFlyoutProperty)
+            {
+                return; // Allow ContextFlyout to not need wrapping in <Template>
+            }
+
             throw new InvalidOperationException(
                 "Cannot use a control as a Setter value. Wrap the control in a <Template>.");
         }

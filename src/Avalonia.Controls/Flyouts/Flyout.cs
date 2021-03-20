@@ -38,10 +38,11 @@ namespace Avalonia.Controls
         {
             if (FlyoutPresenterClasses != null)
             {
-                //Remove any classes no longer in use
+                //Remove any classes no longer in use, ignoring any pseudoclasses
                 for (int i = _popup.Child.Classes.Count - 1; i >= 0; i--)
                 {
-                    if (!FlyoutPresenterClasses.Contains(_popup.Child.Classes[i]))
+                    if (!FlyoutPresenterClasses.Contains(_popup.Child.Classes[i]) && 
+                        !_popup.Child.Classes[i].Contains(":"))
                     {
                         _popup.Child.Classes.RemoveAt(i);
                     }
