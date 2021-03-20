@@ -32,6 +32,7 @@ namespace Avalonia.Android
     class AndroidPlatform : IPlatformSettings, IWindowingPlatform
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
+        public static AndroidPlatformOptions Options { get; private set; }
         public Size DoubleClickSize => new Size(4, 4);
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(200);
         public double RenderScalingFactor => _scalingFactor;
@@ -46,23 +47,23 @@ namespace Avalonia.Android
 
         public static void Initialize(Type appType, AndroidPlatformOptions options)
         {
+            Options = options;
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToTransient<ClipboardImpl>()
-                .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
+                .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
-                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(appType.Assembly));
 
             SkiaPlatform.Initialize();
-            ((global::Android.App.Application) global::Android.App.Application.Context.ApplicationContext)
-                .RegisterActivityLifecycleCallbacks(new ActivityTracker());
 
             if (options.UseGpu)
             {
@@ -83,6 +84,7 @@ namespace Avalonia.Android
 
     public sealed class AndroidPlatformOptions
     {
+        public bool UseDeferredRendering { get; set; } = true;
         public bool UseGpu { get; set; } = true;
     }
 }
