@@ -82,14 +82,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Flyout"/> property
         /// </summary>
-        public static readonly DirectProperty<Button, FlyoutBase> FlyoutProperty =
-            AvaloniaProperty.RegisterDirect<Button, FlyoutBase>(nameof(Flyout),
-                x => x.Flyout, (x, v) => x.Flyout = v);
+        public static readonly StyledProperty<FlyoutBase> FlyoutProperty =
+            AvaloniaProperty.Register<Button, FlyoutBase>(nameof(Flyout));
 
         private ICommand _command;
         private bool _commandCanExecute = true;
         private KeyGesture _hotkey;
-        private FlyoutBase _flyout;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -183,8 +181,8 @@ namespace Avalonia.Controls
         /// </summary>
         public FlyoutBase Flyout
         {
-            get => _flyout;
-            set => SetAndRaise(FlyoutProperty, ref _flyout, value);
+            get => GetValue(FlyoutProperty);
+            set => SetValue(FlyoutProperty, value);
         }
 
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
@@ -310,7 +308,7 @@ namespace Avalonia.Controls
 
         protected virtual void OpenFlyout()
         {
-            _flyout?.ShowAt(this);
+            Flyout?.ShowAt(this);
         }
 
         /// <inheritdoc/>
@@ -360,6 +358,16 @@ namespace Avalonia.Controls
             if (change.Property == IsPressedProperty)
             {
                 UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>());
+            }
+            else if (change.Property == FlyoutProperty)
+            {
+                // If flyout is changed while one is already open, make sure we 
+                // close the old one first
+                if (change.OldValue.GetValueOrDefault() is FlyoutBase oldFlyout &&
+                    oldFlyout.IsOpen)
+                {
+                    oldFlyout.Hide();
+                }
             }
         }
 
