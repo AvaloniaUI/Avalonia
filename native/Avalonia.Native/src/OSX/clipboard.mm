@@ -56,7 +56,7 @@ public:
                 return S_OK;
             }
             
-            NSArray* arr = (NSArray*)data;
+            NSArray<NSString*>* arr = (NSArray*)data;
             
             for(int c = 0; c < [arr count]; c++)
                 if(![[arr objectAtIndex:c] isKindOfClass:[NSString class]])

@@ -403,7 +403,7 @@ enum AvnExtendClientAreaChromeHints
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
-     HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator);
+     HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator, IAvnApplicationEvents* appCb);
      IAvnMacOptions* GetMacOptions();
      HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv);
      HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv);
@@ -727,4 +727,10 @@ interface IAvnNativeControlHostTopLevelAttachment : IUnknown
      void ShowInBounds(float x, float y, float width, float height);
      void HideWithSize(float width, float height);
      void ReleaseChild();
+}
+
+[uuid(6575b5af-f27a-4609-866c-f1f014c20f79)]
+interface IAvnApplicationEvents : IUnknown
+{
+     void FilesOpened (IAvnStringArray* urls);
 }

@@ -6,7 +6,6 @@ using Android.Runtime;
 using Android.Views;
 
 using Avalonia.Android.OpenGL;
-using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Controls;
@@ -35,7 +34,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view = new ViewImpl(context, this, placeOnTop);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
-                p => GetAvaloniaPointFromEvent(p));
+                GetAvaloniaPointFromEvent);
 
             _gl = GlPlatformSurface.TryCreate(this);
             _framebuffer = new FramebufferManager(this);
@@ -43,8 +42,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             MaxClientSize = new Size(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels);
         }
-
-
 
         private bool _handleEvents;
 
@@ -58,7 +55,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        public virtual Point GetAvaloniaPointFromEvent(MotionEvent e) => new Point(e.GetX(), e.GetY());
+        public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
+            new Point(e.GetX(pointerIndex), e.GetY(pointerIndex)) / RenderScaling;
 
         public IInputRoot InputRoot { get; private set; }
 
@@ -76,7 +74,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        public IMouseDevice MouseDevice => AndroidMouseDevice.Instance;
+        public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public Action Closed { get; set; }
 
@@ -98,10 +96,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer };
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new ImmediateRenderer(root);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            AndroidPlatform.Options.UseDeferredRendering
+            ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
+            : new ImmediateRenderer(root);
 
         public virtual void Hide()
         {
@@ -123,7 +121,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             return PixelPoint.FromPoint(point, 1);
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             //still not implemented
         }
