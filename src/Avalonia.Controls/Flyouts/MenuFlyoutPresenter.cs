@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     public class MenuFlyoutPresenter : MenuBase
     {
         public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
-            AvaloniaProperty.Register<MenuFlyoutPresenter, CornerRadius>(nameof(CornerRadius));
+            Border.CornerRadiusProperty.AddOwner<FlyoutPresenter>();
 
         public CornerRadius CornerRadius
         {
