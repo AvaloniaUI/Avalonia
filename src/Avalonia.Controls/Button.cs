@@ -271,6 +271,11 @@ namespace Avalonia.Controls
                 IsPressed = true;
                 e.Handled = true;
             }
+            else if (e.Key == Key.Escape && Flyout != null)
+            {
+                // If Flyout doesn't have focusable content, close the flyout here
+                Flyout.Hide();
+            }
 
             base.OnKeyDown(e);
         }
