@@ -22,10 +22,11 @@
         /// </summary>
         Right = 3,
 
-        /// <summary>
-        /// Preferred location is centered on the screen
-        /// </summary>
-        Full = 4,
+        //TODO
+        // <summary>
+        // Preferred location is centered on the screen
+        // </summary>
+        //Full = 4,
 
         /// <summary>
         /// Preferred location is above the target element, with the left edge of the flyout

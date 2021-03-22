@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.Logging;
 
 #nullable enable
 
@@ -133,8 +134,12 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Hides the Flyout
         /// </summary>
-        /// <param name="canCancel">Whether or not this closing action can be cancelled</param>
-        public void Hide(bool canCancel = true)
+        public void Hide()
+        {
+            HideCore();
+        }
+
+        protected virtual void HideCore(bool canCancel = true)
         {
             if (!IsOpen)
             {
@@ -181,7 +186,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else // Close before opening a new one
                 {
-                    Hide(false);
+                    HideCore(false);
                 }
             }
 
@@ -232,17 +237,27 @@ namespace Avalonia.Controls.Primitives
         {
             if (args is RawPointerEventArgs pArgs && pArgs.Type == RawPointerEventType.Move)
             {
+                // In ShowMode = TransientWithDismissOnPointerMoveAway, the Flyout is kept
+                // shown as long as the pointer is within a certain px distance from the
+                // flyout itself. I'm not sure what WinUI uses, but I'm defaulting to 
+                // 100px, which seems about right
+                // enlargedPopupRect is the Flyout bounds enlarged 100px
+                // For windowed popups, enlargedPopupRect is in screen coordinates,
+                // for overlay popups, its in OverlayLayer coordinates
+
                 if (enlargedPopupRect == null)
                 {
+                    // Only do this once when the Flyout opens & cache the result
                     if (_popup?.Host is PopupRoot root)
                     { 
+                        // Get the popup root bounds and convert to screen coordinates
                         var tmp = root.Bounds.Inflate(100);
                         var scPt = root.PointToScreen(tmp.TopLeft);
                         enlargedPopupRect = new Rect(scPt.X, scPt.Y, tmp.Width, tmp.Height);
                     }
                     else if (_popup?.Host is OverlayPopupHost host)
                     {
-                        // Overlay popups are in Window client coordinates, just use that
+                        // Overlay popups are in OverlayLayer coordinates, just use that
                         enlargedPopupRect = host.Bounds.Inflate(100);
                     }
 
@@ -251,10 +266,15 @@ namespace Avalonia.Controls.Primitives
 
                 if (_popup?.Host is PopupRoot)
                 {
+                    // As long as the pointer stays within the enlargedPopupRect
+                    // the flyout stays open. If it leaves, close it
+                    // Despite working in screen coordinates, leaving the TopLevel
+                    // window will not close this (as pointer events stop), which 
+                    // does match UWP
                     var pt = pArgs.Root.PointToScreen(pArgs.Position);
                     if (!enlargedPopupRect?.Contains(new Point(pt.X, pt.Y)) ?? false)
                     {
-                        Hide(false);
+                        HideCore(false);
                         enlargedPopupRect = null;
                         transientDisposable?.Dispose();
                         transientDisposable = null;
@@ -262,9 +282,11 @@ namespace Avalonia.Controls.Primitives
                 }
                 else if (_popup?.Host is OverlayPopupHost)
                 {
+                    // Same as above here, but just different coordinate space
+                    // so we don't need to translate
                     if (!enlargedPopupRect?.Contains(pArgs.Position) ?? false)
                     {
-                        Hide(false);
+                        HideCore(false);
                         enlargedPopupRect = null;
                         transientDisposable?.Dispose();
                         transientDisposable = null;
@@ -316,7 +338,7 @@ namespace Avalonia.Controls.Primitives
 
         private void OnPopupClosed(object sender, EventArgs e)
         {
-            Hide();
+            HideCore();
         }
 
         private void PositionPopup(bool showAtPointer)
@@ -418,12 +440,6 @@ namespace Avalonia.Controls.Primitives
                     _popup.PlacementAnchor = PopupPositioning.PopupAnchor.BottomLeft;
                     break;
 
-                case FlyoutPlacementMode.Full:
-                    //Not sure how the get this to work
-                    //Popup should display at max size in the middle of the VisualRoot/Window of the Target
-                    throw new NotSupportedException("FlyoutPlacementMode.Full is not supported at this time");
-                //break;
-
                 //includes Auto (not sure what determines that)...
                 default:
                     //This is just FlyoutPlacementMode.Top behavior (above & centered)
@@ -457,6 +473,11 @@ namespace Avalonia.Controls.Primitives
                 {
                     if (c.ContextFlyout != null)
                     {
+                        if (c.ContextMenu != null)
+                        {
+                            Logger.TryGet(LogEventLevel.Verbose, "FlyoutBase")?.Log(c, "ContextMenu and ContextFlyout are both set, defaulting to ContextMenu");
+                            return;
+                        }
                         c.ContextFlyout.ShowAt(c, true);
                     }
                 }
