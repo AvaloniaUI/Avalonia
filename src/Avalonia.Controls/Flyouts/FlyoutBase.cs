@@ -50,10 +50,11 @@ namespace Avalonia.Controls.Primitives
 
         private bool _isOpen;
         private Control? _target;
-        protected Popup? _popup;
         private FlyoutShowMode _showMode = FlyoutShowMode.Standard;
-        Rect? enlargedPopupRect;
-        IDisposable? transientDisposable;
+        private Rect? enlargedPopupRect;
+        private IDisposable? transientDisposable;
+
+        protected Popup? Popup { get; private set; }
 
         /// <summary>
         /// Gets whether this Flyout is currently Open
@@ -159,7 +160,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             IsOpen = false;
-            _popup.IsOpen = false;
+            Popup.IsOpen = false;
 
             // Ensure this isn't active
             transientDisposable?.Dispose();
@@ -173,7 +174,7 @@ namespace Avalonia.Controls.Primitives
             if (placementTarget == null)
                 throw new ArgumentNullException("placementTarget cannot be null");
 
-            if (_popup == null)
+            if (Popup == null)
             {
                 InitPopup();
             }
@@ -190,37 +191,37 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (_popup.Parent != null && _popup.Parent != placementTarget)
+            if (Popup.Parent != null && Popup.Parent != placementTarget)
             {
-                ((ISetLogicalParent)_popup).SetParent(null);
+                ((ISetLogicalParent)Popup).SetParent(null);
             }
 
-            if (_popup.PlacementTarget != placementTarget)
+            if (Popup.PlacementTarget != placementTarget)
             {
-                _popup.PlacementTarget = Target = placementTarget;
-                ((ISetLogicalParent)_popup).SetParent(placementTarget);
+                Popup.PlacementTarget = Target = placementTarget;
+                ((ISetLogicalParent)Popup).SetParent(placementTarget);
             }
 
-            if (_popup.Child == null)
+            if (Popup.Child == null)
             {
-                _popup.Child = CreatePresenter();
+                Popup.Child = CreatePresenter();
             }
 
             OnOpening();
             PositionPopup(showAtPointer);
-            IsOpen = _popup.IsOpen = true;            
+            IsOpen = Popup.IsOpen = true;            
             OnOpened();
                         
             if (ShowMode == FlyoutShowMode.Standard)
             {
                 // Try and focus content inside Flyout
-                if (_popup.Child.Focusable)
+                if (Popup.Child.Focusable)
                 {
-                    FocusManager.Instance?.Focus(_popup.Child);
+                    FocusManager.Instance?.Focus(Popup.Child);
                 }
                 else
                 {
-                    var nextFocus = KeyboardNavigationHandler.GetNext(_popup.Child, NavigationDirection.Next);
+                    var nextFocus = KeyboardNavigationHandler.GetNext(Popup.Child, NavigationDirection.Next);
                     if (nextFocus != null)
                     {
                         FocusManager.Instance?.Focus(nextFocus);
@@ -248,14 +249,14 @@ namespace Avalonia.Controls.Primitives
                 if (enlargedPopupRect == null)
                 {
                     // Only do this once when the Flyout opens & cache the result
-                    if (_popup?.Host is PopupRoot root)
+                    if (Popup?.Host is PopupRoot root)
                     { 
                         // Get the popup root bounds and convert to screen coordinates
                         var tmp = root.Bounds.Inflate(100);
                         var scPt = root.PointToScreen(tmp.TopLeft);
                         enlargedPopupRect = new Rect(scPt.X, scPt.Y, tmp.Width, tmp.Height);
                     }
-                    else if (_popup?.Host is OverlayPopupHost host)
+                    else if (Popup?.Host is OverlayPopupHost host)
                     {
                         // Overlay popups are in OverlayLayer coordinates, just use that
                         enlargedPopupRect = host.Bounds.Inflate(100);
@@ -264,7 +265,7 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                if (_popup?.Host is PopupRoot)
+                if (Popup?.Host is PopupRoot)
                 {
                     // As long as the pointer stays within the enlargedPopupRect
                     // the flyout stays open. If it leaves, close it
@@ -280,7 +281,7 @@ namespace Avalonia.Controls.Primitives
                         transientDisposable = null;
                     }
                 }
-                else if (_popup?.Host is OverlayPopupHost)
+                else if (Popup?.Host is OverlayPopupHost)
                 {
                     // Same as above here, but just different coordinate space
                     // so we don't need to translate
@@ -323,12 +324,12 @@ namespace Avalonia.Controls.Primitives
 
         private void InitPopup()
         {
-            _popup = new Popup();
-            _popup.WindowManagerAddShadowHint = false;
-            _popup.IsLightDismissEnabled = true;            
+            Popup = new Popup();
+            Popup.WindowManagerAddShadowHint = false;
+            Popup.IsLightDismissEnabled = true;
 
-            _popup.Opened += OnPopupOpened;
-            _popup.Closed += OnPopupClosed;
+            Popup.Opened += OnPopupOpened;
+            Popup.Closed += OnPopupClosed;
         }
 
         private void OnPopupOpened(object sender, EventArgs e)
@@ -344,24 +345,24 @@ namespace Avalonia.Controls.Primitives
         private void PositionPopup(bool showAtPointer)
         {
             Size sz;
-            if(_popup.Child.DesiredSize == Size.Empty)
+            if(Popup.Child.DesiredSize == Size.Empty)
             {
                 // Popup may not have been shown yet. Measure content
-                sz = LayoutHelper.MeasureChild(_popup.Child, Size.Infinity, new Thickness());
+                sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
             }
             else
             {
-                sz = _popup.Child.DesiredSize;
+                sz = Popup.Child.DesiredSize;
             }
 
             if (showAtPointer)
             {
-                _popup.PlacementMode = PlacementMode.Pointer;
+                Popup.PlacementMode = PlacementMode.Pointer;
             }
             else
             {
-                _popup.PlacementMode = PlacementMode.AnchorAndGravity;
-                _popup.PlacementConstraintAdjustment =
+                Popup.PlacementMode = PlacementMode.AnchorAndGravity;
+                Popup.PlacementConstraintAdjustment =
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideX |
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
             }
@@ -371,80 +372,80 @@ namespace Avalonia.Controls.Primitives
             switch (Placement)
             {
                 case FlyoutPlacementMode.Top: //Above & centered
-                    _popup.PlacementRect = new Rect(0, 0, trgtBnds.Width-1, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.Top;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Top;
+                    Popup.PlacementRect = new Rect(0, 0, trgtBnds.Width-1, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Top;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Top;
                     break;
 
                 case FlyoutPlacementMode.TopEdgeAlignedLeft:
-                    _popup.PlacementRect = new Rect(0, 0, 0, 0);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.TopRight;                    
+                    Popup.PlacementRect = new Rect(0, 0, 0, 0);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopRight;                    
                     break;
 
                 case FlyoutPlacementMode.TopEdgeAlignedRight:
-                    _popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 10, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.TopLeft;                    
+                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 10, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopLeft;                    
                     break;
 
                 case FlyoutPlacementMode.RightEdgeAlignedTop:
-                    _popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 1, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.BottomRight;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
+                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 1, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.BottomRight;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
                     break;
 
                 case FlyoutPlacementMode.Right: //Right & centered
-                    _popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 1, trgtBnds.Height);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.Right;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
+                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 1, trgtBnds.Height);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Right;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
                     break;
 
                 case FlyoutPlacementMode.RightEdgeAlignedBottom:
-                    _popup.PlacementRect = new Rect(trgtBnds.Width - 1, trgtBnds.Height - 1, 1, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.TopRight;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
+                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, trgtBnds.Height - 1, 1, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopRight;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Right;
                     break;
 
                 case FlyoutPlacementMode.Bottom: //Below & centered
-                    _popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, trgtBnds.Width, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.Bottom;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
+                    Popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, trgtBnds.Width, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Bottom;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
                     break;
 
                 case FlyoutPlacementMode.BottomEdgeAlignedLeft:
-                    _popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, 1, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.BottomRight;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
+                    Popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, 1, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.BottomRight;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
                     break;
 
                 case FlyoutPlacementMode.BottomEdgeAlignedRight:
-                    _popup.PlacementRect = new Rect(trgtBnds.Width - 1, trgtBnds.Height - 1, 1, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.BottomLeft;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
+                    Popup.PlacementRect = new Rect(trgtBnds.Width - 1, trgtBnds.Height - 1, 1, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.BottomLeft;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Bottom;
                     break;
 
                 case FlyoutPlacementMode.LeftEdgeAlignedTop:
-                    _popup.PlacementRect = new Rect(0, 0, 1, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.BottomLeft;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Left;
+                    Popup.PlacementRect = new Rect(0, 0, 1, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.BottomLeft;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Left;
                     break;
 
                 case FlyoutPlacementMode.Left: //Left & centered
-                    _popup.PlacementRect = new Rect(0, 0, 1, trgtBnds.Height);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.Left;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.Left;
+                    Popup.PlacementRect = new Rect(0, 0, 1, trgtBnds.Height);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Left;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Left;
                     break;
 
                 case FlyoutPlacementMode.LeftEdgeAlignedBottom:
-                    _popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, 1, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.TopLeft;
-                    _popup.PlacementAnchor = PopupPositioning.PopupAnchor.BottomLeft;
+                    Popup.PlacementRect = new Rect(0, trgtBnds.Height - 1, 1, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopLeft;
+                    Popup.PlacementAnchor = PopupPositioning.PopupAnchor.BottomLeft;
                     break;
 
                 //includes Auto (not sure what determines that)...
                 default:
                     //This is just FlyoutPlacementMode.Top behavior (above & centered)
-                    _popup.PlacementRect = new Rect(-sz.Width / 2, 0, sz.Width, 1);
-                    _popup.PlacementGravity = PopupPositioning.PopupGravity.Top;
+                    Popup.PlacementRect = new Rect(-sz.Width / 2, 0, sz.Width, 1);
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.Top;
                     break;
             }
         }
@@ -482,6 +483,22 @@ namespace Avalonia.Controls.Primitives
                     }
                 }
             }            
+        }
+
+        internal static void SetPresenterClasses(IControl presenter, Classes classes)
+        {
+            //Remove any classes no longer in use, ignoring pseudoclasses
+            for (int i = presenter.Classes.Count - 1; i >= 0; i--)
+            {
+                if (!classes.Contains(presenter.Classes[i]) &&
+                    !presenter.Classes[i].Contains(":"))
+                {
+                    presenter.Classes.RemoveAt(i);
+                }
+            }
+
+            //Add new classes
+            presenter.Classes.AddRange(classes);
         }
     }
 }

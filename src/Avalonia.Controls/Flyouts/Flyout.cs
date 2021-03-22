@@ -14,9 +14,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Flyout, object>(nameof(Content));
 
         /// <summary>
-        /// Gets the Classes collection to applied to the FlyoutPresenter this Flyout is hosting
+        /// Gets the Classes collection to apply to the FlyoutPresenter this Flyout is hosting
         /// </summary>
-        public Classes? FlyoutPresenterClasses => _classes ??= new Classes();
+        public Classes FlyoutPresenterClasses => _classes ??= new Classes();
 
         private Classes? _classes;
 
@@ -40,20 +40,9 @@ namespace Avalonia.Controls
 
         protected override void OnOpened()
         {
-            if (FlyoutPresenterClasses != null)
+            if (_classes != null)
             {
-                //Remove any classes no longer in use, ignoring any pseudoclasses
-                for (int i = _popup.Child.Classes.Count - 1; i >= 0; i--)
-                {
-                    if (!FlyoutPresenterClasses.Contains(_popup.Child.Classes[i]) && 
-                        !_popup.Child.Classes[i].Contains(":"))
-                    {
-                        _popup.Child.Classes.RemoveAt(i);
-                    }
-                }
-
-                //Add new classes
-                _popup.Child.Classes.AddRange(FlyoutPresenterClasses);
+                SetPresenterClasses(Popup.Child, FlyoutPresenterClasses);
             }
             base.OnOpened();
         }
