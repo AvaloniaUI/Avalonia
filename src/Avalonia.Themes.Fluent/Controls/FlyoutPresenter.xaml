@@ -17,13 +17,15 @@
     <Setter Property="MaxHeight" Value="{DynamicResource FlyoutThemeMaxHeight}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="LayoutRoot"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
-                Padding="{DynamicResource FlyoutBorderThemePadding}">
+                Padding="{DynamicResource FlyoutBorderThemePadding}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
             <ContentPresenter Content="{TemplateBinding Content}"
@@ -37,8 +39,5 @@
         </Border>
       </ControlTemplate>
     </Setter>
-  </Style>
-  <Style Selector="FlyoutPresenter /template/ Border#LayoutRoot">
-    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
   </Style>
 </Styles>
