@@ -39,8 +39,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _gl = GlPlatformSurface.TryCreate(this);
             _framebuffer = new FramebufferManager(this);
 
-            MaxClientSize = new Size(_view.Resources.DisplayMetrics.WidthPixels,
-                _view.Resources.DisplayMetrics.HeightPixels);
+            RenderScaling = (int)_view.Resources.DisplayMetrics.Density;
+
+            MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
+                _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
         }
 
         private bool _handleEvents;
@@ -60,19 +62,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize
-        {
-            get
-            {
-                if (_view == null)
-                    return new Size(0, 0);
-                return new Size(_view.Width, _view.Height);
-            }
-            set
-            {
-
-            }
-        }
+        public virtual Size ClientSize => Size.ToSize(RenderScaling);
 
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
@@ -113,12 +103,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Point PointToClient(PixelPoint point)
         {
-            return point.ToPoint(1);
+            return point.ToPoint(RenderScaling);
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            return PixelPoint.FromPoint(point, 1);
+            return PixelPoint.FromPoint(point, RenderScaling);
         }
 
         public void SetCursor(ICursorImpl cursor)
@@ -136,7 +126,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view.Visibility = ViewStates.Visible;
         }
 
-        public double RenderScaling => 1;
+        public double RenderScaling { get; }
 
         void Draw()
         {
@@ -191,7 +181,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
             {
-                var newSize = new Size(width, height);
+                var newSize = new PixelSize(width, height).ToSize(_tl.RenderScaling);
 
                 if (newSize != _oldSize)
                 {
