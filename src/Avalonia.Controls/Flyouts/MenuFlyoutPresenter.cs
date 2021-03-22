@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Generators;
+﻿using System;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
@@ -7,6 +8,15 @@ namespace Avalonia.Controls
 {
     public class MenuFlyoutPresenter : MenuBase
     {
+        public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
+            AvaloniaProperty.Register<MenuFlyoutPresenter, CornerRadius>(nameof(CornerRadius));
+
+        public CornerRadius CornerRadius
+        {
+            get => GetValue(CornerRadiusProperty);
+            set => SetValue(CornerRadiusProperty, value);
+        }
+
         public MenuFlyoutPresenter()
             :base(new DefaultMenuInteractionHandler(true))
         {
@@ -25,7 +35,7 @@ namespace Avalonia.Controls
 
         public override void Open()
         {
-            //Ignore
+            throw new NotSupportedException("Use MenuFlyout.ShowAt(Control) instead");
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
