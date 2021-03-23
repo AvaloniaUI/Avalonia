@@ -185,7 +185,8 @@ namespace Avalonia.Controls.UnitTests
             {
                 var target = new ComboBox
                 {
-                    Template = GetTemplate()
+                    Template = GetTemplate(),
+                    VirtualizationMode =  ItemVirtualizationMode.None
                 };
 
                 target.ApplyTemplate();
