@@ -572,6 +572,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = ListBoxTemplate(),
                 Items = new[] { "Foo" },
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+                SelectionMode = SelectionMode.AlwaysSelected,
+                VirtualizationMode = ItemVirtualizationMode.None,
             };
 
             Prepare(target);
