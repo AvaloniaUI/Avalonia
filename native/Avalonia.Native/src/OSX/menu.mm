@@ -298,6 +298,23 @@ void AvnAppMenu::RaiseNeedsUpdate()
     }
 }
 
+void AvnAppMenu::RaiseOpening()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->Opening();
+    }
+}
+
+void AvnAppMenu::RaiseClosed()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->Closed();
+    }
+}
+
+
 HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
     @autoreleasepool
@@ -382,6 +399,15 @@ HRESULT AvnAppMenu::Clear()
     _parent->RaiseNeedsUpdate();
 }
 
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    _parent->RaiseOpening();
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    _parent->RaiseClosed();
+}
 
 @end
 
