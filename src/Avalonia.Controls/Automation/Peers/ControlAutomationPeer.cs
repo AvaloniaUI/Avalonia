@@ -23,10 +23,14 @@ namespace Avalonia.Automation.Peers
             : base(factory)
         {
             Owner = owner ?? throw new ArgumentNullException("owner");
+            Initialize();
+        }
 
-            owner.PropertyChanged += OwnerPropertyChanged;
-            var visualChildren = ((IVisual)owner).VisualChildren;
-            visualChildren.CollectionChanged += VisualChildrenChanged;
+        protected ControlAutomationPeer(IAutomationNode node, Control owner)
+            : base(node)
+        {
+            Owner = owner ?? throw new ArgumentNullException("owner");
+            Initialize();
         }
 
         public Control Owner { get; }
@@ -161,9 +165,16 @@ namespace Avalonia.Automation.Peers
         protected override bool IsKeyboardFocusableCore() => Owner.Focusable;
         protected override void SetFocusCore() => Owner.Focus();
 
-        private Rect GetBounds(TransformedBounds? bounds)
+        private static Rect GetBounds(TransformedBounds? bounds)
         {
             return bounds?.Bounds.TransformToAABB(bounds!.Value.Transform) ?? default;
+        }
+
+        private void Initialize()
+        {
+            Owner.PropertyChanged += OwnerPropertyChanged;
+            var visualChildren = ((IVisual)Owner).VisualChildren;
+            visualChildren.CollectionChanged += VisualChildrenChanged;
         }
 
         private void VisualChildrenChanged(object sender, EventArgs e) => InvalidateChildren();

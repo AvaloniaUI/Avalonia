@@ -8,8 +8,8 @@ namespace Avalonia.Automation.Peers
 {
     public class PopupRootAutomationPeer : WindowBaseAutomationPeer
     {
-        public PopupRootAutomationPeer(IAutomationNodeFactory factory, PopupRoot owner)
-            : base(factory, owner)
+        public PopupRootAutomationPeer(IAutomationNode node, PopupRoot owner)
+            : base(node, owner)
         {
             if (owner.IsVisible)
                 StartTrackingFocus();

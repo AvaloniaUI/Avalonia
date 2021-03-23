@@ -209,5 +209,12 @@ namespace Avalonia.Controls
             _automationPeer = OnCreateAutomationPeer(factory);
             return _automationPeer;
         }
+
+        internal void SetAutomationPeer(AutomationPeer peer)
+        {
+            if (_automationPeer is object)
+                throw new InvalidOperationException("Automation peer is already set.");
+            _automationPeer = peer ?? throw new ArgumentNullException(nameof(peer));
+        }
     }
 }

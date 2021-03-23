@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
@@ -466,5 +468,6 @@ namespace Avalonia.Native
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
 
         public IPlatformHandle Handle { get; private set; }
+        public Func<IAutomationNode, AutomationPeer> AutomationStarted { get; set; }
     }
 }

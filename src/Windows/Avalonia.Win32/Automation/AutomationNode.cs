@@ -56,7 +56,13 @@ namespace Avalonia.Win32.Automation
             Peer = peer;
         }
 
-        public AutomationPeer Peer { get; }
+        protected AutomationNode(Func<IAutomationNode, AutomationPeer> peerGetter)
+        {
+            _runtimeId = new int[] { 3, GetHashCode() };
+            Peer = peerGetter(this);
+        }
+
+        public AutomationPeer Peer { get; protected set; }
         public IAutomationNodeFactory Factory => AutomationNodeFactory.Instance;
 
         public Rect BoundingRectangle

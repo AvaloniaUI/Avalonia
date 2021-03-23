@@ -14,8 +14,8 @@ namespace Avalonia.Automation.Peers
     {
         private Control? _focus;
 
-        public WindowBaseAutomationPeer(IAutomationNodeFactory factory, WindowBase owner)
-            : base(factory, owner)
+        public WindowBaseAutomationPeer(IAutomationNode node, WindowBase owner)
+            : base(node, owner)
         {
         }
 

@@ -87,7 +87,7 @@ namespace Avalonia.Win32
         private POINT _maxTrackSize;
         private WindowImpl _parent;        
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
-        private AutomationNode _automationProvider;
+        private AutomationNode _automationNode;
         private bool _isCloseRequested;
         private bool _shown;
 
@@ -175,6 +175,7 @@ namespace Avalonia.Win32
         public Action LostFocus { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Func<IAutomationNode, AutomationPeer> AutomationStarted { get; set; }
 
         public Thickness BorderThickness
         {
@@ -1268,17 +1269,6 @@ namespace Avalonia.Win32
 
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
-
-        internal AutomationNode GetOrCreateAutomationProvider()
-        {
-            if (_automationProvider is null)
-            {
-                var peer = ControlAutomationPeer.GetOrCreatePeer(AutomationNodeFactory.Instance, (Control)_owner);
-                _automationProvider = peer.Node as AutomationNode;
-            }
-
-            return _automationProvider;
-        }
 
         private struct SavedWindowInfo
         {

@@ -171,9 +171,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNode node)
         {
-            return new PopupRootAutomationPeer(factory, this);
+            return new PopupRootAutomationPeer(node, this);
         }
     }
 }

@@ -13,8 +13,8 @@ namespace Avalonia.Win32.Automation
         IRawElementProviderFragmentRoot,
         IRootAutomationNode
     {
-        public RootAutomationNode(AutomationPeer peer)
-            : base(peer)
+        public RootAutomationNode(Func<IAutomationNode, AutomationPeer> peerGetter)
+            : base(peerGetter)
         {
         }
 

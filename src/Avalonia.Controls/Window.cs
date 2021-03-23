@@ -968,9 +968,9 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNode node)
         {
-            return new WindowAutomationPeer(factory, this);
+            return new WindowAutomationPeer(node, this);
         }
     }
 }

@@ -8,8 +8,8 @@ namespace Avalonia.Automation.Peers
 {
     public class WindowAutomationPeer : WindowBaseAutomationPeer
     {
-        public WindowAutomationPeer(IAutomationNodeFactory factory, Window owner)
-            : base(factory, owner)
+        public WindowAutomationPeer(IAutomationNode node, Window owner)
+            : base(node, owner)
         {
             if (owner.IsVisible)
                 StartTrackingFocus();

@@ -67,6 +67,17 @@ namespace Avalonia.Automation.Peers
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AutomationPeer"/> class.
+        /// </summary>
+        /// <param name="node">
+        /// The platform automation node.
+        /// </param>
+        protected AutomationPeer(IAutomationNode node)
+        {
+            Node = node;
+        }
+
+        /// <summary>
         /// Gets the related node in the platform UI Automation tree.
         /// </summary>
         public IAutomationNode Node { get; }

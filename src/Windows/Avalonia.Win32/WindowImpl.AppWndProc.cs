@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop.Automation;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -76,7 +77,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DESTROY:
                     {
-                        if (_automationProvider is object)
+                        if (_automationNode is object)
                             UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
 
                         //Window doesn't exist anymore
@@ -461,11 +462,14 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETOBJECT:
                     if ((long)lParam == UiaRootObjectId)
                     {
-                        var provider = GetOrCreateAutomationProvider();
-
-                        if (provider is object)
+                        if (_automationNode is null && AutomationStarted is object)
                         {
-                            var r = UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, provider);
+                            _automationNode = new RootAutomationNode(AutomationStarted);
+                        }
+
+                        if (_automationNode is object)
+                        {
+                            var r = UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, _automationNode);
                             return r;
                         }
                     }
