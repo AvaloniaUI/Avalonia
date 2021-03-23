@@ -1,4 +1,3 @@
-
 using Android.App;
 using Android.OS;
 using Android.Views;
@@ -7,7 +6,6 @@ namespace Avalonia.Android
 {
     public abstract class AvaloniaActivity : Activity
     {
-        
         internal AvaloniaView View;
         object _content;
 
@@ -35,9 +33,7 @@ namespace Avalonia.Android
             }
         }
 
-        public override bool DispatchKeyEvent(KeyEvent e)
-        {
-            return View.DispatchKeyEvent(e);
-        }
+        public override bool DispatchKeyEvent(KeyEvent e) =>
+            View.DispatchKeyEvent(e) ? true : base.DispatchKeyEvent(e);
     }
 }
