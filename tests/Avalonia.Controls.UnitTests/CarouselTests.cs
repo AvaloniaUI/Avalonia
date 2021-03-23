@@ -335,8 +335,6 @@ namespace Avalonia.Controls.UnitTests
                         BindingErrorType.DataValidationError));
                 target.Bind(ComboBox.SelectedItemProperty, textObservable);
 
-                Dispatcher.UIThread.RunJobs();
-
                 Assert.True(DataValidationErrors.GetHasErrors(target));
                 Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
             }

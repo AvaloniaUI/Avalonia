@@ -573,7 +573,7 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { "Foo" },
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
                 SelectionMode = SelectionMode.AlwaysSelected,
-                VirtualizationMode = ItemVirtualizationMode.None,
+                VirtualizationMode = ItemVirtualizationMode.None
             };
 
             Prepare(target);
@@ -582,8 +582,6 @@ namespace Avalonia.Controls.UnitTests
             var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
             target.Bind(ComboBox.SelectedItemProperty, textObservable);
                 
-            Dispatcher.UIThread.RunJobs();
-
             Assert.True(DataValidationErrors.GetHasErrors(target));
             Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }

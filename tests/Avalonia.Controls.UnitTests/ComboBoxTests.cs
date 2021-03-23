@@ -195,8 +195,6 @@ namespace Avalonia.Controls.UnitTests
                 var exception = new System.InvalidCastException("failed validation");
                 var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
                 target.Bind(ComboBox.SelectedItemProperty, textObservable);
-                
-                Dispatcher.UIThread.RunJobs();
 
                 Assert.True(DataValidationErrors.GetHasErrors(target));
                 Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
