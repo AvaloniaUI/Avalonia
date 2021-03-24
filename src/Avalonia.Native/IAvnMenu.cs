@@ -125,8 +125,8 @@ namespace Avalonia.Native.Interop.Impl
 
         private __MicroComIAvnMenuItemProxy CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
         {
-            var nativeItem = (__MicroComIAvnMenuItemProxy)(item is NativeMenuItemSeperator ?
-                factory.CreateMenuItemSeperator() :
+            var nativeItem = (__MicroComIAvnMenuItemProxy)(item is NativeMenuItemSeparator ?
+                factory.CreateMenuItemSeparator() :
                 factory.CreateMenuItem());
             nativeItem.ManagedMenuItem = item;
 
