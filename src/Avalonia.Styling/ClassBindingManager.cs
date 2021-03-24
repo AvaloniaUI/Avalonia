@@ -21,15 +21,8 @@ namespace Avalonia
             var prop = AvaloniaProperty.Register<StyledElement, bool>("__AvaloniaReserved::Classes::" + className);
             prop.Changed.Subscribe(args =>
             {
-                var enable = args.NewValue.GetValueOrDefault();
                 var classes = ((IStyledElement)args.Sender).Classes;
-                if (enable)
-                {
-                    if (!classes.Contains(className))
-                        classes.Add(className);
-                }
-                else
-                    classes.Remove(className);
+                classes.Set(className, args.NewValue.GetValueOrDefault());
             });
             
             return prop;
