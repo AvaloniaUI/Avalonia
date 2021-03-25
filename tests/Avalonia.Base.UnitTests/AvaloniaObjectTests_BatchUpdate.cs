@@ -54,6 +54,21 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Binding_Disposal_Should_Not_Raise_Property_Changes_During_Batch_Update()
+        {
+            var target = new TestClass();
+            var observable = new TestObservable<string>("foo");
+            var raised = new List<string>();
+
+            var sub = target.Bind(TestClass.FooProperty, observable, BindingPriority.LocalValue);
+            target.GetObservable(TestClass.FooProperty).Skip(1).Subscribe(x => raised.Add(x));
+            target.BeginBatchUpdate();
+            sub.Dispose();
+
+            Assert.Empty(raised);
+        }
+
+        [Fact]
         public void SetValue_Change_Should_Be_Raised_After_Batch_Update_1()
         {
             var target = new TestClass();
@@ -231,6 +246,27 @@ namespace Avalonia.Base.UnitTests
 
             target.BeginBatchUpdate();
             observable.OnCompleted();
+            target.EndBatchUpdate();
+
+            Assert.Equal(1, raised.Count);
+            Assert.Null(target.Foo);
+            Assert.Equal("foo", raised[0].OldValue);
+            Assert.Null(raised[0].NewValue);
+            Assert.Equal(BindingPriority.Unset, raised[0].Priority);
+        }
+
+        [Fact]
+        public void Binding_Disposal_Should_Be_Raised_After_Batch_Update()
+        {
+            var target = new TestClass();
+            var observable = new TestObservable<string>("foo");
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
+
+            var sub = target.Bind(TestClass.FooProperty, observable, BindingPriority.LocalValue);
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            target.BeginBatchUpdate();
+            sub.Dispose();
             target.EndBatchUpdate();
 
             Assert.Equal(1, raised.Count);
@@ -501,6 +537,38 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal(2, notifications.Count);
             Assert.Equal(null, notifications[0].NewValue);
             Assert.Equal("bar", notifications[1].NewValue);
+        }
+
+        [Fact]
+        public void Can_Bind_Completed_Binding_Back_To_Original_Value_When_Ending_Batch_Update()
+        {
+            var target = new TestClass();
+            var raised = 0;
+            var notifications = new List<AvaloniaPropertyChangedEventArgs>();
+            var observable1 = new TestObservable<string>("foo");
+            var observable2 = new TestObservable<string>("foo");
+
+            target.Bind(TestClass.FooProperty, observable1);
+
+            target.BeginBatchUpdate();
+            observable1.OnCompleted();
+            target.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == TestClass.FooProperty && e.NewValue is null)
+                {
+                    target.Bind(TestClass.FooProperty, observable2);
+                    ++raised;
+                }
+
+                notifications.Add(e);
+            };
+            target.EndBatchUpdate();
+
+            Assert.Equal("foo", target.Foo);
+            Assert.Equal(1, raised);
+            Assert.Equal(2, notifications.Count);
+            Assert.Equal(null, notifications[0].NewValue);
+            Assert.Equal("foo", notifications[1].NewValue);
         }
 
         public class TestClass : AvaloniaObject
