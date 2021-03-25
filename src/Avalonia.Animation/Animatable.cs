@@ -135,9 +135,9 @@ namespace Avalonia.Animation
                 {
                     var transition = Transitions[i];
 
-                    if (transition.Property == change.Property)
+                    if (transition.Property == change.Property &&
+                        _transitionState.TryGetValue(transition, out var state))
                     {
-                        var state = _transitionState[transition];
                         var oldValue = state.BaseValue;
                         var newValue = GetAnimationBaseValue(transition.Property);
 
