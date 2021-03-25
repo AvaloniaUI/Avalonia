@@ -173,7 +173,7 @@ namespace Avalonia
                     // During batch update values can't be removed immediately because they're needed to raise
                     // a correctly-typed _sink.ValueChanged notification. They instead mark themselves for removal
                     // by setting their priority to Unset.
-                    if (_batchUpdate is null)
+                    if (!IsBatchUpdating())
                     {
                         _values.Remove(property);
                     }
@@ -285,7 +285,7 @@ namespace Avalonia
                 else
                 {
                     var priorityValue = new PriorityValue<T>(_owner, property, this, l);
-                    if (_batchUpdate is object)
+                    if (IsBatchUpdating())
                         priorityValue.BeginBatchUpdate();
                     result = priorityValue.SetValue(value, priority);
                     _values.SetValue(property, priorityValue);
@@ -311,7 +311,7 @@ namespace Avalonia
             {
                 priorityValue = new PriorityValue<T>(_owner, property, this, e);
 
-                if (_batchUpdate is object)
+                if (IsBatchUpdating())
                 {
                     priorityValue.BeginBatchUpdate();
                 }
@@ -338,7 +338,7 @@ namespace Avalonia
         private void AddValue(AvaloniaProperty property, IValue value)
         {
             _values.AddValue(property, value);
-            if (_batchUpdate?.IsBatchUpdating == true && value is IBatchUpdate batch)
+            if (IsBatchUpdating() && value is IBatchUpdate batch)
                 batch.BeginBatchUpdate();
             value.Start();
         }
@@ -363,6 +363,8 @@ namespace Avalonia
                 _batchUpdate.ValueChanged(property, oldValue.ToObject());
             }
         }
+
+        private bool IsBatchUpdating() => _batchUpdate?.IsBatchUpdating == true;
 
         private static bool IsRemoveSentinel<T>(IValue value)
         {
@@ -447,9 +449,14 @@ namespace Avalonia
 
                             // During batch update values can't be removed immediately because they're needed to raise
                             // the _sink.ValueChanged notification. They instead mark themselves for removal by setting
-                            // their priority to Unset.
-                            if (slot.Priority == BindingPriority.Unset)
+                            // their priority to Unset. We need to re-read the slot here because raising ValueChanged
+                            // could have caused it to be updated.
+                            if (values.TryGetValue(entry.property, out var updatedSlot) &&
+                                updatedSlot.Priority == BindingPriority.Unset)
                             {
+                                if (entry.property.Name == "Transitions" && _owner._owner.GetType().Name == "TabItem")
+                                {
+                                }
                                 values.Remove(entry.property);
                             }
                         }
