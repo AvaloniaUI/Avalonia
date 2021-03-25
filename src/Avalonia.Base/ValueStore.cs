@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
@@ -56,7 +57,7 @@ namespace Avalonia
 
         public bool IsAnimating(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 return slot.Priority < BindingPriority.LocalValue;
             }
@@ -66,7 +67,7 @@ namespace Avalonia
 
         public bool IsSet(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 return slot.GetValue().HasValue;
             }
@@ -79,7 +80,7 @@ namespace Avalonia
             BindingPriority maxPriority,
             out T value)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 var v = ((IValue<T>)slot).GetValue(maxPriority);
 
@@ -103,7 +104,7 @@ namespace Avalonia
 
             IDisposable? result = null;
 
-            if (_values.TryGetValue(property, out var slot) && !IsRemoveSentinel<T>(slot))
+            if (TryGetValue(property, out var slot))
             {
                 result = SetExisting(slot, property, value, priority);
             }
@@ -138,7 +139,7 @@ namespace Avalonia
             IObservable<BindingValue<T>> source,
             BindingPriority priority)
         {
-            if (_values.TryGetValue(property, out var slot) && !IsRemoveSentinel<T>(slot))
+            if (TryGetValue(property, out var slot))
             {
                 return BindExisting(slot, property, source, priority);
             }
@@ -160,7 +161,7 @@ namespace Avalonia
 
         public void ClearLocalValue<T>(StyledPropertyBase<T> property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 if (slot is PriorityValue<T> p)
                 {
@@ -198,7 +199,7 @@ namespace Avalonia
 
         public void CoerceValue<T>(StyledPropertyBase<T> property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 if (slot is PriorityValue<T> p)
                 {
@@ -209,7 +210,7 @@ namespace Avalonia
 
         public Diagnostics.AvaloniaPropertyValue? GetDiagnostic(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 var slotValue = slot.GetValue();
                 return new Diagnostics.AvaloniaPropertyValue(
@@ -242,6 +243,7 @@ namespace Avalonia
             IPriorityValueEntry entry,
             Optional<T> oldValue)
         {
+            // We need to include remove sentinels here so call `_values.TryGetValue` directly.
             if (_values.TryGetValue(property, out var slot) && slot == entry)
             {
                 if (_batchUpdate is null)
@@ -366,12 +368,17 @@ namespace Avalonia
 
         private bool IsBatchUpdating() => _batchUpdate?.IsBatchUpdating == true;
 
-        private static bool IsRemoveSentinel<T>(IValue value)
+        private bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out IValue value)
+        {
+            return _values.TryGetValue(property, out value) && !IsRemoveSentinel(value);
+        }
+
+        private static bool IsRemoveSentinel(IValue value)
         {
             // Local value entries are optimized and contain only a single value field to save space,
             // so there's no way to mark them for removal at the end of a batch update. Instead a
             // ConstantValueEntry with a priority of Unset is used as a sentinel value.
-            return value is ConstantValueEntry<T> t && t.Priority == BindingPriority.Unset;
+            return value is IConstantValueEntry t && t.Priority == BindingPriority.Unset;
         }
 
         private class BatchUpdate
