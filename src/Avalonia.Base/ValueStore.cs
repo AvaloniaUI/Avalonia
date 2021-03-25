@@ -461,9 +461,6 @@ namespace Avalonia
                             if (values.TryGetValue(entry.property, out var updatedSlot) &&
                                 updatedSlot.Priority == BindingPriority.Unset)
                             {
-                                if (entry.property.Name == "Transitions" && _owner._owner.GetType().Name == "TabItem")
-                                {
-                                }
                                 values.Remove(entry.property);
                             }
                         }
