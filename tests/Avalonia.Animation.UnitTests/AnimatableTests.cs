@@ -330,6 +330,15 @@ namespace Avalonia.Animation.UnitTests
             }
         }
 
+        [Fact]
+        public void Transitions_Can_Be_Changed_To_Collection_That_Contains_The_Same_Transitions()
+        {
+            var target = CreateTarget();
+            var control = CreateControl(target.Object);
+
+            control.Transitions = new Transitions { target.Object };
+        }
+
         private static Mock<ITransition> CreateTarget()
         {
             return CreateTransition(Visual.OpacityProperty);
