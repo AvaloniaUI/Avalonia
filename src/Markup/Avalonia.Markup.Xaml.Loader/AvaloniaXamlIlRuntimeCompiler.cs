@@ -179,12 +179,12 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var indexerClosureType = _sreBuilder.DefineType("IndexerClosure_" + Guid.NewGuid().ToString("N"));
 
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
-                    _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
-                    new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
-                    new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType)),
-                    new DeterministicIdGenerator()),
+                _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
+                new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
+                new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType))), 
                 _sreEmitMappings,
                 _sreContextType) { EnableIlVerification = true };
+            
 
             IXamlType overrideType = null;
             if (rootInstance != null)
