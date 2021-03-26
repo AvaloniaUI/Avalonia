@@ -71,12 +71,12 @@
 }
 @end
 
-AvnAppMenuItem::AvnAppMenuItem(bool isSeperator)
+AvnAppMenuItem::AvnAppMenuItem(bool isSeparator)
 {
     _isCheckable = false;
-    _isSeperator = isSeperator;
+    _isSeparator = isSeparator;
     
-    if(isSeperator)
+    if(isSeparator)
     {
         _native = [NSMenuItem separatorItem];
     }
@@ -298,6 +298,23 @@ void AvnAppMenu::RaiseNeedsUpdate()
     }
 }
 
+void AvnAppMenu::RaiseOpening()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->Opening();
+    }
+}
+
+void AvnAppMenu::RaiseClosed()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->Closed();
+    }
+}
+
+
 HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
     @autoreleasepool
@@ -382,6 +399,15 @@ HRESULT AvnAppMenu::Clear()
     _parent->RaiseNeedsUpdate();
 }
 
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    _parent->RaiseOpening();
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    _parent->RaiseClosed();
+}
 
 @end
 
@@ -401,7 +427,7 @@ extern IAvnMenuItem* CreateAppMenuItem()
     }
 }
 
-extern IAvnMenuItem* CreateAppMenuItemSeperator()
+extern IAvnMenuItem* CreateAppMenuItemSeparator()
 {
     @autoreleasepool
     {
