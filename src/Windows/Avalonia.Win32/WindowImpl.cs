@@ -527,6 +527,7 @@ namespace Avalonia.Win32
             }
 
             _framebuffer.Dispose();
+            _hiddenWindow?.Dispose();
         }
 
         public void Invalidate(Rect rect)
