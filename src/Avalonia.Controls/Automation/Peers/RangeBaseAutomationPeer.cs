@@ -19,6 +19,9 @@ namespace Avalonia.Automation.Peers
         public double Maximum => Owner.Maximum;
         public double Minimum => Owner.Minimum;
         public double Value => Owner.Value;
+        public double SmallChange => Owner.SmallChange;
+        public double LargeChange => Owner.LargeChange;
+        
         public void SetValue(double value) => Owner.Value = value;
 
         protected virtual void OwnerPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)

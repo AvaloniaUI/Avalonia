@@ -22,7 +22,20 @@ namespace Avalonia.Native
 
         public void PropertyChanged(AutomationProperty property, object? oldValue, object? newValue)
         {
-            // TODO
+            AvnAutomationProperty p;
+
+            if (property == AutomationElementIdentifiers.BoundingRectangleProperty)
+                p = AvnAutomationProperty.AutomationPeer_BoundingRectangle;
+            else if (property == AutomationElementIdentifiers.ClassNameProperty)
+                p = AvnAutomationProperty.AutomationPeer_ClassName;
+            else if (property == AutomationElementIdentifiers.NameProperty)
+                p = AvnAutomationProperty.AutomationPeer_Name;
+            else if (property == RangeValuePatternIdentifiers.ValueProperty)
+                p = AvnAutomationProperty.RangeValueProvider_Value;
+            else
+                return;
+            
+            Native.PropertyChanged(p);
         }
 
         public void FocusChanged(AutomationPeer? focus)

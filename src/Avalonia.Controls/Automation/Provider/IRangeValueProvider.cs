@@ -29,6 +29,18 @@ namespace Avalonia.Automation.Provider
         double Value { get; }
 
         /// <summary>
+        /// Gets the value that is added to or subtracted from the Value property when a large
+        /// change is made, such as with the PAGE DOWN key.
+        /// </summary>
+        double LargeChange { get; }
+
+        /// <summary>
+        /// Gets the value that is added to or subtracted from the Value property when a small
+        /// change is made, such as with an arrow key.
+        /// </summary>
+        double SmallChange { get; }
+        
+        /// <summary>
         /// Sets the value of the control.
         /// </summary>
         /// <param name="value">The value to set.</param>

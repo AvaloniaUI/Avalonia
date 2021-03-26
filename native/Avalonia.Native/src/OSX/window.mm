@@ -514,6 +514,10 @@ public:
         NSAccessibilityPostNotification(Window, NSAccessibilityLayoutChangedNotification);
     }
 
+    virtual void PropertyChanged(AvnAutomationProperty property) override
+    {
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {

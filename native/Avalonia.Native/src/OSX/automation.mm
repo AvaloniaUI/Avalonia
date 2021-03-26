@@ -26,6 +26,17 @@ public:
         NSAccessibilityPostNotification(_node, NSAccessibilityLayoutChangedNotification);
     }
     
+    virtual void PropertyChanged(AvnAutomationProperty property) override
+    {
+        switch (property) {
+            case RangeValueProvider_Value:
+                NSAccessibilityPostNotification(_node, NSAccessibilityValueChangedNotification);
+                break;
+            default:
+                break;
+        }
+    }
+    
     virtual NSObject* GetNSAccessibility() override
     {
         return _node;
@@ -75,7 +86,7 @@ public:
         case AutomationStatusBar: return NSAccessibilityTableRole;
         case AutomationTab: return NSAccessibilityTabGroupRole;
         case AutomationTabItem: return NSAccessibilityRadioButtonRole;
-        case AutomationText: return NSAccessibilityTextFieldRole;
+        case AutomationText: return NSAccessibilityStaticTextRole;
         case AutomationToolBar: return NSAccessibilityToolbarRole;
         case AutomationToolTip: return NSAccessibilityPopoverRole;
         case AutomationTree: return NSAccessibilityOutlineRole;
@@ -105,7 +116,39 @@ public:
 
 - (NSString *)accessibilityTitle
 {
-    return GetNSStringAndRelease(_peer->GetName());
+    // StaticText exposes its text via the value property.
+    if (_peer->GetAutomationControlType() != AutomationText)
+    {
+        return GetNSStringAndRelease(_peer->GetName());
+    }
+    
+    return [super accessibilityTitle];
+}
+
+- (id)accessibilityValue
+{
+    if (_peer->IsRangeValueProvider())
+    {
+        return [NSNumber numberWithDouble:_peer->RangeValueProvider_GetValue()];
+    }
+    else if (_peer->IsToggleProvider())
+    {
+        switch (_peer->ToggleProvider_GetToggleState()) {
+            case 0: return [NSNumber numberWithBool:NO];
+            case 1: return [NSNumber numberWithBool:YES];
+            default: return [NSNumber numberWithInt:-1];
+        }
+    }
+    else if (_peer->IsValueProvider())
+    {
+        return GetNSStringAndRelease(_peer->ValueProvider_GetValue());
+    }
+    else if (_peer->GetAutomationControlType() == AutomationText)
+    {
+        return GetNSStringAndRelease(_peer->GetName());
+    }
+
+    return [super accessibilityValue];
 }
 
 - (NSArray *)accessibilityChildren
@@ -175,7 +218,29 @@ public:
 
 - (BOOL)accessibilityPerformPress
 {
+    if (!_peer->IsInvokeProvider())
+        return NO;
     _peer->InvokeProvider_Invoke();
+    return YES;
+}
+
+- (BOOL)accessibilityPerformIncrement
+{
+    if (!_peer->IsRangeValueProvider())
+        return NO;
+    auto value = _peer->RangeValueProvider_GetValue();
+    value += _peer->RangeValueProvider_GetSmallChange();
+    _peer->RangeValueProvider_SetValue(value);
+    return YES;
+}
+
+- (BOOL)accessibilityPerformDecrement
+{
+    if (!_peer->IsRangeValueProvider())
+        return NO;
+    auto value = _peer->RangeValueProvider_GetValue();
+    value -= _peer->RangeValueProvider_GetSmallChange();
+    _peer->RangeValueProvider_SetValue(value);
     return YES;
 }
 
@@ -184,6 +249,11 @@ public:
     if (selector == @selector(accessibilityPerformPress))
     {
         return _peer->IsInvokeProvider();
+    }
+    else if (selector == @selector(accessibilityPerformIncrement) ||
+             selector == @selector(accessibilityPerformDecrement))
+    {
+        return _peer->IsRangeValueProvider();
     }
     
     return [super isAccessibilitySelectorAllowed:selector];

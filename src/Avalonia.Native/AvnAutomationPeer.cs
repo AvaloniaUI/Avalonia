@@ -75,8 +75,21 @@ namespace Avalonia.Native
         }
 
         public int IsInvokeProvider() => (_inner is IInvokeProvider).AsComBool();
-
         public void InvokeProvider_Invoke() => ((IInvokeProvider)_inner).Invoke();
+
+        public int IsRangeValueProvider() => (_inner is IRangeValueProvider).AsComBool();
+        public double RangeValueProvider_GetValue() => ((IRangeValueProvider)_inner).Value;
+        public double RangeValueProvider_GetSmallChange() => ((IRangeValueProvider)_inner).SmallChange;
+        public double RangeValueProvider_GetLargeChange() => ((IRangeValueProvider)_inner).LargeChange;
+        public void RangeValueProvider_SetValue(double value) => ((IRangeValueProvider)_inner).SetValue(value);
+        
+        public int IsToggleProvider() => (_inner is IToggleProvider).AsComBool();
+        public int ToggleProvider_GetToggleState() => (int)((IToggleProvider)_inner).ToggleState;
+        public void ToggleProvider_Toggle() => ((IToggleProvider)_inner).Toggle();
+
+        public int IsValueProvider() => (_inner is IValueProvider).AsComBool();
+        public IAvnString ValueProvider_GetValue() => ((IValueProvider)_inner).Value.ToAvnString();
+        public void ValueProvider_SetValue(string value) => ((IValueProvider)_inner).SetValue(value);
         
         public static AvnAutomationPeer? Wrap(AutomationPeer? peer) =>
             peer != null ? new AvnAutomationPeer(peer) : null;

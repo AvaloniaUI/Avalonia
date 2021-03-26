@@ -218,6 +218,14 @@ enum SystemDecorations {
     SystemDecorationsFull = 2,
 }
 
+enum AvnAutomationProperty
+{
+    AutomationPeer_BoundingRectangle,
+    AutomationPeer_ClassName,
+    AutomationPeer_Name,
+    RangeValueProvider_Value,
+}
+
 struct AvnSize
 {
     double Width, Height;
@@ -808,6 +816,20 @@ interface IAvnAutomationPeer : IUnknown
      
      bool IsInvokeProvider();
      void InvokeProvider_Invoke();
+     
+     bool IsRangeValueProvider();
+     double RangeValueProvider_GetValue();
+     double RangeValueProvider_GetSmallChange();
+     double RangeValueProvider_GetLargeChange();
+     void RangeValueProvider_SetValue(double value);
+     
+     bool IsToggleProvider();
+     int ToggleProvider_GetToggleState();
+     void ToggleProvider_Toggle();
+     
+     bool IsValueProvider();
+     IAvnString* ValueProvider_GetValue();
+     void ValueProvider_SetValue(char* value);
 }
 
 [uuid(b00af5da-78af-4b33-bfff-4ce13a6239a9)]
@@ -821,4 +843,5 @@ interface IAvnAutomationPeerArray : IUnknown
 interface IAvnAutomationNode : IUnknown
 {
     void ChildrenChanged();
+    void PropertyChanged(AvnAutomationProperty property);
 }
