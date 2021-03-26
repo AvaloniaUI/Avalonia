@@ -29,7 +29,16 @@ namespace Avalonia.Controls
             var host = this.FindLogicalAncestorOfType<Popup>();
             if (host != null)
             {
-                host.IsOpen = false;
+                for (int i = 0; i < LogicalChildren.Count; i++)
+                {
+                    if (LogicalChildren[i] is MenuItem item)
+                    {
+                        item.IsSubMenuOpen = false;
+                    }
+                }
+
+                SelectedIndex = -1;
+                host.IsOpen = false;                
             }
         }
 
