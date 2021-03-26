@@ -820,4 +820,5 @@ interface IAvnAutomationPeerArray : IUnknown
 [uuid(004dc40b-e435-49dc-bac5-6272ee35382a)]
 interface IAvnAutomationNode : IUnknown
 {
+    void ChildrenChanged();
 }

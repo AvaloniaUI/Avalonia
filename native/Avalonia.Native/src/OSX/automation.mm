@@ -21,6 +21,11 @@ public:
         _node = [[AvnAutomationNode alloc] initWithPeer: peer];
     }
     
+    virtual void ChildrenChanged() override
+    {
+        NSAccessibilityPostNotification(_node, NSAccessibilityLayoutChangedNotification);
+    }
+    
     virtual NSObject* GetNSAccessibility() override
     {
         return _node;
@@ -50,25 +55,46 @@ public:
     auto controlType = _peer->GetAutomationControlType();
     
     switch (controlType) {
-        case AutomationButton:
-            return NSAccessibilityButtonRole;
-        case AutomationCheckBox:
-            return NSAccessibilityCheckBoxRole;
-        case AutomationComboBox:
-            return NSAccessibilityPopUpButtonRole;
-        case AutomationGroup:
-        case AutomationPane:
-            return NSAccessibilityGroupRole;
-        case AutomationSlider:
-            return NSAccessibilitySliderRole;
-        case AutomationTab:
-            return NSAccessibilityTabGroupRole;
-        case AutomationTabItem:
-            return NSAccessibilityRadioButtonRole;
-        case AutomationWindow:
-            return NSAccessibilityWindowRole;
-        default:
-            return NSAccessibilityUnknownRole;
+        case AutomationButton: return NSAccessibilityButtonRole;
+        case AutomationCalendar: return NSAccessibilityGridRole;
+        case AutomationCheckBox: return NSAccessibilityCheckBoxRole;
+        case AutomationComboBox: return NSAccessibilityPopUpButtonRole;
+        case AutomationEdit: return NSAccessibilityTextFieldRole;
+        case AutomationHyperlink: return NSAccessibilityLinkRole;
+        case AutomationImage: return NSAccessibilityImageRole;
+        case AutomationListItem: return NSAccessibilityRowRole;
+        case AutomationList: return NSAccessibilityTableRole;
+        case AutomationMenu: return NSAccessibilityMenuBarRole;
+        case AutomationMenuBar: return NSAccessibilityMenuBarRole;
+        case AutomationMenuItem: return NSAccessibilityMenuItemRole;
+        case AutomationProgressBar: return NSAccessibilityProgressIndicatorRole;
+        case AutomationRadioButton: return NSAccessibilityRadioButtonRole;
+        case AutomationScrollBar: return NSAccessibilityScrollBarRole;
+        case AutomationSlider: return NSAccessibilitySliderRole;
+        case AutomationSpinner: return NSAccessibilityIncrementorRole;
+        case AutomationStatusBar: return NSAccessibilityTableRole;
+        case AutomationTab: return NSAccessibilityTabGroupRole;
+        case AutomationTabItem: return NSAccessibilityRadioButtonRole;
+        case AutomationText: return NSAccessibilityTextFieldRole;
+        case AutomationToolBar: return NSAccessibilityToolbarRole;
+        case AutomationToolTip: return NSAccessibilityPopoverRole;
+        case AutomationTree: return NSAccessibilityOutlineRole;
+        case AutomationTreeItem: return NSAccessibilityOutlineRowSubrole;
+        case AutomationCustom: return NSAccessibilityUnknownRole;
+        case AutomationGroup: return NSAccessibilityGroupRole;
+        case AutomationThumb: return NSAccessibilityHandleRole;
+        case AutomationDataGrid: return NSAccessibilityGridRole;
+        case AutomationDataItem: return NSAccessibilityCellRole;
+        case AutomationDocument: return NSAccessibilityStaticTextRole;
+        case AutomationSplitButton: return NSAccessibilityPopUpButtonRole;
+        case AutomationWindow: return NSAccessibilityWindowRole;
+        case AutomationPane: return NSAccessibilityGroupRole;
+        case AutomationHeader: return NSAccessibilityGroupRole;
+        case AutomationHeaderItem:  return NSAccessibilityButtonRole;
+        case AutomationTable: return NSAccessibilityTableRole;
+        case AutomationTitleBar: return NSAccessibilityGroupRole;
+        case AutomationSeparator: return NSAccessibilityUnknownRole;
+        default: return NSAccessibilityUnknownRole;
     }
 }
 
@@ -188,13 +214,13 @@ public:
 - (AvnWindow*) getAvnWindow
 {
     auto window = [self getWindow];
-    return dynamic_cast<INSWindowHolder*>(window)->GetNSWindow();
+    return window != nullptr ? dynamic_cast<INSWindowHolder*>(window)->GetNSWindow() : nullptr;
 }
 
 - (AvnView*) getAvnView
 {
     auto window = [self getWindow];
-    return dynamic_cast<INSWindowHolder*>(window)->GetNSView();
+    return window != nullptr ? dynamic_cast<INSWindowHolder*>(window)->GetNSView() : nullptr;
 }
 
 @end

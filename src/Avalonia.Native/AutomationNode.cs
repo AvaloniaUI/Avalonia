@@ -18,10 +18,7 @@ namespace Avalonia.Native
         public IAvnAutomationNode Native { get; }
         public IAutomationNodeFactory Factory { get; }
 
-        public void ChildrenChanged()
-        {
-            // TODO
-        }
+        public void ChildrenChanged() => Native.ChildrenChanged();
 
         public void PropertyChanged(AutomationProperty property, object? oldValue, object? newValue)
         {
