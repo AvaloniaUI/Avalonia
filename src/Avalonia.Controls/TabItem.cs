@@ -85,7 +85,7 @@ namespace Avalonia.Controls
 
         protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
         {
-            return new ListItemAutomationPeer(factory, this);
+            return new TabItemAutomationPeer(factory, this);
         }
     }
 }
