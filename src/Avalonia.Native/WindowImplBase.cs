@@ -48,6 +48,7 @@ namespace Avalonia.Native
     internal abstract class WindowBaseImpl : IWindowBaseImpl,
         IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
     {
+        protected readonly IAvaloniaNativeFactory _factory;
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
@@ -63,8 +64,10 @@ namespace Avalonia.Native
         private NativeControlHostImpl _nativeControlHost;
         private IGlContext _glContext;
 
-        internal WindowBaseImpl(AvaloniaNativePlatformOptions opts, AvaloniaNativePlatformOpenGlInterface glFeature)
+        internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
+            AvaloniaNativePlatformOpenGlInterface glFeature)
         {
+            _factory = factory;
             _gpu = opts.UseGpu && glFeature != null;
             _deferredRendering = opts.UseDeferredRendering;
 
@@ -91,6 +94,8 @@ namespace Avalonia.Native
 
             Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d));
         }
+
+        public IAvnWindowBase Native => _native;
 
         public Size ClientSize 
         {
@@ -244,8 +249,14 @@ namespace Avalonia.Native
                     return (AvnDragDropEffects)args.Effects;
                 }
             }
-        }
 
+            public IAvnAutomationPeer AutomationStarted(IAvnAutomationNode node)
+            {
+                var factory = AutomationNodeFactory.GetInstance(_parent._factory);
+                return new AvnAutomationPeer(_parent.AutomationStarted(new AutomationNode(factory, node)));
+            }
+        }
+       
         public void Activate()
         {
             _native.Activate();
