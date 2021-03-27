@@ -299,6 +299,7 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.Calendar => UiaControlTypeId.Calendar,
                 AutomationControlType.CheckBox => UiaControlTypeId.CheckBox,
                 AutomationControlType.ComboBox => UiaControlTypeId.ComboBox,
+                AutomationControlType.ComboBoxItem => UiaControlTypeId.ListItem,
                 AutomationControlType.Edit => UiaControlTypeId.Edit,
                 AutomationControlType.Hyperlink => UiaControlTypeId.Hyperlink,
                 AutomationControlType.Image => UiaControlTypeId.Image,

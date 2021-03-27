@@ -414,6 +414,7 @@ enum AvnAutomationControlType
     AutomationCalendar,
     AutomationCheckBox,
     AutomationComboBox,
+    AutomationComboBoxItem,
     AutomationEdit,
     AutomationHyperlink,
     AutomationImage,

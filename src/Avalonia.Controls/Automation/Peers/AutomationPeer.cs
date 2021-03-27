@@ -13,6 +13,7 @@ namespace Avalonia.Automation.Peers
         Calendar,
         CheckBox,
         ComboBox,
+        ComboBoxItem,
         Edit,
         Hyperlink,
         Image,

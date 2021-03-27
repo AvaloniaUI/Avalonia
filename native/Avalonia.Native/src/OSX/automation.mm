@@ -75,6 +75,7 @@ public:
         case AutomationCalendar: return NSAccessibilityGridRole;
         case AutomationCheckBox: return NSAccessibilityCheckBoxRole;
         case AutomationComboBox: return NSAccessibilityPopUpButtonRole;
+        case AutomationComboBoxItem: return NSAccessibilityMenuItemRole;
         case AutomationEdit: return NSAccessibilityTextFieldRole;
         case AutomationHyperlink: return NSAccessibilityLinkRole;
         case AutomationImage: return NSAccessibilityImageRole;
