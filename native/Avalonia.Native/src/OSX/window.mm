@@ -518,6 +518,11 @@ public:
     {
     }
     
+    virtual void FocusChanged(IAvnAutomationPeer* peer) override
+    {
+        NSAccessibilityPostNotification(Window, NSAccessibilityFocusedUIElementChangedNotification);
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {
@@ -2299,6 +2304,18 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto peer = [self getAutomationPeer];
     auto hit = peer->RootProvider_GetPeerFromPoint(p);
     return GetAccessibilityElement(hit);
+}
+
+- (id)accessibilityFocusedUIElement
+{
+    auto peer = [self getAutomationPeer];
+    
+    if (peer->IsRootProvider())
+    {
+        return GetAccessibilityElement(peer->RootProvider_GetFocus());
+    }
+    
+    return [super accessibilityFocusedUIElement];
 }
 
 - (IAvnAutomationPeer* _Nonnull) getAutomationPeer

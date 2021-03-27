@@ -38,9 +38,6 @@ namespace Avalonia.Native
             Native.PropertyChanged(p);
         }
 
-        public void FocusChanged(AutomationPeer? focus)
-        {
-            // TODO
-        }
+        public void FocusChanged(AutomationPeer? focus) => Native.FocusChanged(AvnAutomationPeer.Wrap(focus));
     }
 }

@@ -52,6 +52,7 @@ namespace Avalonia.Native
         }
 
         public int IsRootProvider() => (_inner is IRootProvider).AsComBool();
+        public IAvnAutomationPeer? RootProvider_GetFocus() => Wrap(((IRootProvider)_inner).GetFocus());
 
         public IAvnAutomationPeer? RootProvider_GetPeerFromPoint(AvnPoint point)
         {

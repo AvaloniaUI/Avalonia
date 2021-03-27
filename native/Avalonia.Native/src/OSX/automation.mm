@@ -36,7 +36,12 @@ public:
                 break;
         }
     }
-    
+
+    virtual void FocusChanged(IAvnAutomationPeer* peer) override
+    {
+        // Only implemented in top-level nodes, i.e. AvnWindow.
+    }
+
     virtual NSObject* GetNSAccessibility() override
     {
         return _node;
