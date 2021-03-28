@@ -18,11 +18,11 @@
       <NativeMenuItem Header="File">
         <NativeMenu>
           <NativeMenuItem Icon="/Assets/test_icon.ico" Header="Open" Clicked="OnOpenClicked" Gesture="Ctrl+O"/>
-          <NativeMenuItemSeperator/>
+          <NativeMenuItemSeperator/><!-- Uses incorrect spelling to demonstrate backwards compatibility -->
           <NativeMenuItem Icon="/Assets/github_icon.png" Header="Recent">
             <NativeMenu/>
           </NativeMenuItem>
-          <NativeMenuItemSeperator/>
+          <NativeMenuItemSeparator/>
           <NativeMenuItem Header="{x:Static local:MainWindow.MenuQuitHeader}"
                           Gesture="{x:Static local:MainWindow.MenuQuitGesture}"
                           Clicked="OnCloseClicked" />
