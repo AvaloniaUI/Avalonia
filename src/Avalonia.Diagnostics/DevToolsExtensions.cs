@@ -32,7 +32,7 @@ namespace Avalonia
         /// Attaches DevTools to a window, to be opened with the specified options.
         /// </summary>
         /// <param name="root">The window to attach DevTools to.</param>
-        /// <param name="options">additional settint of DevTools</param>
+        /// <param name="options">Additional settings of DevTools.</param>
         public static void AttachDevTools(this TopLevel root, DevToolsOptions options)
         {
             DevTools.Attach(root, options);
