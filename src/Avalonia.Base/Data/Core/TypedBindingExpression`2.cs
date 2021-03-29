@@ -30,7 +30,7 @@ namespace Avalonia.Data.Core
         private readonly Optional<TOut> _fallbackValue;
         private IDisposable? _rootSourceSubsciption;
         private WeakReference<TIn>? _root;
-        private bool _rootHasFired;
+        private Flags _flags;
         private int _publishCount;
 
         public TypedBindingExpression(
@@ -89,7 +89,7 @@ namespace Avalonia.Data.Core
 
         protected override void Initialize()
         {
-            _rootHasFired = false;
+            _flags &= ~Flags.RootHasFired;
             _rootSourceSubsciption = _rootSource.Subscribe(RootChanged);
         }
 
@@ -118,7 +118,7 @@ namespace Avalonia.Data.Core
         private void RootChanged(TIn value)
         {
             _root = new WeakReference<TIn>(value);
-            _rootHasFired = true;
+            _flags |= Flags.RootHasFired;
             StopListeningToChain(0);
             ListenToChain(0);
             PublishValue();
@@ -151,11 +151,18 @@ namespace Avalonia.Data.Core
                 {
                     // Broken expression chain.
                 }
+                finally
+                {
+                    _flags |= Flags.ListeningToChain;
+                }
             }
         }
 
         private void StopListeningToChain(int from)
         {
+            if ((_flags & Flags.ListeningToChain) == 0)
+                return;
+
             if (_chain != null && _root != null && _root.TryGetTarget(out _))
             {
                 for (var i = from; i < _chain.Length; ++i)
@@ -168,6 +175,8 @@ namespace Avalonia.Data.Core
                     }
                 }
             }
+
+            _flags &= ~Flags.ListeningToChain;
         }
 
         private bool SubscribeToChanges(object o)
@@ -253,7 +262,7 @@ namespace Avalonia.Data.Core
                     return BindingValue<TOut>.BindingError(e, _fallbackValue);
                 }
             }
-            else if (_rootHasFired)
+            else if ((_flags & Flags.RootHasFired) != 0)
             {
                 return BindingValue<TOut>.BindingError(new NullReferenceException(), _fallbackValue);
             }
@@ -322,6 +331,13 @@ namespace Avalonia.Data.Core
 
             public Func<TIn, object> Eval;
             public WeakReference<object>? Value;
+        }
+
+        [Flags]
+        private enum Flags
+        {
+            RootHasFired = 0x01,
+            ListeningToChain = 0x02,
         }
     }
 }
