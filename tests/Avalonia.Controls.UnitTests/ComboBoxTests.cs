@@ -1,9 +1,14 @@
+using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -137,5 +142,65 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(other.IsFocused);
             }
         }
+
+        [Theory]
+        [InlineData(-1, 2, "c", "A item", "B item", "C item")]
+        [InlineData(0, 1, "b", "A item", "B item", "C item")]
+        [InlineData(2, 2, "x", "A item", "B item", "C item")]
+        public void TextSearch_Should_Have_Expected_SelectedIndex(
+            int initialSelectedIndex,
+            int expectedSelectedIndex,
+            string searchTerm,
+            params string[] items)
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),                    
+                    Items = items.Select(x => new ComboBoxItem { Content = x })
+                };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                target.SelectedIndex = initialSelectedIndex;
+
+                var args = new TextInputEventArgs
+                {
+                    Text = searchTerm,
+                    RoutedEvent = InputElement.TextInputEvent
+                };
+
+                target.RaiseEvent(args);
+
+                Assert.Equal(expectedSelectedIndex, target.SelectedIndex);
+            }
+        }
+        
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),
+                    VirtualizationMode =  ItemVirtualizationMode.None
+                };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.SelectedItemProperty, textObservable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+                
+            }
+            
+        } 
     }
 }

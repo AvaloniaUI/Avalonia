@@ -207,7 +207,7 @@ namespace Avalonia.Layout
             }
         }
 
-        public bool IsIndexValidInData(int currentIndex) => currentIndex >= 0 && currentIndex < _context.ItemCount;
+        public bool IsIndexValidInData(int currentIndex) => (uint)currentIndex < _context.ItemCount;
 
         public ILayoutable GetRealizedElement(int dataIndex)
         {
