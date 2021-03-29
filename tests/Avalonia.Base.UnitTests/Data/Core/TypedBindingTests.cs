@@ -73,6 +73,21 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Null(source.Foo);
         }
 
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Immediately_Write_Value_Back_To_Source()
+        {
+            var source = new Source { Foo = "foo" };
+            var target = new TextBlock { DataContext = source };
+            var binding = TypedBinding<Source>.TwoWay(o => o.Foo, (o, v) => o.Foo = v);
+            var raised = 0;
+
+            source.PropertyChanged += (s, e) => ++raised;
+
+            target.Bind(TextBox.TextProperty, binding);
+
+            Assert.Equal(0, raised);
+        }
+
         private class DummyObject : ICloneable
         {
             private readonly string _val;

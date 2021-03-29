@@ -68,7 +68,8 @@ namespace Avalonia.Data.Core
                 try
                 {
                     var c = _publishCount;
-                    _write.Invoke(root, value.Value);
+                    if ((_flags & Flags.Initialized) != 0)
+                        _write.Invoke(root, value.Value);
                     if (_publishCount == c)
                         PublishValue();
                 }
@@ -91,6 +92,7 @@ namespace Avalonia.Data.Core
         {
             _flags &= ~Flags.RootHasFired;
             _rootSourceSubsciption = _rootSource.Subscribe(RootChanged);
+            _flags |= Flags.Initialized;
         }
 
         protected override void Deinitialize()
@@ -98,6 +100,7 @@ namespace Avalonia.Data.Core
             StopListeningToChain(0);
             _rootSourceSubsciption?.Dispose();
             _rootSourceSubsciption = null;
+            _flags &= ~Flags.Initialized;
         }
 
         protected override void Subscribed(IObserver<BindingValue<TOut>> observer, bool first)
@@ -336,8 +339,9 @@ namespace Avalonia.Data.Core
         [Flags]
         private enum Flags
         {
-            RootHasFired = 0x01,
-            ListeningToChain = 0x02,
+            Initialized = 0x01,
+            RootHasFired = 0x02,
+            ListeningToChain = 0x04,
         }
     }
 }

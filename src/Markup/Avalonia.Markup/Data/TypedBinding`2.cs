@@ -103,8 +103,8 @@ namespace Avalonia.Data
                     return target.Bind(property, expression, Priority);
                 case BindingMode.TwoWay:
                     return new CompositeDisposable(
-                        target.Bind(property, expression, Priority),
-                        target.GetBindingObservable(property).Subscribe(expression));
+                        target.GetBindingObservable(property).Subscribe(expression),
+                        target.Bind(property, expression, Priority));
                 case BindingMode.OneTime:
                 case BindingMode.OneWayToSource:
                     throw new NotImplementedException();
