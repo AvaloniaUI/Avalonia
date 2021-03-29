@@ -25,7 +25,9 @@ namespace Avalonia.Data.Core
 
         public void OnCompleted() => _source.OnCompleted();
         public void OnError(Exception error) => _source.OnError(error);
+#pragma warning disable CS8600
         public void OnNext(object? value) => _source.OnNext(new BindingValue<T>((T)value));
+#pragma warning restore CS8600
 
         protected override void Subscribed()
         {
