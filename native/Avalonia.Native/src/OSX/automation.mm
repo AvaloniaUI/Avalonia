@@ -157,6 +157,27 @@ public:
     return [super accessibilityValue];
 }
 
+- (id)accessibilityMinValue
+{
+    if (_peer->IsRangeValueProvider())
+    {
+        return [NSNumber numberWithDouble:_peer->RangeValueProvider_GetMinimum()];
+    }
+    
+    return [super accessibilityMinValue];
+}
+
+- (id)accessibilityMaxValue
+{
+    if (_peer->IsRangeValueProvider())
+    {
+        return [NSNumber numberWithDouble:_peer->RangeValueProvider_GetMaximum()];
+    }
+    
+    return [super accessibilityMaxValue];
+}
+
+
 - (NSArray *)accessibilityChildren
 {
     if (_children == nullptr && _peer != nullptr)
@@ -226,7 +247,7 @@ public:
 {
     if (!_peer->IsExpandCollapseProvider())
         return NO;
-    return _peer->ExpandCollapseProvider_IsExpanded();
+    return _peer->ExpandCollapseProvider_GetIsExpanded();
 }
 
 - (void)setAccessibilityExpanded:(BOOL)accessibilityExpanded
@@ -284,7 +305,7 @@ public:
 {
     if (selector == @selector(accessibilityPerformShowMenu))
     {
-        return _peer->IsExpandCollapseProvider() && _peer->ExpandCollapseProvider_ShowsMenu();
+        return _peer->IsExpandCollapseProvider() && _peer->ExpandCollapseProvider_GetShowsMenu();
     }
     else if (selector == @selector(isAccessibilityExpanded))
     {
@@ -295,7 +316,9 @@ public:
         return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider();
     }
     else if (selector == @selector(accessibilityPerformIncrement) ||
-             selector == @selector(accessibilityPerformDecrement))
+             selector == @selector(accessibilityPerformDecrement) ||
+             selector == @selector(accessibilityMinValue) ||
+             selector == @selector(accessibilityMaxValue))
     {
         return _peer->IsRangeValueProvider();
     }

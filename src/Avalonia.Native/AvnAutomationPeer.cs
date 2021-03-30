@@ -78,14 +78,14 @@ namespace Avalonia.Native
 
         public int IsExpandCollapseProvider() => (_inner is IExpandCollapseProvider).AsComBool();
 
-        public int ExpandCollapseProvider_IsExpanded() => ((IExpandCollapseProvider)_inner).ExpandCollapseState switch
+        public int ExpandCollapseProvider_GetIsExpanded() => ((IExpandCollapseProvider)_inner).ExpandCollapseState switch
         {
             ExpandCollapseState.Expanded => 1,
             ExpandCollapseState.PartiallyExpanded => 1,
             _ => 0,
         };
 
-        public int ExpandCollapseProvider_ShowsMenu() => ((IExpandCollapseProvider)_inner).ShowsMenu.AsComBool();
+        public int ExpandCollapseProvider_GetShowsMenu() => ((IExpandCollapseProvider)_inner).ShowsMenu.AsComBool();
         public void ExpandCollapseProvider_Expand() => ((IExpandCollapseProvider)_inner).Expand();
         public void ExpandCollapseProvider_Collapse() => ((IExpandCollapseProvider)_inner).Collapse();
 
@@ -94,6 +94,8 @@ namespace Avalonia.Native
 
         public int IsRangeValueProvider() => (_inner is IRangeValueProvider).AsComBool();
         public double RangeValueProvider_GetValue() => ((IRangeValueProvider)_inner).Value;
+        public double RangeValueProvider_GetMinimum() => ((IRangeValueProvider)_inner).Minimum;
+        public double RangeValueProvider_GetMaximum() => ((IRangeValueProvider)_inner).Maximum;
         public double RangeValueProvider_GetSmallChange() => ((IRangeValueProvider)_inner).SmallChange;
         public double RangeValueProvider_GetLargeChange() => ((IRangeValueProvider)_inner).LargeChange;
         public void RangeValueProvider_SetValue(double value) => ((IRangeValueProvider)_inner).SetValue(value);

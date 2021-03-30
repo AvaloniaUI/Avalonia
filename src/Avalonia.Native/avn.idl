@@ -817,8 +817,8 @@ interface IAvnAutomationPeer : IUnknown
      IAvnAutomationPeer* RootProvider_GetPeerFromPoint(AvnPoint point);
      
      bool IsExpandCollapseProvider();
-     bool ExpandCollapseProvider_IsExpanded();
-     bool ExpandCollapseProvider_ShowsMenu();
+     bool ExpandCollapseProvider_GetIsExpanded();
+     bool ExpandCollapseProvider_GetShowsMenu();
      void ExpandCollapseProvider_Expand();
      void ExpandCollapseProvider_Collapse();
      
@@ -827,6 +827,8 @@ interface IAvnAutomationPeer : IUnknown
      
      bool IsRangeValueProvider();
      double RangeValueProvider_GetValue();
+     double RangeValueProvider_GetMinimum();
+     double RangeValueProvider_GetMaximum();
      double RangeValueProvider_GetSmallChange();
      double RangeValueProvider_GetLargeChange();
      void RangeValueProvider_SetValue(double value);
