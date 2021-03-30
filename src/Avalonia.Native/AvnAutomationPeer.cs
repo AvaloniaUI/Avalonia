@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Native.Interop;
@@ -74,6 +75,19 @@ namespace Avalonia.Native
             
             return Wrap(result);
         }
+
+        public int IsExpandCollapseProvider() => (_inner is IExpandCollapseProvider).AsComBool();
+
+        public int ExpandCollapseProvider_IsExpanded() => ((IExpandCollapseProvider)_inner).ExpandCollapseState switch
+        {
+            ExpandCollapseState.Expanded => 1,
+            ExpandCollapseState.PartiallyExpanded => 1,
+            _ => 0,
+        };
+
+        public int ExpandCollapseProvider_ShowsMenu() => ((IExpandCollapseProvider)_inner).ShowsMenu.AsComBool();
+        public void ExpandCollapseProvider_Expand() => ((IExpandCollapseProvider)_inner).Expand();
+        public void ExpandCollapseProvider_Collapse() => ((IExpandCollapseProvider)_inner).Collapse();
 
         public int IsInvokeProvider() => (_inner is IInvokeProvider).AsComBool();
         public void InvokeProvider_Invoke() => ((IInvokeProvider)_inner).Invoke();

@@ -816,6 +816,12 @@ interface IAvnAutomationPeer : IUnknown
      IAvnAutomationPeer* RootProvider_GetFocus();
      IAvnAutomationPeer* RootProvider_GetPeerFromPoint(AvnPoint point);
      
+     bool IsExpandCollapseProvider();
+     bool ExpandCollapseProvider_IsExpanded();
+     bool ExpandCollapseProvider_ShowsMenu();
+     void ExpandCollapseProvider_Expand();
+     void ExpandCollapseProvider_Collapse();
+     
      bool IsInvokeProvider();
      void InvokeProvider_Invoke();
      

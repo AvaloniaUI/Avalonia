@@ -12,6 +12,15 @@
         ExpandCollapseState ExpandCollapseState { get; }
 
         /// <summary>
+        /// Gets a value indicating whether expanding the element shows a menu of items to the user,
+        /// such as drop-down list.
+        /// </summary>
+        /// <remarks>
+        /// Used in OSX to enable the "Show Menu" action on the element.
+        /// </remarks>
+        bool ShowsMenu { get; }
+        
+        /// <summary>
         /// Displays all child nodes, controls, or content of the control.
         /// </summary>
         void Expand();

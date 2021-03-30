@@ -20,6 +20,7 @@ namespace Avalonia.Automation.Peers
         public new ComboBox Owner => (ComboBox)base.Owner;
 
         public ExpandCollapseState ExpandCollapseState => ToState(Owner.IsDropDownOpen);
+        public bool ShowsMenu => true;
         public void Collapse() => Owner.IsDropDownOpen = false;
         public void Expand() => Owner.IsDropDownOpen = true;
 

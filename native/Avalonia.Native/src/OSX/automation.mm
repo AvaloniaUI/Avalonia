@@ -222,11 +222,33 @@ public:
     return [self accessibilityTopLevelUIElement];
 }
 
+- (BOOL)isAccessibilityExpanded
+{
+    if (!_peer->IsExpandCollapseProvider())
+        return NO;
+    return _peer->ExpandCollapseProvider_IsExpanded();
+}
+
+- (void)setAccessibilityExpanded:(BOOL)accessibilityExpanded
+{
+    if (!_peer->IsExpandCollapseProvider())
+        return;
+    if (accessibilityExpanded)
+        _peer->ExpandCollapseProvider_Expand();
+    else
+        _peer->ExpandCollapseProvider_Collapse();
+}
+
 - (BOOL)accessibilityPerformPress
 {
-    if (!_peer->IsInvokeProvider())
-        return NO;
-    _peer->InvokeProvider_Invoke();
+    if (_peer->IsInvokeProvider())
+    {
+        _peer->InvokeProvider_Invoke();
+    }
+    else if (_peer->IsExpandCollapseProvider())
+    {
+        _peer->ExpandCollapseProvider_Expand();
+    }
     return YES;
 }
 
@@ -250,11 +272,27 @@ public:
     return YES;
 }
 
+- (BOOL)accessibilityPerformShowMenu
+{
+    if (!_peer->IsExpandCollapseProvider())
+        return NO;
+    _peer->ExpandCollapseProvider_Expand();
+    return YES;
+}
+
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
-    if (selector == @selector(accessibilityPerformPress))
+    if (selector == @selector(accessibilityPerformShowMenu))
     {
-        return _peer->IsInvokeProvider();
+        return _peer->IsExpandCollapseProvider() && _peer->ExpandCollapseProvider_ShowsMenu();
+    }
+    else if (selector == @selector(isAccessibilityExpanded))
+    {
+        return _peer->IsExpandCollapseProvider();
+    }
+    else if (selector == @selector(accessibilityPerformPress))
+    {
+        return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider();
     }
     else if (selector == @selector(accessibilityPerformIncrement) ||
              selector == @selector(accessibilityPerformDecrement))
