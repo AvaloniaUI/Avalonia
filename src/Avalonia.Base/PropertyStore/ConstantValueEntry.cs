@@ -7,11 +7,18 @@ using Avalonia.Data;
 namespace Avalonia.PropertyStore
 {
     /// <summary>
+    /// Represents an untyped interface to <see cref="ConstantValueEntry{T}"/>.
+    /// </summary>
+    internal interface IConstantValueEntry : IPriorityValueEntry, IDisposable
+    {
+    }
+
+    /// <summary>
     /// Stores a value with a priority in a <see cref="ValueStore"/> or
     /// <see cref="PriorityValue{T}"/>.
     /// </summary>
     /// <typeparam name="T">The property type.</typeparam>
-    internal class ConstantValueEntry<T> : IPriorityValueEntry<T>, IDisposable
+    internal class ConstantValueEntry<T> : IPriorityValueEntry<T>, IConstantValueEntry
     {
         private IValueSink _sink;
         private Optional<T> _value;
