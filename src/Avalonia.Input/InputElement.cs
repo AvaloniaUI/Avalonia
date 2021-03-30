@@ -176,12 +176,12 @@ namespace Avalonia.Input
         /// <summary>
         /// Defines the <see cref="Tapped"/> event.
         /// </summary>
-        public static readonly RoutedEvent<TappedEventArgs> TappedEvent = Gestures.TappedEvent;
+        public static readonly RoutedEvent<RoutedEventArgs> TappedEvent = Gestures.TappedEvent;
 
         /// <summary>
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
-        public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
+        public static readonly RoutedEvent<RoutedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
@@ -346,7 +346,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a tap gesture occurs on the control.
         /// </summary>
-        public event EventHandler<TappedEventArgs> Tapped
+        public event EventHandler<RoutedEventArgs> Tapped
         {
             add { AddHandler(TappedEvent, value); }
             remove { RemoveHandler(TappedEvent, value); }
@@ -355,7 +355,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a double-tap gesture occurs on the control.
         /// </summary>
-        public event EventHandler<TappedEventArgs> DoubleTapped
+        public event EventHandler<RoutedEventArgs> DoubleTapped
         {
             add { AddHandler(DoubleTappedEvent, value); }
             remove { RemoveHandler(DoubleTappedEvent, value); }
