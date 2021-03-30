@@ -15,9 +15,19 @@ namespace Avalonia.Themes.Fluent.Accents
         {
             AvaloniaXamlLoader.Load(this);
 
-            var accentColor_prov = AvaloniaLocator.CurrentMutable.GetService<IPlatformAccentColorProvider>();
+            var accentColorProvider = AvaloniaLocator.CurrentMutable.GetService<IPlatformAccentColorProvider>();
 
-            var accentcolor = accentColor_prov == null ? Color.Parse("#FF0078D7") : accentColor_prov.AccentColor;
+            Color accentcolor;
+
+            if(accentColorProvider is not null && accentColorProvider.UseSystemAccentColor is true)
+            {
+                accentcolor = accentColorProvider.AccentColor;
+            }
+            else
+            {
+                TryGetResource("FallbackSystemAccentColor", out object accentcolorResource);
+                accentcolor = (Color)accentcolorResource;
+            }
             
             var light1 = Color.ChangeColorLuminosity(accentcolor, 0.3);
             var light2 = Color.ChangeColorLuminosity(accentcolor, 0.5);

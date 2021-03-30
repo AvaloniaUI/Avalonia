@@ -8,5 +8,6 @@ namespace Avalonia.Platform
     public interface IPlatformAccentColorProvider
     {
         Color AccentColor { get; }
+        bool UseSystemAccentColor { get; }
     }
 }
