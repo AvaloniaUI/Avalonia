@@ -10,6 +10,7 @@ namespace Avalonia.Data.Core.Parsers
     {
         private readonly LambdaExpression _rootExpression;
         private List<Func<TIn, object>> _links = new List<Func<TIn, object>>();
+        private Expression? _head;
 
         public ExpressionChainVisitor(LambdaExpression expression)
         {
@@ -20,30 +21,62 @@ namespace Avalonia.Data.Core.Parsers
         {
             var visitor = new ExpressionChainVisitor<TIn>(expression);
             visitor.Visit(expression);
-            visitor._links.Reverse();
             return visitor._links.ToArray();
+        }
+
+        protected override Expression VisitBinary(BinaryExpression node)
+        {
+            var result = base.VisitBinary(node);
+            if (node.Left == _head)
+                _head = node;
+            return result;
         }
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            if (node.Expression?.GetType().IsValueType == false)
+            var result = base.VisitMember(node);
+
+            if (node.Expression is object &&
+                node.Expression == _head &&
+                node.Expression.Type.IsValueType == false)
             {
                 var link = Expression.Lambda<Func<TIn, object>>(node.Expression, _rootExpression.Parameters);
                 _links.Add(link.Compile());
+                _head = node;
             }
 
-            return base.VisitMember(node);
+            return result;
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (node.Object?.GetType().IsValueType == false)
+            var result = base.VisitMethodCall(node);
+
+            if (node.Object is object &&
+                node.Object == _head &&
+                node.Type.IsValueType == false)
             {
                 var link = Expression.Lambda<Func<TIn, object>>(node.Object, _rootExpression.Parameters);
                 _links.Add(link.Compile());
+                _head = node;
             }
 
-            return base.VisitMethodCall(node);
+            return result;
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            if (node == _rootExpression.Parameters[0])
+                _head = node;
+            return base.VisitParameter(node);
+        }
+
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            var result = base.VisitUnary(node);
+            if (node.Operand == _head)
+                _head = node;
+            return result;
         }
     }
 }

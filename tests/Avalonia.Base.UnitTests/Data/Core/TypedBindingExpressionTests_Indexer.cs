@@ -213,6 +213,40 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.KeepAlive(data);
         }
 
+        [Fact]
+        public void Should_Track_Property_On_Array_Item()
+        {
+            var data = new[] { new Class1 { Foo = "foo" } };
+            var target = TypedBindingExpression.OneWay(data, o => o[0].Foo);
+            var result = new List<string>();
+
+            using (var sub = target.Subscribe(x => result.Add(x.Value)))
+            {
+                data[0].Foo = "bar";
+            }
+
+            Assert.Equal(new[] { "foo", "bar" }, result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public void Should_Track_Property_On_List_Item()
+        {
+            var data = new List<Class1> { new Class1 { Foo = "foo" } };
+            var target = TypedBindingExpression.OneWay(data, o => o[0].Foo);
+            var result = new List<string>();
+
+            using (var sub = target.Subscribe(x => result.Add(x.Value)))
+            {
+                data[0].Foo = "bar";
+            }
+
+            Assert.Equal(new[] { "foo", "bar" }, result);
+
+            GC.KeepAlive(data);
+        }
+
         ////[Fact]
         ////public void Should_SetArrayIndex()
         ////{
@@ -302,6 +336,21 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var value = await target.Take(1);
 
             Assert.Equal(data[1], value.Value);
+        }
+
+        private class Class1 : NotifyingBase
+        {
+            private string _foo;
+
+            public string Foo
+            {
+                get { return _foo; }
+                set
+                {
+                    _foo = value;
+                    RaisePropertyChanged(nameof(Foo));
+                }
+            }
         }
 
         private class NonIntegerIndexer : NotifyingBase
