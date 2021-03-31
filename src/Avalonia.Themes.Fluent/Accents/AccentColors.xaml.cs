@@ -17,7 +17,7 @@ namespace Avalonia.Themes.Fluent.Accents
 
             TryGetResource("FallbackSystemAccentColor", out object accentcolorResource);
             var accentColorProvider = AvaloniaLocator.CurrentMutable.GetService<IPlatformAccentColorProvider>();
-            Color accentcolor = accentColorProvider.GetSystemAccentColor((Color)accentcolorResource);
+            Color accentcolor = accentColorProvider is null ? (Color)accentcolorResource : accentColorProvider.GetSystemAccentColor((Color)accentcolorResource);
             
             var light1 = Color.ChangeColorLuminosity(accentcolor, 0.3);
             var light2 = Color.ChangeColorLuminosity(accentcolor, 0.5);
