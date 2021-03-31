@@ -7,11 +7,11 @@ using Avalonia.Platform;
 
 namespace Avalonia.Win32
 {
-    public class AccentColorProvider : IPlatformAccentColorProvider
+    public class WindowsColorSchemeProvider : IPlatformColorSchemeProvider
     {
         private bool _useFallback;
 
-        public AccentColorProvider(bool useFallback)
+        public WindowsColorSchemeProvider(bool useFallback)
         {
             _useFallback = useFallback;
         }

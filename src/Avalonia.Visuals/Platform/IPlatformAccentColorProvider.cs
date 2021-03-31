@@ -5,7 +5,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Platform
 {
-    public interface IPlatformAccentColorProvider
+    public interface IPlatformColorSchemeProvider
     {
         public Color GetSystemAccentColor(Color fallBackColor);
     }
