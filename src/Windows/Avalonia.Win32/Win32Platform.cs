@@ -117,7 +117,7 @@ namespace Avalonia.Win32
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
-                .Bind<IPlatformAccentColorProvider>().ToConstant(new AccentColorProvider() { UseSystemAccentColor = options.UseSystemAccentColor });
+                .Bind<IPlatformAccentColorProvider>().ToConstant(new AccentColorProvider(!options.UseSystemAccentColor));
 
             Win32GlManager.Initialize();
 

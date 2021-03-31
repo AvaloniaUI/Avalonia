@@ -9,9 +9,23 @@ namespace Avalonia.Win32
 {
     public class AccentColorProvider : IPlatformAccentColorProvider
     {
-        public Color AccentColor
+        private bool _useFallback;
+
+        public AccentColorProvider(bool useFallback)
         {
-            get => GetAccentColorWin("ImmersiveSystemAccent");
+            _useFallback = useFallback;
+        }
+
+        public Color GetSystemAccentColor(Color fallBackColor)
+        {
+            if(_useFallback || System.Environment.OSVersion == new OperatingSystem(PlatformID.Win32NT, new Version(6, 1)))
+            {
+                return fallBackColor;
+            }
+            else
+            {
+                return GetAccentColorWin("ImmersiveSystemAccent");
+            }
         }
 
         private static Color GetAccentColorWin(string name)
@@ -23,6 +37,5 @@ namespace Avalonia.Win32
             var bytes = BitConverter.GetBytes(rawColor);
             return Color.FromArgb(bytes[3], bytes[0], bytes[1], bytes[2]);
         }
-        public bool UseSystemAccentColor { get; internal set; }
     }
 }
