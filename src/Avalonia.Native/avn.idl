@@ -417,7 +417,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT SetAppMenu(IAvnMenu* menu);
      HRESULT CreateMenu(IAvnMenuEvents* cb, IAvnMenu** ppv);
      HRESULT CreateMenuItem(IAvnMenuItem** ppv);
-     HRESULT CreateMenuItemSeperator(IAvnMenuItem** ppv);
+     HRESULT CreateMenuItemSeparator(IAvnMenuItem** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -685,10 +685,9 @@ interface IAvnMenuItem : IUnknown
 [uuid(0af7df53-7632-42f4-a650-0992c361b477)]
 interface IAvnMenuEvents : IUnknown
 {
-    /**
-     * NeedsUpdate
-     */
      void NeedsUpdate();
+     void Opening();
+     void Closed();
 }
 
 [uuid(5142bb41-66ab-49e7-bb37-cd079c000f27)]
