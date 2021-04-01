@@ -17,6 +17,8 @@ namespace Avalonia.ReactiveUI
         {
             return builder.AfterPlatformServicesSetup(_ =>
             {
+                PlatformRegistrationManager.SetRegistrationNamespaces(RegistrationNamespace.Avalonia);
+                Locator.CurrentMutable.InitializeReactiveUI();
                 RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
                 Locator.CurrentMutable.RegisterConstant(new AvaloniaActivationForViewFetcher(), typeof(IActivationForViewFetcher));
                 Locator.CurrentMutable.RegisterConstant(new AutoDataTemplateBindingHook(), typeof(IPropertyBindingHook));
