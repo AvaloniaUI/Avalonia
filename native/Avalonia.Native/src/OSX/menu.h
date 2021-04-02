@@ -31,13 +31,13 @@ private:
     NSMenuItem* _native; // here we hold a pointer to an AvnMenuItem
     IAvnActionCallback* _callback;
     IAvnPredicateCallback* _predicate;
-    bool _isSeperator;
+    bool _isSeparator;
     bool _isCheckable;
     
 public:
     FORWARD_IUNKNOWN()
     
-    AvnAppMenuItem(bool isSeperator);
+    AvnAppMenuItem(bool isSeparator);
     
     NSMenuItem* GetNative();
     
