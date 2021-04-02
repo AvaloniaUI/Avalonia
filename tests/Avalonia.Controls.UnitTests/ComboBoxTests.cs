@@ -1,11 +1,14 @@
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -173,5 +176,31 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(expectedSelectedIndex, target.SelectedIndex);
             }
         }
+        
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),
+                    VirtualizationMode =  ItemVirtualizationMode.None
+                };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.SelectedItemProperty, textObservable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+                
+            }
+            
+        } 
     }
 }

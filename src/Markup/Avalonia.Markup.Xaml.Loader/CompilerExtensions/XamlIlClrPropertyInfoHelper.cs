@@ -55,9 +55,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         return cached.get;
                 }
 
-                var name = lst.Count == 0 ?
-                    key :
-                    key + "_" + context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
+                var name = lst.Count == 0 ? key : key + "_" + Guid.NewGuid().ToString("N");
                 
                 var field = _builder.DefineField(types.IPropertyInfo, name + "!Field", false, true);
 

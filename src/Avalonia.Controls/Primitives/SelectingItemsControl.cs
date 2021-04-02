@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives
                 nameof(SelectedItem),
                 o => o.SelectedItem,
                 (o, v) => o.SelectedItem = v,
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
@@ -466,6 +466,20 @@ namespace Avalonia.Controls.Primitives
             EndUpdating();
         }
 
+        /// <summary>
+        /// Called to update the validation state for properties for which data validation is
+        /// enabled.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The new binding value for the property.</param>
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            if (property == SelectedItemProperty)
+            {
+                DataValidationErrors.SetError(this, value.Error);
+            }
+        }
+        
         protected override void OnInitialized()
         {
             base.OnInitialized();
@@ -707,7 +721,7 @@ namespace Avalonia.Controls.Primitives
                 _oldSelectedItem = SelectedItem;
             }
             else if (e.PropertyName == nameof(InternalSelectionModel.WritableSelectedItems) &&
-                _oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
+                     _oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
             {
                 RaisePropertyChanged(
                     SelectedItemsProperty,
@@ -977,7 +991,7 @@ namespace Avalonia.Controls.Primitives
             public Optional<ISelectionModel> Selection { get; set; }
             public Optional<IList?> SelectedItems { get; set; }
 
-            public Optional<int> SelectedIndex 
+            public Optional<int> SelectedIndex
             {
                 get => _selectedIndex;
                 set
@@ -996,6 +1010,6 @@ namespace Avalonia.Controls.Primitives
                     _selectedIndex = default;
                 }
             }
-       }
+        }
     }
 }
