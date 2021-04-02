@@ -480,12 +480,16 @@ namespace Avalonia.Collections
         public virtual void RemoveAll(IEnumerable<T> items)
         {
             Contract.Requires<ArgumentNullException>(items != null);
-
+            
+            var list = new List<T>();
             foreach (var i in items)
             {
-                // TODO: Optimize to only send as many notifications as necessary.
-                Remove(i);
+                if (_inner.Remove(i))
+                    list.Add(i);
             }
+            
+            if (list.Count > 0)
+                NotifyRemove(list, -1);
         }
 
         /// <summary>
