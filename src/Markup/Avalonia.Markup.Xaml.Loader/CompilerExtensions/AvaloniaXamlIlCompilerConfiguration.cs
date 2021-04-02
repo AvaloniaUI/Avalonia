@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             XamlValueConverter customValueConverter,
             XamlIlClrPropertyInfoEmitter clrPropertyEmitter,
             XamlIlPropertyInfoAccessorFactoryEmitter accessorFactoryEmitter,
-            IXamlIdentifierGenerator identifierGenerator)
+            IXamlIdentifierGenerator identifierGenerator = null)
             : base(typeSystem, defaultAssembly, typeMappings, xmlnsMappings, customValueConverter, identifierGenerator)
         {
             ClrPropertyEmitter = clrPropertyEmitter;
