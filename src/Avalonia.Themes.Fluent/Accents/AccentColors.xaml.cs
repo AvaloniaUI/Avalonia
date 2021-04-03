@@ -19,12 +19,12 @@ namespace Avalonia.Themes.Fluent.Accents
             var accentColorProvider = AvaloniaLocator.CurrentMutable.GetService<IPlatformColorSchemeProvider>();
             Color accentcolor = accentColorProvider is null ? (Color)accentcolorResource : accentColorProvider.GetSystemAccentColor((Color)accentcolorResource);
             
-            var light1 = Color.ChangeColorLuminosity(accentcolor, 0.3);
-            var light2 = Color.ChangeColorLuminosity(accentcolor, 0.5);
-            var light3 = Color.ChangeColorLuminosity(accentcolor, 0.7);
-            var dark1 = Color.ChangeColorLuminosity(accentcolor, -0.3);
-            var dark2 = Color.ChangeColorLuminosity(accentcolor, -0.5);
-            var dark3 = Color.ChangeColorLuminosity(accentcolor, -0.7);
+            var light1 = ChangeColorLuminosity(accentcolor, 0.3);
+            var light2 = ChangeColorLuminosity(accentcolor, 0.5);
+            var light3 = ChangeColorLuminosity(accentcolor, 0.7);
+            var dark1 = ChangeColorLuminosity(accentcolor, -0.3);
+            var dark2 = ChangeColorLuminosity(accentcolor, -0.5);
+            var dark3 = ChangeColorLuminosity(accentcolor, -0.7);
 
 
             this.Resources.Add("SystemAccentColor", accentcolor);
@@ -34,6 +34,33 @@ namespace Avalonia.Themes.Fluent.Accents
             this.Resources.Add("SystemAccentColorDark1", dark1);
             this.Resources.Add("SystemAccentColorDark2", dark2);
             this.Resources.Add("SystemAccentColorDark3", dark3);
+        }
+
+        internal static Color ChangeColorLuminosity(Color color, double newluminosityFactor)
+        {
+            var red = (double)color.R;
+            var green = (double)color.G;
+            var blue = (double)color.B;
+
+            if (newluminosityFactor < 0)//applies darkness
+            {
+                newluminosityFactor = 1 + newluminosityFactor;
+                red *= newluminosityFactor;
+                green *= newluminosityFactor;
+                blue *= newluminosityFactor;
+            }
+            else if (newluminosityFactor >= 0) //applies lightness
+            {
+                red = (255 - red) * newluminosityFactor + red;
+                green = (255 - green) * newluminosityFactor + green;
+                blue = (255 - blue) * newluminosityFactor + blue;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("The Luminosity Factor must be a finite number.");
+            }
+
+            return new Color(color.A, (byte)red, (byte)green, (byte)blue);
         }
     }
 }

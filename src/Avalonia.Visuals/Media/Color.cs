@@ -307,41 +307,5 @@ namespace Avalonia.Media
         {
             return !left.Equals(right);
         }
-
-        /// <summary>
-        /// Change the luminosity of a color.
-        /// </summary>
-        /// <param name="color">The color to change its luminosity</param>
-        /// <param name="newluminosityFactor">The new Luminosity for the Color</param>
-        /// <returns>A new Color with the Luminosity Factor applied.</returns>
-        /// <remarks>
-        /// See original code link: https://gist.github.com/zihotki/09fc41d52981fb6f93a81ebf20b35cd5
-        /// </remarks>
-        public static Color ChangeColorLuminosity(Color color, double newluminosityFactor)
-        {
-            var red = (double)color.R;
-            var green = (double)color.G;
-            var blue = (double)color.B;
-
-            if (newluminosityFactor < 0)//applies darkness
-            {
-                newluminosityFactor = 1 + newluminosityFactor;
-                red *= newluminosityFactor;
-                green *= newluminosityFactor;
-                blue *= newluminosityFactor;
-            }
-            else if(newluminosityFactor >= 0) //applies lightness
-            {
-                red = (255 - red) * newluminosityFactor + red;
-                green = (255 - green) * newluminosityFactor + green;
-                blue = (255 - blue) * newluminosityFactor + blue;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("The Luminosity Factor must be a finite number.");
-            }
-
-            return new Color(color.A, (byte)red, (byte)green, (byte)blue);
-        }
     }
 }
