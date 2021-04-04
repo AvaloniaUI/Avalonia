@@ -257,7 +257,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PopBitmapBlendMode()
         {
-            var next = NextDrawAs<OpacityNode>();
+            var next = NextDrawAs<BitmapBlendModeNode>();
 
             if (next == null || !next.Item.Equals(null))
             {
@@ -377,7 +377,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
         {
-            var next = NextDrawAs<OpacityNode>();
+            var next = NextDrawAs<BitmapBlendModeNode>();
 
             if (next == null || !next.Item.Equals(blendingMode))
             {

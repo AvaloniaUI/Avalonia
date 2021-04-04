@@ -559,12 +559,12 @@ namespace Avalonia.Direct2D1.Media
 
         public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
         {
-            // Stubs for now
+            // TODO: Stubs for now
         }
 
         public void PopBitmapBlendMode()
         {
-            // Stubs for now
+            // TODO: Stubs for now
         }
 
         public void PushOpacityMask(IBrush mask, Rect bounds)
