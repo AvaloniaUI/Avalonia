@@ -12,7 +12,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// Initializes a new instance of the <see cref="BitmapBlendModeNode"/> class that represents an
         /// <see cref="BitmapBlendingMode"/> push.
         /// </summary>
-        /// <param name="opacity">The <see cref="BitmapBlendingMode"/> to push.</param>
+        /// <param name="bitmapBlend">The <see cref="BitmapBlendingMode"/> to push.</param>
         public BitmapBlendModeNode(BitmapBlendingMode bitmapBlend)
         {
             BlendingMode = bitmapBlend;
