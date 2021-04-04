@@ -178,8 +178,7 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
-
-
+        
         public void Custom(ICustomDrawOperation custom)
         {
             var next = NextDrawAs<CustomDrawOperation>();
