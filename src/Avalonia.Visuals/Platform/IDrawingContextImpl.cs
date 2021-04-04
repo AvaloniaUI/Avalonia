@@ -30,7 +30,6 @@ namespace Avalonia.Platform
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        /// <param name="bitmapBlendMode">The bitmap blending mode.</param>
         void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
 
         /// <summary>
@@ -153,7 +152,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Pushes an bitmap blending value.
         /// </summary>
-        /// <param name="opacity">The opacity.</param>
+        /// <param name="blendingMode">The bitmap blending mode.</param>
         void PushBitmapBlendMode(BitmapBlendingMode blendingMode);
 
         /// <summary>
