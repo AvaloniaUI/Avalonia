@@ -1877,7 +1877,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     for(int i = 0; i < numWindows; i++)
     {
-        [[windows objectAtIndex:i] performClose:nil];
+        auto window = (AvnWindow*)[windows objectAtIndex:i];
+        
+        if([window parentWindow] == nullptr) // Avalonia will handle the child windows.
+        {
+            [window performClose:nil];
+        }
     }
 }
 
@@ -2226,9 +2231,12 @@ protected:
     {
         @autoreleasepool
         {
-            [Window setContentSize:NSSize{x, y}];
+            if (Window != nullptr)
+            {
+                [Window setContentSize:NSSize{x, y}];
             
-            [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+                [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+            }
             
             return S_OK;
         }

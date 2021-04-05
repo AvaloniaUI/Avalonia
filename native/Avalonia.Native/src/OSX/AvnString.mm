@@ -85,6 +85,16 @@ public:
         }
     }
     
+    AvnStringArrayImpl(NSArray<NSURL*>* array)
+    {
+        for(int c = 0; c < [array count]; c++)
+        {
+            ComPtr<IAvnString> s;
+            *s.getPPV() = new AvnStringImpl([array objectAtIndex:c].absoluteString);
+            _list.push_back(s);
+        }
+    }
+    
     AvnStringArrayImpl(NSString* string)
     {
         ComPtr<IAvnString> s;
@@ -113,6 +123,11 @@ IAvnString* CreateAvnString(NSString* string)
 
 
 IAvnStringArray* CreateAvnStringArray(NSArray<NSString*> * array)
+{
+    return new AvnStringArrayImpl(array);
+}
+
+IAvnStringArray* CreateAvnStringArray(NSArray<NSURL*> * array)
 {
     return new AvnStringArrayImpl(array);
 }

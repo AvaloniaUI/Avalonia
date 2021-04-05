@@ -218,6 +218,7 @@ namespace Avalonia.Controls
             if (Command != null)
             {
                 Command.CanExecuteChanged += CanExecuteChanged;
+                CanExecuteChanged(this, EventArgs.Empty);
             }
         }
 

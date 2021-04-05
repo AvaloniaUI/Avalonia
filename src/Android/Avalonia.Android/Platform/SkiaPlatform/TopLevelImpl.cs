@@ -6,7 +6,6 @@ using Android.Runtime;
 using Android.Views;
 
 using Avalonia.Android.OpenGL;
-using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Controls;
@@ -35,16 +34,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view = new ViewImpl(context, this, placeOnTop);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
-                p => GetAvaloniaPointFromEvent(p));
+                GetAvaloniaPointFromEvent);
 
             _gl = GlPlatformSurface.TryCreate(this);
             _framebuffer = new FramebufferManager(this);
 
-            MaxClientSize = new Size(_view.Resources.DisplayMetrics.WidthPixels,
-                _view.Resources.DisplayMetrics.HeightPixels);
+            RenderScaling = (int)_view.Resources.DisplayMetrics.Density;
+
+            MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
+                _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
         }
-
-
 
         private bool _handleEvents;
 
@@ -58,25 +57,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
         }
 
-        public virtual Point GetAvaloniaPointFromEvent(MotionEvent e) => new Point(e.GetX(), e.GetY());
+        public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
+            new Point(e.GetX(pointerIndex), e.GetY(pointerIndex)) / RenderScaling;
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize
-        {
-            get
-            {
-                if (_view == null)
-                    return new Size(0, 0);
-                return new Size(_view.Width, _view.Height);
-            }
-            set
-            {
+        public virtual Size ClientSize => Size.ToSize(RenderScaling);
 
-            }
-        }
-
-        public IMouseDevice MouseDevice => AndroidMouseDevice.Instance;
+        public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public Action Closed { get; set; }
 
@@ -98,10 +86,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer };
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new ImmediateRenderer(root);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            AndroidPlatform.Options.UseDeferredRendering
+            ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
+            : new ImmediateRenderer(root);
 
         public virtual void Hide()
         {
@@ -115,15 +103,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Point PointToClient(PixelPoint point)
         {
-            return point.ToPoint(1);
+            return point.ToPoint(RenderScaling);
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            return PixelPoint.FromPoint(point, 1);
+            return PixelPoint.FromPoint(point, RenderScaling);
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             //still not implemented
         }
@@ -138,7 +126,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view.Visibility = ViewStates.Visible;
         }
 
-        public double RenderScaling => 1;
+        public double RenderScaling { get; }
 
         void Draw()
         {
@@ -193,7 +181,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
             {
-                var newSize = new Size(width, height);
+                var newSize = new PixelSize(width, height).ToSize(_tl.RenderScaling);
 
                 if (newSize != _oldSize)
                 {
