@@ -883,20 +883,19 @@ namespace Avalonia.Win32
                 _isClientAreaExtended = false;
                 return;
             }
-
-            GetWindowRect(_hwnd, out var rcClient);
+            GetClientRect(_hwnd, out var rcClient);
+            GetWindowRect(_hwnd, out var rcWindow);
 
             // Inform the application of the frame change.
             SetWindowPos(_hwnd,
-                         IntPtr.Zero,
-                         rcClient.left, rcClient.top,
-                         rcClient.Width, rcClient.Height,
-                         SetWindowPosFlags.SWP_FRAMECHANGED);
-
+                IntPtr.Zero,
+                rcWindow.left, rcWindow.top,
+                rcClient.Width, rcClient.Height,
+                SetWindowPosFlags.SWP_FRAMECHANGED);
+            
             if (_isClientAreaExtended && WindowState != WindowState.FullScreen)
             {
                 var margins = UpdateExtendMargins();
-
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
             }
             else
@@ -906,6 +905,8 @@ namespace Avalonia.Win32
 
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
+                
+                Resize(new Size(rcWindow.Width, rcWindow.Height));
             }
 
             if(!_isClientAreaExtended || (_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) &&
