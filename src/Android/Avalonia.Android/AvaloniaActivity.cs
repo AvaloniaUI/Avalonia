@@ -15,7 +15,7 @@ namespace Avalonia.Android
             if (_content != null)
                 View.Content = _content;
             SetContentView(View);
-            TakeKeyEvents(true);
+            //TakeKeyEvents(true);
             base.OnCreate(savedInstanceState);
         }
 
@@ -33,7 +33,7 @@ namespace Avalonia.Android
             }
         }
 
-        public override bool DispatchKeyEvent(KeyEvent e) =>
-            View.DispatchKeyEvent(e) ? true : base.DispatchKeyEvent(e);
+        //public override bool DispatchKeyEvent(KeyEvent e) =>
+        //    View.DispatchKeyEvent(e) ? true : base.DispatchKeyEvent(e);
     }
 }

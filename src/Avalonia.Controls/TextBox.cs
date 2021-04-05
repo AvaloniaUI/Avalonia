@@ -18,7 +18,7 @@ using Avalonia.Controls.Metadata;
 namespace Avalonia.Controls
 {
     [PseudoClasses(":empty")]
-    public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
+    public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost, ISoftInputElement
     {
         public static KeyGesture CutGesture { get; } = AvaloniaLocator.Current
             .GetService<PlatformHotkeyConfiguration>()?.Cut.FirstOrDefault();
@@ -129,6 +129,11 @@ namespace Avalonia.Controls
                     AvaloniaProperty.RegisterDirect<TextBox, bool>(
                         nameof(CanPaste),
                         o => o.CanPaste);
+
+        public static readonly DirectProperty<TextBox, InputType> InputTypeProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, InputType>(
+                    nameof(InputType),
+                    o => o.InputType);
 
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -1243,5 +1248,7 @@ namespace Avalonia.Controls
                 ClearSelection();
             }
         }
+
+        public InputType InputType { get; set; } = InputType.Text;
     }
 }

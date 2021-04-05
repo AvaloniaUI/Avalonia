@@ -2,6 +2,8 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
+using Android.Views.Accessibility;
+using Android.Views.InputMethods;
 using Android.Widget;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
@@ -23,6 +25,9 @@ namespace Avalonia.Android
             AddView(_view.View);
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
+
+            Focusable = true;
+            FocusableInTouchMode = true;
         }
 
         public object Content
@@ -88,6 +93,27 @@ namespace Avalonia.Android
 
             public WindowState WindowState { get; set; }
             public IDisposable ShowDialog() => null;
+        }
+
+        public override void OnInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info)
+        {
+            base.OnInitializeAccessibilityNodeInfo(info);
+        }
+
+        public override AccessibilityNodeInfo CreateAccessibilityNodeInfo()
+        {
+            return base.CreateAccessibilityNodeInfo();
+        }
+
+        public override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
+        {
+            outAttrs.InputType = global::Android.Text.InputTypes.ClassNumber;
+            return base.OnCreateInputConnection(outAttrs);
+        }
+
+        public override bool OnCheckIsTextEditor()
+        {
+            return true;
         }
     }
 }

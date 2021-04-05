@@ -14,7 +14,8 @@
         <TextBlock Text="MinimumPrefixLength: 1"/>
         <AutoCompleteBox Width="200"
                          Margin="0,0,0,8"
-                         MinimumPrefixLength="1"/>
+                         MinimumPrefixLength="1"
+                         />
         <TextBlock Text="MinimumPrefixLength: 3"/>
         <AutoCompleteBox Width="200"
                          Margin="0,0,0,8"

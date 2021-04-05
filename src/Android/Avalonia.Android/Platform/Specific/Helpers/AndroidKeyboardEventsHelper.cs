@@ -1,9 +1,11 @@
 using System;
 using System.ComponentModel;
+using Android.App;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using Android.Views.InputMethods;
+using Android.Widget;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
@@ -12,7 +14,7 @@ using Avalonia.Input.Raw;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView
+    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView, IAndroidSoftInput
     {
         private TView _view;
         private IInputElement _lastFocusedElement;
@@ -36,9 +38,20 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return DispatchKeyEventInternal(e, out callBase);
         }
 
+        string? UnicodeTextInput(KeyEvent keyEvent)
+        {
+            return keyEvent.Action == KeyEventActions.Multiple
+                && keyEvent.RepeatCount == 0
+                && !string.IsNullOrEmpty(keyEvent?.Characters)
+                ? keyEvent.Characters
+                : null;
+        }
+
         private bool? DispatchKeyEventInternal(KeyEvent e, out bool callBase)
         {
-            if (e.Action == KeyEventActions.Multiple)
+            var unicodeTextInput = UnicodeTextInput(e);
+
+            if (e.Action == KeyEventActions.Multiple && unicodeTextInput == null)
             {
                 callBase = true;
                 return null;
@@ -53,13 +66,14 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
             _view.Input(rawKeyEvent);
 
-            if (e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
+            if ((e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
+                || unicodeTextInput != null)
             {
                 var rawTextEvent = new RawTextInputEventArgs(
                   AndroidKeyboardDevice.Instance,
                   Convert.ToUInt32(e.EventTime),
                   _view.InputRoot,
-                  Convert.ToChar(e.UnicodeChar).ToString()
+                  unicodeTextInput ?? Convert.ToChar(e.UnicodeChar).ToString()
                   );
                 _view.Input(rawTextEvent);
             }
@@ -88,39 +102,47 @@ namespace Avalonia.Android.Platform.Specific.Helpers
         private bool NeedsKeyboard(IInputElement element)
         {
             //may be some other elements
-            return element is TextBox;
+            return element is ISoftInputElement;
         }
 
-        private void TryShowHideKeyboard(IInputElement element, bool value)
+        private void TryShowHideKeyboard(ISoftInputElement element, bool value)
         {
-            var input = _view.View.Context.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
-
             if (value)
             {
-                //show keyboard
-                //may be in the future different keyboards support e.g. normal, only digits etc.
-                //Android.Text.InputTypes
-                input.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.ImplicitOnly);
+                _view.ShowSoftInput(element);
             }
             else
             {
-                //hide keyboard
-                input.HideSoftInputFromWindow(_view.View.WindowToken, HideSoftInputFlags.None);
+                _view.HideSoftInput();
             }
         }
 
         public void UpdateKeyboardState(IInputElement element)
         {
-            var focusedElement = element;
-            bool oldValue = NeedsKeyboard(_lastFocusedElement);
-            bool newValue = NeedsKeyboard(focusedElement);
+            var focusedElement = element as ISoftInputElement;
+            var lastElement = _lastFocusedElement as ISoftInputElement;
+            
+            bool oldValue = lastElement?.InputType > InputType.None;
+            bool newValue = focusedElement?.InputType > InputType.None;
 
             if (newValue != oldValue || newValue)
             {
+                if (_lastFocusedElement != null)
+                    _lastFocusedElement.PointerReleased -= RestoreSoftKeyboard;
+
                 TryShowHideKeyboard(focusedElement, newValue);
+
+                if (newValue && focusedElement != null)
+                    element.PointerReleased += RestoreSoftKeyboard;
             }
 
             _lastFocusedElement = element;
+        }
+
+        private void RestoreSoftKeyboard(object sender, PointerReleasedEventArgs e)
+        {
+            if (_lastFocusedElement is ISoftInputElement softInputElement && softInputElement.InputType != InputType.None)
+                TryShowHideKeyboard(softInputElement, true);
         }
 
         public void ActivateAutoShowKeyboard()
