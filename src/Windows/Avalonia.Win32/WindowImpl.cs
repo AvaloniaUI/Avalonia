@@ -892,7 +892,7 @@ namespace Avalonia.Win32
                 rcWindow.left, rcWindow.top,
                 rcClient.Width, rcClient.Height,
                 SetWindowPosFlags.SWP_FRAMECHANGED);
-            
+ 
             if (_isClientAreaExtended && WindowState != WindowState.FullScreen)
             {
                 var margins = UpdateExtendMargins();
