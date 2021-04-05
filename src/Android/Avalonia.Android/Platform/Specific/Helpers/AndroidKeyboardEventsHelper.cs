@@ -14,7 +14,7 @@ using Avalonia.Input.Raw;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView, IAndroidSoftInput
+    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView, IInitEditorInfo
     {
         private TView _view;
         private IInputElement _lastFocusedElement;
@@ -107,13 +107,32 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
         private void TryShowHideKeyboard(ISoftInputElement element, bool value)
         {
-            if (value)
+            _view.InitEditorInfo((outAttrs) =>
             {
-                _view.ShowSoftInput(element);
+                outAttrs.InputType = element.InputType switch
+                {
+                    InputType.Numeric => global::Android.Text.InputTypes.ClassNumber,
+                    InputType.Phone => global::Android.Text.InputTypes.ClassPhone,
+                    _ => global::Android.Text.InputTypes.Null
+                };
+            });
+
+            var input = _view.View.Context.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
+
+            if (value && element != null && element.InputType != InputType.None)
+            {
+                _view.View.RequestFocus();
+
+                if (!ReferenceEquals(_lastFocusedElement, element))
+                {
+                    input.RestartInput(_view.View);
+                }
+
+                input.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.NotAlways);
             }
             else
             {
-                _view.HideSoftInput();
+                input.HideSoftInputFromWindow(_view.View.WindowToken, HideSoftInputFlags.None);
             }
         }
 

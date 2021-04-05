@@ -9,11 +9,4 @@ namespace Avalonia.Android.Platform.Specific
 
 
     }
-
-    public interface IAndroidSoftInput
-    {
-        void ShowSoftInput(ISoftInputElement softInputElement);
-
-        void HideSoftInput();
-    }
 }

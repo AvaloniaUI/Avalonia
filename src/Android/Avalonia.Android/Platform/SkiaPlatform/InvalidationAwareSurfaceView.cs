@@ -13,7 +13,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
-    public abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle, IAndroidSoftInput
+    public abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle, IInitEditorInfo
     {
         bool _invalidateQueued;
         private ISoftInputElement _softInputElement;
@@ -92,14 +92,19 @@ namespace Avalonia.Android
         protected abstract void Draw();
         public string HandleDescriptor => "SurfaceView";
 
-        public override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
+        private Action<EditorInfo> _initEditorInfo;
+
+        public void InitEditorInfo(Action<EditorInfo> init)
         {
-            outAttrs.InputType = _softInputElement.InputType switch
-            {
-                InputType.Numeric => global::Android.Text.InputTypes.ClassNumber,
-                InputType.Phone => global::Android.Text.InputTypes.ClassPhone,
-                _ => global::Android.Text.InputTypes.Null
-            };
+            _initEditorInfo = init;
+        }
+
+        public sealed override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
+        {
+            if (_initEditorInfo == null)
+                throw new InvalidOperationException("Call IInitEditorInfo.InitEditorInfo first");
+
+            _initEditorInfo(outAttrs);
 
             return base.OnCreateInputConnection(outAttrs);
         }
@@ -118,33 +123,6 @@ namespace Avalonia.Android
         public override bool OnCheckIsTextEditor()
         {
             return true;
-        }
-
-        public void ShowSoftInput(ISoftInputElement softInputElement)
-        {
-            var input = Context.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
-            var previousSoftInput = _softInputElement;
-            _softInputElement = softInputElement;
-
-            if (_softInputElement.InputType == InputType.None)
-                HideSoftInput();
-            else
-            {
-                RequestFocus();
-
-                if (!ReferenceEquals(_softInputElement, previousSoftInput))
-                {
-                    input.RestartInput(this);
-                }
-
-                input.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.NotAlways);
-            }
-        }
-
-        public void HideSoftInput()
-        {
-            var input = Context.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
-            input.HideSoftInputFromWindow(WindowToken, HideSoftInputFlags.None);
         }
     }
 }

@@ -4,7 +4,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Runtime;
 using Android.Views;
-
+using Android.Views.InputMethods;
 using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
@@ -19,7 +19,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo, IAndroidSoftInput
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo, IInitEditorInfo
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -210,15 +210,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             throw new NotImplementedException();
         }
-
-        void IAndroidSoftInput.ShowSoftInput(ISoftInputElement softInputElement)
+        public void InitEditorInfo(Action<EditorInfo> init)
         {
-            _view.ShowSoftInput(softInputElement);
-        }
-
-        void IAndroidSoftInput.HideSoftInput()
-        {
-            _view.HideSoftInput();
+            _view.InitEditorInfo(init);
         }
     }
 }
