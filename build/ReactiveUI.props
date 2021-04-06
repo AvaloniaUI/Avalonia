@@ -1,5 +1,5 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Include="ReactiveUI" Version="12.1.1" />
+    <PackageReference Include="ReactiveUI" Version="13.2.10" />
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@ using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls.ApplicationLifetimes
@@ -102,6 +103,14 @@ namespace Avalonia.Controls.ApplicationLifetimes
         public int Start(string[] args)
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
+
+            var options = AvaloniaLocator.Current.GetService<ClassicDesktopStyleApplicationLifetimeOptions>();
+            
+            if(options != null && options.ProcessUrlActivationCommandLine && args.Length > 0)
+            {
+                ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
+            }
+
             _cts = new CancellationTokenSource();
             MainWindow?.Show();
             Dispatcher.UIThread.MainLoop(_cts.Token);
@@ -114,6 +123,11 @@ namespace Avalonia.Controls.ApplicationLifetimes
             if (_activeLifetime == this)
                 _activeLifetime = null;
         }
+    }
+    
+    public class ClassicDesktopStyleApplicationLifetimeOptions
+    {
+        public bool ProcessUrlActivationCommandLine { get; set; }
     }
 }
 

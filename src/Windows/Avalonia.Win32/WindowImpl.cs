@@ -84,6 +84,7 @@ namespace Avalonia.Win32
         private WindowImpl _parent;        
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
+        private bool _shown;
 
         public WindowImpl()
         {
@@ -565,6 +566,7 @@ namespace Avalonia.Win32
         public void Hide()
         {
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
+            _shown = false;
         }
 
         public virtual void Show(bool activate)
@@ -871,6 +873,11 @@ namespace Avalonia.Win32
 
         private void ExtendClientArea()
         {
+            if (!_shown)
+            {
+                return;
+            }
+            
             if (DwmIsCompositionEnabled(out bool compositionEnabled) < 0 || !compositionEnabled)
             {
                 _isClientAreaExtended = false;
@@ -916,6 +923,13 @@ namespace Avalonia.Win32
 
         private void ShowWindow(WindowState state, bool activate)
         {
+            _shown = true;
+            
+            if (_isClientAreaExtended)
+            {
+                ExtendClientArea();
+            }
+            
             ShowWindowCommand? command;
 
             var newWindowProperties = _windowProperties;
