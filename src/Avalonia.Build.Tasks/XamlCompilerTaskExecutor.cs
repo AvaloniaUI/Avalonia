@@ -22,7 +22,6 @@ using XamlX.IL;
 
 namespace Avalonia.Build.Tasks
 {
-    
     public static partial class XamlCompilerTaskExecutor
     {
         static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
@@ -99,7 +98,8 @@ namespace Avalonia.Build.Tasks
                 XamlXmlnsMappings.Resolve(typeSystem, xamlLanguage),
                 AvaloniaXamlIlLanguage.CustomValueConverter,
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
-                new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)));
+                new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
+                new DeterministicIdGenerator());
 
 
             var contextDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlContext", 

@@ -89,10 +89,6 @@ partial class Build : NukeBuild
             Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
         }
         ExecWait("dotnet version:", "dotnet", "--version");
-        if (Parameters.IsRunningOnUnix)
-            ExecWait("Mono version:", "mono", "--version");
-
-
     }
 
     IReadOnlyCollection<Output> MsBuildCommon(
