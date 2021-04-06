@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Data;
 
 #nullable enable
@@ -93,16 +94,35 @@ namespace Avalonia.Animation
                 var oldTransitions = change.OldValue.GetValueOrDefault<Transitions>();
                 var newTransitions = change.NewValue.GetValueOrDefault<Transitions>();
 
+                // When transitions are replaced, we add the new transitions before removing the old
+                // transitions, so that when the old transition being disposed causes the value to
+                // change, there is a corresponding entry in `_transitionStates`. This means that we
+                // need to account for any transitions present in both the old and new transitions
+                // collections.
                 if (newTransitions is object)
                 {
+                    var toAdd = (IList)newTransitions;
+
+                    if (newTransitions.Count > 0 && oldTransitions?.Count > 0)
+                    {
+                        toAdd = newTransitions.Except(oldTransitions).ToList();
+                    }
+
                     newTransitions.CollectionChanged += TransitionsCollectionChanged;
-                    AddTransitions(newTransitions);
+                    AddTransitions(toAdd);
                 }
 
                 if (oldTransitions is object)
                 {
+                    var toRemove = (IList)oldTransitions;
+
+                    if (oldTransitions.Count > 0 && newTransitions?.Count > 0)
+                    {
+                        toRemove = oldTransitions.Except(newTransitions).ToList();
+                    }
+
                     oldTransitions.CollectionChanged -= TransitionsCollectionChanged;
-                    RemoveTransitions(oldTransitions);
+                    RemoveTransitions(toRemove);
                 }
             }
             else if (_transitionsEnabled &&
@@ -115,9 +135,9 @@ namespace Avalonia.Animation
                 {
                     var transition = Transitions[i];
 
-                    if (transition.Property == change.Property)
+                    if (transition.Property == change.Property &&
+                        _transitionState.TryGetValue(transition, out var state))
                     {
-                        var state = _transitionState[transition];
                         var oldValue = state.BaseValue;
                         var newValue = GetAnimationBaseValue(transition.Property);
 
