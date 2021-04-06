@@ -85,7 +85,7 @@ namespace Avalonia.Win32
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
         private bool _shown;
-        private WindowImpl _hiddenWindow;
+        private bool _hiddenWindowIsParent;
 
         public WindowImpl()
         {
@@ -527,7 +527,6 @@ namespace Avalonia.Win32
             }
 
             _framebuffer.Dispose();
-            _hiddenWindow?.Dispose();
         }
 
         public void Invalidate(Rect rect)
@@ -755,11 +754,6 @@ namespace Avalonia.Win32
                     _scaling = dpix / 96.0;
                 }
             }
-        }
-
-        private WindowImpl GetOrCreateHiddenWindow()
-        {
-            return _hiddenWindow ??= new WindowImpl();
         }
 
         private void CreateDropTarget()
@@ -1102,7 +1096,7 @@ namespace Avalonia.Win32
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
 
-                    if (_hiddenWindow is object && _parent == _hiddenWindow)
+                    if (_hiddenWindowIsParent)
                     {
                         // Can't enable the taskbar icon by clearing the parent window unless the window
                         // is hidden. Hide the window and show it again with the same activation state
@@ -1118,13 +1112,15 @@ namespace Avalonia.Win32
                         if (shown)
                             Show(activated);
                     }
-
                 }
                 else
                 {
                     // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
                     if (_parent is null)
-                        SetParent(GetOrCreateHiddenWindow());
+                    {
+                        SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
+                        _hiddenWindowIsParent = true;
+                    }
 
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                 }
