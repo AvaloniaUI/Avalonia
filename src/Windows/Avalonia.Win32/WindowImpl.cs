@@ -906,7 +906,7 @@ namespace Avalonia.Win32
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
                 
-                Resize(new Size(rcWindow.Width, rcWindow.Height));
+                Resize(new Size(rcWindow.Width/ RenderScaling, rcWindow.Height / RenderScaling));
             }
 
             if(!_isClientAreaExtended || (_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) &&
