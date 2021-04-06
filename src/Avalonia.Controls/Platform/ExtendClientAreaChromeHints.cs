@@ -16,7 +16,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// The default for the platform.
         /// </summary>
-        Default = SystemChrome,
+        Default = PreferSystemChrome,
 
         /// <summary>
         /// Use SystemChrome
