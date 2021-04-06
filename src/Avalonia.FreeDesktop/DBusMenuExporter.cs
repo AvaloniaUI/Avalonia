@@ -192,7 +192,7 @@ namespace Avalonia.FreeDesktop
             {
                 var (it, menu) = i;
 
-                if (it is NativeMenuItemSeperator)
+                if (it is NativeMenuItemSeparator)
                 {
                     if (name == "type")
                         return "separator";
