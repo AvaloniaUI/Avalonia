@@ -14,17 +14,21 @@ namespace Avalonia.Controls.Chrome
     public class CaptionButtons : TemplatedControl
     {
         private CompositeDisposable? _disposables;
-        private Window? _hostWindow;
 
-        public void Attach(Window hostWindow)
+        /// <summary>
+        /// Currently attached window.
+        /// </summary>
+        protected Window? HostWindow { get; private set; }
+
+        public virtual void Attach(Window hostWindow)
         {
             if (_disposables == null)
             {
-                _hostWindow = hostWindow;
+                HostWindow = hostWindow;
 
                 _disposables = new CompositeDisposable
                 {
-                    _hostWindow.GetObservable(Window.WindowStateProperty)
+                    HostWindow.GetObservable(Window.WindowStateProperty)
                     .Subscribe(x =>
                     {
                         PseudoClasses.Set(":minimized", x == WindowState.Minimized);
@@ -36,14 +40,45 @@ namespace Avalonia.Controls.Chrome
             }
         }
 
-        public void Detach()
+        public virtual void Detach()
         {
             if (_disposables != null)
             {
                 _disposables.Dispose();
                 _disposables = null;
 
-                _hostWindow = null;
+                HostWindow = null;
+            }
+        }
+
+        protected virtual void OnClose()
+        {
+            HostWindow?.Close();
+        }
+
+        protected virtual void OnRestore()
+        {
+            if (HostWindow != null)
+            {
+                HostWindow.WindowState = HostWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+            }
+        }
+
+        protected virtual void OnMinimize()
+        {
+            if (HostWindow != null)
+            {
+                HostWindow.WindowState = WindowState.Minimized;
+            }
+        }
+
+        protected virtual void OnToggleFullScreen()
+        {
+            if (HostWindow != null)
+            {
+                HostWindow.WindowState = HostWindow.WindowState == WindowState.FullScreen
+                    ? WindowState.Normal
+                    : WindowState.FullScreen;
             }
         }
 
@@ -56,31 +91,13 @@ namespace Avalonia.Controls.Chrome
             var minimiseButton = e.NameScope.Get<Panel>("PART_MinimiseButton");
             var fullScreenButton = e.NameScope.Get<Panel>("PART_FullScreenButton");
 
-            closeButton.PointerReleased += (sender, e) => _hostWindow?.Close();
+            closeButton.PointerReleased += (sender, e) => OnClose();
 
-            restoreButton.PointerReleased += (sender, e) =>
-            {
-                if (_hostWindow != null)
-                {
-                    _hostWindow.WindowState = _hostWindow.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
-                }
-            };
+            restoreButton.PointerReleased += (sender, e) => OnRestore();
 
-            minimiseButton.PointerReleased += (sender, e) =>
-            {
-                if (_hostWindow != null)
-                {
-                    _hostWindow.WindowState = WindowState.Minimized;
-                }
-            };
+            minimiseButton.PointerReleased += (sender, e) => OnMinimize();
 
-            fullScreenButton.PointerReleased += (sender, e) =>
-            {
-                if (_hostWindow != null)
-                {
-                    _hostWindow.WindowState = _hostWindow.WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
-                }
-            };
+            fullScreenButton.PointerReleased += (sender, e) => OnToggleFullScreen();
         }
     }
 }
