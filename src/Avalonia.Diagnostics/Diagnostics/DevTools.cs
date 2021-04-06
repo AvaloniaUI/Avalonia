@@ -6,6 +6,8 @@ using Avalonia.Diagnostics.Views;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
+#nullable enable 
+
 namespace Avalonia.Diagnostics
 {
     public static class DevTools
@@ -14,11 +16,19 @@ namespace Avalonia.Diagnostics
 
         public static IDisposable Attach(TopLevel root, KeyGesture gesture)
         {
+            return Attach(root, new DevToolsOptions()
+            {
+                Gesture = gesture,
+            });
+        }
+
+        public static IDisposable Attach(TopLevel root, DevToolsOptions options)
+        {
             void PreviewKeyDown(object sender, KeyEventArgs e)
             {
-                if (gesture.Matches(e))
+                if (options.Gesture.Matches(e))
                 {
-                    Open(root);
+                    Open(root, options);
                 }
             }
 
@@ -28,7 +38,9 @@ namespace Avalonia.Diagnostics
                 RoutingStrategies.Tunnel);
         }
 
-        public static IDisposable Open(TopLevel root)
+        public static IDisposable Open(TopLevel root) => Open(root, new DevToolsOptions());
+
+        public static IDisposable Open(TopLevel root, DevToolsOptions options)
         {
             if (s_open.TryGetValue(root, out var window))
             {
@@ -38,15 +50,15 @@ namespace Avalonia.Diagnostics
             {
                 window = new MainWindow
                 {
-                    Width = 1024,
-                    Height = 512,
                     Root = root,
+                    Width = options.Size.Width,
+                    Height = options.Size.Height,
                 };
 
                 window.Closed += DevToolsClosed;
                 s_open.Add(root, window);
 
-                if (root is Window inspectedWindow)
+                if (options.ShowAsChildWindow && root is Window inspectedWindow)
                 {
                     window.Show(inspectedWindow);
                 }
