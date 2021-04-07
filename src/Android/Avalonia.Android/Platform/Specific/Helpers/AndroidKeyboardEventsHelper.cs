@@ -19,15 +19,12 @@ namespace Avalonia.Android.Platform.Specific.Helpers
     internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView
     {
         private readonly TView _view;
-        private readonly ITextInputMethodImpl _textInpuMethod;
-        private IInputElement _lastFocusedElement;
 
         public bool HandleEvents { get; set; }
 
-        public AndroidKeyboardEventsHelper(TView view, ITextInputMethodImpl androidTextInput)
+        public AndroidKeyboardEventsHelper(TView view)
         {
             _view = view;
-            _textInpuMethod = androidTextInput;
             HandleEvents = true;
         }
 
@@ -101,23 +98,6 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             if (e.IsShiftPressed) rv |= RawInputModifiers.Shift;
 
             return rv;
-        }
-
-        public void ActivateAutoShowKeyboard()
-        {
-            var kbDevice = (KeyboardDevice.Instance as INotifyPropertyChanged);
-
-            //just in case we've called more than once the method
-            kbDevice.PropertyChanged -= KeyboardDevice_PropertyChanged;
-            kbDevice.PropertyChanged += KeyboardDevice_PropertyChanged;
-        }
-
-        private void KeyboardDevice_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(KeyboardDevice.FocusedElement))
-            {
-                //UpdateKeyboardState(KeyboardDevice.Instance.FocusedElement);
-            }
         }
 
         public void Dispose()

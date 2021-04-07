@@ -35,7 +35,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             _view = new ViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
-            _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this, _textInputMethod);
+            _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
                 GetAvaloniaPointFromEvent);
 
@@ -46,14 +46,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
-
-            _keyboardHelper.ActivateAutoShowKeyboard();
-        }
-
-        public bool HandleEvents
-        {
-            get { return _keyboardHelper.HandleEvents; }
-            set { _keyboardHelper.HandleEvents = value; }
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>

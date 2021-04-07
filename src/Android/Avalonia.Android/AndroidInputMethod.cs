@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using Android.Views.InputMethods;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 
@@ -38,7 +35,13 @@ namespace Avalonia.Android
         public void SetActive(bool active)
         {
             if (active)
+            {
                 _host.RequestFocus();
+                Reset();
+                _imm.ShowSoftInput(_host, ShowFlags.Implicit);
+            }
+            else
+                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.None);
         }
 
         public void SetCursorRect(Rect rect)
@@ -81,14 +84,11 @@ namespace Avalonia.Android
                     outAttrs.InputType |= global::Android.Text.InputTypes.TextFlagMultiLine;
             });
 
-            Reset();
             _inputElement.PointerReleased += RestoreSoftKeyboard;
-            RestoreSoftKeyboard(null, null);
         }
 
         private void RestoreSoftKeyboard(object sender, PointerReleasedEventArgs e)
         {
-            //_imm.ToggleSoftInput(ShowFlags.Implicit, HideSoftInputFlags.NotAlways);
             _imm.ShowSoftInput(_host, ShowFlags.Implicit);
         }
     }
