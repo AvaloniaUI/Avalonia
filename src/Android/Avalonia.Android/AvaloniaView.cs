@@ -94,26 +94,5 @@ namespace Avalonia.Android
             public WindowState WindowState { get; set; }
             public IDisposable ShowDialog() => null;
         }
-
-        public override void OnInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info)
-        {
-            base.OnInitializeAccessibilityNodeInfo(info);
-        }
-
-        public override AccessibilityNodeInfo CreateAccessibilityNodeInfo()
-        {
-            return base.CreateAccessibilityNodeInfo();
-        }
-
-        public override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
-        {
-            outAttrs.InputType = global::Android.Text.InputTypes.ClassNumber;
-            return base.OnCreateInputConnection(outAttrs);
-        }
-
-        public override bool OnCheckIsTextEditor()
-        {
-            return true;
-        }
     }
 }
