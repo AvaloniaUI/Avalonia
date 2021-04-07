@@ -9,9 +9,11 @@ using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
@@ -19,19 +21,20 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo, IInitEditorInfo
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo, ITopLevelImplWithTextInputMethod
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
 
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
-
+        private readonly ITextInputMethodImpl _textInputMethod;
         private ViewImpl _view;
 
         public TopLevelImpl(Context context, bool placeOnTop = false)
         {
             _view = new ViewImpl(context, this, placeOnTop);
+            _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
                 GetAvaloniaPointFromEvent);
@@ -46,7 +49,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             _keyboardHelper.ActivateAutoShowKeyboard();
         }
-
 
         public bool HandleEvents
         {
@@ -141,7 +143,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             Resized?.Invoke(size);
         }
 
-        class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback
+        class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo
         {
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
@@ -188,6 +190,29 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                 base.SurfaceChanged(holder, format, width, height);
             }
+
+            public sealed override bool OnCheckIsTextEditor()
+            {
+                return true;
+            }
+
+            private Action<EditorInfo> _initEditorInfo;
+
+            public void InitEditorInfo(Action<EditorInfo> init)
+            {
+                _initEditorInfo = init;
+            }
+
+            public sealed override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
+            {
+                if (_initEditorInfo == null)
+                    throw new InvalidOperationException("Call IInitEditorInfo.InitEditorInfo first");
+
+                _initEditorInfo(outAttrs);
+
+                return base.OnCreateInputConnection(outAttrs);
+            }
+
         }
 
         public IPopupImpl CreatePopup() => null;
@@ -205,6 +230,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public PixelSize Size => new PixelSize(_view.Holder.SurfaceFrame.Width(), _view.Holder.SurfaceFrame.Height());
 
         public double Scaling => RenderScaling;
+
+        public ITextInputMethodImpl TextInputMethod => _textInputMethod;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {

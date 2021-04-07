@@ -13,7 +13,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
-    public abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle, IInitEditorInfo
+    public abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle
     {
         bool _invalidateQueued;
         private ISoftInputElement _softInputElement;
@@ -91,24 +91,6 @@ namespace Avalonia.Android
         }
         protected abstract void Draw();
         public string HandleDescriptor => "SurfaceView";
-
-        private Action<EditorInfo> _initEditorInfo;
-
-        public void InitEditorInfo(Action<EditorInfo> init)
-        {
-            _initEditorInfo = init;
-        }
-
-        public sealed override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
-        {
-            if (_initEditorInfo == null)
-                throw new InvalidOperationException("Call IInitEditorInfo.InitEditorInfo first");
-
-            _initEditorInfo(outAttrs);
-
-            return base.OnCreateInputConnection(outAttrs);
-        }
-
 
         public override bool CheckInputConnectionProxy(View view)
         {
