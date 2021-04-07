@@ -16,7 +16,6 @@ namespace Avalonia.Android
     public abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformHandle
     {
         bool _invalidateQueued;
-        private ISoftInputElement _softInputElement;
         readonly object _lock = new object();
         private readonly Handler _handler;
 

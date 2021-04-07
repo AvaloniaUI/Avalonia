@@ -12,19 +12,22 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView, ITopLevelImplWithTextInputMethod
+    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView
     {
-        private TView _view;
+        private readonly TView _view;
+        private readonly ITextInputMethodImpl _textInpuMethod;
         private IInputElement _lastFocusedElement;
 
         public bool HandleEvents { get; set; }
 
-        public AndroidKeyboardEventsHelper(TView view)
+        public AndroidKeyboardEventsHelper(TView view, ITextInputMethodImpl androidTextInput)
         {
-            this._view = view;
+            _view = view;
+            _textInpuMethod = androidTextInput;
             HandleEvents = true;
         }
 
@@ -100,71 +103,6 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return rv;
         }
 
-        private bool NeedsKeyboard(IInputElement element)
-        {
-            //may be some other elements
-            return element is ISoftInputElement;
-        }
-
-        private void TryShowHideKeyboard(ISoftInputElement element, bool value)
-        {
-            _view.InitEditorInfo((outAttrs) =>
-            {
-                outAttrs.InputType = element.InputType switch
-                {
-                    InputType.Numeric => global::Android.Text.InputTypes.ClassNumber,
-                    InputType.Phone => global::Android.Text.InputTypes.ClassPhone,
-                    _ => global::Android.Text.InputTypes.Null
-                };
-            });
-
-            var input = _view.View.Context.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
-
-            if (value && element != null && element.InputType != InputType.None)
-            {
-                _view.View.RequestFocus();
-
-                if (!ReferenceEquals(_lastFocusedElement, element))
-                {
-                    input.RestartInput(_view.View);
-                }
-
-                input.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.NotAlways);
-            }
-            else
-            {
-                input.HideSoftInputFromWindow(_view.View.WindowToken, HideSoftInputFlags.None);
-            }
-        }
-
-        public void UpdateKeyboardState(IInputElement element)
-        {
-            var focusedElement = element as ISoftInputElement;
-            var lastElement = _lastFocusedElement as ISoftInputElement;
-            
-            bool oldValue = lastElement?.InputType > InputType.None;
-            bool newValue = focusedElement?.InputType > InputType.None;
-
-            if (newValue != oldValue || newValue)
-            {
-                if (_lastFocusedElement != null)
-                    _lastFocusedElement.PointerReleased -= RestoreSoftKeyboard;
-
-                TryShowHideKeyboard(focusedElement, newValue);
-
-                if (newValue && focusedElement != null)
-                    element.PointerReleased += RestoreSoftKeyboard;
-            }
-
-            _lastFocusedElement = element;
-        }
-
-        private void RestoreSoftKeyboard(object sender, PointerReleasedEventArgs e)
-        {
-            if (_lastFocusedElement is ISoftInputElement softInputElement && softInputElement.InputType != InputType.None)
-                TryShowHideKeyboard(softInputElement, true);
-        }
-
         public void ActivateAutoShowKeyboard()
         {
             var kbDevice = (KeyboardDevice.Instance as INotifyPropertyChanged);
@@ -178,7 +116,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
         {
             if (e.PropertyName == nameof(KeyboardDevice.FocusedElement))
             {
-                UpdateKeyboardState(KeyboardDevice.Instance.FocusedElement);
+                //UpdateKeyboardState(KeyboardDevice.Instance.FocusedElement);
             }
         }
 

@@ -35,7 +35,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             _view = new ViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
-            _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
+            _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this, _textInputMethod);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
                 GetAvaloniaPointFromEvent);
 
@@ -236,10 +236,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
             throw new NotImplementedException();
-        }
-        public void InitEditorInfo(Action<EditorInfo> init)
-        {
-            _view.InitEditorInfo(init);
         }
     }
 }
