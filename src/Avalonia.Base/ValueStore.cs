@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
@@ -56,7 +57,7 @@ namespace Avalonia
 
         public bool IsAnimating(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 return slot.Priority < BindingPriority.LocalValue;
             }
@@ -66,7 +67,7 @@ namespace Avalonia
 
         public bool IsSet(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 return slot.GetValue().HasValue;
             }
@@ -79,7 +80,7 @@ namespace Avalonia
             BindingPriority maxPriority,
             out T value)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 var v = ((IValue<T>)slot).GetValue(maxPriority);
 
@@ -103,7 +104,7 @@ namespace Avalonia
 
             IDisposable? result = null;
 
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 result = SetExisting(slot, property, value, priority);
             }
@@ -138,7 +139,7 @@ namespace Avalonia
             IObservable<BindingValue<T>> source,
             BindingPriority priority)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 return BindExisting(slot, property, source, priority);
             }
@@ -160,7 +161,7 @@ namespace Avalonia
 
         public void ClearLocalValue<T>(StyledPropertyBase<T> property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 if (slot is PriorityValue<T> p)
                 {
@@ -173,7 +174,7 @@ namespace Avalonia
                     // During batch update values can't be removed immediately because they're needed to raise
                     // a correctly-typed _sink.ValueChanged notification. They instead mark themselves for removal
                     // by setting their priority to Unset.
-                    if (_batchUpdate is null)
+                    if (!IsBatchUpdating())
                     {
                         _values.Remove(property);
                     }
@@ -198,7 +199,7 @@ namespace Avalonia
 
         public void CoerceValue<T>(StyledPropertyBase<T> property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 if (slot is PriorityValue<T> p)
                 {
@@ -209,7 +210,7 @@ namespace Avalonia
 
         public Diagnostics.AvaloniaPropertyValue? GetDiagnostic(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out var slot))
+            if (TryGetValue(property, out var slot))
             {
                 var slotValue = slot.GetValue();
                 return new Diagnostics.AvaloniaPropertyValue(
@@ -242,6 +243,7 @@ namespace Avalonia
             IPriorityValueEntry entry,
             Optional<T> oldValue)
         {
+            // We need to include remove sentinels here so call `_values.TryGetValue` directly.
             if (_values.TryGetValue(property, out var slot) && slot == entry)
             {
                 if (_batchUpdate is null)
@@ -285,7 +287,7 @@ namespace Avalonia
                 else
                 {
                     var priorityValue = new PriorityValue<T>(_owner, property, this, l);
-                    if (_batchUpdate is object)
+                    if (IsBatchUpdating())
                         priorityValue.BeginBatchUpdate();
                     result = priorityValue.SetValue(value, priority);
                     _values.SetValue(property, priorityValue);
@@ -311,7 +313,7 @@ namespace Avalonia
             {
                 priorityValue = new PriorityValue<T>(_owner, property, this, e);
 
-                if (_batchUpdate is object)
+                if (IsBatchUpdating())
                 {
                     priorityValue.BeginBatchUpdate();
                 }
@@ -338,7 +340,7 @@ namespace Avalonia
         private void AddValue(AvaloniaProperty property, IValue value)
         {
             _values.AddValue(property, value);
-            if (_batchUpdate is object && value is IBatchUpdate batch)
+            if (IsBatchUpdating() && value is IBatchUpdate batch)
                 batch.BeginBatchUpdate();
             value.Start();
         }
@@ -364,6 +366,21 @@ namespace Avalonia
             }
         }
 
+        private bool IsBatchUpdating() => _batchUpdate?.IsBatchUpdating == true;
+
+        private bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out IValue value)
+        {
+            return _values.TryGetValue(property, out value) && !IsRemoveSentinel(value);
+        }
+
+        private static bool IsRemoveSentinel(IValue value)
+        {
+            // Local value entries are optimized and contain only a single value field to save space,
+            // so there's no way to mark them for removal at the end of a batch update. Instead a
+            // ConstantValueEntry with a priority of Unset is used as a sentinel value.
+            return value is IConstantValueEntry t && t.Priority == BindingPriority.Unset;
+        }
+
         private class BatchUpdate
         {
             private ValueStore _owner;
@@ -372,6 +389,8 @@ namespace Avalonia
             private int _iterator = -1;
 
             public BatchUpdate(ValueStore owner) => _owner = owner;
+
+            public bool IsBatchUpdating => _batchUpdateCount > 0;
 
             public void Begin()
             {
@@ -437,8 +456,10 @@ namespace Avalonia
 
                             // During batch update values can't be removed immediately because they're needed to raise
                             // the _sink.ValueChanged notification. They instead mark themselves for removal by setting
-                            // their priority to Unset.
-                            if (slot.Priority == BindingPriority.Unset)
+                            // their priority to Unset. We need to re-read the slot here because raising ValueChanged
+                            // could have caused it to be updated.
+                            if (values.TryGetValue(entry.property, out var updatedSlot) &&
+                                updatedSlot.Priority == BindingPriority.Unset)
                             {
                                 values.Remove(entry.property);
                             }

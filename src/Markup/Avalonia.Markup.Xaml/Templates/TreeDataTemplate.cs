@@ -51,8 +51,12 @@ namespace Avalonia.Markup.Xaml.Templates
 
         public IControl Build(object data)
         {
-            var visualTreeForItem = TemplateContent.Load(Content).Control;
-            visualTreeForItem.DataContext = data;
+            var visualTreeForItem = TemplateContent.Load(Content)?.Control;
+            if (visualTreeForItem != null)
+            {
+                visualTreeForItem.DataContext = data;
+            }
+
             return visualTreeForItem;
         }
     }
