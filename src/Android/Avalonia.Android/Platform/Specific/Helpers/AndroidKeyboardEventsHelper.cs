@@ -1,18 +1,9 @@
 using System;
-using System.ComponentModel;
-using Android.App;
-using Android.Content;
-using Android.Runtime;
 using Android.Views;
-using Android.Views.InputMethods;
-using Android.Widget;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Input.TextInput;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {

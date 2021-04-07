@@ -2,13 +2,8 @@ using System;
 using Android.Content;
 using Android.Graphics;
 using Android.OS;
-using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Android.Views.Accessibility;
-using Android.Views.InputMethods;
-using Avalonia.Android.Platform.Specific;
-using Avalonia.Input;
 using Avalonia.Platform;
 
 namespace Avalonia.Android
@@ -23,9 +18,6 @@ namespace Avalonia.Android
         {
             Holder.AddCallback(this);
             _handler = new Handler(context.MainLooper);
-
-            Focusable = true;
-            FocusableInTouchMode = true;
         }
 
         public override void Invalidate()

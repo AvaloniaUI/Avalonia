@@ -2,8 +2,6 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
-using Android.Views.Accessibility;
-using Android.Views.InputMethods;
 using Android.Widget;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
@@ -25,9 +23,6 @@ namespace Avalonia.Android
             AddView(_view.View);
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
-
-            Focusable = true;
-            FocusableInTouchMode = true;
         }
 
         public object Content
