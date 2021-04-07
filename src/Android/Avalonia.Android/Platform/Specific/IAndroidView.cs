@@ -1,5 +1,4 @@
 using Android.Views;
-using Avalonia.Input;
 
 namespace Avalonia.Android.Platform.Specific
 {

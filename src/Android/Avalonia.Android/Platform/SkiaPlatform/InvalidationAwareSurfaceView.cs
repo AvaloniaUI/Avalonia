@@ -90,20 +90,5 @@ namespace Avalonia.Android
         }
         protected abstract void Draw();
         public string HandleDescriptor => "SurfaceView";
-
-        public override bool CheckInputConnectionProxy(View view)
-        {
-            return base.CheckInputConnectionProxy(view);
-        }
-
-        public override void OnInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info)
-        {
-            base.OnInitializeAccessibilityNodeInfo(info);
-        }
-
-        public override bool OnCheckIsTextEditor()
-        {
-            return true;
-        }
     }
 }
