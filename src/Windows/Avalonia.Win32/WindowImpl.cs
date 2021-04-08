@@ -572,8 +572,7 @@ namespace Avalonia.Win32
 
         public virtual void Show(bool activate)
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
-
+            SetParent(_parent);
             ShowWindow(_showWindowState, activate);
         }
 
