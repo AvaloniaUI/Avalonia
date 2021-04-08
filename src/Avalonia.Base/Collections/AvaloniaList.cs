@@ -480,13 +480,41 @@ namespace Avalonia.Collections
         public virtual void RemoveAll(IEnumerable<T> items)
         {
             Contract.Requires<ArgumentNullException>(items != null);
+            
+            //match all indices and sort in reverse
+            var indices = MatchIndices(_inner, items)
+                .OrderByDescending(x => x);
 
-            foreach (var i in items)
+            var firstIndexToRemove = -1;
+            var countToRemove = 0;
+            foreach (var index in indices)
             {
-                // TODO: Optimize to only send as many notifications as necessary.
-                Remove(i);
+                //to prevent duplicates
+                if (Equals(firstIndexToRemove, index))
+                    continue;
+                
+                if (countToRemove > 0 &&
+                    firstIndexToRemove - index > 1)
+                {
+                    RemoveRange(firstIndexToRemove, countToRemove);
+                    countToRemove = 0;
+                }
+                
+                firstIndexToRemove = index;
+                countToRemove++;
             }
+            
+            if (countToRemove > 0)
+                RemoveRange(firstIndexToRemove, countToRemove);
         }
+        
+        private static IEnumerable<int> MatchIndices(IEnumerable<T> source, IEnumerable<T> itemsToMatch)
+        {
+            var indexed = source.Select((item, index) => new { Item = item, Index = index });
+            return itemsToMatch
+                .Join(indexed, left => left, right => right.Item, (left, right) => right.Index);
+        }
+
 
         /// <summary>
         /// Removes the item at the specified index.
