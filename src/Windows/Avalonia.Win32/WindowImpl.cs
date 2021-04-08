@@ -581,8 +581,15 @@ namespace Avalonia.Win32
 
         public void SetParent(IWindowImpl parent)
         {
-            _parent = (WindowImpl)parent;
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent?._hwnd ?? IntPtr.Zero);
+            var parentHwnd = ((WindowImpl)parent)?._hwnd ?? IntPtr.Zero;
+
+            if (parentHwnd == IntPtr.Zero && !_windowProperties.ShowInTaskbar)
+            {
+                parentHwnd = OffscreenParentWindow.Handle;
+                _hiddenWindowIsParent = true;
+            }
+
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -1108,6 +1115,7 @@ namespace Avalonia.Win32
                         if (shown)
                             Hide();
 
+                        _hiddenWindowIsParent = false;
                         SetParent(null);
 
                         if (shown)
