@@ -14,6 +14,7 @@ namespace Avalonia.Android
         readonly object _lock = new object();
         private readonly Handler _handler;
 
+
         public InvalidationAwareSurfaceView(Context context) : base(context)
         {
             Holder.AddCallback(this);
