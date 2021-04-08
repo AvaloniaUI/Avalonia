@@ -197,10 +197,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             public sealed override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
             {
-                if (_initEditorInfo == null)
-                    throw new InvalidOperationException("Call IInitEditorInfo.InitEditorInfo first");
-
-                _initEditorInfo(outAttrs);
+                if (_initEditorInfo != null)
+                    _initEditorInfo(outAttrs);
 
                 return base.OnCreateInputConnection(outAttrs);
             }

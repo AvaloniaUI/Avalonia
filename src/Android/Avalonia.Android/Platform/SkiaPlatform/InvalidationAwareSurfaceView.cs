@@ -13,7 +13,7 @@ namespace Avalonia.Android
         bool _invalidateQueued;
         readonly object _lock = new object();
         private readonly Handler _handler;
-
+   
 
         public InvalidationAwareSurfaceView(Context context) : base(context)
         {
