@@ -90,6 +90,10 @@ namespace Avalonia.Input
                 return MouseButton.Middle;
             if (kind == PointerUpdateKind.RightButtonPressed || kind == PointerUpdateKind.RightButtonReleased)
                 return MouseButton.Right;
+            if (kind == PointerUpdateKind.XButton1Pressed || kind == PointerUpdateKind.XButton1Released)
+                return MouseButton.XButton1;
+            if (kind == PointerUpdateKind.XButton2Pressed || kind == PointerUpdateKind.XButton2Released)
+                return MouseButton.XButton2;
             return MouseButton.None;
         }
     }
