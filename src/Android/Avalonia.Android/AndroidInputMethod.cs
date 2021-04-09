@@ -71,7 +71,7 @@ namespace Avalonia.Android
                     TextInputContentType.Password => global::Android.Text.InputTypes.TextVariationPassword,
                     TextInputContentType.Phone => global::Android.Text.InputTypes.ClassPhone,
                     TextInputContentType.Url => global::Android.Text.InputTypes.TextVariationUri,
-                    _ => global::Android.Text.InputTypes.Null
+                    _ => global::Android.Text.InputTypes.ClassText
                 };
 
                 if (options.AutoCapitalization)
