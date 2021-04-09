@@ -26,15 +26,7 @@ namespace Avalonia.Themes.Fluent.Accents
             else
             {
                 var systemAccentColor = accentColorProvider.GetSystemAccentColor();
-                switch (systemAccentColor.HasValue)
-                {
-                    case true:
-                        accentcolor = systemAccentColor.Value;
-                        break;
-                    case false:
-                        accentcolor = (Color)accentcolorResource;
-                        break;
-                }
+                accentcolor = systemAccentColor ?? (Color)accentcolorResource;
             }
 
             
