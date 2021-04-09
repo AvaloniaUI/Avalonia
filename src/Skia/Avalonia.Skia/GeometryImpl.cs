@@ -11,7 +11,20 @@ namespace Avalonia.Skia
     internal abstract class GeometryImpl : IGeometryImpl
     {
         private PathCache _pathCache;
-        private SKPathMeasure _pathMeasureCache;
+        private SKPathMeasure _pathMeasureCachex;
+
+        private SKPathMeasure CachedPathMeasure
+        {
+            get
+            {
+                if (_pathMeasureCachex is null)
+                {
+                    _pathMeasureCachex = new SKPathMeasure(EffectivePath);
+                }
+
+                return _pathMeasureCachex;
+            }
+        }
 
         /// <inheritdoc />
         public abstract Rect Bounds { get; }
@@ -24,12 +37,7 @@ namespace Avalonia.Skia
                 if (EffectivePath is null)
                     return 0;
 
-                if (_pathMeasureCache is null)
-                {
-                    _pathMeasureCache = new SKPathMeasure(EffectivePath);
-                }
-
-                return (double)_pathMeasureCache?.Length;
+                return (double)CachedPathMeasure?.Length;
             }
         }
 
@@ -132,12 +140,7 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            if (_pathMeasureCache is null)
-            {
-                _pathMeasureCache = new SKPathMeasure(EffectivePath);
-            }
-
-            var res = _pathMeasureCache.GetPosition((float)distance, out var skPoint);
+            var res = CachedPathMeasure.GetPosition((float)distance, out var skPoint);
             point = new Point(skPoint.X, skPoint.Y);
             return res;
         }
@@ -152,12 +155,7 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            if (_pathMeasureCache is null)
-            {
-                _pathMeasureCache = new SKPathMeasure(EffectivePath);
-            }
-
-            var res = _pathMeasureCache.GetPositionAndTangent((float)distance, out var skPoint, out var skTangent);
+            var res = CachedPathMeasure.GetPositionAndTangent((float)distance, out var skPoint, out var skTangent);
             point = new Point(skPoint.X, skPoint.Y);
             tangent = new Point(skTangent.X, skTangent.Y);
             return res;
@@ -172,16 +170,11 @@ namespace Avalonia.Skia
                 return false;
             }
 
-            if (_pathMeasureCache is null)
-            {
-                _pathMeasureCache = new SKPathMeasure(EffectivePath);
-            }
-            
             segmentGeometry = null;
 
             var _skPathSegment = new SKPath();
 
-            var res = _pathMeasureCache.GetSegment((float)startDistance, (float)stopDistance, _skPathSegment, startOnBeginFigure);
+            var res = CachedPathMeasure.GetSegment((float)startDistance, (float)stopDistance, _skPathSegment, startOnBeginFigure);
 
             if (res)
             {

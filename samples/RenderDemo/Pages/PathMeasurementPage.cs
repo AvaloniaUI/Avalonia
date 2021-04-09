@@ -15,13 +15,17 @@ namespace RenderDemo.Pages
 {
     public class PathMeasurementPage : Control
     {
+        static PathMeasurementPage()
+        {
+            AffectsRender<PathMeasurementPage>(BoundsProperty);
+        }
+
         private RenderTargetBitmap _bitmap;
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             _bitmap = new RenderTargetBitmap(new PixelSize(500, 500), new Vector(96, 96));
             base.OnAttachedToLogicalTree(e);
-            AffectsRender<PathMeasurementPage>(BoundsProperty);
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
