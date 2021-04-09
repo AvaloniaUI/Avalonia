@@ -150,7 +150,7 @@ namespace Avalonia.Platform
         void PopGeometryClip();
         
         /// <summary>
-        /// Pushes an bitmap blending value.
+        /// Pushes a bitmap blending value.
         /// </summary>
         /// <param name="blendingMode">The bitmap blending mode.</param>
         void PushBitmapBlendMode(BitmapBlendingMode blendingMode);
