@@ -55,7 +55,7 @@ namespace Avalonia.Platform
         ITransformedGeometryImpl WithTransform(Matrix transform);
 
         /// <summary>
-        /// Attempts to get the corresponding point from the
+        /// Attempts to get the corresponding point at the
         /// specified distance
         /// </summary>
         /// <param name="distance">The contour distance to get from.</param>
