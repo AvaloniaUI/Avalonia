@@ -7,6 +7,6 @@ namespace Avalonia.Platform
 {
     public interface IPlatformColorSchemeProvider
     {
-        public Color GetSystemAccentColor(Color fallBackColor);
+        public Color? GetSystemAccentColor();
     }
 }

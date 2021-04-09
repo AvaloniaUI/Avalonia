@@ -9,18 +9,11 @@ namespace Avalonia.Win32
 {
     public class WindowsColorSchemeProvider : IPlatformColorSchemeProvider
     {
-        private bool _useFallback;
-
-        public WindowsColorSchemeProvider(bool useFallback)
+        public Color? GetSystemAccentColor()
         {
-            _useFallback = useFallback;
-        }
-
-        public Color GetSystemAccentColor(Color fallBackColor)
-        {
-            if(_useFallback || System.Environment.OSVersion == new OperatingSystem(PlatformID.Win32NT, new Version(6, 1)))
+            if(System.Environment.OSVersion == new OperatingSystem(PlatformID.Win32NT, new Version(6, 1)))
             {
-                return fallBackColor;
+                return null;
             }
             else
             {

@@ -116,8 +116,10 @@ namespace Avalonia.Win32
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
-                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
-                .Bind<IPlatformColorSchemeProvider>().ToConstant(new WindowsColorSchemeProvider(!options.UseSystemAccentColor));
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
+
+            if(options.UseSystemAccentColor)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformColorSchemeProvider>().ToConstant(new WindowsColorSchemeProvider());
 
             Win32GlManager.Initialize();
 
