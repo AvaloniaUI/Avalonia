@@ -4,7 +4,7 @@ using Avalonia.Visuals.Media.Imaging;
 namespace Avalonia.Rendering.SceneGraph
 {
     /// <summary>
-    /// A node in the scene graph which represents an opacity push or pop.
+    /// A node in the scene graph which represents an bitmap blending mode push or pop.
     /// </summary>
     internal class BitmapBlendModeNode : IDrawOperation
     {
