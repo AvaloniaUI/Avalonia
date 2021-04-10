@@ -11,18 +11,18 @@ namespace Avalonia.Skia
     internal abstract class GeometryImpl : IGeometryImpl
     {
         private PathCache _pathCache;
-        private SKPathMeasure _pathMeasureCachex;
+        private SKPathMeasure _pathMeasureCache;
 
         private SKPathMeasure CachedPathMeasure
         {
             get
             {
-                if (_pathMeasureCachex is null)
+                if (_pathMeasureCache is null)
                 {
-                    _pathMeasureCachex = new SKPathMeasure(EffectivePath);
+                    _pathMeasureCache = new SKPathMeasure(EffectivePath);
                 }
 
-                return _pathMeasureCachex;
+                return _pathMeasureCache;
             }
         }
 
