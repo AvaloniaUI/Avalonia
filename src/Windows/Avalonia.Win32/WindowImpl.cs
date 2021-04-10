@@ -85,6 +85,7 @@ namespace Avalonia.Win32
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
         private bool _shown;
+        private bool _hiddenWindowIsParent;
 
         public WindowImpl()
         {
@@ -571,8 +572,7 @@ namespace Avalonia.Win32
 
         public virtual void Show(bool activate)
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
-
+            SetParent(_parent);
             ShowWindow(_showWindowState, activate);
         }
 
@@ -580,8 +580,15 @@ namespace Avalonia.Win32
 
         public void SetParent(IWindowImpl parent)
         {
-            _parent = (WindowImpl)parent;
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent._hwnd);
+            var parentHwnd = ((WindowImpl)parent)?._hwnd ?? IntPtr.Zero;
+
+            if (parentHwnd == IntPtr.Zero && !_windowProperties.ShowInTaskbar)
+            {
+                parentHwnd = OffscreenParentWindow.Handle;
+                _hiddenWindowIsParent = true;
+            }
+
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -1095,16 +1102,38 @@ namespace Avalonia.Win32
                 if (newProperties.ShowInTaskbar)
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
+
+                    if (_hiddenWindowIsParent)
+                    {
+                        // Can't enable the taskbar icon by clearing the parent window unless the window
+                        // is hidden. Hide the window and show it again with the same activation state
+                        // when we've finished. Interestingly it seems to work fine the other way.
+                        var shown = IsWindowVisible(_hwnd);
+                        var activated = GetActiveWindow() == _hwnd;
+
+                        if (shown)
+                            Hide();
+
+                        _hiddenWindowIsParent = false;
+                        SetParent(null);
+
+                        if (shown)
+                            Show(activated);
+                    }
                 }
                 else
                 {
+                    // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
+                    if (_parent is null)
+                    {
+                        SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
+                        _hiddenWindowIsParent = true;
+                    }
+
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                 }
 
                 SetExtendedStyle(exStyle);
-
-                // TODO: To hide non-owned window from taskbar we need to parent it to a hidden window.
-                // Otherwise it will still show in the taskbar.
             }
 
             WindowStyles style;
