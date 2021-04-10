@@ -16,18 +16,18 @@ namespace Avalonia.AndroidTestApplication
         Icon = "@drawable/icon",
         LaunchMode = LaunchMode.SingleInstance/*,
         ScreenOrientation = ScreenOrientation.Landscape*/)]
-    public class MainBaseActivity : Activity
+    public class MainBaseActivity : AvaloniaActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
             if (Avalonia.Application.Current == null)
             {
                 AppBuilder.Configure<App>()
                     .UseAndroid()
                     .SetupWithoutStarting();
             }
-            SetContentView(new AvaloniaView(this) { Content = App.CreateSimpleWindow() });
+            base.OnCreate(savedInstanceState);
+            Content = App.CreateSimpleWindow();
         }
     }
 
