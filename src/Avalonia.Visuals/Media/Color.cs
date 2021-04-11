@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Runtime.InteropServices;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
 #endif
