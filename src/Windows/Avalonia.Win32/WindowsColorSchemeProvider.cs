@@ -11,7 +11,7 @@ namespace Avalonia.Win32
     {
         public Color? GetSystemAccentColor()
         {
-            if(System.Environment.OSVersion == new OperatingSystem(PlatformID.Win32NT, new Version(6, 1)))
+            if (Win32Platform.WindowsVersion.Major < 10)
             {
                 return null;
             }
