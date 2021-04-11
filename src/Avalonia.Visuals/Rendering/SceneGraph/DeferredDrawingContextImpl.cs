@@ -254,6 +254,21 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
+        public void PopBitmapBlendMode()
+        {
+            var next = NextDrawAs<BitmapBlendModeNode>();
+
+            if (next == null || !next.Item.Equals(null))
+            {
+                Add(new BitmapBlendModeNode());
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
+        /// <inheritdoc/>
         public void PopOpacity()
         {
             var next = NextDrawAs<OpacityNode>();
@@ -358,6 +373,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            var next = NextDrawAs<BitmapBlendModeNode>();
+
+            if (next == null || !next.Item.Equals(blendingMode))
+            {
+                Add(new BitmapBlendModeNode(blendingMode));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
         public readonly struct UpdateState : IDisposable
         {
             public UpdateState(
