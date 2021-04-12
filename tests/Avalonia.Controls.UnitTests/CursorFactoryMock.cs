@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Input;
 using Avalonia.Platform;
 
@@ -17,8 +18,11 @@ namespace Avalonia.Controls.UnitTests
 
         private class MockCursorImpl : ICursorImpl
         {
+            public IntPtr Handle { get; } = IntPtr.Zero;
+
             public void Dispose()
             {
+
             }
         }
     }
