@@ -83,6 +83,25 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
+        /// Obtains layout scale of the given control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <exception cref="Exception">Thrown when control has no root or returned layout scaling is invalid.</exception>
+        public static double GetLayoutScale(ILayoutable control)
+        {
+            var visualRoot = control.VisualRoot;
+            
+            var result = (visualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
+
+            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
+            {
+                throw new Exception($"Invalid LayoutScaling returned from {visualRoot.GetType()}");
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Rounds a size to integer values for layout purposes, compensating for high DPI screen
         /// coordinates.
         /// </summary>
