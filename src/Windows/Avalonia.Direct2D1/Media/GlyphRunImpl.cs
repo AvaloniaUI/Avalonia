@@ -4,12 +4,12 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class GlyphRunImpl : IGlyphRunImpl
     {
-        public GlyphRunImpl(SharpDX.DirectWrite.GlyphRun glyphRun)
+        public GlyphRunImpl(Vortice.DirectWrite.GlyphRun glyphRun)
         {
             GlyphRun = glyphRun;
         }
 
-        public SharpDX.DirectWrite.GlyphRun GlyphRun { get; }
+        public Vortice.DirectWrite.GlyphRun GlyphRun { get; }
 
         public void Dispose()
         {

@@ -25,9 +25,9 @@ namespace Avalonia.Direct2D1.UnitTests.Media
 
                 Assert.Equal("Arial", font.FontFamily.FamilyNames.GetString(0));
 
-                Assert.Equal(SharpDX.DirectWrite.FontWeight.Normal, font.Weight);
+                Assert.Equal(Vortice.DirectWrite.FontWeight.Normal, font.Weight);
 
-                Assert.Equal(SharpDX.DirectWrite.FontStyle.Normal, font.Style);
+                Assert.Equal(Vortice.DirectWrite.FontStyle.Normal, font.Style);
             }
         }
 
@@ -47,9 +47,9 @@ namespace Avalonia.Direct2D1.UnitTests.Media
 
                 Assert.Equal("Arial", font.FontFamily.FamilyNames.GetString(0));
 
-                Assert.Equal(SharpDX.DirectWrite.FontWeight.Bold, font.Weight);
+                Assert.Equal(Vortice.DirectWrite.FontWeight.Bold, font.Weight);
 
-                Assert.Equal(SharpDX.DirectWrite.FontStyle.Normal, font.Style);
+                Assert.Equal(Vortice.DirectWrite.FontStyle.Normal, font.Style);
             }
         }
 
@@ -71,9 +71,9 @@ namespace Avalonia.Direct2D1.UnitTests.Media
 
                 Assert.Equal(defaultName, font.FontFamily.FamilyNames.GetString(0));
 
-                Assert.Equal(SharpDX.DirectWrite.FontWeight.Normal, font.Weight);
+                Assert.Equal(Vortice.DirectWrite.FontWeight.Normal, font.Weight);
 
-                Assert.Equal(SharpDX.DirectWrite.FontStyle.Normal, font.Style);
+                Assert.Equal(Vortice.DirectWrite.FontStyle.Normal, font.Style);
             }
         }
 

@@ -2,7 +2,7 @@
 {
     public interface IExternalDirect2DRenderTargetSurface
     {
-        SharpDX.Direct2D1.RenderTarget GetOrCreateRenderTarget();
+        Vortice.Direct2D1.ID2D1RenderTarget GetOrCreateRenderTarget();
         void DestroyRenderTarget();
         void BeforeDrawing();
         void AfterDrawing();

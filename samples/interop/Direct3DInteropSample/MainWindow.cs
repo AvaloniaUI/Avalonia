@@ -10,19 +10,29 @@ using Avalonia.Rendering;
 
 using SharpDX;
 using SharpDX.D3DCompiler;
-using SharpDX.Direct2D1;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
-
+using Vortice.Direct2D1;
+using Vortice.DXGI;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using DeviceContext = SharpDX.Direct2D1.DeviceContext;
+using DeviceContextOptions = SharpDX.Direct2D1.DeviceContextOptions;
 using Factory2 = SharpDX.DXGI.Factory2;
+using Format = SharpDX.DXGI.Format;
 using InputElement = SharpDX.Direct3D11.InputElement;
 using Matrix = SharpDX.Matrix;
 using PixelFormat = SharpDX.Direct2D1.PixelFormat;
+using PresentFlags = SharpDX.DXGI.PresentFlags;
+using RenderTargetProperties = SharpDX.Direct2D1.RenderTargetProperties;
+using RenderTargetType = SharpDX.Direct2D1.RenderTargetType;
 using Resource = SharpDX.Direct3D11.Resource;
+using SampleDescription = SharpDX.DXGI.SampleDescription;
+using SwapChainDescription1 = SharpDX.DXGI.SwapChainDescription1;
+using SwapChainFlags = SharpDX.DXGI.SwapChainFlags;
+using SwapEffect = SharpDX.DXGI.SwapEffect;
+using Usage = SharpDX.DXGI.Usage;
 
 namespace Direct3DInteropSample
 {
@@ -40,6 +50,11 @@ namespace Direct3DInteropSample
         private DeviceContext _deviceContext;
         private readonly MainWindowViewModel _model;
 
+        public static SharpDX.Direct3D11.Device Direct3D11Device => new(Direct2D1Platform.Direct3D11Device.NativePointer);
+        public static SharpDX.Direct2D1.Factory1 Direct2D1Factory => new(Direct2D1Platform.Direct2D1Factory.NativePointer);
+        public static SharpDX.Direct2D1.Device Direct2D1Device => new(Direct2D1Platform.Direct2D1Device.NativePointer);
+        public static SharpDX.DXGI.Device1 DxgiDevice => new(Direct2D1Platform.DxgiDevice.NativePointer);
+
         public MainWindow()
         {
             DataContext = _model = new MainWindowViewModel();
@@ -55,12 +70,12 @@ namespace Direct3DInteropSample
                 Usage = Usage.RenderTargetOutput
             };
 
-            using (var factory = Direct2D1Platform.DxgiDevice.Adapter.GetParent<Factory2>())
+            using (var factory = DxgiDevice.Adapter.GetParent<Factory2>())
             {
-                _swapChain = new SwapChain1(factory, Direct2D1Platform.DxgiDevice, PlatformImpl?.Handle.Handle ?? IntPtr.Zero, ref _desc);
+                _swapChain = new SwapChain1(factory, DxgiDevice, PlatformImpl?.Handle.Handle ?? IntPtr.Zero, ref _desc);
             }              
 
-            _deviceContext = new DeviceContext(Direct2D1Platform.Direct2D1Device, DeviceContextOptions.None)
+            _deviceContext = new DeviceContext(Direct2D1Device, DeviceContextOptions.None)
             {
                 DotsPerInch = new Size2F(96, 96)
             };
@@ -82,7 +97,7 @@ namespace Direct3DInteropSample
         protected override void HandlePaint(Rect rect)
         {
             var viewProj = Matrix.Multiply(_view, _proj);
-            var context = Direct2D1Platform.Direct3D11Device.ImmediateContext;
+            var context = Direct3D11Device.ImmediateContext;
 
             // Clear views
             context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth, 1.0f, 0);
@@ -106,7 +121,7 @@ namespace Direct3DInteropSample
 
         private void CreateMesh()
         {
-            var device = Direct2D1Platform.Direct3D11Device;
+            var device = Direct3D11Device;
 
             // Compile Vertex and Pixel shaders
             var vertexShaderByteCode = ShaderBytecode.CompileFromFile("MiniCube.fx", "VS", "vs_4_0");
@@ -181,7 +196,7 @@ namespace Direct3DInteropSample
             // Create Constant Buffer
             _contantBuffer = new Buffer(device, Utilities.SizeOf<Matrix>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0);
 
-            var context = Direct2D1Platform.Direct3D11Device.ImmediateContext;
+            var context = Direct3D11Device.ImmediateContext;
 
             // Prepare All the stages
             context.InputAssembler.InputLayout = layout;
@@ -199,7 +214,7 @@ namespace Direct3DInteropSample
             Utilities.Dispose(ref _renderView);
             Utilities.Dispose(ref _depthBuffer);
             Utilities.Dispose(ref _depthView);
-            var context = Direct2D1Platform.Direct3D11Device.ImmediateContext;
+            var context = Direct3D11Device.ImmediateContext;
 
             // Resize the backbuffer
             _swapChain.ResizeBuffers(0, 0, 0, Format.Unknown, SwapChainFlags.None);
@@ -208,11 +223,11 @@ namespace Direct3DInteropSample
             _backBuffer = Resource.FromSwapChain<Texture2D>(_swapChain, 0);
 
             // Renderview on the backbuffer
-            _renderView = new RenderTargetView(Direct2D1Platform.Direct3D11Device, _backBuffer);
+            _renderView = new RenderTargetView(Direct3D11Device, _backBuffer);
 
             // Create the depth buffer
             _depthBuffer = new Texture2D(
-                Direct2D1Platform.Direct3D11Device,
+                Direct3D11Device,
                 new Texture2DDescription()
                 {
                     Format = Format.D32_Float_S8X24_UInt,
@@ -228,7 +243,7 @@ namespace Direct3DInteropSample
                 });
 
             // Create the depth buffer view
-            _depthView = new DepthStencilView(Direct2D1Platform.Direct3D11Device, _depthBuffer);
+            _depthView = new DepthStencilView(Direct3D11Device, _depthBuffer);
 
             // Setup targets and viewport for rendering
             context.Rasterizer.SetViewport(new Viewport(0, 0, (int)size.Width, (int)size.Height, 0.0f, 1.0f));
@@ -240,7 +255,7 @@ namespace Direct3DInteropSample
             using (var dxgiBackBuffer = _swapChain.GetBackBuffer<Surface>(0))
             {
                 var renderTarget = new SharpDX.Direct2D1.RenderTarget(
-                    Direct2D1Platform.Direct2D1Factory,
+                    Direct2D1Factory,
                     dxgiBackBuffer,
                     new RenderTargetProperties
                     {
@@ -273,7 +288,7 @@ namespace Direct3DInteropSample
 
             public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
             {
-                return new DrawingContextImpl(visualBrushRenderer, null, _window._deviceContext);
+                return new DrawingContextImpl(visualBrushRenderer, null, new ID2D1DeviceContext(_window._deviceContext.NativePointer));
             }
         }
 

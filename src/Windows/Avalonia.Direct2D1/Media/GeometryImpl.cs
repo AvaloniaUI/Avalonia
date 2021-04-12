@@ -1,6 +1,6 @@
 using Avalonia.Logging;
 using Avalonia.Platform;
-using SharpDX.Direct2D1;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -10,39 +10,40 @@ namespace Avalonia.Direct2D1.Media
     public abstract class GeometryImpl : IGeometryImpl
     {
         private const float ContourApproximation = 0.0001f;
+        public const float DefaultFlatteningTolerance = 0.25f;
 
-        public GeometryImpl(Geometry geometry)
+        public GeometryImpl(ID2D1Geometry geometry)
         {
             Geometry = geometry;
         }
 
         /// <inheritdoc/>
-        public Rect Bounds => Geometry.GetWidenedBounds(0).ToAvalonia();
+        public Rect Bounds => Geometry.GetWidenedBounds(0, null, null, DefaultFlatteningTolerance).ToAvalonia();
 
         /// <inheritdoc />
         public double ContourLength => Geometry.ComputeLength(null, ContourApproximation);
 
-        public Geometry Geometry { get; }
+        public ID2D1Geometry Geometry { get; }
 
         /// <inheritdoc/>
         public Rect GetRenderBounds(Avalonia.Media.IPen pen)
         {
-            return Geometry.GetWidenedBounds((float)(pen?.Thickness ?? 0)).ToAvalonia();
+            return Geometry.GetWidenedBounds((float)(pen?.Thickness ?? 0), null, null, DefaultFlatteningTolerance).ToAvalonia();
         }
 
         /// <inheritdoc/>
         public bool FillContains(Point point)
         {
-            return Geometry.FillContainsPoint(point.ToSharpDX());
+            return Geometry.FillContainsPoint(point.ToSharpDX(), null, DefaultFlatteningTolerance);
         }
 
         /// <inheritdoc/>
         public IGeometryImpl Intersect(IGeometryImpl geometry)
         {
-            var result = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
+            var result = Direct2D1Platform.Direct2D1Factory.CreatePathGeometry();
             using (var sink = result.Open())
             {
-                Geometry.Combine(((GeometryImpl)geometry).Geometry, CombineMode.Intersect, sink);
+                Geometry.CombineWithGeometry(((GeometryImpl)geometry).Geometry, CombineMode.Intersect, null, DefaultFlatteningTolerance, sink);
                 sink.Close();
             }
             return new StreamGeometryImpl(result);
@@ -51,14 +52,13 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public bool StrokeContains(Avalonia.Media.IPen pen, Point point)
         {
-            return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)(pen?.Thickness ?? 0));
+            return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)(pen?.Thickness ?? 0), null, null, DefaultFlatteningTolerance);
         }
 
         public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
             return new TransformedGeometryImpl(
-                new TransformedGeometry(
-                    Direct2D1Platform.Direct2D1Factory,
+                Direct2D1Platform.Direct2D1Factory.CreateTransformedGeometry(
                     GetSourceGeometry(),
                     transform.ToDirect2D()),
                 this);
@@ -67,7 +67,7 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc />
         public bool TryGetPointAtDistance(double distance, out Point point)
         {
-            Geometry.ComputePointAtLength((float)distance, ContourApproximation, out var tangentVector);
+            Geometry.ComputePointAtLength((float)distance, null, ContourApproximation, out var tangentVector);
             point = new Point(tangentVector.X, tangentVector.Y);
             return true;
         }
@@ -91,6 +91,6 @@ namespace Avalonia.Direct2D1.Media
             return false;
         }
 
-        protected virtual Geometry GetSourceGeometry() => Geometry;
+        protected virtual ID2D1Geometry GetSourceGeometry() => Geometry;
     }
 }

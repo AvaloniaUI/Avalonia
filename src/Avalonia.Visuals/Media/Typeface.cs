@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 
 namespace Avalonia.Media
@@ -7,7 +7,6 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents a typeface.
     /// </summary>
-    [DebuggerDisplay("Name = {FontFamily.Name}, Weight = {Weight}, Style = {Style}")]
     public readonly struct Typeface : IEquatable<Typeface>
     {
         /// <summary>
@@ -97,6 +96,21 @@ namespace Avalonia.Media
                 hashCode = (hashCode * 397) ^ (int)Weight;
                 return hashCode;
             }
+        }
+
+        public override string ToString()
+        {
+            if (FontFamily == FontFamily.Default && Weight == FontWeight.Normal && Style == FontStyle.Normal)
+                return "<Default>";
+
+            var parts = new List<string>(3) { $"Name = {FontFamily}" };
+
+            if (Weight != FontWeight.Normal)
+                parts.Add($"Weight = {Weight}");
+            if (Style != FontStyle.Normal)
+                parts.Add($"Style = {Style}");
+
+            return string.Join(", ", parts);
         }
     }
 }

@@ -9,7 +9,6 @@ using Avalonia.Threading;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 using MonoMac.WebKit;
-using Encoding = SharpDX.Text.Encoding;
 
 namespace NativeEmbedSample
 {

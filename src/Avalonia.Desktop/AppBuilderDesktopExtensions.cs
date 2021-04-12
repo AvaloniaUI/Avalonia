@@ -48,6 +48,6 @@ namespace Avalonia
 
         static void LoadSkia<TAppBuilder>(TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
-             => builder.UseSkia();
+             => builder.UseDirect2D1();
     }
 }

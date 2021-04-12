@@ -2,17 +2,17 @@ using System;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
-using SharpDX.Direct2D1;
-using D2D = SharpDX.Direct2D1;
-using SweepDirection = SharpDX.Direct2D1.SweepDirection;
+using Vortice.Direct2D1;
+using D2D = Vortice.Direct2D1;
+using SweepDirection = Vortice.Direct2D1.SweepDirection;
 
 namespace Avalonia.Direct2D1.Media
 {
     public class StreamGeometryContextImpl : IStreamGeometryContextImpl
     {
-        private readonly GeometrySink _sink;
+        private readonly ID2D1GeometrySink _sink;
 
-        public StreamGeometryContextImpl(GeometrySink sink)
+        public StreamGeometryContextImpl(ID2D1GeometrySink sink)
         {
             _sink = sink;
         }

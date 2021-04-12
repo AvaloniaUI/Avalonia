@@ -1,10 +1,11 @@
 using System;
 using System.Linq;
+using System.Numerics;
 using Avalonia.Platform;
-using SharpDX;
-using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
-using DWrite = SharpDX.DirectWrite;
+using Vortice;
+using Vortice.Direct2D1;
+using Vortice.Mathematics;
+using DWrite = Vortice.DirectWrite;
 
 namespace Avalonia.Direct2D1
 {
@@ -15,17 +16,17 @@ namespace Avalonia.Direct2D1
         /// </summary>
         public const float ZeroTolerance = 1e-6f; // Value a 8x higher than 1.19209290E-07F
 
-        public static readonly RawRectangleF RectangleInfinite;
+        public static readonly RawRectF RectangleInfinite;
 
         /// <summary>
         /// Gets the identity matrix.
         /// </summary>
         /// <value>The identity matrix.</value>
-        public readonly static RawMatrix3x2 Matrix3x2Identity = new RawMatrix3x2 { M11 = 1, M12 = 0, M21 = 0, M22 = 1, M31 = 0, M32 = 0 };
+        public readonly static Matrix3x2 Matrix3x2Identity = new Matrix3x2 { M11 = 1, M12 = 0, M21 = 0, M22 = 1, M31 = 0, M32 = 0 };
 
         static PrimitiveExtensions()
         {
-            RectangleInfinite = new RawRectangleF
+            RectangleInfinite = new RawRectF
             {
                 Left = float.NegativeInfinity,
                 Top = float.NegativeInfinity,
@@ -34,28 +35,28 @@ namespace Avalonia.Direct2D1
             };
         }
 
-        public static Rect ToAvalonia(this RawRectangleF r)
+        public static Rect ToAvalonia(this RawRectF r)
         {
             return new Rect(new Point(r.Left, r.Top), new Point(r.Right, r.Bottom));
         }
 
-        public static PixelSize ToAvalonia(this Size2 p) => new PixelSize(p.Width, p.Height);
+        public static PixelSize ToAvalonia(this Vortice.Mathematics.Size p) => new PixelSize(p.Width, p.Height);
 
-        public static Vector ToAvaloniaVector(this Size2F p) => new Vector(p.Width, p.Height);
+        public static Vector ToAvaloniaVector(this SizeF p) => new Vector(p.Width, p.Height);
 
-        public static RawRectangleF ToSharpDX(this Rect r)
+        public static RawRectF ToSharpDX(this Rect r)
         {
-            return new RawRectangleF((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
+            return new RawRectF((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
         }
 
-        public static RawVector2 ToSharpDX(this Point p)
+        public static PointF ToSharpDX(this Point p)
         {
-            return new RawVector2 { X = (float)p.X, Y = (float)p.Y };
+            return new PointF { X = (float)p.X, Y = (float)p.Y };
         }
 
-        public static Size2F ToSharpDX(this Size p)
+        public static SizeF ToSharpDX(this Size p)
         {
-            return new Size2F((float)p.Width, (float)p.Height);
+            return new SizeF((float)p.Width, (float)p.Height);
         }
 
         public static ExtendMode ToDirect2D(this Avalonia.Media.GradientSpreadMethod spreadMethod)
@@ -68,7 +69,7 @@ namespace Avalonia.Direct2D1
                 return ExtendMode.Wrap;
         }
 
-        public static SharpDX.Direct2D1.LineJoin ToDirect2D(this Avalonia.Media.PenLineJoin lineJoin)
+        public static Vortice.Direct2D1.LineJoin ToDirect2D(this Avalonia.Media.PenLineJoin lineJoin)
         {
             if (lineJoin == Avalonia.Media.PenLineJoin.Round)
                 return LineJoin.Round;
@@ -78,7 +79,7 @@ namespace Avalonia.Direct2D1
                 return LineJoin.Bevel;
         }
         
-        public static SharpDX.Direct2D1.CapStyle ToDirect2D(this Avalonia.Media.PenLineCap lineCap)
+        public static Vortice.Direct2D1.CapStyle ToDirect2D(this Avalonia.Media.PenLineCap lineCap)
         {
             if (lineCap == Avalonia.Media.PenLineCap.Flat)
                 return CapStyle.Flat;
@@ -95,11 +96,11 @@ namespace Avalonia.Direct2D1
             bool isPremul = alphaFormat == AlphaFormat.Premul;
 
             if (format == Platform.PixelFormat.Rgb565)
-                return SharpDX.WIC.PixelFormat.Format16bppBGR565;
+                return Vortice.WIC.PixelFormat.Format16bppBGR565;
             if (format == Platform.PixelFormat.Bgra8888)
-                return isPremul ? SharpDX.WIC.PixelFormat.Format32bppPBGRA : SharpDX.WIC.PixelFormat.Format32bppBGRA;
+                return isPremul ? Vortice.WIC.PixelFormat.Format32bppPBGRA : Vortice.WIC.PixelFormat.Format32bppBGRA;
             if (format == Platform.PixelFormat.Rgba8888)
-                return isPremul ? SharpDX.WIC.PixelFormat.Format32bppPRGBA : SharpDX.WIC.PixelFormat.Format32bppRGBA;
+                return isPremul ? Vortice.WIC.PixelFormat.Format32bppPRGBA : Vortice.WIC.PixelFormat.Format32bppRGBA;
             throw new ArgumentException("Unknown pixel format");
         }
 
@@ -109,7 +110,7 @@ namespace Avalonia.Direct2D1
         /// <param name="pen">The pen to convert.</param>
         /// <param name="renderTarget">The render target.</param>
         /// <returns>The Direct2D brush.</returns>
-        public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.IPen pen, SharpDX.Direct2D1.RenderTarget renderTarget)
+        public static ID2D1StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.IPen pen, Vortice.Direct2D1.ID2D1RenderTarget renderTarget)
         {
             return pen.ToDirect2DStrokeStyle(Direct2D1Platform.Direct2D1Factory);
         }
@@ -120,7 +121,7 @@ namespace Avalonia.Direct2D1
         /// <param name="pen">The pen to convert.</param>
         /// <param name="factory">The factory associated with this resource.</param>
         /// <returns>The Direct2D brush.</returns>
-        public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.IPen pen, Factory factory)
+        public static ID2D1StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.IPen pen, ID2D1Factory factory)
         {
             var d2dLineCap = pen.LineCap.ToDirect2D();
 
@@ -143,7 +144,7 @@ namespace Avalonia.Direct2D1
 
             dashes = dashes ?? Array.Empty<float>();
 
-            return new StrokeStyle(factory, properties, dashes);
+            return factory.CreateStrokeStyle(properties, dashes);
         }
 
         /// <summary>
@@ -151,9 +152,9 @@ namespace Avalonia.Direct2D1
         /// </summary>
         /// <param name="color">The color to convert.</param>
         /// <returns>The Direct2D color.</returns>
-        public static RawColor4 ToDirect2D(this Avalonia.Media.Color color)
+        public static Color4 ToDirect2D(this Avalonia.Media.Color color)
         {
-            return new RawColor4(
+            return new Color4(
                 (float)(color.R / 255.0),
                 (float)(color.G / 255.0),
                 (float)(color.B / 255.0),
@@ -165,9 +166,9 @@ namespace Avalonia.Direct2D1
         /// </summary>
         /// <param name="matrix">The <see cref="Matrix"/>.</param>
         /// <returns>The <see cref="RawMatrix3x2"/>.</returns>
-        public static RawMatrix3x2 ToDirect2D(this Matrix matrix)
+        public static Matrix3x2 ToDirect2D(this Matrix matrix)
         {
-            return new RawMatrix3x2
+            return new Matrix3x2
             {
                 M11 = (float)matrix.M11,
                 M12 = (float)matrix.M12,
@@ -183,7 +184,7 @@ namespace Avalonia.Direct2D1
         /// </summary>
         /// <param name="matrix">The matrix</param>
         /// <returns>a <see cref="Avalonia.Matrix"/>.</returns>
-        public static Matrix ToAvalonia(this RawMatrix3x2 matrix)
+        public static Matrix ToAvalonia(this Matrix3x2 matrix)
         {
             return new Matrix(
                 matrix.M11,
@@ -195,13 +196,13 @@ namespace Avalonia.Direct2D1
         }
 
         /// <summary>
-        /// Converts a Avalonia <see cref="Rect"/> to a Direct2D <see cref="RawRectangleF"/>
+        /// Converts a Avalonia <see cref="Rect"/> to a Direct2D <see cref="RawRectF"/>
         /// </summary>
         /// <param name="rect">The <see cref="Rect"/>.</param>
-        /// <returns>The <see cref="RawRectangleF"/>.</returns>
-        public static RawRectangleF ToDirect2D(this Rect rect)
+        /// <returns>The <see cref="RawRectF"/>.</returns>
+        public static RawRectF ToDirect2D(this Rect rect)
         {
-            return new RawRectangleF(
+            return new RawRectF(
                 (float)rect.X,
                 (float)rect.Y,
                 (float)rect.Right,

@@ -4,7 +4,7 @@ namespace Avalonia.Direct2D1.Media
 {
     public abstract class BrushImpl : IDisposable
     {
-        public SharpDX.Direct2D1.Brush PlatformBrush { get; set; }
+        public Vortice.Direct2D1.ID2D1Brush PlatformBrush { get; set; }
 
         public virtual void Dispose()
         {

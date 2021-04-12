@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
-using DWrite = SharpDX.DirectWrite;
+using DWrite = Vortice.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -21,24 +21,23 @@ namespace Avalonia.Direct2D1.Media
 
             var font = ((GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl).DWFont;
             var familyName = font.FontFamily.FamilyNames.GetString(0);
-            using (var textFormat = new DWrite.TextFormat(
-                Direct2D1Platform.DirectWriteFactory, 
-                familyName, 
-                font.FontFamily.FontCollection, 
+            using (var textFormat = Direct2D1Platform.DirectWriteFactory.CreateTextFormat( 
+                familyName,
+                font.FontFamily.FontCollection,
                 (DWrite.FontWeight)typeface.Weight,
-                (DWrite.FontStyle)typeface.Style, 
-                DWrite.FontStretch.Normal, 
+                (DWrite.FontStyle)typeface.Style,
+                DWrite.FontStretch.Normal,
                 (float)fontSize))
             {
                 textFormat.WordWrapping =
                     wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
-                TextLayout = new DWrite.TextLayout(
-                    Direct2D1Platform.DirectWriteFactory,
+                TextLayout = Direct2D1Platform.DirectWriteFactory.CreateTextLayout(
                     Text ?? string.Empty,
                     textFormat,
                     (float)constraint.Width,
-                    (float)constraint.Height) { TextAlignment = textAlignment.ToDirect2D() };
+                    (float)constraint.Height);
+                TextLayout.TextAlignment = textAlignment.ToDirect2D();
             }
 
             if (spans != null)
@@ -58,21 +57,20 @@ namespace Avalonia.Direct2D1.Media
 
         public string Text { get; }
 
-        public DWrite.TextLayout TextLayout { get; }
+        public DWrite.IDWriteTextLayout TextLayout { get; }
 
-        public IEnumerable<FormattedTextLine> GetLines()
-        {
-            var result = TextLayout.GetLineMetrics();
-            return from line in result select new FormattedTextLine(line.Length, line.Height);
-        }
+        public IEnumerable<FormattedTextLine> GetLines() => from line in TextLayout.LineMetrics
+                                                            select new FormattedTextLine(line.Length, line.Height);
 
         public TextHitTestResult HitTestPoint(Point point)
         {
-            var result = TextLayout.HitTestPoint(
+            TextLayout.HitTestPoint(
                 (float)point.X,
                 (float)point.Y,
                 out var isTrailingHit,
-                out var isInside);
+                out var isInside,
+                out var result
+            );
 
             return new TextHitTestResult
             {
@@ -84,16 +82,16 @@ namespace Avalonia.Direct2D1.Media
 
         public Rect HitTestTextPosition(int index)
         {
-            var result = TextLayout.HitTestTextPosition(index, false, out _, out _);
+            TextLayout.HitTestTextPosition(index, false, out _, out _, out var result);
 
-            return new Rect(result.Left, result.Top, result.Width, result.Height);
+            return HitTestMetricsToRect(result);
         }
 
-        public IEnumerable<Rect> HitTestTextRange(int index, int length)
-        {
-            var result = TextLayout.HitTestTextRange(index, length, 0, 0);
-            return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
-        }
+        private static Rect HitTestMetricsToRect(DWrite.HitTestMetrics result) =>
+            new(result.Left, result.Top, result.Width, result.Height);
+
+        public IEnumerable<Rect> HitTestTextRange(int index, int length) =>
+            TextLayout.HitTestTextRange(index, length, 0, 0).Select(HitTestMetricsToRect);
 
         private void ApplySpan(FormattedTextStyleSpan span)
         {
@@ -103,7 +101,7 @@ namespace Avalonia.Direct2D1.Media
                 {
                     TextLayout.SetDrawingEffect(
                         new BrushWrapper(span.ForegroundBrush.ToImmutable()),
-                        new DWrite.TextRange(span.StartIndex, span.Length));
+                        new DWrite.TextRange { StartPosition = span.StartIndex, Length = span.Length });
                 }
             }
         }

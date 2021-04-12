@@ -3,18 +3,17 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using Avalonia.Direct2D1;
-using SharpDX.Direct2D1;
-using SharpDX.Direct3D11;
-using SharpDX.Direct3D9;
-using SharpDX.DXGI;
-using AlphaMode = SharpDX.Direct2D1.AlphaMode;
-using Device = SharpDX.Direct3D11.Device;
-using Format = SharpDX.DXGI.Format;
-using Query = SharpDX.Direct3D11.Query;
-using QueryType = SharpDX.Direct3D11.QueryType;
-using RenderTarget = SharpDX.Direct2D1.RenderTarget;
-using Surface = SharpDX.DXGI.Surface;
-using Usage = SharpDX.Direct3D9.Usage;
+using Vortice.Direct2D1;
+using Vortice.Direct3D11;
+using Vortice.Direct3D9;
+using Vortice.DXGI;
+using AlphaMode = Vortice.DCommon.AlphaMode;
+using Device = Vortice.Direct3D11.ID3D11Device;
+using Format = Vortice.DXGI.Format;
+using Query = Vortice.Direct3D11.ID3D11Query;
+using QueryType = Vortice.Direct3D11.QueryType;
+using RenderTarget = Vortice.Direct2D1.ID2D1RenderTarget;
+using Surface = Vortice.DXGI.IDXGISurface;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
@@ -23,9 +22,9 @@ namespace Avalonia.Win32.Interop.Wpf
         class SwapBuffer: IDisposable
         {
             private readonly Query _event;
-            private readonly SharpDX.Direct3D11.Resource _resource;
-            private readonly SharpDX.Direct3D11.Resource _sharedResource;
-            public SharpDX.Direct3D9.Surface Texture { get; }
+            private readonly Vortice.Direct3D11.ID3D11Resource _resource;
+            private readonly Vortice.Direct3D11.ID3D11Resource _sharedResource;
+            public Vortice.Direct3D9.IDirect3DSurface9 Texture { get; }
             public RenderTarget Target { get;}
             public IntSize Size { get; }
 
@@ -33,53 +32,55 @@ namespace Avalonia.Win32.Interop.Wpf
             {
                 int width = (int) size.Width;
                 int height = (int) size.Height;
-                _event = new Query(s_dxDevice, new QueryDescription {Type = QueryType.Event});
-                using (var texture = new Texture2D(s_dxDevice, new Texture2DDescription
+                _event = s_dxDevice.CreateQuery(new QueryDescription {QueryType = QueryType.Event});
+                using (var texture = s_dxDevice.CreateTexture2D(new Texture2DDescription
                 {
                     Width = width,
                     Height = height,
                     ArraySize = 1,
                     MipLevels = 1,
                     Format = Format.B8G8R8A8_UNorm,
-                    Usage = ResourceUsage.Default,
+                    Usage = Vortice.Direct3D11.Usage.Default,
                     SampleDescription = new SampleDescription(2, 0),
                     BindFlags = BindFlags.RenderTarget,
                 }))
                 using (var surface = texture.QueryInterface<Surface>())
                 
                 {
-                    _resource = texture.QueryInterface<SharpDX.Direct3D11.Resource>();
-                    
-                    Target = new RenderTarget(Direct2D1Platform.Direct2D1Factory, surface,
+                    _resource = texture.QueryInterface<Vortice.Direct3D11.ID3D11Resource>();
+
+                    Target = Direct2D1Platform.Direct2D1Factory.CreateDxgiSurfaceRenderTarget(
+                        surface,
                         new RenderTargetProperties
                         {
-                            DpiX = (float) dpi.X,
-                            DpiY = (float) dpi.Y,
+                            DpiX = (float)dpi.X,
+                            DpiY = (float)dpi.Y,
                             MinLevel = FeatureLevel.Level_10,
-                            PixelFormat = new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied),
-
+                            PixelFormat = new Vortice.DCommon.PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied),
                         });
                 }
-                using (var texture = new Texture2D(s_dxDevice, new Texture2DDescription
+                using (var texture = s_dxDevice.CreateTexture2D(new Texture2DDescription
                 {
                     Width = width,
                     Height = height,
                     ArraySize = 1,
                     MipLevels = 1,
                     Format = Format.B8G8R8A8_UNorm,
-                    Usage = ResourceUsage.Default,
+                    Usage = Vortice.Direct3D11.Usage.Default,
                     SampleDescription = new SampleDescription(1, 0),
                     BindFlags = BindFlags.RenderTarget|BindFlags.ShaderResource,
                     OptionFlags = ResourceOptionFlags.Shared,
                 }))
-                using (var resource = texture.QueryInterface<SharpDX.DXGI.Resource>())
+                using (var resource = texture.QueryInterface<Vortice.DXGI.IDXGIResource>())
                 {
-                    _sharedResource = texture.QueryInterface<SharpDX.Direct3D11.Resource>();
+                    _sharedResource = texture.QueryInterface<Vortice.Direct3D11.ID3D11Resource>();
                     var handle = resource.SharedHandle;
-                    using (var texture9 = new Texture(s_d3DDevice, texture.Description.Width,
-                        texture.Description.Height, 1,
-                        Usage.RenderTarget, SharpDX.Direct3D9.Format.A8R8G8B8, Pool.Default, ref handle))
-                        Texture = texture9.GetSurfaceLevel(0);
+                    using var texture9 = s_d3DDevice.CreateTexture(
+                        texture.Description.Width, texture.Description.Height, 1,
+                        Vortice.Direct3D9.Usage.RenderTarget, Vortice.Direct3D9.Format.A8R8G8B8, Pool.Default,
+                        ref handle
+                    );
+                    Texture = texture9.GetSurfaceLevel(0);
                 }
                 Size = size;
             }
@@ -98,7 +99,9 @@ namespace Avalonia.Win32.Interop.Wpf
                 s_dxDevice.ImmediateContext.ResolveSubresource(_resource, 0, _sharedResource, 0, Format.B8G8R8A8_UNorm);
                 s_dxDevice.ImmediateContext.Flush();
                 s_dxDevice.ImmediateContext.End(_event);
-                s_dxDevice.ImmediateContext.GetData(_event).Dispose();
+                while (!s_dxDevice.ImmediateContext.IsDataAvailable(_event))
+                {
+                }
             }
         }
 
@@ -106,8 +109,8 @@ namespace Avalonia.Win32.Interop.Wpf
         private SwapBuffer _backBuffer;
         private readonly WpfTopLevelImpl _impl;
         private static Device s_dxDevice;
-        private static Direct3DEx s_d3DContext;
-        private static DeviceEx s_d3DDevice;
+        private static IDirect3D9Ex s_d3DContext;
+        private static IDirect3DDevice9Ex s_d3DDevice;
         private Vector _oldDpi;
 
 
@@ -117,18 +120,18 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             if(s_d3DDevice != null)
                 return;
-            s_d3DContext = new Direct3DEx();
+            D3D9.Create9Ex(out s_d3DContext).CheckError();
 
-            SharpDX.Direct3D9.PresentParameters presentparams = new SharpDX.Direct3D9.PresentParameters
+            Vortice.Direct3D9.PresentParameters presentparams = new()
             {
                 Windowed = true,
-                SwapEffect = SharpDX.Direct3D9.SwapEffect.Discard,
+                SwapEffect = Vortice.Direct3D9.SwapEffect.Discard,
                 DeviceWindowHandle = GetDesktopWindow(),
                 PresentationInterval = PresentInterval.Default
             };
-            s_dxDevice = s_dxDevice ?? AvaloniaLocator.Current.GetService<SharpDX.DXGI.Device>()
-                             .QueryInterface<SharpDX.Direct3D11.Device>();
-            s_d3DDevice = new DeviceEx(s_d3DContext, 0, DeviceType.Hardware, IntPtr.Zero, CreateFlags.HardwareVertexProcessing | CreateFlags.Multithreaded | CreateFlags.FpuPreserve, presentparams);
+            s_dxDevice ??= AvaloniaLocator.Current.GetService<Vortice.DXGI.IDXGIDevice>()
+                                          .QueryInterface<Vortice.Direct3D11.ID3D11Device>();
+            s_d3DDevice = s_d3DContext.CreateDeviceEx(0, DeviceType.Hardware, IntPtr.Zero, CreateFlags.HardwareVertexProcessing | CreateFlags.Multithreaded | CreateFlags.FpuPreserve, presentparams);
 
         }
 

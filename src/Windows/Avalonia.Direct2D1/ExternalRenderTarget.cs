@@ -2,7 +2,7 @@
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using SharpDX;
+using SharpGen.Runtime;
 
 namespace Avalonia.Direct2D1
 {
@@ -25,13 +25,13 @@ namespace Avalonia.Direct2D1
         {
             var target =  _externalRenderTargetProvider.GetOrCreateRenderTarget();
             _externalRenderTargetProvider.BeforeDrawing();
-            return new DrawingContextImpl(visualBrushRenderer, null, target, null, () =>
+            return new DrawingContextImpl(visualBrushRenderer, null, target, finishedCallback: () =>
             {
                 try
                 {
                     _externalRenderTargetProvider.AfterDrawing();
                 }
-                catch (SharpDXException ex) when ((uint) ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
+                catch (SharpGenException ex) when ((uint) ex.HResult == 0x8899000C) // D2DERR_RECREATE_TARGET
                 {
                     _externalRenderTargetProvider.DestroyRenderTarget();
                 }

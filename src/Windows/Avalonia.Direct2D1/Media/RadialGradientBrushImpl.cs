@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Media;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -7,7 +8,7 @@ namespace Avalonia.Direct2D1.Media
     {
         public RadialGradientBrushImpl(
             IRadialGradientBrush brush,
-            SharpDX.Direct2D1.RenderTarget target,
+            Vortice.Direct2D1.ID2D1RenderTarget target,
             Size destinationSize)
         {
             if (brush.GradientStops.Count == 0)
@@ -15,7 +16,7 @@ namespace Avalonia.Direct2D1.Media
                 return;
             }
 
-            var gradientStops = brush.GradientStops.Select(s => new SharpDX.Direct2D1.GradientStop
+            var gradientStops = brush.GradientStops.Select(s => new Vortice.Direct2D1.GradientStop
             {
                 Color = s.Color.ToDirect2D(),
                 Position = (float)s.Offset
@@ -28,21 +29,20 @@ namespace Avalonia.Direct2D1.Media
             var radiusX = brush.Radius * destinationSize.Width;
             var radiusY = brush.Radius * destinationSize.Height;
 
-            using (var stops = new SharpDX.Direct2D1.GradientStopCollection(
-                target,
+            using (var stops = target.CreateGradientStopCollection(
                 gradientStops,
+                Gamma.StandardRgb,
                 brush.SpreadMethod.ToDirect2D()))
             {
-                PlatformBrush = new SharpDX.Direct2D1.RadialGradientBrush(
-                    target,
-                    new SharpDX.Direct2D1.RadialGradientBrushProperties
+                PlatformBrush = target.CreateRadialGradientBrush(
+                    new Vortice.Direct2D1.RadialGradientBrushProperties
                     {
                         Center = centerPoint.ToSharpDX(),
                         GradientOriginOffset = gradientOrigin.ToSharpDX(),
                         RadiusX = (float)radiusX,
                         RadiusY = (float)radiusY
                     },
-                    new SharpDX.Direct2D1.BrushProperties
+                    new Vortice.Direct2D1.BrushProperties
                     {
                         Opacity = (float)brush.Opacity,
                         Transform = PrimitiveExtensions.Matrix3x2Identity,

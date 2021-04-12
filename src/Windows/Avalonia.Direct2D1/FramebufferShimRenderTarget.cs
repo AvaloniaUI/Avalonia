@@ -4,7 +4,7 @@ using Avalonia.Direct2D1.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
-using SharpDX.WIC;
+using Vortice.WIC;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 
 namespace Avalonia.Direct2D1
@@ -49,7 +49,7 @@ namespace Avalonia.Direct2D1
             {
                 return base.CreateDrawingContext(visualBrushRenderer, () =>
                 {
-                    using (var l = WicImpl.Lock(BitmapLockFlags.Read))
+                    using (var l = WicImpl.Lock(BitmapLockFlags.LockRead))
                     {
                         for (var y = 0; y < _target.Size.Height; y++)
                         {

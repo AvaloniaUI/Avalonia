@@ -1,36 +1,39 @@
-using SharpDX;
-using SharpDX.Direct2D1;
-using SharpDX.DirectWrite;
-using SharpDX.Mathematics.Interop;
+using System;
+using System.Numerics;
+using SharpGen.Runtime;
+using Vortice.DCommon;
+using Vortice.Direct2D1;
+using Vortice.DirectWrite;
+using Vortice.Mathematics;
 
 namespace Avalonia.Direct2D1.Media
 {
-    internal class AvaloniaTextRenderer : TextRendererBase
+    internal sealed class AvaloniaTextRenderer : CallbackBase, IDWriteTextRenderer
     {
         private readonly DrawingContextImpl _context;
 
-        private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
+        private readonly Vortice.Direct2D1.ID2D1RenderTarget _renderTarget;
 
-        private readonly Brush _foreground;
+        private readonly ID2D1Brush _foreground;
 
         public AvaloniaTextRenderer(
             DrawingContextImpl context,
-            SharpDX.Direct2D1.RenderTarget target,
-            Brush foreground)
+            Vortice.Direct2D1.ID2D1RenderTarget target,
+            ID2D1Brush foreground)
         {
             _context = context;
             _renderTarget = target;
             _foreground = foreground;
         }
 
-        public override Result DrawGlyphRun(
-            object clientDrawingContext,
+        public void DrawGlyphRun(
+            IntPtr clientDrawingContext,
             float baselineOriginX,
             float baselineOriginY,
             MeasuringMode measuringMode,
             GlyphRun glyphRun,
-            GlyphRunDescription glyphRunDescription,
-            ComObject clientDrawingEffect)
+            ref GlyphRunDescription glyphRunDescription,
+            IUnknown clientDrawingEffect)
         {
             var wrapper = clientDrawingEffect as BrushWrapper;
 
@@ -40,7 +43,7 @@ namespace Avalonia.Direct2D1.Media
                 _context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
 
             _renderTarget.DrawGlyphRun(
-                new RawVector2 { X = baselineOriginX, Y = baselineOriginY },
+                new PointF { X = baselineOriginX, Y = baselineOriginY },
                 glyphRun,
                 brush,
                 measuringMode);
@@ -49,18 +52,39 @@ namespace Avalonia.Direct2D1.Media
             {
                 brush.Dispose();
             }
-
-            return Result.Ok;
         }
 
-        public override RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
+        public void DrawUnderline(IntPtr clientDrawingContext, float baselineOriginX, float baselineOriginY, ref Underline underline,
+                                  IUnknown clientDrawingEffect)
+        {
+            throw new SharpGenException(Result.NotImplemented);
+        }
+
+        public void DrawStrikethrough(IntPtr clientDrawingContext, float baselineOriginX, float baselineOriginY,
+                                      ref Strikethrough strikethrough, IUnknown clientDrawingEffect)
+        {
+            throw new SharpGenException(Result.NotImplemented);
+        }
+
+        public void DrawInlineObject(IntPtr clientDrawingContext, float originX, float originY, IDWriteInlineObject inlineObject,
+                                     RawBool isSideways, RawBool isRightToLeft, IUnknown clientDrawingEffect)
+        {
+            throw new SharpGenException(Result.NotImplemented);
+        }
+
+        public Matrix3x2 GetCurrentTransform(IntPtr clientDrawingContext)
         {
             return _renderTarget.Transform;
         }
 
-        public override float GetPixelsPerDip(object clientDrawingContext)
+        public float GetPixelsPerDip(IntPtr clientDrawingContext)
         {
-            return _renderTarget.DotsPerInch.Width / 96;
+            return _renderTarget.Dpi.X / 96;
+        }
+
+        public RawBool IsPixelSnappingDisabled(IntPtr clientDrawingContext)
+        {
+            return false;
         }
     }
 }

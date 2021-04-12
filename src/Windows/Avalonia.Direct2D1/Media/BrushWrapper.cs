@@ -1,5 +1,5 @@
 using Avalonia.Media;
-using SharpDX;
+using SharpGen.Runtime;
 
 namespace Avalonia.Direct2D1.Media
 {

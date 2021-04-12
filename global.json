@@ -1,10 +1,7 @@
 {
-	"sdk": {
-		"version": "3.1.401"
-	},
     "msbuild-sdks": {
-        "Microsoft.Build.Traversal": "1.0.43",
-        "MSBuild.Sdk.Extras": "2.0.54",
+        "Microsoft.Build.Traversal": "3.0.3",
+        "MSBuild.Sdk.Extras": "3.0.23",
         "AggregatePackage.NuGet.Sdk" : "0.1.12"
     }
 }
