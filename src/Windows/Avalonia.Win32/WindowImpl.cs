@@ -580,7 +580,9 @@ namespace Avalonia.Win32
 
         public void SetParent(IWindowImpl parent)
         {
-            var parentHwnd = ((WindowImpl)parent)?._hwnd ?? IntPtr.Zero;
+            _parent = (WindowImpl)parent;
+            
+            var parentHwnd = _parent?._hwnd ?? IntPtr.Zero;
 
             if (parentHwnd == IntPtr.Zero && !_windowProperties.ShowInTaskbar)
             {
