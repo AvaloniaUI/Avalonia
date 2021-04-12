@@ -94,7 +94,7 @@ namespace Avalonia.Utilities
             return (0, false);
         }
 
-        public bool TryGetValue(AvaloniaProperty property, [MaybeNull] out TValue value)
+        public bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out TValue value)
         {
             (int index, bool found) = TryFindEntry(property.Id);
             if (!found)
