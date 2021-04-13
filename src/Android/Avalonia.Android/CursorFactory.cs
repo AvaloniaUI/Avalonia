@@ -15,8 +15,6 @@ namespace Avalonia.Android
 
             private CursorImpl() { }
 
-            public IntPtr Handle => IntPtr.Zero;
-
             public void Dispose() { }
         }
     }

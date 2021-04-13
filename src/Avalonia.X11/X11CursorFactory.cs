@@ -85,7 +85,7 @@ namespace Avalonia.X11
             return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);
         }
 
-        private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface, IPlatformHandle
+        private unsafe class XImageCursor : CursorImpl, IFramebufferPlatformSurface
         {
             private readonly PixelSize _pixelSize;
             private readonly IUnmanagedBlob _blob;
@@ -97,7 +97,7 @@ namespace Avalonia.X11
 
                 _pixelSize = bitmap.PixelSize;
                 _blob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(size);
-                
+
                 var image = (XcursorImage*)_blob.Address;
                 image->version = 1;
                 image->size = Marshal.SizeOf<XcursorImage>();
@@ -106,18 +106,16 @@ namespace Avalonia.X11
                 image->xhot = hotSpot.X;
                 image->yhot = hotSpot.Y;
                 image->pixels = (IntPtr)(image + 1);
-               
+
                 using (var renderTarget = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateRenderTarget(new[] { this }))
                 using (var ctx = renderTarget.CreateDrawingContext(null))
                 {
-                    var r = new Rect(_pixelSize.ToSize(1)); 
+                    var r = new Rect(_pixelSize.ToSize(1));
                     ctx.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, r, r);
                 }
 
                 Handle = XLib.XcursorImageLoadCursor(display, _blob.Address);
             }
-
-            public string HandleDescriptor => "XCURSOR";
 
             public override void Dispose()
             {
@@ -135,11 +133,12 @@ namespace Avalonia.X11
         }
     }
 
-    class CursorImpl : ICursorImpl
+    class CursorImpl : ICursorImpl, IPlatformHandle
     {
         public CursorImpl() { }
         public CursorImpl(IntPtr handle) => Handle = handle;
         public IntPtr Handle { get; protected set; }
+        public virtual string HandleDescriptor => "XCURSOR";
         public virtual void Dispose() { }
     }
 }

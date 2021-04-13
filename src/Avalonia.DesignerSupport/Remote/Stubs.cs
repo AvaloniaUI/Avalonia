@@ -199,8 +199,6 @@ namespace Avalonia.DesignerSupport.Remote
 
         private class CursorStub : ICursorImpl
         {
-            public IntPtr Handle => IntPtr.Zero;
-
             public void Dispose() { }
         }
     }

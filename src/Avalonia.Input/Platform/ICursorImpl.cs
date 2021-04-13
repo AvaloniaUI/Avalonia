@@ -10,9 +10,5 @@ namespace Avalonia.Platform
     /// </summary>
     public interface ICursorImpl : IDisposable
     {
-        /// <summary>
-        /// Gets the handle.
-        /// </summary>
-        IntPtr Handle { get; }
     }
 }

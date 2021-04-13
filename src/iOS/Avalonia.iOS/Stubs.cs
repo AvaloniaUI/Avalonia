@@ -12,7 +12,6 @@ namespace Avalonia.iOS
 
         private class CursorImplStub : ICursorImpl
         {
-            public IntPtr Handle => IntPtr.Zero;
             public void Dispose() { }
         }
     }

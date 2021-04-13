@@ -11,7 +11,6 @@ namespace Avalonia.LinuxFramebuffer
 
         private class CursorStub : ICursorImpl
         {
-            public IntPtr Handle => IntPtr.Zero;
             public void Dispose() { }
         }
     }

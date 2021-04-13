@@ -63,6 +63,16 @@ namespace Avalonia.Input
 
         public ICursorImpl PlatformImpl { get; }
 
+        public IPlatformHandle? PlatformCursor
+        {
+            get
+            {
+                if (PlatformImpl is IPlatformHandle platformHandle)
+                    return platformHandle;
+                return null;
+            }
+        }
+
         public void Dispose() => PlatformImpl.Dispose();
 
         public static Cursor Parse(string s)
