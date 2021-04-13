@@ -253,8 +253,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     {
         public static void ValidateEdge(this PopupAnchor edge)
         {
-            if (edge.HasAllFlags(PopupAnchor.Left) && edge.HasAllFlags(PopupAnchor.Right) ||
-                edge.HasAllFlags(PopupAnchor.Top) && edge.HasAllFlags(PopupAnchor.Bottom))
+            if (edge.HasAllFlags(PopupAnchor.Left | PopupAnchor.Right) ||
+                edge.HasAllFlags(PopupAnchor.Top | PopupAnchor.Bottom))
                 throw new ArgumentException("Opposite edges specified");
         }
 
