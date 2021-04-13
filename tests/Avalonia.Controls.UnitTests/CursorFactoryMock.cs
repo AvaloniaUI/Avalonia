@@ -18,7 +18,7 @@ namespace Avalonia.Controls.UnitTests
 
         private class MockCursorImpl : ICursorImpl
         {
-            public IntPtr Handle { get; } = IntPtr.Zero;
+            public IntPtr Handle => IntPtr.Zero;
 
             public void Dispose()
             {

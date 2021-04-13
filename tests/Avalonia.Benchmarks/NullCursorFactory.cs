@@ -11,7 +11,7 @@ namespace Avalonia.Benchmarks
 
         private class NullCursorImpl : ICursorImpl
         {
-            public IntPtr Handle { get; } = IntPtr.Zero;
+            public IntPtr Handle => IntPtr.Zero;
 
             public void Dispose() { }
         }

@@ -39,7 +39,7 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }        
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
@@ -175,7 +175,7 @@ namespace Avalonia.DesignerSupport.Remote
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public bool NeedsManagedDecorations => false;
-        
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 
@@ -199,6 +199,8 @@ namespace Avalonia.DesignerSupport.Remote
 
         private class CursorStub : ICursorImpl
         {
+            public IntPtr Handle => IntPtr.Zero;
+
             public void Dispose() { }
         }
     }
