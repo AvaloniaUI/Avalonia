@@ -481,46 +481,24 @@ namespace Avalonia.Collections
         {
             Contract.Requires<ArgumentNullException>(items != null);
 
-            T[] srcItems = items.ToArray(); // enumerate items first
-            const int LARGE_AMOUNT_THR = 1024 * 1024 * 8;
-            bool ligtMode = srcItems.Length * _inner.Count <= LARGE_AMOUNT_THR;
+            var hItems = new HashSet<T>(items);
 
-            // list of indexes to remove in target elements list
-            List<int> aIndex = ligtMode ? CreateIndexesLight(srcItems) : CreateIndexesHeavy(srcItems);
-            aIndex.Sort();
-            
             int counter = 0;
-            int lastIndex = -1;
-
-            void remove_queued()
+            for (int i = _inner.Count - 1; i >= 0; --i)
             {
-                if (counter > 0)
-                    RemoveRange(lastIndex, counter);
-            }
-
-            for (int i = aIndex.Count - 1; i >= 0; --i)
-            {
-                int currIndex = aIndex[i];
-                if (currIndex < 0)
-                    break; // skip missed elements
-
-                if (currIndex == lastIndex)
-                    continue;
-
-                if (currIndex == lastIndex - 1)
+                if (hItems.Contains(_inner[i]))
                 {
                     counter += 1;
                 }
-                else
+                else if(counter > 0)
                 {
-                    remove_queued();
-                    counter = 1;
+                    RemoveRange(i + 1, counter);
+                    counter = 0;
                 }
-
-                lastIndex = currIndex;
             }
 
-            remove_queued();
+            if (counter > 0)
+                RemoveRange(0, counter);
         }
 
         /// <summary>
@@ -757,54 +735,6 @@ namespace Avalonia.Collections
             }
 
             NotifyCountChanged();
-        }
-
-        protected virtual List<int> CreateIndexesLight(T[] items)
-        {
-            var aIndex = new List<int>(items.Length + 8);
-            for (int i = 0; i < items.Length; ++i)
-            {
-                T currItem = items[i];
-                // find all indexes of current item
-                for (int ind = 0; ind >= 0 && ind < _inner.Count;)
-                {
-                    ind = _inner.IndexOf(currItem, ind);
-                    if (ind >= 0)
-                        aIndex.Add(ind++);
-                }
-            }
-
-            return aIndex;
-        }
-
-        protected List<int> CreateIndexesHeavy(T[] items)
-        {
-            var dict = new Dictionary<T, (int, List<int>)>(_inner.Count);
-            for (int i = 0; i < _inner.Count; ++i)
-            {
-                if (dict.TryGetValue(_inner[i], out (int, List<int>) val))
-                {
-                    (val.Item2 ??= new List<int>(4)).Add(i);
-                    dict[_inner[i]] = val;
-                }
-                else
-                {
-                    dict.Add(_inner[i], (i, null));
-                }
-            }
-
-            var aIndex = new List<int>(items.Length + 8);
-            foreach (T item in items)
-            {
-                if (dict.TryGetValue(item, out var value))
-                {
-                    aIndex.Add(value.Item1);
-                    if (value.Item2 != null)
-                        aIndex.AddRange(value.Item2);
-                }
-            }
-             
-            return aIndex;
         }
 
         /// <summary>

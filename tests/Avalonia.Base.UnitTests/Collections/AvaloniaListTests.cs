@@ -364,6 +364,7 @@ namespace Avalonia.Base.UnitTests.Collections
             int[] bar = Enumerable.Range(-7, 15).ToArray();
             var itemsLst = new List<int[]>()
             {
+                Array.Empty<int>(),
                 bar,
                 bar.Concat(bar).ToArray(),
                 bar.Concat(bar).Concat(bar).ToArray(),
@@ -398,59 +399,45 @@ namespace Avalonia.Base.UnitTests.Collections
                 to_remove_lst.ForEach(rl => testCases.Add((items, rl)));
             }
 
-
             foreach (var tCase in testCases)
             {
-                AvaloniaList<int>[] targets = new[] 
-                { 
-                    new AvaloniaList<int>(tCase.src),
-                    new AvaloniaListOverrided<int>(tCase.src)
+                var target = new AvaloniaList<int>(tCase.src);
+
+                bool raised = false;
+                var innerItems = tCase.src.ToList();
+
+                target.CollectionChanged += (s, e) =>
+                {
+                    Assert.Equal(target, s);
+                    Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+
+                    // simulate next remove notification
+                    int expected_end = innerItems.FindLastIndex(x => tCase.excludes.Contains(x)) + 1;
+                    int[] expected_items = innerItems.Take(expected_end).Reverse().TakeWhile(x => tCase.excludes.Contains(x)).Reverse().ToArray();
+                    int expected_start = expected_end - expected_items.Length;
+                    // handle simulated notification
+                    innerItems.RemoveRange(expected_start, expected_items.Length);
+
+                    Assert.Equal(expected_items, e.OldItems.Cast<int>());
+                    Assert.Equal(expected_start, e.OldStartingIndex);
+                    Assert.Equal(target.ToArray(), innerItems);
+
+                    raised = true;
                 };
 
-                foreach (var target in targets)
+                target.RemoveAll(tCase.excludes);
+
+                if (tCase.src.Intersect(tCase.excludes).Count() != 0)
                 {
-                    bool raised = false;
-                    var innerItems = tCase.src.ToList();
-
-                    target.CollectionChanged += (s, e) =>
-                    {
-                        Assert.Equal(target, s);
-                        Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
-
-                        // simulate next remove notification
-                        int expected_end = innerItems.FindLastIndex(x => tCase.excludes.Contains(x)) + 1;
-                        int[] expected_items = innerItems.Take(expected_end).Reverse().TakeWhile(x => tCase.excludes.Contains(x)).Reverse().ToArray();
-                        int expected_start = expected_end - expected_items.Length;
-                        // handle simulated notification
-                        innerItems.RemoveRange(expected_start, expected_items.Length);
-
-                        Assert.Equal(expected_items, e.OldItems.Cast<int>());
-                        Assert.Equal(expected_start, e.OldStartingIndex);
-                        Assert.Equal(target.ToArray(), innerItems);
-
-                        raised = true;
-                    };
-
-                    target.RemoveAll(tCase.excludes);
-
-                    if (tCase.src.Intersect(tCase.excludes).Count() != 0)
-                    {
-                        Assert.True(raised);
-                        Assert.Equal(tCase.src.Where(x => !tCase.excludes.Contains(x)), innerItems);
-                    }
-                    else
-                    {
-                        Assert.False(raised);
-                        Assert.Equal(target.Intersect(tCase.excludes).Count(), 0);
-                    }                    
+                    Assert.True(raised);
+                    Assert.Equal(tCase.src.Where(x => !tCase.excludes.Contains(x)), innerItems);
+                }
+                else
+                {
+                    Assert.False(raised);
+                    Assert.Equal(target.Intersect(tCase.excludes).Count(), 0);
                 }
             }
-        }
-
-        sealed class AvaloniaListOverrided<T> : AvaloniaList<T>
-        {
-            public AvaloniaListOverrided(IEnumerable<T> items) : base(items) { }
-            protected override List<int> CreateIndexesLight(T[] items) => CreateIndexesHeavy(items);
         }
     }
 }
