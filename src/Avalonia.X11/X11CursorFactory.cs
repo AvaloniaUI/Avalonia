@@ -138,7 +138,7 @@ namespace Avalonia.X11
         public CursorImpl() { }
         public CursorImpl(IntPtr handle) => Handle = handle;
         public IntPtr Handle { get; protected set; }
-        public virtual string HandleDescriptor => "XCURSOR";
+        public string HandleDescriptor => "XCURSOR";
         public virtual void Dispose() { }
     }
 }

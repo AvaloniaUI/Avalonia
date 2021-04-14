@@ -6,7 +6,7 @@ using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativeCursor : ICursorImpl, IPlatformHandle, IDisposable
+    class AvaloniaNativeCursor : ICursorImpl, IPlatformHandle
     {
         public IAvnCursor Cursor { get; private set; }
         public IntPtr Handle => IntPtr.Zero;
@@ -20,7 +20,7 @@ namespace Avalonia.Native
 
         public void Dispose()
         {
-            Cursor.Dispose();
+            Cursor?.Dispose();
             Cursor = null;
         }
     }
