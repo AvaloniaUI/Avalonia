@@ -58,8 +58,7 @@ public partial class Build
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
-        public AbsolutePath ZipSourceControlCatalogDesktopDir { get; }
-        public AbsolutePath ZipTargetControlCatalogDesktopDir { get; }
+        public AbsolutePath ZipTargetControlCatalogNetCoreDir { get; }
 
 
         public BuildParameters(Build b)
@@ -129,9 +128,7 @@ public partial class Build
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
-            ZipSourceControlCatalogDesktopDir =
-                RootDirectory / ("samples/ControlCatalog.Desktop/bin/" + DirSuffix + "/net461");
-            ZipTargetControlCatalogDesktopDir = ZipRoot / ("ControlCatalog.Desktop-" + FileZipSuffix);
+            ZipTargetControlCatalogNetCoreDir = ZipRoot / ("ControlCatalog.NetCore-" + FileZipSuffix);
         }
 
         string GetVersion()
