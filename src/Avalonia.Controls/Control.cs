@@ -37,8 +37,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ContextMenu"/> property.
         /// </summary>
+        [Obsolete("Prefer ContextFlyout")]
         public static readonly StyledProperty<ContextMenu?> ContextMenuProperty =
             AvaloniaProperty.Register<Control, ContextMenu?>(nameof(ContextMenu));
+
+        /// <summary>
+        /// Defines the <see cref="ContextFlyout"/> property
+        /// </summary>
+        public static readonly StyledProperty<FlyoutBase?> ContextFlyoutProperty =
+            AvaloniaProperty.Register<Control, FlyoutBase?>(nameof(ContextFlyout));
 
         /// <summary>
         /// Event raised when an element wishes to be scrolled into view.
@@ -70,10 +77,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a context menu to the control.
         /// </summary>
+        [Obsolete("Prefer ContextFlyout")]
         public ContextMenu? ContextMenu
         {
             get => GetValue(ContextMenuProperty);
             set => SetValue(ContextMenuProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a context flyout to the control
+        /// </summary>
+        public FlyoutBase? ContextFlyout
+        {
+            get => GetValue(ContextFlyoutProperty);
+            set => SetValue(ContextFlyoutProperty, value);
         }
 
         /// <summary>
@@ -93,6 +110,11 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void ISetterValue.Initialize(ISetter setter)
         {
+            if (setter is Setter s && s.Property == ContextFlyoutProperty)
+            {
+                return; // Allow ContextFlyout to not need wrapping in <Template>
+            }
+
             throw new InvalidOperationException(
                 "Cannot use a control as a Setter value. Wrap the control in a <Template>.");
         }

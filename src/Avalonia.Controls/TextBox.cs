@@ -492,7 +492,8 @@ namespace Avalonia.Controls
         {
             base.OnLostFocus(e);
 
-            if (ContextMenu == null || !ContextMenu.IsOpen)
+            if ((ContextFlyout == null || !ContextFlyout.IsOpen) &&
+                (ContextMenu == null || !ContextMenu.IsOpen))
             {
                 ClearSelection();
                 RevealPassword = false;
