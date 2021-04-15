@@ -147,13 +147,13 @@ namespace Avalonia.Win32.Interop.Wpf
         {
             var state = Keyboard.Modifiers;
             var rv = default(RawInputModifiers);
-            if (state.HasFlagCustom(ModifierKeys.Windows))
+            if (state.HasAllFlags(ModifierKeys.Windows))
                 rv |= RawInputModifiers.Meta;
-            if (state.HasFlagCustom(ModifierKeys.Alt))
+            if (state.HasAllFlags(ModifierKeys.Alt))
                 rv |= RawInputModifiers.Alt;
-            if (state.HasFlagCustom(ModifierKeys.Control))
+            if (state.HasAllFlags(ModifierKeys.Control))
                 rv |= RawInputModifiers.Control;
-            if (state.HasFlagCustom(ModifierKeys.Shift))
+            if (state.HasAllFlags(ModifierKeys.Shift))
                 rv |= RawInputModifiers.Shift;
             if (e != null)
             {
