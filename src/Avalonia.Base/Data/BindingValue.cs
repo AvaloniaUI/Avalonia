@@ -108,12 +108,12 @@ namespace Avalonia.Data
         /// Gets a value indicating whether the binding value represents either a binding or data
         /// validation error.
         /// </summary>
-        public bool HasError => Type.HasFlagCustom(BindingValueType.HasError);
+        public bool HasError => Type.HasAllFlags(BindingValueType.HasError);
 
         /// <summary>
         /// Gets a value indicating whether the binding value has a value.
         /// </summary>
-        public bool HasValue => Type.HasFlagCustom(BindingValueType.HasValue);
+        public bool HasValue => Type.HasAllFlags(BindingValueType.HasValue);
 
         /// <summary>
         /// Gets the type of the binding value.
