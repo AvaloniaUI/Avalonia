@@ -321,7 +321,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets a value indicating whether <see cref="SelectionMode.AlwaysSelected"/> is set.
         /// </summary>
-        protected bool AlwaysSelected => SelectionMode.HasFlagCustom(SelectionMode.AlwaysSelected);
+        protected bool AlwaysSelected => SelectionMode.HasAllFlags(SelectionMode.AlwaysSelected);
 
         /// <inheritdoc/>
         public override void BeginInit()
@@ -501,7 +501,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (ItemCount > 0 &&
                     Match(keymap.SelectAll) &&
-                    SelectionMode.HasFlagCustom(SelectionMode.Multiple))
+                    SelectionMode.HasAllFlags(SelectionMode.Multiple))
                 {
                     Selection.SelectAll();
                     e.Handled = true;
@@ -530,7 +530,7 @@ namespace Avalonia.Controls.Primitives
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
                 var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
-                _selection.SingleSelect = !newValue.HasFlagCustom(SelectionMode.Multiple);
+                _selection.SingleSelect = !newValue.HasAllFlags(SelectionMode.Multiple);
             }
         }
 
@@ -591,8 +591,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             var mode = SelectionMode;
-            var multi = mode.HasFlagCustom(SelectionMode.Multiple);
-            var toggle = toggleModifier || mode.HasFlagCustom(SelectionMode.Toggle);
+            var multi = mode.HasAllFlags(SelectionMode.Multiple);
+            var toggle = toggleModifier || mode.HasAllFlags(SelectionMode.Toggle);
             var range = multi && rangeModifier;
 
             if (!select)
@@ -869,7 +869,7 @@ namespace Avalonia.Controls.Primitives
         {
             return new InternalSelectionModel
             {
-                SingleSelect = !SelectionMode.HasFlagCustom(SelectionMode.Multiple),
+                SingleSelect = !SelectionMode.HasAllFlags(SelectionMode.Multiple),
             };
         }
 

@@ -639,23 +639,23 @@ namespace Avalonia.X11
         RawInputModifiers TranslateModifiers(XModifierMask state)
         {
             var rv = default(RawInputModifiers);
-            if (state.HasFlagCustom(XModifierMask.Button1Mask))
+            if (state.HasAllFlags(XModifierMask.Button1Mask))
                 rv |= RawInputModifiers.LeftMouseButton;
-            if (state.HasFlagCustom(XModifierMask.Button2Mask))
+            if (state.HasAllFlags(XModifierMask.Button2Mask))
                 rv |= RawInputModifiers.RightMouseButton;
-            if (state.HasFlagCustom(XModifierMask.Button3Mask))
+            if (state.HasAllFlags(XModifierMask.Button3Mask))
                 rv |= RawInputModifiers.MiddleMouseButton;
-            if (state.HasFlagCustom(XModifierMask.Button4Mask))
+            if (state.HasAllFlags(XModifierMask.Button4Mask))
                 rv |= RawInputModifiers.XButton1MouseButton;
-            if (state.HasFlagCustom(XModifierMask.Button5Mask))
+            if (state.HasAllFlags(XModifierMask.Button5Mask))
                 rv |= RawInputModifiers.XButton2MouseButton;
-            if (state.HasFlagCustom(XModifierMask.ShiftMask))
+            if (state.HasAllFlags(XModifierMask.ShiftMask))
                 rv |= RawInputModifiers.Shift;
-            if (state.HasFlagCustom(XModifierMask.ControlMask))
+            if (state.HasAllFlags(XModifierMask.ControlMask))
                 rv |= RawInputModifiers.Control;
-            if (state.HasFlagCustom(XModifierMask.Mod1Mask))
+            if (state.HasAllFlags(XModifierMask.Mod1Mask))
                 rv |= RawInputModifiers.Alt;
-            if (state.HasFlagCustom(XModifierMask.Mod4Mask))
+            if (state.HasAllFlags(XModifierMask.Mod4Mask))
                 rv |= RawInputModifiers.Meta;
             return rv;
         }
