@@ -632,11 +632,11 @@ namespace Avalonia.Controls
                 double actualLength2 = GetActualLength(definition2);
 
                 // When splitting, Check to see if the total pixels spanned by the definitions 
-                // is the same asbefore starting resize. If not cancel the drag
+                // is the same as before starting resize. If not cancel the drag.
                 if (_resizeData.SplitBehavior == SplitBehavior.Split &&
                     !MathUtilities.AreClose(
                         actualLength1 + actualLength2,
-                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength))
+                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength, LayoutHelper.LayoutEpsilon))
                 {
                     CancelResize();
 
