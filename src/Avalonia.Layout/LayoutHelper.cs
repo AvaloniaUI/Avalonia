@@ -13,7 +13,7 @@ namespace Avalonia.Layout
         /// Epsilon value used for certain layout calculations.
         /// Based on the value in WPF LayoutDoubleUtil.
         /// </summary>
-        public const double LayoutEpsilon = 0.00000153;
+        public static double LayoutEpsilon { get; } = 0.00000153;
 
         /// <summary>
         /// Calculates a control's size based on its <see cref="ILayoutable.Width"/>,
