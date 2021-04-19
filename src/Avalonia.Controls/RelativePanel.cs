@@ -55,7 +55,10 @@ namespace Avalonia.Controls
             _childGraph.Measure(availableSize);
 
             _childGraph.Reset(false);
-            var boundingSize = _childGraph.GetBoundingSize(Width.IsNaN(), Height.IsNaN());
+            var calcWidth = Width.IsNaN() && HorizontalAlignment != HorizontalAlignment.Stretch;
+            var calcHeight = Height.IsNaN() && VerticalAlignment != VerticalAlignment.Stretch;
+
+            var boundingSize = _childGraph.GetBoundingSize(calcWidth, calcHeight);
             _childGraph.Reset();
             _childGraph.Measure(boundingSize);
             return boundingSize;
