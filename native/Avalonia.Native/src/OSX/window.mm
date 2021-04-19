@@ -1936,6 +1936,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         
         [NSApp setMenu:_menu];
     }
+    else
+    {
+        [self showAppMenuOnly];
+    }
 }
 
 -(void) showAppMenuOnly
