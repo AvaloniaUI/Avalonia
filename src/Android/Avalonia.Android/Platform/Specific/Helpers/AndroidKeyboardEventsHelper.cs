@@ -1,12 +1,7 @@
 using System;
-using System.ComponentModel;
-using Android.Content;
-using Android.Runtime;
 using Android.Views;
-using Android.Views.InputMethods;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 
@@ -14,14 +9,13 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 {
     internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView
     {
-        private TView _view;
-        private IInputElement _lastFocusedElement;
+        private readonly TView _view;
 
         public bool HandleEvents { get; set; }
 
         public AndroidKeyboardEventsHelper(TView view)
         {
-            this._view = view;
+            _view = view;
             HandleEvents = true;
         }
 
@@ -36,9 +30,20 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return DispatchKeyEventInternal(e, out callBase);
         }
 
+        string? UnicodeTextInput(KeyEvent keyEvent)
+        {
+            return keyEvent.Action == KeyEventActions.Multiple
+                && keyEvent.RepeatCount == 0
+                && !string.IsNullOrEmpty(keyEvent?.Characters)
+                ? keyEvent.Characters
+                : null;
+        }
+
         private bool? DispatchKeyEventInternal(KeyEvent e, out bool callBase)
         {
-            if (e.Action == KeyEventActions.Multiple)
+            var unicodeTextInput = UnicodeTextInput(e);
+
+            if (e.Action == KeyEventActions.Multiple && unicodeTextInput == null)
             {
                 callBase = true;
                 return null;
@@ -53,13 +58,14 @@ namespace Avalonia.Android.Platform.Specific.Helpers
 
             _view.Input(rawKeyEvent);
 
-            if (e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
+            if ((e.Action == KeyEventActions.Down && e.UnicodeChar >= 32)
+                || unicodeTextInput != null)
             {
                 var rawTextEvent = new RawTextInputEventArgs(
                   AndroidKeyboardDevice.Instance,
                   Convert.ToUInt32(e.EventTime),
                   _view.InputRoot,
-                  Convert.ToChar(e.UnicodeChar).ToString()
+                  unicodeTextInput ?? Convert.ToChar(e.UnicodeChar).ToString()
                   );
                 _view.Input(rawTextEvent);
             }
@@ -83,61 +89,6 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             if (e.IsShiftPressed) rv |= RawInputModifiers.Shift;
 
             return rv;
-        }
-
-        private bool NeedsKeyboard(IInputElement element)
-        {
-            //may be some other elements
-            return element is TextBox;
-        }
-
-        private void TryShowHideKeyboard(IInputElement element, bool value)
-        {
-            var input = _view.View.Context.GetSystemService(Context.InputMethodService).JavaCast<InputMethodManager>();
-
-            if (value)
-            {
-                //show keyboard
-                //may be in the future different keyboards support e.g. normal, only digits etc.
-                //Android.Text.InputTypes
-                input.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.ImplicitOnly);
-            }
-            else
-            {
-                //hide keyboard
-                input.HideSoftInputFromWindow(_view.View.WindowToken, HideSoftInputFlags.None);
-            }
-        }
-
-        public void UpdateKeyboardState(IInputElement element)
-        {
-            var focusedElement = element;
-            bool oldValue = NeedsKeyboard(_lastFocusedElement);
-            bool newValue = NeedsKeyboard(focusedElement);
-
-            if (newValue != oldValue || newValue)
-            {
-                TryShowHideKeyboard(focusedElement, newValue);
-            }
-
-            _lastFocusedElement = element;
-        }
-
-        public void ActivateAutoShowKeyboard()
-        {
-            var kbDevice = (KeyboardDevice.Instance as INotifyPropertyChanged);
-
-            //just in case we've called more than once the method
-            kbDevice.PropertyChanged -= KeyboardDevice_PropertyChanged;
-            kbDevice.PropertyChanged += KeyboardDevice_PropertyChanged;
-        }
-
-        private void KeyboardDevice_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(KeyboardDevice.FocusedElement))
-            {
-                UpdateKeyboardState(KeyboardDevice.Instance.FocusedElement);
-            }
         }
 
         public void Dispose()

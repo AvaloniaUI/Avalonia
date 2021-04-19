@@ -96,6 +96,7 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
             CommandProperty.Changed.Subscribe(CommandChanged);
+            CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
             IsCancelProperty.Changed.Subscribe(IsCancelChanged);
         }
@@ -414,6 +415,18 @@ namespace Avalonia.Controls
                     }
                 }
 
+                button.CanExecuteChanged(button, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="CommandParameter"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandParameterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Button button)
+            {
                 button.CanExecuteChanged(button, EventArgs.Empty);
             }
         }
