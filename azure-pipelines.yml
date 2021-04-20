@@ -1,6 +1,6 @@
 variables:
-  versionDotNetSdk: 5.0.102
-  versionNukeGlobalTool: 5.0.2
+  versionDotNetSdk: 5.0.201
+  versionNukeGlobalTool: 5.1.0
 
 jobs:
 
