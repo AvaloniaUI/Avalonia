@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Reactive
 {
@@ -55,9 +56,9 @@ namespace Avalonia.Reactive
                     newValue = (T)e.Sender.GetValue(e.Property);
                 }
 
-                if (!Equals(newValue, _value))
+                if (!EqualityComparer<T>.Default.Equals(newValue, _value))
                 {
-                    _value = (T)newValue;
+                    _value = newValue;
                     PublishNext(_value);
                 }
             }

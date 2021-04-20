@@ -13,8 +13,9 @@ namespace Avalonia.Controls.Selection
     internal class InternalSelectionModel : SelectionModel<object?>
     {
         private IList? _writableSelectedItems;
-        private bool _ignoreModelChanges;
+        private int _ignoreModelChanges;
         private bool _ignoreSelectedItemsChanges;
+        private bool _isResetting;
 
         public InternalSelectionModel()
         {
@@ -130,17 +131,31 @@ namespace Avalonia.Controls.Selection
 
             try
             {
-                _ignoreModelChanges = true;
+                ++_ignoreModelChanges;
 
                 using (BatchUpdate())
                 {
                     Clear();
-                    Add(_writableSelectedItems);
+
+                    for (var i = 0; i < _writableSelectedItems.Count; ++i)
+                    {
+                        var index = IndexOf(Source, _writableSelectedItems[i]);
+
+                        if (index != -1)
+                        {
+                            Select(index);
+                        }
+                        else
+                        {
+                            _writableSelectedItems.RemoveAt(i);
+                            --i;
+                        }
+                    }
                 }
             }
             finally
             {
-                _ignoreModelChanges = false;
+                --_ignoreModelChanges;
             }
         }
 
@@ -162,7 +177,7 @@ namespace Avalonia.Controls.Selection
 
         private void OnSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
         {
-            if (_ignoreModelChanges)
+            if (_ignoreModelChanges > 0)
             {
                 return;
             }
@@ -188,6 +203,27 @@ namespace Avalonia.Controls.Selection
             finally
             {
                 _ignoreSelectedItemsChanges = false;
+            }
+        }
+
+        private protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                ++_ignoreModelChanges;
+                _isResetting = true;
+            }
+
+            base.OnSourceCollectionChanged(e);
+        }
+
+        protected override void OnSourceCollectionChangeFinished()
+        {
+            base.OnSourceCollectionChangeFinished();
+
+            if (_isResetting)
+            {
+                --_ignoreModelChanges;
             }
         }
 
@@ -222,7 +258,7 @@ namespace Avalonia.Controls.Selection
             {
                 using var operation = BatchUpdate();
 
-                _ignoreModelChanges = true;
+                ++_ignoreModelChanges;
 
                 switch (e.Action)
                 {
@@ -244,7 +280,7 @@ namespace Avalonia.Controls.Selection
             }
             finally
             {
-                _ignoreModelChanges = false;
+                --_ignoreModelChanges;
             }
         }
 

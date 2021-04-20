@@ -88,10 +88,6 @@ partial class Build : NukeBuild
             Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
         }
         ExecWait("dotnet version:", "dotnet", "--version");
-        if (Parameters.IsRunningOnUnix)
-            ExecWait("Mono version:", "mono", "--version");
-
-
     }
 
     IReadOnlyCollection<Output> MsBuildCommon(
@@ -268,14 +264,19 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             var data = Parameters;
+            var pathToProjectSource = RootDirectory / "samples" / "ControlCatalog.NetCore";
+            var pathToPublish = pathToProjectSource / "bin" / data.Configuration / "publish";
+
+            DotNetPublish(c => c
+                .SetProject(pathToProjectSource / "ControlCatalog.NetCore.csproj")
+                .EnableNoBuild()
+                .SetConfiguration(data.Configuration)
+                .AddProperty("PackageVersion", data.Version)
+                .AddProperty("PublishDir", pathToPublish));
+
             Zip(data.ZipCoreArtifacts, data.BinRoot);
             Zip(data.ZipNuGetArtifacts, data.NugetRoot);
-            Zip(data.ZipTargetControlCatalogDesktopDir,
-                GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.dll").Concat(
-                    GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.config")).Concat(
-                    GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.so")).Concat(
-                    GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.dylib")).Concat(
-                    GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.exe")));
+            Zip(data.ZipTargetControlCatalogNetCoreDir, pathToPublish);
         });
 
     Target CreateIntermediateNugetPackages => _ => _

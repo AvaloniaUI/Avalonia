@@ -59,4 +59,6 @@
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/SplitView.xaml"/>
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/DatePicker.xaml"/>  
   <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/TimePicker.xaml"/>  
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FlyoutPresenter.xaml"/>
+  <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/MenuFlyoutPresenter.xaml"/>
 </Styles>
