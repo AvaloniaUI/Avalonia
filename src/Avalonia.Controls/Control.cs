@@ -37,7 +37,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ContextMenu"/> property.
         /// </summary>
-        [Obsolete("Prefer ContextFlyout")]
         public static readonly StyledProperty<ContextMenu?> ContextMenuProperty =
             AvaloniaProperty.Register<Control, ContextMenu?>(nameof(ContextMenu));
 
@@ -77,7 +76,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a context menu to the control.
         /// </summary>
-        [Obsolete("Prefer ContextFlyout")]
         public ContextMenu? ContextMenu
         {
             get => GetValue(ContextMenuProperty);
