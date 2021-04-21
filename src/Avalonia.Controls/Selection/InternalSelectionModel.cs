@@ -80,10 +80,12 @@ namespace Avalonia.Controls.Selection
             try
             {
                 _ignoreSelectedItemsChanges = true;
+                ++_ignoreModelChanges;
                 base.SetSource(value);
             }
             finally
             {
+                --_ignoreModelChanges;
                 _ignoreSelectedItemsChanges = false;
             }
 
@@ -93,17 +95,14 @@ namespace Avalonia.Controls.Selection
             }
             else
             {
-                foreach (var i in oldSelection)
-                {
-                    var index = ItemsView!.IndexOf(i);
-                    Select(index);
-                }
+                SyncFromSelectedItems();
             }
         }
 
         private void SyncToSelectedItems()
         {
-            if (_writableSelectedItems is object)
+            if (_writableSelectedItems is object &&
+                !SequenceEqual(_writableSelectedItems, base.SelectedItems))
             {
                 try
                 {
@@ -309,6 +308,28 @@ namespace Avalonia.Controls.Selection
             }
 
             return -1;
+        }
+
+        private static bool SequenceEqual(IList first, IReadOnlyList<object?> second)
+        {
+            if (first is IEnumerable<object?> e)
+            {
+                return e.SequenceEqual(second);
+            }
+
+            var comparer = EqualityComparer<object?>.Default;
+            var e1 = first.GetEnumerator();
+            using var e2 = second.GetEnumerator();
+
+            while (e1.MoveNext())
+            {
+                if (!(e2.MoveNext() && comparer.Equals(e1.Current, e2.Current)))
+                {
+                    return false;
+                }
+            }
+
+            return !e2.MoveNext();
         }
     }
 }
