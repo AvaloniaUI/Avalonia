@@ -223,6 +223,7 @@ namespace Avalonia.Controls.Selection
             if (_isResetting)
             {
                 --_ignoreModelChanges;
+                _isResetting = false;
             }
         }
 
