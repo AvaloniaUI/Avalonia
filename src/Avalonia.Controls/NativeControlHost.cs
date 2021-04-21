@@ -120,7 +120,7 @@ namespace Avalonia.Controls
         private Rect? GetAbsoluteBounds()
         {
             var bounds = Bounds;
-            var position = this.TranslatePoint(bounds.Position, _currentRoot);
+            var position = this.TranslatePoint(default, _currentRoot);
             if (position == null)
                 return null;
             return new Rect(position.Value, bounds.Size);
