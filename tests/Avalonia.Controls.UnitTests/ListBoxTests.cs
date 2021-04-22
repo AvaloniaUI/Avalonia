@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Collections;
@@ -455,6 +456,33 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(panel.Children[0].Bounds.Top >= 0 && panel.Children[0].Bounds.Bottom <= panel.Bounds.Height, "first item is not completelly visible!");
                 Assert.True(panel.Children[1].Bounds.Top >= 0 && panel.Children[1].Bounds.Bottom <= panel.Bounds.Height, "second item is not completelly visible!");
             }
+        }
+
+        [Fact]
+        public void Initial_Binding_Of_SelectedItems_Should_Not_Cause_Write_To_SelectedItems()
+        {
+            var target = new ListBox
+            {
+                [!ListBox.ItemsProperty] = new Binding("Items"),
+                [!ListBox.SelectedItemsProperty] = new Binding("SelectedItems"),
+            };
+
+            var viewModel = new
+            {
+                Items = new[] { "Foo", "Bar", "Baz " },
+                SelectedItems = new ObservableCollection<string> { "Bar" },
+            };
+
+            var raised = 0;
+
+            viewModel.SelectedItems.CollectionChanged += (s, e) => ++raised;
+
+            target.DataContext = viewModel;
+
+            Assert.Equal(0, raised);
+            Assert.Equal(new[] { "Bar" }, viewModel.SelectedItems);
+            Assert.Equal(new[] { "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "Bar" }, target.Selection.SelectedItems);
         }
 
         private FuncControlTemplate ListBoxTemplate()

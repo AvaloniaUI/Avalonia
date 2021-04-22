@@ -120,7 +120,7 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
             AvaloniaProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>(
                 nameof(HorizontalScrollBarVisibility),
-                ScrollBarVisibility.Hidden);
+                ScrollBarVisibility.Disabled);
 
         /// <summary>
         /// Defines the VerticalScrollBarMaximum property.

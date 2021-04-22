@@ -37,7 +37,7 @@ namespace Avalonia.Controls.UnitTests
             target.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
             target.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
 
-            Assert.Equal(new[] { true, false, true }, values);
+            Assert.Equal(new[] { false, true }, values);
         }
 
         [Fact]
