@@ -136,9 +136,8 @@ namespace Avalonia.Platform
         /// Creates a platform implementation of a glyph run.
         /// </summary>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="width">The glyph run's width.</param>
         /// <returns></returns>
-        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width);
+        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun);
 
         bool SupportsIndividualRoundRects { get; }
 
