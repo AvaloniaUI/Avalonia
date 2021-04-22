@@ -1,11 +1,15 @@
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -454,6 +458,33 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Initial_Binding_Of_SelectedItems_Should_Not_Cause_Write_To_SelectedItems()
+        {
+            var target = new ListBox
+            {
+                [!ListBox.ItemsProperty] = new Binding("Items"),
+                [!ListBox.SelectedItemsProperty] = new Binding("SelectedItems"),
+            };
+
+            var viewModel = new
+            {
+                Items = new[] { "Foo", "Bar", "Baz " },
+                SelectedItems = new ObservableCollection<string> { "Bar" },
+            };
+
+            var raised = 0;
+
+            viewModel.SelectedItems.CollectionChanged += (s, e) => ++raised;
+
+            target.DataContext = viewModel;
+
+            Assert.Equal(0, raised);
+            Assert.Equal(new[] { "Bar" }, viewModel.SelectedItems);
+            Assert.Equal(new[] { "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "Bar" }, target.Selection.SelectedItems);
+        }
+
         private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>
@@ -558,6 +589,29 @@ namespace Avalonia.Controls.UnitTests
             }
 
             public string Value { get; }
+        }
+
+
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = new[] { "Foo" },
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+                SelectionMode = SelectionMode.AlwaysSelected,
+                VirtualizationMode = ItemVirtualizationMode.None
+            };
+
+            Prepare(target);
+            
+            var exception = new System.InvalidCastException("failed validation");
+            var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+            target.Bind(ComboBox.SelectedItemProperty, textObservable);
+                
+            Assert.True(DataValidationErrors.GetHasErrors(target));
+            Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }
     }
 }

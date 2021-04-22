@@ -637,7 +637,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool MeasureOverrideInProgress
         {
-            get { return (CheckFlagsAnd(Flags.MeasureOverrideInProgress)); }
+            get { return CheckFlags(Flags.MeasureOverrideInProgress); }
             set { SetFlags(value, Flags.MeasureOverrideInProgress); }
         }
 
@@ -646,7 +646,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool ArrangeOverrideInProgress
         {
-            get { return (CheckFlagsAnd(Flags.ArrangeOverrideInProgress)); }
+            get { return CheckFlags(Flags.ArrangeOverrideInProgress); }
             set { SetFlags(value, Flags.ArrangeOverrideInProgress); }
         }
 
@@ -2350,25 +2350,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// CheckFlagsAnd returns <c>true</c> if all the flags in the
+        /// CheckFlags returns <c>true</c> if all the flags in the
         /// given bitmask are set on the object.
         /// </summary>
-        private bool CheckFlagsAnd(Flags flags)
+        private bool CheckFlags(Flags flags)
         {
-            return ((_flags & flags) == flags);
-        }
-
-        /// <summary>
-        /// CheckFlagsOr returns <c>true</c> if at least one flag in the
-        /// given bitmask is set.
-        /// </summary>
-        /// <remarks>
-        /// If no bits are set in the given bitmask, the method returns
-        /// <c>true</c>.
-        /// </remarks>
-        private bool CheckFlagsOr(Flags flags)
-        {
-            return (flags == 0 || (_flags & flags) != 0);
+            return _flags.HasAllFlags(flags);
         }
 
         private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
@@ -2535,7 +2522,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool CellsStructureDirty
         {
-            get { return (!CheckFlagsAnd(Flags.ValidCellsStructure)); }
+            get { return !CheckFlags(Flags.ValidCellsStructure); }
             set { SetFlags(!value, Flags.ValidCellsStructure); }
         }
 
@@ -2544,7 +2531,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool ListenToNotifications
         {
-            get { return (CheckFlagsAnd(Flags.ListenToNotifications)); }
+            get { return CheckFlags(Flags.ListenToNotifications); }
             set { SetFlags(value, Flags.ListenToNotifications); }
         }
 
@@ -2553,7 +2540,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SizeToContentU
         {
-            get { return (CheckFlagsAnd(Flags.SizeToContentU)); }
+            get { return CheckFlags(Flags.SizeToContentU); }
             set { SetFlags(value, Flags.SizeToContentU); }
         }
 
@@ -2562,7 +2549,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SizeToContentV
         {
-            get { return (CheckFlagsAnd(Flags.SizeToContentV)); }
+            get { return CheckFlags(Flags.SizeToContentV); }
             set { SetFlags(value, Flags.SizeToContentV); }
         }
 
@@ -2571,7 +2558,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasStarCellsU
         {
-            get { return (CheckFlagsAnd(Flags.HasStarCellsU)); }
+            get { return CheckFlags(Flags.HasStarCellsU); }
             set { SetFlags(value, Flags.HasStarCellsU); }
         }
 
@@ -2580,7 +2567,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasStarCellsV
         {
-            get { return (CheckFlagsAnd(Flags.HasStarCellsV)); }
+            get { return CheckFlags(Flags.HasStarCellsV); }
             set { SetFlags(value, Flags.HasStarCellsV); }
         }
 
@@ -2589,7 +2576,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasGroup3CellsInAutoRows
         {
-            get { return (CheckFlagsAnd(Flags.HasGroup3CellsInAutoRows)); }
+            get { return CheckFlags(Flags.HasGroup3CellsInAutoRows); }
             set { SetFlags(value, Flags.HasGroup3CellsInAutoRows); }
         }
 
@@ -2803,10 +2790,10 @@ namespace Avalonia.Controls
             internal LayoutTimeSizeType SizeTypeU;
             internal LayoutTimeSizeType SizeTypeV;
             internal int Next;
-            internal bool IsStarU { get { return ((SizeTypeU & LayoutTimeSizeType.Star) != 0); } }
-            internal bool IsAutoU { get { return ((SizeTypeU & LayoutTimeSizeType.Auto) != 0); } }
-            internal bool IsStarV { get { return ((SizeTypeV & LayoutTimeSizeType.Star) != 0); } }
-            internal bool IsAutoV { get { return ((SizeTypeV & LayoutTimeSizeType.Auto) != 0); } }
+            internal bool IsStarU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Auto);
+            internal bool IsStarV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Auto);
         }
 
         /// <summary>

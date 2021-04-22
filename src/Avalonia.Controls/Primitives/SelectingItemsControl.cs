@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives
                 nameof(SelectedItem),
                 o => o.SelectedItem,
                 (o, v) => o.SelectedItem = v,
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
@@ -321,7 +321,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets a value indicating whether <see cref="SelectionMode.AlwaysSelected"/> is set.
         /// </summary>
-        protected bool AlwaysSelected => (SelectionMode & SelectionMode.AlwaysSelected) != 0;
+        protected bool AlwaysSelected => SelectionMode.HasAllFlags(SelectionMode.AlwaysSelected);
 
         /// <inheritdoc/>
         public override void BeginInit()
@@ -466,6 +466,20 @@ namespace Avalonia.Controls.Primitives
             EndUpdating();
         }
 
+        /// <summary>
+        /// Called to update the validation state for properties for which data validation is
+        /// enabled.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The new binding value for the property.</param>
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            if (property == SelectedItemProperty)
+            {
+                DataValidationErrors.SetError(this, value.Error);
+            }
+        }
+        
         protected override void OnInitialized()
         {
             base.OnInitialized();
@@ -487,7 +501,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (ItemCount > 0 &&
                     Match(keymap.SelectAll) &&
-                    SelectionMode.HasFlag(SelectionMode.Multiple))
+                    SelectionMode.HasAllFlags(SelectionMode.Multiple))
                 {
                     Selection.SelectAll();
                     e.Handled = true;
@@ -516,7 +530,7 @@ namespace Avalonia.Controls.Primitives
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
                 var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
-                _selection.SingleSelect = !newValue.HasFlagCustom(SelectionMode.Multiple);
+                _selection.SingleSelect = !newValue.HasAllFlags(SelectionMode.Multiple);
             }
         }
 
@@ -577,8 +591,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             var mode = SelectionMode;
-            var multi = (mode & SelectionMode.Multiple) != 0;
-            var toggle = (toggleModifier || (mode & SelectionMode.Toggle) != 0);
+            var multi = mode.HasAllFlags(SelectionMode.Multiple);
+            var toggle = toggleModifier || mode.HasAllFlags(SelectionMode.Toggle);
             var range = multi && rangeModifier;
 
             if (!select)
@@ -707,7 +721,7 @@ namespace Avalonia.Controls.Primitives
                 _oldSelectedItem = SelectedItem;
             }
             else if (e.PropertyName == nameof(InternalSelectionModel.WritableSelectedItems) &&
-                _oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
+                     _oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
             {
                 RaisePropertyChanged(
                     SelectedItemsProperty,
@@ -855,7 +869,7 @@ namespace Avalonia.Controls.Primitives
         {
             return new InternalSelectionModel
             {
-                SingleSelect = !SelectionMode.HasFlagCustom(SelectionMode.Multiple),
+                SingleSelect = !SelectionMode.HasAllFlags(SelectionMode.Multiple),
             };
         }
 
@@ -977,7 +991,7 @@ namespace Avalonia.Controls.Primitives
             public Optional<ISelectionModel> Selection { get; set; }
             public Optional<IList?> SelectedItems { get; set; }
 
-            public Optional<int> SelectedIndex 
+            public Optional<int> SelectedIndex
             {
                 get => _selectedIndex;
                 set
@@ -996,6 +1010,6 @@ namespace Avalonia.Controls.Primitives
                     _selectedIndex = default;
                 }
             }
-       }
+        }
     }
 }

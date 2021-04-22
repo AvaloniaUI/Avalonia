@@ -74,7 +74,7 @@ namespace Avalonia.iOS
 
             public PixelPoint PointToScreen(Point point) => new PixelPoint((int) point.X, (int) point.Y);
 
-            public void SetCursor(IPlatformHandle cursor)
+            public void SetCursor(ICursorImpl _)
             {
                 // no-op
             }

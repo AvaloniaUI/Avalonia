@@ -50,6 +50,12 @@ namespace Avalonia.Controls
             ScrollBar.OrientationProperty.AddOwner<Slider>();
 
         /// <summary>
+        /// Defines the <see cref="IsDirectionReversed"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsDirectionReversedProperty =
+            Track.IsDirectionReversedProperty.AddOwner<Slider>();
+
+        /// <summary>
         /// Defines the <see cref="IsSnapToTickEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsSnapToTickEnabledProperty =
@@ -83,7 +89,6 @@ namespace Avalonia.Controls
         private IDisposable _increaseButtonSubscription;
         private IDisposable _increaseButtonReleaseDispose;
         private IDisposable _pointerMovedDispose;
-        private IDisposable _trackOnKeyDownDispose;
 
         private const double Tolerance = 0.0001;
 
@@ -93,6 +98,7 @@ namespace Avalonia.Controls
         static Slider()
         {
             PressedMixin.Attach<Slider>();
+            FocusableProperty.OverrideDefaultValue<Slider>(true);
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragStarted(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>((x, e) => x.OnThumbDragCompleted(e),
@@ -125,6 +131,19 @@ namespace Avalonia.Controls
         {
             get { return GetValue(OrientationProperty); }
             set { SetValue(OrientationProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the direction of increasing value.
+        /// </summary>
+        /// <value>
+        /// true if the direction of increasing value is to the left for a horizontal slider or
+        /// down for a vertical slider; otherwise, false. The default is false.
+        /// </value>
+        public bool IsDirectionReversed
+        {
+            get { return GetValue(IsDirectionReversedProperty); }
+            set { SetValue(IsDirectionReversedProperty, value); }
         }
 
         /// <summary>
@@ -165,7 +184,6 @@ namespace Avalonia.Controls
             _increaseButtonSubscription?.Dispose();
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
-            _trackOnKeyDownDispose?.Dispose();
             
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
@@ -174,7 +192,6 @@ namespace Avalonia.Controls
             if (_track != null)
             {
                 _track.IsThumbDragHandled = true;
-                _trackOnKeyDownDispose = _track.AddDisposableHandler(KeyDownEvent, TrackOnKeyDown);
             }
 
             if (_decreaseButton != null)
@@ -192,26 +209,32 @@ namespace Avalonia.Controls
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
         }
 
-        private void TrackOnKeyDown(object sender, KeyEventArgs e)
+        protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.KeyModifiers != KeyModifiers.None) return;
+            base.OnKeyDown(e);
+
+            if (e.Handled || e.KeyModifiers != KeyModifiers.None) return;
+
+            var handled = true;
 
             switch (e.Key)
             {
+                case Key.Down:
                 case Key.Left:
-                    MoveToNextTick(-SmallChange);
+                    MoveToNextTick(IsDirectionReversed ? SmallChange : -SmallChange);
                     break;
 
+                case Key.Up:
                 case Key.Right:
-                    MoveToNextTick(SmallChange);
+                    MoveToNextTick(IsDirectionReversed ? -SmallChange : SmallChange);
                     break;
 
                 case Key.PageUp:
-                    MoveToNextTick(-LargeChange);
+                    MoveToNextTick(IsDirectionReversed ? -LargeChange : LargeChange);
                     break;
 
                 case Key.PageDown:
-                    MoveToNextTick(LargeChange);
+                    MoveToNextTick(IsDirectionReversed ? LargeChange : -LargeChange);
                     break;
 
                 case Key.Home:
@@ -221,7 +244,13 @@ namespace Avalonia.Controls
                 case Key.End:
                     Value = Maximum;
                     break;
+
+                default:
+                    handled = false;
+                    break;
             }
+
+            e.Handled = handled;
         }
             
         private void MoveToNextTick(double direction)
@@ -312,7 +341,9 @@ namespace Avalonia.Controls
 
             var pointNum = orient ? x.Position.X : x.Position.Y;
             var logicalPos = MathUtilities.Clamp(pointNum / pointDen, 0.0d, 1.0d);
-            var invert = orient ? 0 : 1;
+            var invert = orient ? 
+                IsDirectionReversed ? 1 : 0 :
+                IsDirectionReversed ? 0 : 1;
             var calcVal = Math.Abs(invert - logicalPos);
             var range = Maximum - Minimum;
             var finalValue = calcVal * range + Minimum;

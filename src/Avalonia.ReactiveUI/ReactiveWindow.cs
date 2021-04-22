@@ -17,8 +17,8 @@ namespace Avalonia.ReactiveUI
     /// <typeparam name="TViewModel">ViewModel type.</typeparam>
     public class ReactiveWindow<TViewModel> : Window, IViewFor<TViewModel> where TViewModel : class
     {
-        public static readonly StyledProperty<TViewModel> ViewModelProperty = AvaloniaProperty
-            .Register<ReactiveWindow<TViewModel>, TViewModel>(nameof(ViewModel));
+        public static readonly StyledProperty<TViewModel?> ViewModelProperty = AvaloniaProperty
+            .Register<ReactiveWindow<TViewModel>, TViewModel?>(nameof(ViewModel));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReactiveWindow{TViewModel}"/> class.
@@ -35,19 +35,19 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// The ViewModel.
         /// </summary>
-        public TViewModel ViewModel
+        public TViewModel? ViewModel
         {
             get => GetValue(ViewModelProperty);
             set => SetValue(ViewModelProperty, value);
         }
 
-        object IViewFor.ViewModel
+        object? IViewFor.ViewModel
         {
             get => ViewModel;
-            set => ViewModel = (TViewModel)value;
+            set => ViewModel = (TViewModel?)value;
         }
 
-        private void OnDataContextChanged(object value)
+        private void OnDataContextChanged(object? value)
         {
             if (value is TViewModel viewModel)
             {
@@ -59,7 +59,7 @@ namespace Avalonia.ReactiveUI
             }
         }
 
-        private void OnViewModelChanged(object value)
+        private void OnViewModelChanged(object? value)
         {
             if (value == null)
             {
