@@ -14,6 +14,7 @@
         /// Draws the <see cref="DrawableTextRun"/> at the given origin.
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
-        public abstract void Draw(DrawingContext drawingContext);
+        /// <param name="origin">The origin.</param>
+        public abstract void Draw(DrawingContext drawingContext, Point origin);
     }
 }
