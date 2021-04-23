@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Win32.WinRT;
 
 namespace Avalonia.Win32
 {
@@ -11,24 +10,14 @@ namespace Avalonia.Win32
     {
         public Color? GetSystemAccentColor()
         {
-            if (Win32Platform.WindowsVersion.Major < 10)
+            if (Win32Platform.WindowsVersion >= new Version(10, 0, 10586))
             {
-                return null;
+                var settings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
+                var color = settings.GetColorValue(UIColorType.Accent);
+                return new Color(color.A, color.R, color.G, color.B);
             }
-            else
-            {
-                return GetAccentColorWin("ImmersiveSystemAccent");
-            }
-        }
 
-        private static Color GetAccentColorWin(string name)
-        {
-            var colorSet = Interop.UnmanagedMethods.GetImmersiveUserColorSetPreference(false, false);
-            var colorType = Interop.UnmanagedMethods.GetImmersiveColorTypeFromName(name);
-            var rawColor = Interop.UnmanagedMethods.GetImmersiveColorFromColorSetEx(colorSet, colorType, false, 0);
-
-            var bytes = BitConverter.GetBytes(rawColor);
-            return Color.FromArgb(bytes[3], bytes[0], bytes[1], bytes[2]);
+            return null;
         }
     }
 }
