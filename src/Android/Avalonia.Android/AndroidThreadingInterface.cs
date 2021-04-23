@@ -1,25 +1,26 @@
 using System;
 using System.Reactive.Disposables;
 using System.Threading;
+
 using Android.OS;
+
 using Avalonia.Platform;
 using Avalonia.Threading;
 
+using App = Android.App.Application;
+
 namespace Avalonia.Android
 {
-    class AndroidThreadingInterface : IPlatformThreadingInterface
+    internal sealed class AndroidThreadingInterface : IPlatformThreadingInterface
     {
         private Handler _handler;
 
         public AndroidThreadingInterface()
         {
-            _handler = new Handler(global::Android.App.Application.Context.MainLooper);
+            _handler = new Handler(App.Context.MainLooper);
         }
 
-        public void RunLoop(CancellationToken cancellationToken)
-        {
-            return;
-        }
+        public void RunLoop(CancellationToken cancellationToken) => throw new NotSupportedException();
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
@@ -57,7 +58,7 @@ namespace Avalonia.Android
                     });
                 }
             }, null, TimeSpan.Zero, interval);
-            
+
             return Disposable.Create(() =>
             {
                 lock (l)

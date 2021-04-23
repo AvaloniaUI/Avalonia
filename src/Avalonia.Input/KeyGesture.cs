@@ -115,24 +115,24 @@ namespace Avalonia.Input
                 }
             }
 
-            if (KeyModifiers.HasFlagCustom(KeyModifiers.Control))
+            if (KeyModifiers.HasAllFlags(KeyModifiers.Control))
             {
                 s.Append("Ctrl");
             }
 
-            if (KeyModifiers.HasFlagCustom(KeyModifiers.Shift))
+            if (KeyModifiers.HasAllFlags(KeyModifiers.Shift))
             {
                 Plus(s);
                 s.Append("Shift");
             }
 
-            if (KeyModifiers.HasFlagCustom(KeyModifiers.Alt))
+            if (KeyModifiers.HasAllFlags(KeyModifiers.Alt))
             {
                 Plus(s);
                 s.Append("Alt");
             }
 
-            if (KeyModifiers.HasFlagCustom(KeyModifiers.Meta))
+            if (KeyModifiers.HasAllFlags(KeyModifiers.Meta))
             {
                 Plus(s);
                 s.Append("Cmd");

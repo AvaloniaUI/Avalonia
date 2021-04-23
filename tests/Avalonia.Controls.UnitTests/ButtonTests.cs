@@ -269,6 +269,19 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, command.SubscriptionCount);
         }
 
+        [Fact]
+        public void Button_Invokes_CanExecute_When_CommandParameter_Changed()
+        {
+            var command = new TestCommand(p => p is bool value && value);
+            var target = new Button { Command = command };
+
+            target.CommandParameter = true;
+            Assert.True(target.IsEffectivelyEnabled);
+
+            target.CommandParameter = false;
+            Assert.False(target.IsEffectivelyEnabled);
+        }
+
         private class TestButton : Button, IRenderRoot
         {
             public TestButton()
@@ -324,12 +337,22 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestCommand : ICommand
         {
+            private readonly Func<object, bool> _canExecute;
+            private readonly Action<object> _execute;
             private EventHandler _canExecuteChanged;
-            private bool _enabled;
+            private bool _enabled = true;
 
-            public TestCommand(bool enabled)
+            public TestCommand(bool enabled = true)
             {
                 _enabled = enabled;
+                _canExecute = _ => _enabled;
+                _execute = _ => { };
+            }
+
+            public TestCommand(Func<object, bool> canExecute, Action<object> execute = null)
+            {
+                _canExecute = canExecute;
+                _execute = execute ?? (_ => { });
             }
 
             public bool IsEnabled
@@ -353,11 +376,9 @@ namespace Avalonia.Controls.UnitTests
                 remove { _canExecuteChanged -= value; --SubscriptionCount; }
             }
 
-            public bool CanExecute(object parameter) => _enabled;
+            public bool CanExecute(object parameter) => _canExecute(parameter);
 
-            public void Execute(object parameter)
-            {
-            }
+            public void Execute(object parameter) => _execute(parameter);
         }
     }
 }

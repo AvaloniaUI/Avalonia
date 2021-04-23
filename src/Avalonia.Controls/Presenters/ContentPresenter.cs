@@ -379,7 +379,7 @@ namespace Avalonia.Controls.Presenters
             var useLayoutRounding = UseLayoutRounding;
             var availableSize = finalSize;
             var sizeForChild = availableSize;
-            var scale = GetLayoutScale();
+            var scale = LayoutHelper.GetLayoutScale(this);
             var originX = offset.X;
             var originY = offset.Y;
 
@@ -461,18 +461,6 @@ namespace Avalonia.Controls.Presenters
         private void UpdatePseudoClasses()
         {
             PseudoClasses.Set(":empty", Content is null);
-        }
-
-        private double GetLayoutScale()
-        {
-            var result = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
-
-            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
-            {
-                throw new Exception($"Invalid LayoutScaling returned from {VisualRoot.GetType()}");
-            }
-
-            return result;
         }
 
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)

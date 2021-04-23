@@ -809,5 +809,10 @@
     <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
+
+    <!-- Resources for FlyoutPresenter.xaml -->
+    <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+    <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+
   </Style.Resources>
 </Style>
