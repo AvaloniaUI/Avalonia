@@ -19,83 +19,109 @@
             </DrawingGroup>
             <dialogs:ResourceSelectorConverter x:Key="Icons">
                 <DrawingGroup x:Key="Icon_Folder">
-                    <GeometryDrawing Geometry="M 0 0 L 22 0 L 22 16 L 24 18 L 24 28 L 0 28 Z">
+                    <GeometryDrawing Geometry="M 0 0 L 16 16"/>
+                    <GeometryDrawing Geometry="M 0 3 C 0,1 0,1 2,1 L 5 1 C 5.5,1 6,1 6.5,1.5 L 8 3 L 14 3 C 16,3 16,3 16,5
+                    L 16,12 C 16,14 16,14 14,14
+                    L 2,14 C 0,14 0,14 0,12 Z">
                         <GeometryDrawing.Brush>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                                <GradientStop Offset="0" Color="#FFE09F00"/>
-                                <GradientStop Offset="1" Color="#FFD18B00"/>
+                            <LinearGradientBrush StartPoint="1,4" EndPoint="23,20">
+                                <GradientStop Offset="0" Color="#FFFFC018"/>
+                                <GradientStop Offset="1" Color="#FFDFA32D"/>
                             </LinearGradientBrush>
                         </GeometryDrawing.Brush>
                     </GeometryDrawing>
-                    <GeometryDrawing Geometry="M 0 0 L 20 4 L 20 20 L 18 21 L 18 32 L 0 28 Z">
+                    <GeometryDrawing Geometry="M 0 4.5 L 8 4.5 L 8 9 L 0 9 Z">
                         <GeometryDrawing.Brush>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                                <GradientStop Offset="0" Color="#FFFFDA6F"/>
-                                <GradientStop Offset="1" Color="#FFFEC326"/>
+                            <LinearGradientBrush StartPoint="0,4.5" EndPoint="0,5">
+                                <GradientStop Offset="0" Color="#00D7A018"/>
+                                <GradientStop Offset="1" Color="#7FD7A018"/>
                             </LinearGradientBrush>
                         </GeometryDrawing.Brush>
                     </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 0 9 C 0,5 0,5 2,5 L 5 5 C 5.5,5 6,5 6.5,4.75 L 8 4 L 14 4 C 16,4 16,4 16,6
+                                                L 16,11 C 16,13 16,13 14,13
+                                                L 2,13 C 0,13 0,13 0,11 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="1,6" EndPoint="23,19">
+                                <GradientStop Offset="0" Color="#FFFFE69D"/>
+                                <GradientStop Offset="1" Color="#FFFFC937"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 0 9 C 0,5 0,5 2,5 L 5 5 C 5.5,5 6,5 6.5,4.75 L 8 4 L 14 4
+                                                L 8 4.25 C 6,5.25 5.5,5.25 5.125,5.25 L 2 5.25 C 0,5.25 0,5.25 0,9.25 z" Brush="#7FFFFFFF"/>
                 </DrawingGroup>
                 <DrawingGroup x:Key="Icon_File">
-                    <GeometryDrawing Geometry="M 4 0 L 24 0 L 28 4 L 28 32 L 4 32 Z">
-                        <GeometryDrawing.Brush>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                                <GradientStop Offset="0" Color="#FFB9B9B9"/>
-                                <GradientStop Offset="1" Color="#FFAFAFAF"/>
-                            </LinearGradientBrush>
-                        </GeometryDrawing.Brush>
-                    </GeometryDrawing>
-                    <GeometryDrawing Geometry="M 5 1 L 23 1 L 27 5 L 27 31 L 5 31 Z">
-                        <GeometryDrawing.Brush>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                                <GradientStop Offset="0" Color="#FFFFFFFF"/>
-                                <GradientStop Offset="1" Color="#FFF9F9F9"/>
-                            </LinearGradientBrush>
-                        </GeometryDrawing.Brush>
-                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 0 0 L 16 16"/>
+                    <GeometryDrawing Geometry="M 2 0 L 10 0 L 14 4 L 14 16 L 2 16 Z" Brush="#FF797774"/>
+                    <GeometryDrawing Geometry="M 3 1 L 9.7 1 L 13 4.3 L 13 15 L 3 15 Z" Brush="#FFFAFAFA"/>
+                    <GeometryDrawing Geometry="L 9 1 L 9 5 L 14 5 L 14 4 L 10 4 L 10 1 Z" Brush="#FF797774"/>
                 </DrawingGroup>
                 <DrawingGroup x:Key="Icon_Volume">
-                    <GeometryDrawing Geometry="M 0 0 L 32 0 L 32 32 L 0 32 Z"/>
-                    <GeometryDrawing Geometry="M 4 0 L 28 0 L 28 32 L 4 32 Z">
+                    <GeometryDrawing Geometry="M 0 0 L 16 16"/>
+                    <GeometryDrawing Geometry="M 4 5 L 12 5 L 14.5 7.5 C 15,8 15,8 15,9 L 1 9 C 1,8 1,8 1.5 7.5 Z" Brush="#FFE1E3E6"/>
+                    <GeometryDrawing Geometry="M 12 5 L 14.5 7.5 C 15,8 15,8 15,9 L 10 9 L 10 5 Z">
                         <GeometryDrawing.Brush>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                                <GradientStop Offset="0" Color="#FFB9B9B9"/>
-                                <GradientStop Offset="1" Color="#FFAFAFAF"/>
+                            <LinearGradientBrush StartPoint="12,5" EndPoint="11.5,5.5">
+                                <GradientStop Offset="0" Color="#FFCDCFD1"/>
+                                <GradientStop Offset="1" Color="#00CDCFD1"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 4 5 L 1.5 7.5 C 1,8 1,8 1,9 L 4 9 L 6 9 L 6 5 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="4,5" EndPoint="4.5,5.5">
+                                <GradientStop Offset="0" Color="#FFCDCFD1"/>
+                                <GradientStop Offset="1" Color="#00CDCFD1"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 1 9 C 1,8 1,8 2,8 L 14 8
+                                                C 15,8 15,8 15,9 L 15 11
+                                                C 15,12 15,12 14,12 L 2 12
+                                                C 1,12 1,12 1,11 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0,8" EndPoint="0,12">
+                                <GradientStop Offset="0" Color="#FF737374"/>
+                                <GradientStop Offset="1" Color="#FFA8A8A8"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M 2 9 C 2,8 2,8 3,8 L 13 8
+                                                C 14,8 14,8 14,9 L 14 10
+                                                C 14,11 14,11 13,11 L 3 11
+                                                C 2,11 2,11 2,10 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0,8" EndPoint="0,11">
+                                <GradientStop Offset="0" Color="#FF333333"/>
+                                <GradientStop Offset="1" Color="#FF5A5A5A"/>
                             </LinearGradientBrush>
                         </GeometryDrawing.Brush>
                     </GeometryDrawing>
                     <GeometryDrawing>
                         <GeometryDrawing.Geometry>
-                            <EllipseGeometry Rect="10,13,12,12"/>
+                            <EllipseGeometry Rect="2.5,8.5,2,2"/>
                         </GeometryDrawing.Geometry>
-                        <GeometryDrawing.Pen>
-                            <Pen Thickness="8">
-                                <Pen.Brush>
-                                    <LinearGradientBrush StartPoint="0%,37%" EndPoint="0%,100%">
-                                        <GradientStop Offset="0" Color="#FFFFFFFF"/>
-                                        <GradientStop Offset="1" Color="#FFF9F9F9"/>
-                                    </LinearGradientBrush>
-                                </Pen.Brush>
-                            </Pen>
-                        </GeometryDrawing.Pen>
-                    </GeometryDrawing>
-                    <GeometryDrawing Geometry="M 15 23 L 6 28 L 6.5 30 L 9 31 Z">
                         <GeometryDrawing.Brush>
-                            <LinearGradientBrush StartPoint="30,23" EndPoint="6,31">
-                                <GradientStop Offset="0" Color="#FF898D98"/>
-                                <GradientStop Offset="1" Color="#FF6F767C"/>
-                            </LinearGradientBrush>
+                            <RadialGradientBrush GradientOrigin="3.5,9.5" Center="3.5,9.5">
+                                <GradientStop Offset="0.8" Color="#4001FF01"/>
+                                <GradientStop Offset="1" Color="#0001FF01"/>
+                            </RadialGradientBrush>
                         </GeometryDrawing.Brush>
                     </GeometryDrawing>
-                    <GeometryDrawing Geometry="M 9 3 L 26 3 L 26 6 L 9 6 Z">
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <EllipseGeometry Rect="3,9,1,1"/>
+                        </GeometryDrawing.Geometry>
                         <GeometryDrawing.Brush>
-                            <LinearGradientBrush StartPoint="0,3" EndPoint="0,6">
-                                <GradientStop Offset="0" Color="#FFE9E9E9"/>
-                                <GradientStop Offset="1" Color="#FFDFDFDF"/>
-                            </LinearGradientBrush>
+                            <RadialGradientBrush GradientOrigin="3.5,9.5" Center="3.25,9.75">
+                                <GradientStop Offset="0" Color="#FFB6FFB6"/>
+                                <GradientStop Offset="1" Color="#FF01FF01"/>
+                            </RadialGradientBrush>
                         </GeometryDrawing.Brush>
                     </GeometryDrawing>
-            </DrawingGroup>
+                    <GeometryDrawing Geometry="M 3.23483495705 9.76516504295 A 0.375,0.375 180 1 0 3.76516504295,9.23483495705 A 0.4375,0.4375 135 0 1 3.23483495705,9.76516504295 Z" Brush="#FF00B300"/>
+                </DrawingGroup>
             </dialogs:ResourceSelectorConverter>
         </ResourceDictionary>
     </Style.Resources>
