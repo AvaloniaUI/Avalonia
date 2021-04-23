@@ -5,7 +5,8 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.AccentColorsPage"
              Padding="20">
-    <Grid ColumnDefinitions="auto,5,auto,5,auto"
+    <Grid x:Name="ColorBordersGrid"
+          ColumnDefinitions="auto,5,auto,5,auto"
           RowDefinitions="auto,5,auto,5,auto">
         <Grid.Styles>
             <Style Selector="Border">

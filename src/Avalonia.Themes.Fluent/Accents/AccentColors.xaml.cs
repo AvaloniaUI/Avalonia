@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿#nullable enable
+using System;
+
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -15,63 +14,31 @@ namespace Avalonia.Themes.Fluent.Accents
         {
             AvaloniaXamlLoader.Load(this);
 
-            TryGetResource("FallbackSystemAccentColor", out object accentcolorResource);
             var accentColorProvider = AvaloniaLocator.CurrentMutable.GetService<IPlatformColorSchemeProvider>();
-            Color accentcolor;
+            var accentColorScheme = accentColorProvider?.GetAccentColorScheme();
 
-            if(accentColorProvider is null)
+            if (accentColorScheme is null)
             {
-                accentcolor = (Color)accentcolorResource;
-            }
-            else
-            {
-                var systemAccentColor = accentColorProvider.GetSystemAccentColor();
-                accentcolor = systemAccentColor ?? (Color)accentcolorResource;
-            }
+                if (!TryGetResource("FallbackSystemAccentColor", out var fallbackAccentColorResource))
+                {
+                    throw new InvalidOperationException("\"FallbackSystemAccentColor\" resource is not defined in the application.");
+                }
 
-            
-            var light1 = ChangeColorLuminosity(accentcolor, 0.3);
-            var light2 = ChangeColorLuminosity(accentcolor, 0.5);
-            var light3 = ChangeColorLuminosity(accentcolor, 0.7);
-            var dark1 = ChangeColorLuminosity(accentcolor, -0.3);
-            var dark2 = ChangeColorLuminosity(accentcolor, -0.5);
-            var dark3 = ChangeColorLuminosity(accentcolor, -0.7);
+                if (fallbackAccentColorResource is not Color fallbackAccentColor)
+                {
+                    throw new InvalidOperationException("\"FallbackSystemAccentColor\" must be a Color type.");
+                }
 
-
-            this.Resources.Add("SystemAccentColor", accentcolor);
-            this.Resources.Add("SystemAccentColorLight1", light1);
-            this.Resources.Add("SystemAccentColorLight2", light2);
-            this.Resources.Add("SystemAccentColorLight3", light3);
-            this.Resources.Add("SystemAccentColorDark1", dark1);
-            this.Resources.Add("SystemAccentColorDark2", dark2);
-            this.Resources.Add("SystemAccentColorDark3", dark3);
-        }
-
-        internal static Color ChangeColorLuminosity(Color color, double newluminosityFactor)
-        {
-            var red = (double)color.R;
-            var green = (double)color.G;
-            var blue = (double)color.B;
-
-            if (newluminosityFactor < 0)//applies darkness
-            {
-                newluminosityFactor = 1 + newluminosityFactor;
-                red *= newluminosityFactor;
-                green *= newluminosityFactor;
-                blue *= newluminosityFactor;
-            }
-            else if (newluminosityFactor >= 0) //applies lightness
-            {
-                red = (255 - red) * newluminosityFactor + red;
-                green = (255 - green) * newluminosityFactor + green;
-                blue = (255 - blue) * newluminosityFactor + blue;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("The Luminosity Factor must be a finite number.");
+                accentColorScheme = new AccentColorScheme(fallbackAccentColor);
             }
 
-            return new Color(color.A, (byte)red, (byte)green, (byte)blue);
+            Resources.Add("SystemAccentColor", accentColorScheme.Accent);
+            Resources.Add("SystemAccentColorLight1", accentColorScheme.AccentLight1);
+            Resources.Add("SystemAccentColorLight2", accentColorScheme.AccentLight2);
+            Resources.Add("SystemAccentColorLight3", accentColorScheme.AccentLight3);
+            Resources.Add("SystemAccentColorDark1", accentColorScheme.AccentDark1);
+            Resources.Add("SystemAccentColorDark2", accentColorScheme.AccentDark2);
+            Resources.Add("SystemAccentColorDark3", accentColorScheme.AccentDark3);
         }
     }
 }
