@@ -175,16 +175,12 @@ namespace Avalonia.Controls
                 this.GetObservable(TextWrappingProperty),
                 (acceptsReturn, wrapping) =>
                 {
-                    if (acceptsReturn)
+                    if (wrapping != TextWrapping.NoWrap)
                     {
-                        return wrapping != TextWrapping.Wrap ?
-                            ScrollBarVisibility.Auto :
-                            ScrollBarVisibility.Disabled;
+                        return ScrollBarVisibility.Disabled;
                     }
-                    else
-                    {
-                        return ScrollBarVisibility.Hidden;
-                    }
+
+                    return acceptsReturn ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden;
                 });
             this.Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
