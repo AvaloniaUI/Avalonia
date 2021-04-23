@@ -310,9 +310,9 @@ namespace Avalonia.Win32
                             {
                                 Input?.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                     _owner,
-                                    touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_UP) ?
+                                    touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_UP) ?
                                         RawPointerEventType.TouchEnd :
-                                        touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_DOWN) ?
+                                        touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                             RawPointerEventType.TouchBegin :
                                             RawPointerEventType.TouchUpdate,
                                     PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
@@ -521,27 +521,27 @@ namespace Avalonia.Win32
             var keys = (ModifierKeys)ToInt32(wParam);
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_LBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_LBUTTON))
             {
                 modifiers |= RawInputModifiers.LeftMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_RBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_RBUTTON))
             {
                 modifiers |= RawInputModifiers.RightMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_MBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_MBUTTON))
             {
                 modifiers |= RawInputModifiers.MiddleMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_XBUTTON1))
+            if (keys.HasAllFlags(ModifierKeys.MK_XBUTTON1))
             {
                 modifiers |= RawInputModifiers.XButton1MouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_XBUTTON2))
+            if (keys.HasAllFlags(ModifierKeys.MK_XBUTTON2))
             {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             }

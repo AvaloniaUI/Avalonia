@@ -22,6 +22,9 @@
       <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
       <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
       <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
+      <TabItem Header="ContextFlyout">
+        <pages:ContextFlyoutPage/>
+      </TabItem>
       <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
       <TabItem Header="Cursor"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
@@ -39,6 +42,9 @@
         <pages:CalendarDatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
+      <TabItem Header="Flyouts">
+        <pages:FlyoutsPage />
+      </TabItem>
       <TabItem Header="Image"
                ScrollViewer.VerticalScrollBarVisibility="Disabled"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled">

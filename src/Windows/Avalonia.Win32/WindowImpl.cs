@@ -580,7 +580,9 @@ namespace Avalonia.Win32
 
         public void SetParent(IWindowImpl parent)
         {
-            var parentHwnd = ((WindowImpl)parent)?._hwnd ?? IntPtr.Zero;
+            _parent = (WindowImpl)parent;
+            
+            var parentHwnd = _parent?._hwnd ?? IntPtr.Zero;
 
             if (parentHwnd == IntPtr.Zero && !_windowProperties.ShowInTaskbar)
             {
@@ -845,7 +847,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            bool wantsTitleBar = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
+            bool wantsTitleBar = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
 
             if (!wantsTitleBar)
             {
@@ -862,7 +864,7 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
             }
 
-            margins.cyTopHeight = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
 
             if (WindowState == WindowState.Maximized)
             {
@@ -916,8 +918,8 @@ namespace Avalonia.Win32
                 Resize(new Size(rcWindow.Width/ RenderScaling, rcWindow.Height / RenderScaling));
             }
 
-            if(!_isClientAreaExtended || (_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) &&
-                !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome)))
+            if(!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
+                !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome)))
             {
                 EnableCloseButton(_hwnd);
             }
@@ -1283,7 +1285,7 @@ namespace Avalonia.Win32
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome);
+        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);
 
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;

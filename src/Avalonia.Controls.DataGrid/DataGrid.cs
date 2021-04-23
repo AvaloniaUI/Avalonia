@@ -910,6 +910,11 @@ namespace Avalonia.Controls
 
                     // Clear all row selections
                     ClearRowSelection(resetAnchorSlot: true);
+
+                    if (DataConnection.CollectionView != null)
+                    {
+                        DataConnection.CollectionView.MoveCurrentTo(null);
+                    }
                 }
                 else
                 {
