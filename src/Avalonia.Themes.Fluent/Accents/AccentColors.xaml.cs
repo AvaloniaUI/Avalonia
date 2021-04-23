@@ -24,7 +24,7 @@ namespace Avalonia.Themes.Fluent.Accents
                     throw new InvalidOperationException("\"FallbackSystemAccentColor\" resource is not defined in the application.");
                 }
 
-                if (fallbackAccentColorResource is not Color fallbackAccentColor)
+                if (!(fallbackAccentColorResource is Color fallbackAccentColor))
                 {
                     throw new InvalidOperationException("\"FallbackSystemAccentColor\" must be a Color type.");
                 }
