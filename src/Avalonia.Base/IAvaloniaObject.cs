@@ -156,5 +156,9 @@ namespace Avalonia
             AvaloniaProperty<T> property,
             Optional<T> oldValue,
             Optional<T> newValue);
+
+        object ReadLocalValue(AvaloniaProperty property);
+
+        LocalValueEnumerator GetLocalValueEnumerator();
     }
 }

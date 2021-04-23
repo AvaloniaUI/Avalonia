@@ -1,0 +1,4 @@
+Compat issues with assembly Avalonia.Base:
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.LocalValueEnumerator Avalonia.IAvaloniaObject.GetLocalValueEnumerator()' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Object Avalonia.IAvaloniaObject.ReadLocalValue(Avalonia.AvaloniaProperty)' is present in the implementation but not in the contract.
+Total Issues: 2

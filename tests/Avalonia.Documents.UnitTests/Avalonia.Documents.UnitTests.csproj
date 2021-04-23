@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;net47</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\UnitTests.NetCore.targets" />
+  <Import Project="..\..\build\UnitTests.NetFX.props" />
+  <Import Project="..\..\build\Moq.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.Documents\Avalonia.Documents.csproj" />
+  </ItemGroup>
+
+</Project>
