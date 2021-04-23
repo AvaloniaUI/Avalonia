@@ -7,7 +7,7 @@ namespace Avalonia.Platform
 {
     public interface IPlatformColorSchemeProvider
     {
-        public AccentColorScheme? GetAccentColorScheme();
+        AccentColorScheme? GetAccentColorScheme();
     }
 
     public class AccentColorScheme
