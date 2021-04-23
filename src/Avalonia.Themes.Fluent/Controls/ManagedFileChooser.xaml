@@ -128,9 +128,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <DockPanel>
-                    <!--Background="{DynamicResource SystemControlDisabledChromeDisabledHighBrush}"-->
                     <ListBox x:Name="QuickLinks" DockPanel.Dock="Left" Items="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
-                    <!-- BorderBrush="{DynamicResource SystemControlHighlightAltBaseMediumHighBrush}" BorderThickness="0,0,1,0"-->
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Spacing="4" Orientation="Horizontal" Background="Transparent">
@@ -296,10 +294,10 @@
         </Setter>
     </Style>
     <Style Selector="dialogs|ManagedFileChooser /template/ ListBox#QuickLinks ListBoxItem:pointerover /template/ Border#LayoutRoot">
-        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumLowBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltMediumBrush}"/>
     </Style>
     <Style Selector="dialogs|ManagedFileChooser /template/ ListBox#QuickLinks ListBoxItem:selected /template/ Border#LayoutRoot">
-        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltMediumHighBrush}"/>
     </Style>
     <Style Selector="dialogs|ManagedFileChooser /template/ DockPanel#NavBar Button,
                     dialogs|ManagedFileChooser /template/ DockPanel#NavBar TextBox">
