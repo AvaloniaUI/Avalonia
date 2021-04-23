@@ -15,7 +15,9 @@ namespace Avalonia.Layout.UnitTests
         [Fact]
         public async Task EffectiveViewportChanged_Not_Raised_When_Control_Added_To_Tree()
         {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
             await RunOnUIThread.Execute(async () =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
             {
                 var root = CreateRoot();
                 var target = new Canvas();
@@ -160,7 +162,7 @@ namespace Avalonia.Layout.UnitTests
             {
                 var root = CreateRoot();
                 var target = new Canvas { Width = 200, Height = 200 };
-                var scroller = new ScrollViewer { Width = 100, Height = 100, Content = target, Template = ScrollViewerTemplate() };
+                var scroller = new ScrollViewer { Width = 100, Height = 100, Content = target, Template = ScrollViewerTemplate(), HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden };
                 var raised = 0;
 
                 target.EffectiveViewportChanged += (s, e) =>
@@ -183,7 +185,7 @@ namespace Avalonia.Layout.UnitTests
             {
                 var root = CreateRoot();
                 var target = new Canvas { Width = 200, Height = 200 };
-                var scroller = new ScrollViewer { Width = 100, Height = 100, Content = target, Template = ScrollViewerTemplate() };
+                var scroller = new ScrollViewer { Width = 100, Height = 100, Content = target, Template = ScrollViewerTemplate(), HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden };
                 var raised = 0;
 
                 root.Child = scroller;

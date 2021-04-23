@@ -26,7 +26,7 @@ namespace Avalonia.Media.TextFormatting
         public override int TextSourceLength { get; }
 
         /// <inheritdoc/>
-        public override Rect Bounds => GlyphRun.Bounds;
+        public override Size Size => GlyphRun.Size;
 
         /// <summary>
         /// Gets the font metrics.
@@ -47,37 +47,39 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            if (GlyphRun.GlyphIndices.Length == 0)
+            using (drawingContext.PushPostTransform(Matrix.CreateTranslation(origin)))
             {
-                return;
-            }
+                if (GlyphRun.GlyphIndices.Length == 0)
+                {
+                    return;
+                }
 
-            if (Properties.Typeface == null)
-            {
-                return;
-            }
+                if (Properties.Typeface == default)
+                {
+                    return;
+                }
 
-            if (Properties.ForegroundBrush == null)
-            {
-                return;
-            }
+                if (Properties.ForegroundBrush == null)
+                {
+                    return;
+                }
 
-            if (Properties.BackgroundBrush != null)
-            {
-                drawingContext.DrawRectangle(Properties.BackgroundBrush, null,
-                new Rect(origin.X, origin.Y + FontMetrics.Ascent, Bounds.Width, Bounds.Height));
-            }
+                if (Properties.BackgroundBrush != null)
+                {
+                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
+                }
 
-            drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun, origin);
+                drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
 
-            if (Properties.TextDecorations == null)
-            {
-                return;
-            }
+                if (Properties.TextDecorations == null)
+                {
+                    return;
+                }
 
-            foreach (var textDecoration in Properties.TextDecorations)
-            {
-                textDecoration.Draw(drawingContext, this, origin);
+                foreach (var textDecoration in Properties.TextDecorations)
+                {
+                    textDecoration.Draw(drawingContext, this);
+                }
             }
         }
 

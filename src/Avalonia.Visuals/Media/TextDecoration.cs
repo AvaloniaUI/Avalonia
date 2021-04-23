@@ -155,8 +155,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
         /// <param name="shapedTextCharacters">The shaped characters that are decorated.</param>
-        /// <param name="origin">The origin.</param>
-        internal void Draw(DrawingContext drawingContext, ShapedTextCharacters shapedTextCharacters, Point origin)
+        internal void Draw(DrawingContext drawingContext, ShapedTextCharacters shapedTextCharacters)
         {
             var fontRenderingEmSize = shapedTextCharacters.Properties.FontRenderingEmSize;
             var fontMetrics = shapedTextCharacters.FontMetrics;
@@ -181,16 +180,20 @@ namespace Avalonia.Media
                     break;
             }
 
+            var origin = new Point();
+
             switch (Location)
             {
-                case TextDecorationLocation.Overline:
-                    origin += new Point(0, fontMetrics.Ascent);
+                case TextDecorationLocation.Baseline:
+                    origin += shapedTextCharacters.GlyphRun.BaselineOrigin;
                     break;
                 case TextDecorationLocation.Strikethrough:
-                    origin += new Point(0, -fontMetrics.StrikethroughPosition);
+                    origin += new Point(shapedTextCharacters.GlyphRun.BaselineOrigin.X,
+                        shapedTextCharacters.GlyphRun.BaselineOrigin.Y + fontMetrics.StrikethroughPosition);
                     break;
                 case TextDecorationLocation.Underline:
-                    origin += new Point(0, -fontMetrics.UnderlinePosition);
+                    origin += new Point(shapedTextCharacters.GlyphRun.BaselineOrigin.X,
+                        shapedTextCharacters.GlyphRun.BaselineOrigin.Y + fontMetrics.UnderlinePosition);
                     break;
             }
 
@@ -207,7 +210,7 @@ namespace Avalonia.Media
             var pen = new Pen(Stroke ?? shapedTextCharacters.Properties.ForegroundBrush, thickness,
                 new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
 
-            drawingContext.DrawLine(pen, origin, origin + new Point(shapedTextCharacters.Bounds.Width, 0));
+            drawingContext.DrawLine(pen, origin, origin + new Point(shapedTextCharacters.Size.Width, 0));
         }
     }
 }

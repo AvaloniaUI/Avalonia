@@ -5,9 +5,15 @@ using Avalonia.Platform;
 
 namespace Avalonia.iOS
 {
-    class CursorFactoryStub : IStandardCursorFactory
+    class CursorFactoryStub : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType) => new PlatformHandle(IntPtr.Zero, "NULL");
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorImplStub();
+        ICursorImpl ICursorFactory.GetCursor(StandardCursorType cursorType) => new CursorImplStub();
+
+        private class CursorImplStub : ICursorImpl
+        {
+            public void Dispose() { }
+        }
     }
 
     class WindowingPlatformStub : IWindowingPlatform

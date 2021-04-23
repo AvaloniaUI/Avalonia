@@ -2,6 +2,7 @@
 #include "rendertarget.h"
 #import <IOSurface/IOSurface.h>
 #import <IOSurface/IOSurfaceObjC.h>
+#import <QuartzCore/QuartzCore.h>
 
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/OpenGL.h>
@@ -110,7 +111,11 @@
         if(_renderbuffer != 0)
             glDeleteRenderbuffers(1, &_renderbuffer);
     }
-    CFRelease(surface);
+
+    if(surface != nullptr)
+    {
+        CFRelease(surface);
+    }
 }
 @end
 
@@ -143,13 +148,23 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
     return _layer;
 }
 
-- (void)resize:(AvnPixelSize)size withScale: (float) scale;{
+- (void)resize:(AvnPixelSize)size withScale: (float) scale{
+
+    if(size.Height <= 0)
+        size.Height = 1;
+    if(size.Width <= 0)
+        size.Width = 1;
+
     @synchronized (lock) {
         if(surface == nil
            || surface->size.Width != size.Width
            || surface->size.Height != size.Height
            || surface->scale != scale)
+        {
             surface = [[IOSurfaceHolder alloc] initWithSize:size withScale:scale withOpenGlContext:_glContext.getRaw()];
+            
+            [self updateLayer];
+        }
     }
 }
 
@@ -159,12 +174,15 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
         @synchronized (lock) {
             if(_layer == nil)
                 return;
+            [CATransaction begin];
             [_layer setContents: nil];
             if(surface != nil)
             {
                 [_layer setContentsScale: surface->scale];
                 [_layer setContents: (__bridge IOSurface*) surface->surface];
             }
+            [CATransaction commit];
+            [CATransaction flush];
         }
     }
     else

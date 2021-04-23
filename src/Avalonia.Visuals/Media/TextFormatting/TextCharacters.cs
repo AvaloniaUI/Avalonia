@@ -16,6 +16,14 @@ namespace Avalonia.Media.TextFormatting
             Properties = properties;
         }
 
+        public TextCharacters(ReadOnlySlice<char> text, int offsetToFirstCharacter, int length,
+            TextRunProperties properties)
+        {
+            Text = text.Skip(offsetToFirstCharacter).Take(length);
+            TextSourceLength = length;
+            Properties = properties;
+        }
+
         /// <inheritdoc />
         public override int TextSourceLength { get; }
 
@@ -70,10 +78,11 @@ namespace Avalonia.Media.TextFormatting
             var codepoint = Codepoint.ReadAt(text, count, out _);
 
             //ToDo: Fix FontFamily fallback
-            currentTypeface =
-                FontManager.Current.MatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight, defaultTypeface.FontFamily);
+            var matchFound =
+                FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
+                    defaultTypeface.FontFamily, defaultProperties.CultureInfo, out currentTypeface);
 
-            if (currentTypeface != null && TryGetRunProperties(text, currentTypeface, defaultTypeface, out count))
+            if (matchFound && TryGetRunProperties(text, currentTypeface, defaultTypeface, out count))
             {
                 //Fallback found
                 return new ShapeableTextCharacters(text.Take(count),

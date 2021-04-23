@@ -8,7 +8,7 @@ using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    public class SystemDialogs : ISystemDialogImpl
+    internal class SystemDialogs : ISystemDialogImpl
     {
         IAvnSystemDialogs _native;
 
@@ -26,7 +26,7 @@ namespace Avalonia.Native
             if (dialog is OpenFileDialog ofd)
             {
                 _native.OpenFileDialog(nativeParent,
-                                        events, ofd.AllowMultiple,
+                                        events, ofd.AllowMultiple.AsComBool(),
                                         ofd.Title ?? "",
                                         ofd.Directory ?? "",
                                         ofd.InitialFileName ?? "",
@@ -62,7 +62,7 @@ namespace Avalonia.Native
         }
     }
 
-    public class SystemDialogEvents : CallbackBase, IAvnSystemDialogEvents
+    internal unsafe class SystemDialogEvents : CallbackBase, IAvnSystemDialogEvents
     {
         private TaskCompletionSource<string[]> _tcs;
 
@@ -73,13 +73,13 @@ namespace Avalonia.Native
 
         public Task<string[]> Task => _tcs.Task;
 
-        public void OnCompleted(int numResults, IntPtr trFirstResultRef)
+        public void OnCompleted(int numResults, void* trFirstResultRef)
         {
             string[] results = new string[numResults];
 
             unsafe
             {
-                var ptr = (IntPtr*)trFirstResultRef.ToPointer();
+                var ptr = (IntPtr*)trFirstResultRef;
 
                 for (int i = 0; i < numResults; i++)
                 {

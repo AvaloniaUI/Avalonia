@@ -148,6 +148,7 @@ namespace Avalonia.Controls.Platform
             {
                 case Key.Up:
                 case Key.Down:
+                {
                     if (item?.IsTopLevel == true)
                     {
                         if (item.HasSubMenu && !item.IsSubMenuOpen)
@@ -161,8 +162,10 @@ namespace Avalonia.Controls.Platform
                         goto default;
                     }
                     break;
+                }
 
                 case Key.Left:
+                {
                     if (item?.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
                     {
                         parent.Close();
@@ -174,8 +177,10 @@ namespace Avalonia.Controls.Platform
                         goto default;
                     }
                     break;
+                }
 
                 case Key.Right:
+                {
                     if (item != null && !item.IsTopLevel && item.HasSubMenu)
                     {
                         Open(item, true);
@@ -186,8 +191,10 @@ namespace Avalonia.Controls.Platform
                         goto default;
                     }
                     break;
+                }
 
                 case Key.Enter:
+                {
                     if (item != null)
                     {
                         if (!item.HasSubMenu)
@@ -202,12 +209,14 @@ namespace Avalonia.Controls.Platform
                         e.Handled = true;
                     }
                     break;
+                }
 
                 case Key.Escape:
-                    if (item?.Parent != null)
+                {
+                    if (item?.Parent is IMenuElement parent)
                     {
-                        item.Parent.Close();
-                        item.Parent.Focus();
+                        parent.Close();
+                        parent.Focus();
                     }
                     else
                     {
@@ -216,11 +225,13 @@ namespace Avalonia.Controls.Platform
 
                     e.Handled = true;
                     break;
+                }
 
                 default:
+                {
                     var direction = e.Key.ToNavigationDirection();
 
-                    if (direction.HasValue)
+                    if (direction?.IsDirectional() == true)
                     {
                         if (item == null && _isContextMenu)
                         {
@@ -246,6 +257,7 @@ namespace Avalonia.Controls.Platform
                     }
 
                     break;
+                }
             }
 
             if (!e.Handled && item?.Parent is IMenuItem parentItem)
@@ -343,7 +355,13 @@ namespace Avalonia.Controls.Platform
                 }
                 else if (!item.IsPointerOverSubMenu)
                 {
-                    item.IsSubMenuOpen = false;
+                    DelayRun(() =>
+                    {
+                        if (!item.IsPointerOverSubMenu)
+                        {
+                            item.IsSubMenuOpen = false;
+                        }
+                    }, MenuShowDelay);
                 }
             }
         }

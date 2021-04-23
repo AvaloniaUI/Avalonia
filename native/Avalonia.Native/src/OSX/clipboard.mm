@@ -56,7 +56,7 @@ public:
                 return S_OK;
             }
             
-            NSArray* arr = (NSArray*)data;
+            NSArray<NSString*>* arr = (NSArray*)data;
             
             for(int c = 0; c < [arr count]; c++)
                 if(![[arr objectAtIndex:c] isKindOfClass:[NSString class]])
@@ -67,7 +67,7 @@ public:
         }
     }
     
-    virtual HRESULT SetText (char* type, void* utf8String) override
+    virtual HRESULT SetText (char* type, char* utf8String) override
     {
         Clear();
         @autoreleasepool

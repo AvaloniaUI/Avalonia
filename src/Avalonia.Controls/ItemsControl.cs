@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -18,6 +19,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays a collection of items.
     /// </summary>
+    [PseudoClasses(":empty", ":singleitem")]
     public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener
     {
         /// <summary>
@@ -167,7 +169,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="items">The collection.</param>
         /// <param name="index">The index.</param>
-        /// <returns>The index of the item or -1 if the item was not found.</returns>
+        /// <returns>The item at the given index or null if the index is out of bounds.</returns>
         protected static object ElementAt(IEnumerable items, int index)
         {
             if (index != -1 && index < items.Count())

@@ -23,7 +23,7 @@ namespace Avalonia
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
         private List<IAvaloniaObject> _inheritanceChildren;
         private ValueStore _values;
-        private ValueStore Values => _values ?? (_values = new ValueStore(this));
+        private bool _batchUpdate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
@@ -113,15 +113,23 @@ namespace Avalonia
         /// <param name="binding">The binding information.</param>
         public IBinding this[IndexerDescriptor binding]
         {
+            get { return new IndexerBinding(this, binding.Property, binding.Mode); }
+            set { this.Bind(binding.Property, value); }
+        }
+
+        private ValueStore Values
+        {
             get
             {
-                return new IndexerBinding(this, binding.Property, binding.Mode);
-            }
+                if (_values is null)
+                {
+                    _values = new ValueStore(this);
 
-            set
-            {
-                var sourceBinding = value as IBinding;
-                this.Bind(binding.Property, sourceBinding);
+                    if (_batchUpdate)
+                        _values.BeginBatchUpdate();
+                }
+
+                return _values;
             }
         }
 
@@ -440,6 +448,28 @@ namespace Avalonia
         public void CoerceValue<T>(StyledPropertyBase<T> property)
         {
             _values?.CoerceValue(property);
+        }
+
+        public void BeginBatchUpdate()
+        {
+            if (_batchUpdate)
+            {
+                throw new InvalidOperationException("Batch update already in progress.");
+            }
+
+            _batchUpdate = true;
+            _values?.BeginBatchUpdate();
+        }
+
+        public void EndBatchUpdate()
+        {
+            if (!_batchUpdate)
+            {
+                throw new InvalidOperationException("No batch update in progress.");
+            }
+
+            _batchUpdate = false;
+            _values?.EndBatchUpdate();
         }
 
         /// <inheritdoc/>

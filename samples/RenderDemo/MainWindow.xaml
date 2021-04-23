@@ -3,8 +3,8 @@
         x:Class="RenderDemo.MainWindow"
         Title="AvaloniaUI Rendering Test"
         xmlns:pages="clr-namespace:RenderDemo.Pages"
-        Width="800"
-        Height="600">
+        Width="{Binding Width, Mode=TwoWay}"
+        Height="{Binding Height, Mode=TwoWay}">
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="Rendering">
@@ -23,6 +23,10 @@
                       IsChecked="{Binding DrawFps}"/>
           </MenuItem.Icon>
         </MenuItem>
+      </MenuItem>
+      <MenuItem Header="Tests">
+        <MenuItem Header="Resize window"
+                  Command="{Binding ResizeWindow}"/>
       </MenuItem>
     </Menu>
     <TabControl Classes="sidebar">
@@ -52,6 +56,9 @@
       </TabItem>
       <TabItem Header="LineBounds">
         <pages:LineBoundsPage />
+      </TabItem>
+      <TabItem Header="Path Measurement">
+        <pages:PathMeasurementPage />
       </TabItem>
     </TabControl>
   </DockPanel>

@@ -34,7 +34,7 @@ namespace Avalonia.UnitTests
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
         {
-            return Mock.Of<IGeometryImpl>();
+            return Mock.Of<IGeometryImpl>(x => x.Bounds == rect);
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -97,9 +97,8 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
-            width = 0;
             return Mock.Of<IGlyphRunImpl>();
         }
 

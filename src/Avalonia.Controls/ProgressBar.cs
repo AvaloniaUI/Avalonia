@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -8,6 +9,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control used to indicate the progress of an operation.
     /// </summary>
+    [PseudoClasses(":vertical", ":horizontal", ":indeterminate")]
     public class ProgressBar : RangeBase
     {
         public class ProgressBarTemplateProperties : AvaloniaObject
@@ -136,6 +138,8 @@ namespace Avalonia.Controls
         static ProgressBar()
         {
             ValueProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
         }
 

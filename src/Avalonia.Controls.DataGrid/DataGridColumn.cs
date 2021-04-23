@@ -12,6 +12,7 @@ using System;
 using System.Linq;
 using System.Diagnostics;
 using Avalonia.Controls.Utils;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Controls
 {
@@ -665,6 +666,7 @@ namespace Avalonia.Controls
         /// <param name="dataItem">
         /// The data item represented by the row that contains the intended cell.
         /// </param>
+        /// <param name="binding">When the method returns, contains the applied binding.</param>
         /// <returns>
         /// A new editing element that is bound to the column's <see cref="P:Avalonia.Controls.DataGridBoundColumn.Binding" /> property value.
         /// </returns>
@@ -1032,13 +1034,16 @@ namespace Avalonia.Controls
 
             if (String.IsNullOrEmpty(result))
             {
-
-                if(this is DataGridBoundColumn boundColumn && 
-                    boundColumn.Binding != null &&
-                    boundColumn.Binding is Binding binding &&
-                    binding.Path != null)
+                if (this is DataGridBoundColumn boundColumn)
                 {
-                    result = binding.Path;
+                    if (boundColumn.Binding is Binding binding)
+                    {
+                        result = binding.Path;
+                    }
+                    else if (boundColumn.Binding is CompiledBindingExtension compiledBinding)
+                    {
+                        result = compiledBinding.Path.ToString();
+                    }
                 }
             }
 

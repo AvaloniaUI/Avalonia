@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 
 namespace Avalonia.Input.GestureRecognizers
@@ -11,9 +10,9 @@ namespace Avalonia.Input.GestureRecognizers
     {
         private bool _scrolling;
         private Point _trackedRootPoint;
-        private IPointer _tracking;
-        private IInputElement _target;
-        private IGestureRecognizerActionsDispatcher _actions;
+        private IPointer? _tracking;
+        private IInputElement? _target;
+        private IGestureRecognizerActionsDispatcher? _actions;
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
         private int _gestureId;
@@ -95,7 +94,7 @@ namespace Avalonia.Input.GestureRecognizers
                         _scrolling = true;
                     if (_scrolling)
                     {
-                        _actions.Capture(e.Pointer, this);
+                        _actions!.Capture(e.Pointer, this);
                     }
                 }
 
@@ -110,7 +109,7 @@ namespace Avalonia.Input.GestureRecognizers
                     _trackedRootPoint = rootPoint;
                     if (elapsed.TotalSeconds > 0)
                         _inertia = vector / elapsed.TotalSeconds;
-                    _target.RaiseEvent(new ScrollGestureEventArgs(_gestureId, vector));
+                    _target!.RaiseEvent(new ScrollGestureEventArgs(_gestureId, vector));
                     e.Handled = true;
                 }
             }
@@ -128,7 +127,7 @@ namespace Avalonia.Input.GestureRecognizers
             {
                 _inertia = default;
                 _scrolling = false;
-                _target.RaiseEvent(new ScrollGestureEndedEventArgs(_gestureId));
+                _target!.RaiseEvent(new ScrollGestureEndedEventArgs(_gestureId));
                 _gestureId = 0;
                 _lastMoveTimestamp = null;
             }
@@ -165,7 +164,7 @@ namespace Avalonia.Input.GestureRecognizers
 
                         var speed = _inertia * Math.Pow(0.15, st.Elapsed.TotalSeconds);
                         var distance = speed * elapsedSinceLastTick.TotalSeconds;
-                        _target.RaiseEvent(new ScrollGestureEventArgs(_gestureId, distance));
+                        _target!.RaiseEvent(new ScrollGestureEventArgs(_gestureId, distance));
 
 
 

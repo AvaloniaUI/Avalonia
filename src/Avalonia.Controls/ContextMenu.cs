@@ -63,6 +63,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
 
         /// <summary>
+        /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty  =
+            Popup.WindowManagerAddShadowHintProperty.AddOwner<ContextMenu>();
+
+        /// <summary>
         /// Defines the <see cref="PlacementTarget"/> property.
         /// </summary>
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
@@ -158,6 +164,12 @@ namespace Avalonia.Controls
             set { SetValue(PlacementModeProperty, value); }
         }
 
+        public bool WindowManagerAddShadowHint
+        {
+            get { return GetValue(WindowManagerAddShadowHintProperty); }
+            set { SetValue(WindowManagerAddShadowHintProperty, value); }
+        }
+
         /// <summary>
         /// Gets or sets the the anchor rectangle within the parent that the context menu will be placed
         /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
@@ -221,6 +233,16 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == WindowManagerAddShadowHintProperty && _popup != null)
+            {
+                _popup.WindowManagerAddShadowHint = change.NewValue.GetValueOrDefault<bool>();
+            }
+        }
+
         /// <summary>
         /// Opens the menu.
         /// </summary>
@@ -247,52 +269,7 @@ namespace Avalonia.Controls
             }
 
             control ??= _attachedControls![0];
-
-            if (IsOpen)
-            {
-                return;
-            }
-
-            if (_popup == null)
-            {
-                _popup = new Popup
-                {
-                    HorizontalOffset = HorizontalOffset,
-                    VerticalOffset = VerticalOffset,
-                    PlacementAnchor = PlacementAnchor,
-                    PlacementConstraintAdjustment = PlacementConstraintAdjustment,
-                    PlacementGravity = PlacementGravity,
-                    PlacementMode = PlacementMode,
-                    PlacementRect = PlacementRect,
-                    PlacementTarget = PlacementTarget ?? control,
-                    IsLightDismissEnabled = true,
-                    OverlayDismissEventPassThrough = true,
-                };
-
-                _popup.Opened += PopupOpened;
-                _popup.Closed += PopupClosed;
-            }
-
-            if (_popup.Parent != control)
-            {
-                ((ISetLogicalParent)_popup).SetParent(null);
-                ((ISetLogicalParent)_popup).SetParent(control);
-            }
-
-            if (PlacementTarget is null && _popup.PlacementTarget != control)
-            {
-                _popup.PlacementTarget = control;
-            }
-
-            _popup.Child = this;
-            IsOpen = true;
-            _popup.IsOpen = true;
-
-            RaiseEvent(new RoutedEventArgs
-            {
-                RoutedEvent = MenuOpenedEvent,
-                Source = this,
-            });
+            Open(control, PlacementTarget ?? control);
         }
 
         /// <summary>
@@ -325,6 +302,51 @@ namespace Avalonia.Controls
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new MenuItemContainerGenerator(this);
+        }
+
+        private void Open(Control control, Control placementTarget)
+        {
+            if (IsOpen)
+            {
+                return;
+            }
+
+            if (_popup == null)
+            {
+                _popup = new Popup
+                {
+                    HorizontalOffset = HorizontalOffset,
+                    VerticalOffset = VerticalOffset,
+                    PlacementAnchor = PlacementAnchor,
+                    PlacementConstraintAdjustment = PlacementConstraintAdjustment,
+                    PlacementGravity = PlacementGravity,
+                    PlacementMode = PlacementMode,
+                    PlacementRect = PlacementRect,
+                    IsLightDismissEnabled = true,
+                    OverlayDismissEventPassThrough = true,
+                    WindowManagerAddShadowHint = WindowManagerAddShadowHint,
+                };
+
+                _popup.Opened += PopupOpened;
+                _popup.Closed += PopupClosed;
+            }
+
+            if (_popup.Parent != control)
+            {
+                ((ISetLogicalParent)_popup).SetParent(null);
+                ((ISetLogicalParent)_popup).SetParent(control);
+            }
+
+            _popup.PlacementTarget = placementTarget;
+            _popup.Child = this;
+            IsOpen = true;
+            _popup.IsOpen = true;
+
+            RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = MenuOpenedEvent,
+                Source = this,
+            });
         }
 
         private void PopupOpened(object sender, EventArgs e)
@@ -380,7 +402,7 @@ namespace Avalonia.Controls
                 if (contextMenu.CancelOpening())
                     return;
 
-                contextMenu.Open(control);
+                contextMenu.Open(control, e.Source as Control ?? control);
                 e.Handled = true;
             }
         }

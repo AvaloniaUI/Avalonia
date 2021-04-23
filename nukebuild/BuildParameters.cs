@@ -19,10 +19,14 @@ public partial class Build
     [Parameter("force-nuget-version")]
     public string ForceNugetVersion { get; set; }
 
+    [Parameter("skip-previewer")]
+    public bool SkipPreviewer { get; set; }
+
     public class BuildParameters
     {
         public string Configuration { get; }
         public bool SkipTests { get; }
+        public bool SkipPreviewer {get;}
         public string MainRepo { get; }
         public string MasterBranch { get; }
         public string RepositoryName { get; }
@@ -54,15 +58,15 @@ public partial class Build
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
-        public AbsolutePath ZipSourceControlCatalogDesktopDir { get; }
-        public AbsolutePath ZipTargetControlCatalogDesktopDir { get; }
+        public AbsolutePath ZipTargetControlCatalogNetCoreDir { get; }
 
 
-       public BuildParameters(Build b)
+        public BuildParameters(Build b)
         {
             // ARGUMENTS
             Configuration = b.Configuration ?? "Release";
             SkipTests = b.SkipTests;
+            SkipPreviewer = b.SkipPreviewer;
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
@@ -124,9 +128,7 @@ public partial class Build
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
-            ZipSourceControlCatalogDesktopDir =
-                RootDirectory / ("samples/ControlCatalog.Desktop/bin/" + DirSuffix + "/net461");
-            ZipTargetControlCatalogDesktopDir = ZipRoot / ("ControlCatalog.Desktop-" + FileZipSuffix);
+            ZipTargetControlCatalogNetCoreDir = ZipRoot / ("ControlCatalog.NetCore-" + FileZipSuffix);
         }
 
         string GetVersion()

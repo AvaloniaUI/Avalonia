@@ -588,18 +588,11 @@
             <!--<DataGridColumnHeader Name="PART_TopRightCornerHeader"
                                   Grid.Column="2"
                                   Template="{StaticResource TopRightHeaderTemplate}" />-->
-            <!--<Rectangle Name="PART_ColumnHeadersAndRowsSeparator"
+            <Rectangle Name="PART_ColumnHeadersAndRowsSeparator"
                        Grid.ColumnSpan="3"
                        VerticalAlignment="Bottom"
-                       StrokeThickness="1"
                        Height="1"
-                       Fill="{DynamicResource DataGridGridLinesBrush}" />-->
-            <Border Name="PART_ColumnHeadersAndRowsSeparator"
-                    Grid.ColumnSpan="3"
-                    Height="2"
-                    VerticalAlignment="Bottom"
-                    BorderThickness="0,0,0,1"
-                    BorderBrush="{DynamicResource DataGridGridLinesBrush}" />
+                       Fill="{DynamicResource DataGridGridLinesBrush}" />
 
             <DataGridRowsPresenter Name="PART_RowsPresenter"
                                    Grid.Row="1"
@@ -641,5 +634,15 @@
         </Border>
       </ControlTemplate>
     </Setter>
+  </Style>
+
+  <Style Selector="DataGrid:empty-columns /template/ DataGridColumnHeader#PART_TopLeftCornerHeader">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="DataGrid:empty-columns /template/ DataGridColumnHeadersPresenter#PART_ColumnHeadersPresenter">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="DataGrid:empty-columns /template/ Rectangle#PART_ColumnHeadersAndRowsSeparator">
+    <Setter Property="IsVisible" Value="False" />
   </Style>
 </Styles>

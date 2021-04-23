@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
@@ -11,11 +11,14 @@
     <ProjectReference Include="..\..\src\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2019013001" />
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- For Microsoft.CodeAnalysis -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
 
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />

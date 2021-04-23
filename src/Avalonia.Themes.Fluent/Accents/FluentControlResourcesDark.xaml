@@ -439,7 +439,7 @@
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
     
     <!--Resources for NotificationCard.xaml -->
-    <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444" Opacity="0.75"/>
+    <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444" />
     <SolidColorBrush x:Key="NotificationCardProgressBackgroundBrush" Color="#9A9A9A" />
     <SolidColorBrush x:Key="NotificationCardInformationBackgroundBrush" Color="#007ACC" Opacity="0.75"/>
     <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="#1F9E45" Opacity="0.75"/>
@@ -809,5 +809,10 @@
     <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
+
+    <!-- Resources for FlyoutPresenter.xaml -->
+    <StaticResource x:Key="FlyoutPresenterBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
+    <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
+
   </Style.Resources>
 </Style>

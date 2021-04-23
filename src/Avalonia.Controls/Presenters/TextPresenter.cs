@@ -1,9 +1,11 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Input.TextInput;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -77,12 +79,15 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(SelectionBrushProperty);
+            AffectsRender<TextPresenter>(SelectionBrushProperty, TextBlock.ForegroundProperty, 
+                                         SelectionForegroundBrushProperty, CaretBrushProperty,
+                                         SelectionStartProperty, SelectionEndProperty);
+            
             AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, RevealPasswordProperty, 
                 TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
                 TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
 
-            Observable.Merge(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
+            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, TextBlock.ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
                 TextBlock.FontSizeProperty.Changed, TextBlock.FontStyleProperty.Changed, 
                 TextBlock.FontWeightProperty.Changed, TextBlock.FontFamilyProperty.Changed,
@@ -282,7 +287,7 @@ namespace Avalonia.Controls.Presenters
             return new FormattedText
             {
                 Constraint = constraint,
-                Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
                 FontSize = FontSize,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
@@ -311,7 +316,24 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            context.DrawText(Foreground, new Point(), FormattedText);
+            double top = 0;
+            var textSize = FormattedText.Bounds.Size;
+
+            if (Bounds.Height < textSize.Height)
+            {
+                switch (VerticalAlignment)
+                {
+                    case VerticalAlignment.Center:
+                        top += (Bounds.Height - textSize.Height) / 2;
+                        break;
+
+                    case VerticalAlignment.Bottom:
+                        top += (Bounds.Height - textSize.Height);
+                        break;
+                }
+            }
+
+            context.DrawText(Foreground, new Point(0, top), FormattedText);
         }
 
         public override void Render(DrawingContext context)
@@ -359,17 +381,21 @@ namespace Avalonia.Controls.Presenters
 
                 if (_caretBlink)
                 {
-                    var charPos = FormattedText.HitTestTextPosition(CaretIndex);
-                    var x = Math.Floor(charPos.X) + 0.5;
-                    var y = Math.Floor(charPos.Y) + 0.5;
-                    var b = Math.Ceiling(charPos.Bottom) - 0.5;
-
+                    var (p1, p2) = GetCaretPoints();
                     context.DrawLine(
                         new Pen(caretBrush, 1),
-                        new Point(x, y),
-                        new Point(x, b));
+                        p1, p2);
                 }
             }
+        }
+
+        (Point, Point) GetCaretPoints()
+        {
+            var charPos = FormattedText.HitTestTextPosition(CaretIndex);
+            var x = Math.Floor(charPos.X) + 0.5;
+            var y = Math.Floor(charPos.Y) + 0.5;
+            var b = Math.Ceiling(charPos.Bottom) - 0.5;
+            return (new Point(x, y), new Point(x, b));
         }
 
         public void ShowCaret()
@@ -499,7 +525,7 @@ namespace Avalonia.Controls.Presenters
                 return new FormattedText
                 {
                     Text = "X",
-                    Typeface = FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                    Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
                     FontSize = FontSize,
                     TextAlignment = TextAlignment,
                     Constraint = availableSize,
@@ -518,6 +544,12 @@ namespace Avalonia.Controls.Presenters
         {
             _caretBlink = !_caretBlink;
             InvalidateVisual();
+        }
+
+        internal Rect GetCursorRectangle()
+        {
+            var (p1, p2) = GetCaretPoints();
+            return new Rect(p1, p2);
         }
     }
 }

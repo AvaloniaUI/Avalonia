@@ -313,7 +313,6 @@ namespace Avalonia.LeakTests
             }
         }
 
-
         [Fact]
         public void Slider_Is_Freed()
         {
@@ -344,6 +343,43 @@ namespace Avalonia.LeakTests
 
                 dotMemory.Check(memory =>
                     Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Slider>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
+        public void TabItem_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new TabControl
+                        {
+                            Items = new[] { new TabItem() }
+                        }
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that TabControl and TabItem gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    var tabControl = Assert.IsType<TabControl>(window.Presenter.Child);
+                    Assert.IsType<TabItem>(tabControl.Presenter.Panel.Children[0]);
+
+                    // Clear the items and ensure the TabItem is removed.
+                    tabControl.Items = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Empty(tabControl.Presenter.Panel.Children);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TabItem>()).ObjectsCount));
             }
         }
 
@@ -460,7 +496,7 @@ namespace Avalonia.LeakTests
                 
                 AttachShowAndDetachContextMenu(window);
 
-                Mock.Get(window.PlatformImpl).ResetCalls();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -505,7 +541,7 @@ namespace Avalonia.LeakTests
                 BuildAndShowContextMenu(window);
                 BuildAndShowContextMenu(window);
 
-                Mock.Get(window.PlatformImpl).ResetCalls();
+                Mock.Get(window.PlatformImpl).Invocations.Clear();
                 dotMemory.Check(memory =>
                     Assert.Equal(initialMenuCount, memory.GetObjects(where => where.Type.Is<ContextMenu>()).ObjectsCount));
                 dotMemory.Check(memory =>
@@ -552,6 +588,37 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [Fact]
+        public void ItemsRepeater_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new ItemsRepeater(),
+                    };
+
+                    window.Show();
+
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<ItemsRepeater>(window.Presenter.Child);
+
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<ItemsRepeater>()).ObjectsCount));
+            }
+        }
+
         private IDisposable Start()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(
@@ -570,8 +637,9 @@ namespace Avalonia.LeakTests
         {
             public bool DrawFps { get; set; }
             public bool DrawDirtyRects { get; set; }
+#pragma warning disable CS0067
             public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
-
+#pragma warning restore CS0067
             public void AddDirty(IVisual visual)
             {
             }

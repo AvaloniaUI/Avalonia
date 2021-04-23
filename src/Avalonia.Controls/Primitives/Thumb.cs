@@ -1,9 +1,11 @@
 using System;
+using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
+    [PseudoClasses(":pressed")]
     public class Thumb : TemplatedControl
     {
         public static readonly RoutedEvent<VectorEventArgs> DragStartedEvent =

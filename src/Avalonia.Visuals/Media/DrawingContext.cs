@@ -122,11 +122,22 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush brush, IPen pen, Geometry geometry)
         {
+            DrawGeometry(brush, pen, geometry.PlatformImpl);
+        }
+
+        /// <summary>
+        /// Draws a geometry.
+        /// </summary>
+        /// <param name="brush">The fill brush.</param>
+        /// <param name="pen">The stroke pen.</param>
+        /// <param name="geometry">The geometry.</param>
+        public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
+        {
             Contract.Requires<ArgumentNullException>(geometry != null);
 
             if (brush != null || PenIsVisible(pen))
             {
-                PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);
+                PlatformImpl.DrawGeometry(brush, pen, geometry);
             }
         }
 
@@ -206,14 +217,13 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
             Contract.Requires<ArgumentNullException>(glyphRun != null);
 
             if (foreground != null)
             {
-                PlatformImpl.DrawGlyphRun(foreground, glyphRun, baselineOrigin);
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun);
             }
         }
 

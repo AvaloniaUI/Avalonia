@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -8,11 +10,16 @@ namespace Avalonia
     /// <summary>
     /// Defines a point.
     /// </summary>
-    public readonly struct Point : IEquatable<Point>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Point : IEquatable<Point>
     {
         static Point()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<PointAnimator>(prop => typeof(Point).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>
@@ -266,6 +273,25 @@ namespace Avalonia
         public Point WithY(double y)
         {
             return new Point(_x, y);
+        }
+
+        /// <summary>
+        /// Deconstructs the point into its X and Y coordinates.
+        /// </summary>
+        /// <param name="x">The X coordinate.</param>
+        /// <param name="y">The Y coordinate.</param>
+        public void Deconstruct(out double x, out double y)
+        {
+            x = this._x;
+            y = this._y;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the X and Y coordinates are zero.
+        /// </summary>
+        public bool IsDefault
+        {
+            get { return (_x == 0) && (_y == 0); }
         }
     }
 }

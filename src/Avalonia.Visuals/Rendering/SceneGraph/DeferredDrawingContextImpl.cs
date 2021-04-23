@@ -204,13 +204,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
             var next = NextDrawAs<GlyphRunNode>();
 
             if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
             {
-                Add(new GlyphRunNode(Transform, foreground, glyphRun, baselineOrigin, CreateChildScene(foreground)));
+                Add(new GlyphRunNode(Transform, foreground, glyphRun, CreateChildScene(foreground)));
             }
 
             else
@@ -218,7 +218,7 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
         }
@@ -253,6 +253,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
+        public void PopBitmapBlendMode()
+        {
+            var next = NextDrawAs<BitmapBlendModeNode>();
+
+            if (next == null || !next.Item.Equals(null))
+            {
+                Add(new BitmapBlendModeNode());
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
         /// <inheritdoc/>
         public void PopOpacity()
         {
@@ -358,6 +373,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            var next = NextDrawAs<BitmapBlendModeNode>();
+
+            if (next == null || !next.Item.Equals(blendingMode))
+            {
+                Add(new BitmapBlendModeNode(blendingMode));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
         public readonly struct UpdateState : IDisposable
         {
             public UpdateState(

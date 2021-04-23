@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -31,7 +30,7 @@ namespace Avalonia.Skia
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
             FontWeight fontWeight,
-            FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
+            FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
         {
             SKFontStyle skFontStyle;
 
@@ -81,7 +80,7 @@ namespace Avalonia.Skia
                         continue;
                     }
 
-                    fontKey = new FontKey(skTypeface.FamilyName, fontStyle, fontWeight);
+                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight);
 
                     return true;
                 }
@@ -92,7 +91,7 @@ namespace Avalonia.Skia
 
                 if (skTypeface != null)
                 {
-                    fontKey = new FontKey(skTypeface.FamilyName, fontStyle, fontWeight);
+                    fontKey = new Typeface(skTypeface.FamilyName, fontStyle, fontWeight);
 
                     return true;
                 }
@@ -110,20 +109,23 @@ namespace Avalonia.Skia
             if (typeface.FontFamily.Key == null)
             {
                 var defaultName = SKTypeface.Default.FamilyName;
+                var fontStyle = new SKFontStyle((SKFontStyleWeight)typeface.Weight, SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style);
 
                 foreach (var familyName in typeface.FontFamily.FamilyNames)
                 {
-                    skTypeface = SKTypeface.FromFamilyName(familyName, (SKFontStyleWeight)typeface.Weight,
-                        SKFontStyleWidth.Normal, (SKFontStyleSlant)typeface.Style);
+                    skTypeface = _skFontManager.MatchFamily(familyName, fontStyle);
 
-                    if (!skTypeface.FamilyName.Equals(familyName, StringComparison.Ordinal) &&
-                        defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal))
+                    if (skTypeface is null
+                        || (!skTypeface.FamilyName.Equals(familyName, StringComparison.Ordinal)
+                            && defaultName.Equals(skTypeface.FamilyName, StringComparison.Ordinal)))
                     {
                         continue;
                     }
 
                     break;
                 }
+
+                skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle);
             }
             else
             {

@@ -5,7 +5,7 @@ namespace Avalonia
     /// <summary>
     /// Metadata for direct avalonia properties.
     /// </summary>
-    public class DirectPropertyMetadata<TValue> : PropertyMetadata, IDirectPropertyMetadata
+    public class DirectPropertyMetadata<TValue> : AvaloniaPropertyMetadata, IDirectPropertyMetadata
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyMetadata{TValue}"/> class.
@@ -47,7 +47,7 @@ namespace Avalonia
         object IDirectPropertyMetadata.UnsetValue => UnsetValue;
 
         /// <inheritdoc/>
-        public override void Merge(PropertyMetadata baseMetadata, AvaloniaProperty property)
+        public override void Merge(AvaloniaPropertyMetadata baseMetadata, AvaloniaProperty property)
         {
             base.Merge(baseMetadata, property);
 

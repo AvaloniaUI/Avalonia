@@ -1,5 +1,6 @@
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -9,6 +10,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Viewbox_Stretch_Uniform_Child()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var target = new Viewbox() { Child = new Rectangle() { Width = 100, Height = 50 } };
 
             target.Measure(new Size(200, 200));
@@ -25,6 +28,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Viewbox_Stretch_None_Child()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var target = new Viewbox() { Stretch = Stretch.None, Child = new Rectangle() { Width = 100, Height = 50 } };
 
             target.Measure(new Size(200, 200));
@@ -41,6 +46,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Viewbox_Stretch_Fill_Child()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var target = new Viewbox() { Stretch = Stretch.Fill, Child = new Rectangle() { Width = 100, Height = 50 } };
 
             target.Measure(new Size(200, 200));
@@ -57,6 +64,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Viewbox_Stretch_UniformToFill_Child()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var target = new Viewbox() { Stretch = Stretch.UniformToFill, Child = new Rectangle() { Width = 100, Height = 50 } };
 
             target.Measure(new Size(200, 200));
@@ -73,6 +82,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Viewbox_Stretch_Uniform_Child_With_Unrestricted_Width()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var target = new Viewbox() { Child = new Rectangle() { Width = 100, Height = 50 } };
 
             target.Measure(new Size(double.PositiveInfinity, 200));
@@ -89,6 +100,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Viewbox_Stretch_Uniform_Child_With_Unrestricted_Height()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             var target = new Viewbox() { Child = new Rectangle() { Width = 100, Height = 50 } };
 
             target.Measure(new Size(200, double.PositiveInfinity));

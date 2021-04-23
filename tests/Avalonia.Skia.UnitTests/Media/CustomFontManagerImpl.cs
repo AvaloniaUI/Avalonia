@@ -39,7 +39,7 @@ namespace Avalonia.Skia.UnitTests.Media
         private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily,
-            CultureInfo culture, out FontKey fontKey)
+            CultureInfo culture, out Typeface typeface)
         {
             foreach (var customTypeface in _customTypefaces)
             {
@@ -48,7 +48,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     continue;
                 }
 
-                fontKey = new FontKey(customTypeface.FontFamily.Name, fontStyle, fontWeight);
+                typeface = new Typeface(customTypeface.FontFamily, fontStyle, fontWeight);
 
                 return true;
             }
@@ -56,7 +56,7 @@ namespace Avalonia.Skia.UnitTests.Media
             var fallback = SKFontManager.Default.MatchCharacter(fontFamily?.Name, (SKFontStyleWeight)fontWeight,
                 SKFontStyleWidth.Normal, (SKFontStyleSlant)fontStyle, _bcp47, codepoint);
 
-            fontKey = new FontKey(fallback?.FamilyName ?? _defaultFamilyName, fontStyle, fontWeight);
+            typeface = new Typeface(fallback?.FamilyName ?? _defaultFamilyName, fontStyle, fontWeight);
 
             return true;
         }
@@ -73,17 +73,17 @@ namespace Avalonia.Skia.UnitTests.Media
                         skTypeface = typefaceCollection.Get(typeface);
                         break;
                     }
-
                 case "Noto Sans":
                     {
                         var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(_italicTypeface.FontFamily);
                         skTypeface = typefaceCollection.Get(typeface);
                         break;
                     }
+                case FontFamily.DefaultFontFamilyName:
                 case "Noto Mono":
                     {
                         var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(_defaultTypeface.FontFamily);
-                        skTypeface = typefaceCollection.Get(typeface);
+                        skTypeface = typefaceCollection.Get(_defaultTypeface);
                         break;
                     }
                 default:

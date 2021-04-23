@@ -16,7 +16,7 @@
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v11.0</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -126,10 +126,6 @@
     <ProjectReference Include="..\..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
       <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
       <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
-      <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>
-      <Name>Avalonia.ReactiveUI</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj">
       <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>

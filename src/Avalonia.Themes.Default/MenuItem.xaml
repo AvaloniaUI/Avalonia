@@ -59,12 +59,12 @@
                   Grid.Column="4"/>
             <Popup Name="PART_Popup"
                    PlacementMode="Right"
-                   IsLightDismissEnabled="True"
+                   IsLightDismissEnabled="False"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
-                <ScrollViewer>                  
+                <ScrollViewer Classes="menuscroller">                  
                     <ItemsPresenter Name="PART_ItemsPresenter"
                                     Items="{TemplateBinding Items}"
                                     ItemsPanel="{TemplateBinding ItemsPanel}"

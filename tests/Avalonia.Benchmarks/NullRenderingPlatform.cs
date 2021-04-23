@@ -28,7 +28,7 @@ namespace Avalonia.Benchmarks
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
         {
-            throw new NotImplementedException();
+            return new MockStreamGeometryImpl();
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()
@@ -86,10 +86,8 @@ namespace Avalonia.Benchmarks
             return new MockFontManagerImpl();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
-            width = default;
-
             return new NullGlyphRun();
         }
 

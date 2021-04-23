@@ -265,5 +265,26 @@ namespace Avalonia.Controls
                     $"The pseudoclass '{name}' may only be {operation} by the control itself.");
             }
         }
+
+        /// <summary>
+        /// Adds a or removes a  style class to/from the collection.
+        /// </summary>
+        /// <param name="name">The class names.</param>
+        /// <param name="value">If true adds the class, if false, removes it.</param>
+        /// <remarks>
+        /// Only standard classes may be added or removed via this method. To add pseudoclasses (classes
+        /// beginning with a ':' character) use the protected <see cref="StyledElement.PseudoClasses"/>
+        /// property.
+        /// </remarks>
+        public void Set(string name, bool value)
+        {
+            if (value)
+            {
+                if (!Contains(name))
+                    Add(name);
+            }
+            else
+                Remove(name);
+        }
     }
 }

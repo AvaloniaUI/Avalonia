@@ -13,6 +13,7 @@ namespace Avalonia.Win32.Interop
         /// <summary>
         /// Ported from https://github.com/chromium/chromium/blob/master/ui/views/win/fullscreen_handler.cc
         /// </summary>
+        /// <param name="hwnd">The window handle.</param>
         /// <param name="fullscreen">Fullscreen state.</param>
         public static unsafe void MarkFullscreen(IntPtr hwnd, bool fullscreen)
         {

@@ -16,30 +16,16 @@ namespace Avalonia.Controls
         private bool _queuedForDestruction;
         private bool _queuedForMoveResize;
         private readonly List<Visual> _propertyChangedSubscriptions = new List<Visual>();
-        private readonly EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChangedHandler;
-        static NativeControlHost()
-        {
-            IsVisibleProperty.Changed.AddClassHandler<NativeControlHost>(OnVisibleChanged);
-        }
-
-        public NativeControlHost()
-        {
-            _propertyChangedHandler = PropertyChangedHandler;
-        }
-
-        private static void OnVisibleChanged(NativeControlHost host, AvaloniaPropertyChangedEventArgs arg2)
-            => host.UpdateHost();
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _currentRoot = e.Root as TopLevel;
             var visual = (IVisual)this;
-            while (visual != _currentRoot)
+            while (visual != null)
             {
-
                 if (visual is Visual v)
                 {
-                    v.PropertyChanged += _propertyChangedHandler;
+                    v.PropertyChanged += PropertyChangedHandler;
                     _propertyChangedSubscriptions.Add(v);
                 }
 
@@ -51,7 +37,7 @@ namespace Avalonia.Controls
 
         private void PropertyChangedHandler(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.IsEffectiveValueChange && e.Property == BoundsProperty)
+            if (e.IsEffectiveValueChange && (e.Property == BoundsProperty || e.Property == IsVisibleProperty))
                 EnqueueForMoveResize();
         }
 
@@ -61,7 +47,7 @@ namespace Avalonia.Controls
             if (_propertyChangedSubscriptions != null)
             {
                 foreach (var v in _propertyChangedSubscriptions)
-                    v.PropertyChanged -= _propertyChangedHandler;
+                    v.PropertyChanged -= PropertyChangedHandler;
                 _propertyChangedSubscriptions.Clear();
             }
             UpdateHost();
@@ -134,7 +120,7 @@ namespace Avalonia.Controls
         private Rect? GetAbsoluteBounds()
         {
             var bounds = Bounds;
-            var position = this.TranslatePoint(bounds.Position, _currentRoot);
+            var position = this.TranslatePoint(default, _currentRoot);
             if (position == null)
                 return null;
             return new Rect(position.Value, bounds.Size);
@@ -157,10 +143,14 @@ namespace Avalonia.Controls
             var needsShow = IsEffectivelyVisible && bounds.HasValue;
 
             if (needsShow)
+            {
+                if (bounds.Value.IsEmpty)
+                    return false;
                 _attachment?.ShowInBounds(bounds.Value);
+            }
             else
                 _attachment?.HideWithSize(Bounds.Size);
-            return false;
+            return true;
         }
 
         private void CheckDestruction()

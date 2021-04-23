@@ -135,8 +135,8 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.KeyModifiers & KeyModifiers.Shift) != 0,
-                    (e.KeyModifiers & KeyModifiers.Control) != 0);
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Control));
             }
         }
 
@@ -154,8 +154,8 @@ namespace Avalonia.Controls
                     e.Handled = UpdateSelectionFromEventSource(
                         e.Source,
                         true,
-                        (e.KeyModifiers & KeyModifiers.Shift) != 0,
-                        (e.KeyModifiers & KeyModifiers.Control) != 0,
+                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+                        e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
                         point.Properties.IsRightButtonPressed);
                 }
             }
@@ -163,6 +163,7 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            base.OnApplyTemplate(e);
             Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
         }
     }

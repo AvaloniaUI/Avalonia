@@ -67,7 +67,7 @@ namespace Avalonia.Headless
 
         public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
 
         }
@@ -75,9 +75,10 @@ namespace Avalonia.Headless
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; }
 
-        public void Show()
+        public void Show(bool activate)
         {
-            Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
+            if (activate)
+                Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
         }
 
         public void Hide()
@@ -148,7 +149,7 @@ namespace Avalonia.Headless
 
         public void ShowDialog(IWindowImpl parent)
         {
-            Show();
+            Show(true);
         }
 
         public void SetSystemDecorations(bool enabled)

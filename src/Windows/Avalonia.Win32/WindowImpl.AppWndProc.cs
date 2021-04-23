@@ -65,6 +65,11 @@ namespace Avalonia.Win32
                             return IntPtr.Zero;
                         }
 
+                        BeforeCloseCleanup(false);
+
+                        // Used to distinguish between programmatic and regular close requests.
+                        _isCloseRequested = true;
+
                         break;
                     }
 
@@ -200,6 +205,10 @@ namespace Avalonia.Win32
                             DipFromLParam(lParam), GetMouseModifiers(wParam));
                         break;
                     }
+                // Mouse capture is lost
+                case WindowsMessage.WM_CANCELMODE:
+                    _mouseDevice.Capture(null);
+                    break;
 
                 case WindowsMessage.WM_MOUSEMOVE:
                     {
@@ -301,9 +310,9 @@ namespace Avalonia.Win32
                             {
                                 Input?.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                     _owner,
-                                    touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_UP) ?
+                                    touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_UP) ?
                                         RawPointerEventType.TouchEnd :
-                                        touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_DOWN) ?
+                                        touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                             RawPointerEventType.TouchBegin :
                                             RawPointerEventType.TouchUpdate,
                                     PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
@@ -338,24 +347,26 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_PAINT:
+                {
+                    using(NonPumpingSyncContext.Use())
+                    using (_rendererLock.Lock())
                     {
-                        using (_rendererLock.Lock())
+                        if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                         {
-                            if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
-                            {
-                                var f = RenderScaling;
-                                var r = ps.rcPaint;
-                                Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
-                                    (r.bottom - r.top) / f));
-                                EndPaint(_hwnd, ref ps);
-                            }
+                            var f = RenderScaling;
+                            var r = ps.rcPaint;
+                            Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
+                                (r.bottom - r.top) / f));
+                            EndPaint(_hwnd, ref ps);
                         }
-
-                        return IntPtr.Zero;
                     }
+
+                    return IntPtr.Zero;
+                }
 
                 case WindowsMessage.WM_SIZE:
                     {
+                        using(NonPumpingSyncContext.Use())
                         using (_rendererLock.Lock())
                         {
                             // Do nothing here, just block until the pending frame render is completed on the render thread
@@ -510,27 +521,27 @@ namespace Avalonia.Win32
             var keys = (ModifierKeys)ToInt32(wParam);
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_LBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_LBUTTON))
             {
                 modifiers |= RawInputModifiers.LeftMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_RBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_RBUTTON))
             {
                 modifiers |= RawInputModifiers.RightMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_MBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_MBUTTON))
             {
                 modifiers |= RawInputModifiers.MiddleMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_XBUTTON1))
+            if (keys.HasAllFlags(ModifierKeys.MK_XBUTTON1))
             {
                 modifiers |= RawInputModifiers.XButton1MouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_XBUTTON2))
+            if (keys.HasAllFlags(ModifierKeys.MK_XBUTTON2))
             {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             }

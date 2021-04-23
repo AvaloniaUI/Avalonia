@@ -122,6 +122,34 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
 
             [Fact]
+            public void Initializing_Source_Raises_SelectedItems_PropertyChanged()
+            {
+                var target = CreateTarget(false);
+                var selectedItemRaised = 0;
+                var selectedItemsRaised = 0;
+
+                target.Select(1);
+                target.Select(2);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                    else if (e.PropertyName == nameof(target.SelectedItems))
+                    {
+                        ++selectedItemsRaised;
+                    }
+                };
+
+                target.Source = new[] { "foo", "bar", "baz" };
+
+                Assert.Equal(1, selectedItemRaised);
+                Assert.Equal(1, selectedItemsRaised);
+            }
+
+            [Fact]
             public void Initializing_Source_Respects_Range_SourceItem_Order()
             {
                 var target = CreateTarget(false);
@@ -151,6 +179,34 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal(new[] { 1 }, target.SelectedIndexes);
                 Assert.Equal("bar", target.SelectedItem);
                 Assert.Equal(new[] { "bar" }, target.SelectedItems);
+            }
+
+            [Fact]
+            public void Changing_Source_To_Null_Raises_SelectedItems_PropertyChanged()
+            {
+                var target = CreateTarget();
+                var selectedItemRaised = 0;
+                var selectedItemsRaised = 0;
+
+                target.Select(1);
+                target.Select(2);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                    else if (e.PropertyName == nameof(target.SelectedItems))
+                    {
+                        ++selectedItemsRaised;
+                    }
+                };
+
+                target.Source = null;
+
+                Assert.Equal(1, selectedItemRaised);
+                Assert.Equal(1, selectedItemsRaised);
             }
         }
 
@@ -1160,6 +1216,7 @@ namespace Avalonia.Controls.UnitTests.Selection
                 var data = (AvaloniaList<string>)target.Source!;
                 var selectionChangedRaised = 0;
                 var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
                 var indexesChangedRaised = 0;
 
                 target.Source = data;
@@ -1170,6 +1227,11 @@ namespace Avalonia.Controls.UnitTests.Selection
                     if (e.PropertyName == nameof(target.SelectedIndex))
                     {
                         ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
                     }
                 };
 
@@ -1193,6 +1255,7 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal(2, target.AnchorIndex);
                 Assert.Equal(1, selectionChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
                 Assert.Equal(0, indexesChangedRaised);
             }
 

@@ -3,6 +3,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -138,7 +139,7 @@ namespace Avalonia.Controls
                 FontStyleProperty, TextWrappingProperty, FontFamilyProperty,
                 TextTrimmingProperty, TextProperty, PaddingProperty, LineHeightProperty, MaxLinesProperty);
 
-            Observable.Merge(TextProperty.Changed, ForegroundProperty.Changed,
+            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
                 TextTrimmingProperty.Changed, FontSizeProperty.Changed,
                 FontStyleProperty.Changed, FontWeightProperty.Changed,
@@ -415,26 +416,26 @@ namespace Avalonia.Controls
             {
                 return;
             }
+            
+            var padding = Padding;
+            var top = padding.Top;
+            var textSize = TextLayout.Size;
 
-            var textAlignment = TextAlignment;
-
-            var width = Bounds.Size.Width;
-
-            var offsetX = 0.0;
-
-            switch (textAlignment)
+            if (Bounds.Height < textSize.Height)
             {
-                case TextAlignment.Center:
-                    offsetX = (width - TextLayout.Size.Width) / 2;
-                    break;
-                case TextAlignment.Right:
-                    offsetX =  width - TextLayout.Size.Width;
-                    break;
+                switch (VerticalAlignment)
+                {
+                    case VerticalAlignment.Center:
+                        top += (Bounds.Height - textSize.Height) / 2;
+                        break;
+
+                    case VerticalAlignment.Bottom:
+                        top += (Bounds.Height - textSize.Height);
+                        break;
+                }
             }
 
-            var padding = Padding;
-
-            TextLayout.Draw(context, new Point(padding.Left + offsetX, padding.Top));
+            TextLayout.Draw(context, new Point(padding.Left, top));
         }
 
         /// <summary>
@@ -452,7 +453,7 @@ namespace Avalonia.Controls
 
             return new TextLayout(
                 text ?? string.Empty,
-                FontManager.Current?.GetOrAddTypeface(FontFamily, FontStyle, FontWeight),
+                new Typeface(FontFamily, FontStyle, FontWeight),
                 FontSize,
                 Foreground,
                 TextAlignment,

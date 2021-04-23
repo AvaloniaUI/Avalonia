@@ -24,7 +24,8 @@ namespace Avalonia.Rendering.SceneGraph
             using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
             using (var context = new DrawingContext(impl))
             {
-                Update(context, scene, (VisualNode)scene.Root, scene.Root.Visual.Bounds, true);
+                var clip = new Rect(scene.Root.Visual.Bounds.Size);
+                Update(context, scene, (VisualNode)scene.Root, clip, true);
             }
         }
 
@@ -77,7 +78,7 @@ namespace Avalonia.Rendering.SceneGraph
                         using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
                         using (var context = new DrawingContext(impl))
                         {
-                            var clip = scene.Root.Visual.Bounds;
+                            var clip = new Rect(scene.Root.Visual.Bounds.Size);
 
                             if (node.Parent != null)
                             {
@@ -174,7 +175,9 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (visual.IsVisible)
             {
-                var m = Matrix.CreateTranslation(visual.Bounds.Position);
+                var m = node != scene.Root ? 
+                    Matrix.CreateTranslation(visual.Bounds.Position) :
+                    Matrix.Identity;
 
                 var renderTransform = Matrix.Identity;
 

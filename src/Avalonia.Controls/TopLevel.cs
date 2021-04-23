@@ -1,8 +1,10 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -31,6 +33,7 @@ namespace Avalonia.Controls
         ICloseable,
         IStyleHost,
         ILogicalRoot,
+        ITextInputMethodRoot,
         IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
@@ -162,7 +165,7 @@ namespace Avalonia.Controls
             this.GetObservable(PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
-                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformCursor));
+                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformImpl));
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
@@ -489,5 +492,8 @@ namespace Avalonia.Controls
             if (focused == this)
                 KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
+
+        ITextInputMethodImpl ITextInputMethodRoot.InputMethod =>
+            (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
     }
 }

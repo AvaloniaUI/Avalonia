@@ -1,9 +1,9 @@
 using System;
+
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
-using Avalonia.Data;
-using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -14,6 +14,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents a single item of data inside a <see cref="TemplatedControl"/> template.
     /// </summary>
+    [PseudoClasses(":empty")]
     public class ContentPresenter : Control, IContentPresenter
     {
         /// <summary>
@@ -84,10 +85,19 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<Thickness> PaddingProperty =
             Decorator.PaddingProperty.AddOwner<ContentPresenter>();
 
+        /// <summary>
+        /// Defines the <see cref="RecognizesAccessKey"/> property
+        /// </summary>
+        public static readonly DirectProperty<ContentPresenter, bool> RecognizesAccessKeyProperty =
+            AvaloniaProperty.RegisterDirect<ContentPresenter, bool>(
+                nameof(RecognizesAccessKey),
+                cp => cp.RecognizesAccessKey, (cp, value) => cp.RecognizesAccessKey = value);
+
         private IControl _child;
         private bool _createdChild;
         private IRecyclingDataTemplate _recyclingDataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
+        private bool _recognizesAccessKey;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -100,6 +110,11 @@ namespace Avalonia.Controls.Presenters
             ContentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
             ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
             TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.TemplatedParentChanged(e));
+        }
+
+        public ContentPresenter()
+        {
+            UpdatePseudoClasses();
         }
 
         /// <summary>
@@ -200,6 +215,15 @@ namespace Avalonia.Controls.Presenters
         {
             get { return GetValue(PaddingProperty); }
             set { SetValue(PaddingProperty, value); }
+        }
+
+        /// <summary>
+        /// Determine if <see cref="ContentPresenter"/> should use <see cref="AccessText"/> in its style
+        /// </summary>
+        public bool RecognizesAccessKey
+        {
+            get => _recognizesAccessKey;
+            set => SetAndRaise(RecognizesAccessKeyProperty, ref _recognizesAccessKey, value);
         }
 
         /// <summary>
@@ -305,7 +329,12 @@ namespace Avalonia.Controls.Presenters
 
             if (content != null && newChild == null)
             {
-                var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? FuncDataTemplate.Default;
+                var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? 
+                    (
+                        RecognizesAccessKey 
+                            ? FuncDataTemplate.Access 
+                            : FuncDataTemplate.Default
+                    );
 
                 if (dataTemplate is IRecyclingDataTemplate rdt)
                 {
@@ -349,7 +378,7 @@ namespace Avalonia.Controls.Presenters
             var useLayoutRounding = UseLayoutRounding;
             var availableSize = finalSize;
             var sizeForChild = availableSize;
-            var scale = GetLayoutScale();
+            var scale = LayoutHelper.GetLayoutScale(this);
             var originX = offset.X;
             var originY = offset.Y;
 
@@ -424,19 +453,13 @@ namespace Avalonia.Controls.Presenters
                 _recyclingDataTemplate = null;
             }
 
+            UpdatePseudoClasses();
             InvalidateMeasure();
         }
 
-        private double GetLayoutScale()
+        private void UpdatePseudoClasses()
         {
-            var result = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
-
-            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
-            {
-                throw new Exception($"Invalid LayoutScaling returned from {VisualRoot.GetType()}");
-            }
-
-            return result;
+            PseudoClasses.Set(":empty", Content is null);
         }
 
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)

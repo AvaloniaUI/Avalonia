@@ -12,7 +12,8 @@ namespace Avalonia.Media.TextFormatting
         {
             var textWrapping = paragraphProperties.TextWrapping;
 
-            var textRuns = FetchTextRuns(textSource, firstTextSourceIndex, previousLineBreak, out var nextLineBreak);
+            var textRuns = FetchTextRuns(textSource, firstTextSourceIndex, previousLineBreak, 
+                out var nextLineBreak);
 
             var textRange = GetTextRange(textRuns);
 
@@ -21,20 +22,18 @@ namespace Avalonia.Media.TextFormatting
             switch (textWrapping)
             {
                 case TextWrapping.NoWrap:
-                    {
-                        var textLineMetrics =
-                            TextLineMetrics.Create(textRuns, textRange, paragraphWidth, paragraphProperties);
-
-                        textLine = new TextLineImpl(textRuns, textLineMetrics, nextLineBreak);
-                        break;
-                    }
+                {
+                    textLine = new TextLineImpl(textRuns, textRange, paragraphWidth, paragraphProperties,
+                        nextLineBreak);
+                    break;
+                }
                 case TextWrapping.WrapWithOverflow:
                 case TextWrapping.Wrap:
-                    {
-                        textLine = PerformTextWrapping(textRuns, textRange, paragraphWidth, paragraphProperties,
-                            nextLineBreak);
-                        break;
-                    }
+                {
+                    textLine = PerformTextWrapping(textRuns, textRange, paragraphWidth, paragraphProperties,
+                        nextLineBreak);
+                    break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -43,18 +42,24 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Measures the number of characters that fits into available width.
+        /// Measures the number of characters that fit into available width.
         /// </summary>
         /// <param name="textCharacters">The text run.</param>
         /// <param name="availableWidth">The available width.</param>
-        /// <returns></returns>
-        internal static int MeasureCharacters(ShapedTextCharacters textCharacters, double availableWidth)
+        /// <param name="count">The count of fitting characters.</param>
+        /// <returns>
+        /// <c>true</c> if characters fit into the available width; otherwise, <c>false</c>.
+        /// </returns>
+        internal static bool TryMeasureCharacters(ShapedTextCharacters textCharacters, double availableWidth,
+            out int count)
         {
             var glyphRun = textCharacters.GlyphRun;
 
-            if (glyphRun.Bounds.Width < availableWidth)
+            if (glyphRun.Size.Width < availableWidth)
             {
-                return glyphRun.Characters.Length;
+                count = glyphRun.Characters.Length;
+
+                return true;
             }
 
             var glyphCount = 0;
@@ -96,21 +101,42 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
+            if (glyphCount == 0)
+            {
+                count = 0;
+
+                return false;
+            }
+
             if (glyphCount == glyphRun.GlyphIndices.Length)
             {
-                return glyphRun.Characters.Length;
+                count = glyphRun.Characters.Length;
+
+                return true;
             }
 
             if (glyphRun.GlyphClusters.IsEmpty)
             {
-                return glyphCount;
+                count = glyphCount;
+
+                return true;
             }
 
             var firstCluster = glyphRun.GlyphClusters[0];
 
             var lastCluster = glyphRun.GlyphClusters[glyphCount];
 
-            return lastCluster - firstCluster;
+            if (glyphRun.IsLeftToRight)
+            {
+                count = lastCluster - firstCluster;
+            }
+            else
+            {
+                count = firstCluster - lastCluster;
+            }
+           
+
+            return count > 0;
         }
 
         /// <summary>
@@ -256,21 +282,24 @@ namespace Avalonia.Media.TextFormatting
                 switch (textRun)
                 {
                     case TextCharacters textCharacters:
+                    {
+                        var shapeableRuns = textCharacters.GetShapeableCharacters();
+
+                        foreach (var run in shapeableRuns)
                         {
-                            var shapeableRuns = textCharacters.GetShapeableCharacters();
+                            var glyphRun = TextShaper.Current.ShapeText(run.Text, run.Properties.Typeface,
+                                run.Properties.FontRenderingEmSize, run.Properties.CultureInfo);
 
-                            foreach (var run in shapeableRuns)
-                            {
-                                var glyphRun = TextShaper.Current.ShapeText(run.Text, run.Properties.Typeface,
-                                    run.Properties.FontRenderingEmSize, run.Properties.CultureInfo);
+                            var shapedCharacters = new ShapedTextCharacters(glyphRun, run.Properties);
 
-                                var shapedCharacters = new ShapedTextCharacters(glyphRun, run.Properties);
-
-                                textRuns.Add(shapedCharacters);
-                            }
-
-                            break;
+                            textRuns.Add(shapedCharacters);
                         }
+
+                        break;
+                    }
+                    case TextEndOfLine textEndOfLine:
+                        nextLineBreak = new TextLineBreak(textEndOfLine);
+                        break;
                 }
 
                 if (TryGetLineBreak(textRun, out var runLineBreak))
@@ -313,14 +342,6 @@ namespace Avalonia.Media.TextFormatting
                     return true;
                 }
 
-                //The line breaker isn't treating \n\r as a pair so we have to fix that here.
-                if (textRun.Text[lineBreak.PositionMeasure] == '\n'
-                    && textRun.Text[lineBreak.PositionWrap] == '\r')
-                {
-                    lineBreak = new LineBreak(lineBreak.PositionMeasure, lineBreak.PositionWrap + 1,
-                        lineBreak.Required);
-                }
-
                 return true;
             }
 
@@ -341,98 +362,137 @@ namespace Avalonia.Media.TextFormatting
         {
             var availableWidth = paragraphWidth;
             var currentWidth = 0.0;
-            var runIndex = 0;
+            var measuredLength = 0;
+
+            foreach (var currentRun in textRuns)
+            {
+                if (currentWidth + currentRun.Size.Width > availableWidth)
+                {
+                    if (TryMeasureCharacters(currentRun, paragraphWidth - currentWidth, out var count))
+                    {
+                        measuredLength += count;
+                    }
+
+                    break;
+                }
+
+                currentWidth += currentRun.Size.Width;
+
+                measuredLength += currentRun.Text.Length;
+            }
+
             var currentLength = 0;
 
-            while (runIndex < textRuns.Count)
-            {
-                var currentRun = textRuns[runIndex];
+            var lastWrapPosition = 0;
 
-                if (currentWidth + currentRun.GlyphRun.Bounds.Width > availableWidth)
+            var currentPosition = 0;
+
+            if (measuredLength == 0 && paragraphProperties.TextWrapping != TextWrapping.WrapWithOverflow)
+            {
+                measuredLength = 1;
+            }
+            else
+            {
+                for (var index = 0; index < textRuns.Count; index++)
                 {
-                    var measuredLength = MeasureCharacters(currentRun, paragraphWidth - currentWidth);
+                    var currentRun = textRuns[index];
+
+                    var lineBreaker = new LineBreakEnumerator(currentRun.Text);
 
                     var breakFound = false;
 
-                    var currentBreakPosition = 0;
-
-                    if (measuredLength < currentRun.Text.Length)
+                    while (lineBreaker.MoveNext())
                     {
-                        var lineBreaker = new LineBreakEnumerator(currentRun.Text);
-
-                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
+                        if (lineBreaker.Current.Required &&
+                            currentLength + lineBreaker.Current.PositionMeasure <= measuredLength)
                         {
-                            var nextBreakPosition = lineBreaker.Current.PositionWrap;
+                            breakFound = true;
 
-                            if (nextBreakPosition == 0 || nextBreakPosition > measuredLength)
+                            currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+
+                            break;
+                        }
+
+                        if ((paragraphProperties.TextWrapping != TextWrapping.WrapWithOverflow || lastWrapPosition != 0) &&
+                            currentLength + lineBreaker.Current.PositionMeasure > measuredLength)
+                        {
+                            if (lastWrapPosition > 0)
                             {
-                                break;
+                                currentPosition = lastWrapPosition;
+                            }
+                            else
+                            {
+                                currentPosition = currentLength + lineBreaker.Current.PositionWrap;
                             }
 
-                            breakFound = lineBreaker.Current.Required ||
-                                         lineBreaker.Current.PositionWrap != currentRun.Text.Length;
+                            breakFound = true;
 
-                            currentBreakPosition = nextBreakPosition;
+                            break;
                         }
-                    }
 
-                    if (breakFound)
-                    {
-                        measuredLength = currentBreakPosition;
-                    }
-                    else
-                    {
-                        if (paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
+                        if (currentLength + lineBreaker.Current.PositionWrap >= measuredLength)
                         {
-                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Skip(currentBreakPosition));
+                            currentPosition = currentLength + lineBreaker.Current.PositionWrap;
 
-                            if (lineBreaker.MoveNext())
+                            if (index < textRuns.Count - 1 &&
+                                lineBreaker.Current.PositionWrap == currentRun.Text.Length)
                             {
-                                measuredLength = currentBreakPosition + lineBreaker.Current.PositionWrap;
+                                var nextRun = textRuns[index + 1];
+
+                                lineBreaker = new LineBreakEnumerator(nextRun.Text);
+
+                                if (lineBreaker.MoveNext() &&
+                                    lineBreaker.Current.PositionMeasure == 0)
+                                {
+                                    currentPosition += lineBreaker.Current.PositionWrap;
+                                }
                             }
+
+                            breakFound = true;
+
+                            break;
                         }
+
+                        lastWrapPosition = currentLength + lineBreaker.Current.PositionWrap;
                     }
 
-                    currentLength += measuredLength;
-
-                    var splitResult = SplitTextRuns(textRuns, currentLength);
-
-                    var textLineMetrics = TextLineMetrics.Create(splitResult.First,
-                        new TextRange(textRange.Start, currentLength), paragraphWidth, paragraphProperties);
-
-                    var remainingCharacters = splitResult.Second;
-
-                    if (currentLineBreak?.RemainingCharacters != null)
+                    if (!breakFound)
                     {
-                        if (remainingCharacters != null)
-                        {
-                            remainingCharacters.AddRange(currentLineBreak.RemainingCharacters);
-                        }
-                        else
-                        {
-                            remainingCharacters = new List<ShapedTextCharacters>(currentLineBreak.RemainingCharacters);
-                        }
+                        currentLength += currentRun.Text.Length;
+
+                        continue;
                     }
 
-                    var lineBreak = remainingCharacters != null && remainingCharacters.Count > 0 ?
-                        new TextLineBreak(remainingCharacters) :
-                        null;
+                    measuredLength = currentPosition;
 
-                    return new TextLineImpl(splitResult.First, textLineMetrics, lineBreak);
+                    break;
                 }
+            }
+            
+            var splitResult = SplitTextRuns(textRuns, measuredLength);
 
-                currentWidth += currentRun.GlyphRun.Bounds.Width;
+            textRange = new TextRange(textRange.Start, measuredLength);
 
-                currentLength += currentRun.GlyphRun.Characters.Length;
+            var remainingCharacters = splitResult.Second;
 
-                runIndex++;
+            if (currentLineBreak?.RemainingCharacters != null)
+            {
+                if (remainingCharacters != null)
+                {
+                    remainingCharacters.AddRange(currentLineBreak.RemainingCharacters);
+                }
+                else
+                {
+                    remainingCharacters = new List<ShapedTextCharacters>(currentLineBreak.RemainingCharacters);
+                }
             }
 
-            return new TextLineImpl(textRuns,
-                TextLineMetrics.Create(textRuns, textRange, paragraphWidth, paragraphProperties),
-                currentLineBreak?.RemainingCharacters != null ?
-                    new TextLineBreak(currentLineBreak.RemainingCharacters) :
-                    null);
+            var lineBreak = remainingCharacters != null && remainingCharacters.Count > 0 ?
+                new TextLineBreak(remainingCharacters) :
+                null;
+
+            return new TextLineImpl(splitResult.First, textRange, paragraphWidth, paragraphProperties,
+                lineBreak);
         }
 
         /// <summary>
@@ -518,7 +578,7 @@ namespace Avalonia.Media.TextFormatting
 
                 _pos += Current.TextSourceLength;
 
-                return !(Current is TextEndOfLine);
+                return true;
             }
         }
     }

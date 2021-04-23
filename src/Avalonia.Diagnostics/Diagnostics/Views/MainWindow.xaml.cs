@@ -76,13 +76,29 @@ namespace Avalonia.Diagnostics.Views
             if (e.Modifiers == modifiers)
             {
                 var point = (Root as IInputRoot)?.MouseDevice?.GetPosition(Root) ?? default;
-                var control = Root.GetVisualsAt(point, x => (!(x is AdornerLayer) && x.IsVisible))
+                
+                var control = Root.GetVisualsAt(point, x =>
+                    {
+                        if (x is AdornerLayer || !x.IsVisible) return false;
+                        if (!(x is IInputElement ie)) return true;
+                        return ie.IsHitTestVisible;
+                    })
                     .FirstOrDefault();
 
                 if (control != null)
                 {
                     var vm = (MainViewModel)DataContext;
                     vm.SelectControl((IControl)control);
+                }
+            } 
+            else if (e.Modifiers == RawInputModifiers.Alt)
+            {
+                if (e.Key == Key.S || e.Key == Key.D)
+                {
+                    var enable = e.Key == Key.S;
+
+                    var vm = (MainViewModel)DataContext;
+                    vm.EnableSnapshotStyles(enable);
                 }
             }
         }

@@ -11,7 +11,7 @@ namespace Avalonia.Input
             return _items.ContainsKey(dataFormat);
         }
 
-        public object Get(string dataFormat)
+        public object? Get(string dataFormat)
         {
             if (_items.ContainsKey(dataFormat))
                 return _items[dataFormat];
@@ -23,12 +23,12 @@ namespace Avalonia.Input
             return _items.Keys;
         }
 
-        public IEnumerable<string> GetFileNames()
+        public IEnumerable<string>? GetFileNames()
         {
             return Get(DataFormats.FileNames) as IEnumerable<string>;
         }
 
-        public string GetText()
+        public string? GetText()
         {
             return Get(DataFormats.Text) as string;
         }
