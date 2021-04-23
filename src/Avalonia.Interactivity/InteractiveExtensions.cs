@@ -65,7 +65,7 @@ namespace Avalonia.Interactivity
         /// <param name="e">The routed event.</param>
         /// <returns>An <see cref="EventRoute"/> describing the route.</returns>
         /// <remarks>
-        /// Usually, calling <see cref="RaiseEvent(IInteractive, RoutedEventArgs)"/> is sufficent to raise a routed
+        /// Usually, calling <see cref="IInteractive.RaiseEvent(RoutedEventArgs)"/> is sufficent to raise a routed
         /// event, however there are situations in which the construction of the event args is expensive
         /// and should be avoided if there are no handlers for an event. In these cases you can call
         /// this method to build the event route and check the <see cref="EventRoute.HasHandlers"/>
@@ -79,8 +79,8 @@ namespace Avalonia.Interactivity
             var result = new EventRoute(e);
             var hasClassHandlers = e.HasRaisedSubscriptions;
 
-            if (e.RoutingStrategies.HasFlagCustom(RoutingStrategies.Bubble) ||
-                e.RoutingStrategies.HasFlagCustom(RoutingStrategies.Tunnel))
+            if (e.RoutingStrategies.HasAllFlags(RoutingStrategies.Bubble) ||
+                e.RoutingStrategies.HasAllFlags(RoutingStrategies.Tunnel))
             {
                 IInteractive? element = interactive;
 

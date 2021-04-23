@@ -432,7 +432,7 @@ namespace Avalonia.Input
 
             IInputElement? branch = null;
 
-            var el = element;
+            IInputElement? el = element;
 
             while (el != null)
             {

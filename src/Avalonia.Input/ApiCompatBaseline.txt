@@ -1,5 +1,8 @@
 Compat issues with assembly Avalonia.Input:
 MembersMustExist : Member 'public Avalonia.Platform.IPlatformHandle Avalonia.Input.Cursor.PlatformCursor.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Input.Gestures.DoubleTappedEvent' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Input.Gestures.RightTappedEvent' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Input.Gestures.TappedEvent' does not exist in the implementation but it does exist in the contract.
 CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Input.IInputElement' does not implement interface 'Avalonia.VisualTree.IVisual' in the implementation but it does in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Collections.Generic.IEnumerable<Avalonia.Input.IInputElement> Avalonia.Input.IInputElement.InputChildren' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Input.IInputElement Avalonia.Input.IInputElement.InputParent' is present in the implementation but not in the contract.
@@ -17,6 +20,12 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Point Avalon
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.PixelPoint Avalonia.Input.IInputRoot.PointToScreen(Avalonia.Point)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Input.IInputElement Avalonia.Input.IMainMenu.InputElement' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Input.IInputElement Avalonia.Input.IMainMenu.InputElement.get()' is present in the implementation but not in the contract.
+MembersMustExist : Member 'public Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Input.InputElement.DoubleTappedEvent' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Interactivity.RoutedEvent<Avalonia.Interactivity.RoutedEventArgs> Avalonia.Input.InputElement.TappedEvent' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Input.InputElement.add_DoubleTapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Input.InputElement.add_Tapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Input.InputElement.remove_DoubleTapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Input.InputElement.remove_Tapped(System.EventHandler<Avalonia.Interactivity.RoutedEventArgs>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.Collections.Generic.IEnumerable<Avalonia.Input.IInputElement> Avalonia.Input.InputExtensions.GetInputElementsAt(Avalonia.Input.IInputElement, Avalonia.Point)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.Input.IInputElement Avalonia.Input.InputExtensions.InputHitTest(Avalonia.Input.IInputElement, Avalonia.Point, System.Func<Avalonia.VisualTree.IVisual, System.Boolean>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.Boolean Avalonia.Input.KeyboardNavigation.GetIsTabStop(Avalonia.Input.InputElement)' does not exist in the implementation but it does exist in the contract.
@@ -26,4 +35,4 @@ MembersMustExist : Member 'public void Avalonia.Input.KeyboardNavigation.SetIsTa
 MembersMustExist : Member 'public void Avalonia.Input.KeyboardNavigation.SetTabNavigation(Avalonia.Input.InputElement, Avalonia.Input.KeyboardNavigationMode)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Input.KeyboardNavigation.SetTabOnceActiveElement(Avalonia.Input.InputElement, Avalonia.Input.IInputElement)' does not exist in the implementation but it does exist in the contract.
 TypesMustExist : Type 'Avalonia.Platform.IStandardCursorFactory' does not exist in the implementation but it does exist in the contract.
-Total Issues: 27
+Total Issues: 36

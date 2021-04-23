@@ -2595,7 +2595,7 @@ namespace Avalonia.Collections
         /// <returns>Whether the specified flag is set</returns>
         private bool CheckFlag(CollectionViewFlags flags)
         {
-            return _flags.HasFlagCustom(flags);
+            return _flags.HasAllFlags(flags);
         }
 
         /// <summary>

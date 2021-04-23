@@ -2355,7 +2355,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool CheckFlags(Flags flags)
         {
-            return _flags.HasFlagCustom(flags);
+            return _flags.HasAllFlags(flags);
         }
 
         private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
@@ -2790,10 +2790,10 @@ namespace Avalonia.Controls
             internal LayoutTimeSizeType SizeTypeU;
             internal LayoutTimeSizeType SizeTypeV;
             internal int Next;
-            internal bool IsStarU => SizeTypeU.HasFlagCustom(LayoutTimeSizeType.Star);
-            internal bool IsAutoU => SizeTypeU.HasFlagCustom(LayoutTimeSizeType.Auto);
-            internal bool IsStarV => SizeTypeV.HasFlagCustom(LayoutTimeSizeType.Star);
-            internal bool IsAutoV => SizeTypeV.HasFlagCustom(LayoutTimeSizeType.Auto);
+            internal bool IsStarU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Auto);
+            internal bool IsStarV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Auto);
         }
 
         /// <summary>

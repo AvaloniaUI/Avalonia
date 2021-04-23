@@ -483,7 +483,9 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, object>(
                 nameof(SelectedItem),
                 o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v);
+                (o, v) => o.SelectedItem = v,
+                defaultBindingMode: BindingMode.TwoWay,
+                enableDataValidation: true);
 
         /// <summary>
         /// Identifies the
@@ -1333,7 +1335,7 @@ namespace Avalonia.Controls
 
             base.OnApplyTemplate(e);
         }
-        
+
         /// <summary>
         /// Called to update the validation state for properties for which data validation is
         /// enabled.
@@ -1342,7 +1344,7 @@ namespace Avalonia.Controls
         /// <param name="value">The new binding value for the property.</param>
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
         {
-            if (property == TextProperty)
+            if (property == TextProperty || property == SelectedItemProperty)
             {
                 DataValidationErrors.SetError(this, value.Error);
             }
