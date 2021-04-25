@@ -192,7 +192,7 @@ namespace Avalonia.FreeDesktop
             {
                 var (it, menu) = i;
 
-                if (it is NativeMenuItemSeperator)
+                if (it is NativeMenuItemSeparator)
                 {
                     if (name == "type")
                         return "separator";
@@ -223,13 +223,13 @@ namespace Avalonia.FreeDesktop
                             return null;
                         var lst = new List<string>();
                         var mod = item.Gesture;
-                        if (mod.KeyModifiers.HasFlagCustom(KeyModifiers.Control))
+                        if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Control))
                             lst.Add("Control");
-                        if (mod.KeyModifiers.HasFlagCustom(KeyModifiers.Alt))
+                        if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Alt))
                             lst.Add("Alt");
-                        if (mod.KeyModifiers.HasFlagCustom(KeyModifiers.Shift))
+                        if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Shift))
                             lst.Add("Shift");
-                        if (mod.KeyModifiers.HasFlagCustom(KeyModifiers.Meta))
+                        if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Meta))
                             lst.Add("Super");
                         lst.Add(item.Gesture.Key.ToString());
                         return new[] { lst.ToArray() };

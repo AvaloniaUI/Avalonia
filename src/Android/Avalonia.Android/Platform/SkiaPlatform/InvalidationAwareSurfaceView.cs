@@ -13,7 +13,7 @@ namespace Avalonia.Android
         bool _invalidateQueued;
         readonly object _lock = new object();
         private readonly Handler _handler;
-        
+   
 
         public InvalidationAwareSurfaceView(Context context) : base(context)
         {
@@ -43,11 +43,13 @@ namespace Avalonia.Android
             }
         }
 
+        [Obsolete("deprecated")]
         public override void Invalidate(global::Android.Graphics.Rect dirty)
         {
             Invalidate();
         }
 
+        [Obsolete("deprecated")]
         public override void Invalidate(int l, int t, int r, int b)
         {
             Invalidate();
