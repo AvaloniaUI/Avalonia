@@ -394,6 +394,70 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Item_Count_Should_Be_Set_When_Items_Added()
+        {
+            var target = new ItemsControl()
+            {
+                Template = GetTemplate(),
+                Items = new[] { 1, 2, 3 },
+            };
+
+            Assert.Equal(3, target.ItemCount);
+        }
+
+        [Fact]
+        public void Item_Count_Should_Be_Set_When_Items_Changed()
+        {
+            var items = new ObservableCollection<int>() { 1, 2, 3 };
+
+            var target = new ItemsControl()
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            items.Add(4);
+
+            Assert.Equal(4, target.ItemCount);
+
+            items.Clear();
+
+            Assert.Equal(0, target.ItemCount);
+        }
+
+        [Fact]
+        public void Empty_Class_Should_Be_Set_When_Items_Collection_Cleared()
+        {
+            var items = new ObservableCollection<int>() { 1, 2, 3 };
+
+            var target = new ItemsControl()
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            items.Clear();
+
+            Assert.Contains(":empty", target.Classes);
+        }
+
+        [Fact]
+        public void Empty_Class_Should_Not_Be_Set_When_Items_Collection_Count_Increases()
+        {
+            var items = new ObservableCollection<int>() {};
+
+            var target = new ItemsControl()
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            items.Add(1);
+
+            Assert.DoesNotContain(":empty", target.Classes);
+        }
+
+        [Fact]
         public void Setting_Presenter_Explicitly_Should_Set_Item_Parent()
         {
             var target = new TestItemsControl();

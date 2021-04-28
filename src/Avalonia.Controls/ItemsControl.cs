@@ -346,6 +346,8 @@ namespace Avalonia.Controls
                 Presenter.Items = newValue;
             }
 
+            UpdatePseudoClasses();
+
             SubscribeToItems(newValue);
         }
 
@@ -372,9 +374,7 @@ namespace Avalonia.Controls
 
             Presenter?.ItemsChanged(e);
 
-            var collection = sender as ICollection;
-            PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
-            PseudoClasses.Set(":singleitem", collection != null && collection.Count == 1);
+            UpdatePseudoClasses();
         }
 
         /// <summary>
@@ -431,9 +431,6 @@ namespace Avalonia.Controls
         /// <param name="items">The items collection.</param>
         private void SubscribeToItems(IEnumerable items)
         {
-            PseudoClasses.Set(":empty", items == null || items.Count() == 0);
-            PseudoClasses.Set(":singleitem", items != null && items.Count() == 1);
-
             if (items is INotifyCollectionChanged incc)
             {
                 CollectionChangedEventManager.Instance.AddListener(incc, this);
@@ -467,6 +464,12 @@ namespace Avalonia.Controls
             {
                 ItemCount = Items.Count();
             }
+        }
+
+        private void UpdatePseudoClasses()
+        {
+            PseudoClasses.Set(":empty", ItemCount == 0);
+            PseudoClasses.Set(":singleitem", ItemCount == 1);
         }
 
         protected static IInputElement GetNextControl(
