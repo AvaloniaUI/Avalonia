@@ -70,7 +70,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsControl()
         {
-            PseudoClasses.Add(":empty");
+            UpdatePseudoClasses(0);
             SubscribeToItems(_items);
         }
 
@@ -323,6 +323,16 @@ namespace Avalonia.Controls
             base.OnKeyDown(e);
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ItemCountProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<int>());
+            }
+        }
+
         /// <summary>
         /// Called when the <see cref="Items"/> property changes.
         /// </summary>
@@ -345,8 +355,6 @@ namespace Avalonia.Controls
             {
                 Presenter.Items = newValue;
             }
-
-            UpdatePseudoClasses();
 
             SubscribeToItems(newValue);
         }
@@ -373,8 +381,6 @@ namespace Avalonia.Controls
             }
 
             Presenter?.ItemsChanged(e);
-
-            UpdatePseudoClasses();
         }
 
         /// <summary>
@@ -466,10 +472,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdatePseudoClasses()
+        private void UpdatePseudoClasses(int itemCount)
         {
-            PseudoClasses.Set(":empty", ItemCount == 0);
-            PseudoClasses.Set(":singleitem", ItemCount == 1);
+            PseudoClasses.Set(":empty", itemCount == 0);
+            PseudoClasses.Set(":singleitem", itemCount == 1);
         }
 
         protected static IInputElement GetNextControl(

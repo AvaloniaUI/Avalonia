@@ -380,6 +380,17 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Empty_Class_Should_Be_Set_When_Items_Not_Set()
+        {
+            var target = new ItemsControl()
+            {
+                Template = GetTemplate(),
+            };
+
+            Assert.Contains(":empty", target.Classes);
+        }
+
+        [Fact]
         public void Empty_Class_Should_Be_Set_When_Empty_Collection_Set()
         {
             var target = new ItemsControl()
@@ -444,7 +455,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Empty_Class_Should_Not_Be_Set_When_Items_Collection_Count_Increases()
         {
-            var items = new ObservableCollection<int>() {};
+            var items = new ObservableCollection<int>() { };
 
             var target = new ItemsControl()
             {
@@ -455,6 +466,54 @@ namespace Avalonia.Controls.UnitTests
             items.Add(1);
 
             Assert.DoesNotContain(":empty", target.Classes);
+        }
+
+        [Fact]
+        public void Single_Item_Class_Should_Be_Set_When_Items_Collection_Count_Increases_To_One()
+        {
+            var items = new ObservableCollection<int>() { };
+
+            var target = new ItemsControl()
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            items.Add(1);
+
+            Assert.Contains(":singleitem", target.Classes);
+        }
+
+        [Fact]
+        public void Empty_Class_Should_Not_Be_Set_When_Items_Collection_Cleared()
+        {
+            var items = new ObservableCollection<int>() { 1, 2, 3 };
+
+            var target = new ItemsControl()
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            items.Clear();
+
+            Assert.DoesNotContain(":singleitem", target.Classes);
+        }
+
+        [Fact]
+        public void Single_Item_Class_Should_Not_Be_Set_When_Items_Collection_Count_Increases_Beyond_One()
+        {
+            var items = new ObservableCollection<int>() { 1 };
+
+            var target = new ItemsControl()
+            {
+                Template = GetTemplate(),
+                Items = items,
+            };
+
+            items.Add(2);
+
+            Assert.DoesNotContain(":singleitem", target.Classes);
         }
 
         [Fact]
