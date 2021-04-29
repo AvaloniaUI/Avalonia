@@ -174,7 +174,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="20" SharedSizeGroup="Icon" />
                                 <ColumnDefinition Width="16" SharedSizeGroup="Splitter"  />
-                                <ColumnDefinition Width="400" SharedSizeGroup="Name" />
+                                <ColumnDefinition Width="275" SharedSizeGroup="Name" />
                                 <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
                                 <ColumnDefinition Width="200" SharedSizeGroup="Modified" />
                                 <ColumnDefinition Width="16" SharedSizeGroup="Splitter" />
@@ -253,7 +253,7 @@
         <Setter Property="Margin" Value="0"/>
         <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Width" Value="250"/>
+        <Setter Property="Width" Value="240"/>
         <Setter Property="Padding" Value="0,20"/>
         <Setter Property="Template">
             <ControlTemplate>
@@ -272,7 +272,7 @@
     </Style>
     <Style Selector="dialogs|ManagedFileChooser /template/ ListBox#QuickLinks ListBoxItem">
         <Setter Property="Height" Value="32"/>
-        <Setter Property="Padding" Value="34,6"/>
+        <Setter Property="Padding" Value="30,6"/>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border x:Name="LayoutRoot" CornerRadius="2" Margin="10,0">
