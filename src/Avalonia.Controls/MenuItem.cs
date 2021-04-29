@@ -70,7 +70,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<MenuItem, bool>(nameof(IsSubMenuOpen));
 
         /// <summary>
-        /// Defines the <see cref="IsSubMenuOpen"/> property.
+        /// Defines the <see cref="StaysOpenOnClick"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> StaysOpenOnClickProperty =
             AvaloniaProperty.Register<MenuItem, bool>(nameof(StaysOpenOnClick));
