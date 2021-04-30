@@ -1009,6 +1009,14 @@ namespace Avalonia.Controls
             get;
             set;
         }
+        /// <summary>
+        /// Holds a Comparer to use for sorting, if not using the default.
+        /// </summary>
+        public System.Collections.IComparer CustomSortComparer
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// We get the sort description from the data source.  We don't worry whether we can modify sort -- perhaps the sort description
@@ -1020,6 +1028,14 @@ namespace Avalonia.Controls
                 && OwningGrid.DataConnection != null
                 && OwningGrid.DataConnection.SortDescriptions != null)
             {
+                if(CustomSortComparer != null)
+                {
+                    return
+                        OwningGrid.DataConnection.SortDescriptions
+                                  .OfType<DataGridComparerSortDesctiption>()
+                                  .FirstOrDefault(s => s.SourceComparer == CustomSortComparer);
+                }
+
                 string propertyName = GetSortPropertyName();
 
                 return OwningGrid.DataConnection.SortDescriptions.FirstOrDefault(s => s.HasPropertyPath && s.PropertyPath == propertyName);
