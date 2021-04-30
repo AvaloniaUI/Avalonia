@@ -15,6 +15,9 @@ namespace Avalonia.NameGenerator.Generator
             }          
 #endif
 ";
+        private const string AttachDevToolsParameterDocumentation
+            = @"        /// <param name=""attachDevTools"">Should the dev tools be attached.</param>
+";
 
         public InitializeComponentCodeGenerator(IXamlTypeSystem types)
         {
@@ -45,6 +48,11 @@ namespace {nameSpace}
     {{
 {string.Join("\n", properties)}
 
+        /// <summary>
+        /// Wires up the controls and optionally loads XAML markup and attaches dev tools (if Avalonia.Diagnostics package is referenced).
+        /// </summary>
+        /// <param name=""loadXaml"">Should the XAML be loaded into the component.</param>
+{(attachDevTools ? AttachDevToolsParameterDocumentation : string.Empty)}
         public void InitializeComponent(bool loadXaml = true{(attachDevTools ? ", bool attachDevTools = true" : string.Empty)})
         {{
             if (loadXaml)

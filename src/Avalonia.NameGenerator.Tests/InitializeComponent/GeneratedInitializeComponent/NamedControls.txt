@@ -12,6 +12,11 @@ namespace Sample.App
         internal global::Avalonia.Controls.TextBox PasswordTextBox;
         internal global::Avalonia.Controls.Button SignUpButton;
 
+        /// <summary>
+        /// Wires up the controls and optionally loads XAML markup and attaches dev tools (if Avalonia.Diagnostics package is referenced).
+        /// </summary>
+        /// <param name="loadXaml">Should the XAML be loaded into the component.</param>
+
         public void InitializeComponent(bool loadXaml = true)
         {
             if (loadXaml)
