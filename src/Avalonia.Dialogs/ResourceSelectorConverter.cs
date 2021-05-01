@@ -5,7 +5,7 @@ using Avalonia.Data.Converters;
 
 namespace Avalonia.Dialogs
 {
-    internal class ResourceSelectorConverter : ResourceDictionary, IValueConverter
+    public class ResourceSelectorConverter : ResourceDictionary, IValueConverter
     {
         public object Convert(object key, Type targetType, object parameter, CultureInfo culture)
         {
