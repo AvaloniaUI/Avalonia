@@ -168,7 +168,7 @@ namespace Avalonia.Controls
 
             var panel = item.Presenter.Panel;
 
-            if (panel != null)
+            if (item.Presenter?.Panel != null)
             {
                 foreach (var child in panel.Children)
                 {
