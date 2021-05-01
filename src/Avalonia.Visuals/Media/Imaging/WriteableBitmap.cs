@@ -36,6 +36,14 @@ namespace Avalonia.Media.Imaging
 
         public ILockedFramebuffer Lock() => ((IWriteableBitmapImpl) PlatformImpl.Item).Lock();
 
+        /// <summary>
+        /// Creates a <see cref="DrawingContext"/> to render into the <see cref="WriteableBitmap"/>.
+        /// </summary>
+        public DrawingContext CreateDrawingContext()
+        {
+            return new DrawingContext(((IWriteableBitmapImpl)PlatformImpl.Item).CreateDrawingContext(null));
+        }
+
         private static IBitmapImpl CreatePlatformImpl(PixelSize size, in Vector dpi, PixelFormat? format, AlphaFormat? alphaFormat)
         {
             var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();

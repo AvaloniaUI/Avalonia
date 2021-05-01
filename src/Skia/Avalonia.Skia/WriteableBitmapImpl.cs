@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
 using SkiaSharp;
 
@@ -86,6 +88,28 @@ namespace Avalonia.Skia
             {
                 ImageSavingHelper.SaveImage(image, fileName);
             }
+        }
+
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        {
+            Monitor.Enter(_lock);
+
+            var pixmap = _bitmap.PeekPixels();
+            var surface = SKSurface.Create(pixmap);
+            var createInfo = new DrawingContextImpl.CreateInfo
+            {
+                 Canvas = surface.Canvas,
+                 Dpi = Dpi,
+                 VisualBrushRenderer = visualBrushRenderer
+            };
+
+            return new DrawingContextImpl(createInfo, Disposable.Create(() =>
+            {
+                _bitmap.NotifyPixelsChanged();
+                surface.Dispose();
+                pixmap.Dispose();
+                Monitor.Exit(_lock);
+            }));
         }
 
         /// <inheritdoc />

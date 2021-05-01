@@ -1,5 +1,7 @@
 ﻿using System;
 using Avalonia.Platform;
+using Avalonia.Rendering;
+using SharpDX.Direct2D1;
 using SharpDX.WIC;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 
@@ -12,6 +14,27 @@ namespace Avalonia.Direct2D1.Media.Imaging
         {
         }
 
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        {
+            if (WicImpl.PixelFormat != SharpDX.WIC.PixelFormat.Format32bppPBGRA &&
+                WicImpl.PixelFormat != SharpDX.WIC.PixelFormat.Format32bppPRGBA)
+                throw new NotSupportedException("Direct2D only supports drawing to bitmaps with premultiplied alpha.");
+
+            var renderTarget = new WicRenderTarget(
+                Direct2D1Platform.Direct2D1Factory,
+                WicImpl,
+                new RenderTargetProperties
+                {
+                    DpiX = (float)Dpi.X,
+                    DpiY = (float)Dpi.Y,
+                });
+
+            return new DrawingContextImpl(visualBrushRenderer, null, renderTarget, finishedCallback: () =>
+            {
+                Version++;
+            });
+        }
+ 
         class LockedBitmap : ILockedFramebuffer
         {
             private readonly WriteableWicBitmapImpl _parent;

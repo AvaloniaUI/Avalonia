@@ -63,4 +63,5 @@ InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalon
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun, System.Double)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun, System.Double)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 64
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IDrawingContextImpl Avalonia.Platform.IWriteableBitmapImpl.CreateDrawingContext(Avalonia.Rendering.IVisualBrushRenderer)' is present in the implementation but not in the contract.
+Total Issues: 65
