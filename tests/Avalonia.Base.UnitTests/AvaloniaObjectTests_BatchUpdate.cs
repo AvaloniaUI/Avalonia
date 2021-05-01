@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -102,6 +103,25 @@ namespace Avalonia.Base.UnitTests
 
             Assert.Equal(1, raised.Count);
             Assert.Equal("baz", target.Foo);
+        }
+
+        [Fact]
+        public void SetValue_Change_Should_Be_Raised_After_Batch_Update_3()
+        {
+            var target = new TestClass();
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
+
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            target.BeginBatchUpdate();
+            target.SetValue(TestClass.BazProperty, Orientation.Horizontal, BindingPriority.LocalValue);
+            target.EndBatchUpdate();
+
+            Assert.Equal(1, raised.Count);
+            Assert.Equal(TestClass.BazProperty, raised[0].Property);
+            Assert.Equal(Orientation.Vertical, raised[0].OldValue);
+            Assert.Equal(Orientation.Horizontal, raised[0].NewValue);
+            Assert.Equal(Orientation.Horizontal, target.Baz);
         }
 
         [Fact]
@@ -232,6 +252,26 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("baz", target.Foo);
             Assert.Equal("foo", raised[0].OldValue);
             Assert.Equal("baz", raised[0].NewValue);
+        }
+
+        [Fact]
+        public void Binding_Change_Should_Be_Raised_After_Batch_Update_3()
+        {
+            var target = new TestClass();
+            var observable = new TestObservable<Orientation>(Orientation.Horizontal);
+            var raised = new List<AvaloniaPropertyChangedEventArgs>();
+
+            target.PropertyChanged += (s, e) => raised.Add(e);
+
+            target.BeginBatchUpdate();
+            target.Bind(TestClass.BazProperty, observable, BindingPriority.LocalValue);
+            target.EndBatchUpdate();
+
+            Assert.Equal(1, raised.Count);
+            Assert.Equal(TestClass.BazProperty, raised[0].Property);
+            Assert.Equal(Orientation.Vertical, raised[0].OldValue);
+            Assert.Equal(Orientation.Horizontal, raised[0].NewValue);
+            Assert.Equal(Orientation.Horizontal, target.Baz);
         }
 
         [Fact]
@@ -579,6 +619,9 @@ namespace Avalonia.Base.UnitTests
             public static readonly StyledProperty<string> BarProperty =
                 AvaloniaProperty.Register<TestClass, string>(nameof(Bar));
 
+            public static readonly StyledProperty<Orientation> BazProperty =
+                AvaloniaProperty.Register<TestClass, Orientation>(nameof(Bar), Orientation.Vertical);
+
             public string Foo
             {
                 get => GetValue(FooProperty);
@@ -589,6 +632,12 @@ namespace Avalonia.Base.UnitTests
             {
                 get => GetValue(BarProperty);
                 set => SetValue(BarProperty, value);
+            }
+
+            public Orientation Baz
+            {
+                get => GetValue(BazProperty);
+                set => SetValue(BazProperty, value);
             }
         }
 
