@@ -31,7 +31,6 @@ namespace Avalonia.Controls
     /// <see cref="E:Avalonia.Controls.AutoCompleteBox.Populated" />
     /// event.
     /// </summary>
-    [PseudoClasses(":dropdownopen")]
     public class PopulatedEventArgs : EventArgs
     {
         /// <summary>
@@ -253,6 +252,7 @@ namespace Avalonia.Controls
     /// drop-down that contains possible matches based on the input in the text
     /// box.
     /// </summary>
+    [PseudoClasses(":dropdownopen")]
     public class AutoCompleteBox : TemplatedControl
     {
         /// <summary>

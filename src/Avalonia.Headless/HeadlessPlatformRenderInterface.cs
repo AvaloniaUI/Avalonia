@@ -90,9 +90,8 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(destinationSize, new Vector(96, 96));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
-            width = 100;
             return new HeadlessGlyphRunStub();
         }
 

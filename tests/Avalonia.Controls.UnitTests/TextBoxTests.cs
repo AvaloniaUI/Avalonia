@@ -378,7 +378,7 @@ namespace Avalonia.Controls.UnitTests
 
         [Theory]
         [InlineData(new object[] { false, TextWrapping.NoWrap, ScrollBarVisibility.Hidden })]
-        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Hidden })]
+        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
         [InlineData(new object[] { true, TextWrapping.NoWrap, ScrollBarVisibility.Auto })]
         [InlineData(new object[] { true, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
         public void Has_Correct_Horizontal_ScrollBar_Visibility(
