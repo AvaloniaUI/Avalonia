@@ -2,16 +2,6 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
        xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
-    <!-- Accent Colours -->
-    <!-- TODO pull accents from system... algorithm to generate shades -->
-    <Color x:Key="SystemAccentColor">#FF0078D7</Color>
-    <Color x:Key="SystemAccentColorDark1">#FF005A9E</Color>
-    <Color x:Key="SystemAccentColorDark2">#FF004275</Color>
-    <Color x:Key="SystemAccentColorDark3">#FF002642</Color>
-    <Color x:Key="SystemAccentColorLight1">#FF429CE3</Color>
-    <Color x:Key="SystemAccentColorLight2">#FF76B9ED</Color>
-    <Color x:Key="SystemAccentColorLight3">#FFA6D8FF</Color>
-
     <!-- System Control Colors -->
     <Color x:Key="SystemAltHighColor">#FFFFFFFF</Color>
     <Color x:Key="SystemAltLowColor">#33FFFFFF</Color>
@@ -39,6 +29,9 @@
     <Color x:Key="SystemListLowColor">#19000000</Color>
     <Color x:Key="SystemListMediumColor">#33000000</Color>
     <Color x:Key="SystemErrorTextColor">#C50500</Color>
+
+    <Color x:Key="SystemRevealListLowColor">#17000000</Color>
+    <Color x:Key="SystemRevealListMediumColor">#2E000000</Color>
 
     <SolidColorBrush x:Key="SystemControlBackgroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
     <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="{StaticResource SystemAltHighColor}" />
@@ -135,7 +128,7 @@
     <SolidColorBrush x:Key="SystemControlPageTextBaseHighBrush" Color="{StaticResource SystemBaseHighColor}" />
     <SolidColorBrush x:Key="SystemControlPageTextBaseMediumBrush" Color="{StaticResource SystemBaseMediumColor}" />
     <SolidColorBrush x:Key="SystemControlPageTextChromeBlackMediumLowBrush" Color="{StaticResource SystemChromeBlackMediumLowColor}" />
-    <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+    <!--<SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" /> (DEFINED IN BASE.XAML)-->
     <SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{StaticResource SystemErrorTextColor}" />
     <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.14" />
     <SolidColorBrush x:Key="SystemControlHighlightListLowRevealBackgroundBrush" Color="{StaticResource SystemListMediumColor}" />
@@ -150,9 +143,48 @@
     <!--<AcrylicBrush x:Key="SystemControlTransientBackgroundBrush" BackgroundSource="HostBackdrop" TintColor="{StaticResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{StaticResource SystemChromeMediumLowColor}" />-->
     <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{StaticResource SystemChromeMediumLowColor}" />
     <StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
-    <x:Boolean x:Key="IsApplicationFocusVisualKindReveal">False</x:Boolean>
+    <!--<x:Boolean x:Key="IsApplicationFocusVisualKindReveal">False</x:Boolean>-->
 
+    <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
+    <!--<RevealBackgroundBrush x:Key="SystemControlTransparentRevealBackgroundBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+    <!--<RevealBorderBrush x:Key="SystemControlTransparentRevealBorderBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
+
+
+    <!--<RevealBackgroundBrush x:Key="SystemControlHighlightListLowRevealBackgroundBrush" TargetTheme="Light" Color="{ThemeResource SystemRevealListMediumColor}" FallbackColor="{ StaticResource SystemListMediumColor}" />-->
+    <Color x:Key="RegionColor">#FFFFFFFF</Color>
+    <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
+
+
+    <x:Double x:Key="AutoCompleteListMaxHeight">374</x:Double>
+    <Thickness x:Key="AutoCompleteListMargin">0,2,0,2</Thickness>
+    <Thickness x:Key="AutoCompleteListBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="AutoCompleteListPadding">-1,0,-1,0</Thickness>
+    <x:Double x:Key="TextControlThemeMinHeight">32</x:Double>
+    <x:Double x:Key="TextControlThemeMinWidth">64</x:Double>
+    <x:Double x:Key="FlyoutThemeMaxWidth">456</x:Double>
+    <Thickness x:Key="DateTimeFlyoutButtonBorderThickness">0</Thickness>
+    <Thickness x:Key="DateTimeFlyoutBorderThickness">1</Thickness>
+    <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
+
+    <Thickness x:Key="FlyoutContentThemePadding">12,11,12,12</Thickness>
+    <x:Double x:Key="FlyoutThemeMinWidth">96</x:Double>
+    <x:Double x:Key="FlyoutThemeMinHeight">40</x:Double>
+    <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
+
+    <!-- Moved from FlyoutPresenter.xaml -->
+    <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+
+    <!-- Moved from MenuItem.xaml -->
+    <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
+
+    <!-- Moved from Menu.xaml -->
+    <Thickness x:Key="MenuBarItemPadding">12,0,12,0</Thickness>
+    
+    
     <!-- Default Control Settings -->
+    <!-- UNUSED    
     <FontFamily x:Key="ContentControlThemeFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="MTCMediaFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="PhoneFontFamilyNormal">Segoe WP</FontFamily>
@@ -340,6 +372,6 @@
     <FontWeight x:Key="HubHeaderThemeFontWeight">Light</FontWeight>
     <FontWeight x:Key="HubSectionHeaderThemeFontWeight">Normal</FontWeight>
     <GridLength x:Key="AppBarExpandButtonThemeWidthGridLength">48</GridLength>
-    <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
+    <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>-->
   </Style.Resources>
 </Style>
