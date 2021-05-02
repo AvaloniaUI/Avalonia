@@ -2,16 +2,6 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
        xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
-    <!-- Accent Colours -->
-    <!-- TODO pull accents from system... algorithm to generate shades -->
-    <Color x:Key="SystemAccentColor">#FF0078D7</Color>
-    <Color x:Key="SystemAccentColorDark1">#FF005A9E</Color>
-    <Color x:Key="SystemAccentColorDark2">#FF004275</Color>
-    <Color x:Key="SystemAccentColorDark3">#FF002642</Color>
-    <Color x:Key="SystemAccentColorLight1">#FF429CE3</Color>
-    <Color x:Key="SystemAccentColorLight2">#FF76B9ED</Color>
-    <Color x:Key="SystemAccentColorLight3">#FFA6D8FF</Color>
-
     <!-- System Control Colors -->
     <Color x:Key="SystemAltHighColor">#FF000000</Color>
     <Color x:Key="SystemAltLowColor">#33000000</Color>
@@ -39,6 +29,9 @@
     <Color x:Key="SystemListLowColor">#19FFFFFF</Color>
     <Color x:Key="SystemListMediumColor">#33FFFFFF</Color>
     <Color x:Key="SystemErrorTextColor">#FFF000</Color>
+
+    <Color x:Key="SystemRevealListLowColor">#18FFFFFF</Color>
+    <Color x:Key="SystemRevealListMediumColor">#30FFFFFF</Color>
 
     <SolidColorBrush x:Key="SystemControlBackgroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
     <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="{StaticResource SystemAltHighColor}" />
@@ -135,7 +128,7 @@
     <SolidColorBrush x:Key="SystemControlPageTextBaseHighBrush" Color="{StaticResource SystemBaseHighColor}" />
     <SolidColorBrush x:Key="SystemControlPageTextBaseMediumBrush" Color="{StaticResource SystemBaseMediumColor}" />
     <SolidColorBrush x:Key="SystemControlPageTextChromeBlackMediumLowBrush" Color="{StaticResource SystemChromeBlackMediumLowColor}" />
-    <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
+    <!--<SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" /> (DEFINED IN BASE.XAML)-->
     <SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{StaticResource SystemErrorTextColor}" />
     <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.36" />
     <SolidColorBrush x:Key="SystemControlHighlightListLowRevealBackgroundBrush" Color="{StaticResource SystemListMediumColor}" />
@@ -150,10 +143,45 @@
     <!--<AcrylicBrush x:Key="SystemControlTransientBackgroundBrush" BackgroundSource="HostBackdrop" TintColor="{StaticResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{StaticResource SystemChromeMediumLowColor}" />-->
     <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{StaticResource SystemChromeMediumLowColor}" />
     <StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
-    <x:Boolean x:Key="IsApplicationFocusVisualKindReveal">False</x:Boolean>
+    <!--<x:Boolean x:Key="IsApplicationFocusVisualKindReveal">False</x:Boolean>-->
 
+    <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
+    <!--<RevealBackgroundBrush x:Key="SystemControlTransparentRevealBackgroundBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+    <!--<RevealBorderBrush x:Key="SystemControlTransparentRevealBorderBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
 
+    <Color x:Key="RegionColor">#FF000000</Color>
+    <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
+
+    <x:Double x:Key="AutoCompleteListMaxHeight">374</x:Double>
+    <Thickness x:Key="AutoCompleteListMargin">0,2,0,2</Thickness>
+    <Thickness x:Key="AutoCompleteListBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="AutoCompleteListPadding">-1,0,-1,0</Thickness>
+    <x:Double x:Key="TextControlThemeMinHeight">32</x:Double>
+    <x:Double x:Key="TextControlThemeMinWidth">64</x:Double>
+    <x:Double x:Key="FlyoutThemeMaxWidth">456</x:Double>
+    <Thickness x:Key="DateTimeFlyoutButtonBorderThickness">0</Thickness>
+    <Thickness x:Key="DateTimeFlyoutBorderThickness">1</Thickness>
+    <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
+
+    <Thickness x:Key="FlyoutContentThemePadding">12,11,12,12</Thickness>
+    <x:Double x:Key="FlyoutThemeMinWidth">96</x:Double>
+    <x:Double x:Key="FlyoutThemeMinHeight">40</x:Double>
+    <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
+    
+    <!-- Moved from FlyoutPresenter.xaml -->
+    <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+
+    <!-- Moved from MenuItem.xaml -->
+    <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
+
+    <!-- Moved from Menu.xaml -->
+    <Thickness x:Key="MenuBarItemPadding">12,0,12,0</Thickness>
+    
+    
     <!-- Default Control Settings -->
+    <!-- UNUSED    
     <FontFamily x:Key="ContentControlThemeFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="MTCMediaFontFamily">XamlAutoFontFamily</FontFamily>
     <FontFamily x:Key="PhoneFontFamilyNormal">Segoe WP</FontFamily>
@@ -167,7 +195,7 @@
     <x:Double x:Key="AppBarThemeMinimalHeight">24</x:Double>
     <x:Double x:Key="AppBarThemeCompactHeight">40</x:Double>
     <x:Double x:Key="AppBarExpandButtonCircleDiameter">3</x:Double>
-    <x:Double x:Key="AutoCompleteListMaxHeight">374</x:Double>
+    
     <x:Double x:Key="AutoCompleteListBorderOpacity">0</x:Double>
     <Thickness x:Key="CheckBoxBorderThemeThickness">2</Thickness>
     <Thickness x:Key="CheckBoxCheckedStrokeThickness">0</Thickness>
@@ -190,7 +218,7 @@
     <x:Double x:Key="DatePickerSpacingThemeWidth">20</x:Double>
     <x:Double x:Key="DatePickerSpacingThemeHeight">20</x:Double>
     <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
-    <x:Double x:Key="FlyoutThemeMaxWidth">456</x:Double>
+    
     <x:Double x:Key="FlyoutThemeMinHeight">40</x:Double>
     <x:Double x:Key="FlyoutThemeMinWidth">96</x:Double>
     <x:Double x:Key="FlyoutThemeTouchMinWidth">240</x:Double>
@@ -241,8 +269,7 @@
     <x:Double x:Key="TextControlBackgroundRestOpacity">0.4</x:Double>
     <x:Double x:Key="TextControlBackgroundHoverOpacity">0.6</x:Double>
     <x:Double x:Key="TextControlBackgroundFocusedOpacity">1</x:Double>
-    <x:Double x:Key="TextControlThemeMinHeight">32</x:Double>
-    <x:Double x:Key="TextControlThemeMinWidth">64</x:Double>
+    
     <x:Double x:Key="TextStyleLargeFontSize">18.14</x:Double>
     <x:Double x:Key="TextStyleExtraLargeFontSize">25.5</x:Double>
 
@@ -262,9 +289,7 @@
     <Thickness x:Key="AppBarTopBorderThemeThickness">0,0,0,0</Thickness>
     <Thickness x:Key="AppBarTopThemePadding">0,0,0,0</Thickness>
     <Thickness x:Key="AppBarExpandButtonCircleInnerPadding">3,0,3,0</Thickness>
-    <Thickness x:Key="AutoCompleteListBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="AutoCompleteListMargin">0,2,0,2</Thickness>
-    <Thickness x:Key="AutoCompleteListPadding">-1,0,-1,0</Thickness>
+    
     <Thickness x:Key="AutoCompleteListViewItemMargin">12,11,0,13</Thickness>
     <Thickness x:Key="ButtonBorderThemeThickness">2</Thickness>
     <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
@@ -286,9 +311,8 @@
     <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
     <Thickness x:Key="ContentDialogPadding">24,18,24,24</Thickness>
     <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
-    <Thickness x:Key="DateTimeFlyoutBorderThickness">1</Thickness>
-    <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
-    <Thickness x:Key="DateTimeFlyoutButtonBorderThickness">0</Thickness>
+    
+    
     <Thickness x:Key="DateTimeFlyoutContentPanelPortraitThemeMargin">0,37,0,0</Thickness>
     <Thickness x:Key="DateTimeFlyoutContentPanelLandscapeThemeMargin">0,19,0,0</Thickness>
     <Thickness x:Key="DateTimeFlyoutTitleThemeMargin">19,0,19,17.5</Thickness>
@@ -341,6 +365,6 @@
     <FontWeight x:Key="HubHeaderThemeFontWeight">Light</FontWeight>
     <FontWeight x:Key="HubSectionHeaderThemeFontWeight">Normal</FontWeight>
     <GridLength x:Key="AppBarExpandButtonThemeWidthGridLength">48</GridLength>
-    <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
+    <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>-->
   </Style.Resources>
 </Style>

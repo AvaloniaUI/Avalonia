@@ -2,20 +2,9 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
   xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
-    <Color x:Key="SystemRevealListLowColor">#18FFFFFF</Color>
-    <Color x:Key="SystemRevealListMediumColor">#30FFFFFF</Color>
-    <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
-    <!--<RevealBackgroundBrush x:Key="SystemControlTransparentRevealBackgroundBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
-    <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
-    <!--<RevealBorderBrush x:Key="SystemControlTransparentRevealBorderBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
-    <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
-    
-    <!-- Override system shape defaults -->
-    <CornerRadius x:Key="ControlCornerRadius">3</CornerRadius>
-    <CornerRadius x:Key="OverlayCornerRadius">5</CornerRadius>
-    
+            
     <!-- Override system borders -->
-    <Thickness x:Key="MenuBarItemBorderThickness">1,1,1,1</Thickness>
+    <!--<Thickness x:Key="MenuBarItemBorderThickness">1,1,1,1</Thickness>
     <Thickness x:Key="GridViewItemMultiselectBorderThickness">1,1,1,1</Thickness>
     <Thickness x:Key="CheckBoxBorderThemeThickness">1</Thickness>
     <x:Double x:Key="GridViewItemSelectedBorderThemeThickness">1</x:Double>
@@ -38,13 +27,12 @@
     <Thickness x:Key="ListViewItemRevealBorderThemeThickness">1,1,1,1</Thickness>
     <Thickness x:Key="GridViewItemRevealBorderThemeThickness">1,1,1,1</Thickness>
     <Thickness x:Key="ComboBoxItemRevealBorderThemeThickness">1,1,1,1</Thickness>
-    <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">1</x:Double>
+    <x:Double x:Key="PersonPictureEllipseBadgeStrokeThickness">1</x:Double>-->
     
-    <Color x:Key="RegionColor">#FF000000</Color>
-    <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
+    
     
     <!-- BaseResources for Button.xaml -->
-    <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+    <!--<StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
     <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
@@ -55,10 +43,10 @@
     <StaticResource x:Key="ButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
     <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
     <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-    <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />-->
 
     <!-- Resources for RepeatButton.xaml -->
-    <StaticResource x:Key="RepeatButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+    <!--<StaticResource x:Key="RepeatButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <StaticResource x:Key="RepeatButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <StaticResource x:Key="RepeatButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
     <StaticResource x:Key="RepeatButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
@@ -69,9 +57,9 @@
     <StaticResource x:Key="RepeatButtonBorderBrush" ResourceKey="SystemControlForegroundTransparentBrush" />
     <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
     <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-    <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <StaticResource x:Key="RepeatButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />-->
     <!-- Resources for Windows.UI.Xaml.Controls.Primitives.ToggleButton -->
-    <StaticResource x:Key="ToggleButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+    <!--<StaticResource x:Key="ToggleButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
     <StaticResource x:Key="ToggleButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
@@ -106,10 +94,10 @@
     <StaticResource x:Key="ToggleButtonBorderBrushIndeterminate" ResourceKey="SystemControlForegroundTransparentBrush" />
     <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
     <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-    <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
+    <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />-->
 
     <!-- BaseResources for ComboBox.xaml -->
-    <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <!--<StaticResource x:Key="ComboBoxItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -165,10 +153,10 @@
     <StaticResource x:Key="ComboBoxDropDownGlyphForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
     <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
     <StaticResource x:Key="ComboBoxDropDownForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
+    <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />-->
 
     <!-- BaseResources for ListBox.xaml -->
-    <Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
+    <!--<Thickness x:Key="ListBoxBorderThemeThickness">0</Thickness>
     <SolidColorBrush x:Key="ListBoxBackgroundThemeBrush" Color="#CCFFFFFF" />
     <SolidColorBrush x:Key="ListBoxBorderThemeBrush" Color="Transparent" />
     <SolidColorBrush x:Key="ListBoxDisabledForegroundThemeBrush" Color="#66FFFFFF" />
@@ -183,15 +171,16 @@
     <SolidColorBrush x:Key="ListBoxItemSelectedDisabledBackgroundThemeBrush" Color="#66FFFFFF" />
     <SolidColorBrush x:Key="ListBoxItemSelectedDisabledForegroundThemeBrush" Color="#99000000" />
     <SolidColorBrush x:Key="ListBoxItemSelectedForegroundThemeBrush" Color="White" />
-    <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
+    <SolidColorBrush x:Key="ListBoxItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />-->
+    
     <!-- BaseResources for ProgressBar.xaml -->
-    <SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#30000000" />
+    <!--<SolidColorBrush x:Key="ProgressBarBackgroundThemeBrush" Color="#30000000" />
     <SolidColorBrush x:Key="ProgressBarBorderThemeBrush" Color="Transparent" />
     <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF4617B4" />
-    <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF4617B4" />
+    <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF4617B4" />-->
 
     <!-- BaseResources for TextBox.xaml -->
-    <StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <!--<StaticResource x:Key="TextControlForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemControlForegroundChromeBlackHighBrush" />
     <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="SystemControlDisabledChromeDisabledLowBrush" />
@@ -220,16 +209,16 @@
     <StaticResource x:Key="TextControlButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
     <StaticResource x:Key="TextControlButtonForegroundPressed" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
     <StaticResource x:Key="ContentLinkForegroundColor" ResourceKey="SystemControlHyperlinkTextBrush" />
-    <StaticResource x:Key="ContentLinkBackgroundColor" ResourceKey="SystemControlPageBackgroundChromeLowBrush" />
+    <StaticResource x:Key="ContentLinkBackgroundColor" ResourceKey="SystemControlPageBackgroundChromeLowBrush" />-->
 
     <!-- Resources for AutoCompleteBox.xaml -->
-    <StaticResource x:Key="AutoCompleteBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
+    <!--<StaticResource x:Key="AutoCompleteBoxLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     <StaticResource x:Key="AutoCompleteBoxSuggestionsListBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     <StaticResource x:Key="AutoCompleteBoxSuggestionsListBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
-    <x:Double x:Key="AutoCompleteBoxIconFontSize">12</x:Double>
+    <x:Double x:Key="AutoCompleteBoxIconFontSize">12</x:Double>-->
 
     <!-- BaseResources for CheckBox.xaml -->
-    <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <!--<StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxForegroundUncheckedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -300,10 +289,10 @@
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminate" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-    <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />-->
     
     <!-- BaseResources for RadioButton.xaml -->
-    <StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <!--<StaticResource x:Key="RadioButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="RadioButtonForegroundPointerOver" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="RadioButtonForegroundPressed" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="RadioButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -338,10 +327,10 @@
     <StaticResource x:Key="RadioButtonCheckGlyphStroke" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="RadioButtonCheckGlyphStrokePointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="RadioButtonCheckGlyphStrokePressed" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="RadioButtonCheckGlyphStrokeDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="RadioButtonCheckGlyphStrokeDisabled" ResourceKey="SystemControlTransparentBrush" />-->
     
     <!-- BaseResources for Slider.xaml -->
-    <StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
+    <!--<StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="SliderContainerBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
@@ -361,20 +350,20 @@
     <StaticResource x:Key="SliderHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="SliderTickBarFill" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
     <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-    <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="SystemControlBackgroundAltHighBrush" />
+    <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="SystemControlBackgroundAltHighBrush" />-->
 
     <!-- Resources for ToolTip.xaml -->
-    <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
+    <!--<x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
     <Thickness x:Key="ToolTipBorderThemeThickness">1</Thickness>
     <StaticResource x:Key="ToolTipForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="ToolTipBackground" ResourceKey="SystemControlBackgroundChromeMediumLowBrush" />
     <StaticResource x:Key="ToolTipBorderBrush" ResourceKey="SystemControlForegroundChromeHighBrush" />
     <SolidColorBrush x:Key="ToolTipBackgroundThemeBrush" Color="#FFFFFFFF" />
     <SolidColorBrush x:Key="ToolTipBorderThemeBrush" Color="#FF808080" />
-    <SolidColorBrush x:Key="ToolTipForegroundThemeBrush" Color="#FF666666" />
+    <SolidColorBrush x:Key="ToolTipForegroundThemeBrush" Color="#FF666666" />-->
 
     <!-- Resources for TabItem.xaml -->
-    <FontFamily x:Key="TabItemHeaderFontFamily">XamlAutoFontFamily</FontFamily>
+    <!--<FontFamily x:Key="TabItemHeaderFontFamily">XamlAutoFontFamily</FontFamily>
     <x:Double x:Key="TabItemHeaderFontSize">24</x:Double>
     <x:Double x:Key="TabItemHeaderLockedTranslation">40</x:Double>
     <x:Int32 x:Key="TabItemHeaderCharacterSpacing">-25</x:Int32>
@@ -382,9 +371,10 @@
     <Thickness x:Key="TabItemMargin">12,0,12,0</Thickness>
     <FontWeight x:Key="TabItemHeaderThemeFontWeight">SemiLight</FontWeight>
     <StaticResource x:Key="TabControlBackground" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="TabItemHeaderBackground" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="TabItemHeaderBackground" ResourceKey="SystemControlTransparentBrush" />-->
+    
     <!-- Resources for TabItem -->
-    <StaticResource x:Key="TabItemHeaderBackgroundUnselected" ResourceKey="SystemControlTransparentBrush" />
+    <!--<StaticResource x:Key="TabItemHeaderBackgroundUnselected" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="TabItemHeaderBackgroundUnselectedPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="TabItemHeaderBackgroundUnselectedPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="TabItemHeaderBackgroundSelected" ResourceKey="SystemControlHighlightTransparentBrush" />
@@ -399,10 +389,10 @@
     <StaticResource x:Key="TabItemHeaderForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
     <StaticResource x:Key="TabItemHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="TabItemHeaderFocusPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
-    <StaticResource x:Key="TabItemHeaderSelectedPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
+    <StaticResource x:Key="TabItemHeaderSelectedPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />-->
 
     <!-- BaseResources for ScrollBar.xaml -->
-    <StaticResource x:Key="ScrollBarBackground" ResourceKey="SystemControlTransparentBrush" />
+    <!--<StaticResource x:Key="ScrollBarBackground" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ScrollBarBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ScrollBarBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ScrollBarForeground" ResourceKey="SystemControlTransparentBrush" />
@@ -447,9 +437,9 @@
     <x:Double x:Key="SmallScrollThumbOffset">-2</x:Double>
     <TransformOperations x:Key="VerticalSmallScrollThumbScaleTransform">scaleX(0.125) translateX(-2px)</TransformOperations>
     <TransformOperations x:Key="HorizontalSmallScrollThumbScaleTransform">scaleY(0.125) translateY(-2px)</TransformOperations>
-    <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>
+    <x:Double x:Key="ScrollBarButtonArrowIconFontSize">8</x:Double>-->
 
     <!-- BaseResources for ScrollViewer.xaml -->
-    <SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+    <!--<SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />-->
   </Style.Resources>
 </Style>
