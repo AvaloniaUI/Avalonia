@@ -2,7 +2,6 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
   xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
-            
     <!-- Override system borders -->
     <!--<Thickness x:Key="MenuBarItemBorderThickness">1,1,1,1</Thickness>
     <Thickness x:Key="GridViewItemMultiselectBorderThickness">1,1,1,1</Thickness>
