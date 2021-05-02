@@ -59,7 +59,7 @@
         <Panel Name="PART_InlineErrorTemplatePanel" Background="Transparent">
           <Panel.Styles>
             <Style Selector="Panel#PART_InlineErrorTemplatePanel">
-              <Setter Property="Margin" Value="8,0,4,0" />
+              <Setter Property="Margin" Value="8,0" />
             </Style>
             <Style Selector="Panel#PART_InlineErrorTemplatePanel ToolTip">
               <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
