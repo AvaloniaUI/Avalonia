@@ -12,7 +12,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class EventsPageViewModel : ViewModelBase
     {
-        private static readonly HashSet<RoutedEvent> s_defaultEvents = new()
+        private static readonly HashSet<RoutedEvent> s_defaultEvents = new HashSet<RoutedEvent>()
         {
             Button.ClickEvent,
             InputElement.KeyDownEvent,
