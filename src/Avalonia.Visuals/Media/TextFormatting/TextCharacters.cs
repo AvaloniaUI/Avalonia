@@ -161,30 +161,27 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentScript != script)
                 {
-                    if (currentScript != Script.Inherited && currentScript != Script.Common)
+                    if (script == Script.Inherited || script == Script.Common)
                     {
-                        if (script == Script.Inherited || script == Script.Common)
-                        {
-                            script = currentScript;
-                        }
-                        else
+                        script = currentScript;
+                    }
+                    else
+                    {
+                        if (currentScript != Script.Inherited && currentScript != Script.Common)
                         {
                             break;
                         }
                     }
                 }
 
-                if (isFallback)
+                if (currentScript != Script.Common && currentScript != Script.Inherited)
                 {
-                    if (defaultFont.TryGetGlyph(grapheme.FirstCodepoint, out _))
+                    if (isFallback && defaultFont.TryGetGlyph(grapheme.FirstCodepoint, out _))
                     {
                         break;
                     }
-                }
 
-                if (!font.TryGetGlyph(grapheme.FirstCodepoint, out _))
-                {
-                    if (!grapheme.FirstCodepoint.IsWhiteSpace)
+                    if (!font.TryGetGlyph(grapheme.FirstCodepoint, out _))
                     {
                         break;
                     }
