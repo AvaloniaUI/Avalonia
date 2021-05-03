@@ -1,37 +1,32 @@
-﻿namespace Avalonia.Controls.Converters
+﻿using System;
+
+namespace Avalonia.Controls.Converters
 {
     /// <summary>
     /// Defines constants that specify the filter type for a <see cref="CornerRadiusFilterConverter"/> instance.
     /// </summary>
-    public enum CornerRadiusFilterKind
+    [Flags]
+    public enum CornerRadiusFilterKinds
     {
         /// <summary>
         /// No filter applied.
         /// </summary>
         None,
         /// <summary>
-        /// Filters TopLeft and TopRight values, sets BottomLeft and BottomRight to 0.
+        /// Filters TopLeft value.
         /// </summary>
-        Top,
+        TopLeft = 1,
         /// <summary>
-        /// Filters TopRight and BottomRight values, sets TopLeft and BottomLeft to 0.
+        /// Filters TopRight value.
         /// </summary>
-        Right,
+        TopRight = 2,
         /// <summary>
-        /// Filters BottomLeft and BottomRight values, sets TopLeft and TopRight to 0.
+        /// Filters BottomLeft value.
         /// </summary>
-        Bottom,
+        BottomLeft = 4,
         /// <summary>
-        /// Filters TopLeft and BottomLeft values, sets TopRight and BottomRight to 0.
+        /// Filters BottomRight value.
         /// </summary>
-        Left,
-        /// <summary>
-        /// Gets the double value of TopLeft corner.
-        /// </summary>
-        TopLeftValue,
-        /// <summary>
-        /// Gets the double value of BottomRight corner.
-        /// </summary>
-        BottomRightValue
+        BottomRight = 8
     }
 }

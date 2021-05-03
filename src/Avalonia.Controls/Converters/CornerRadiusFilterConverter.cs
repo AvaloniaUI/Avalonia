@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Converters
         /// <summary>
         /// Gets or sets the type of the filter applied to the <see cref="CornerRadiusFilterConverter"/>.
         /// </summary>
-        public CornerRadiusFilterKind Filter { get; set; }
+        public CornerRadiusFilterKinds Filter { get; set; }
 
         /// <summary>
         /// Gets or sets the scale multiplier applied to the <see cref="CornerRadiusFilterConverter"/>.
@@ -29,48 +29,16 @@ namespace Avalonia.Controls.Converters
                 return value;
             }
 
-            if (Filter == CornerRadiusFilterKind.TopLeftValue
-                || Filter == CornerRadiusFilterKind.BottomRightValue)
-            {
-                var doubleValue = GetDoubleValue(radius, Filter);
-                return double.IsNaN(Scale) ? doubleValue : doubleValue * Scale;
-            }
-            else
-            {
-                var cornerRadius = GetCornerRadiusValue(radius, Filter);
-                return double.IsNaN(Scale) ? cornerRadius : new CornerRadius(
-                    cornerRadius.TopLeft * Scale,
-                    cornerRadius.TopRight * Scale,
-                    cornerRadius.BottomRight * Scale,
-                    cornerRadius.BottomLeft * Scale);
-            }
+            return new CornerRadius(
+                Filter.HasAllFlags(CornerRadiusFilterKinds.TopLeft) ? radius.TopLeft * Scale : 0,
+                Filter.HasAllFlags(CornerRadiusFilterKinds.TopRight) ? radius.TopRight * Scale : 0,
+                Filter.HasAllFlags(CornerRadiusFilterKinds.BottomRight) ? radius.BottomRight * Scale : 0,
+                Filter.HasAllFlags(CornerRadiusFilterKinds.BottomLeft) ? radius.BottomLeft * Scale : 0);
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
-        }
-
-        private CornerRadius GetCornerRadiusValue(CornerRadius radius, CornerRadiusFilterKind filterKind)
-        {
-            return filterKind switch
-            {
-                CornerRadiusFilterKind.Top => new CornerRadius(radius.TopLeft, radius.TopRight, 0, 0),
-                CornerRadiusFilterKind.Right => new CornerRadius(0, radius.TopRight, radius.BottomRight, 0),
-                CornerRadiusFilterKind.Bottom => new CornerRadius(0, 0, radius.BottomRight, radius.BottomLeft),
-                CornerRadiusFilterKind.Left => new CornerRadius(radius.TopLeft, 0, 0, radius.BottomLeft),
-                _ => radius,
-            };
-        }
-
-        private double GetDoubleValue(CornerRadius radius, CornerRadiusFilterKind filterKind)
-        {
-            return filterKind switch
-            {
-                CornerRadiusFilterKind.TopLeftValue => radius.TopLeft,
-                CornerRadiusFilterKind.BottomRightValue => radius.BottomRight,
-                _ => 0,
-            };
         }
     }
 }
