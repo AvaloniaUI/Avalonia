@@ -6,17 +6,17 @@ namespace Avalonia.Input
 {
     public static class Gestures
     {
-        public static readonly RoutedEvent<RoutedEventArgs> TappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        public static readonly RoutedEvent<RoutedEventArgs> DoubleTappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "DoubleTapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        public static readonly RoutedEvent<RoutedEventArgs> RightTappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "RightTapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));

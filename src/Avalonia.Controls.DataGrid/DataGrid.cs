@@ -5357,7 +5357,7 @@ namespace Avalonia.Controls
             _focusedRow = null;
         }
 
-        private void SelectAll()
+        public void SelectAll()
         {
             SetRowsSelection(0, SlotCount - 1);
         }

@@ -62,4 +62,5 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.TimePicker.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.FlyoutPresenter.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.MenuFlyoutPresenter.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.ManagedFileChooser.xaml?assembly=Avalonia.Themes.Default"/>
 </Styles>

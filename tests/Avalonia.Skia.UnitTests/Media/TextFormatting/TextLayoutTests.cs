@@ -11,8 +11,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     public class TextLayoutTests
     {
-        private static readonly string s_singleLineText = "0123456789";
-        private static readonly string s_multiLineText = "012345678\r\r0123456789";
+        private const string SingleLineText = "0123456789";
+        private const string MultiLineText = "01 23 45 678\r\rabc def gh ij";
 
         [InlineData("01234\r01234\r", 3)]
         [InlineData("01234\r01234", 2)]
@@ -45,7 +45,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 };
 
                 var layout = new TextLayout(
-                    s_multiLineText,
+                    MultiLineText,
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
@@ -61,7 +61,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var actual = textRun.Text.Buffer.Span.ToString();
 
-                Assert.Equal("12", actual);
+                Assert.Equal("1 ", actual);
 
                 Assert.Equal(foreground, textRun.Properties.ForegroundBrush);
             }
@@ -74,7 +74,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
-                for (var i = 4; i < s_multiLineText.Length; i++)
+                var expected = new TextLayout(
+                    MultiLineText,
+                    Typeface.Default,
+                    12.0f,
+                    Brushes.Black.ToImmutable(),
+                    textWrapping: TextWrapping.Wrap,
+                    maxWidth: 25);
+                
+                var expectedLines = expected.TextLines.Select(x => MultiLineText.Substring(x.TextRange.Start,
+                    x.TextRange.Length)).ToList();
+                
+                for (var i = 4; i < MultiLineText.Length; i++)
                 {
                     var spans = new[]
                     {
@@ -82,16 +93,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                             new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                     };
 
-                    var expected = new TextLayout(
-                        s_multiLineText,
-                        Typeface.Default,
-                        12.0f,
-                        Brushes.Black.ToImmutable(),
-                        textWrapping: TextWrapping.Wrap,
-                        maxWidth: 25);
-
                     var actual = new TextLayout(
-                        s_multiLineText,
+                        MultiLineText,
                         Typeface.Default,
                         12.0f,
                         Brushes.Black.ToImmutable(),
@@ -99,14 +102,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         maxWidth: 25,
                         textStyleOverrides: spans);
 
-                    Assert.Equal(expected.TextLines.Count, actual.TextLines.Count);
+                    var actualLines = actual.TextLines.Select(x => MultiLineText.Substring(x.TextRange.Start,
+                        x.TextRange.Length)).ToList();
+                    
+                    Assert.Equal(expectedLines.Count, actualLines.Count);
 
                     for (var j = 0; j < actual.TextLines.Count; j++)
                     {
-                        Assert.Equal(expected.TextLines[j].TextRange.Length, actual.TextLines[j].TextRange.Length);
+                        var expectedText = expectedLines[j];
+                        
+                        var actualText = actualLines[j];
 
-                        Assert.Equal(expected.TextLines[j].TextRuns.Sum(x => x.Text.Length),
-                            actual.TextLines[j].TextRuns.Sum(x => x.Text.Length));
+                        Assert.Equal(expectedText, actualText);
                     }
                 }
             }
@@ -126,7 +133,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 };
 
                 var layout = new TextLayout(
-                    s_singleLineText,
+                    SingleLineText,
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
@@ -140,7 +147,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Text.Length);
 
-                var actual = s_singleLineText.Substring(textRun.Text.Start,
+                var actual = SingleLineText.Substring(textRun.Text.Start,
                     textRun.Text.Length);
 
                 Assert.Equal("01", actual);
@@ -163,7 +170,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 };
 
                 var layout = new TextLayout(
-                    s_singleLineText,
+                    SingleLineText,
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
@@ -261,12 +268,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var layout = new TextLayout(
-                    s_multiLineText,
+                    MultiLineText,
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable());
 
-                Assert.Equal(s_multiLineText.Length, layout.TextLines.Sum(x => x.TextRange.Length));
+                Assert.Equal(MultiLineText.Length, layout.TextLines.Sum(x => x.TextRange.Length));
             }
         }
 
@@ -276,13 +283,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var layout = new TextLayout(
-                    s_multiLineText,
+                    MultiLineText,
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable());
 
                 Assert.Equal(
-                    s_multiLineText.Length,
+                    MultiLineText.Length,
                     layout.TextLines.Select(textLine =>
                             textLine.TextRuns.Sum(textRun => textRun.Text.Length))
                         .Sum());
@@ -295,9 +302,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 const string text =
-                    "Multiline TextBox with TextWrapping.\r\rLorem ipsum dolor sit amet, consectetur adipiscing elit. " +
-                    "Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. " +
-                    "Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.";
+                    "Multiline TextBox with TextWrapping.\r\rLorem ipsum dolor sit amet";
 
                 var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
@@ -338,7 +343,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 };
 
                 var layout = new TextLayout(
-                    s_multiLineText,
+                    MultiLineText,
                     Typeface.Default,
                     12.0f,
                     Brushes.Black.ToImmutable(),
@@ -541,7 +546,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var layout = new TextLayout(
-                    s_multiLineText,
+                    MultiLineText,
                     Typeface.Default,
                     12,
                     Brushes.Black,
@@ -549,7 +554,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 foreach (var line in layout.TextLines)
                 {
-                    Assert.Equal(50, line.LineMetrics.Size.Height);
+                    Assert.Equal(50, line.Height);
                 }
             }
         }
@@ -601,7 +606,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var layout = new TextLayout(
-                    s_singleLineText,
+                    SingleLineText,
                     Typeface.Default,
                     12,
                     Brushes.Black,
@@ -609,7 +614,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     maxWidth: 3);
 
                 //every character should be new line as there not enough space for even one character
-                Assert.Equal(s_singleLineText.Length, layout.TextLines.Count);
+                Assert.Equal(SingleLineText.Length, layout.TextLines.Count);
             }
         }
 
