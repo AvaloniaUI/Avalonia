@@ -408,7 +408,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             using (Start())
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
                 
                 var textSource = new SingleBufferTextSource("0123456789_0123456789_0123456789_0123456789", defaultProperties);
                 var formatter = new TextFormatterImpl();
@@ -416,7 +416,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, 33, paragraphProperties);
                 
-                Assert.NotNull(textLine.TextLineBreak.RemainingCharacters);
+                Assert.NotNull(textLine.TextLineBreak?.RemainingCharacters);
             }
         }
         
