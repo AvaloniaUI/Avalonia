@@ -17,7 +17,6 @@
     <PackageReference Include="ILRepack.NETStandard" Version="2.0.4" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.2" />
-    <PackageReference Include="Pharmacist.Core" Version="1.8.1" />
   </ItemGroup>
 
   <ItemGroup>

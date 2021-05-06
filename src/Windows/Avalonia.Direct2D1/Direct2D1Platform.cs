@@ -213,7 +213,7 @@ namespace Avalonia.Direct2D1
             return new WicBitmapImpl(format, alphaFormat, data, size, dpi, stride);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
             var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
 
@@ -236,8 +236,6 @@ namespace Avalonia.Direct2D1
 
             run.Advances = new float[glyphCount];
 
-            width = 0;
-
             var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
 
             if (glyphRun.GlyphAdvances.IsEmpty)
@@ -247,8 +245,6 @@ namespace Avalonia.Direct2D1
                     var advance = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
 
                     run.Advances[i] = advance;
-
-                    width += advance;
                 }
             }
             else
@@ -258,8 +254,6 @@ namespace Avalonia.Direct2D1
                     var advance = (float)glyphRun.GlyphAdvances[i];
 
                     run.Advances[i] = advance;
-
-                    width += advance;
                 }
             }
 

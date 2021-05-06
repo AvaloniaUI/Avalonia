@@ -45,38 +45,41 @@ namespace Avalonia.Media.TextFormatting
         public GlyphRun GlyphRun { get; }
 
         /// <inheritdoc/>
-        public override void Draw(DrawingContext drawingContext)
+        public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            if (GlyphRun.GlyphIndices.Length == 0)
+            using (drawingContext.PushPostTransform(Matrix.CreateTranslation(origin)))
             {
-                return;
-            }
+                if (GlyphRun.GlyphIndices.Length == 0)
+                {
+                    return;
+                }
 
-            if (Properties.Typeface == default)
-            {
-                return;
-            }
+                if (Properties.Typeface == default)
+                {
+                    return;
+                }
 
-            if (Properties.ForegroundBrush == null)
-            {
-                return;
-            }
+                if (Properties.ForegroundBrush == null)
+                {
+                    return;
+                }
 
-            if (Properties.BackgroundBrush != null)
-            {
-                drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
-            }
+                if (Properties.BackgroundBrush != null)
+                {
+                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
+                }
 
-            drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
+                drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
 
-            if (Properties.TextDecorations == null)
-            {
-                return;
-            }
+                if (Properties.TextDecorations == null)
+                {
+                    return;
+                }
 
-            foreach (var textDecoration in Properties.TextDecorations)
-            {
-                textDecoration.Draw(drawingContext, this);
+                foreach (var textDecoration in Properties.TextDecorations)
+                {
+                    textDecoration.Draw(drawingContext, this);
+                }
             }
         }
 

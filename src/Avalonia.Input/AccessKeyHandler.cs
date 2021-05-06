@@ -177,7 +177,7 @@ namespace Avalonia.Input
         {
             bool menuIsOpen = MainMenu?.IsOpen == true;
 
-            if (e.KeyModifiers.HasFlagCustom(KeyModifiers.Alt) || menuIsOpen)
+            if (e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) || menuIsOpen)
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
