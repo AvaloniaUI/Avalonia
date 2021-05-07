@@ -859,19 +859,19 @@ namespace Avalonia.Controls
             var constraint = clientSize;
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
 
-            if (sizeToContent.HasFlagCustom(SizeToContent.Width))
+            if (sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 constraint = constraint.WithWidth(maxAutoSize.Width);
             }
 
-            if (sizeToContent.HasFlagCustom(SizeToContent.Height))
+            if (sizeToContent.HasAllFlags(SizeToContent.Height))
             {
                 constraint = constraint.WithHeight(maxAutoSize.Height);
             }
 
             var result = base.MeasureOverride(constraint);
 
-            if (!sizeToContent.HasFlagCustom(SizeToContent.Width))
+            if (!sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 if (!double.IsInfinity(availableSize.Width))
                 {
@@ -883,7 +883,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (!sizeToContent.HasFlagCustom(SizeToContent.Height))
+            if (!sizeToContent.HasAllFlags(SizeToContent.Height))
             {
                 if (!double.IsInfinity(availableSize.Height))
                 {
