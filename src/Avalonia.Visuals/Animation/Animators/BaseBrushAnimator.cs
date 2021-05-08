@@ -17,7 +17,7 @@ namespace Avalonia.Animation.Animators
     {
         private IAnimator _targetAnimator;
 
-        private static readonly List<(Func<Type, bool> Match, Type AnimatorType)> _brushAnimators = new();
+        private static readonly List<(Func<Type, bool> Match, Type AnimatorType)> _brushAnimators = new List<(Func<Type, bool> Match, Type AnimatorType)>();
 
         /// <summary>
         /// Register an <see cref="Animator{T}"/> that handles a specific
