@@ -1,4 +1,6 @@
 Compat issues with assembly Avalonia.Visuals:
+CannotRemoveBaseTypeOrInterface : Type 'Avalonia.Animation.Animators.SolidColorBrushAnimator' does not inherit from base type 'Avalonia.Animation.Animators.Animator<Avalonia.Media.SolidColorBrush>' in the implementation but it does in the contract.
+MembersMustExist : Member 'public Avalonia.Media.SolidColorBrush Avalonia.Animation.Animators.SolidColorBrushAnimator.Interpolate(System.Double, Avalonia.Media.SolidColorBrush, Avalonia.Media.SolidColorBrush)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.DrawableTextRun.Draw(Avalonia.Media.DrawingContext)' does not exist in the implementation but it does exist in the contract.
 CannotAddAbstractMembers : Member 'public void Avalonia.Media.TextFormatting.DrawableTextRun.Draw(Avalonia.Media.DrawingContext, Avalonia.Point)' is abstract in the implementation but is missing in the contract.
 CannotSealType : Type 'Avalonia.Media.TextFormatting.GenericTextParagraphProperties' is actually (has the sealed modifier) sealed in the implementation but not sealed in the contract.
@@ -63,4 +65,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalon
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun, System.Double)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun, System.Double)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 64
+Total Issues: 66

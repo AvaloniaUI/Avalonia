@@ -12,7 +12,7 @@ namespace Avalonia.Animation.Animators
     {
         public override IBrush Interpolate(double progress, IBrush oldValue, IBrush newValue)
         {
-            if (oldValue is not ISolidColorBrush oldValS || newValue is not ISolidColorBrush newValS)
+            if (!(oldValue is ISolidColorBrush oldValS) || !(newValue is ISolidColorBrush newValS))
                 return Brushes.Transparent;
             
             return new ImmutableSolidColorBrush(ColorAnimator.InterpolateCore(progress, oldValS.Color, newValS.Color));
