@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -27,7 +28,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _root = root;
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
             _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root));
-            _events = new EventsPageViewModel(root);
+            _events = new EventsPageViewModel(this);
 
             UpdateFocusedControl();
             KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
@@ -191,6 +192,20 @@ namespace Avalonia.Diagnostics.ViewModels
             if (e.PropertyName == nameof(KeyboardDevice.Instance.FocusedElement))
             {
                 UpdateFocusedControl();
+            }
+        }
+
+        public void RequestTreeNavigateTo(IControl control, bool isVisualTree)
+        {
+            var tree = isVisualTree ? _visualTree : _logicalTree;
+
+            var node = tree.FindNode(control);
+
+            if (node != null)
+            {
+                SelectedTab = isVisualTree ? 1 : 0;
+
+                tree.SelectControl(control);
             }
         }
     }
