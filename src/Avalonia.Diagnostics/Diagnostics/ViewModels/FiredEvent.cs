@@ -62,13 +62,18 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void AddToChain(object handler, bool handled, RoutingStrategies route)
-        {
-            AddToChain(new EventChainLink(handler, handled, route));
-        }
-
         public void AddToChain(EventChainLink link)
         {
+            if (EventChain.Count > 0)
+            {
+                var prevLink = EventChain[EventChain.Count-1];
+
+                if (prevLink.Route != link.Route)
+                {
+                    link.BeginsNewRoute = true;
+                }
+            }
+
             EventChain.Add(link);
             if (HandledBy == null && link.Handled)
                 HandledBy = link;

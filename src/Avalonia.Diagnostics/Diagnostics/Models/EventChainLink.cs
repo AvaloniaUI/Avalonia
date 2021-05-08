@@ -16,6 +16,8 @@ namespace Avalonia.Diagnostics.Models
 
         public object Handler { get; }
 
+        public bool BeginsNewRoute { get; set; }
+
         public string HandlerName
         {
             get
