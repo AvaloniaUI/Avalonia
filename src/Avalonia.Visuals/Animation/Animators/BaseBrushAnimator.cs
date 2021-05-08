@@ -52,7 +52,7 @@ namespace Avalonia.Animation.Animators
 
                 _targetAnimator.Property = this.Property;
                 
-                _targetAnimator.Apply(animation, control, clock, match, onComplete);
+               return _targetAnimator.Apply(animation, control, clock, match, onComplete);
             }
 
             Logger.TryGet(LogEventLevel.Error, LogArea.Animations)?.Log(
