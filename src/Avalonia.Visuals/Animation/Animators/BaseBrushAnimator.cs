@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Logging;
 using Avalonia.Media;
@@ -17,7 +16,8 @@ namespace Avalonia.Animation.Animators
     {
         private IAnimator _targetAnimator;
 
-        private static readonly List<(Func<Type, bool> Match, Type AnimatorType)> _brushAnimators = new List<(Func<Type, bool> Match, Type AnimatorType)>();
+        private static readonly List<(Func<Type, bool> Match, Type AnimatorType)> _brushAnimators =
+            new List<(Func<Type, bool> Match, Type AnimatorType)>();
 
         /// <summary>
         /// Register an <see cref="Animator{T}"/> that handles a specific
@@ -35,14 +35,15 @@ namespace Avalonia.Animation.Animators
         {
             _brushAnimators.Insert(0, (condition, typeof(TAnimator)));
         }
-        
+
         /// <inheritdoc/>
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock,
             IObservable<bool> match, Action onComplete)
         {
-            foreach (var valueType in _brushAnimators
-                .Where(valueType => valueType.Match(this[0].Value.GetType())))
+            foreach (var valueType in _brushAnimators)
             {
+                if (!valueType.Match(this[0].Value.GetType())) continue;
+
                 _targetAnimator = (IAnimator)Activator.CreateInstance(valueType.AnimatorType);
 
                 foreach (var keyframe in this)
