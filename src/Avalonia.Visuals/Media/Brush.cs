@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Avalonia.Animation;
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Media
 {
@@ -21,6 +22,7 @@ namespace Avalonia.Media
 
         static Brush()
         {
+            Animation.Animation.RegisterAnimator<BaseBrushAnimator>(prop => typeof(IBrush).IsAssignableFrom(prop.PropertyType));
             AffectsRender<Brush>(OpacityProperty);
         }
 
