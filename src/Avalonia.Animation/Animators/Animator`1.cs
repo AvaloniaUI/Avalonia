@@ -116,7 +116,7 @@ namespace Avalonia.Animation.Animators
                 clock ?? control.Clock ?? Clock.GlobalClock,
                 onComplete,
                 InterpolationHandler);
-            return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
+            return control.Bind(Property, instance, BindingPriority.Animation);
         }
 
         /// <summary>

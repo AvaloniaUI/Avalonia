@@ -12,7 +12,7 @@ namespace Avalonia.Animation
     /// Handles interpolation and time-related functions 
     /// for keyframe animations.
     /// </summary>
-    internal class AnimationInstance<T> : SingleSubscriberObservableBase<T>
+    internal class AnimationInstance<T> : SingleSubscriberObservableBase<object>
     {
         private T _lastInterpValue;
         private T _firstKFValue;

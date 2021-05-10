@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using System;
+using Avalonia.Media;
 using Avalonia.Media.Immutable;
 
 namespace Avalonia.Animation.Animators
@@ -6,14 +7,20 @@ namespace Avalonia.Animation.Animators
     /// <summary>
     /// Animator that handles <see cref="SolidColorBrush"/> values. 
     /// </summary>
-    public class SolidColorBrushAnimator : Animator<IBrush>
+    public class ISolidColorBrushAnimator : Animator<ISolidColorBrush>
     {
-        public override IBrush Interpolate(double progress, IBrush oldValue, IBrush newValue)
+        public override ISolidColorBrush Interpolate(double progress, ISolidColorBrush oldValue, ISolidColorBrush newValue)
         {
-            if (!(oldValue is ISolidColorBrush oldSCB) || !(newValue is ISolidColorBrush newSCB))
-                return Brushes.Transparent;
-
-            return new ImmutableSolidColorBrush(ColorAnimator.InterpolateCore(progress, oldSCB.Color, newSCB.Color));
+            return new ImmutableSolidColorBrush(ColorAnimator.InterpolateCore(progress, oldValue.Color, newValue.Color));
+        }
+    }
+    
+    [Obsolete]    
+    public class SolidColorBrushAnimator : Animator<SolidColorBrush>
+    {    
+        public override SolidColorBrush Interpolate(double progress, SolidColorBrush oldValue, SolidColorBrush newValue)
+        {
+            return new SolidColorBrush(ColorAnimator.InterpolateCore(progress, oldValue.Color, newValue.Color));
         }
     }
 }
