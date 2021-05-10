@@ -209,6 +209,17 @@ namespace Avalonia.Animation
             ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator) ),
         };
 
+        /// <summary>
+        /// Registers a <see cref="Animator{T}"/> that can handle
+        /// a value type that matches the specified condition.
+        /// </summary>
+        /// <param name="condition">
+        /// The condition to which the <see cref="Animator{T}"/>
+        /// is to be activated and used.
+        /// </param>
+        /// <typeparam name="TAnimator">
+        /// The type of the animator to instantiate.
+        /// </typeparam>
         public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
             where TAnimator : IAnimator
         {
