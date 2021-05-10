@@ -19,7 +19,7 @@ namespace Avalonia.Skia
         private readonly object _lock = new object();
         
         /// <summary>
-        /// Create immutable bitmap from given stream.
+        /// Create a WriteableBitmap from given stream.
         /// </summary>
         /// <param name="stream">Stream containing encoded data.</param>
         public WriteableBitmapImpl(Stream stream)
