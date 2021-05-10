@@ -22,7 +22,7 @@ namespace Avalonia.Diagnostics.Views
             _events = this.FindControl<ListBox>("EventsList");
         }
 
-        public void NavigateTo(object sender, TappedEventArgs e)
+        public void NavigateTo(object sender, RoutedEventArgs e)
         {
             if (DataContext is EventsPageViewModel vm && sender is Control control)
             {
