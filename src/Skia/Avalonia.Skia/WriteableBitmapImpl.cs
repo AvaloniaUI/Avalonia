@@ -34,7 +34,7 @@ namespace Avalonia.Skia
                 }
 
                 PixelSize = new PixelSize(_bitmap.Width, _bitmap.Height);
-                Dpi = new Vector(96, 96);
+                Dpi = SkiaPlatform.DefaultDpi;
             }
         }
 
@@ -77,7 +77,7 @@ namespace Avalonia.Skia
                 _bitmap = bmp;
 
                 PixelSize = new PixelSize(bmp.Width, bmp.Height);
-                Dpi = new Vector(96, 96);
+                Dpi = SkiaPlatform.DefaultDpi;
             }
         }
         

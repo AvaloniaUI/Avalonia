@@ -59,7 +59,7 @@ namespace Avalonia.Media.Imaging
         /// <param name="width">The desired width of the resulting bitmap.</param>
         /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should any scaling be required.</param>
         /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
-        public static Bitmap DecodeToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        public new static WriteableBitmap DecodeToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
@@ -74,7 +74,7 @@ namespace Avalonia.Media.Imaging
         /// <param name="height">The desired height of the resulting bitmap.</param>
         /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should any scaling be required.</param>
         /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
-        public static Bitmap DecodeToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        public new static WriteableBitmap DecodeToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
