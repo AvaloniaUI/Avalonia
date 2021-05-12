@@ -1,5 +1,6 @@
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {   
@@ -37,6 +38,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the image that will be displayed.
         /// </summary>
+        [Content]
         public IImage Source
         {
             get { return GetValue(SourceProperty); }
