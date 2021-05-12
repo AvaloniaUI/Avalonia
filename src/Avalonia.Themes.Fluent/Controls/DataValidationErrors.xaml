@@ -28,13 +28,13 @@
     <Style.Resources>
       <DataTemplate x:Key="InlineDataValidationErrorTemplate">
         <ItemsControl Items="{Binding}">
-          <ItemsControl.ItemTemplate>
+          <ItemsControl.DataTemplates>
             <DataTemplate>
               <TextBlock Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
                          Text="{Binding}"
                          TextWrapping="Wrap" />
             </DataTemplate>
-          </ItemsControl.ItemTemplate>
+          </ItemsControl.DataTemplates>
         </ItemsControl>
       </DataTemplate>
       <ControlTemplate x:Key="InlineDataValidationContentTemplate" TargetType="DataValidationErrors">
