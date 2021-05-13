@@ -87,7 +87,7 @@ namespace Avalonia.Skia
                     {
                         var nextCodepoint = Codepoint.ReadAt(text, i + 1, out _);
 
-                        if (nextCodepoint == '\r' && codepoint == '\n' || nextCodepoint == '\n' && codepoint == '\r')
+                        if (nextCodepoint == '\n' && codepoint == '\r')
                         {
                             count++;
 

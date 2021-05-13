@@ -1,0 +1,42 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
+  </Styles.Resources>
+  
+  <Style Selector="FlyoutPresenter">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="{DynamicResource FlyoutPresenterBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FlyoutBorderThemeBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource FlyoutBorderThemeThickness}" />
+    <Setter Property="Padding" Value="{DynamicResource FlyoutContentThemePadding}" />
+    <Setter Property="MinWidth" Value="{DynamicResource FlyoutThemeMinWidth}" />
+    <Setter Property="MaxWidth" Value="{DynamicResource FlyoutThemeMaxWidth}" />
+    <Setter Property="MinHeight" Value="{DynamicResource FlyoutThemeMinHeight}" />
+    <Setter Property="MaxHeight" Value="{DynamicResource FlyoutThemeMaxHeight}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="LayoutRoot"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="{DynamicResource FlyoutBorderThemePadding}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

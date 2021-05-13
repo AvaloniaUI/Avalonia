@@ -15,7 +15,7 @@ namespace Avalonia
         /// <param name="root">The window to attach DevTools to.</param>
         public static void AttachDevTools(this TopLevel root)
         {
-            DevTools.Attach(root, new KeyGesture(Key.F12));
+            DevTools.Attach(root, new DevToolsOptions());
         }
 
         /// <summary>
@@ -26,6 +26,16 @@ namespace Avalonia
         public static void AttachDevTools(this TopLevel root, KeyGesture gesture)
         {
             DevTools.Attach(root, gesture);
+        }
+
+        /// <summary>
+        /// Attaches DevTools to a window, to be opened with the specified options.
+        /// </summary>
+        /// <param name="root">The window to attach DevTools to.</param>
+        /// <param name="options">Additional settings of DevTools.</param>
+        public static void AttachDevTools(this TopLevel root, DevToolsOptions options)
+        {
+            DevTools.Attach(root, options);
         }
     }
 }
