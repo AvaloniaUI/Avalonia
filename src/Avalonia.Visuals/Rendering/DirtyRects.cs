@@ -37,6 +37,8 @@ namespace Avalonia.Rendering
             if (_root != null)
             {
                 rect = _root.Bounds;
+                _rects.Add(rect);
+                return;
             }
 
             if (!rect.IsEmpty)
