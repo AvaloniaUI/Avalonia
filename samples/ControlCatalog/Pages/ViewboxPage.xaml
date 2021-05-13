@@ -22,14 +22,38 @@
         </StreamGeometry>
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*,*">
         <StackPanel Orientation="Vertical" Spacing="4">
             <TextBlock Classes="h1">Viewbox</TextBlock>
             <TextBlock Classes="h2">A control used to scale single child.</TextBlock>
         </StackPanel>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" HorizontalAlignment="Center" Margin="0,10,0,0">
+
+          <Border HorizontalAlignment="Center" Grid.Column="0" BorderThickness="1" BorderBrush="Orange" Width="200" Height="200">
+            <Border VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="0" BorderThickness="1" BorderBrush="CornflowerBlue" Width="{Binding #WidthSlider.Value}" Height="{Binding #HeightSlider.Value}" >
+              <Viewbox x:Name="Viewbox"
+                StretchDirection="{Binding #StretchDirectionSelector.SelectedItem}">
+                <Path Width="50" Stretch="Uniform" Fill="CornflowerBlue" Data="{StaticResource Acorn}"/>
+              </Viewbox>
+            </Border>
+          </Border>
+
+          <StackPanel HorizontalAlignment="Left" Orientation="Vertical" Grid.Column="1" Margin="8,0,0,0" Width="150">
+            <TextBlock Text="Width" />
+            <Slider Minimum="10" Maximum="200" Value="100" x:Name="WidthSlider" TickFrequency="25" TickPlacement="TopLeft" />
+            <TextBlock Text="Height" />
+            <Slider Minimum="10" Maximum="200" Value="100" x:Name="HeightSlider" TickFrequency="25" TickPlacement="TopLeft" />
+            <TextBlock Text="Stretch" />
+            <ComboBox x:Name="StretchSelector" HorizontalAlignment="Stretch" Margin="0,0,0,2" SelectionChanged="StretchSelector_OnSelectionChanged" />
+            <TextBlock Text="Stretch Direction" />
+            <ComboBox x:Name="StretchDirectionSelector" HorizontalAlignment="Stretch" />
+          </StackPanel>
+        </Grid>
+
         <Grid ColumnDefinitions="Auto,*,*"
               RowDefinitions="*,*,*,*"
-              Grid.Row="1" Margin="48"
+              Grid.Row="2" Margin="48"
               MaxWidth="400">
             <TextBlock Grid.Row="0" VerticalAlignment="Center">None</TextBlock>
             <TextBlock Grid.Row="1" VerticalAlignment="Center">Fill</TextBlock>
