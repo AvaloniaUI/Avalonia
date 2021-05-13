@@ -34,7 +34,7 @@
             <Border VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="0" BorderThickness="1" BorderBrush="CornflowerBlue" Width="{Binding #WidthSlider.Value}" Height="{Binding #HeightSlider.Value}" >
               <Viewbox x:Name="Viewbox"
                 StretchDirection="{Binding #StretchDirectionSelector.SelectedItem}">
-                <Path Width="50" Stretch="Uniform" Fill="CornflowerBlue" Data="{StaticResource Acorn}"/>
+                <Ellipse Width="50" Height="50" Fill="CornflowerBlue" />
               </Viewbox>
             </Border>
           </Border>
