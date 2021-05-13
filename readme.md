@@ -14,7 +14,7 @@ To see the status of some of our features, please see our [Roadmap](https://gith
 
 ## 🚀 Getting Started
 
-The Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started, or you can use the .NET Core CLI. For a starter guide see our [documentation](https://avaloniaui.net/docs/quickstart/create-new-project).
+The Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started, or you can use the .NET Core CLI. For a starter guide see our [documentation](https://docs.avaloniaui.net/docs/getting-started).
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: https://www.nuget.org/packages/Avalonia/
 
