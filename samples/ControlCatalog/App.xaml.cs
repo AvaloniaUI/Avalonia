@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
@@ -99,8 +100,10 @@ namespace ControlCatalog
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
                 desktopLifetime.MainWindow = new MainWindow();
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
+            {
                 singleViewLifetime.MainView = new MainView();
-
+            }
+                
             base.OnFrameworkInitializationCompleted();
         }
     }

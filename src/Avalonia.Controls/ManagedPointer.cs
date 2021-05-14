@@ -13,11 +13,13 @@ namespace Avalonia.Controls
         {
             _topLevel = visualRoot;
             visualRoot.PointerMoved += VisualRootOnPointerMoved;
+            
+            var layer = AdornerLayer.GetAdornerLayer(visualRoot);
 
-            visualRoot.Content = this;
-            //var layer = OverlayLayer.GetOverlayLayer(visualRoot);
-
-            //layer.Children.Add(this);
+            AdornerLayer.SetAdornedElement(this, visualRoot);
+            ((ISetLogicalParent)this).SetParent(visualRoot);
+            layer.Children.Add(this);
+            
         }
 
         private void VisualRootOnPointerMoved(object sender, PointerEventArgs e)
