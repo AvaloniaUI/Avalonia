@@ -1,5 +1,7 @@
+using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Media;
 
 namespace Avalonia.Controls
@@ -14,12 +16,23 @@ namespace Avalonia.Controls
             _topLevel = visualRoot;
             visualRoot.PointerMoved += VisualRootOnPointerMoved;
             
-            var layer = AdornerLayer.GetAdornerLayer(visualRoot);
-
-            AdornerLayer.SetAdornedElement(this, visualRoot);
+            var layer = OverlayLayer.GetOverlayLayer(visualRoot);
+            
             ((ISetLogicalParent)this).SetParent(visualRoot);
             layer.Children.Add(this);
-            
+
+            var inputRoot = visualRoot as IInputRoot;
+
+            InputManager.Instance.PreProcess.Subscribe(x =>
+            {
+                if (x is RawPointerEventArgs args && args.Type == RawPointerEventType.Move)
+                {
+                    Console.WriteLine(args.Position);
+
+                    _p = args.Position;
+                }
+            });
+
         }
 
         private void VisualRootOnPointerMoved(object sender, PointerEventArgs e)
