@@ -256,7 +256,7 @@ namespace Avalonia.Rendering.SceneGraph
 
                     if (childCount == 0 || wasVisited)
                     {
-                        if ((wasVisited || FilterAndClip(node, ref clip)) && node.HitTest(_point))
+                        if ((wasVisited || FilterAndClip(node, ref clip)) && (node.Visual is ICustomSimpleHitTest custom ? custom.HitTest(_point) : node.HitTest(_point)))
                         {
                             _current = node.Visual;
 
