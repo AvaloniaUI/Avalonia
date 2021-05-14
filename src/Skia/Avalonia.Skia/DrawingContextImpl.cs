@@ -217,7 +217,7 @@ namespace Avalonia.Skia
                 paint.IsAntialias = true;
                 paint.Color = color;
                 paint.ImageFilter = filter;
-                
+ 
                 return new BoxShadowFilter
                 {
                     Paint = paint, _filter = filter,
@@ -317,6 +317,8 @@ namespace Avalonia.Skia
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
+                        shadow.Paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
+
                         var spread = (float)boxShadow.Spread;
                         if (boxShadow.IsInset)
                             spread = -spread;
@@ -373,6 +375,8 @@ namespace Avalonia.Skia
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
+                        shadow.Paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
+
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
                         var offsetY = (float)boxShadow.OffsetY;
@@ -990,7 +994,9 @@ namespace Avalonia.Skia
                 paint.PathEffect = pe;
                 rv.AddDisposable(pe);
             }
-
+            
+            paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
+            
             return rv;
         }
 
