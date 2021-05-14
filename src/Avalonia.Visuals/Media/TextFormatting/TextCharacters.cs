@@ -135,20 +135,20 @@ namespace Avalonia.Media.TextFormatting
 
             count = 0;
             var script = Script.Common;
-            //var direction = BiDiClass.LeftToRight;
+            var direction = BiDiClass.LeftToRight;
 
             var font = typeface.GlyphTypeface;
             var defaultFont = defaultTypeface.GlyphTypeface;
-
+            
             var enumerator = new GraphemeEnumerator(text);
 
             while (enumerator.MoveNext())
             {
-                var grapheme = enumerator.Current;
+                var currentGrapheme = enumerator.Current;
 
-                var currentScript = grapheme.FirstCodepoint.Script;
+                var currentScript = currentGrapheme.FirstCodepoint.Script;
 
-                //var currentDirection = grapheme.FirstCodepoint.BiDiClass;
+                var currentDirection = currentGrapheme.FirstCodepoint.BiDiClass;
 
                 //// ToDo: Implement BiDi algorithm
                 //if (currentScript.HorizontalDirection != direction)
@@ -176,18 +176,29 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentScript != Script.Common && currentScript != Script.Inherited)
                 {
-                    if (isFallback && defaultFont.TryGetGlyph(grapheme.FirstCodepoint, out _))
+                    if (isFallback && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
                     {
                         break;
                     }
 
-                    if (!font.TryGetGlyph(grapheme.FirstCodepoint, out _))
+                    if (!font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
                     {
                         break;
                     }
                 }
 
-                count += grapheme.Text.Length;
+                if (!currentGrapheme.FirstCodepoint.IsWhiteSpace && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                {
+                    break;
+                }
+
+                if (direction == BiDiClass.RightToLeft && currentDirection  == BiDiClass.CommonSeparator)
+                {
+                    break;
+                }
+
+                count += currentGrapheme.Text.Length;
+                direction = currentDirection;
             }
 
             return count > 0;
