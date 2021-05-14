@@ -8,11 +8,16 @@
 
   <UserControl.Resources>
     <SolidColorBrush x:Key="ThicknessBorderBrush" Color="#666666" />
+    <SolidColorBrush x:Key="HighlightBorderBrush" Color="CornflowerBlue" />
     <SolidColorBrush x:Key="SizeGuidelineBrush" Color="#333333" />
     <SolidColorBrush x:Key="MarginBackgroundBrush" Color="#D78965" />
+    <SolidColorBrush x:Key="MarginHighlightBrush" Color="#EA966F" />
     <SolidColorBrush x:Key="BorderBackgroundBrush" Color="#E3C381" />
+    <SolidColorBrush x:Key="BorderHighlightBrush" Color="#EFCD88" />
     <SolidColorBrush x:Key="PaddingBackgroundBrush" Color="#B8C47F" />
+    <SolidColorBrush x:Key="PaddingHighlightBrush" Color="#CEDA8E" />
     <SolidColorBrush x:Key="SizeBackgroundBrush" Color="#88B2BD" />
+    <SolidColorBrush x:Key="SizeHighlightBrush" Color="#9ED0DC" />
     <conv:BoolToOpacityConverter x:Key="BoolToOpacity" Opacity="0.6"/>
   </UserControl.Resources>
 
@@ -24,43 +29,60 @@
       <Setter Property="BorderBrush" Value="{StaticResource ThicknessBorderBrush}" />
       <Setter Property="Template">
         <ControlTemplate>
-          <Border
-            Background="{TemplateBinding Background}"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}">
-            <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="Auto,*,Auto">
-              <Grid.Styles>
-                <Style Selector="TextBox.thickness-edit">
-                  <Setter Property="Background" Value="Transparent" />
-                  <Setter Property="BorderThickness" Value="0" />
-                  <Setter Property="Margin" Value="2" />
-                  <Setter Property="HorizontalAlignment" Value="Stretch" />
-                  <Setter Property="VerticalAlignment" Value="Stretch" />
-                  <Setter Property="HorizontalContentAlignment" Value="Center" />
-                  <Setter Property="VerticalContentAlignment" Value="Center" />
-                  <Setter Property="(ScrollViewer.HorizontalScrollBarVisibility)" Value="Disabled" />
-                  <Setter Property="(ScrollViewer.VerticalScrollBarVisibility)" Value="Disabled" />
-                  <Setter Property="IsVisible" Value="{Binding $parent[local:ThicknessEditor].IsPresent}" />
-                </Style>
-              </Grid.Styles>
-              <TextBlock IsVisible="{TemplateBinding IsPresent}" Margin="4,0,0,0" Text="{TemplateBinding Header}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" />
-              <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Left, RelativeSource={RelativeSource TemplatedParent}}" Classes="thickness-edit" />
-              <TextBox x:Name="Right"  Grid.Row="0" Grid.Column="1" Text="{Binding Top, RelativeSource={RelativeSource TemplatedParent}}" Classes="thickness-edit" />
-              <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Right, RelativeSource={RelativeSource TemplatedParent}}"  Classes="thickness-edit" />
-              <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Bottom, RelativeSource={RelativeSource TemplatedParent}}" Classes="thickness-edit" />
-              <ContentPresenter Grid.Row="1" Grid.Column="1"
-                Name="PART_ContentPresenter"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Content="{TemplateBinding Content}"
-                                Padding="{TemplateBinding Padding}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
-            </Grid>
-          </Border>
+          <Panel>
+            <Rectangle x:Name="PART_Background" Classes.no-content-pointerover="{Binding !#PART_ContentPresenter.IsPointerOver}" />
+            <Border
+              x:Name="PART_Border"
+              Classes.no-content-pointerover="{Binding !#PART_ContentPresenter.IsPointerOver}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}">
+              <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="Auto,*,Auto">
+                <Grid.Styles>
+                  <Style Selector="TextBox.thickness-edit">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Margin" Value="2" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="VerticalAlignment" Value="Stretch" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="(ScrollViewer.HorizontalScrollBarVisibility)" Value="Disabled" />
+                    <Setter Property="(ScrollViewer.VerticalScrollBarVisibility)" Value="Disabled" />
+                    <Setter Property="IsVisible" Value="{Binding $parent[local:ThicknessEditor].IsPresent}" />
+                  </Style>
+                </Grid.Styles>
+                <TextBlock IsVisible="{TemplateBinding IsPresent}" Margin="4,0,0,0" Text="{TemplateBinding Header}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" />
+                <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Left, RelativeSource={RelativeSource TemplatedParent}}" Classes="thickness-edit" />
+                <TextBox x:Name="Right"  Grid.Row="0" Grid.Column="1" Text="{Binding Top, RelativeSource={RelativeSource TemplatedParent}}" Classes="thickness-edit" />
+                <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Right, RelativeSource={RelativeSource TemplatedParent}}"  Classes="thickness-edit" />
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Bottom, RelativeSource={RelativeSource TemplatedParent}}" Classes="thickness-edit" />
+                <ContentPresenter Grid.Row="1" Grid.Column="1"
+                                  Name="PART_ContentPresenter"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Content="{TemplateBinding Content}"
+                                  Padding="{TemplateBinding Padding}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+              </Grid>
+            </Border>
+          </Panel>
 
         </ControlTemplate>
       </Setter>
     </Style>
+
+    <Style Selector="local|ThicknessEditor /template/ Rectangle#PART_Background">
+      <Setter Property="Fill" Value="{Binding Background, RelativeSource={RelativeSource TemplatedParent}}" />
+    </Style>
+
+    <Style Selector="local|ThicknessEditor:pointerover /template/ Rectangle#PART_Background.no-content-pointerover">
+      <Setter Property="Fill" Value="{Binding Highlight, RelativeSource={RelativeSource TemplatedParent}}" />
+    </Style>
+
+    <Style Selector="local|ThicknessEditor:pointerover /template/ Border#PART_Border.no-content-pointerover">
+      <Setter Property="BorderBrush" Value="{StaticResource HighlightBorderBrush}" />
+    </Style>
+
     <Style Selector="local|ThicknessEditor[IsPresent=False]">
       <Setter Property="BorderThickness" Value="0" />
     </Style>
@@ -110,47 +132,66 @@
 
     <Grid Grid.Column="2" RowDefinitions="Auto,*, Auto,*,Auto" >
       <TextBlock Grid.Row="0" Text="Layout Visualizer" Margin="4" />
-      
-      <Grid Grid.Row="1" x:Name="LayoutRoot" Margin="8,0,8,8" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
 
-        <Border x:Name="VerticalSize" Grid.Row="0" Grid.Column="1" >
-          <TextBlock VerticalAlignment="Center" FontWeight="Bold"
-                     TextDecorations="{Binding Layout.HeightConstraint, Converter={x:Static local:Converters.HasConstraintConverter}}"
-                     Text="{Binding Layout.Height}"
-                     ToolTip.Tip="{Binding Layout.HeightConstraint}" />
-        </Border>
-        
-        <Border x:Name="HorizontalSize" Grid.Row="1" Grid.Column="0" >
-          <TextBlock HorizontalAlignment="Center" FontWeight="Bold" 
-                     TextDecorations="{Binding Layout.WidthConstraint, Converter={x:Static local:Converters.HasConstraintConverter}}"
-                     Text="{Binding Layout.Width}" 
-                     ToolTip.Tip="{Binding Layout.WidthConstraint}" />
-        </Border>
-        
-        <local:ThicknessEditor Grid.Row="0" Grid.Column="0" Header="margin" VerticalAlignment="Top" HorizontalAlignment="Center" Background="{StaticResource MarginBackgroundBrush}" Thickness="{Binding Layout.MarginThickness}">
-          <local:ThicknessEditor x:Name="BorderArea" Header="border" Background="{StaticResource BorderBackgroundBrush}" Thickness="{Binding Layout.BorderThickness}" IsPresent="{Binding Layout.HasBorder}">
-            <local:ThicknessEditor x:Name="PaddingArea" Header="padding" Background="{StaticResource PaddingBackgroundBrush}" Thickness="{Binding Layout.PaddingThickness}" IsPresent="{Binding Layout.HasPadding}">
-              <Border x:Name="ContentArea" BorderThickness="1" BorderBrush="{StaticResource ThicknessBorderBrush}" MinWidth="100" MinHeight="16" Background="{StaticResource SizeBackgroundBrush}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="content" />
-              </Border>
+      <Viewbox Grid.Row="1" StretchDirection="DownOnly" >
+        <Grid Grid.Row="1" x:Name="LayoutRoot" Margin="8,0,8,8" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto">
+
+          <Grid.Styles>
+            <Style Selector="TextBlock.with-constraint">
+              <Setter Property="TextDecorations" Value="Underline" />
+            </Style>
+
+          </Grid.Styles>
+
+          <Border x:Name="VerticalSize" Grid.Row="0" Grid.Column="1" >
+            <TextBlock VerticalAlignment="Center" FontWeight="Bold"
+                       Classes.with-constraint="{Binding Layout.HeightConstraint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Text="{Binding Layout.Height}"
+                       ToolTip.Tip="{Binding Layout.HeightConstraint}" />
+          </Border>
+
+          <Border x:Name="HorizontalSize" Grid.Row="1" Grid.Column="0" >
+            <TextBlock HorizontalAlignment="Center" FontWeight="Bold"
+                       Classes.with-constraint="{Binding Layout.WidthConstraint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Text="{Binding Layout.Width}"
+                       ToolTip.Tip="{Binding Layout.WidthConstraint}" />
+          </Border>
+
+          <local:ThicknessEditor Grid.Row="0" Grid.Column="0" Header="margin" VerticalAlignment="Top" HorizontalAlignment="Center" Background="{StaticResource MarginBackgroundBrush}" Highlight="{StaticResource MarginHighlightBrush}" Thickness="{Binding Layout.MarginThickness}">
+            <local:ThicknessEditor x:Name="BorderArea" Header="border" Background="{StaticResource BorderBackgroundBrush}" Highlight="{StaticResource BorderHighlightBrush}" Thickness="{Binding Layout.BorderThickness}" IsPresent="{Binding Layout.HasBorder}">
+              <local:ThicknessEditor x:Name="PaddingArea" Header="padding" Background="{StaticResource PaddingBackgroundBrush}" Highlight="{StaticResource PaddingHighlightBrush}" Thickness="{Binding Layout.PaddingThickness}" IsPresent="{Binding Layout.HasPadding}">
+                <Border x:Name="ContentArea" BorderThickness="1" MinWidth="100" MinHeight="16" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                  <Border.Styles>
+                    <Style Selector="Border">
+                      <Setter Property="Background" Value="{StaticResource SizeBackgroundBrush}" />
+                      <Setter Property="BorderBrush" Value="{StaticResource ThicknessBorderBrush}" />
+                    </Style>
+                    <Style Selector="Border:pointerover">
+                      <Setter Property="Background" Value="{StaticResource SizeHighlightBrush}" />
+                      <Setter Property="BorderBrush" Value="{StaticResource HighlightBorderBrush}" />
+                    </Style>
+                  </Border.Styles>
+                  <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="content" />
+                </Border>
+              </local:ThicknessEditor>
             </local:ThicknessEditor>
           </local:ThicknessEditor>
-        </local:ThicknessEditor>
 
-        <Canvas Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2">
-          <Canvas.Styles>
-            <Style Selector="Rectangle">
-              <Setter Property="StrokeDashArray" Value="1,3" />
-              <Setter Property="Stroke" Value="{StaticResource SizeGuidelineBrush}" />
-              <Setter Property="StrokeThickness" Value="1" />
-            </Style>
-          </Canvas.Styles>
-          <Rectangle x:Name="HorizontalSizeBegin" />
-          <Rectangle x:Name="HorizontalSizeEnd" />
-          <Rectangle x:Name="VerticalSizeBegin" />
-          <Rectangle x:Name="VerticalSizeEnd" />
-        </Canvas>
-      </Grid>
+          <Canvas Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2">
+            <Canvas.Styles>
+              <Style Selector="Rectangle">
+                <Setter Property="StrokeDashArray" Value="1,3" />
+                <Setter Property="Stroke" Value="{StaticResource SizeGuidelineBrush}" />
+                <Setter Property="StrokeThickness" Value="1" />
+              </Style>
+            </Canvas.Styles>
+            <Rectangle x:Name="HorizontalSizeBegin" />
+            <Rectangle x:Name="HorizontalSizeEnd" />
+            <Rectangle x:Name="VerticalSizeBegin" />
+            <Rectangle x:Name="VerticalSizeEnd" />
+          </Canvas>
+        </Grid>
+      </Viewbox>
 
       <Grid Grid.Row="2" Margin="4" RowDefinitions="Auto,Auto">
 
