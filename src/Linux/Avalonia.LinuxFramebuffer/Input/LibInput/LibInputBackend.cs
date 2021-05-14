@@ -71,7 +71,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             lock (_inputQueue)
             {
                 _inputQueue.Enqueue(ev);
-                if (_inputQueue.Count == 1)
+                if (_inputQueue.Count == 10)
                 {
                     Dispatcher.UIThread.Post(() =>
                     {
@@ -84,7 +84,11 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                                     dequeuedEvent = _inputQueue.Dequeue();
                             if (dequeuedEvent == null)
                                 return;
-                            _onInput?.Invoke(dequeuedEvent);
+
+                            if (_inputQueue.Count == 0)
+                            {
+                                _onInput?.Invoke(dequeuedEvent);
+                            }
                         }
                     }, DispatcherPriority.Input);
                 }
@@ -168,14 +172,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     _mousePosition = _mousePosition.WithY(info.Height);
                 }
 
-                if (DateTimeOffset.Now > _offset + TimeSpan.FromMilliseconds(40))
-                {
-                    _offset = DateTimeOffset.Now;
-                    
-                    ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move,
-                        _mousePosition,
-                        RawInputModifiers.None));
-                }
+                ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move,
+                    _mousePosition,
+                    RawInputModifiers.None));
             }
             else if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_BUTTON)
             {
