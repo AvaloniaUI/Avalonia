@@ -129,6 +129,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
         }
 
+        private int count = 0;
+        
         private void HandlePointer(IntPtr ev, LibInputEventType type)
         {
             //TODO: support input modifiers
@@ -165,9 +167,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 {
                     _mousePosition = _mousePosition.WithY(info.Height);
                 }
-                
-                ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
-                    RawInputModifiers.None));
+
+                count++;
+
+                if (count % 25 == 25)
+                {
+                    ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move,
+                        _mousePosition,
+                        RawInputModifiers.None));
+                }
             }
             else if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_BUTTON)
             {
@@ -193,8 +201,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
             
         }
-            
-        
 
         public void Initialize(IScreenInfoProvider screen, Action<RawInputEventArgs> onInput)
         {
