@@ -8,6 +8,7 @@ using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.XamlIl;
 using Avalonia.Platform;
 using ControlCatalog.Pages;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
@@ -16,6 +17,8 @@ namespace ControlCatalog
         public MainView()
         {
             AvaloniaXamlLoader.Load(this);
+
+            DataContext = new MainWindowViewModel();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

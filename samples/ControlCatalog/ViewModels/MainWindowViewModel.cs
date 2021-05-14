@@ -32,74 +32,8 @@ namespace ControlCatalog.ViewModels
             set => this.RaiseAndSetIfChanged(ref _test, value);
         }
 
-        public MainWindowViewModel(IManagedNotificationManager notificationManager)
+        public MainWindowViewModel()
         {
-            _notificationManager = notificationManager;
-
-            ShowCustomManagedNotificationCommand = MiniCommand.Create(() =>
-            {
-                NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });
-            });
-
-            ShowManagedNotificationCommand = MiniCommand.Create(() =>
-            {
-                NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
-            });
-
-            ShowNativeNotificationCommand = MiniCommand.Create(() =>
-            {
-                NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
-            });
-
-            AboutCommand = MiniCommand.CreateFromTask(async () =>
-            {
-                var dialog = new AboutAvaloniaDialog();
-
-                var mainWindow = (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-
-                await dialog.ShowDialog(mainWindow);
-            });
-
-            ExitCommand = MiniCommand.Create(() =>
-            {
-                (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
-            });
-
-            ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
-            {
-                IsMenuItemChecked = !IsMenuItemChecked;
-            });
-
-            WindowState = WindowState.Normal;
-
-            WindowStates = new WindowState[]
-            {
-                WindowState.Minimized,
-                WindowState.Normal,
-                WindowState.Maximized,
-                WindowState.FullScreen,
-            };
-
-            this.WhenAnyValue(x => x.SystemTitleBarEnabled, x=>x.PreferSystemChromeEnabled)
-                .Subscribe(x =>
-                {
-                    var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
-
-                    if(x.Item1)
-                    {
-                        hints |= ExtendClientAreaChromeHints.SystemChrome;
-                    }
-
-                    if(x.Item2)
-                    {
-                        hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
-                    }
-
-                    ChromeHints = hints;
-                });
-
-            SystemTitleBarEnabled = true;            
-            TitleBarHeight = -1;
 
             var timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(100);
