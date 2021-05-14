@@ -75,9 +75,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 {
                     Dispatcher.UIThread.Post(() =>
                     {
+                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
                         while (true)
                         {
-                            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
                             RawInputEventArgs dequeuedEvent = null;
                             lock(_inputQueue)
                                 if (_inputQueue.Count != 0)
