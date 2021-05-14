@@ -422,7 +422,7 @@ namespace Avalonia.Media.TextFormatting
                             }
                             else
                             {
-                                currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+                                currentPosition = currentLength + measuredLength;
                             }
 
                             breakFound = true;
