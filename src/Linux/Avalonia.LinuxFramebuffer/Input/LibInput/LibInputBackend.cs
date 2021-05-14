@@ -142,6 +142,13 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
                     RawInputModifiers.None));
             }
+            else if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_MOTION)
+            {
+                _mousePosition = new Point(libinput_event_touch_get_x_transformed(pev, (int)info.Width),
+                    libinput_event_touch_get_y_transformed(pev, (int)info.Height));
+                ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
+                    RawInputModifiers.None));
+            }
             else if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_BUTTON)
             {
                 var button = (EvKey)libinput_event_pointer_get_button(pev);
