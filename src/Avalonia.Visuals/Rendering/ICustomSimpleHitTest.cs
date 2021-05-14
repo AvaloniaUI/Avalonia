@@ -11,6 +11,7 @@ namespace Avalonia.Rendering
     /// </summary>
     public interface ICustomSimpleHitTest
     {
+        /// <param name="point">The point to hit test in global coordinate space.</param>
         bool HitTest(Point point);
     }
 
