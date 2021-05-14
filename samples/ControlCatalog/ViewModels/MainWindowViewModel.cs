@@ -5,6 +5,8 @@ using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
 using System;
+using System.Reactive.Linq;
+using Avalonia.Threading;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -22,6 +24,13 @@ namespace ControlCatalog.ViewModels
         private bool _systemTitleBarEnabled;        
         private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
+        private string _test;
+
+        public string Test
+        {
+            get => _test;
+            set => this.RaiseAndSetIfChanged(ref _test, value);
+        }
 
         public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
@@ -91,6 +100,12 @@ namespace ControlCatalog.ViewModels
 
             SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
+
+            var timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(100);
+            timer.Tick += (sender, args) => Test = DateTime.Now.ToLongTimeString();
+            timer.Start();
+
         }        
 
         public int TransparencyLevel
