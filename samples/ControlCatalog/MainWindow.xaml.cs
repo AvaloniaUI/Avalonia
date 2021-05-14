@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
@@ -17,21 +18,8 @@ namespace ControlCatalog
         public MainWindow()
         {
             this.InitializeComponent();
+            
             this.AttachDevTools();
-            //Renderer.DrawFps = true;
-            //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
-
-            _notificationArea = new WindowNotificationManager(this)
-            {
-                Position = NotificationPosition.TopRight,
-                MaxItems = 3
-            };
-
-            DataContext = new MainWindowViewModel(_notificationArea);
-            _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
-
-            var mainMenu = this.FindControl<Menu>("MainMenu");
-            mainMenu.AttachedToVisualTree += MenuAttached;
         }
 
         public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
