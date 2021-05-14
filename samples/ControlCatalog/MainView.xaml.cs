@@ -28,6 +28,8 @@ namespace ControlCatalog
             
             var topLevel = this.VisualRoot as TopLevel;
 
+            topLevel.Renderer.DrawFps = true;
+
             new ManagedPointer(topLevel);
         }
     }

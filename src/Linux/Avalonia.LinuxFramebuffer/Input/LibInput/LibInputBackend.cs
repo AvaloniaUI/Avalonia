@@ -129,7 +129,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
         }
 
-        private int count = 0;
+        DateTimeOffset _offset = DateTimeOffset.Now;
         
         private void HandlePointer(IntPtr ev, LibInputEventType type)
         {
@@ -168,9 +168,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     _mousePosition = _mousePosition.WithY(info.Height);
                 }
 
-                count++;
-
-                if (count % 25 == 25)
+                if (DateTimeOffset.Now > _offset + TimeSpan.FromMilliseconds(40))
                 {
                     ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move,
                         _mousePosition,
