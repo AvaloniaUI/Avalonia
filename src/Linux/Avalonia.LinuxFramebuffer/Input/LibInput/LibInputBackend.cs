@@ -16,7 +16,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         private readonly Queue<Action> _inputThreadActions = new Queue<Action>();
         private TouchDevice _touch = new TouchDevice();
         private MouseDevice _mouse = new MouseDevice();
-        private Point _mousePosition;
+        private Point _mousePosition = new Point();
         
         private readonly Queue<RawInputEventArgs> _inputQueue = new Queue<RawInputEventArgs>();
         private Action<RawInputEventArgs> _onInput;
@@ -144,8 +144,17 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
             else if (type == LibInputEventType.LIBINPUT_EVENT_POINTER_MOTION)
             {
-                _mousePosition = new Point(libinput_event_touch_get_x_transformed(pev, (int)info.Width),
-                    libinput_event_touch_get_y_transformed(pev, (int)info.Height));
+                _mousePosition += new Point(libinput_event_pointer_get_dx(pev), libinput_event_pointer_get_dy(pev));
+
+                if (_mousePosition.X < 0)
+                {
+                    _mousePosition = _mousePosition.WithX(0);
+                }
+
+                if (_mousePosition.Y < 0)
+                {
+                    _mousePosition = _mousePosition.WithY(0);
+                }
                 ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
                     RawInputModifiers.None));
             }
