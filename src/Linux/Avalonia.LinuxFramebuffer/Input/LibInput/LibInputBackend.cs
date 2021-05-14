@@ -155,6 +155,17 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 {
                     _mousePosition = _mousePosition.WithY(0);
                 }
+
+                if (_mousePosition.X > info.Width)
+                {
+                    _mousePosition = _mousePosition.WithY(info.Width);
+                }
+
+                if (_mousePosition.Y > info.Height)
+                {
+                    _mousePosition = _mousePosition.WithY(info.Height);
+                }
+                
                 ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move, _mousePosition,
                     RawInputModifiers.None));
             }
@@ -188,6 +199,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         public void Initialize(IScreenInfoProvider screen, Action<RawInputEventArgs> onInput)
         {
             _screen = screen;
+            _mousePosition = new Point(_screen.ScaledSize.Width / 2, _screen.ScaledSize.Height / 2);
             _onInput = onInput;
         }
 
