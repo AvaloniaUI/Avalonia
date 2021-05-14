@@ -13,8 +13,9 @@ namespace Avalonia.Controls.Selection
     internal class InternalSelectionModel : SelectionModel<object?>
     {
         private IList? _writableSelectedItems;
-        private bool _ignoreModelChanges;
+        private int _ignoreModelChanges;
         private bool _ignoreSelectedItemsChanges;
+        private bool _isResetting;
 
         public InternalSelectionModel()
         {
@@ -79,10 +80,12 @@ namespace Avalonia.Controls.Selection
             try
             {
                 _ignoreSelectedItemsChanges = true;
+                ++_ignoreModelChanges;
                 base.SetSource(value);
             }
             finally
             {
+                --_ignoreModelChanges;
                 _ignoreSelectedItemsChanges = false;
             }
 
@@ -92,17 +95,14 @@ namespace Avalonia.Controls.Selection
             }
             else
             {
-                foreach (var i in oldSelection)
-                {
-                    var index = ItemsView!.IndexOf(i);
-                    Select(index);
-                }
+                SyncFromSelectedItems();
             }
         }
 
         private void SyncToSelectedItems()
         {
-            if (_writableSelectedItems is object)
+            if (_writableSelectedItems is object &&
+                !SequenceEqual(_writableSelectedItems, base.SelectedItems))
             {
                 try
                 {
@@ -130,17 +130,31 @@ namespace Avalonia.Controls.Selection
 
             try
             {
-                _ignoreModelChanges = true;
+                ++_ignoreModelChanges;
 
                 using (BatchUpdate())
                 {
                     Clear();
-                    Add(_writableSelectedItems);
+
+                    for (var i = 0; i < _writableSelectedItems.Count; ++i)
+                    {
+                        var index = IndexOf(Source, _writableSelectedItems[i]);
+
+                        if (index != -1)
+                        {
+                            Select(index);
+                        }
+                        else
+                        {
+                            _writableSelectedItems.RemoveAt(i);
+                            --i;
+                        }
+                    }
                 }
             }
             finally
             {
-                _ignoreModelChanges = false;
+                --_ignoreModelChanges;
             }
         }
 
@@ -162,7 +176,7 @@ namespace Avalonia.Controls.Selection
 
         private void OnSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
         {
-            if (_ignoreModelChanges)
+            if (_ignoreModelChanges > 0)
             {
                 return;
             }
@@ -188,6 +202,28 @@ namespace Avalonia.Controls.Selection
             finally
             {
                 _ignoreSelectedItemsChanges = false;
+            }
+        }
+
+        private protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                ++_ignoreModelChanges;
+                _isResetting = true;
+            }
+
+            base.OnSourceCollectionChanged(e);
+        }
+
+        protected override void OnSourceCollectionChangeFinished()
+        {
+            base.OnSourceCollectionChangeFinished();
+
+            if (_isResetting)
+            {
+                --_ignoreModelChanges;
+                _isResetting = false;
             }
         }
 
@@ -222,7 +258,7 @@ namespace Avalonia.Controls.Selection
             {
                 using var operation = BatchUpdate();
 
-                _ignoreModelChanges = true;
+                ++_ignoreModelChanges;
 
                 switch (e.Action)
                 {
@@ -244,7 +280,7 @@ namespace Avalonia.Controls.Selection
             }
             finally
             {
-                _ignoreModelChanges = false;
+                --_ignoreModelChanges;
             }
         }
 
@@ -273,6 +309,28 @@ namespace Avalonia.Controls.Selection
             }
 
             return -1;
+        }
+
+        private static bool SequenceEqual(IList first, IReadOnlyList<object?> second)
+        {
+            if (first is IEnumerable<object?> e)
+            {
+                return e.SequenceEqual(second);
+            }
+
+            var comparer = EqualityComparer<object?>.Default;
+            var e1 = first.GetEnumerator();
+            using var e2 = second.GetEnumerator();
+
+            while (e1.MoveNext())
+            {
+                if (!(e2.MoveNext() && comparer.Equals(e1.Current, e2.Current)))
+                {
+                    return false;
+                }
+            }
+
+            return !e2.MoveNext();
         }
     }
 }

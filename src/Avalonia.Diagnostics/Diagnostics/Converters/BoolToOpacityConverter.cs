@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using Avalonia.Media;
 
 namespace Avalonia.Diagnostics.Converters
 {
-    internal class BoolToBrushConverter : IValueConverter
+    internal class BoolToOpacityConverter : IValueConverter
     {
-        public IBrush Brush { get; set; }
+        public double Opacity { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)value ? Brush : Brushes.Transparent;
+            return (bool)value ? 1d : Opacity;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

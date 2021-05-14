@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
@@ -10,7 +11,8 @@ namespace Avalonia
         IStyleHost,
         ILogical,
         IResourceHost,
-        IDataContextProvider
+        IDataContextProvider,
+        ISupportInitialize
     {
         /// <summary>
         /// Occurs when the control has finished initialization.

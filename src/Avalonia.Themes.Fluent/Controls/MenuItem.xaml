@@ -43,8 +43,7 @@
 
   <Styles.Resources>
     <conv:PlatformKeyGestureConverter x:Key="KeyGestureConverter" />
-    <x:Double x:Key="MenuFlyoutSubItemPopupHorizontalOffset">-4</x:Double>
-    <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
+    <x:Double x:Key="MenuFlyoutSubItemPopupHorizontalOffset">-4</x:Double>    
     <Thickness x:Key="MenuIconPresenterMargin">0,0,12,0</Thickness>
     <Thickness x:Key="MenuInputGestureTextMargin">24,0,0,0</Thickness>
     <StreamGeometry x:Key="MenuItemChevronPathData">M 1,0 10,10 l -9,10 -1,-1 L 8,10 -0,1 Z</StreamGeometry>
@@ -112,9 +111,8 @@
           <Popup Name="PART_Popup"
                  WindowManagerAddShadowHint="False"
                  PlacementMode="Right"
-                 OverlayInputPassThroughElement="{Binding $parent[MenuItem]}"
                  HorizontalOffset="{DynamicResource MenuFlyoutSubItemPopupHorizontalOffset}"
-                 IsLightDismissEnabled="True"
+                 IsLightDismissEnabled="False"
                  IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
             <Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
                     BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"

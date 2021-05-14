@@ -52,7 +52,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
             throw new NotImplementedException();
         }
@@ -112,6 +112,8 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
                 }
             }
 
+            public double ContourLength { get; }
+
             public IStreamGeometryImpl Clone()
             {
                 return this;
@@ -147,6 +149,21 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             }
 
             public ITransformedGeometryImpl WithTransform(Matrix transform)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryGetPointAtDistance(double distance, out Point point)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryGetPointAndTangentAtDistance(double distance, out Point point, out Point tangent)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry)
             {
                 throw new NotImplementedException();
             }

@@ -2595,7 +2595,7 @@ namespace Avalonia.Collections
         /// <returns>Whether the specified flag is set</returns>
         private bool CheckFlag(CollectionViewFlags flags)
         {
-            return _flags.HasFlagCustom(flags);
+            return _flags.HasAllFlags(flags);
         }
 
         /// <summary>
@@ -3275,7 +3275,7 @@ namespace Avalonia.Collections
                 addIndex);
 
             // next check if we need to add an item into the current group
-            // bool needsGrouping = false;
+            bool needsGrouping = false;
             if (Count == 1 && GroupDescriptions.Count > 0)
             {
                 // if this is the first item being added
@@ -3302,7 +3302,7 @@ namespace Avalonia.Collections
                 // otherwise, we need to validate that it is within the current page.
                 if (PageSize == 0 || (PageIndex + 1) * PageSize > leafIndex)
                 {
-                    //needsGrouping = true;
+                    needsGrouping = true;
 
                     int pageStartIndex = PageIndex * PageSize;
 
@@ -3338,6 +3338,13 @@ namespace Avalonia.Collections
                             removeNotificationItem,
                             PageSize - 1));
                 }
+            }
+
+            // if we need to add the item into the current group
+            // that will be displayed
+            if (needsGrouping)
+            {
+                this._group.AddToSubgroups(addedItem, false /*loading*/);
             }
 
             int addedIndex = IndexOf(addedItem);
