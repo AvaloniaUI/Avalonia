@@ -170,6 +170,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
                 if (DateTimeOffset.Now > _offset + TimeSpan.FromMilliseconds(40))
                 {
+                    _offset = DateTimeOffset.Now;
+                    
                     ScheduleInput(new RawPointerEventArgs(_mouse, ts, _inputRoot, RawPointerEventType.Move,
                         _mousePosition,
                         RawInputModifiers.None));
