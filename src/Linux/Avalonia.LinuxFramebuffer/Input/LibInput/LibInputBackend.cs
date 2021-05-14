@@ -71,7 +71,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             lock (_inputQueue)
             {
                 _inputQueue.Enqueue(ev);
-                if (_inputQueue.Count == 10)
+                if (_inputQueue.Count == 1)
                 {
                     Dispatcher.UIThread.Post(() =>
                     {
