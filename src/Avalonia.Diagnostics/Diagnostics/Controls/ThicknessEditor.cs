@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
 
-namespace Avalonia.Diagnostics.Views
+namespace Avalonia.Diagnostics.Controls
 {
     internal class ThicknessEditor : ContentControl
     {
@@ -35,12 +35,6 @@ namespace Avalonia.Diagnostics.Views
         public static readonly StyledProperty<IBrush> HighlightProperty =
             AvaloniaProperty.Register<ThicknessEditor, IBrush>(nameof(Highlight));
 
-        public IBrush Highlight
-        {
-            get => GetValue(HighlightProperty);
-            set => SetValue(HighlightProperty, value);
-        }
-        
         private Thickness _thickness;
         private string _header;
         private bool _isPresent = true;
@@ -90,6 +84,12 @@ namespace Avalonia.Diagnostics.Views
         {
             get => _bottom;
             set => SetAndRaise(BottomProperty, ref _bottom, value);
+        }
+
+        public IBrush Highlight
+        {
+            get => GetValue(HighlightProperty);
+            set => SetValue(HighlightProperty, value);
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
