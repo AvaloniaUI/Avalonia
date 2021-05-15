@@ -183,6 +183,7 @@
                 <Setter Property="StrokeDashArray" Value="1,3" />
                 <Setter Property="Stroke" Value="{StaticResource SizeGuidelineBrush}" />
                 <Setter Property="StrokeThickness" Value="1" />
+                <Setter Property="IsHitTestVisible" Value="False" />
               </Style>
             </Canvas.Styles>
             <Rectangle x:Name="HorizontalSizeBegin" />
