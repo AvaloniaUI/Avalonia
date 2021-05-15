@@ -13,7 +13,7 @@
       <StackPanel Orientation="Vertical" Spacing="8">
         <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
         <TextBox Width="200" Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
-        <TextBox Width="200" Watermark="Watermark" />
+        <TextBox Width="200" Watermark="Numeric Watermark" x:Name="numericWatermark"/>
         <TextBox Width="200"
                  Watermark="Floating Watermark"
                  UseFloatingWatermark="True"

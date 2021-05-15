@@ -416,26 +416,8 @@ namespace Avalonia.Controls
             {
                 return;
             }
-
-            var textAlignment = TextAlignment;
-
-            var width = Bounds.Size.Width;
-
-            var offsetX = 0.0;
-
-            switch (textAlignment)
-            {
-                case TextAlignment.Center:
-                    offsetX = (width - TextLayout.Size.Width) / 2;
-                    break;
-
-                case TextAlignment.Right:
-                    offsetX = width - TextLayout.Size.Width;
-                    break;
-            }
-
+            
             var padding = Padding;
-
             var top = padding.Top;
             var textSize = TextLayout.Size;
 
@@ -453,10 +435,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            using (context.PushPostTransform(Matrix.CreateTranslation(padding.Left + offsetX, top)))
-            {
-                TextLayout.Draw(context);
-            }
+            TextLayout.Draw(context, new Point(padding.Left, top));
         }
 
         /// <summary>

@@ -31,6 +31,21 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
+        /// AreClose - Returns whether or not two doubles are "close".  That is, whether or
+        /// not they are within epsilon of each other.
+        /// </summary>
+        /// <param name="value1"> The first double to compare. </param>
+        /// <param name="value2"> The second double to compare. </param>
+        /// <param name="eps"> The fixed epsilon value used to compare.</param>
+        public static bool AreClose(double value1, double value2, double eps)
+        {
+            //in case they are Infinities (then epsilon check does not work)
+            if (value1 == value2) return true;
+            double delta = value1 - value2;
+            return (-eps < delta) && (eps > delta);
+        }
+
+        /// <summary>
         /// AreClose - Returns whether or not two floats are "close".  That is, whether or 
         /// not they are within epsilon of each other.
         /// </summary> 

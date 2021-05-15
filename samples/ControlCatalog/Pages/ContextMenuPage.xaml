@@ -31,6 +31,7 @@
                                 <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
                             </MenuItem.Icon>
                         </MenuItem>
+                        <MenuItem Header="Menu Item that won't close on click" StaysOpenOnClick="True" />
                     </ContextMenu>
                 </Border.ContextMenu>
                 <TextBlock Text="Defined in XAML"/>

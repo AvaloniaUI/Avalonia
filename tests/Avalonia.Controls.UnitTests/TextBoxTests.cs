@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
@@ -56,7 +57,44 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("123", target1.SelectedText);
             }
         }
-        
+
+        [Fact]
+        public void Opening_Context_Flyout_Does_not_Lose_Selection()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    ContextFlyout = new MenuFlyout
+                    {
+                        Items = new List<MenuItem>
+                        {
+                            new MenuItem { Header = "Item 1" },
+                            new MenuItem {Header = "Item 2" },
+                            new MenuItem {Header = "Item 3" }
+                        }
+                    }
+                };
+                              
+
+                target1.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target1 };
+
+                target1.SelectionStart = 0;
+                target1.SelectionEnd = 3;
+
+                target1.Focus();
+                Assert.True(target1.IsFocused);
+
+                target1.ContextFlyout.ShowAt(target1);
+
+                Assert.Equal("123", target1.SelectedText);
+            }
+        }
+
         [Fact]
         public void DefaultBindingMode_Should_Be_TwoWay()
         {
@@ -340,7 +378,7 @@ namespace Avalonia.Controls.UnitTests
 
         [Theory]
         [InlineData(new object[] { false, TextWrapping.NoWrap, ScrollBarVisibility.Hidden })]
-        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Hidden })]
+        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
         [InlineData(new object[] { true, TextWrapping.NoWrap, ScrollBarVisibility.Auto })]
         [InlineData(new object[] { true, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
         public void Has_Correct_Horizontal_ScrollBar_Visibility(
