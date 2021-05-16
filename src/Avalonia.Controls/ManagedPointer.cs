@@ -20,6 +20,8 @@ namespace Avalonia.Controls
         public ManagedPointer(TopLevel visualRoot)
         {
             IsHitTestVisible = false;
+            ZIndex = int.MaxValue;
+
             RenderTransform = new PointerTransform();
 
             var layer = OverlayLayer.GetOverlayLayer(visualRoot);

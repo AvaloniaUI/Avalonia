@@ -12,11 +12,12 @@ namespace Avalonia.Controls.Embedding
     {
         public EmbeddableControlRoot(ITopLevelImpl impl) : base(impl)
         {
-            
+            new ManagedPointer(this);
         }
 
         public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())
         {
+            new ManagedPointer(this);
         }
 
         protected bool EnforceClientSize { get; set; } = true;
