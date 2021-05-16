@@ -9,9 +9,9 @@
         <!-- Set Defaults -->
         <Setter Property="Template">
             <ControlTemplate>
-                <Viewbox Height="15" Width="15" HorizontalAlignment="Left" Stretch="None">
+                <Viewbox Height="15" Width="15" HorizontalAlignment="Left" Stretch="Uniform">
                     <Path Fill="{DynamicResource TextControlForeground}"
-                        Data="M 0 2.3179921 V 18.758225 l 3.712311 -3.623922 l 2.12132 4.331029 c 0.519598 1.171377 3.220861 0.229524 2.452777 -1.336875 l -2.099224 -4.496756 l 4.684582 -0.000044 z" />
+                        Data="m 0 0 v 16.4402 l 3.792 -3.6182 l 2.193 4.195 c 0.5196 1.1714 3.2209 0.2295 2.4528 -1.3369 l -2.0992 -4.4968 l 4.6846 -0 z" />
                 </Viewbox>
             </ControlTemplate>
         </Setter>
