@@ -6,47 +6,33 @@ using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
-    public class ManagedPointer : Control
+    public class ManagedPointer : TemplatedControl
     {
-        private Point _p = new Point();
-        private readonly TopLevel _topLevel;
-        
+        private class PointerTransform : ITransform
+        {
+            public Point Position { get; set; }
+
+            public Matrix Value => Matrix.CreateTranslation(Position.X, Position.Y);
+        }
+
         public ManagedPointer(TopLevel visualRoot)
         {
-            _topLevel = visualRoot;
-            visualRoot.PointerMoved += VisualRootOnPointerMoved;
-            
+            RenderTransform = new PointerTransform();
+
             var layer = OverlayLayer.GetOverlayLayer(visualRoot);
-            
+
             ((ISetLogicalParent)this).SetParent(visualRoot);
             layer.Children.Add(this);
 
-            var inputRoot = visualRoot as IInputRoot;
-
             InputManager.Instance.PreProcess.Subscribe(x =>
             {
-                if (x is RawPointerEventArgs args && args.Type == RawPointerEventType.Move)
+                if (x is RawPointerEventArgs { Type: RawPointerEventType.Move } args &&
+                    RenderTransform is PointerTransform t)
                 {
-                    Console.WriteLine(args.Position);
-
-                    _p = args.Position;
+                    t.Position = args.Position;
+                    InvalidateVisual();
                 }
             });
-
-        }
-
-        private void VisualRootOnPointerMoved(object sender, PointerEventArgs e)
-        {
-            _p = e.GetPosition(_topLevel);
-            
-            InvalidateVisual();
-        }
-
-        public override void Render(DrawingContext context)
-        {
-            base.Render(context);
-
-            context.FillRectangle(Brushes.Black, new Rect(_p, new Size(10, 10)));
         }
     }
 }
