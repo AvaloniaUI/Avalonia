@@ -76,6 +76,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     Dispatcher.UIThread.Post(() =>
                     {
                         Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
+                        RawInputEventArgs? lastArgs = null;
+                        
                         while (true)
                         {
                             RawInputEventArgs dequeuedEvent = null;
@@ -85,10 +88,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                             if (dequeuedEvent == null)
                                 return;
 
-                            if (_inputQueue.Count == 0)
+                            if (dequeuedEvent is RawPointerEventArgs { Type: RawPointerEventType.Move } && lastArgs is RawPointerEventArgs { Type: RawPointerEventType.Move } && _inputQueue.Count > 0 )
                             {
-                                _onInput?.Invoke(dequeuedEvent);
+                                lastArgs = dequeuedEvent;
+                                continue;
                             }
+
+                            lastArgs = dequeuedEvent;
+                            
+                            _onInput?.Invoke(dequeuedEvent);
                         }
                     }, DispatcherPriority.Input);
                 }
