@@ -77,26 +77,33 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     {
                         Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-                        RawInputEventArgs? lastArgs = null;
-                        
                         while (true)
                         {
                             RawInputEventArgs dequeuedEvent = null;
-                            lock(_inputQueue)
-                                if (_inputQueue.Count != 0)
-                                    dequeuedEvent = _inputQueue.Dequeue();
-                            if (dequeuedEvent == null)
-                                return;
 
-                            if (dequeuedEvent is RawPointerEventArgs { Type: RawPointerEventType.Move } && lastArgs is RawPointerEventArgs { Type: RawPointerEventType.Move } && _inputQueue.Count > 0 )
+                            lock (_inputQueue)
                             {
-                                lastArgs = dequeuedEvent;
-                                continue;
+                                if (_inputQueue.Count != 0)
+                                {
+                                    dequeuedEvent = _inputQueue.Dequeue();
+                                }
                             }
-
-                            lastArgs = dequeuedEvent;
                             
-                            _onInput?.Invoke(dequeuedEvent);
+                            switch (dequeuedEvent)
+                            {
+                                case RawPointerEventArgs pointerEventArgs when (pointerEventArgs.Type == RawPointerEventType.Move ||
+                                                                    pointerEventArgs.Type == RawPointerEventType.TouchUpdate) && 
+                                                                   _inputQueue.Count != 0 && _inputQueue.Peek() is RawPointerEventArgs next &&
+                                                                   next.Type == pointerEventArgs.Type:
+                                    continue;
+                                
+                                case null:
+                                    return;
+                                
+                                default:
+                                    _onInput?.Invoke(dequeuedEvent);
+                                    break;
+                            }
                         }
                     }, DispatcherPriority.Input);
                 }
