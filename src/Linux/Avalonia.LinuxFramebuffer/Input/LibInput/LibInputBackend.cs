@@ -47,7 +47,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 libinput_dispatch(ctx);
                 while ((ev = libinput_get_event(ctx)) != IntPtr.Zero)
                 {
-                    
                     var type = libinput_event_get_type(ev);
                     if (type >= LibInputEventType.LIBINPUT_EVENT_TOUCH_DOWN &&
                         type <= LibInputEventType.LIBINPUT_EVENT_TOUCH_CANCEL)
@@ -179,7 +178,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
                 if (_mousePosition.X > info.Width)
                 {
-                    _mousePosition = _mousePosition.WithY(info.Width);
+                    _mousePosition = _mousePosition.WithX(info.Width);
                 }
 
                 if (_mousePosition.Y > info.Height)

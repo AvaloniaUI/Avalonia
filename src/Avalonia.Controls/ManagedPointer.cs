@@ -1,8 +1,10 @@
 using System;
+using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -24,15 +26,22 @@ namespace Avalonia.Controls
             ((ISetLogicalParent)this).SetParent(visualRoot);
             layer.Children.Add(this);
 
-            InputManager.Instance.PreProcess.Subscribe(x =>
+            InputManager.Instance.PreProcess.OfType<RawPointerEventArgs>().Subscribe(x =>
             {
-                if (x is RawPointerEventArgs { Type: RawPointerEventType.Move } args &&
+                IsVisible = true;
+                
+                if (x is { Type: RawPointerEventType.Move } args &&
                     RenderTransform is PointerTransform t)
                 {
                     t.Position = args.Position;
                     InvalidateVisual();
                 }
             });
+
+            InputManager.Instance.PreProcess.OfType<RawPointerEventArgs>()
+                .Throttle(TimeSpan.FromSeconds(5))
+                .ObserveOn(AvaloniaScheduler.Instance)
+                .Subscribe(x => IsVisible = false);
         }
     }
 }
