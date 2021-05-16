@@ -5,8 +5,6 @@ using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
 using System;
-using System.Reactive.Linq;
-using Avalonia.Threading;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
@@ -24,22 +22,75 @@ namespace ControlCatalog.ViewModels
         private bool _systemTitleBarEnabled;        
         private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
-        private string _test;
 
-        public string Test
+        public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
-            get => _test;
-            set => this.RaiseAndSetIfChanged(ref _test, value);
-        }
+            _notificationManager = notificationManager;
 
-        public MainWindowViewModel()
-        {
+            ShowCustomManagedNotificationCommand = MiniCommand.Create(() =>
+            {
+                NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });
+            });
 
-            var timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(100);
-            timer.Tick += (sender, args) => Test = DateTime.Now.ToLongTimeString();
-            timer.Start();
+            ShowManagedNotificationCommand = MiniCommand.Create(() =>
+            {
+                NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
+            });
 
+            ShowNativeNotificationCommand = MiniCommand.Create(() =>
+            {
+                NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
+            });
+
+            AboutCommand = MiniCommand.CreateFromTask(async () =>
+            {
+                var dialog = new AboutAvaloniaDialog();
+
+                var mainWindow = (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+
+                await dialog.ShowDialog(mainWindow);
+            });
+
+            ExitCommand = MiniCommand.Create(() =>
+            {
+                (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
+            });
+
+            ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
+            {
+                IsMenuItemChecked = !IsMenuItemChecked;
+            });
+
+            WindowState = WindowState.Normal;
+
+            WindowStates = new WindowState[]
+            {
+                WindowState.Minimized,
+                WindowState.Normal,
+                WindowState.Maximized,
+                WindowState.FullScreen,
+            };
+
+            this.WhenAnyValue(x => x.SystemTitleBarEnabled, x=>x.PreferSystemChromeEnabled)
+                .Subscribe(x =>
+                {
+                    var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
+
+                    if(x.Item1)
+                    {
+                        hints |= ExtendClientAreaChromeHints.SystemChrome;
+                    }
+
+                    if(x.Item2)
+                    {
+                        hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
+                    }
+
+                    ChromeHints = hints;
+                });
+
+            SystemTitleBarEnabled = true;            
+            TitleBarHeight = -1;
         }        
 
         public int TransparencyLevel
