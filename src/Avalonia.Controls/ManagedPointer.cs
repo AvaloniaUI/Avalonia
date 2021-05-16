@@ -23,6 +23,7 @@ namespace Avalonia.Controls
 
         public ManagedPointer(TopLevel visualRoot)
         {
+            IsVisible = false;
             IsHitTestVisible = false;
             ZIndex = int.MaxValue;
             
