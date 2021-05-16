@@ -19,6 +19,7 @@ namespace Avalonia.Controls
 
         public ManagedPointer(TopLevel visualRoot)
         {
+            IsHitTestVisible = false;
             RenderTransform = new PointerTransform();
 
             var layer = OverlayLayer.GetOverlayLayer(visualRoot);
