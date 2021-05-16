@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -18,8 +19,8 @@ namespace Avalonia.Controls
             public Matrix Value => Matrix.CreateTranslation(Position.X, Position.Y);
         }
         
-        public static readonly StyledProperty<Cursor?> PointerCursorProperty =
-            AvaloniaProperty.Register<ManagedPointer, Cursor?>(nameof(PointerCursor), null, true);
+        public static readonly StyledProperty<StandardCursorType> PointerCursorProperty =
+            AvaloniaProperty.Register<ManagedPointer, StandardCursorType>(nameof(PointerCursor), StandardCursorType.None);
 
         public ManagedPointer(TopLevel visualRoot)
         {
@@ -30,7 +31,10 @@ namespace Avalonia.Controls
             visualRoot.GetObservable(TopLevel.PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
-                .Switch().Subscribe(cursor => PointerCursor = cursor);
+                .Switch().Select(x=>x.PlatformImpl).OfType<ManagedCursorImpl>().Subscribe(cursor =>
+                {
+                    PointerCursor = cursor.Type;
+                });
 
             RenderTransform = new PointerTransform();
 
@@ -57,7 +61,7 @@ namespace Avalonia.Controls
                 .Subscribe(x => IsVisible = false);
         }
 
-        public Cursor? PointerCursor
+        public StandardCursorType PointerCursor
         {
             get => GetValue(PointerCursorProperty);
             set => SetValue(PointerCursorProperty, value);
