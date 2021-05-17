@@ -73,7 +73,7 @@ namespace Avalonia.Media.Imaging
         /// <param name="stream">The stream to read the bitmap from. This can be any supported image format.</param>
         /// <param name="height">The desired height of the resulting bitmap.</param>
         /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should any scaling be required.</param>
-        /// <returns>An instance of the <see cref="Bitmap"/> class.</returns>
+        /// <returns>An instance of the <see cref="WriteableBitmap"/> class.</returns>
         public new static WriteableBitmap DecodeToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
             var ri = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
