@@ -55,7 +55,7 @@
     <Grid Grid.Column="2" RowDefinitions="*,Auto,*" >
 
       <Grid RowDefinitions="Auto,*" Grid.Row="0">
-        <TextBlock Grid.Row="0" Text="Layout Visualizer" Margin="4" />
+        <TextBlock FontWeight="Bold" Grid.Row="0" Text="Layout Visualizer" Margin="4" />
         <local:LayoutExplorerView Grid.Row="1" DataContext="{Binding Layout}" />
       </Grid>
 
