@@ -124,7 +124,11 @@ public:
             [Window setTitle:_lastTitle];
             
             _shown = true;
-        
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [Window updateShadow];
+            });
+            
             return S_OK;
         }
     }
@@ -1836,6 +1840,19 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _isExtended;
     AvnMenu* _menu;
     double _lastScaling;
+}
+
+- (void)updateShadow
+{
+    // Because of [invalidateShadow] of NSWindow is not working,
+    // We should do the trick as following to force the NSWindow re-renders its shadow.
+    
+    NSRect frame = [self frame];
+    NSRect updatedFrame = NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + 1.0, frame.size.height + 1.0);
+    [self setFrame:updatedFrame display:YES];
+    [self setFrame:frame display:YES];
+    
+    [self invalidateShadow];
 }
 
 -(void) setIsExtended:(bool)value;
