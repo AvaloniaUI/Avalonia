@@ -401,6 +401,24 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(expectedOffset, textLine.Start);
             }
         }
+
+        [Fact]
+        public void Should_FormatLine_With_Emergency_Breaks()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+                
+                var textSource = new SingleBufferTextSource("0123456789_0123456789_0123456789_0123456789", defaultProperties);
+                var formatter = new TextFormatterImpl();
+                
+                var textLine =
+                    formatter.FormatLine(textSource, 0, 33, paragraphProperties);
+                
+                Assert.NotNull(textLine.TextLineBreak?.RemainingCharacters);
+            }
+        }
         
         public static IDisposable Start()
         {
