@@ -20,6 +20,7 @@
       <TreeView.Styles>
         <Style Selector="TreeViewItem">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+          <Setter Property="Background" Value="Transparent" />
         </Style>
       </TreeView.Styles>
     </TreeView>
