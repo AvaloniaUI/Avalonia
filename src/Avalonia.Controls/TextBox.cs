@@ -17,6 +17,9 @@ using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Represents a control that can be used to display or edit unformatted text.
+    /// </summary>
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
