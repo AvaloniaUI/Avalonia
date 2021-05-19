@@ -45,19 +45,20 @@
                 </Border>
 
                 <controls:ThicknessEditor Grid.Row="0" Grid.Column="0" Header="margin" VerticalAlignment="Top"
-                                       HorizontalAlignment="Center" Background="{StaticResource MarginBackgroundBrush}"
-                                       Highlight="{StaticResource MarginHighlightBrush}"
-                                       Thickness="{Binding MarginThickness}">
+                                          HorizontalAlignment="Center"
+                                          Background="{StaticResource MarginBackgroundBrush}"
+                                          Highlight="{StaticResource MarginHighlightBrush}"
+                                          Thickness="{Binding MarginThickness}">
                     <controls:ThicknessEditor x:Name="BorderArea" Header="border"
-                                           Background="{StaticResource BorderBackgroundBrush}"
-                                           Highlight="{StaticResource BorderHighlightBrush}"
-                                           Thickness="{Binding BorderThickness}"
-                                           IsPresent="{Binding HasBorder}">
+                                              Background="{StaticResource BorderBackgroundBrush}"
+                                              Highlight="{StaticResource BorderHighlightBrush}"
+                                              Thickness="{Binding BorderThickness}"
+                                              IsPresent="{Binding HasBorder}">
                         <controls:ThicknessEditor x:Name="PaddingArea" Header="padding"
-                                               Background="{StaticResource PaddingBackgroundBrush}"
-                                               Highlight="{StaticResource PaddingHighlightBrush}"
-                                               Thickness="{Binding PaddingThickness}"
-                                               IsPresent="{Binding HasPadding}">
+                                                  Background="{StaticResource PaddingBackgroundBrush}"
+                                                  Highlight="{StaticResource PaddingHighlightBrush}"
+                                                  Thickness="{Binding PaddingThickness}"
+                                                  IsPresent="{Binding HasPadding}">
                             <Border x:Name="ContentArea" BorderThickness="1" MinWidth="100" MinHeight="16"
                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                                 <Border.Styles>
@@ -153,12 +154,16 @@
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <RadioButton GroupName="HAlignment" Classes="h-left"
+                                 ToolTip.Tip="Left"
                                  IsChecked="{Binding HorizontalAlignment, Converter={StaticResource AlignmentConverter}, ConverterParameter={x:Static HorizontalAlignment.Left}}" />
                     <RadioButton GroupName="HAlignment" Classes="h-center" BorderThickness="0,1,1,1"
+                                 ToolTip.Tip="Center"
                                  IsChecked="{Binding HorizontalAlignment, Converter={StaticResource AlignmentConverter}, ConverterParameter={x:Static HorizontalAlignment.Center}}" />
                     <RadioButton GroupName="HAlignment" Classes="h-right" BorderThickness="0,1,1,1"
+                                 ToolTip.Tip="Right"
                                  IsChecked="{Binding HorizontalAlignment, Converter={StaticResource AlignmentConverter}, ConverterParameter={x:Static HorizontalAlignment.Right}}" />
                     <RadioButton GroupName="HAlignment" Classes="h-stretch"
+                                 ToolTip.Tip="Stretch"
                                  IsChecked="{Binding HorizontalAlignment, Converter={StaticResource AlignmentConverter}, ConverterParameter={x:Static HorizontalAlignment.Stretch}}" />
                 </StackPanel>
 
@@ -185,12 +190,16 @@
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <RadioButton GroupName="VAlignment" Classes="v-top"
+                                 ToolTip.Tip="Top"
                                  IsChecked="{Binding VerticalAlignment, Converter={StaticResource AlignmentConverter}, ConverterParameter={x:Static VerticalAlignment.Top}}" />
                     <RadioButton GroupName="VAlignment" Classes="v-center" BorderThickness="0,1,1,1"
+                                 ToolTip.Tip="Center"
                                  IsChecked="{Binding VerticalAlignment, Converter={StaticResource AlignmentConverter}, ConverterParameter={x:Static VerticalAlignment.Center}}" />
                     <RadioButton GroupName="VAlignment" Classes="v-bottom" BorderThickness="0,1,1,1"
+                                 ToolTip.Tip="Bottom"
                                  IsChecked="{Binding VerticalAlignment, Converter={StaticResource AlignmentConverter}, ConverterParameter={x:Static VerticalAlignment.Bottom}}" />
                     <RadioButton GroupName="VAlignment" Classes="v-stretch"
+                                 ToolTip.Tip="Stretch"
                                  IsChecked="{Binding VerticalAlignment, Converter={StaticResource AlignmentConverter}, ConverterParameter={x:Static VerticalAlignment.Stretch}}" />
                 </StackPanel>
 
