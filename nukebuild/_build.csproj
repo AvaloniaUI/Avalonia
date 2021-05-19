@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <!-- ILRepack doesn't work with .NET 5, so we need to keep _build project on 3.1 -->
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace></RootNamespace>
     <IsPackable>False</IsPackable>
@@ -14,6 +15,7 @@
     <PackageReference Include="xunit.runner.console" Version="2.3.1" />
     <PackageReference Include="JetBrains.dotMemoryUnit" Version="3.0.20171219.105559" />
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
+    <PackageReference Include="ILRepack.NETStandard" Version="2.0.4" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.3" />
   </ItemGroup>
@@ -39,7 +41,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\tools\MicroComGenerator\MicroComGenerator.csproj" />
-    <ProjectReference Include="..\third_party\il-repack\ILRepack\ILRepack.csproj" />
   </ItemGroup>
 
 </Project>
