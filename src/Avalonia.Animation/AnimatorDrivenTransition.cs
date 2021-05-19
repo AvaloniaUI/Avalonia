@@ -3,7 +3,7 @@ using Avalonia.Animation.Animators;
 
 namespace Avalonia.Animation
 {
-    public class AnimatorDrivenTransition<T, TAnimator> : Transition<T> where TAnimator : Animator<T>, new()
+    public abstract class AnimatorDrivenTransition<T, TAnimator> : Transition<T> where TAnimator : Animator<T>, new()
     {
         private static readonly TAnimator s_animator = new TAnimator();
 
