@@ -20,7 +20,7 @@ namespace Avalonia.Animation
             var newTransform = TransformOperationsAnimator.EnsureOperations(newValue);
 
             return new AnimatorTransitionObservable<TransformOperations, TransformOperationsAnimator>(
-                s_operationsAnimator, progress, oldTransform, newTransform);
+                s_operationsAnimator, progress, Easing, oldTransform, newTransform);
         }
     }
 }

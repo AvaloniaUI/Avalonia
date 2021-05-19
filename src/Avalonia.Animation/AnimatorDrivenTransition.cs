@@ -9,7 +9,7 @@ namespace Avalonia.Animation
 
         public override IObservable<T> DoTransition(IObservable<double> progress, T oldValue, T newValue)
         {
-            return new AnimatorTransitionObservable<T, TAnimator>(s_animator, progress, oldValue, newValue);
+            return new AnimatorTransitionObservable<T, TAnimator>(s_animator, progress, Easing, oldValue, newValue);
         }
     }
 }
