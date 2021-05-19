@@ -1844,8 +1844,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)updateShadow
 {
-    // Because of [invalidateShadow] of NSWindow is not working,
-    // We should do the trick as following to force the NSWindow re-renders its shadow.
+    // Common problem in Cocoa where [invalidateShadow] does work,
+    // This hack forces Cocoa to invalidate the shadow.
     
     NSRect frame = [self frame];
     NSRect updatedFrame = NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + 1.0, frame.size.height + 1.0);
