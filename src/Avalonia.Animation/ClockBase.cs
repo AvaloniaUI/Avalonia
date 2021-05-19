@@ -8,9 +8,7 @@ namespace Avalonia.Animation
 {
     public class ClockBase : IClock
     {
-        private ClockObservable _observable;
-
-        private IObservable<TimeSpan> _connectedObservable;
+        private readonly ClockObservable _observable;
 
         private TimeSpan? _previousTime;
         private TimeSpan _internalTime;
@@ -18,7 +16,6 @@ namespace Avalonia.Animation
         protected ClockBase()
         {
             _observable = new ClockObservable();
-            _connectedObservable = _observable.Publish().RefCount();
         }
 
         protected bool HasSubscriptions => _observable.HasSubscriptions;
@@ -58,7 +55,7 @@ namespace Avalonia.Animation
 
         public IDisposable Subscribe(IObserver<TimeSpan> observer)
         {
-            return _connectedObservable.Subscribe(observer);
+            return _observable.Subscribe(observer);
         }
 
         private class ClockObservable : LightweightObservableBase<TimeSpan>
