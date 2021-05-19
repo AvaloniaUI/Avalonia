@@ -163,6 +163,10 @@
   <Style Selector="DataGridCell:invalid /template/ Rectangle#InvalidVisualElement">
     <Setter Property="IsVisible" Value="True" />
   </Style>
+  <Style Selector="DataGridCell > TextBox DataValidationErrors">
+    <Setter Property="Template" Value="{DynamicResource TooltipDataValidationContentTemplate}" />
+    <Setter Property="ErrorTemplate" Value="{DynamicResource TooltipDataValidationErrorTemplate}" />
+  </Style>
 
   <Style Selector="DataGridColumnHeader">
     <Setter Property="Foreground" Value="{DynamicResource DataGridColumnHeaderForegroundBrush}" />

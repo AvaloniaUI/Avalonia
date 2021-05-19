@@ -15,6 +15,7 @@
     <Style Selector="DataGrid ContextMenu">
       <Setter Property="Foreground" Value="Black"/>
     </Style>
+    <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
   </Window.Styles>
   
   <views:MainView/>
