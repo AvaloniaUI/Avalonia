@@ -1,8 +1,4 @@
-using Avalonia.Metadata;
 using System;
-using System.Reactive.Linq;
-using Avalonia.Animation.Easings;
-using Avalonia.Animation.Utils;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
@@ -11,7 +7,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Handles the timing and lifetime of a <see cref="Transition{T}"/>.
     /// </summary>
-    internal class TransitionInstance : SingleSubscriberObservableBase<double>
+    internal class TransitionInstance : SingleSubscriberObservableBase<double>, IObserver<TimeSpan>
     {
         private IDisposable _timerSubscription;
         private TimeSpan _delay;
@@ -76,8 +72,23 @@ namespace Avalonia.Animation
         protected override void Subscribed()
         {
             _clock = new Clock(_baseClock);
-            _timerSubscription = _clock.Subscribe(TimerTick);
+            _timerSubscription = _clock.Subscribe(this);
             PublishNext(0.0d);
+        }
+
+        void IObserver<TimeSpan>.OnCompleted()
+        {
+            PublishCompleted();
+        }
+
+        void IObserver<TimeSpan>.OnError(Exception error)
+        {
+            PublishError(error);
+        }
+
+        void IObserver<TimeSpan>.OnNext(TimeSpan value)
+        {
+            TimerTick(value);
         }
     }
 }

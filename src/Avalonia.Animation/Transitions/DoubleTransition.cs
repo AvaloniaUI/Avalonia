@@ -1,6 +1,5 @@
 using System;
 using System.Reactive.Linq;
-
 using Avalonia.Animation.Animators;
 
 namespace Avalonia.Animation
@@ -8,7 +7,11 @@ namespace Avalonia.Animation
     /// <summary>
     /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="double"/> types.
     /// </summary>  
-    public class DoubleTransition : Transition<double>
+    public class DoubleTransition : AnimatorDrivenTransition<double, DoubleAnimator>
+    {
+    }
+
+    public class DoubleTransitionOld : Transition<double>
     {
         private static readonly DoubleAnimator s_animator = new DoubleAnimator();
 
