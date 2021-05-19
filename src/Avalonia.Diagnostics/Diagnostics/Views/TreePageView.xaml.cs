@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Generators;
@@ -6,6 +7,7 @@ using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views
 {
@@ -100,12 +102,19 @@ namespace Avalonia.Diagnostics.Views
         private void TreeViewItemTemplateApplied(object sender, TemplateAppliedEventArgs e)
         {
             var item = (TreeViewItem)sender;
-            var headerPresenter = item.HeaderPresenter;
-            headerPresenter.ApplyTemplate();
 
-            var header = headerPresenter.Child;
-            header.PointerEnter += AddAdorner;
-            header.PointerLeave += RemoveAdorner;
+            // This depends on the default tree item template.
+            // We want to handle events in the item header but exclude events coming from children.
+            var header = item.FindDescendantOfType<Border>();
+
+            Debug.Assert(header != null);
+
+            if (header != null)
+            {
+                header.PointerEnter += AddAdorner;
+                header.PointerLeave += RemoveAdorner;
+            }
+
             item.TemplateApplied -= TreeViewItemTemplateApplied;
         }
     }
