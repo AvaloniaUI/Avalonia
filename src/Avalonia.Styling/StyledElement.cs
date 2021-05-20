@@ -465,7 +465,7 @@ namespace Avalonia
         /// Sets the styled element's inheritance parent.
         /// </summary>
         /// <param name="parent">The parent.</param>
-        void ISetInheritanceParent.SetParent(IAvaloniaObject parent)
+        void ISetInheritanceParent.SetParent(IAvaloniaObject? parent)
         {
             InheritanceParent = parent;
         }
