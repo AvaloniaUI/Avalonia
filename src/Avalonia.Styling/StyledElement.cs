@@ -300,7 +300,7 @@ namespace Avalonia
         bool IStyleHost.IsStylesInitialized => _styles != null;
 
         /// <inheritdoc/>
-        IStyleHost? IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
+        IStyleHost? IStyleHost.StylingParent => (IStyleHost?)InheritanceParent;
 
         /// <inheritdoc/>
         public virtual void BeginInit()
