@@ -11,7 +11,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<Stretch> StretchProperty =
+        public static readonly StyledProperty<Stretch> StretchProperty =
             AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
 
         /// <summary>
@@ -19,8 +19,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<StretchDirection> StretchDirectionProperty =
             AvaloniaProperty.Register<Viewbox, StretchDirection>(nameof(StretchDirection), StretchDirection.Both);
-
-        private Stretch _stretch = Stretch.Uniform;
 
         static Viewbox()
         {
@@ -34,8 +32,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Stretch Stretch
         {
-            get => _stretch;
-            set => SetAndRaise(StretchProperty, ref _stretch, value);
+            get => GetValue(StretchProperty);
+            set => SetValue(StretchProperty, value);
         }
 
         /// <summary>

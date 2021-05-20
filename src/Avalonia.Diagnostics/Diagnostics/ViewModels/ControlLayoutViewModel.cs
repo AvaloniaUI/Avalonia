@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel;
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
@@ -8,27 +10,58 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class ControlLayoutViewModel : ViewModelBase
     {
         private readonly IVisual _control;
-        private Thickness _marginThickness;
         private Thickness _borderThickness;
-        private Thickness _paddingThickness;
-        private double _width;
         private double _height;
-        private string _widthConstraint;
         private string _heightConstraint;
+        private HorizontalAlignment _horizontalAlignment;
+        private Thickness _marginThickness;
+        private Thickness _paddingThickness;
         private bool _updatingFromControl;
+        private VerticalAlignment _verticalAlignment;
+        private double _width;
+        private string _widthConstraint;
+
+        public ControlLayoutViewModel(IVisual control)
+        {
+            _control = control;
+
+            HasPadding = AvaloniaPropertyRegistry.Instance.IsRegistered(control, Decorator.PaddingProperty);
+            HasBorder = AvaloniaPropertyRegistry.Instance.IsRegistered(control, Border.BorderThicknessProperty);
+
+            if (control is AvaloniaObject ao)
+            {
+                MarginThickness = ao.GetValue(Layoutable.MarginProperty);
+
+                if (HasPadding)
+                {
+                    PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
+                }
+
+                if (HasBorder)
+                {
+                    BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
+                }
+
+                HorizontalAlignment = ao.GetValue(Layoutable.HorizontalAlignmentProperty);
+                VerticalAlignment = ao.GetValue(Layoutable.VerticalAlignmentProperty);
+            }
+
+            UpdateSize();
+            UpdateSizeConstraints();
+        }
 
         public Thickness MarginThickness
         {
             get => _marginThickness;
             set => RaiseAndSetIfChanged(ref _marginThickness, value);
         }
-        
+
         public Thickness BorderThickness
         {
             get => _borderThickness;
             set => RaiseAndSetIfChanged(ref _borderThickness, value);
         }
-        
+
         public Thickness PaddingThickness
         {
             get => _paddingThickness;
@@ -59,35 +92,21 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _heightConstraint, value);
         }
 
-        public bool HasPadding { get; }
-        
-        public bool HasBorder { get; }
-        
-        public ControlLayoutViewModel(IVisual control)
+        public HorizontalAlignment HorizontalAlignment
         {
-            _control = control;
-
-            HasPadding = AvaloniaPropertyRegistry.Instance.IsRegistered(control, Decorator.PaddingProperty);
-            HasBorder = AvaloniaPropertyRegistry.Instance.IsRegistered(control, Border.BorderThicknessProperty);
-
-            if (control is AvaloniaObject ao)
-            {
-                MarginThickness = ao.GetValue(Layoutable.MarginProperty);
-
-                if (HasPadding)
-                {
-                    PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
-                }
-
-                if (HasBorder)
-                {
-                    BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
-                }
-            }
-
-            UpdateSize();
-            UpdateSizeConstraints();
+            get => _horizontalAlignment;
+            private set => RaiseAndSetIfChanged(ref _horizontalAlignment, value);
         }
+
+        public VerticalAlignment VerticalAlignment
+        {
+            get => _verticalAlignment;
+            private set => RaiseAndSetIfChanged(ref _verticalAlignment, value);
+        }
+
+        public bool HasPadding { get; }
+
+        public bool HasBorder { get; }
 
         private void UpdateSizeConstraints()
         {
@@ -95,12 +114,27 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 string CreateConstraintInfo(StyledProperty<double> minProperty, StyledProperty<double> maxProperty)
                 {
-                    if (ao.IsSet(minProperty) || ao.IsSet(maxProperty))
-                    {
-                        var minValue = ao.GetValue(minProperty);
-                        var maxValue = ao.GetValue(maxProperty);
+                    bool hasMin = ao.IsSet(minProperty);
+                    bool hasMax = ao.IsSet(maxProperty);
 
-                        return $"{minValue} < size < {maxValue}";
+                    if (hasMin || hasMax)
+                    {
+                        var builder = new StringBuilder();
+
+                        if (hasMin)
+                        {
+                            var minValue = ao.GetValue(minProperty);
+                            builder.AppendFormat("Min: {0}", Math.Round(minValue, 2));
+                            builder.AppendLine();
+                        }
+
+                        if (hasMax)
+                        {
+                            var maxValue = ao.GetValue(maxProperty);
+                            builder.AppendFormat("Max: {0}", Math.Round(maxValue, 2));
+                        }
+
+                        return builder.ToString();
                     }
 
                     return null;
@@ -134,6 +168,14 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     ao.SetValue(Border.BorderThicknessProperty, BorderThickness);
                 }
+                else if (e.PropertyName == nameof(HorizontalAlignment))
+                {
+                    ao.SetValue(Layoutable.HorizontalAlignmentProperty, HorizontalAlignment);
+                }
+                else if (e.PropertyName == nameof(VerticalAlignment))
+                {
+                    ao.SetValue(Layoutable.VerticalAlignmentProperty, VerticalAlignment);
+                }
             }
         }
 
@@ -154,21 +196,29 @@ namespace Avalonia.Diagnostics.ViewModels
                         if (e.Property == Layoutable.MarginProperty)
                         {
                             MarginThickness = ao.GetValue(Layoutable.MarginProperty);
-                        } 
+                        }
                         else if (e.Property == Decorator.PaddingProperty)
                         {
                             PaddingThickness = ao.GetValue(Decorator.PaddingProperty);
-                        } 
+                        }
                         else if (e.Property == Border.BorderThicknessProperty)
                         {
                             BorderThickness = ao.GetValue(Border.BorderThicknessProperty);
-                        } 
+                        }
                         else if (e.Property == Layoutable.MinWidthProperty ||
                                  e.Property == Layoutable.MaxWidthProperty ||
                                  e.Property == Layoutable.MinHeightProperty ||
                                  e.Property == Layoutable.MaxHeightProperty)
                         {
                             UpdateSizeConstraints();
+                        }
+                        else if (e.Property == Layoutable.HorizontalAlignmentProperty)
+                        {
+                            HorizontalAlignment = ao.GetValue(Layoutable.HorizontalAlignmentProperty);
+                        }
+                        else if (e.Property == Layoutable.VerticalAlignmentProperty)
+                        {
+                            VerticalAlignment = ao.GetValue(Layoutable.VerticalAlignmentProperty);
                         }
                     }
                 }
@@ -183,8 +233,8 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             var size = _control.Bounds;
 
-            Width = size.Width;
-            Height = size.Height;
+            Width = Math.Round(size.Width, 2);
+            Height = Math.Round(size.Height, 2);
         }
     }
 }
