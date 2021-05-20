@@ -10,10 +10,9 @@ namespace Avalonia.Animation
     {
         public static IClock GlobalClock => AvaloniaLocator.Current.GetService<IGlobalClock>();
 
-        private IDisposable _parentSubscription;
+        private readonly IDisposable _parentSubscription;
 
-        public Clock()
-            :this(GlobalClock)
+        public Clock() : this(GlobalClock)
         {
         }
         

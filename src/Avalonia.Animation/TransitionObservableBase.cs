@@ -15,18 +15,6 @@ namespace Avalonia.Animation
             _progress = progress;
         }
 
-        protected override void Unsubscribed()
-        {
-            _progressSubscription?.Dispose();
-        }
-
-        protected override void Subscribed()
-        {
-            _progressSubscription = _progress.Subscribe(this);
-        }
-
-        protected abstract T ProduceValue(double progress);
-
         void IObserver<double>.OnCompleted()
         {
             PublishCompleted();
@@ -41,5 +29,17 @@ namespace Avalonia.Animation
         {
             PublishNext(ProduceValue(value));
         }
+
+        protected override void Unsubscribed()
+        {
+            _progressSubscription?.Dispose();
+        }
+
+        protected override void Subscribed()
+        {
+            _progressSubscription = _progress.Subscribe(this);
+        }
+
+        protected abstract T ProduceValue(double progress);
     }
 }
