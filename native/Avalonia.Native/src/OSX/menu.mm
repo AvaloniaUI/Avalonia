@@ -2,6 +2,9 @@
 #include "common.h"
 #include "menu.h"
 #include "window.h"
+#include "KeyTransform.h"
+#include <CoreFoundation/CoreFoundation.h>
+#include <Carbon/Carbon.h> /* For kVK_ constants, and TIS functions. */
 
 @implementation AvnMenu
 {
@@ -68,12 +71,12 @@
 }
 @end
 
-AvnAppMenuItem::AvnAppMenuItem(bool isSeperator)
+AvnAppMenuItem::AvnAppMenuItem(bool isSeparator)
 {
     _isCheckable = false;
-    _isSeperator = isSeperator;
+    _isSeparator = isSeparator;
     
-    if(isSeperator)
+    if(isSeparator)
     {
         _native = [NSMenuItem separatorItem];
     }
@@ -122,23 +125,57 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
     }
 }
 
-HRESULT AvnAppMenuItem::SetGesture (char* key, AvnInputModifiers modifiers)
+
+HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
     @autoreleasepool
     {
-        NSEventModifierFlags flags = 0;
+        if(key != AvnKeyNone)
+        {
+            NSEventModifierFlags flags = 0;
+            
+            if (modifiers & Control)
+                flags |= NSEventModifierFlagControl;
+            if (modifiers & Shift)
+                flags |= NSEventModifierFlagShift;
+            if (modifiers & Alt)
+                flags |= NSEventModifierFlagOption;
+            if (modifiers & Windows)
+                flags |= NSEventModifierFlagCommand;
+            
+            auto it = s_UnicodeKeyMap.find(key);
+            
+            if(it != s_UnicodeKeyMap.end())
+            {
+                auto keyString= [NSString stringWithFormat:@"%C", (unsigned short)it->second];
+                
+                [_native setKeyEquivalent: keyString];
+                [_native setKeyEquivalentModifierMask:flags];
+                
+                return S_OK;
+            }
+            else
+            {
+                auto it = s_AvnKeyMap.find(key); // check if a virtual key is mapped.
+                
+                if(it != s_AvnKeyMap.end())
+                {
+                    auto it1 = s_QwertyKeyMap.find(it->second); // convert virtual key to qwerty string.
+                    
+                    if(it1 != s_QwertyKeyMap.end())
+                    {
+                        [_native setKeyEquivalent: [NSString  stringWithUTF8String: it1->second]];
+                        [_native setKeyEquivalentModifierMask:flags];
+                        
+                        return S_OK;
+                    }
+                }
+            }
+        }
         
-        if (modifiers & Control)
-            flags |= NSEventModifierFlagControl;
-        if (modifiers & Shift)
-            flags |= NSEventModifierFlagShift;
-        if (modifiers & Alt)
-            flags |= NSEventModifierFlagOption;
-        if (modifiers & Windows)
-            flags |= NSEventModifierFlagCommand;
-        
-        [_native setKeyEquivalent:[NSString stringWithUTF8String:(const char*)key]];
-        [_native setKeyEquivalentModifierMask:flags];
+        // Nothing matched... clear.
+        [_native setKeyEquivalent: @""];
+        [_native setKeyEquivalentModifierMask: 0];
         
         return S_OK;
     }
@@ -261,6 +298,23 @@ void AvnAppMenu::RaiseNeedsUpdate()
     }
 }
 
+void AvnAppMenu::RaiseOpening()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->Opening();
+    }
+}
+
+void AvnAppMenu::RaiseClosed()
+{
+    if(_baseEvents != nullptr)
+    {
+        _baseEvents->Closed();
+    }
+}
+
+
 HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
     @autoreleasepool
@@ -345,6 +399,15 @@ HRESULT AvnAppMenu::Clear()
     _parent->RaiseNeedsUpdate();
 }
 
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    _parent->RaiseOpening();
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    _parent->RaiseClosed();
+}
 
 @end
 
@@ -364,7 +427,7 @@ extern IAvnMenuItem* CreateAppMenuItem()
     }
 }
 
-extern IAvnMenuItem* CreateAppMenuItemSeperator()
+extern IAvnMenuItem* CreateAppMenuItemSeparator()
 {
     @autoreleasepool
     {
@@ -408,47 +471,50 @@ extern void SetAppMenu (NSString* appName, IAvnMenu* menu)
         
         auto appMenu  = [s_appMenuItem submenu];
         
-        [appMenu addItem:[NSMenuItem separatorItem]];
-        
-        // Services item and menu
-        auto servicesItem = [[NSMenuItem alloc] init];
-        servicesItem.title = @"Services";
-        NSMenu *servicesMenu = [[NSMenu alloc] initWithTitle:@"Services"];
-        servicesItem.submenu = servicesMenu;
-        [NSApplication sharedApplication].servicesMenu = servicesMenu;
-        [appMenu addItem:servicesItem];
-        
-        [appMenu addItem:[NSMenuItem separatorItem]];
-        
-        // Hide Application
-        auto hideItem = [[NSMenuItem alloc] initWithTitle:[@"Hide " stringByAppendingString:appName] action:@selector(hide:) keyEquivalent:@"h"];
-        
-        [appMenu addItem:hideItem];
-        
-        // Hide Others
-        auto hideAllOthersItem = [[NSMenuItem alloc] initWithTitle:@"Hide Others"
-                                                       action:@selector(hideOtherApplications:)
-                                                keyEquivalent:@"h"];
-        
-        hideAllOthersItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagOption;
-        [appMenu addItem:hideAllOthersItem];
-        
-        // Show All
-        auto showAllItem = [[NSMenuItem alloc] initWithTitle:@"Show All"
-                                                 action:@selector(unhideAllApplications:)
-                                          keyEquivalent:@""];
-        
-        [appMenu addItem:showAllItem];
-        
-        [appMenu addItem:[NSMenuItem separatorItem]];
-        
-        // Quit Application
-        auto quitItem = [[NSMenuItem alloc] init];
-        quitItem.title = [@"Quit " stringByAppendingString:appName];
-        quitItem.keyEquivalent = @"q";
-        quitItem.target = [AvnWindow class];
-        quitItem.action = @selector(closeAll);
-        [appMenu addItem:quitItem];
+        if(GetAutoGenerateDefaultAppMenuItems())
+        {
+            [appMenu addItem:[NSMenuItem separatorItem]];
+            
+            // Services item and menu
+            auto servicesItem = [[NSMenuItem alloc] init];
+            servicesItem.title = @"Services";
+            NSMenu *servicesMenu = [[NSMenu alloc] initWithTitle:@"Services"];
+            servicesItem.submenu = servicesMenu;
+            [NSApplication sharedApplication].servicesMenu = servicesMenu;
+            [appMenu addItem:servicesItem];
+            
+            [appMenu addItem:[NSMenuItem separatorItem]];
+            
+            // Hide Application
+            auto hideItem = [[NSMenuItem alloc] initWithTitle:[@"Hide " stringByAppendingString:appName] action:@selector(hide:) keyEquivalent:@"h"];
+            
+            [appMenu addItem:hideItem];
+            
+            // Hide Others
+            auto hideAllOthersItem = [[NSMenuItem alloc] initWithTitle:@"Hide Others"
+                                                           action:@selector(hideOtherApplications:)
+                                                    keyEquivalent:@"h"];
+            
+            hideAllOthersItem.keyEquivalentModifierMask = NSEventModifierFlagCommand | NSEventModifierFlagOption;
+            [appMenu addItem:hideAllOthersItem];
+            
+            // Show All
+            auto showAllItem = [[NSMenuItem alloc] initWithTitle:@"Show All"
+                                                     action:@selector(unhideAllApplications:)
+                                              keyEquivalent:@""];
+            
+            [appMenu addItem:showAllItem];
+            
+            [appMenu addItem:[NSMenuItem separatorItem]];
+            
+            // Quit Application
+            auto quitItem = [[NSMenuItem alloc] init];
+            quitItem.title = [@"Quit " stringByAppendingString:appName];
+            quitItem.keyEquivalent = @"q";
+            quitItem.target = [AvnWindow class];
+            quitItem.action = @selector(closeAll);
+            [appMenu addItem:quitItem];
+        }
     }
     else
     {

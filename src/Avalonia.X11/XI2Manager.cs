@@ -342,13 +342,13 @@ namespace Avalonia.X11
             Type = ev->evtype;
             Timestamp = (ulong)ev->time.ToInt64();
             var state = (XModifierMask)ev->mods.Effective;
-            if (state.HasFlag(XModifierMask.ShiftMask))
+            if (state.HasAllFlags(XModifierMask.ShiftMask))
                 Modifiers |= RawInputModifiers.Shift;
-            if (state.HasFlag(XModifierMask.ControlMask))
+            if (state.HasAllFlags(XModifierMask.ControlMask))
                 Modifiers |= RawInputModifiers.Control;
-            if (state.HasFlag(XModifierMask.Mod1Mask))
+            if (state.HasAllFlags(XModifierMask.Mod1Mask))
                 Modifiers |= RawInputModifiers.Alt;
-            if (state.HasFlag(XModifierMask.Mod4Mask))
+            if (state.HasAllFlags(XModifierMask.Mod4Mask))
                 Modifiers |= RawInputModifiers.Meta;
 
             Modifiers |= ParseButtonState(ev->buttons.MaskLen, ev->buttons.Mask);
@@ -364,7 +364,7 @@ namespace Avalonia.X11
             if (Type == XiEventType.XI_ButtonPress || Type == XiEventType.XI_ButtonRelease)
                 Button = ev->detail;
             Detail = ev->detail;
-            Emulated = ev->flags.HasFlag(XiDeviceEventFlags.XIPointerEmulated);
+            Emulated = ev->flags.HasAllFlags(XiDeviceEventFlags.XIPointerEmulated);
         }
     }
     

@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
@@ -90,20 +91,33 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<NumericUpDown, string> TextProperty =
             AvaloniaProperty.RegisterDirect<NumericUpDown, string>(nameof(Text), o => o.Text, (o, v) => o.Text = v,
-                defaultBindingMode: BindingMode.TwoWay);
+                defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="Value"/> property.
         /// </summary>
         public static readonly DirectProperty<NumericUpDown, double> ValueProperty =
             AvaloniaProperty.RegisterDirect<NumericUpDown, double>(nameof(Value), updown => updown.Value,
-                (updown, v) => updown.Value = v, defaultBindingMode: BindingMode.TwoWay);
+                (updown, v) => updown.Value = v, defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
         public static readonly StyledProperty<string> WatermarkProperty =
             AvaloniaProperty.Register<NumericUpDown, string>(nameof(Watermark));
+
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<NumericUpDown>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<NumericUpDown>();
 
         private IDisposable _textBoxTextChangedSubscription;
 
@@ -256,6 +270,25 @@ namespace Avalonia.Controls
             set { SetValue(WatermarkProperty, value); }
         }
 
+
+        /// <summary>
+        /// Gets or sets the horizontal alignment of the content within the control.
+        /// </summary>
+        public HorizontalAlignment HorizontalContentAlignment
+        {
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+
         /// <summary>
         /// Initializes new instance of <see cref="NumericUpDown"/> class.
         /// </summary>
@@ -334,6 +367,20 @@ namespace Avalonia.Controls
                     var commitSuccess = CommitInput();
                     e.Handled = !commitSuccess;
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Called to update the validation state for properties for which data validation is
+        /// enabled.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The new binding value for the property.</param>
+        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        {
+            if (property == TextProperty || property == ValueProperty)
+            {
+                DataValidationErrors.SetError(this, value.Error);
             }
         }
 

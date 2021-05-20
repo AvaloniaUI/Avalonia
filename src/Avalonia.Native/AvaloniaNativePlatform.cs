@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -9,7 +8,6 @@ using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
@@ -86,18 +84,23 @@ namespace Avalonia.Native
         void DoInitialize(AvaloniaNativePlatformOptions options)
         {
             _options = options;
-            _factory.Initialize(new GCHandleDeallocator());
+            
+            var applicationPlatform = new AvaloniaNativeApplicationPlatform();
+            
+            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
             if (_factory.MacOptions != null)
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
                 _factory.MacOptions.SetShowInDock(macOpts?.ShowInDock != false ? 1 : 0);
+                _factory.MacOptions.SetDisableDefaultApplicationMenuItems(
+                    macOpts?.DisableDefaultApplicationMenuItems == true ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
-                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
+                .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)

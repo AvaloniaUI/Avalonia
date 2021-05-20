@@ -1,8 +1,11 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Design.PreviewWith>
     <Border Padding="20">
-      <StackPanel>
+      <StackPanel Spacing="10">
         <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" />
+        <ProgressBar VerticalAlignment="Center" Value="5" Maximum="10" />
+        <ProgressBar VerticalAlignment="Center" Value="50" />
+        <ProgressBar VerticalAlignment="Center" Value="50" Minimum="25" Maximum="75" />
         <ProgressBar HorizontalAlignment="Left" IsIndeterminate="True" Orientation="Vertical" />
       </StackPanel>
     </Border>

@@ -16,8 +16,7 @@
     <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
-    <Setter Property="Padding" Value="8,5,8,5" />
-    <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
+    <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />    
     <Setter Property="FontWeight" Value="Normal" />

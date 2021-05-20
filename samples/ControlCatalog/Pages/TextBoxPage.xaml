@@ -13,7 +13,7 @@
       <StackPanel Orientation="Vertical" Spacing="8">
         <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
         <TextBox Width="200" Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
-        <TextBox Width="200" Watermark="Watermark" />
+        <TextBox Width="200" Watermark="Numeric Watermark" x:Name="numericWatermark"/>
         <TextBox Width="200"
                  Watermark="Floating Watermark"
                  UseFloatingWatermark="True"
@@ -64,5 +64,8 @@
         <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-*.ttf#Source Sans Pro"/>
       </StackPanel>
     </StackPanel>
+    <TextBox AcceptsReturn="True" TextWrapping="Wrap" Height="200" MaxWidth="400"
+             FontFamily="avares://ControlCatalog/Assets/Fonts#WenQuanYi Micro Hei"
+             Text="计算机科学（是系统性研究信息与计算的理论基础以及它们在计算机系统中如何实现与应用的实用技术的学科。它通常被形容为对那些创造、描述以及转换信息的算法处理的系统研究。计算机科学包含很多分支领域；有些强调特定结果的计算，比如计算机图形学；而有些是探討计算问题的性质，比如计算复杂性理论；还有一些领域專注于怎样实现计算，比如程式語言理論是研究描述计算的方法，而程式设计是应用特定的程式語言解决特定的计算问题，人机交互则是專注于怎样使计算机和计算变得有用、好用，以及随时随地为人所用。&#xD;&#xD;有时公众会误以为计算机科学就是解决计算机问题的事业（比如信息技术），或者只是与使用计算机的经验有关，如玩游戏、上网或者文字处理。其实计算机科学所关注的，不仅仅是去理解实现类似游戏、浏览器这些软件的程序的性质，更要通过现有的知识创造新的程序或者改进已有的程序。" />
   </StackPanel>
 </UserControl>

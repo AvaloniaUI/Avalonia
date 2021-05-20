@@ -6,7 +6,9 @@
 
   <ItemGroup>
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
-      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
+      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" >
+        <PrivateAssets>all</PrivateAssets>
+      </ProjectReference>  
   </ItemGroup>
 
   <PropertyGroup>
@@ -29,21 +31,23 @@
       </_PackageFiles>
     </ItemGroup>
   </Target>
+  
   <ItemGroup>
     <Content Include="*.props">
        <Pack>true</Pack>
-       <PackagePath>build\</PackagePath>
+       <PackagePath>build\;buildTransitive\</PackagePath>
     </Content>
     <Content Include="*.targets">
       <Pack>true</Pack>
-      <PackagePath>build\</PackagePath>
+      <PackagePath>build\;buildTransitive\</PackagePath>
     </Content>
     <Content Include="AvaloniaItemSchema.xaml">
       <Pack>true</Pack>
-      <PackagePath>build\</PackagePath>
+      <PackagePath>build\;buildTransitive\</PackagePath>
     </Content>
   </ItemGroup>
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NetFX.props" />
   <Import Project="..\..\build\CoreLibraries.props" />
+  <Import Project="..\..\build\SourceLink.props" Condition="'$(DisableSourceLink)' == ''" />
 </Project>

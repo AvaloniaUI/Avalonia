@@ -4,10 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -128,6 +125,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<SystemDecorations> SystemDecorationsProperty =
             AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
+
+        /// <summary>
+        /// Defines the <see cref="ShowActivated"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowActivatedProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(ShowActivated), true);
 
         /// <summary>
         /// Enables or disables the taskbar icon
@@ -352,11 +355,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Sets the system decorations (title bar, border, etc)
         /// </summary>
-        /// 
         public SystemDecorations SystemDecorations
         {
             get { return GetValue(SystemDecorationsProperty); }
             set { SetValue(SystemDecorationsProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether a window is activated when first shown. 
+        /// </summary>
+        public bool ShowActivated
+        {
+            get { return GetValue(ShowActivatedProperty); }
+            set { SetValue(ShowActivatedProperty, value); }
         }
 
         /// <summary>
@@ -468,10 +479,9 @@ namespace Avalonia.Controls
 
             try
             {
-                if (!ignoreCancel && HandleClosing())
+                if (!ignoreCancel && ShouldCancelClose())
                 {
                     close = false;
-                    return;
                 }
             }
             finally
@@ -483,11 +493,25 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
+        /// <returns>true if closing is cancelled. Otherwise false.</returns>
+        /// </summary>
+        protected virtual bool HandleClosing()
+        {
+            if (!ShouldCancelClose())
+            {
+                CloseInternal();
+                return false;
+            }
+            
+            return true;
+        }
+
         private void CloseInternal()
         {
             foreach (var (child, _) in _children.ToList())
             {
-                // if we HandleClosing() before then there will be no children.
                 child.CloseInternal();
             }
 
@@ -501,20 +525,18 @@ namespace Avalonia.Controls
             PlatformImpl?.Dispose();
         }
 
-        /// <summary>
-        /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
-        /// </summary>
-        protected virtual bool HandleClosing()
+        private bool ShouldCancelClose(CancelEventArgs args = null)
         {
+            if (args is null)
+            {
+                args = new CancelEventArgs();
+            }
+            
             bool canClose = true;
 
             foreach (var (child, _) in _children.ToList())
             {
-                if (!child.HandleClosing())
-                {
-                    child.CloseInternal();
-                }
-                else
+                if (child.ShouldCancelClose(args))
                 {
                     canClose = false;
                 }
@@ -522,15 +544,12 @@ namespace Avalonia.Controls
 
             if (canClose)
             {
-                var args = new CancelEventArgs();
                 OnClosing(args);
 
                 return args.Cancel;
             }
-            else
-            {
-                return !canClose;
-            }
+
+            return true;
         }
 
         protected virtual void HandleWindowStateChanged(WindowState state)
@@ -650,7 +669,7 @@ namespace Avalonia.Controls
                 Owner = parent;
                 parent?.AddChild(this, false);
 
-                PlatformImpl?.Show();
+                PlatformImpl?.Show(ShowActivated);
                 Renderer?.Start();
                 SetWindowStartupLocation(Owner?.PlatformImpl);
             }
@@ -720,7 +739,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.SetParent(owner.PlatformImpl);
                 Owner = owner;
                 owner.AddChild(this, true);
-                PlatformImpl?.Show();
+                PlatformImpl?.Show(ShowActivated);
 
                 Renderer?.Start();
 
@@ -840,19 +859,19 @@ namespace Avalonia.Controls
             var constraint = clientSize;
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
 
-            if (sizeToContent.HasFlagCustom(SizeToContent.Width))
+            if (sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 constraint = constraint.WithWidth(maxAutoSize.Width);
             }
 
-            if (sizeToContent.HasFlagCustom(SizeToContent.Height))
+            if (sizeToContent.HasAllFlags(SizeToContent.Height))
             {
                 constraint = constraint.WithHeight(maxAutoSize.Height);
             }
 
             var result = base.MeasureOverride(constraint);
 
-            if (!sizeToContent.HasFlagCustom(SizeToContent.Width))
+            if (!sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 if (!double.IsInfinity(availableSize.Width))
                 {
@@ -864,7 +883,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (!sizeToContent.HasFlagCustom(SizeToContent.Height))
+            if (!sizeToContent.HasAllFlags(SizeToContent.Height))
             {
                 if (!double.IsInfinity(availableSize.Height))
                 {

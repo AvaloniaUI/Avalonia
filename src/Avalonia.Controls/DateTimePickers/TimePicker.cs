@@ -8,7 +8,7 @@ using System.Globalization;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// A control to allow the user to select a time
+    /// A control to allow the user to select a time.
     /// </summary>
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl

@@ -1,3 +1,4 @@
 Compat issues with assembly Avalonia.Styling:
-MembersMustExist : Member 'public System.IObservable<System.Object> Avalonia.Controls.ResourceNodeExtensions.GetResourceObservable(Avalonia.IStyledElement, System.Object, System.Func<System.Object, System.Object>)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 1
+InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Styling.IStyleInstance.IsActive' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalonia.Styling.IStyleInstance.IsActive.get()' is present in the implementation but not in the contract.
+Total Issues: 2

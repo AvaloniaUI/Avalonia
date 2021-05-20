@@ -24,5 +24,21 @@ namespace Avalonia.PropertyStore
         }
 
         public void SetValue(T value) => _value = value;
+        public void Start() { }
+
+        public void RaiseValueChanged(
+            IValueSink sink,
+            IAvaloniaObject owner,
+            AvaloniaProperty property,
+            Optional<object> oldValue,
+            Optional<object> newValue)
+        {
+            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                owner,
+                (AvaloniaProperty<T>)property,
+                oldValue.Cast<T>(),
+                newValue.Cast<T>(),
+                BindingPriority.LocalValue));
+        }
     }
 }

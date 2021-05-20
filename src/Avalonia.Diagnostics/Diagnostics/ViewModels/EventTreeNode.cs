@@ -9,7 +9,6 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class EventTreeNode : EventTreeNodeBase
     {
-        private readonly RoutedEvent _event;
         private readonly EventsPageViewModel _parentViewModel;
         private bool _isRegistered;
         private FiredEvent _currentEvent;
@@ -20,9 +19,11 @@ namespace Avalonia.Diagnostics.ViewModels
             Contract.Requires<ArgumentNullException>(@event != null);
             Contract.Requires<ArgumentNullException>(vm != null);
 
-            _event = @event;
+            Event = @event;
             _parentViewModel = vm;
         }
+
+        public RoutedEvent Event { get; }
 
         public override bool? IsEnabled
         {
@@ -53,8 +54,10 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (IsEnabled.GetValueOrDefault() && !_isRegistered)
             {
+                var allRoutes = RoutingStrategies.Direct | RoutingStrategies.Tunnel | RoutingStrategies.Bubble;
+
                 // FIXME: This leaks event handlers.
-                _event.AddClassHandler(typeof(object), HandleEvent, (RoutingStrategies)7, handledEventsToo: true);
+                Event.AddClassHandler(typeof(object), HandleEvent, allRoutes, handledEventsToo: true);
                 _isRegistered = true;
             }
         }

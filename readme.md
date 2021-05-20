@@ -2,15 +2,13 @@
 <br />
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia) [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
-<img alt="Avalonia" src="https://user-images.githubusercontent.com/6759207/84897744-cab6d800-b0ae-11ea-8214-e5174d71f5c8.png" width="400"/>
-
 ## 📖 About AvaloniaUI 
 
 Avalonia is a cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows via .NET Framework and .NET Core, Linux via Xorg, macOS. Avalonia is ready for **General-Purpose Desktop App Development**. However, there may be some bugs and breaking changes as we continue along into this project's development. 
 
 <img src="https://user-images.githubusercontent.com/6759207/84751662-7c79da00-afc5-11ea-8780-dda28db70b76.png" width="700" />
 
-> **Note:** The UI theme you see in the picture above is still work-in-progress and will be available in the upcoming Avalonia 0.10.0 release. However, you can connect to our nightly build feed and install latest pre-release versions of Avalonia NuGet packages, if you are willing to help out with the development and testing. See [Using nightly build feed](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed) for more info.
+([Xaml Control Gallery](https://github.com/AvaloniaUI/xamlcontrolsgallery))
 
 To see the status of some of our features, please see our [Roadmap](https://github.com/AvaloniaUI/Avalonia/issues/2239). You can also see what [breaking changes](https://github.com/AvaloniaUI/Avalonia/issues/3538) we have planned and what our [past breaking changes](https://github.com/AvaloniaUI/Avalonia/wiki/Breaking-Changes) have been. [Awesome Avalonia](https://github.com/AvaloniaCommunity/awesome-avalonia) is community-curated list of awesome Avalonia UI tools, libraries, projects and resources. Go and see what people are building with Avalonia!
 
@@ -31,15 +29,22 @@ Install-Package Avalonia.Desktop
 Examples of UIs built with Avalonia
 ![image](https://user-images.githubusercontent.com/4672627/84707589-5b69a880-af35-11ea-87a6-7ad57a31d314.png)
 
+([Synfonia](https://github.com/jmacato/Synfonia))
+
 ![image](https://user-images.githubusercontent.com/4672627/85069644-d8419000-b18a-11ea-8732-be9055bb61fd.PNG)
+([Xaml Control Gallery](https://github.com/AvaloniaUI/xamlcontrolsgallery))
 
 ![image](https://user-images.githubusercontent.com/4672627/85069659-dc6dad80-b18a-11ea-8375-39ef95315b5c.PNG)
+([Xaml Control Gallery](https://github.com/AvaloniaUI/xamlcontrolsgallery))
 
 ![image](https://user-images.githubusercontent.com/4672627/84708947-c3b98980-af37-11ea-8c9d-503334615bbf.png)
+([Xaml Control Gallery](https://github.com/AvaloniaUI/xamlcontrolsgallery))
 
 ## JetBrains Rider
 
-If you need to develop Avalonia app with JetBrains Rider you can use latest Rider [preview builds](https://www.jetbrains.com/rider/nextversion/).
+[JetBrains Rider](https://www.jetbrains.com/rider/whatsnew/?mkt_tok=eyJpIjoiTURBNU1HSmhNV0kwTUdFMiIsInQiOiJtNnU2VEc1TlNLa1ZRVkROYmdZYVpYREJsaU1qdUhmS3dxSzRHczdYWHl0RVlTNDMwSFwvNUs3VENTNVM0bVcyNFdaRmVYZzVWTTF1N3VrQWNGTkJreEhlam1hMlB4UVVWcHBGM1dNOUxoXC95YnRQdGgyUXl1YmZCM3h3d3BVWWdBIn0%3D#avalonia-support) now has official support for Avalonia.
+
+Code completion, inspections and refactorings are supported out of the box, for XAML previewer add `https://plugins.jetbrains.com/plugins/dev/14839` to plugin repositories and install [AvaloniaRider](https://github.com/ForNeVeR/AvaloniaRider) plugin.
 
 ## Bleeding Edge Builds
 

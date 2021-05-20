@@ -3,9 +3,214 @@
 @clr-map bool int
 @cpp-preamble @@
 #include "com.h"
-#include "key.h"
 #include "stddef.h"
 @@
+
+enum AvnKey
+{
+    AvnKeyNone = 0,
+    AvnKeyCancel = 1,
+    AvnKeyBack = 2,
+    AvnKeyTab = 3,
+    AvnKeyLineFeed = 4,
+    AvnKeyClear = 5,
+    AvnKeyReturn = 6,
+    AvnKeyEnter = 6,
+    AvnKeyPause = 7,
+    AvnKeyCapsLock = 8,
+    AvnKeyCapital = 8,
+    AvnKeyHangulMode = 9,
+    AvnKeyKanaMode = 9,
+    AvnKeyJunjaMode = 10,
+    AvnKeyFinalMode = 11,
+    AvnKeyKanjiMode = 12,
+    HanjaMode = 12,
+    Escape = 13,
+    ImeConvert = 14,
+    ImeNonConvert = 15,
+    ImeAccept = 16,
+    ImeModeChange = 17,
+    Space = 18,
+    PageUp = 19,
+    Prior = 19,
+    PageDown = 20,
+    Next = 20,
+    End = 21,
+    Home = 22,
+    Left = 23,
+    Up = 24,
+    Right = 25,
+    Down = 26,
+    Select = 27,
+    Print = 28,
+    Execute = 29,
+    Snapshot = 30,
+    PrintScreen = 30,
+    Insert = 31,
+    Delete = 32,
+    Help = 33,
+    D0 = 34,
+    D1 = 35,
+    D2 = 36,
+    D3 = 37,
+    D4 = 38,
+    D5 = 39,
+    D6 = 40,
+    D7 = 41,
+    D8 = 42,
+    D9 = 43,
+    A = 44,
+    B = 45,
+    C = 46,
+    D = 47,
+    E = 48,
+    F = 49,
+    G = 50,
+    H = 51,
+    I = 52,
+    J = 53,
+    AvnKeyK = 54,
+    L = 55,
+    M = 56,
+    N = 57,
+    O = 58,
+    P = 59,
+    Q = 60,
+    R = 61,
+    S = 62,
+    T = 63,
+    U = 64,
+    V = 65,
+    W = 66,
+    X = 67,
+    Y = 68,
+    Z = 69,
+    LWin = 70,
+    RWin = 71,
+    Apps = 72,
+    Sleep = 73,
+    NumPad0 = 74,
+    NumPad1 = 75,
+    NumPad2 = 76,
+    NumPad3 = 77,
+    NumPad4 = 78,
+    NumPad5 = 79,
+    NumPad6 = 80,
+    NumPad7 = 81,
+    NumPad8 = 82,
+    NumPad9 = 83,
+    Multiply = 84,
+    Add = 85,
+    Separator = 86,
+    Subtract = 87,
+    Decimal = 88,
+    Divide = 89,
+    F1 = 90,
+    F2 = 91,
+    F3 = 92,
+    F4 = 93,
+    F5 = 94,
+    F6 = 95,
+    F7 = 96,
+    F8 = 97,
+    F9 = 98,
+    F10 = 99,
+    F11 = 100,
+    F12 = 101,
+    F13 = 102,
+    F14 = 103,
+    F15 = 104,
+    F16 = 105,
+    F17 = 106,
+    F18 = 107,
+    F19 = 108,
+    F20 = 109,
+    F21 = 110,
+    F22 = 111,
+    F23 = 112,
+    F24 = 113,
+    NumLock = 114,
+    Scroll = 115,
+    LeftShift = 116,
+    RightShift = 117,
+    LeftCtrl = 118,
+    RightCtrl = 119,
+    LeftAlt = 120,
+    RightAlt = 121,
+    BrowserBack = 122,
+    BrowserForward = 123,
+    BrowserRefresh = 124,
+    BrowserStop = 125,
+    BrowserSearch = 126,
+    BrowserFavorites = 127,
+    BrowserHome = 128,
+    VolumeMute = 129,
+    VolumeDown = 130,
+    VolumeUp = 131,
+    MediaNextTrack = 132,
+    MediaPreviousTrack = 133,
+    MediaStop = 134,
+    MediaPlayPause = 135,
+    LaunchMail = 136,
+    SelectMedia = 137,
+    LaunchApplication1 = 138,
+    LaunchApplication2 = 139,
+    OemSemicolon = 140,
+    Oem1 = 140,
+    OemPlus = 141,
+    OemComma = 142,
+    OemMinus = 143,
+    OemPeriod = 144,
+    OemQuestion = 145,
+    Oem2 = 145,
+    OemTilde = 146,
+    Oem3 = 146,
+    AbntC1 = 147,
+    AbntC2 = 148,
+    OemOpenBrackets = 149,
+    Oem4 = 149,
+    OemPipe = 150,
+    Oem5 = 150,
+    OemCloseBrackets = 151,
+    Oem6 = 151,
+    OemQuotes = 152,
+    Oem7 = 152,
+    Oem8 = 153,
+    OemBackslash = 154,
+    Oem102 = 154,
+    ImeProcessed = 155,
+    System = 156,
+    OemAttn = 157,
+    DbeAlphanumeric = 157,
+    OemFinish = 158,
+    DbeKatakana = 158,
+    DbeHiragana = 159,
+    OemCopy = 159,
+    DbeSbcsChar = 160,
+    OemAuto = 160,
+    DbeDbcsChar = 161,
+    OemEnlw = 161,
+    OemBackTab = 162,
+    DbeRoman = 162,
+    DbeNoRoman = 163,
+    Attn = 163,
+    CrSel = 164,
+    DbeEnterWordRegisterMode = 164,
+    ExSel = 165,
+    DbeEnterImeConfigureMode = 165,
+    EraseEof = 166,
+    DbeFlushString = 166,
+    Play = 167,
+    DbeCodeInput = 167,
+    DbeNoCodeInput = 168,
+    Zoom = 168,
+    NoName = 169,
+    DbeDetermineString = 169,
+    DbeEnterDialogConversionMode = 170,
+    Pa1 = 170,
+    OemClear = 171,
+    DeadCharProcessed = 172,
+};
 
 enum SystemDecorations {
     SystemDecorationsNone = 0,
@@ -192,13 +397,13 @@ enum AvnExtendClientAreaChromeHints
     AvnSystemChrome = 0x01,
     AvnPreferSystemChrome = 0x02,
     AvnOSXThickTitleBar = 0x08,
-    AvnDefaultChrome = AvnSystemChrome,
+    AvnDefaultChrome = AvnPreferSystemChrome,
 }
 
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
-     HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator);
+     HRESULT Initialize(IAvnGCHandleDeallocatorCallback* deallocator, IAvnApplicationEvents* appCb);
      IAvnMacOptions* GetMacOptions();
      HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnWindow** ppv);
      HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnGlContext* gl, IAvnPopup** ppv);
@@ -212,7 +417,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT SetAppMenu(IAvnMenu* menu);
      HRESULT CreateMenu(IAvnMenuEvents* cb, IAvnMenu** ppv);
      HRESULT CreateMenuItem(IAvnMenuItem** ppv);
-     HRESULT CreateMenuItemSeperator(IAvnMenuItem** ppv);
+     HRESULT CreateMenuItemSeparator(IAvnMenuItem** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -225,7 +430,7 @@ interface IAvnString : IUnknown
 [uuid(e5aca675-02b7-4129-aa79-d6e417210bda)]
 interface IAvnWindowBase : IUnknown
 {
-     HRESULT Show();
+     HRESULT Show(bool activate);
      HRESULT Hide();
      HRESULT Close();
      HRESULT Activate();
@@ -323,6 +528,7 @@ interface IAvnMacOptions : IUnknown
 {
      HRESULT SetShowInDock(int show);
      HRESULT SetApplicationTitle(char* utf8string);
+     HRESULT SetDisableDefaultApplicationMenuItems(bool enabled);
 }
 
 [uuid(04c1b049-1f43-418a-9159-cae627ec1367)]
@@ -414,6 +620,7 @@ interface IAvnCursor : IUnknown
 interface IAvnCursorFactory : IUnknown
 {
      HRESULT GetCursor(AvnStandardCursorType cursorType, IAvnCursor** retOut);
+     HRESULT CreateCustomCursor (void* bitmapData, size_t length, AvnPixelSize hotPixel, IAvnCursor** retOut);
 }
 
 [uuid(60452465-8616-40af-bc00-042e69828ce7)]
@@ -468,7 +675,7 @@ interface IAvnMenuItem : IUnknown
 {
      HRESULT SetSubMenu(IAvnMenu* menu);
      HRESULT SetTitle(char* utf8String);
-     HRESULT SetGesture(char* utf8String, AvnInputModifiers modifiers);
+     HRESULT SetGesture(AvnKey key, AvnInputModifiers modifiers);
      HRESULT SetAction(IAvnPredicateCallback* predicate, IAvnActionCallback* callback);
      HRESULT SetIsChecked(bool isChecked);
      HRESULT SetToggleType(AvnMenuItemToggleType toggleType);
@@ -478,10 +685,9 @@ interface IAvnMenuItem : IUnknown
 [uuid(0af7df53-7632-42f4-a650-0992c361b477)]
 interface IAvnMenuEvents : IUnknown
 {
-    /**
-     * NeedsUpdate
-     */
      void NeedsUpdate();
+     void Opening();
+     void Closed();
 }
 
 [uuid(5142bb41-66ab-49e7-bb37-cd079c000f27)]
@@ -520,4 +726,10 @@ interface IAvnNativeControlHostTopLevelAttachment : IUnknown
      void ShowInBounds(float x, float y, float width, float height);
      void HideWithSize(float width, float height);
      void ReleaseChild();
+}
+
+[uuid(6575b5af-f27a-4609-866c-f1f014c20f79)]
+interface IAvnApplicationEvents : IUnknown
+{
+     void FilesOpened (IAvnStringArray* urls);
 }

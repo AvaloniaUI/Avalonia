@@ -12,6 +12,7 @@ using System;
 using System.Linq;
 using System.Diagnostics;
 using Avalonia.Controls.Utils;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Controls
 {
@@ -1008,6 +1009,14 @@ namespace Avalonia.Controls
             get;
             set;
         }
+        /// <summary>
+        /// Holds a Comparer to use for sorting, if not using the default.
+        /// </summary>
+        public System.Collections.IComparer CustomSortComparer
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// We get the sort description from the data source.  We don't worry whether we can modify sort -- perhaps the sort description
@@ -1019,6 +1028,14 @@ namespace Avalonia.Controls
                 && OwningGrid.DataConnection != null
                 && OwningGrid.DataConnection.SortDescriptions != null)
             {
+                if(CustomSortComparer != null)
+                {
+                    return
+                        OwningGrid.DataConnection.SortDescriptions
+                                  .OfType<DataGridComparerSortDesctiption>()
+                                  .FirstOrDefault(s => s.SourceComparer == CustomSortComparer);
+                }
+
                 string propertyName = GetSortPropertyName();
 
                 return OwningGrid.DataConnection.SortDescriptions.FirstOrDefault(s => s.HasPropertyPath && s.PropertyPath == propertyName);
@@ -1033,13 +1050,16 @@ namespace Avalonia.Controls
 
             if (String.IsNullOrEmpty(result))
             {
-
-                if(this is DataGridBoundColumn boundColumn && 
-                    boundColumn.Binding != null &&
-                    boundColumn.Binding is Binding binding &&
-                    binding.Path != null)
+                if (this is DataGridBoundColumn boundColumn)
                 {
-                    result = binding.Path;
+                    if (boundColumn.Binding is Binding binding)
+                    {
+                        result = binding.Path;
+                    }
+                    else if (boundColumn.Binding is CompiledBindingExtension compiledBinding)
+                    {
+                        result = compiledBinding.Path.ToString();
+                    }
                 }
             }
 

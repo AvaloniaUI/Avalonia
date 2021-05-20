@@ -10,6 +10,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Data;
+using Avalonia.Media;
 using Avalonia.UnitTests;
 using XamlX;
 using Xunit;
@@ -536,7 +537,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
-        public void ResolvesSourceBindingLongForm()
+        public void Binds_To_Source()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -556,6 +557,124 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 target.ApplyTemplate();
 
                 Assert.Equal("Test".Length.ToString(), target.Text);
+            }
+        }
+
+        [Fact]
+        public void Binds_To_Source_StaticResource()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+             x:CompileBindings='True'>
+    <Window.Resources>
+        <local:TestDataContext x:Key='dataKey' StringProperty='foobar'/>
+    </Window.Resources>
+    <TextBlock Name='textBlock' Text='{Binding StringProperty, Source={StaticResource dataKey}}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Binds_To_Source_StaticResource1()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+             x:CompileBindings='True'>
+    <Window.Resources>
+        <local:TestDataContext x:Key='dataKey' StringProperty='foobar'/>
+        <x:String x:Key='otherObjectKey'>test</x:String>
+    </Window.Resources>
+    <TextBlock Name='textBlock' Text='{Binding StringProperty, Source={StaticResource dataKey}}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Binds_To_Source_StaticResource_In_ResourceDictionary()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+             x:DataType='local:TestDataContext' x:CompileBindings='True'>
+    <Window.Resources>
+        <ResourceDictionary>
+            <local:TestDataContext x:Key='dataKey' StringProperty='foobar'/>
+        </ResourceDictionary>
+    </Window.Resources>
+    <TextBlock Name='textBlock' Text='{Binding StringProperty, Source={StaticResource dataKey}}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Binds_To_Source_StaticResource_In_ResourceDictionary1()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+             x:DataType='local:TestDataContext' x:CompileBindings='True'>
+    <Window.Resources>
+        <ResourceDictionary>
+            <local:TestDataContext x:Key='dataKey' StringProperty='foobar'/>
+            <x:String x:Key='otherObjectKey'>test</x:String>
+        </ResourceDictionary>
+    </Window.Resources>
+    <TextBlock Name='textBlock' Text='{Binding StringProperty, Source={StaticResource dataKey}}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Binds_To_Source_xStatic()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='using:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'
+             x:CompileBindings='True'>
+    <ContentControl Name='contentControl' Content='{Binding Color, Source={x:Static Brushes.Red}}'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var contentControl = window.FindControl<ContentControl>("contentControl");
+
+                Assert.Equal(Brushes.Red.Color, contentControl.Content);
             }
         }
 

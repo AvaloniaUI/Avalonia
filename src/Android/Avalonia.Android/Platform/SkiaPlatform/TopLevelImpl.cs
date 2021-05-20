@@ -2,71 +2,60 @@ using System;
 using System.Collections.Generic;
 using Android.Content;
 using Android.Graphics;
+using Android.Runtime;
 using Android.Views;
-using Avalonia.Android.Platform.Input;
+using Android.Views.InputMethods;
+using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
+using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl,  IFramebufferPlatformSurface
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo, ITopLevelImplWithTextInputMethod
     {
+        private readonly IGlPlatformSurface _gl;
+        private readonly IFramebufferPlatformSurface _framebuffer;
+
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
-
+        private readonly ITextInputMethodImpl _textInputMethod;
         private ViewImpl _view;
 
         public TopLevelImpl(Context context, bool placeOnTop = false)
         {
             _view = new ViewImpl(context, this, placeOnTop);
+            _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
-                p => GetAvaloniaPointFromEvent(p));
+                GetAvaloniaPointFromEvent);
 
-            Surfaces = new object[] { this };
+            _gl = GlPlatformSurface.TryCreate(this);
+            _framebuffer = new FramebufferManager(this);
 
-            MaxClientSize = new Size(_view.Resources.DisplayMetrics.WidthPixels,
-                _view.Resources.DisplayMetrics.HeightPixels);
+            RenderScaling = (int)_view.Resources.DisplayMetrics.Density;
+
+            MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
+                _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
         }
 
-
-
-        private bool _handleEvents;
-
-        public bool HandleEvents
-        {
-            get { return _handleEvents; }
-            set
-            {
-                _handleEvents = value;
-                _keyboardHelper.HandleEvents = _handleEvents;
-            }
-        }
-        
-        public virtual Point GetAvaloniaPointFromEvent(MotionEvent e) => new Point(e.GetX(), e.GetY());
+        public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
+            new Point(e.GetX(pointerIndex), e.GetY(pointerIndex)) / RenderScaling;
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize
-        {
-            get
-            {
-                if (_view == null)
-                    return new Size(0, 0);
-                return new Size(_view.Width, _view.Height);
-            }
-            set
-            {
-                
-            }
-        }
+        public virtual Size ClientSize => Size.ToSize(RenderScaling);
 
-        public IMouseDevice MouseDevice => AndroidMouseDevice.Instance;
+        public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public Action Closed { get; set; }
 
@@ -82,20 +71,22 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public View View => _view;
 
+        internal InvalidationAwareSurfaceView InternalView => _view;
+
         public IPlatformHandle Handle => _view;
 
-        public IEnumerable<object> Surfaces { get; }
+        public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer };
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            return new ImmediateRenderer(root);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            AndroidPlatform.Options.UseDeferredRendering
+            ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
+            : new ImmediateRenderer(root);
 
         public virtual void Hide()
         {
             _view.Visibility = ViewStates.Invisible;
         }
-        
+
         public void Invalidate(Rect rect)
         {
             if (_view.Holder?.Surface?.IsValid == true) _view.Invalidate();
@@ -103,15 +94,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Point PointToClient(PixelPoint point)
         {
-            return point.ToPoint(1);
+            return point.ToPoint(RenderScaling);
         }
 
         public PixelPoint PointToScreen(Point point)
         {
-            return PixelPoint.FromPoint(point, 1);
+            return PixelPoint.FromPoint(point, RenderScaling);
         }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             //still not implemented
         }
@@ -126,7 +117,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view.Visibility = ViewStates.Visible;
         }
 
-        public double RenderScaling => 1;
+        public double RenderScaling { get; }
 
         void Draw()
         {
@@ -144,7 +135,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             Resized?.Invoke(size);
         }
 
-        class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback
+        class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo
         {
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
@@ -181,7 +172,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
             {
-                var newSize = new Size(width, height);
+                var newSize = new PixelSize(width, height).ToSize(_tl.RenderScaling);
 
                 if (newSize != _oldSize)
                 {
@@ -191,12 +182,50 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                 base.SurfaceChanged(holder, format, width, height);
             }
+
+            public sealed override bool OnCheckIsTextEditor()
+            {
+                return true;
+            }
+
+            private Action<EditorInfo> _initEditorInfo;
+
+            public void InitEditorInfo(Action<EditorInfo> init)
+            {
+                _initEditorInfo = init;
+            }
+
+            public sealed override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
+            {
+                if (_initEditorInfo != null)
+                    _initEditorInfo(outAttrs);
+
+                return base.OnCreateInputConnection(outAttrs);
+            }
+
         }
 
         public IPopupImpl CreatePopup() => null;
         
         public Action LostFocus { get; set; }
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        ILockedFramebuffer IFramebufferPlatformSurface.Lock()=>new AndroidFramebuffer(_view.Holder.Surface);
+        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
+
+        IntPtr EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo.Handle =>
+            AndroidFramebuffer.ANativeWindow_fromSurface(JNIEnv.Handle, _view.Holder.Surface.Handle);
+
+        public PixelSize Size => new PixelSize(_view.Holder.SurfaceFrame.Width(), _view.Holder.SurfaceFrame.Height());
+
+        public double Scaling => RenderScaling;
+
+        public ITextInputMethodImpl TextInputMethod => _textInputMethod;
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

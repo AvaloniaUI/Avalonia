@@ -106,13 +106,13 @@ public:
         return Window;
     }
     
-    virtual HRESULT Show() override
+    virtual HRESULT Show(bool activate) override
     {
         @autoreleasepool
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
-            if(ShouldTakeFocusOnShow())
+            if(ShouldTakeFocusOnShow() && activate)
             {
                 [Window makeKeyAndOrderFront:Window];
                 [NSApp activateIgnoringOtherApps:YES];
@@ -124,7 +124,11 @@ public:
             [Window setTitle:_lastTitle];
             
             _shown = true;
-        
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [Window updateShadow];
+            });
+            
             return S_OK;
         }
     }
@@ -561,11 +565,11 @@ private:
         }
     }
     
-    virtual HRESULT Show () override
+    virtual HRESULT Show (bool activate) override
     {
         @autoreleasepool
         {            
-            WindowBaseImpl::Show();
+            WindowBaseImpl::Show(activate);
             
             HideOrShowTrafficLights();
             
@@ -1391,17 +1395,20 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [super viewDidChangeBackingProperties];
 }
 
-- (bool) ignoreUserInput
+- (bool) ignoreUserInput:(bool)trigerInputWhenDisabled
 {
     auto parentWindow = objc_cast<AvnWindow>([self window]);
     
     if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
     {
-        auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
-        
-        if(window != nullptr)
+        if(trigerInputWhenDisabled)
         {
-            window->WindowEvents->GotInputWhenDisabled();
+            auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
+            
+            if(window != nullptr)
+            {
+                window->WindowEvents->GotInputWhenDisabled();
+            }
         }
         
         return TRUE;
@@ -1412,7 +1419,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
-    if([self ignoreUserInput])
+    bool triggerInputWhenDisabled = type != Move;
+    
+    if([self ignoreUserInput: triggerInputWhenDisabled])
     {
         return;
     }
@@ -1578,7 +1587,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput])
+    if([self ignoreUserInput: false])
     {
         return;
     }
@@ -1833,6 +1842,19 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     double _lastScaling;
 }
 
+- (void)updateShadow
+{
+    // Common problem in Cocoa where [invalidateShadow] does work,
+    // This hack forces Cocoa to invalidate the shadow.
+    
+    NSRect frame = [self frame];
+    NSRect updatedFrame = NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + 1.0, frame.size.height + 1.0);
+    [self setFrame:updatedFrame display:YES];
+    [self setFrame:frame display:YES];
+    
+    [self invalidateShadow];
+}
+
 -(void) setIsExtended:(bool)value;
 {
     _isExtended = value;
@@ -1872,7 +1894,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     for(int i = 0; i < numWindows; i++)
     {
-        [[windows objectAtIndex:i] performClose:nil];
+        auto window = (AvnWindow*)[windows objectAtIndex:i];
+        
+        if([window parentWindow] == nullptr) // Avalonia will handle the child windows.
+        {
+            [window performClose:nil];
+        }
     }
 }
 
@@ -1925,6 +1952,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         }
         
         [NSApp setMenu:_menu];
+    }
+    else
+    {
+        [self showAppMenuOnly];
     }
 }
 
@@ -2063,17 +2094,17 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void)becomeKeyWindow
 {
+    [self showWindowMenuWithAppMenu];
+    
     if([self activateAppropriateChild: true])
     {
-        [self showWindowMenuWithAppMenu];
-        
         if(_parent != nullptr)
         {
             _parent->BaseEvents->Activated();
         }
-        
-        [super becomeKeyWindow];
     }
+    
+    [super becomeKeyWindow];
 }
 
 -(void) restoreParentWindow;
@@ -2221,9 +2252,12 @@ protected:
     {
         @autoreleasepool
         {
-            [Window setContentSize:NSSize{x, y}];
+            if (Window != nullptr)
+            {
+                [Window setContentSize:NSSize{x, y}];
             
-            [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+                [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+            }
             
             return S_OK;
         }

@@ -23,9 +23,11 @@ namespace Avalonia.Skia
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new Stack<PaintWrapper>();
         private readonly Stack<double> _opacityStack = new Stack<double>();
+        private readonly Stack<BitmapBlendingMode> _blendingModeStack = new Stack<BitmapBlendingMode>();
         private readonly Matrix? _postTransform;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private double _currentOpacity = 1.0f;
+        private BitmapBlendingMode _currentBlendingMode = BitmapBlendingMode.SourceOver;
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
         private bool _disposed;
@@ -145,6 +147,7 @@ namespace Avalonia.Skia
                 })
             {
                 paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
+                paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
 
                 drawableImage.Draw(this, s, d, paint);
             }
@@ -163,7 +166,10 @@ namespace Avalonia.Skia
         {
             using (var paint = CreatePaint(_strokePaint, pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
-                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, paint.Paint);
+                if (paint.Paint is object)
+                {
+                    Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
+                }
             }
         }
 
@@ -358,7 +364,6 @@ namespace Avalonia.Skia
                     {
                         Canvas.DrawRect(rc, paint.Paint);
                     }
-                  
                 }
             }
 
@@ -394,15 +399,17 @@ namespace Avalonia.Skia
             {
                 using (var paint = CreatePaint(_strokePaint, pen, rect.Rect.Size))
                 {
-                    if (isRounded)
+                    if (paint.Paint is object)
                     {
-                        Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                        if (isRounded)
+                        {
+                            Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                        }
+                        else
+                        {
+                            Canvas.DrawRect(rc, paint.Paint);
+                        }
                     }
-                    else
-                    {
-                        Canvas.DrawRect(rc, paint.Paint);
-                    }
-                   
                 }
             }
         }
@@ -506,6 +513,19 @@ namespace Avalonia.Skia
         public void PopGeometryClip()
         {
             Canvas.Restore();
+        }
+
+        /// <inheritdoc />
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            _blendingModeStack.Push(_currentBlendingMode);
+            _currentBlendingMode = blendingMode;
+        }
+
+        /// <inheritdoc />
+        public void PopBitmapBlendMode()
+        {
+            _currentBlendingMode = _blendingModeStack.Pop();
         }
 
         public void Custom(ICustomDrawOperation custom) => custom.Render(this);
