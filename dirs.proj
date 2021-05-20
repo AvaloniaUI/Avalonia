@@ -24,6 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SlnGen" Version="5.2.0" PrivateAssets="all" />
+    <PackageReference Include="SlnGen" Version="2.0.40" PrivateAssets="all" />
   </ItemGroup>
 </Project>
