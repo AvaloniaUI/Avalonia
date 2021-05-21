@@ -125,10 +125,6 @@ public:
             
             _shown = true;
             
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [Window updateShadow];
-            });
-            
             return S_OK;
         }
     }
@@ -1842,19 +1838,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     double _lastScaling;
 }
 
-- (void)updateShadow
-{
-    // Common problem in Cocoa where [invalidateShadow] does work,
-    // This hack forces Cocoa to invalidate the shadow.
-    
-    NSRect frame = [self frame];
-    NSRect updatedFrame = NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + 1.0, frame.size.height + 1.0);
-    [self setFrame:updatedFrame display:YES];
-    [self setFrame:frame display:YES];
-    
-    [self invalidateShadow];
-}
-
 -(void) setIsExtended:(bool)value;
 {
     _isExtended = value;
@@ -2013,7 +1996,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _lastScaling = [self backingScaleFactor];
     [self setOpaque:NO];
     [self setBackgroundColor: [NSColor clearColor]];
-    [self invalidateShadow];
     _isExtended = false;
     return self;
 }
