@@ -194,12 +194,9 @@ public:
             if(ret == nullptr)
                 return E_POINTER;
             
-            if(_shown)
-            {
-                auto frame = [View frame];
-                ret->Width = frame.size.width;
-                ret->Height = frame.size.height;
-            }
+            auto frame = [View frame];
+            ret->Width = frame.size.width;
+            ret->Height = frame.size.height;
             
             return S_OK;
         }
