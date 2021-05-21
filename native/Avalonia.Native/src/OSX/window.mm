@@ -25,6 +25,7 @@ public:
     ComPtr<IAvnGlContext> _glContext;
     NSObject<IRenderTarget>* renderTarget;
     AvnPoint lastPositionSet;
+    CGSize _lastRequestedSize;
     NSString* _lastTitle;
     IAvnMenu* _mainMenu;
     
@@ -193,9 +194,18 @@ public:
         {
             if(ret == nullptr)
                 return E_POINTER;
-            auto frame = [View frame];
-            ret->Width = frame.size.width;
-            ret->Height = frame.size.height;
+            
+            if(_shown)
+            {
+                auto frame = [View frame];
+                ret->Width = frame.size.width;
+                ret->Height = frame.size.height;
+            }
+            else
+            {
+                ret->Width = _lastRequestedSize.width;
+                ret->Height = _lastRequestedSize.height;
+            }
             return S_OK;
         }
     }
@@ -255,6 +265,9 @@ public:
             {
                 y = maxSize.height;
             }
+            
+            _lastRequestedSize.width = x;
+            _lastRequestedSize.height = y;
             
             [Window setContentSize:NSSize{x, y}];
             
@@ -530,7 +543,7 @@ private:
         _decorations = SystemDecorationsFull;
         _transitioningWindowState = false;
         _inSetWindowState = false;
-        _lastWindowState = Normal;
+        _lastWindowState = (AvnWindowState)-1;
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
