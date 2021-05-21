@@ -656,7 +656,6 @@ namespace Avalonia.Controls
                     if (PlatformImpl != null)
                     {
                         PlatformImpl.Resize(initialSize);
-                        ClientSize = PlatformImpl.ClientSize;
                     }
                 }
             }

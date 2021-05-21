@@ -25,7 +25,6 @@ public:
     ComPtr<IAvnGlContext> _glContext;
     NSObject<IRenderTarget>* renderTarget;
     AvnPoint lastPositionSet;
-    CGSize _lastRequestedSize;
     NSString* _lastTitle;
     IAvnMenu* _mainMenu;
     
@@ -201,11 +200,7 @@ public:
                 ret->Width = frame.size.width;
                 ret->Height = frame.size.height;
             }
-            else
-            {
-                ret->Width = _lastRequestedSize.width;
-                ret->Height = _lastRequestedSize.height;
-            }
+            
             return S_OK;
         }
     }
@@ -266,8 +261,10 @@ public:
                 y = maxSize.height;
             }
             
-            _lastRequestedSize.width = x;
-            _lastRequestedSize.height = y;
+            if(!_shown)
+            {
+                BaseEvents->Resized(AvnSize{x,y});
+            }
             
             [Window setContentSize:NSSize{x, y}];
             
