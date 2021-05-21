@@ -9,10 +9,24 @@ git clone https://github.com/AvaloniaUI/Avalonia.git
 git submodule update --init
 ```
 
+### Install the required version of the .NET Core SDK
+
+Go to https://dotnet.microsoft.com/download/visual-studio-sdks and install the latest version of the .NET Core SDK compatible with Avalonia UI. Make sure to download the SDK (not just the "runtime") package. The version compatible is indicated within the [global.json](https://github.com/AvaloniaUI/Avalonia/blob/master/global.json) file. Note that Avalonia UI does not always use the latest version and is hardcoded to use the last version known to be compatible (SDK releases may break the builds from time-to-time).
+
 ###  Open in Visual Studio
 
-Open the `Avalonia.sln` solution in Visual Studio 2019 or newer. The free Visual Studio Community
-edition works fine. Run the `Samples\ControlCatalog.Desktop` project to see the sample application.
+Open the `Avalonia.sln` solution in Visual Studio 2019 or newer. The free Visual Studio Community edition works fine. Build and run the `Samples\ControlCatalog.Desktop` or `ControlCatalog.NetCore` project to see the sample application.
+
+### Troubleshooting
+
+ * **Error CS0006: Avalonia.DesktopRuntime.dll could not be found**
+
+    It is common for the first build to fail with the errors below (also discussed in [#4257](https://github.com/AvaloniaUI/Avalonia/issues/4257)).
+    ```
+    >CSC : error CS0006: Metadata file 'C:\...\Avalonia\src\Avalonia.DesktopRuntime\bin\Debug\netcoreapp2.0\Avalonia.DesktopRuntime.dll' could not be found
+    >CSC : error CS0006: Metadata file 'C:\...\Avalonia\packages\Avalonia\bin\Debug\netcoreapp2.0\Avalonia.dll' could not be found
+    ```
+    To correct this, right click on the `Avalonia.DesktopRuntime` project then press `Build` to build the project manually. Afterwards the solution should build normally and the ControlCatalog can be run.
 
 # Linux/macOS
 
@@ -20,9 +34,9 @@ It's *not* possible to build the *whole* project on Linux/macOS. You can only bu
 
 MonoDevelop, Xamarin Studio and Visual Studio for Mac aren't capable of properly opening our solution. You can use Rider (at least 2017.2 EAP) or VSCode instead. They will fail to load most of platform specific projects, but you don't need them to run on .NET Core.
 
-###  Install the latest version of .NET Core
+###  Install the latest version of the .NET Core SDK
 
-Go to https://www.microsoft.com/net/core and follow instructions for your OS. You need SDK (not just "runtime") package.
+Go to https://www.microsoft.com/net/core and follow the instructions for your OS. Make sure to download the SDK (not just the "runtime") package.
 
 ###  Additional requirements for macOS
 

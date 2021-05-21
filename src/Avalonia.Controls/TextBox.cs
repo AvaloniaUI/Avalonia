@@ -17,6 +17,9 @@ using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Represents a control that can be used to display or edit unformatted text.
+    /// </summary>
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
@@ -260,7 +263,11 @@ namespace Avalonia.Controls
             set
             {
                 value = CoerceCaretIndex(value);
-                SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+                var changed = SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+                if (changed)
+                {
+                    UpdateCommandStates();
+                }
                 if (SelectionStart == SelectionEnd)
                 {
                     CaretIndex = SelectionStart;
@@ -278,7 +285,11 @@ namespace Avalonia.Controls
             set
             {
                 value = CoerceCaretIndex(value);
-                SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
+                var changed = SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
+                if (changed)
+                {
+                    UpdateCommandStates();
+                }
                 if (SelectionStart == SelectionEnd)
                 {
                     CaretIndex = SelectionEnd;
