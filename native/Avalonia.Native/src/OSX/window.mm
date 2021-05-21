@@ -537,7 +537,7 @@ private:
         _decorations = SystemDecorationsFull;
         _transitioningWindowState = false;
         _inSetWindowState = false;
-        _lastWindowState = (AvnWindowState)-1;
+        _lastWindowState = Normal;
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
