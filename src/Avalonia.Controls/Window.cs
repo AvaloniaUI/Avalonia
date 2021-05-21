@@ -653,10 +653,7 @@ namespace Avalonia.Controls
             {
                 using (BeginAutoSizing())
                 {
-                    if (PlatformImpl != null)
-                    {
-                        PlatformImpl.Resize(initialSize);
-                    }
+                    PlatformImpl?.Resize(initialSize);
                 }
             }
 
