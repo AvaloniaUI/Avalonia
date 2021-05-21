@@ -50,7 +50,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -112,6 +111,9 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
+            
+            [Window setContentView: StandardContainer];
+            
             if(ShouldTakeFocusOnShow() && activate)
             {
                 [Window makeKeyAndOrderFront:Window];
