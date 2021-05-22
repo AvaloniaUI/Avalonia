@@ -21,12 +21,13 @@ namespace Avalonia.DesignerSupport.Remote
         public IPlatformHandle Handle { get; }
         public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
+        public Size? FrameSize => null;
         public double RenderScaling { get; } = 1.0;
         public double DesktopScaling => 1.0;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
@@ -53,7 +54,7 @@ namespace Avalonia.DesignerSupport.Remote
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent,
                     (_, size, __) =>
                     {
-                        Resize(size);
+                        Resize(size, PlatformResizeReason.Unspecified);
                     }));
         }
 
@@ -77,7 +78,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void Show(bool activate)
+        public void Show(bool activate, bool isDialog)
         {
         }
 
@@ -97,7 +98,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void Resize(Size clientSize)
+        public void Resize(Size clientSize, PlatformResizeReason reason)
         {
         }
 

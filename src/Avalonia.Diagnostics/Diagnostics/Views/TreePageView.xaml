@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
              x:Class="Avalonia.Diagnostics.Views.TreePageView">
-  <Grid ColumnDefinitions="0.4*,4,0.6*">    
+  <Grid ColumnDefinitions="0.35*,4,0.65*">
     <TreeView Name="tree"
               BorderThickness="0"
               Items="{Binding Nodes}"
@@ -11,7 +11,7 @@
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{Binding Type}"/>
+            <TextBlock Text="{Binding Type}" FontWeight="{Binding FontWeight}"/>
             <TextBlock Text="{Binding Classes}"/>
             <TextBlock Foreground="Gray" Text="{Binding ElementName}"/>
           </StackPanel>
@@ -20,6 +20,7 @@
       <TreeView.Styles>
         <Style Selector="TreeViewItem">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+          <Setter Property="Background" Value="Transparent" />
         </Style>
       </TreeView.Styles>
     </TreeView>

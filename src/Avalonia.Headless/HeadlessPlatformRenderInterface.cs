@@ -47,6 +47,8 @@ namespace Avalonia.Headless
         }
 
         public IStreamGeometryImpl CreateStreamGeometry() => new HeadlessStreamingGeometryStub();
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => throw new NotImplementedException();
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => throw new NotImplementedException();
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
 
@@ -66,6 +68,28 @@ namespace Avalonia.Headless
         }
 
         public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
         {
             return new HeadlessBitmapStub(new Size(1, 1), new Vector(96, 96));
         }

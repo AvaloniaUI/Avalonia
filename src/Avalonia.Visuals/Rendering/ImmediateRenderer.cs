@@ -225,7 +225,7 @@ namespace Avalonia.Rendering
 
             if (filter?.Invoke(visual) != false)
             {
-                bool containsPoint = false;
+                bool containsPoint;
 
                 if (visual is ICustomSimpleHitTest custom)
                 {
@@ -289,11 +289,14 @@ namespace Avalonia.Rendering
 
                 using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
-                using (clipToBounds 
-                    ? visual is IVisualWithRoundRectClip roundClipVisual 
+                using (clipToBounds
+#pragma warning disable CS0618 // Type or member is obsolete
+                    ? visual is IVisualWithRoundRectClip roundClipVisual
                         ? context.PushClip(new RoundedRect(bounds, roundClipVisual.ClipToBoundsRadius))
                         : context.PushClip(bounds) 
                     : default(DrawingContext.PushedState))
+#pragma warning restore CS0618 // Type or member is obsolete
+
                 using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())

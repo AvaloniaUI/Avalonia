@@ -79,7 +79,7 @@ namespace Avalonia.PropertyStore
 
         public void OnError(Exception error)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("BindingEntry.OnError is not implemented", error);
         }
 
         public void OnNext(BindingValue<T> value)

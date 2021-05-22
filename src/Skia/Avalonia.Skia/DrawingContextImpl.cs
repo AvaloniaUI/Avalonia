@@ -166,7 +166,10 @@ namespace Avalonia.Skia
         {
             using (var paint = CreatePaint(_strokePaint, pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
-                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, paint.Paint);
+                if (paint.Paint is object)
+                {
+                    Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
+                }
             }
         }
 
@@ -361,7 +364,6 @@ namespace Avalonia.Skia
                     {
                         Canvas.DrawRect(rc, paint.Paint);
                     }
-                  
                 }
             }
 
@@ -397,15 +399,17 @@ namespace Avalonia.Skia
             {
                 using (var paint = CreatePaint(_strokePaint, pen, rect.Rect.Size))
                 {
-                    if (isRounded)
+                    if (paint.Paint is object)
                     {
-                        Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                        if (isRounded)
+                        {
+                            Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                        }
+                        else
+                        {
+                            Canvas.DrawRect(rc, paint.Paint);
+                        }
                     }
-                    else
-                    {
-                        Canvas.DrawRect(rc, paint.Paint);
-                    }
-                   
                 }
             }
         }
@@ -502,7 +506,7 @@ namespace Avalonia.Skia
         public void PushGeometryClip(IGeometryImpl clip)
         {
             Canvas.Save();
-            Canvas.ClipPath(((GeometryImpl)clip).EffectivePath);
+            Canvas.ClipPath(((GeometryImpl)clip).EffectivePath, SKClipOperation.Intersect, true);
         }
 
         /// <inheritdoc />
@@ -587,7 +591,7 @@ namespace Avalonia.Skia
         /// Configure paint wrapper for using gradient brush.
         /// </summary>
         /// <param name="paintWrapper">Paint wrapper.</param>
-        /// <param name="targetSize">Target size.</param>
+        /// <param name="targetRect">Target bound rect.</param>
         /// <param name="gradientBrush">Gradient brush.</param>
         private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
         {

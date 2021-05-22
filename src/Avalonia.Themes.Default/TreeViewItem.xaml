@@ -15,6 +15,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
                             TemplatedControl.IsTemplateFocusTarget="True">
                         <Grid Name="PART_Header"
                               ColumnDefinitions="16, *"

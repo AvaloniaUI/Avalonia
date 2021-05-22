@@ -70,34 +70,74 @@ namespace Avalonia.Media.TextFormatting
             {
                 var glyphTypeface = glyphRun.GlyphTypeface;
 
-                for (var i = 0; i < glyphRun.GlyphClusters.Length; i++)
+                if (glyphRun.IsLeftToRight)
                 {
-                    var glyph = glyphRun.GlyphIndices[i];
-
-                    var advance = glyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
-
-                    if (currentWidth + advance > availableWidth)
+                    foreach (var glyph in glyphRun.GlyphIndices)
                     {
-                        break;
+                        var advance = glyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
+
+                        if (currentWidth + advance > availableWidth)
+                        {
+                            break;
+                        }
+
+                        currentWidth += advance;
+
+                        glyphCount++;
                     }
+                }
+                else
+                {
+                    for (var index = glyphRun.GlyphClusters.Length - 1; index > 0; index--)
+                    {
+                        var glyph = glyphRun.GlyphIndices[index];
 
-                    currentWidth += advance;
+                        var advance = glyphTypeface.GetGlyphAdvance(glyph) * glyphRun.Scale;
 
-                    glyphCount++;
+                        if (currentWidth + advance > availableWidth)
+                        {
+                            break;
+                        }
+
+                        currentWidth += advance;
+
+                        glyphCount++;
+                    }
                 }
             }
             else
             {
-                foreach (var advance in glyphRun.GlyphAdvances)
+                if (glyphRun.IsLeftToRight)
                 {
-                    if (currentWidth + advance > availableWidth)
+                    for (var index = 0; index < glyphRun.GlyphAdvances.Length; index++)
                     {
-                        break;
+                        var advance = glyphRun.GlyphAdvances[index];
+                    
+                        if (currentWidth + advance > availableWidth)
+                        {
+                            break;
+                        }
+
+                        currentWidth += advance;
+
+                        glyphCount++;
                     }
+                }
+                else
+                {
+                    for (var index = glyphRun.GlyphAdvances.Length - 1; index > 0; index--)
+                    {
+                        var advance = glyphRun.GlyphAdvances[index];
+                    
+                        if (currentWidth + advance > availableWidth)
+                        {
+                            break;
+                        }
 
-                    currentWidth += advance;
+                        currentWidth += advance;
 
-                    glyphCount++;
+                        glyphCount++;
+                    }
                 }
             }
 
@@ -422,7 +462,7 @@ namespace Avalonia.Media.TextFormatting
                             }
                             else
                             {
-                                currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+                                currentPosition = currentLength + measuredLength;
                             }
 
                             breakFound = true;
@@ -475,24 +515,14 @@ namespace Avalonia.Media.TextFormatting
 
             var remainingCharacters = splitResult.Second;
 
-            if (currentLineBreak?.RemainingCharacters != null)
+            var lineBreak = remainingCharacters?.Count > 0 ? new TextLineBreak(remainingCharacters) : null;
+
+            if (lineBreak is null && currentLineBreak.TextEndOfLine != null)
             {
-                if (remainingCharacters != null)
-                {
-                    remainingCharacters.AddRange(currentLineBreak.RemainingCharacters);
-                }
-                else
-                {
-                    remainingCharacters = new List<ShapedTextCharacters>(currentLineBreak.RemainingCharacters);
-                }
+                lineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine);
             }
 
-            var lineBreak = remainingCharacters != null && remainingCharacters.Count > 0 ?
-                new TextLineBreak(remainingCharacters) :
-                null;
-
-            return new TextLineImpl(splitResult.First, textRange, paragraphWidth, paragraphProperties,
-                lineBreak);
+            return new TextLineImpl(splitResult.First, textRange, paragraphWidth, paragraphProperties, lineBreak);
         }
 
         /// <summary>

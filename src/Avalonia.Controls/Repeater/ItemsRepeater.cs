@@ -441,9 +441,9 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
         }
 
-        internal IControl GetElementImpl(int index, bool forceCreate, bool supressAutoRecycle)
+        internal IControl GetElementImpl(int index, bool forceCreate, bool suppressAutoRecycle)
         {
-            var element = _viewManager.GetElement(index, forceCreate, supressAutoRecycle);
+            var element = _viewManager.GetElement(index, forceCreate, suppressAutoRecycle);
             return element;
         }
 
@@ -588,13 +588,13 @@ namespace Avalonia.Controls
                 throw new AvaloniaInternalException("Cannot set ItemsSourceView during layout.");
             }
 
-            ItemsSourceView?.Dispose();
-            ItemsSourceView = newValue;
-
             if (oldValue != null)
             {
                 oldValue.CollectionChanged -= OnItemsSourceViewChanged;
             }
+
+            ItemsSourceView?.Dispose();
+            ItemsSourceView = newValue;
 
             if (newValue != null)
             {

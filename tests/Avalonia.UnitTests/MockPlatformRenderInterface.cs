@@ -52,6 +52,16 @@ namespace Avalonia.UnitTests
             return new MockStreamGeometryImpl();
         }
 
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
         public IWriteableBitmapImpl CreateWriteableBitmap(
             PixelSize size,
             Vector dpi,
@@ -64,6 +74,28 @@ namespace Avalonia.UnitTests
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return Mock.Of<IBitmapImpl>();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
+        {
+            throw new NotImplementedException();
         }
 
         public IBitmapImpl LoadBitmap(string fileName)
