@@ -1,71 +1,42 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 
 namespace Avalonia.Animation.Animators
 {
     /// <summary>
-    /// Animator that handles <see cref="SolidColorBrush"/>. 
+    /// Animator that handles <see cref="SolidColorBrush"/> values. 
     /// </summary>
-    public class SolidColorBrushAnimator : Animator<SolidColorBrush>
+    public class ISolidColorBrushAnimator : Animator<ISolidColorBrush>
     {
-        private ColorAnimator _colorAnimator;
-
-        private void InitializeColorAnimator()
+        public override ISolidColorBrush Interpolate(double progress, ISolidColorBrush oldValue, ISolidColorBrush newValue)
         {
-            _colorAnimator = new ColorAnimator();
-
-            foreach (AnimatorKeyFrame keyframe in this)
+            if (oldValue is null || newValue is null)
             {
-                _colorAnimator.Add(keyframe);
+                return oldValue;
             }
 
-            _colorAnimator.Property = SolidColorBrush.ColorProperty;
+            return new ImmutableSolidColorBrush(ColorAnimator.InterpolateCore(progress, oldValue.Color, newValue.Color));
         }
 
-        public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
+        public override IDisposable BindAnimation(Animatable control, IObservable<ISolidColorBrush> instance)
         {
-            // Preprocess keyframe values to Color if the xaml parser converts them to ISCB.
-            foreach (var keyframe in this)
-            {
-                if (keyframe.Value is ISolidColorBrush colorBrush)
-                {
-                    keyframe.Value = colorBrush.Color;
-                }
-                else
-                {
-                    return Disposable.Empty;
-                }
-            }
-
-            SolidColorBrush finalTarget;
-            var targetVal = control.GetValue(Property);
-            if (targetVal is null)
-            {
-                finalTarget = new SolidColorBrush(Colors.Transparent);
-                control.SetValue(Property, finalTarget);
-            }
-            else if (targetVal is ImmutableSolidColorBrush immutableSolidColorBrush)
-            {
-                finalTarget = new SolidColorBrush(immutableSolidColorBrush.Color);
-                control.SetValue(Property, finalTarget);
-            }
-            else if (targetVal is ISolidColorBrush)
-            {
-                finalTarget = targetVal as SolidColorBrush;
-            }
-            else
-            {
-                return Disposable.Empty;
-            }
-
-            if (_colorAnimator == null)
-                InitializeColorAnimator();
-
-            return _colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
+            return control.Bind((AvaloniaProperty<IBrush>)Property, instance, BindingPriority.Animation);
         }
+    }
+    
+    [Obsolete]    
+    public class SolidColorBrushAnimator : Animator<SolidColorBrush>
+    {    
+        public override SolidColorBrush Interpolate(double progress, SolidColorBrush oldValue, SolidColorBrush newValue)
+        {
+            if (oldValue is null || newValue is null)
+            {
+                return oldValue;
+            }
 
-        public override SolidColorBrush Interpolate(double p, SolidColorBrush o, SolidColorBrush n) => null;
+            return new SolidColorBrush(ColorAnimator.InterpolateCore(progress, oldValue.Color, newValue.Color));
+        }
     }
 }
