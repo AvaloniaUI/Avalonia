@@ -4,6 +4,11 @@ using Avalonia.Animation.Easings;
 
 namespace Avalonia.Animation
 {
+    /// <summary>
+    /// Transition observable based on an <see cref="Animator{T}"/> producing a value.
+    /// </summary>
+    /// <typeparam name="T">Type of the transitioned value.</typeparam>
+    /// <typeparam name="TAnimator">Type of the animator.</typeparam>
     public class AnimatorTransitionObservable<T, TAnimator> : TransitionObservableBase<T> where TAnimator : Animator<T>
     {
         private readonly TAnimator _animator;
@@ -11,7 +16,7 @@ namespace Avalonia.Animation
         private readonly T _oldValue;
         private readonly T _newValue;
 
-        public AnimatorTransitionObservable(TAnimator animator, IObservable<double> progress, Easing easing, T oldValue, T newValue) : base(progress)
+        public AnimatorTransitionObservable(TAnimator animator, IObservable<double> progress, Easing easing, T oldValue, T newValue) : base(progress, easing)
         {
             _animator = animator;
             _easing = easing;
@@ -21,8 +26,6 @@ namespace Avalonia.Animation
 
         protected override T ProduceValue(double progress)
         {
-            progress = _easing.Ease(progress);
-
             return _animator.Interpolate(progress, _oldValue, _newValue);
         }
     }

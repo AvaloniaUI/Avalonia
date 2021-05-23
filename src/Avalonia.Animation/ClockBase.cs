@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reactive.Linq;
-using System.Text;
 using Avalonia.Reactive;
 
 namespace Avalonia.Animation
@@ -58,7 +55,7 @@ namespace Avalonia.Animation
             return _observable.Subscribe(observer);
         }
 
-        private class ClockObservable : LightweightObservableBase<TimeSpan>
+        private sealed class ClockObservable : LightweightObservableBase<TimeSpan>
         {
             public bool HasSubscriptions { get; private set; }
             public void Pulse(TimeSpan time) => PublishNext(time);

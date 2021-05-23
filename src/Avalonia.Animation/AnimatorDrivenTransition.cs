@@ -3,6 +3,11 @@ using Avalonia.Animation.Animators;
 
 namespace Avalonia.Animation
 {
+    /// <summary>
+    /// <see cref="Transition{T}"/> using an <see cref="Animator{T}"/> to transition between values.
+    /// </summary>
+    /// <typeparam name="T">Type of the transitioned value.</typeparam>
+    /// <typeparam name="TAnimator">Type of the animator.</typeparam>
     public abstract class AnimatorDrivenTransition<T, TAnimator> : Transition<T> where TAnimator : Animator<T>, new()
     {
         private static readonly TAnimator s_animator = new TAnimator();
