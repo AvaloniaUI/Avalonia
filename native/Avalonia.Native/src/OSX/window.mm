@@ -265,6 +265,11 @@ public:
             
             [Window setContentSize:NSSize{x, y}];
             
+            
+            // Forces the shadow to invalidate on resize.
+            [Window setContentView: nullptr];
+            [Window setContentView: StandardContainer];
+            
             return S_OK;
         }
     }
