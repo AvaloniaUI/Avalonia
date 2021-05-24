@@ -310,7 +310,7 @@ namespace Avalonia.Rendering.SceneGraph
                         clipped = !node.GeometryClip.FillContains(controlPoint.Value);
                     }
 
-                    if (!clipped && node.Visual is ICustomHitTest custom)
+                    if (!clipped && node.Visual is ICustomSimpleHitTest custom)
                     {
                         clipped = !custom.HitTest(_point);
                     }
