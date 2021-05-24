@@ -257,7 +257,7 @@ namespace Avalonia.Rendering.SceneGraph
                     if (childCount == 0 || wasVisited)
                     {
                         if ((wasVisited || FilterAndClip(node, ref clip)) &&
-                            (node.Visual is ICustomSimpleHitTest custom ? custom.HitTest(_point) : node.HitTest(_point)))
+                            (node.Visual is ICustomHitTest custom ? custom.HitTest(_point) : node.HitTest(_point)))
                         {
                             _current = node.Visual;
 
@@ -310,7 +310,7 @@ namespace Avalonia.Rendering.SceneGraph
                         clipped = !node.GeometryClip.FillContains(controlPoint.Value);
                     }
 
-                    if (!clipped && node.Visual is ICustomSimpleHitTest custom)
+                    if (!clipped && node.Visual is ICustomHitTest custom)
                     {
                         clipped = !custom.HitTest(_point);
                     }
