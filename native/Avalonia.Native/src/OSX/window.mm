@@ -263,12 +263,8 @@ public:
                 BaseEvents->Resized(AvnSize{x,y});
             }
             
+            [StandardContainer setFrameSize:NSSize{x,y}];
             [Window setContentSize:NSSize{x, y}];
-            
-            
-            // Forces the shadow to invalidate on resize.
-            [Window setContentView: nullptr];
-            [Window setContentView: StandardContainer];
             
             return S_OK;
         }
@@ -2250,6 +2246,7 @@ protected:
         {
             if (Window != nullptr)
             {
+                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             
                 [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
