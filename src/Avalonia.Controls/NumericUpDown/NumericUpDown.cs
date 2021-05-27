@@ -119,6 +119,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<NumericUpDown>();
 
+        /// <summary>
+        /// Defines the <see cref="DecimalPlaces"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> DecimalPlacesProperty =
+            AvaloniaProperty.Register<NumericUpDown, int>(nameof(DecimalPlaces), 2);
+
         private IDisposable _textBoxTextChangedSubscription;
 
         private double _value;
@@ -259,6 +265,15 @@ namespace Avalonia.Controls
                 value = OnCoerceValue(value);
                 SetAndRaise(ValueProperty, ref _value, value);
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of decimal places to display in the up-down control.
+        /// </summary>
+        public int DecimalPlaces
+        {
+            get { return GetValue(DecimalPlacesProperty); }
+            set { SetValue(DecimalPlacesProperty, value); }
         }
 
         /// <summary>
@@ -620,7 +635,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnIncrement()
         {
-            var result = Value + Increment;
+            var result = Math.Round(Value + Increment, DecimalPlaces);
             Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
@@ -629,7 +644,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnDecrement()
         {
-            var result = Value - Increment;
+            var result = Math.Round(Value - Increment, DecimalPlaces);
             Value = MathUtilities.Clamp(result, Minimum, Maximum);
         }
 
