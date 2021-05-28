@@ -1,22 +1,25 @@
 ﻿using System;
 using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
-using Avalonia.Media;
 
 namespace Avalonia.Diagnostics.Converters
 {
-    internal class BoolToBrushConverter : IValueConverter
+    internal class EnumToCheckedConverter : IValueConverter
     {
-        public IBrush Brush { get; set; }
-
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)value ? Brush : Brushes.Transparent;
+            return Equals(value, parameter);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            if (value is bool isChecked && isChecked)
+            {
+                return parameter;
+            }
+
+            return BindingOperations.DoNothing;
         }
     }
 }

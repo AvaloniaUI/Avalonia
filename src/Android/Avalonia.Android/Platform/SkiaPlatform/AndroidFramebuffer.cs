@@ -32,7 +32,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             RowBytes = buffer.stride * (Format == PixelFormat.Rgb565 ? 2 : 4);
             Address = buffer.bits;
 
-            Dpi = scaling * new Vector(96, 96);
+            Dpi = new Vector(96, 96) * scaling;
         }
 
         public void Dispose()

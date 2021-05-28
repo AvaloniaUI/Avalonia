@@ -79,7 +79,7 @@ namespace Avalonia.PropertyStore
 
         public void OnError(Exception error)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("BindingEntry.OnError is not implemented", error);
         }
 
         public void OnNext(BindingValue<T> value)
@@ -127,8 +127,8 @@ namespace Avalonia.PropertyStore
             sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
                 (AvaloniaProperty<T>)property,
-                oldValue.GetValueOrDefault<T>(),
-                newValue.GetValueOrDefault<T>(),
+                oldValue.Cast<T>(),
+                newValue.Cast<T>(),
                 Priority));
         }
 

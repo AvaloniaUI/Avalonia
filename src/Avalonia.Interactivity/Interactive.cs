@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Interactivity
 {
     /// <summary>
@@ -155,8 +157,8 @@ namespace Avalonia.Interactivity
             var result = new EventRoute(e);
             var hasClassHandlers = e.HasRaisedSubscriptions;
 
-            if (e.RoutingStrategies.HasFlagCustom(RoutingStrategies.Bubble) ||
-                e.RoutingStrategies.HasFlagCustom(RoutingStrategies.Tunnel))
+            if (e.RoutingStrategies.HasAllFlags(RoutingStrategies.Bubble) ||
+                e.RoutingStrategies.HasAllFlags(RoutingStrategies.Tunnel))
             {
                 IInteractive? element = this;
 

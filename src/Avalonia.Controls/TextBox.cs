@@ -17,6 +17,9 @@ using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Represents a control that can be used to display or edit unformatted text.
+    /// </summary>
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
@@ -175,16 +178,12 @@ namespace Avalonia.Controls
                 this.GetObservable(TextWrappingProperty),
                 (acceptsReturn, wrapping) =>
                 {
-                    if (acceptsReturn)
+                    if (wrapping != TextWrapping.NoWrap)
                     {
-                        return wrapping != TextWrapping.Wrap ?
-                            ScrollBarVisibility.Auto :
-                            ScrollBarVisibility.Disabled;
+                        return ScrollBarVisibility.Disabled;
                     }
-                    else
-                    {
-                        return ScrollBarVisibility.Hidden;
-                    }
+
+                    return acceptsReturn ? ScrollBarVisibility.Auto : ScrollBarVisibility.Hidden;
                 });
             this.Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
@@ -264,7 +263,11 @@ namespace Avalonia.Controls
             set
             {
                 value = CoerceCaretIndex(value);
-                SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+                var changed = SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
+                if (changed)
+                {
+                    UpdateCommandStates();
+                }
                 if (SelectionStart == SelectionEnd)
                 {
                     CaretIndex = SelectionStart;
@@ -282,7 +285,11 @@ namespace Avalonia.Controls
             set
             {
                 value = CoerceCaretIndex(value);
-                SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
+                var changed = SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
+                if (changed)
+                {
+                    UpdateCommandStates();
+                }
                 if (SelectionStart == SelectionEnd)
                 {
                     CaretIndex = SelectionEnd;
@@ -492,7 +499,8 @@ namespace Avalonia.Controls
         {
             base.OnLostFocus(e);
 
-            if (ContextMenu == null || !ContextMenu.IsOpen)
+            if ((ContextFlyout == null || !ContextFlyout.IsOpen) &&
+                (ContextMenu == null || !ContextMenu.IsOpen))
             {
                 ClearSelection();
                 RevealPassword = false;
@@ -600,7 +608,7 @@ namespace Avalonia.Controls
             var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
-            bool DetectSelection() => e.KeyModifiers.HasFlagCustom(keymap.SelectionModifiers);
+            bool DetectSelection() => e.KeyModifiers.HasAllFlags(keymap.SelectionModifiers);
 
             if (Match(keymap.SelectAll))
             {
@@ -718,7 +726,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                bool hasWholeWordModifiers = modifiers.HasFlagCustom(keymap.WholeWordTextActionModifiers);
+                bool hasWholeWordModifiers = modifiers.HasAllFlags(keymap.WholeWordTextActionModifiers);
                 switch (e.Key)
                 {
                     case Key.Left:

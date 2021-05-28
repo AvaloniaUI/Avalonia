@@ -32,6 +32,11 @@ namespace Avalonia.Animation.Animators
 
         public override Color Interpolate(double progress, Color oldValue, Color newValue)
         {
+            return InterpolateCore(progress, oldValue, newValue);
+        }
+
+        internal static Color InterpolateCore(double progress, Color oldValue, Color newValue)
+        {
             // normalize sRGB values.
             var oldA = oldValue.A / 255d;
             var oldR = oldValue.R / 255d;
@@ -59,7 +64,7 @@ namespace Avalonia.Animation.Animators
             var b = oldB + progress * (newB - oldB);
 
             // convert back to sRGB in the [0..255] range
-            a = a * 255d;
+            a *= 255d;
             r = OECF_sRGB(r) * 255d;
             g = OECF_sRGB(g) * 255d;
             b = OECF_sRGB(b) * 255d;

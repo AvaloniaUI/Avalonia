@@ -668,10 +668,11 @@ namespace Avalonia.Controls
                 
                 Owner = parent;
                 parent?.AddChild(this, false);
-
-                PlatformImpl?.Show(ShowActivated);
-                Renderer?.Start();
+                
                 SetWindowStartupLocation(Owner?.PlatformImpl);
+                
+                PlatformImpl?.Show(ShowActivated);
+                Renderer?.Start();                
             }
             OnOpened(EventArgs.Empty);
         }
@@ -739,6 +740,9 @@ namespace Avalonia.Controls
                 PlatformImpl?.SetParent(owner.PlatformImpl);
                 Owner = owner;
                 owner.AddChild(this, true);
+                
+                SetWindowStartupLocation(owner.PlatformImpl);
+                
                 PlatformImpl?.Show(ShowActivated);
 
                 Renderer?.Start();
@@ -755,8 +759,6 @@ namespace Avalonia.Controls
 
                 OnOpened(EventArgs.Empty);
             }
-
-            SetWindowStartupLocation(owner.PlatformImpl);
 
             return result.Task;
         }
@@ -859,19 +861,19 @@ namespace Avalonia.Controls
             var constraint = clientSize;
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
 
-            if (sizeToContent.HasFlagCustom(SizeToContent.Width))
+            if (sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 constraint = constraint.WithWidth(maxAutoSize.Width);
             }
 
-            if (sizeToContent.HasFlagCustom(SizeToContent.Height))
+            if (sizeToContent.HasAllFlags(SizeToContent.Height))
             {
                 constraint = constraint.WithHeight(maxAutoSize.Height);
             }
 
             var result = base.MeasureOverride(constraint);
 
-            if (!sizeToContent.HasFlagCustom(SizeToContent.Width))
+            if (!sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 if (!double.IsInfinity(availableSize.Width))
                 {
@@ -883,7 +885,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (!sizeToContent.HasFlagCustom(SizeToContent.Height))
+            if (!sizeToContent.HasAllFlags(SizeToContent.Height))
             {
                 if (!double.IsInfinity(availableSize.Height))
                 {
