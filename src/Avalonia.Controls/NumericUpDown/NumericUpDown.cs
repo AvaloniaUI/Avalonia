@@ -45,6 +45,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="CultureInfo"/> property.
         /// </summary>
+        [Obsolete]
         public static readonly DirectProperty<NumericUpDown, CultureInfo> CultureInfoProperty =
             AvaloniaProperty.RegisterDirect<NumericUpDown, CultureInfo>(nameof(CultureInfo), o => o.CultureInfo,
                 (o, v) => o.CultureInfo = v, CultureInfo.CurrentCulture);
@@ -186,6 +187,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the current CultureInfo.
         /// </summary>
+        [Obsolete("CultureInfo is obsolete, please use NumberFormat instead.")]
         public CultureInfo CultureInfo
         {
             get { return _cultureInfo; }
