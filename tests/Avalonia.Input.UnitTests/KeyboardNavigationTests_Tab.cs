@@ -13,6 +13,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -49,6 +50,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -85,6 +87,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -122,6 +125,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -165,6 +169,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -193,6 +198,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -222,6 +228,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -263,6 +270,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     (next = new Button { Name = "Button1" }),
@@ -282,6 +290,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -324,6 +333,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -361,6 +371,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -398,6 +409,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -434,6 +446,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -471,6 +484,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -509,6 +523,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     (container = new StackPanel
@@ -548,6 +563,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -586,6 +602,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     (container = new StackPanel
@@ -625,6 +642,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -661,6 +679,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -697,6 +716,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -725,6 +745,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -767,6 +788,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -828,6 +850,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -865,6 +888,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -902,6 +926,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -938,6 +963,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -975,6 +1001,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel
@@ -1013,6 +1040,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     (container = new StackPanel
@@ -1052,6 +1080,7 @@ namespace Avalonia.Input.UnitTests
 
             var top = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     new StackPanel

@@ -64,7 +64,13 @@ namespace Avalonia.Input
                     }
                     else if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
                     {
-                        return TabNavigation.GetNextInTabOrder((IInputElement)customHandler, direction, true);
+                        var e = (IInputElement)customHandler;
+                        return direction switch
+                        {
+                            NavigationDirection.Next => TabNavigation.GetNextTab(e, false),
+                            NavigationDirection.Previous => TabNavigation.GetPrevTab(e, null, false),
+                            _ => throw new NotSupportedException(),
+                        };
                     }
                     else
                     {
@@ -73,14 +79,12 @@ namespace Avalonia.Input
                 }
             }
 
-            if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
+            return direction switch
             {
-                return TabNavigation.GetNextInTabOrder(element, direction);
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
+                NavigationDirection.Next => TabNavigation.GetNextTab(element, false),
+                NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
+                _ => throw new NotSupportedException(),
+            };
         }
 
         /// <summary>

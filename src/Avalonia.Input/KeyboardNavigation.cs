@@ -11,7 +11,8 @@ namespace Avalonia.Input
         public static readonly AttachedProperty<int> TabIndexProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, int>(
                 "TabIndex",
-                typeof(KeyboardNavigation));
+                typeof(KeyboardNavigation),
+                int.MaxValue);
 
         /// <summary>
         /// Defines the TabNavigation attached property.
