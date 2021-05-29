@@ -9,7 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class FilterViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         private readonly Dictionary<string, string> _errors = new Dictionary<string, string>();
-        private string _propertyString = string.Empty;
+        private string _filterString = string.Empty;
         private bool _useRegexFilter, _useCaseSensitiveFilter, _useWholeWordFilter;
         private string _processedFilter;
         private Regex _filterRegex;
@@ -59,10 +59,10 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public string FilterString
         {
-            get => _propertyString;
+            get => _filterString;
             set
             {
-                if (RaiseAndSetIfChanged(ref _propertyString, value))
+                if (RaiseAndSetIfChanged(ref _filterString, value))
                 {
                     UpdateFilterRegex();
                     RefreshFilter?.Invoke(this, EventArgs.Empty);
