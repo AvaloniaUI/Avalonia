@@ -1,28 +1,26 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class TreePageViewModel : ViewModelBase, IDisposable, INotifyDataErrorInfo
+    internal class TreePageViewModel : ViewModelBase, IDisposable
     {
-        private readonly Dictionary<string, string> _errors = new Dictionary<string, string>();
         private TreeNode _selectedNode;
         private ControlDetailsViewModel _details;
-        private string _propertyFilter = string.Empty;
-        private bool _useRegexFilter;
 
         public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
         {
             MainView = mainView;
             Nodes = nodes;
+
+            PropertiesFilter = new FilterViewModel();
+            PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView.Refresh();
         }
 
         public MainViewModel MainView { get; }
+
+        public FilterViewModel PropertiesFilter { get; }
 
         public TreeNode[] Nodes { get; protected set; }
 
@@ -57,63 +55,6 @@ namespace Avalonia.Diagnostics.ViewModels
                 if (RaiseAndSetIfChanged(ref _details, value))
                 {
                     oldValue?.Dispose();
-                }
-            }
-        }
-
-        public Regex FilterRegex { get; set; }
-
-        private void UpdateFilterRegex()
-        {
-            void ClearError()
-            {
-                if (_errors.Remove(nameof(PropertyFilter)))
-                {
-                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(PropertyFilter)));
-                }
-            }
-
-            if (UseRegexFilter)
-            {
-                try
-                {
-                    FilterRegex = new Regex(PropertyFilter, RegexOptions.Compiled);
-                    ClearError();
-                }
-                catch (Exception exception)
-                {
-                    _errors[nameof(PropertyFilter)] = exception.Message;
-                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(PropertyFilter)));
-                }
-            }
-            else
-            {
-                ClearError();
-            }
-        }
-
-        public string PropertyFilter
-        {
-            get => _propertyFilter;
-            set
-            {
-                if (RaiseAndSetIfChanged(ref _propertyFilter, value))
-                {
-                    UpdateFilterRegex();
-                    Details.PropertiesView.Refresh();
-                }
-            }
-        }
-
-        public bool UseRegexFilter
-        {
-            get => _useRegexFilter;
-            set
-            {
-                if (RaiseAndSetIfChanged(ref _useRegexFilter, value))
-                {
-                    UpdateFilterRegex();
-                    Details.PropertiesView.Refresh();
                 }
             }
         }
@@ -194,17 +135,5 @@ namespace Avalonia.Diagnostics.ViewModels
 
             return null;
         }
-
-        public IEnumerable GetErrors(string propertyName)
-        {
-            if (_errors.TryGetValue(propertyName, out var error))
-            {
-                yield return error;
-            }
-        }
-
-        public bool HasErrors => _errors.Count > 0;
-
-        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
     }
 }

@@ -1,0 +1,124 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Text.RegularExpressions;
+
+namespace Avalonia.Diagnostics.ViewModels
+{
+    internal class FilterViewModel : ViewModelBase, INotifyDataErrorInfo
+    {
+        private readonly Dictionary<string, string> _errors = new Dictionary<string, string>();
+        private string _propertyFilter = string.Empty;
+        private bool _useRegexFilter, _useCaseSensitiveFilter, _useWholeWordFilter;
+        private string _processedFilter;
+        private Regex _filterRegex;
+
+        public event EventHandler RefreshFilter;
+
+        public bool Filter(string input)
+        {
+            return _filterRegex?.IsMatch(input) ?? true;
+        }
+
+        private void UpdateFilterRegex()
+        {
+            void ClearError()
+            {
+                if (_errors.Remove(nameof(PropertyFilter)))
+                {
+                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(PropertyFilter)));
+                }
+            }
+
+            _processedFilter = PropertyFilter.Trim();
+
+            try
+            {
+                var options = RegexOptions.Compiled;
+                var pattern = UseRegexFilter
+                    ? _processedFilter : Regex.Escape(_processedFilter);
+                if (!UseCaseSensitiveFilter)
+                {
+                    options |= RegexOptions.IgnoreCase;
+                }
+                if (UseWholeWordFilter)
+                {
+                    pattern = $"\\b(?:{pattern})\\b";
+                }
+
+                _filterRegex = new Regex(pattern, options);
+                ClearError();
+            }
+            catch (Exception exception)
+            {
+                _errors[nameof(PropertyFilter)] = exception.Message;
+                ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(PropertyFilter)));
+            }
+        }
+
+        public string PropertyFilter
+        {
+            get => _propertyFilter;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _propertyFilter, value))
+                {
+                    UpdateFilterRegex();
+                    RefreshFilter?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public bool UseRegexFilter
+        {
+            get => _useRegexFilter;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _useRegexFilter, value))
+                {
+                    UpdateFilterRegex();
+                    RefreshFilter?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public bool UseCaseSensitiveFilter
+        {
+            get => _useCaseSensitiveFilter;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _useCaseSensitiveFilter, value))
+                {
+                    UpdateFilterRegex();
+                    RefreshFilter?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public bool UseWholeWordFilter
+        {
+            get => _useWholeWordFilter;
+            set
+            {
+                if (RaiseAndSetIfChanged(ref _useWholeWordFilter, value))
+                {
+                    UpdateFilterRegex();
+                    RefreshFilter?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public IEnumerable GetErrors(string propertyName)
+        {
+            if (_errors.TryGetValue(propertyName, out var error))
+            {
+                yield return error;
+            }
+        }
+
+        public bool HasErrors => _errors.Count > 0;
+
+        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+    }
+}

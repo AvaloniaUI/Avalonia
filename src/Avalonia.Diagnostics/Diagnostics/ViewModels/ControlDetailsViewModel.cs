@@ -357,17 +357,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private bool FilterProperty(object arg)
         {
-            if (!string.IsNullOrWhiteSpace(TreePage.PropertyFilter) && arg is PropertyViewModel property)
-            {
-                if (TreePage.UseRegexFilter)
-                {
-                    return TreePage.FilterRegex?.IsMatch(property.Name) ?? true;
-                }
-
-                return property.Name.IndexOf(TreePage.PropertyFilter, StringComparison.OrdinalIgnoreCase) != -1;
-            }
-
-            return true;
+            return !(arg is PropertyViewModel property) || TreePage.PropertiesFilter.Filter(property.Name);
         }
 
         private class PropertyComparer : IComparer<PropertyViewModel>
