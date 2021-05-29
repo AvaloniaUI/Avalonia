@@ -78,6 +78,19 @@ namespace Avalonia.Input.Navigation
             return null;
         }
 
+        public static IInputElement? GetNextTabOutside(ICustomKeyboardNavigation e)
+        {
+            if (e is IInputElement container)
+            {
+                var last = GetLastInTree(container);
+
+                if (last is object)
+                    return GetNextTab(last, false);
+            }
+
+            return null;
+        }
+
         public static IInputElement? GetPrevTab(IInputElement? e, IInputElement? container, bool goDownOnly)
         {
             if (e is null && container is null)
@@ -166,6 +179,19 @@ namespace Avalonia.Input.Navigation
             if (!goDownOnly && GetParent(container) != null)
             {
                 return GetPrevTab(container, null, false);
+            }
+
+            return null;
+        }
+
+        public static IInputElement? GetPrevTabOutside(ICustomKeyboardNavigation e)
+        {
+            if (e is IInputElement container)
+            {
+                var first = GetFirstChild(container);
+
+                if (first is object)
+                    return GetPrevTab(first, null, false);
             }
 
             return null;

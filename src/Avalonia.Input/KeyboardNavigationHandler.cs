@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Input.Navigation;
 using Avalonia.VisualTree;
@@ -48,43 +49,24 @@ namespace Avalonia.Input
         {
             element = element ?? throw new ArgumentNullException(nameof(element));
 
-            var customHandler = element.GetSelfAndVisualAncestors()
-                .OfType<ICustomKeyboardNavigation>()
-                .FirstOrDefault();
+            // If there's a custom keyboard navigation handler as an ancestor, use that.
+            var custom = element.FindAncestorOfType<ICustomKeyboardNavigation>(true);
+            if (custom is object && HandlePreCustomNavigation(custom, element, direction, out var ce))
+                return ce;
 
-            if (customHandler != null)
-            {
-                var (handled, next) = customHandler.GetNext(element, direction);
-
-                if (handled)
-                {
-                    if (next != null)
-                    {
-                        return next;
-                    }
-                    else if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
-                    {
-                        var e = (IInputElement)customHandler;
-                        return direction switch
-                        {
-                            NavigationDirection.Next => TabNavigation.GetNextTab(e, false),
-                            NavigationDirection.Previous => TabNavigation.GetPrevTab(e, null, false),
-                            _ => throw new NotSupportedException(),
-                        };
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            return direction switch
+            var result = direction switch
             {
                 NavigationDirection.Next => TabNavigation.GetNextTab(element, false),
                 NavigationDirection.Previous => TabNavigation.GetPrevTab(element, null, false),
                 _ => throw new NotSupportedException(),
             };
+
+            // If there wasn't a custom navigation handler as an ancestor of the current element,
+            // but there is one as an ancestor of the new element, use that.
+            if (custom is null && HandlePostCustomNavigation(element, result, direction, out ce))
+                return ce;
+
+            return result;
         }
 
         /// <summary>
@@ -94,7 +76,7 @@ namespace Avalonia.Input
         /// <param name="direction">The direction to move.</param>
         /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         public void Move(
-            IInputElement element, 
+            IInputElement element,
             NavigationDirection direction,
             KeyModifiers keyModifiers = KeyModifiers.None)
         {
@@ -127,6 +109,71 @@ namespace Avalonia.Input
                 Move(current, direction, e.KeyModifiers);
                 e.Handled = true;
             }
+        }
+
+        private static bool HandlePreCustomNavigation(
+            ICustomKeyboardNavigation customHandler,
+            IInputElement element,
+            NavigationDirection direction,
+            [NotNullWhen(true)] out IInputElement? result)
+        {
+            if (customHandler != null)
+            {
+                var (handled, next) = customHandler.GetNext(element, direction);
+
+                if (handled)
+                {
+                    if (next != null)
+                    {
+                        result = next;
+                        return true;
+                    }
+                    else if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
+                    {
+                        var r = direction switch
+                        {
+                            NavigationDirection.Next => TabNavigation.GetNextTabOutside(customHandler),
+                            NavigationDirection.Previous => TabNavigation.GetPrevTabOutside(customHandler),
+                            _ => throw new NotSupportedException(),
+                        };
+
+                        if (r is object)
+                        {
+                            result = r;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            result = null;
+            return false;
+        }
+
+        private static bool HandlePostCustomNavigation(
+            IInputElement element,
+            IInputElement? newElement,
+            NavigationDirection direction,
+            [NotNullWhen(true)] out IInputElement? result)
+        {
+            if (newElement is object)
+            {
+                var customHandler = newElement.FindAncestorOfType<ICustomKeyboardNavigation>(true);
+
+                if (customHandler is object)
+                {
+                    var (handled, next) = customHandler.GetNext(element, direction);
+
+                    if (handled && next is object)
+                    {
+                        result = next;
+                        return true;
+                    }
+                }
+            }
+
+            result = null;
+            return false;
         }
     }
 }
