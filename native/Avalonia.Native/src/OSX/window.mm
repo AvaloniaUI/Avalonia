@@ -263,6 +263,7 @@ public:
                 BaseEvents->Resized(AvnSize{x,y});
             }
             
+            [StandardContainer setFrameSize:NSSize{x,y}];
             [Window setContentSize:NSSize{x, y}];
             
             return S_OK;
@@ -2245,6 +2246,7 @@ protected:
         {
             if (Window != nullptr)
             {
+                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             
                 [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
