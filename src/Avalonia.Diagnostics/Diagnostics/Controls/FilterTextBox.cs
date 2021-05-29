@@ -12,12 +12,10 @@ namespace Avalonia.Diagnostics.Controls
                 o => o.UseRegexFilter, (o, v) => o.UseRegexFilter = v,
                 defaultBindingMode: BindingMode.TwoWay);
 
-
         public static readonly DirectProperty<FilterTextBox, bool> UseCaseSensitiveFilterProperty =
             AvaloniaProperty.RegisterDirect<FilterTextBox, bool>(nameof(UseCaseSensitiveFilter),
                 o => o.UseCaseSensitiveFilter, (o, v) => o.UseCaseSensitiveFilter = v,
                 defaultBindingMode: BindingMode.TwoWay);
-
 
         public static readonly DirectProperty<FilterTextBox, bool> UseWholeWordFilterProperty =
             AvaloniaProperty.RegisterDirect<FilterTextBox, bool>(nameof(UseWholeWordFilter),
