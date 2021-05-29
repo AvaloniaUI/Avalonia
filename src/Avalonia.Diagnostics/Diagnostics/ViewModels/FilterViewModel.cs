@@ -9,7 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class FilterViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         private readonly Dictionary<string, string> _errors = new Dictionary<string, string>();
-        private string _propertyFilter = string.Empty;
+        private string _propertyString = string.Empty;
         private bool _useRegexFilter, _useCaseSensitiveFilter, _useWholeWordFilter;
         private string _processedFilter;
         private Regex _filterRegex;
@@ -25,13 +25,13 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             void ClearError()
             {
-                if (_errors.Remove(nameof(PropertyFilter)))
+                if (_errors.Remove(nameof(FilterString)))
                 {
-                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(PropertyFilter)));
+                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(FilterString)));
                 }
             }
 
-            _processedFilter = PropertyFilter.Trim();
+            _processedFilter = FilterString.Trim();
 
             try
             {
@@ -52,17 +52,17 @@ namespace Avalonia.Diagnostics.ViewModels
             }
             catch (Exception exception)
             {
-                _errors[nameof(PropertyFilter)] = exception.Message;
-                ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(PropertyFilter)));
+                _errors[nameof(FilterString)] = exception.Message;
+                ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(FilterString)));
             }
         }
 
-        public string PropertyFilter
+        public string FilterString
         {
-            get => _propertyFilter;
+            get => _propertyString;
             set
             {
-                if (RaiseAndSetIfChanged(ref _propertyFilter, value))
+                if (RaiseAndSetIfChanged(ref _propertyString, value))
                 {
                     UpdateFilterRegex();
                     RefreshFilter?.Invoke(this, EventArgs.Empty);
