@@ -16,11 +16,16 @@ namespace Avalonia.Diagnostics.ViewModels
 
             PropertiesFilter = new FilterViewModel();
             PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView.Refresh();
+
+            SettersFilter = new FilterViewModel();
+            SettersFilter.RefreshFilter += (s, e) => Details?.UpdateStyleFilters();
         }
 
         public MainViewModel MainView { get; }
 
         public FilterViewModel PropertiesFilter { get; }
+
+        public FilterViewModel SettersFilter { get; }
 
         public TreeNode[] Nodes { get; protected set; }
 
@@ -29,18 +34,12 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _selectedNode;
             private set
             {
-                var oldDetails = Details;
-
                 if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
                     Details = value != null ?
                         new ControlDetailsViewModel(this, value.Visual) :
                         null;
-
-                    if (Details != null && oldDetails != null)
-                    {
-                        Details.StyleFilter = oldDetails.StyleFilter;
-                    }
+                    Details?.UpdateStyleFilters();
                 }
             }
         }

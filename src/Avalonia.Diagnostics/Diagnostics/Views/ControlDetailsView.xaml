@@ -67,7 +67,13 @@
             <ToggleButton Margin="2,0,0,0" Grid.Column="3" ToolTip.Tip="Snapshot current styles (Alt+S/Alt+D to enable/disable within debugged window)" Content="Snapshot" IsChecked="{Binding SnapshotStyles}" />
           </Grid>
 
-          <TextBox Grid.Row="1" Margin="2" Grid.Column="0" Watermark="Filter" Text="{Binding StyleFilter}" />
+          <controls:FilterTextBox Grid.Row="1" Margin="2" Grid.Column="0"
+                                  DataContext="{Binding TreePage.SettersFilter}"
+                                  Text="{Binding FilterString}"
+                                  Watermark="Filter setters"
+                                  UseCaseSensitiveFilter="{Binding UseCaseSensitiveFilter}"
+                                  UseWholeWordFilter="{Binding UseWholeWordFilter}"
+                                  UseRegexFilter="{Binding UseRegexFilter}" />
         </Grid>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">

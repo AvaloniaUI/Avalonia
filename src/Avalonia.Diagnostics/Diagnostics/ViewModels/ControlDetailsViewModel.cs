@@ -19,7 +19,6 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly IVisual _control;
         private readonly IDictionary<object, List<PropertyViewModel>> _propertyIndex;
         private AvaloniaPropertyViewModel _selectedProperty;
-        private string _styleFilter;
         private bool _snapshotStyles;
         private bool _showInactiveStyles;
         private string _styleStatus;
@@ -144,12 +143,6 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _selectedProperty, value);
         }
 
-        public string StyleFilter
-        {
-            get => _styleFilter;
-            set => RaiseAndSetIfChanged(ref _styleFilter, value);
-        }
-
         public bool SnapshotStyles
         {
             get => _snapshotStyles;
@@ -174,11 +167,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             base.OnPropertyChanged(e);
 
-            if (e.PropertyName == nameof(StyleFilter))
-            {
-                UpdateStyleFilters();
-            }
-            else if (e.PropertyName == nameof(SnapshotStyles))
+            if (e.PropertyName == nameof(SnapshotStyles))
             {
                 if (!SnapshotStyles)
                 {
@@ -187,19 +176,15 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private void UpdateStyleFilters()
+        public void UpdateStyleFilters()
         {
-            var filter = StyleFilter;
-            bool hasFilter = !string.IsNullOrEmpty(filter);
-
             foreach (var style in AppliedStyles)
             {
                 var hasVisibleSetter = false;
 
                 foreach (var setter in style.Setters)
                 {
-                    setter.IsVisible =
-                        !hasFilter || setter.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0;
+                    setter.IsVisible = TreePage.SettersFilter.Filter(setter.Name);
 
                     hasVisibleSetter |= setter.IsVisible;
                 }
