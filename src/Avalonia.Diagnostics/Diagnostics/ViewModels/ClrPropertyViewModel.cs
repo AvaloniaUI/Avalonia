@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -9,7 +8,10 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _type;
         private object? _value;
 
+#nullable disable
+        // Remove "nullable disable" after MemberNotNull will work on our CI.
         public ClrPropertyViewModel(object o, PropertyInfo property)
+#nullable restore
         {
             _target = o;
             Property = property;
@@ -47,7 +49,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        [MemberNotNull(nameof(_type))]
+        // [MemberNotNull(nameof(_type))]
         public override void Update()
         {
             var val = Property.GetValue(_target);

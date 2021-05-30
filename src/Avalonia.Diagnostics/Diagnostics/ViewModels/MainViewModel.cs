@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
@@ -24,7 +23,10 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
 
+#nullable disable
+        // Remove "nullable disable" after MemberNotNull will work on our CI.
         public MainViewModel(TopLevel root)
+#nullable restore
         {
             _root = root;
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
@@ -85,7 +87,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public ViewModelBase Content
         {
             get { return _content; }
-            [MemberNotNull(nameof(_content))]
+            // [MemberNotNull(nameof(_content))]
             private set
             {
                 if (_content is TreePageViewModel oldTree &&
@@ -116,7 +118,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public int SelectedTab
         {
             get { return _selectedTab; }
-            [MemberNotNull(nameof(_content))]
+            // [MemberNotNull(nameof(_content))]
             set
             {
                 _selectedTab = value;

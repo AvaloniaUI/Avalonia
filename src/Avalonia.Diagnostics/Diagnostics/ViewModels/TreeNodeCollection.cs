@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 using Avalonia.Collections;
 
@@ -15,52 +14,22 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public TreeNodeCollection(TreeNode owner) => Owner = owner;
 
-        public TreeNode this[int index]
-        {
-            get
-            {
-                EnsureInitialized();
-                return _inner[index];
-            }
-        }
+        public TreeNode this[int index] => EnsureInitialized()[index];
 
-        public int Count
-        {
-            get
-            {
-                EnsureInitialized();
-                return _inner.Count;
-            }
-        }
+        public int Count => EnsureInitialized().Count;
 
         protected TreeNode Owner { get; }
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
-            add
-            {
-                EnsureInitialized();
-                _inner.CollectionChanged += value;
-            }
-            remove
-            {
-                EnsureInitialized();
-                _inner.CollectionChanged -= value;
-            }
+            add => EnsureInitialized().CollectionChanged += value;
+            remove => EnsureInitialized().CollectionChanged -= value;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged
         {
-            add
-            {
-                EnsureInitialized();
-                _inner.PropertyChanged += value;
-            }
-            remove
-            {
-                EnsureInitialized();
-                _inner.PropertyChanged -= value;
-            }
+            add => EnsureInitialized().PropertyChanged += value;
+            remove => EnsureInitialized().PropertyChanged -= value;
         }
 
         public virtual void Dispose()
@@ -76,22 +45,21 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public IEnumerator<TreeNode> GetEnumerator()
         {
-            EnsureInitialized();
-            return _inner.GetEnumerator();
+            return EnsureInitialized().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         protected abstract void Initialize(AvaloniaList<TreeNode> nodes);
 
-        [MemberNotNull(nameof(_inner))]
-        private void EnsureInitialized()
+        private AvaloniaList<TreeNode> EnsureInitialized()
         {
             if (_inner is null)
             {
                 _inner = new AvaloniaList<TreeNode>();
                 Initialize(_inner);
             }
+            return _inner;
         }
     }
 }

@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class AvaloniaPropertyViewModel : PropertyViewModel
@@ -10,7 +8,10 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _priority;
         private string _group;
 
+#nullable disable
+        // Remove "nullable disable" after MemberNotNull will work on our CI.
         public AvaloniaPropertyViewModel(AvaloniaObject o, AvaloniaProperty property)
+#nullable restore
         {
             _target = o;
             Property = property;
@@ -47,7 +48,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public override string Group => _group;
 
-        [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
+        // [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
         public override void Update()
         {
             if (Property.IsDirect)
