@@ -6,8 +6,6 @@ using Avalonia.Diagnostics.Views;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
-#nullable enable 
-
 namespace Avalonia.Diagnostics
 {
     public static class DevTools
@@ -74,7 +72,7 @@ namespace Avalonia.Diagnostics
         private static void DevToolsClosed(object sender, EventArgs e)
         {
             var window = (MainWindow)sender;
-            s_open.Remove(window.Root);
+            s_open.Remove(window.Root!);
             window.Closed -= DevToolsClosed;
         }
     }

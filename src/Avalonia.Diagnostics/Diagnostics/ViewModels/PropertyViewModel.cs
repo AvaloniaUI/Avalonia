@@ -18,7 +18,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public abstract string Value { get; set; }
         public abstract void Update();
 
-        protected static string ConvertToString(object value)
+        protected static string ConvertToString(object? value)
         {
             if (value is null)
             {

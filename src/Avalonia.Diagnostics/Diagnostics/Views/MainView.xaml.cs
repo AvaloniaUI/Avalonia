@@ -27,7 +27,11 @@ namespace Avalonia.Diagnostics.Views
 
         public void ToggleConsole()
         {
-            var vm = (MainViewModel)DataContext;
+            var vm = (MainViewModel?)DataContext;
+            if (vm is null)
+            {
+                return;
+            }
 
             if (_consoleHeight == -1)
             {

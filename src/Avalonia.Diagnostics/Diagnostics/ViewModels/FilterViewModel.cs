@@ -11,10 +11,13 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly Dictionary<string, string> _errors = new Dictionary<string, string>();
         private string _filterString = string.Empty;
         private bool _useRegexFilter, _useCaseSensitiveFilter, _useWholeWordFilter;
-        private string _processedFilter;
-        private Regex _filterRegex;
+        private Regex? _filterRegex;
 
-        public event EventHandler RefreshFilter;
+        public event EventHandler? RefreshFilter;
+
+        public bool HasErrors => _errors.Count > 0;
+
+        public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
         public bool Filter(string input)
         {
@@ -31,13 +34,11 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
 
-            _processedFilter = FilterString.Trim();
-
             try
             {
                 var options = RegexOptions.Compiled;
                 var pattern = UseRegexFilter
-                    ? _processedFilter : Regex.Escape(_processedFilter);
+                    ? FilterString.Trim() : Regex.Escape(FilterString.Trim());
                 if (!UseCaseSensitiveFilter)
                 {
                     options |= RegexOptions.IgnoreCase;
@@ -116,9 +117,5 @@ namespace Avalonia.Diagnostics.ViewModels
                 yield return error;
             }
         }
-
-        public bool HasErrors => _errors.Count > 0;
-
-        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
     }
 }

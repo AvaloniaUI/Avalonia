@@ -3,13 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+
 using Avalonia.Collections;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal abstract class TreeNodeCollection : IAvaloniaReadOnlyList<TreeNode>, IDisposable
     {
-        private AvaloniaList<TreeNode> _inner;
+        private AvaloniaList<TreeNode>? _inner;
 
         public TreeNodeCollection(TreeNode owner) => Owner = owner;
 
@@ -35,14 +37,30 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public event NotifyCollectionChangedEventHandler CollectionChanged
         {
-            add => _inner.CollectionChanged += value;
-            remove => _inner.CollectionChanged -= value;
+            add
+            {
+                EnsureInitialized();
+                _inner.CollectionChanged += value;
+            }
+            remove
+            {
+                EnsureInitialized();
+                _inner.CollectionChanged -= value;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged
         {
-            add => _inner.PropertyChanged += value;
-            remove => _inner.PropertyChanged -= value;
+            add
+            {
+                EnsureInitialized();
+                _inner.PropertyChanged += value;
+            }
+            remove
+            {
+                EnsureInitialized();
+                _inner.PropertyChanged -= value;
+            }
         }
 
         public virtual void Dispose()
@@ -66,6 +84,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         protected abstract void Initialize(AvaloniaList<TreeNode> nodes);
 
+        [MemberNotNull(nameof(_inner))]
         private void EnsureInitialized()
         {
             if (_inner is null)

@@ -8,7 +8,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public IBrush Tint { get; }
 
-        public ResourceSetterViewModel(AvaloniaProperty property, object resourceKey, object resourceValue, bool isDynamic) : base(property, resourceValue)
+        public ResourceSetterViewModel(AvaloniaProperty property, object resourceKey, object? resourceValue, bool isDynamic) : base(property, resourceValue)
         {
             Key = resourceKey;
             Tint = isDynamic ? Brushes.Orange : Brushes.Brown;

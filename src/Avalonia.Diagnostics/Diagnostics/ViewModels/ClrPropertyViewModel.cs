@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Avalonia.Diagnostics.ViewModels
@@ -7,7 +7,7 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly object _target;
         private string _type;
-        private object _value;
+        private object? _value;
 
         public ClrPropertyViewModel(object o, PropertyInfo property)
         {
@@ -47,11 +47,12 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
+        [MemberNotNull(nameof(_type))]
         public override void Update()
         {
             var val = Property.GetValue(_target);
             RaiseAndSetIfChanged(ref _value, val, nameof(Value));
-            RaiseAndSetIfChanged(ref _type, _value?.GetType().Name, nameof(Type));
+            RaiseAndSetIfChanged(ref _type, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(Type));
         }
     }
 }

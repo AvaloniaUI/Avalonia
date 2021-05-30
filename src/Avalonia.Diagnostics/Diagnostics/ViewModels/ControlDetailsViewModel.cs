@@ -18,10 +18,10 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly IVisual _control;
         private readonly IDictionary<object, List<PropertyViewModel>> _propertyIndex;
-        private AvaloniaPropertyViewModel _selectedProperty;
+        private AvaloniaPropertyViewModel? _selectedProperty;
         private bool _snapshotStyles;
         private bool _showInactiveStyles;
-        private string _styleStatus;
+        private string? _styleStatus;
 
         public ControlDetailsViewModel(TreePageViewModel treePage, IVisual control)
         {
@@ -83,7 +83,8 @@ namespace Avalonia.Diagnostics.ViewModels
                     {
                         foreach (var setter in style.Setters)
                         {
-                            if (setter is Setter regularSetter)
+                            if (setter is Setter regularSetter
+                                && regularSetter.Property != null)
                             {
                                 var setterValue = regularSetter.Value;
 
@@ -115,13 +116,14 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private (object resourceKey, bool isDynamic)? GetResourceInfo(object value)
+        private (object resourceKey, bool isDynamic)? GetResourceInfo(object? value)
         {
             if (value is StaticResourceExtension staticResource)
             {
                 return (staticResource.ResourceKey, false);
             }
-            else if (value is DynamicResourceExtension dynamicResource)
+            else if (value is DynamicResourceExtension dynamicResource
+                && dynamicResource.ResourceKey != null)
             {
                 return (dynamicResource.ResourceKey, true);
             }
@@ -137,7 +139,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public ObservableCollection<PseudoClassViewModel> PseudoClasses { get; }
 
-        public AvaloniaPropertyViewModel SelectedProperty
+        public AvaloniaPropertyViewModel? SelectedProperty
         {
             get => _selectedProperty;
             set => RaiseAndSetIfChanged(ref _selectedProperty, value);
@@ -155,7 +157,7 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _showInactiveStyles, value);
         }
 
-        public string StyleStatus
+        public string? StyleStatus
         {
             get => _styleStatus;
             set => RaiseAndSetIfChanged(ref _styleStatus, value);

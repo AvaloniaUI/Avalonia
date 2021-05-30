@@ -40,12 +40,16 @@ namespace Avalonia.Diagnostics.Views
 
         private void InputKeyDown(object sender, KeyEventArgs e)
         {
-            var vm = (ConsoleViewModel)DataContext;
+            var vm = (ConsoleViewModel?)DataContext;
+            if (vm is null)
+            {
+                return;
+            }
 
             switch (e.Key)
             {
                 case Key.Enter:
-                    vm.Execute();
+                    _ = vm.Execute();
                     e.Handled = true;
                     break;
                 case Key.Up:

@@ -14,12 +14,13 @@ namespace Avalonia.Diagnostics.Views
     internal class TreePageView : UserControl
     {
         private readonly Panel _adorner;
-        private AdornerLayer _currentLayer;
+        private AdornerLayer? _currentLayer;
         private TreeView _tree;
 
         public TreePageView()
         {
             InitializeComponent();
+            _tree = this.FindControl<TreeView>("tree");
             _tree.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
 
             _adorner = new Panel
@@ -39,7 +40,13 @@ namespace Avalonia.Diagnostics.Views
 
         protected void AddAdorner(object sender, PointerEventArgs e)
         {
-            var node = (TreeNode)((Control)sender).DataContext;
+            var node = (TreeNode?)((Control)sender).DataContext;
+            var vm = (TreePageViewModel?)DataContext;
+            if (node is null || vm is null)
+            {
+                return;
+            }
+
             var visual = (Visual)node.Visual;
 
             _currentLayer = AdornerLayer.GetAdornerLayer(visual);
@@ -52,8 +59,6 @@ namespace Avalonia.Diagnostics.Views
 
             _currentLayer.Children.Add(_adorner);
             AdornerLayer.SetAdornedElement(_adorner, visual);
-
-            var vm = (TreePageViewModel) DataContext;
 
             if (vm.MainView.ShouldVisualizeMarginPadding)
             {
@@ -90,7 +95,6 @@ namespace Avalonia.Diagnostics.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            _tree = this.FindControl<TreeView>("tree");
         }
 
         private void TreeViewItemMaterialized(object sender, ItemContainerEventArgs e)
