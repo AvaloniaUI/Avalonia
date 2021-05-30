@@ -250,7 +250,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 .Select(x => new ClrPropertyViewModel(o, x));
         }
 
-        private void ControlPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void ControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (_propertyIndex.TryGetValue(e.Property, out var properties))
             {
@@ -263,9 +263,10 @@ namespace Avalonia.Diagnostics.ViewModels
             Layout.ControlPropertyChanged(sender, e);
         }
 
-        private void ControlPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void ControlPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (_propertyIndex.TryGetValue(e.PropertyName, out var properties))
+            if (e.PropertyName != null
+                && _propertyIndex.TryGetValue(e.PropertyName, out var properties))
             {
                 foreach (var property in properties)
                 {
@@ -279,7 +280,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private void OnClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnClassesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (!SnapshotStyles)
             {
@@ -351,10 +352,10 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             public static PropertyComparer Instance { get; } = new PropertyComparer();
 
-            public int Compare(PropertyViewModel x, PropertyViewModel y)
+            public int Compare(PropertyViewModel? x, PropertyViewModel? y)
             {
-                var groupX = GroupIndex(x.Group);
-                var groupY = GroupIndex(y.Group);
+                var groupX = GroupIndex(x?.Group);
+                var groupY = GroupIndex(y?.Group);
 
                 if (groupX != groupY)
                 {
@@ -362,11 +363,11 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
                 else
                 {
-                    return string.CompareOrdinal(x.Name, y.Name);
+                    return string.CompareOrdinal(x?.Name, y?.Name);
                 }
             }
 
-            private int GroupIndex(string group)
+            private int GroupIndex(string? group)
             {
                 switch (group)
                 {

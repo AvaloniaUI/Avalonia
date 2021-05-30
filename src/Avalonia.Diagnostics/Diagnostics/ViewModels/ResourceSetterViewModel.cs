@@ -16,12 +16,14 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void CopyResourceKey()
         {
-            if (Key is null)
+            var textToCopy = Key?.ToString();
+
+            if (textToCopy is null)
             {
                 return;
             }
 
-            CopyToClipboard(Key.ToString());
+            CopyToClipboard(textToCopy);
         }
     }
 }

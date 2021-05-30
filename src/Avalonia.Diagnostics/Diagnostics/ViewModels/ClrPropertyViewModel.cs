@@ -14,7 +14,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _target = o;
             Property = property;
 
-            if (!property.DeclaringType.IsInterface)
+            if (property.DeclaringType == null || !property.DeclaringType.IsInterface)
             {
                 Name = property.Name;
             }

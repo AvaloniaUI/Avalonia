@@ -58,7 +58,7 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void PreviewKeyDown(object sender, KeyEventArgs e)
+        private void PreviewKeyDown(object? sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {

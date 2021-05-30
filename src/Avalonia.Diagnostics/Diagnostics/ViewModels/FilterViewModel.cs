@@ -110,9 +110,10 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public IEnumerable GetErrors(string propertyName)
+        public IEnumerable GetErrors(string? propertyName)
         {
-            if (_errors.TryGetValue(propertyName, out var error))
+            if (propertyName != null
+                && _errors.TryGetValue(propertyName, out var error))
             {
                 yield return error;
             }

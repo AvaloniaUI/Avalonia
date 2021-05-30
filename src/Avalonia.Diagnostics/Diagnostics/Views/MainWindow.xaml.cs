@@ -114,6 +114,6 @@ namespace Avalonia.Diagnostics.Views
             }
         }
 
-        private void RootClosed(object sender, EventArgs e) => Close();
+        private void RootClosed(object? sender, EventArgs e) => Close();
     }
 }

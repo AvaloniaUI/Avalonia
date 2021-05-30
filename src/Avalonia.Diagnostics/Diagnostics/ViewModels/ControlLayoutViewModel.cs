@@ -179,7 +179,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void ControlPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        public void ControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             try
             {

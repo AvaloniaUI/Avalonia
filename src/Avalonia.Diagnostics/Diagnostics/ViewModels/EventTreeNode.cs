@@ -59,14 +59,14 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private void HandleEvent(object sender, RoutedEventArgs e)
+        private void HandleEvent(object? sender, RoutedEventArgs e)
         {
             if (!_isRegistered || IsEnabled == false)
                 return;
             if (sender is IVisual v && BelongsToDevTool(v))
                 return;
 
-            var s = sender;
+            var s = sender!;
             var handled = e.Handled;
             var route = e.Route;
 

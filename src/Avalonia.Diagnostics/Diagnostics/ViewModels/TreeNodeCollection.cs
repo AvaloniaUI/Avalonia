@@ -35,7 +35,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         protected TreeNode Owner { get; }
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
             add
             {
@@ -49,7 +49,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged
         {
             add
             {

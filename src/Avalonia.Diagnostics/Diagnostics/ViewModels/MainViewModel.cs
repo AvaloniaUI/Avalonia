@@ -190,7 +190,7 @@ namespace Avalonia.Diagnostics.ViewModels
             FocusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
         }
 
-        private void KeyboardPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void KeyboardPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(KeyboardDevice.Instance.FocusedElement))
             {

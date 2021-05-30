@@ -36,12 +36,14 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void CopyValue()
         {
-            if (Value is null)
+            var textToCopy = Value?.ToString();
+
+            if (textToCopy is null)
             {
                 return;
             }
 
-            CopyToClipboard(Value.ToString());
+            CopyToClipboard(textToCopy);
         }
 
         public void CopyPropertyName()

@@ -38,9 +38,9 @@ namespace Avalonia.Diagnostics.Views
             };
         }
 
-        protected void AddAdorner(object sender, PointerEventArgs e)
+        protected void AddAdorner(object? sender, PointerEventArgs e)
         {
-            var node = (TreeNode?)((Control)sender).DataContext;
+            var node = (TreeNode?)((Control)sender!).DataContext;
             var vm = (TreePageViewModel?)DataContext;
             if (node is null || vm is null)
             {
@@ -79,7 +79,7 @@ namespace Avalonia.Diagnostics.Views
             return new Thickness(-input.Left, -input.Top, -input.Right, -input.Bottom);
         }
 
-        protected void RemoveAdorner(object sender, PointerEventArgs e)
+        protected void RemoveAdorner(object? sender, PointerEventArgs e)
         {
             foreach (var border in _adorner.Children.OfType<Border>())
             {
@@ -97,15 +97,15 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void TreeViewItemMaterialized(object sender, ItemContainerEventArgs e)
+        private void TreeViewItemMaterialized(object? sender, ItemContainerEventArgs e)
         {
             var item = (TreeViewItem)e.Containers[0].ContainerControl;
             item.TemplateApplied += TreeViewItemTemplateApplied;
         }
 
-        private void TreeViewItemTemplateApplied(object sender, TemplateAppliedEventArgs e)
+        private void TreeViewItemTemplateApplied(object? sender, TemplateAppliedEventArgs e)
         {
-            var item = (TreeViewItem)sender;
+            var item = (TreeViewItem)sender!;
 
             // This depends on the default tree item template.
             // We want to handle events in the item header but exclude events coming from children.
