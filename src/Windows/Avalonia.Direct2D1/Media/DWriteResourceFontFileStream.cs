@@ -62,11 +62,11 @@ namespace Avalonia.Direct2D1.Media
         /// Implementing GetFileSize() for asynchronously loaded font files may require downloading the complete file contents. Therefore, this method should be used only for operations that either require a complete font file to be loaded (for example, copying a font file) or that need to make decisions based on the value of the file size (for example, validation against a persisted file size).
         /// </remarks>
         /// <unmanaged>HRESULT IDWriteFontFileStream::GetFileSize([Out] __int64* fileSize)</unmanaged>
-        public void GetFileSize(out ulong fileSize)
+        public ulong GetFileSize()
         {
             lock (this)
             {
-                fileSize = (ulong)_stream.Length;
+                return (ulong)_stream.Length;
             }
         }
 
@@ -80,9 +80,9 @@ namespace Avalonia.Direct2D1.Media
         /// The "last modified time" is used by DirectWrite font selection algorithms to determine whether one font resource is more up to date than another one.
         /// </remarks>
         /// <unmanaged>HRESULT IDWriteFontFileStream::GetLastWriteTime([Out] __int64* lastWriteTime)</unmanaged>
-        public void GetLastWriteTime(out ulong lastWriteTime)
+        public ulong GetLastWriteTime()
         {
-            lastWriteTime = 0;
+            return 0;
         }
     }
 }

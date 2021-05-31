@@ -16,5 +16,5 @@
     <Compile Include="..\Avalonia.Win32\Interop\UnmanagedMethods.cs" Link="UnmanagedMethods.cs" />
   </ItemGroup>
 
-  <Import Project="..\..\..\build\SharpDX.props" />
+  <Import Project="..\..\..\build\Vortice.props" />
 </Project>

@@ -105,7 +105,7 @@ namespace Avalonia.Direct2D1.Media
             PixelFormat = format;
             Dpi = dpi;
 
-            using (var l = WicImpl.Lock(BitmapLockFlags.LockWrite))
+            using (var l = WicImpl.Lock(BitmapLockFlags.Write))
             {
                 for (var row = 0; row < size.Height; row++)
                 {
@@ -185,8 +185,8 @@ namespace Avalonia.Direct2D1.Media
 
         public override void Save(Stream stream)
         {
-            using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))
-            using (var frame = new BitmapFrameEncode(encoder))
+            using (var encoder = Direct2D1Platform.ImagingFactory.CreateEncoder(ContainerFormat.Png, stream))
+            using (var frame = encoder.CreateNewFrame(null))
             {
                 frame.Initialize();
                 frame.WriteSource(WicImpl);

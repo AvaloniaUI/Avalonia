@@ -2,7 +2,7 @@
 
 namespace Avalonia.Direct2D1
 {
-    class Direct2DChecker : IModuleEnvironmentChecker
+    internal class Direct2DChecker : IModuleEnvironmentChecker
     {
         //Direct2D backend doesn't work on some machines anymore
         public bool IsCompatible

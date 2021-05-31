@@ -80,12 +80,11 @@ namespace Avalonia.Direct2D1
                 SwapEffect = SwapEffect.Discard,
             };
 
-            Direct2D1Platform.DxgiDevice.GetAdapter(out IDXGIAdapter dxgiAdapter).CheckError();
+            using (var dxgiAdapter = Direct2D1Platform.DxgiDevice.GetAdapter())
             using (var dxgiFactory = dxgiAdapter.GetParent<IDXGIFactory2>())
             {
                 _swapChain = CreateSwapChain(dxgiFactory, swapChainDescription);
             }
-            dxgiAdapter.Dispose();
         }
 
         private void CreateDeviceContext()
@@ -99,7 +98,7 @@ namespace Avalonia.Direct2D1
             }
 
             using (var dxgiBackBuffer = _swapChain.GetBuffer<IDXGISurface>(0))
-            using (var d2dBackBuffer = _deviceContext.CreateBitmap(
+            using (var d2dBackBuffer = _deviceContext.CreateBitmapFromDxgiSurface(
                 dxgiBackBuffer,
                 new BitmapProperties1(
                     new Vortice.DCommon.PixelFormat

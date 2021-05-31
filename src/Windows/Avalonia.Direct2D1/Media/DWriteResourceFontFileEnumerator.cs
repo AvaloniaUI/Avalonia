@@ -36,13 +36,12 @@ namespace Avalonia.Direct2D1.Media
         /// the value TRUE if the enumerator advances to a file; otherwise, FALSE if the enumerator advances past the last file in the collection.
         /// </returns>
         /// <unmanaged>HRESULT IDWriteFontFileEnumerator::MoveNext([Out] BOOL* hasCurrentFile)</unmanaged>
-        public void MoveNext(out RawBool hasCurrentFile)
+        public RawBool MoveNext()
         {
-            hasCurrentFile = false;
             bool moveNext = _keyStream.RemainingLength != 0;
 
             if (!moveNext)
-                return;
+                return false;
 
             _currentFontFile?.Dispose();
 
@@ -50,7 +49,7 @@ namespace Avalonia.Direct2D1.Media
 
             _keyStream.Position += 4;
 
-            hasCurrentFile = true;
+            return true;
         }
 
         /// <summary>
@@ -59,11 +58,11 @@ namespace Avalonia.Direct2D1.Media
         /// <value></value>
         /// <returns>a reference to the newly created <see cref="IDWriteFontFile"/> object.</returns>
         /// <unmanaged>HRESULT IDWriteFontFileEnumerator::GetCurrentFontFile([Out] IDWriteFontFile** fontFile)</unmanaged>
-        public void GetCurrentFontFile(out IDWriteFontFile fontFile)
+        public IDWriteFontFile GetCurrentFontFile()
         {
             _currentFontFile.AddRef();
 
-            fontFile = _currentFontFile;
+            return _currentFontFile;
         }
     }
 }

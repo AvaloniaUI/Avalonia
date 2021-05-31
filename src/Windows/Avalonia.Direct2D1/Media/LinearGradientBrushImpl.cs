@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Numerics;
 using Avalonia.Media;
 using Vortice.Direct2D1;
 
@@ -27,19 +28,19 @@ namespace Avalonia.Direct2D1.Media
 
             using (var stops = target.CreateGradientStopCollection(
                 gradientStops,
+                Gamma.StandardRgb,
                 brush.SpreadMethod.ToDirect2D()))
             {
-                PlatformBrush = new Vortice.Direct2D1.LinearGradientBrush(
-                    target,
-                    new SharpDX.Direct2D1.LinearGradientBrushProperties
+                PlatformBrush = target.CreateLinearGradientBrush(
+                    new LinearGradientBrushProperties
                     {
                         StartPoint = startPoint.ToSharpDX(),
                         EndPoint = endPoint.ToSharpDX()
                     },
-                    new SharpDX.Direct2D1.BrushProperties
+                    new BrushProperties
                     {
                         Opacity = (float)brush.Opacity,
-                        Transform = PrimitiveExtensions.Matrix3x2Identity,
+                        Transform = Matrix3x2.Identity,
                     },
                     stops);
             }

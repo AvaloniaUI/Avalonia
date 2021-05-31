@@ -61,17 +61,19 @@ namespace Avalonia.Direct2D1.Media
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
-            var result = TextLayout.GetLineMetrics();
+            var result = TextLayout.LineMetrics;
             return from line in result select new FormattedTextLine(line.Length, line.Height);
         }
 
         public TextHitTestResult HitTestPoint(Point point)
         {
-            var result = TextLayout.HitTestPoint(
+            TextLayout.HitTestPoint(
                 (float)point.X,
                 (float)point.Y,
                 out var isTrailingHit,
-                out var isInside);
+                out var isInside,
+                out DWrite.HitTestMetrics result
+            );
 
             return new TextHitTestResult
             {
@@ -83,7 +85,7 @@ namespace Avalonia.Direct2D1.Media
 
         public Rect HitTestTextPosition(int index)
         {
-            var result = TextLayout.HitTestTextPosition(index, false, out _, out _);
+            TextLayout.HitTestTextPosition(index, false, out _, out _, out DWrite.HitTestMetrics result);
 
             return new Rect(result.Left, result.Top, result.Width, result.Height);
         }
@@ -102,7 +104,8 @@ namespace Avalonia.Direct2D1.Media
                 {
                     TextLayout.SetDrawingEffect(
                         new BrushWrapper(span.ForegroundBrush.ToImmutable()),
-                        new DWrite.TextRange(span.StartIndex, span.Length));
+                        new DWrite.TextRange { StartPosition = span.StartIndex, Length = span.Length }
+                        );
                 }
             }
         }

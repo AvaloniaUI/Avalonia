@@ -72,19 +72,19 @@ namespace Avalonia.Direct2D1.Media
             throw new SharpGenException(Result.NotImplemented);
         }
 
-        public void GetCurrentTransform(IntPtr clientDrawingContext, out Matrix3x2 transform)
+        public Matrix3x2 GetCurrentTransform(IntPtr clientDrawingContext)
         {
-            transform = _renderTarget.Transform;
+            return _renderTarget.Transform;
         }
 
-        public void GetPixelsPerDip(IntPtr clientDrawingContext, out float pixelsPerDip)
+        public float GetPixelsPerDip(IntPtr clientDrawingContext)
         {
-            pixelsPerDip = _renderTarget.Dpi.X / 96;
+            return _renderTarget.Dpi.Width / 96;
         }
 
-        public void IsPixelSnappingDisabled(IntPtr clientDrawingContext, out RawBool isDisabled)
+        public RawBool IsPixelSnappingDisabled(IntPtr clientDrawingContext)
         {
-            isDisabled = false;
+            return false;
         }
     }
 }

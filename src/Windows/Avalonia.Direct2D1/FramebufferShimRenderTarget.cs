@@ -49,7 +49,7 @@ namespace Avalonia.Direct2D1
             {
                 return base.CreateDrawingContext(visualBrushRenderer, () =>
                 {
-                    using (var l = WicImpl.Lock(BitmapLockFlags.LockRead))
+                    using (var l = WicImpl.Lock(BitmapLockFlags.Read))
                     {
                         for (var y = 0; y < _target.Size.Height; y++)
                         {

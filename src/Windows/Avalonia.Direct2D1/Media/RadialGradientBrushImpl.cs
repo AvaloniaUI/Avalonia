@@ -32,6 +32,7 @@ namespace Avalonia.Direct2D1.Media
 
             using (var stops = target.CreateGradientStopCollection(
                 gradientStops,
+                Gamma.StandardRgb,
                 brush.SpreadMethod.ToDirect2D()))
             {
                 PlatformBrush = target.CreateRadialGradientBrush(

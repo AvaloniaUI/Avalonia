@@ -40,8 +40,8 @@ namespace Avalonia.Direct2D1.Media
             for (var i = 0; i < familyCount; i++)
             {
                 var font = Direct2D1FontCollectionCache.InstalledFontCollection.GetFontFamily(i)
-                    .GetMatchingFonts((SharpDX.DirectWrite.FontWeight)fontWeight, FontStretch.Normal,
-                        (SharpDX.DirectWrite.FontStyle)fontStyle).GetFont(0);
+                    .GetMatchingFonts((Vortice.DirectWrite.FontWeight)fontWeight, FontStretch.Normal,
+                        (Vortice.DirectWrite.FontStyle)fontStyle).GetFont(0);
 
                 if (!font.HasCharacter(codepoint))
                 {

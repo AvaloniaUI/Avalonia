@@ -58,6 +58,6 @@ namespace Avalonia.Direct2D1.Media.Imaging
         }
 
         public ILockedFramebuffer Lock() =>
-            new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.LockWrite), PixelFormat.Value);
+            new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);
     }
 }

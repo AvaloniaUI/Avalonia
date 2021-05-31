@@ -9,8 +9,7 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class DWriteResourceFontLoader : CallbackBase, IDWriteFontCollectionLoader, IDWriteFontFileLoader
     {
-        private readonly List<DWriteResourceFontFileStream> _fontStreams = new List<DWriteResourceFontFileStream>();
-        private readonly List<DWriteResourceFontFileEnumerator> _enumerators = new List<DWriteResourceFontFileEnumerator>();
+        private readonly List<DataStream> _fontStreams = new List<DataStream>();
         private readonly DataStream _keyStream;
 
         /// <summary>
@@ -34,7 +33,7 @@ namespace Avalonia.Direct2D1.Media
 
                 dataStream.Position = 0;
 
-                _fontStreams.Add(new DWriteResourceFontFileStream(dataStream));
+                _fontStreams.Add(dataStream);
             }
 
             // Build a Key storage that stores the index of the font
@@ -52,7 +51,6 @@ namespace Avalonia.Direct2D1.Media
             factory1.RegisterFontCollectionLoader(this);
         }
 
-
         /// <summary>
         /// Gets the key used to identify the FontCollection as well as storing index for fonts.
         /// </summary>
@@ -65,13 +63,10 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="factory">Pointer to the <see cref="IDWriteFactory"/> object that was used to create the current font collection.</param>
         /// <param name="collectionKey">A font collection key that uniquely identifies the collection of font files within the scope of the font collection loader being used. The buffer allocated for this key must be at least  the size, in bytes, specified by collectionKeySize.</param>
         /// <param name="collectionKeySize"></param>
-        /// <param name="fontFileEnumerator">A reference to the newly created font file enumerator.</param>
         /// <unmanaged>HRESULT IDWriteFontCollectionLoader::CreateEnumeratorFromKey([None] IDWriteFactory* factory,[In, Buffer] const void* collectionKey,[None] int collectionKeySize,[Out] IDWriteFontFileEnumerator** fontFileEnumerator)</unmanaged>
-        public void CreateEnumeratorFromKey(IDWriteFactory factory, IntPtr collectionKey, int collectionKeySize, out IDWriteFontFileEnumerator fontFileEnumerator)
+        public IDWriteFontFileEnumerator CreateEnumeratorFromKey(IDWriteFactory factory, IntPtr collectionKey, int collectionKeySize)
         {
-            var enumerator = new DWriteResourceFontFileEnumerator(factory, this, collectionKey, collectionKeySize);
-            _enumerators.Add(enumerator);
-            fontFileEnumerator = enumerator;
+            return new DWriteResourceFontFileEnumerator(factory, this, collectionKey, collectionKeySize);
         }
 
         /// <summary>
@@ -85,12 +80,12 @@ namespace Avalonia.Direct2D1.Media
         /// The resource is closed when the last reference to fontFileStream is released.
         /// </remarks>
         /// <unmanaged>HRESULT IDWriteFontFileLoader::CreateStreamFromKey([In, Buffer] const void* fontFileReferenceKey,[None] int fontFileReferenceKeySize,[Out] IDWriteFontFileStream** fontFileStream)</unmanaged>
-        public void CreateStreamFromKey(IntPtr fontFileReferenceKey, int fontFileReferenceKeySize, out IDWriteFontFileStream fontFileStream)
+        public IDWriteFontFileStream CreateStreamFromKey(IntPtr fontFileReferenceKey, int fontFileReferenceKeySize)
         {
             int index = 0;
             MemoryHelpers.Read(fontFileReferenceKey, ref index);
 
-            fontFileStream = new DWriteResourceFontFileStream(_fontStreams[index]);
+            return new DWriteResourceFontFileStream(_fontStreams[index]);
         }
     }
 }
