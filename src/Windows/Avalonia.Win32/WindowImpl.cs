@@ -90,6 +90,7 @@ namespace Avalonia.Win32
         private AutomationNode _automationNode;
         private bool _isCloseRequested;
         private bool _shown;
+        private bool _hiddenWindowIsParent;
 
         public WindowImpl()
         {
@@ -489,8 +490,8 @@ namespace Avalonia.Win32
                     IntPtr.Zero,
                     0,
                     0,
-                    requestedClientWidth + (windowRect.Width - clientRect.Width),
-                    requestedClientHeight + (windowRect.Height - clientRect.Height),
+                    requestedClientWidth + (_isClientAreaExtended ? 0 : windowRect.Width - clientRect.Width),
+                    requestedClientHeight + (_isClientAreaExtended ? 0 : windowRect.Height - clientRect.Height),
                     SetWindowPosFlags.SWP_RESIZE);
             }
         }
@@ -577,8 +578,7 @@ namespace Avalonia.Win32
 
         public virtual void Show(bool activate)
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
-
+            SetParent(_parent);
             ShowWindow(_showWindowState, activate);
         }
 
@@ -587,7 +587,16 @@ namespace Avalonia.Win32
         public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent._hwnd);
+            
+            var parentHwnd = _parent?._hwnd ?? IntPtr.Zero;
+
+            if (parentHwnd == IntPtr.Zero && !_windowProperties.ShowInTaskbar)
+            {
+                parentHwnd = OffscreenParentWindow.Handle;
+                _hiddenWindowIsParent = true;
+            }
+
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -844,7 +853,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            bool wantsTitleBar = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
+            bool wantsTitleBar = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
 
             if (!wantsTitleBar)
             {
@@ -861,7 +870,7 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
             }
 
-            margins.cyTopHeight = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
 
             if (WindowState == WindowState.Maximized)
             {
@@ -889,20 +898,19 @@ namespace Avalonia.Win32
                 _isClientAreaExtended = false;
                 return;
             }
-
-            GetWindowRect(_hwnd, out var rcClient);
+            GetClientRect(_hwnd, out var rcClient);
+            GetWindowRect(_hwnd, out var rcWindow);
 
             // Inform the application of the frame change.
             SetWindowPos(_hwnd,
-                         IntPtr.Zero,
-                         rcClient.left, rcClient.top,
-                         rcClient.Width, rcClient.Height,
-                         SetWindowPosFlags.SWP_FRAMECHANGED);
+                IntPtr.Zero,
+                rcWindow.left, rcWindow.top,
+                rcClient.Width, rcClient.Height,
+                SetWindowPosFlags.SWP_FRAMECHANGED);
 
             if (_isClientAreaExtended && WindowState != WindowState.FullScreen)
             {
                 var margins = UpdateExtendMargins();
-
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
             }
             else
@@ -912,10 +920,12 @@ namespace Avalonia.Win32
 
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
+                
+                Resize(new Size(rcWindow.Width/ RenderScaling, rcWindow.Height / RenderScaling));
             }
 
-            if(!_isClientAreaExtended || (_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) &&
-                !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome)))
+            if(!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
+                !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome)))
             {
                 EnableCloseButton(_hwnd);
             }
@@ -1100,16 +1110,38 @@ namespace Avalonia.Win32
                 if (newProperties.ShowInTaskbar)
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
+
+                    if (_hiddenWindowIsParent)
+                    {
+                        // Can't enable the taskbar icon by clearing the parent window unless the window
+                        // is hidden. Hide the window and show it again with the same activation state
+                        // when we've finished. Interestingly it seems to work fine the other way.
+                        var shown = IsWindowVisible(_hwnd);
+                        var activated = GetActiveWindow() == _hwnd;
+
+                        if (shown)
+                            Hide();
+
+                        _hiddenWindowIsParent = false;
+                        SetParent(null);
+
+                        if (shown)
+                            Show(activated);
+                    }
                 }
                 else
                 {
+                    // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
+                    if (_parent is null)
+                    {
+                        SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
+                        _hiddenWindowIsParent = true;
+                    }
+
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                 }
 
                 SetExtendedStyle(exStyle);
-
-                // TODO: To hide non-owned window from taskbar we need to parent it to a hidden window.
-                // Otherwise it will still show in the taskbar.
             }
 
             WindowStyles style;
@@ -1259,7 +1291,7 @@ namespace Avalonia.Win32
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome);
+        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);
 
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;

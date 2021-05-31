@@ -18,11 +18,13 @@
 
 - [ ] Added unit tests (if possible)?
 - [ ] Added XML documentation to any related classes?
-- [ ] Consider submitting a PR to https://github.com/AvaloniaUI/Avaloniaui.net with user documentation
+- [ ] Consider submitting a PR to https://github.com/AvaloniaUI/Documentation with user documentation
 
 ## Breaking changes
 <!--- List any breaking changes here. When the PR is merged please add an entry to https://github.com/AvaloniaUI/Avalonia/wiki/Breaking-Changes -->
 
+## Obsoletions / Deprecations
+<!--- Obsolete and Deprecated attributes on APIs MUST only be included when discussed with Core team. @grokys, @kekekeks & @danwalmsley -->
 
 ## Fixed issues
 <!--- If the pull request fixes issue(s) list them like this: 

@@ -2,8 +2,6 @@
 <br />
 [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia) [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
-<img alt="Avalonia" src="https://user-images.githubusercontent.com/6759207/84897744-cab6d800-b0ae-11ea-8214-e5174d71f5c8.png" width="400"/>
-
 ## 📖 About AvaloniaUI 
 
 Avalonia is a cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows via .NET Framework and .NET Core, Linux via Xorg, macOS. Avalonia is ready for **General-Purpose Desktop App Development**. However, there may be some bugs and breaking changes as we continue along into this project's development. 
@@ -16,7 +14,7 @@ To see the status of some of our features, please see our [Roadmap](https://gith
 
 ## 🚀 Getting Started
 
-The Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started, or you can use the .NET Core CLI. For a starter guide see our [documentation](https://avaloniaui.net/docs/quickstart/create-new-project).
+The Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started, or you can use the .NET Core CLI. For a starter guide see our [documentation](https://docs.avaloniaui.net/docs/getting-started).
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: https://www.nuget.org/packages/Avalonia/
 
@@ -54,7 +52,7 @@ We also have a [nightly build](https://github.com/AvaloniaUI/Avalonia/wiki/Using
 
 ## Documentation
 
-Documentation can be found on our website at https://avaloniaui.net/docs/. We also have a [tutorial](https://avaloniaui.net/docs/tutorial/) over there for newcomers.
+Documentation can be found at https://docs.avaloniaui.net. We also have a [tutorial](https://docs.avaloniaui.net/docs/getting-started/programming-with-avalonia) over there for newcomers.
 
 ## Building and Using
 

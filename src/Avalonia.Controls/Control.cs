@@ -43,6 +43,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Control, ContextMenu?>(nameof(ContextMenu));
 
         /// <summary>
+        /// Defines the <see cref="ContextFlyout"/> property
+        /// </summary>
+        public static readonly StyledProperty<FlyoutBase?> ContextFlyoutProperty =
+            AvaloniaProperty.Register<Control, FlyoutBase?>(nameof(ContextFlyout));
+
+        /// <summary>
         /// Event raised when an element wishes to be scrolled into view.
         /// </summary>
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
@@ -80,6 +86,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a context flyout to the control
+        /// </summary>
+        public FlyoutBase? ContextFlyout
+        {
+            get => GetValue(ContextFlyoutProperty);
+            set => SetValue(ContextFlyoutProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets a user-defined object attached to the control.
         /// </summary>
         public object? Tag
@@ -96,6 +111,11 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void ISetterValue.Initialize(ISetter setter)
         {
+            if (setter is Setter s && s.Property == ContextFlyoutProperty)
+            {
+                return; // Allow ContextFlyout to not need wrapping in <Template>
+            }
+
             throw new InvalidOperationException(
                 "Cannot use a control as a Setter value. Wrap the control in a <Template>.");
         }
@@ -184,7 +204,7 @@ namespace Avalonia.Controls
         {
             base.OnLostFocus(e);
 
-            if (_focusAdorner != null)
+            if (_focusAdorner?.Parent != null)
             {
                 var adornerLayer = (IPanel)_focusAdorner.Parent;
                 adornerLayer.Children.Remove(_focusAdorner);

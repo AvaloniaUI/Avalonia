@@ -72,6 +72,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<MenuItem, bool>(nameof(IsSubMenuOpen));
 
         /// <summary>
+        /// Defines the <see cref="StaysOpenOnClick"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> StaysOpenOnClickProperty =
+            AvaloniaProperty.Register<MenuItem, bool>(nameof(StaysOpenOnClick));
+
+        /// <summary>
         /// Defines the <see cref="Click"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
@@ -265,6 +271,16 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IsSubMenuOpenProperty); }
             set { SetValue(IsSubMenuOpenProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates the submenu that this <see cref="MenuItem"/> is
+        /// within should not close when this item is clicked.
+        /// </summary>
+        public bool StaysOpenOnClick
+        {
+            get { return GetValue(StaysOpenOnClickProperty); }
+            set { SetValue(StaysOpenOnClickProperty, value); }
         }
 
         /// <summary>

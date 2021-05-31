@@ -1,44 +1,100 @@
-<Style xmlns="https://github.com/avaloniaui" 
-       Selector="DataValidationErrors"
-       xmlns:sys="clr-namespace:System;assembly=netstandard">
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="using:System">
   <Design.PreviewWith>
-    <Border Padding="20"> 
-      <TextBox Text="Sample">
-        <DataValidationErrors.Error>
-          <sys:Exception/> 
-        </DataValidationErrors.Error>
-      </TextBox>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <TextBox Text="Sample">
+          <DataValidationErrors.Error>
+            <sys:Exception />
+          </DataValidationErrors.Error>
+        </TextBox>
+        <TextBox Text="Sample">
+          <TextBox.Styles>
+            <Style Selector="DataValidationErrors">
+              <Setter Property="Template" Value="{DynamicResource TooltipDataValidationContentTemplate}" />
+              <Setter Property="ErrorTemplate" Value="{DynamicResource TooltipDataValidationErrorTemplate}" />
+            </Style>
+          </TextBox.Styles>
+          <DataValidationErrors.Error>
+            <sys:Exception />
+          </DataValidationErrors.Error>
+        </TextBox>
+      </StackPanel>
     </Border>
   </Design.PreviewWith>
-    
-  <Setter Property="Template">
-    <ControlTemplate>
-      <DockPanel LastChildFill="True">
-        <ContentControl Margin="0 4 0 0"
-          DockPanel.Dock="Bottom"
-          ContentTemplate="{TemplateBinding ErrorTemplate}"
-          DataContext="{TemplateBinding Owner}"
-          Content="{Binding (DataValidationErrors.Errors)}"
-          IsVisible="{Binding (DataValidationErrors.HasErrors)}" />
-        <ContentPresenter
-          Name="PART_ContentPresenter"
-          Background="{TemplateBinding Background}"
-          BorderThickness="{TemplateBinding BorderThickness}"
-          ContentTemplate="{TemplateBinding ContentTemplate}"
-          Content="{TemplateBinding Content}"
-          Padding="{TemplateBinding Padding}" />
-      </DockPanel>
-    </ControlTemplate>
-  </Setter>
-  <Setter Property="ErrorTemplate">
-    <DataTemplate>
-      <ItemsControl Items="{Binding}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <TextBlock Text="{Binding Message}" Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" TextWrapping="Wrap" />
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </DataTemplate>
-  </Setter>
-</Style>
+
+  <Style Selector="DataValidationErrors">
+    <Style.Resources>
+      <DataTemplate x:Key="InlineDataValidationErrorTemplate">
+        <ItemsControl Items="{Binding}" TextBlock.Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}">
+          <ItemsControl.Styles>
+            <Style Selector="TextBlock">
+              <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+          </ItemsControl.Styles>
+        </ItemsControl>
+      </DataTemplate>
+      <ControlTemplate x:Key="InlineDataValidationContentTemplate" TargetType="DataValidationErrors">
+        <DockPanel LastChildFill="True">
+          <ContentControl x:Name="InlineDataValidationContentControl"
+                          Margin="0,4,0,0"
+                          Content="{Binding (DataValidationErrors.Errors)}"
+                          ContentTemplate="{TemplateBinding ErrorTemplate}"
+                          DataContext="{TemplateBinding Owner}"
+                          DockPanel.Dock="Bottom"
+                          IsVisible="{Binding (DataValidationErrors.HasErrors)}" />
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+        </DockPanel>
+      </ControlTemplate>
+
+      <DataTemplate x:Key="TooltipDataValidationErrorTemplate">
+        <Panel Name="PART_InlineErrorTemplatePanel" Background="Transparent">
+          <Panel.Styles>
+            <Style Selector="Panel#PART_InlineErrorTemplatePanel">
+              <Setter Property="Margin" Value="8,0" />
+            </Style>
+            <Style Selector="Panel#PART_InlineErrorTemplatePanel ToolTip">
+              <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+            </Style>
+            <Style Selector="Panel#PART_InlineErrorTemplatePanel ToolTip TextBlock">
+              <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+          </Panel.Styles>
+          <ToolTip.Tip>
+            <ItemsControl Items="{Binding}" />
+          </ToolTip.Tip>
+          <Path Width="14"
+                Height="14"
+                Data="M14,7 A7,7 0 0,0 0,7 M0,7 A7,7 0 1,0 14,7 M7,3l0,5 M7,9l0,2"
+                Stroke="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                StrokeThickness="2" />
+        </Panel>
+      </DataTemplate>
+      <ControlTemplate x:Key="TooltipDataValidationContentTemplate" TargetType="DataValidationErrors">
+        <DockPanel LastChildFill="True">
+          <ContentControl Content="{Binding (DataValidationErrors.Errors)}"
+                          ContentTemplate="{TemplateBinding ErrorTemplate}"
+                          DataContext="{TemplateBinding Owner}"
+                          DockPanel.Dock="Right"
+                          IsVisible="{Binding (DataValidationErrors.HasErrors)}" />
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+        </DockPanel>
+      </ControlTemplate>
+    </Style.Resources>
+
+    <Setter Property="Template" Value="{StaticResource InlineDataValidationContentTemplate}" />
+    <Setter Property="ErrorTemplate" Value="{StaticResource InlineDataValidationErrorTemplate}" />
+  </Style>
+</Styles>

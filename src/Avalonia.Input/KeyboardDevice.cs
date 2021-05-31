@@ -37,7 +37,7 @@ namespace Avalonia.Input
                     ie.IsKeyboardFocusWithin = false;
                 }
 
-                el = (IInputElement)el.VisualParent;
+                el = (IInputElement?)el.VisualParent;
             }
         }
         
@@ -192,7 +192,7 @@ namespace Avalonia.Input
                             Source = element,
                         };
 
-                        IVisual currentHandler = element;
+                        IVisual? currentHandler = element;
                         while (currentHandler != null && !ev.Handled && keyInput.Type == RawKeyEventType.KeyDown)
                         {
                             var bindings = (currentHandler as IInputElement)?.KeyBindings;

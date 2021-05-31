@@ -348,7 +348,9 @@ namespace Avalonia.Controls
 
             var pointNum = orient ? x.Position.X : x.Position.Y;
             var logicalPos = MathUtilities.Clamp(pointNum / pointDen, 0.0d, 1.0d);
-            var invert = orient ? 0 : 1;
+            var invert = orient ? 
+                IsDirectionReversed ? 1 : 0 :
+                IsDirectionReversed ? 0 : 1;
             var calcVal = Math.Abs(invert - logicalPos);
             var range = Maximum - Minimum;
             var finalValue = calcVal * range + Minimum;

@@ -208,7 +208,7 @@ namespace Avalonia.Controls
                 return;
 
             if (e.Key == Key.F4 ||
-                ((e.Key == Key.Down || e.Key == Key.Up) && e.KeyModifiers.HasFlagCustom(KeyModifiers.Alt)))
+                ((e.Key == Key.Down || e.Key == Key.Up) && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt)))
             {
                 IsDropDownOpen = !IsDropDownOpen;
                 e.Handled = true;
