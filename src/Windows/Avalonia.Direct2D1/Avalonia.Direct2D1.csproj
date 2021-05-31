@@ -14,7 +14,7 @@
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="..\..\..\build\SharpDX.props" />
+  <Import Project="..\..\..\build\Vortice.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />
   <Import Project="..\..\..\build\JetBrains.Annotations.props" />

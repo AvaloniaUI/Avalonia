@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using Avalonia.Platform;
-using SharpDX.WIC;
+using Vortice.WIC;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 
 namespace Avalonia.Direct2D1.Media.Imaging
@@ -32,13 +32,13 @@ namespace Avalonia.Direct2D1.Media.Imaging
         class LockedBitmap : ILockedFramebuffer
         {
             private readonly WriteableWicBitmapImpl _parent;
-            private readonly BitmapLock _lock;
+            private readonly IWICBitmapLock _lock;
             private readonly PixelFormat _format;
 
-            public LockedBitmap(WriteableWicBitmapImpl parent, BitmapLock l, PixelFormat format)
+            public LockedBitmap(WriteableWicBitmapImpl parent, IWICBitmapLock @lock, PixelFormat format)
             {
                 _parent = parent;
-                _lock = l;
+                _lock = @lock;
                 _format = format;
             }
 
@@ -58,6 +58,6 @@ namespace Avalonia.Direct2D1.Media.Imaging
         }
 
         public ILockedFramebuffer Lock() =>
-            new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);
+            new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.LockWrite), PixelFormat.Value);
     }
 }

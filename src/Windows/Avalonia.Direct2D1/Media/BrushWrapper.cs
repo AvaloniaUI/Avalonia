@@ -1,5 +1,5 @@
 using Avalonia.Media;
-using SharpDX;
+using SharpGen.Runtime;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -10,6 +10,6 @@ namespace Avalonia.Direct2D1.Media
             Brush = brush;
         }
 
-        public IBrush Brush { get; private set; }
+        public IBrush Brush { get; }
     }
 }

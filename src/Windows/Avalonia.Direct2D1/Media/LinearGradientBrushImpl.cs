@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Media;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -7,7 +8,7 @@ namespace Avalonia.Direct2D1.Media
     {
         public LinearGradientBrushImpl(
             ILinearGradientBrush brush,
-            SharpDX.Direct2D1.RenderTarget target,
+            ID2D1RenderTarget target,
             Size destinationSize)
         {
             if (brush.GradientStops.Count == 0)
@@ -15,7 +16,7 @@ namespace Avalonia.Direct2D1.Media
                 return;
             }
 
-            var gradientStops = brush.GradientStops.Select(s => new SharpDX.Direct2D1.GradientStop
+            var gradientStops = brush.GradientStops.Select(s => new Vortice.Direct2D1.GradientStop
             {
                 Color = s.Color.ToDirect2D(),
                 Position = (float)s.Offset
@@ -24,12 +25,11 @@ namespace Avalonia.Direct2D1.Media
             var startPoint = brush.StartPoint.ToPixels(destinationSize);
             var endPoint = brush.EndPoint.ToPixels(destinationSize);
 
-            using (var stops = new SharpDX.Direct2D1.GradientStopCollection(
-                target,
+            using (var stops = target.CreateGradientStopCollection(
                 gradientStops,
                 brush.SpreadMethod.ToDirect2D()))
             {
-                PlatformBrush = new SharpDX.Direct2D1.LinearGradientBrush(
+                PlatformBrush = new Vortice.Direct2D1.LinearGradientBrush(
                     target,
                     new SharpDX.Direct2D1.LinearGradientBrushProperties
                     {

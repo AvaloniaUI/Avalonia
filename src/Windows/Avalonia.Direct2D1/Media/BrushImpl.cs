@@ -1,10 +1,11 @@
 using System;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
     public abstract class BrushImpl : IDisposable
     {
-        public SharpDX.Direct2D1.Brush PlatformBrush { get; set; }
+        public ID2D1Brush PlatformBrush { get; set; }
 
         public virtual void Dispose()
         {

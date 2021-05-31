@@ -1,6 +1,6 @@
 using Avalonia.Logging;
 using Avalonia.Platform;
-using SharpDX.Direct2D1;
+using Vortice.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -11,7 +11,7 @@ namespace Avalonia.Direct2D1.Media
     {
         private const float ContourApproximation = 0.0001f;
 
-        public GeometryImpl(Geometry geometry)
+        public GeometryImpl(ID2D1Geometry geometry)
         {
             Geometry = geometry;
         }
@@ -22,7 +22,7 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc />
         public double ContourLength => Geometry.ComputeLength(null, ContourApproximation);
 
-        public Geometry Geometry { get; }
+        public ID2D1Geometry Geometry { get; }
 
         /// <inheritdoc/>
         public Rect GetRenderBounds(Avalonia.Media.IPen pen)
@@ -39,7 +39,7 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public IGeometryImpl Intersect(IGeometryImpl geometry)
         {
-            var result = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
+            var result = Direct2D1Platform.Direct2D1Factory.CreatePathGeometry();
             using (var sink = result.Open())
             {
                 Geometry.Combine(((GeometryImpl)geometry).Geometry, CombineMode.Intersect, sink);
@@ -91,6 +91,6 @@ namespace Avalonia.Direct2D1.Media
             return false;
         }
 
-        protected virtual Geometry GetSourceGeometry() => Geometry;
+        protected virtual ID2D1Geometry GetSourceGeometry() => Geometry;
     }
 }

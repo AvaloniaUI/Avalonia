@@ -2,7 +2,7 @@
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Platform;
-using SharpDX.DirectWrite;
+using Vortice.DirectWrite;
 using FontFamily = Avalonia.Media.FontFamily;
 using FontStyle = Avalonia.Media.FontStyle;
 using FontWeight = Avalonia.Media.FontWeight;

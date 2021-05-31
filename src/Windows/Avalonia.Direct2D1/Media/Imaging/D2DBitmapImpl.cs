@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
-using SharpDX.WIC;
-using Bitmap = SharpDX.Direct2D1.Bitmap;
+using Vortice.Direct2D1;
+using Vortice.WIC;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -10,7 +10,7 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class D2DBitmapImpl : BitmapImpl
     {
-        private readonly Bitmap _direct2DBitmap;
+        private readonly ID2D1Bitmap _direct2DBitmap;
 
         /// <summary>
         /// Initialize a new instance of the <see cref="BitmapImpl"/> class
@@ -19,10 +19,10 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="d2DBitmap">The GPU bitmap.</param>
         /// <remarks>
         /// This bitmap must be either from the same render target,
-        /// or if the render target is a <see cref="SharpDX.Direct2D1.DeviceContext"/>,
+        /// or if the render target is a <see cref="Vortice.Direct2D1.ID2D1DeviceContext"/>,
         /// the device associated with this context, to be renderable.
         /// </remarks>
-        public D2DBitmapImpl(Bitmap d2DBitmap)
+        public D2DBitmapImpl(ID2D1Bitmap d2DBitmap)
         {
             _direct2DBitmap = d2DBitmap ?? throw new ArgumentNullException(nameof(d2DBitmap));
         }
@@ -36,18 +36,18 @@ namespace Avalonia.Direct2D1.Media
             _direct2DBitmap.Dispose();
         }
 
-        public override OptionalDispose<Bitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target)
+        public override OptionalDispose<ID2D1Bitmap> GetDirect2DBitmap(ID2D1RenderTarget target)
         {
-            return new OptionalDispose<Bitmap>(_direct2DBitmap, false);
+            return new OptionalDispose<ID2D1Bitmap>(_direct2DBitmap, false);
         }
 
         public override void Save(Stream stream)
         {
-            using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))
-            using (var frame = new BitmapFrameEncode(encoder))
-            using (var bitmapSource = _direct2DBitmap.QueryInterface<BitmapSource>())
+            using (var encoder = Direct2D1Platform.ImagingFactory.CreateEncoder(ContainerFormat.Png, stream))
+            using (var frame = encoder.CreateNewFrame(null))
+            using (var bitmapSource = _direct2DBitmap.QueryInterface<IWICBitmapSource>())
             {
-                frame.Initialize();
+                frame.Initialize(null);
                 frame.WriteSource(bitmapSource);
                 frame.Commit();
                 encoder.Commit();

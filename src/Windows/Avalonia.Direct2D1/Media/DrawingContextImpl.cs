@@ -6,9 +6,8 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
-using SharpDX;
-using SharpDX.Direct2D1;
-using SharpDX.Mathematics.Interop;
+using Vortice.DXGI;
+using Vortice.Direct2D1;
 using BitmapInterpolationMode = Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode;
 
 namespace Avalonia.Direct2D1.Media
@@ -20,10 +19,10 @@ namespace Avalonia.Direct2D1.Media
     {
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly ILayerFactory _layerFactory;
-        private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
-        private readonly DeviceContext _deviceContext;
+        private readonly ID2D1RenderTarget _renderTarget;
+        private readonly ID2D1DeviceContext _deviceContext;
         private readonly bool _ownsDeviceContext;
-        private readonly SharpDX.DXGI.SwapChain1 _swapChain;
+        private readonly IDXGISwapChain1 _swapChain;
         private readonly Action _finishedCallback;
 
         /// <summary>
@@ -40,8 +39,8 @@ namespace Avalonia.Direct2D1.Media
         public DrawingContextImpl(
             IVisualBrushRenderer visualBrushRenderer,
             ILayerFactory layerFactory,
-            SharpDX.Direct2D1.RenderTarget renderTarget,
-            SharpDX.DXGI.SwapChain1 swapChain = null,
+            Vortice.Direct2D1.ID2D1RenderTarget renderTarget,
+            Vortice.DXGI.IDXGISwapChain1 swapChain = null,
             Action finishedCallback = null)
         {
             _visualBrushRenderer = visualBrushRenderer;
@@ -50,14 +49,14 @@ namespace Avalonia.Direct2D1.Media
             _swapChain = swapChain;
             _finishedCallback = finishedCallback;
 
-            if (_renderTarget is DeviceContext deviceContext)
+            if (_renderTarget is ID2D1DeviceContext deviceContext)
             {
                 _deviceContext = deviceContext;
                 _ownsDeviceContext = false;
             }
             else
             {
-                _deviceContext = _renderTarget.QueryInterface<DeviceContext>();
+                _deviceContext = _renderTarget.QueryInterface<ID2D1DeviceContext>();
                 _ownsDeviceContext = true;
             }
 
@@ -412,8 +411,8 @@ namespace Avalonia.Direct2D1.Media
             _deviceContext.PopAxisAlignedClip();
         }
 
-        readonly Stack<Layer> _layers = new Stack<Layer>();
-        private readonly Stack<Layer> _layerPool = new Stack<Layer>();
+        readonly Stack<ID2D1Layer> _layers = new Stack<ID2D1Layer>();
+        private readonly Stack<ID2D1Layer> _layerPool = new Stack<ID2D1Layer>();
         /// <summary>
         /// Pushes an opacity value.
         /// </summary>
