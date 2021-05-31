@@ -76,26 +76,12 @@ namespace Avalonia.Controls.Primitives
                     rect.BottomLeft + offset,
                     rect.BottomRight + offset);
             }
-
-            internal static string RemoveAccessKeyMarker(string text)
-            {
-                if (!string.IsNullOrEmpty(text))
-                {
-                    var accessKeyMarker = "_";
-                    var doubleAccessKeyMarker = accessKeyMarker + accessKeyMarker;
-                    int index = FindAccessKeyMarker(text);
-                    if (index >= 0 && index < text.Length - 1)
-                        text = text.Remove(index, 1);
-                    text = text.Replace(doubleAccessKeyMarker, accessKeyMarker);
-                }
-                return text;
-            }
         }
 
         /// <inheritdoc/>
         protected override TextLayout CreateTextLayout(Size constraint, string text)
         {
-            return base.CreateTextLayout(constraint, StripAccessKey(text));
+            return base.CreateTextLayout(constraint, RemoveAccessKeyMarker(text));
         }
 
         /// <inheritdoc/>
@@ -127,23 +113,35 @@ namespace Avalonia.Controls.Primitives
             return new NoneAutomationPeer(factory, this);
         }
 
-        /// <summary>
-        /// Returns a string with the first underscore stripped.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns>The text with the first underscore stripped.</returns>
-        private string StripAccessKey(string text)
+        internal static string RemoveAccessKeyMarker(string text)
         {
-            var position = text.IndexOf('_');
+            if (!string.IsNullOrEmpty(text))
+            {
+                var accessKeyMarker = "_";
+                var doubleAccessKeyMarker = accessKeyMarker + accessKeyMarker;
+                int index = FindAccessKeyMarker(text);
+                if (index >= 0 && index < text.Length - 1)
+                    text = text.Remove(index, 1);
+                text = text.Replace(doubleAccessKeyMarker, accessKeyMarker);
+            }
+            return text;
+        }
 
-            if (position == -1)
+        private static int FindAccessKeyMarker(string text)
+        {
+            var length = text.Length;
+            var startIndex = 0;
+            while (startIndex < length)
             {
-                return text;
+                int index = text.IndexOf('_', startIndex);
+                if (index == -1)
+                    return -1;
+                if (index + 1 < length && text[index + 1] != '_')
+                    return index;
+                startIndex = index + 2;
             }
-            else
-            {
-                return text.Substring(0, position) + text.Substring(position + 1);
-            }
+
+            return -1;
         }
 
         /// <summary>
