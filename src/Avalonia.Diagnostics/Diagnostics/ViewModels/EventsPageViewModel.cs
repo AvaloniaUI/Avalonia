@@ -23,7 +23,6 @@ namespace Avalonia.Diagnostics.ViewModels
         };
 
         private readonly MainViewModel _mainViewModel;
-        private string _eventTypeFilter;
         private FiredEvent _selectedEvent;
         private EventTreeNodeBase _selectedNode;
 
@@ -36,6 +35,9 @@ namespace Avalonia.Diagnostics.ViewModels
                 .OrderBy(e => e.Key.Name)
                 .Select(g => new EventOwnerTreeNode(g.Key, g, this))
                 .ToArray();
+
+            EventsFilter = new FilterViewModel();
+            EventsFilter.RefreshFilter += (s, e) => UpdateEventFilters();
 
             EnableDefault();
         }
@@ -58,11 +60,7 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _selectedNode, value);
         }
 
-        public string EventTypeFilter
-        {
-            get => _eventTypeFilter;
-            set => RaiseAndSetIfChanged(ref _eventTypeFilter, value);
-        }
+        public FilterViewModel EventsFilter { get; }
 
         public void Clear()
         {
@@ -125,16 +123,6 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
-
-            if (e.PropertyName == nameof(EventTypeFilter))
-            {
-                UpdateEventFilters();
-            }
-        }
-
         private void EvaluateNodeEnabled(Func<EventTreeNode, bool> eval)
         {
             void ProcessNode(EventTreeNodeBase node)
@@ -161,9 +149,6 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateEventFilters()
         {
-            var filter = EventTypeFilter;
-            bool hasFilter = !string.IsNullOrEmpty(filter);
-
             foreach (var node in Nodes)
             {
                 FilterNode(node, false);
@@ -171,7 +156,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             bool FilterNode(EventTreeNodeBase node, bool isParentVisible)
             {
-                bool matchesFilter = !hasFilter || node.Text.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesFilter = EventsFilter.Filter(node.Text);
                 bool hasVisibleChild = false;
 
                 if (node.Children != null)
