@@ -25,7 +25,7 @@ namespace Avalonia.Rendering
     public static class CustomSimpleHitTestExtensions
     {
         public static bool HitTestCustom(this IVisual visual, Point point)
-            => (visual as ICustomSimpleHitTest)?.HitTest(point) ?? visual.Bounds.Contains(point);
+            => (visual as ICustomSimpleHitTest)?.HitTest(point) ?? visual.TransformedBounds?.Contains(point) == true;
 
         public static bool HitTestCustom(this IEnumerable<IVisual> children, Point point)
             => children.Any(ctrl => ctrl.HitTestCustom(point));
