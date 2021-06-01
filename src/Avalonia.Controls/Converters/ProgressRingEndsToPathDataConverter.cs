@@ -91,6 +91,10 @@ namespace Avalonia.Controls.Converters
                     }
                 };*/
             }
+            else if ((normStart == normEnd) && (startAngle == endAngle))
+            {
+                return new PathGeometry();
+            }
             else
             {
                 return new PathGeometry()
