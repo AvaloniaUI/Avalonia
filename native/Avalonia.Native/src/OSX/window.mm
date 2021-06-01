@@ -50,7 +50,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -112,6 +111,9 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
+            
+            [Window setContentView: StandardContainer];
+            
             if(ShouldTakeFocusOnShow() && activate)
             {
                 [Window makeKeyAndOrderFront:Window];
@@ -124,10 +126,6 @@ public:
             [Window setTitle:_lastTitle];
             
             _shown = true;
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [Window updateShadow];
-            });
             
             return S_OK;
         }
@@ -195,9 +193,11 @@ public:
         {
             if(ret == nullptr)
                 return E_POINTER;
+            
             auto frame = [View frame];
             ret->Width = frame.size.width;
             ret->Height = frame.size.height;
+            
             return S_OK;
         }
     }
@@ -258,6 +258,12 @@ public:
                 y = maxSize.height;
             }
             
+            if(!_shown)
+            {
+                BaseEvents->Resized(AvnSize{x,y});
+            }
+            
+            [StandardContainer setFrameSize:NSSize{x,y}];
             [Window setContentSize:NSSize{x, y}];
             
             return S_OK;
@@ -1842,19 +1848,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     double _lastScaling;
 }
 
-- (void)updateShadow
-{
-    // Common problem in Cocoa where [invalidateShadow] does work,
-    // This hack forces Cocoa to invalidate the shadow.
-    
-    NSRect frame = [self frame];
-    NSRect updatedFrame = NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + 1.0, frame.size.height + 1.0);
-    [self setFrame:updatedFrame display:YES];
-    [self setFrame:frame display:YES];
-    
-    [self invalidateShadow];
-}
-
 -(void) setIsExtended:(bool)value;
 {
     _isExtended = value;
@@ -2013,7 +2006,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _lastScaling = [self backingScaleFactor];
     [self setOpaque:NO];
     [self setBackgroundColor: [NSColor clearColor]];
-    [self invalidateShadow];
     _isExtended = false;
     return self;
 }
@@ -2254,6 +2246,7 @@ protected:
         {
             if (Window != nullptr)
             {
+                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             
                 [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
