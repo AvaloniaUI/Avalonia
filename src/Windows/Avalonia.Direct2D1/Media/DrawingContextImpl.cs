@@ -128,10 +128,10 @@ namespace Avalonia.Direct2D1.Media
                 
                 _deviceContext.DrawBitmap(
                     d2d.Value,
-                    destRect.ToSharpDX(),
+                    destRect.ToVortice(),
                     (float)opacity,
                     interpolationMode,
-                    sourceRect.ToSharpDX(),
+                    sourceRect.ToVortice(),
                     null);
             }
         }
@@ -226,8 +226,8 @@ namespace Avalonia.Direct2D1.Media
                     if (d2dBrush.PlatformBrush != null)
                     {
                         _deviceContext.DrawLine(
-                            p1.ToSharpDX(),
-                            p2.ToSharpDX(),
+                            p1.ToVortice(),
+                            p2.ToVortice(),
                             d2dBrush.PlatformBrush,
                             (float)pen.Thickness,
                             d2dStroke);
@@ -373,7 +373,7 @@ namespace Avalonia.Direct2D1.Media
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
 
                 _renderTarget.DrawGlyphRun(
-                    glyphRun.BaselineOrigin.ToSharpDX(), 
+                    glyphRun.BaselineOrigin.ToVortice(), 
                     glyphRunImpl.GlyphRun,
                     brush.PlatformBrush,
                     Vortice.DCommon.MeasuringMode.Natural);
@@ -402,7 +402,7 @@ namespace Avalonia.Direct2D1.Media
         /// <returns>A disposable used to undo the clip rectangle.</returns>
         public void PushClip(Rect clip)
         {
-            _deviceContext.PushAxisAlignedClip(clip.ToSharpDX(), AntialiasMode.PerPrimitive);
+            _deviceContext.PushAxisAlignedClip(clip.ToVortice(), AntialiasMode.PerPrimitive);
         }
 
         public void PushClip(RoundedRect clip)
@@ -513,7 +513,7 @@ namespace Avalonia.Direct2D1.Media
                         var pixelSize = PixelSize.FromSizeWithDpi(intermediateSize, dpi);
 
                         using (var intermediate = _deviceContext.CreateCompatibleRenderTarget(
-                            pixelSize.ToSizeWithDpi(dpi).ToSharpDX(),
+                            pixelSize.ToSizeWithDpi(dpi).ToVortice(),
                             CompatibleRenderTargetOptions.None
                             ))
                         {

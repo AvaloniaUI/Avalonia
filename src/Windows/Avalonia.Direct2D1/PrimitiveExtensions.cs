@@ -36,17 +36,17 @@ namespace Avalonia.Direct2D1
 
         public static Vector ToAvaloniaVector(this System.Drawing.SizeF p) => new Vector(p.Width, p.Height);
 
-        public static Vortice.RawRectF ToSharpDX(this Rect r)
+        public static Vortice.RawRectF ToVortice(this Rect r)
         {
             return new Vortice.RawRectF((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);
         }
 
-        public static System.Drawing.PointF ToSharpDX(this Point p)
+        public static System.Drawing.PointF ToVortice(this Point p)
         {
             return new System.Drawing.PointF((float)p.X, (float)p.Y);
         }
 
-        public static System.Drawing.SizeF ToSharpDX(this Size p)
+        public static System.Drawing.SizeF ToVortice(this Size p)
         {
             return new System.Drawing.SizeF((float)p.Width, (float)p.Height);
         }

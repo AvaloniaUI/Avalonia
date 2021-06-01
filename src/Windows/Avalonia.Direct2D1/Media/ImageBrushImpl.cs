@@ -89,7 +89,7 @@ namespace Avalonia.Direct2D1.Media
             TileBrushCalculator calc)
         {
             var result = target.CreateCompatibleRenderTarget(
-                calc.IntermediateSize.ToSharpDX(),
+                calc.IntermediateSize.ToVortice(),
                 null,
                 null,
                 CompatibleRenderTargetOptions.None

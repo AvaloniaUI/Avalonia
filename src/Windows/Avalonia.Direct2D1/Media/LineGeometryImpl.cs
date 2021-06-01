@@ -14,8 +14,8 @@ namespace Avalonia.Direct2D1.Media
         {
             using (var sink = ((ID2D1PathGeometry)Geometry).Open())
             {
-                sink.BeginFigure(p1.ToSharpDX(), FigureBegin.Hollow);
-                sink.AddLine(p2.ToSharpDX());
+                sink.BeginFigure(p1.ToVortice(), FigureBegin.Hollow);
+                sink.AddLine(p2.ToVortice());
                 sink.EndFigure(FigureEnd.Open);
                 sink.Close();
             }

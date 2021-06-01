@@ -38,8 +38,8 @@ namespace Avalonia.Direct2D1.Media
                 PlatformBrush = target.CreateRadialGradientBrush(
                     new Vortice.Direct2D1.RadialGradientBrushProperties
                     {
-                        Center = centerPoint.ToSharpDX(),
-                        GradientOriginOffset = gradientOrigin.ToSharpDX(),
+                        Center = centerPoint.ToVortice(),
+                        GradientOriginOffset = gradientOrigin.ToVortice(),
                         RadiusX = (float)radiusX,
                         RadiusY = (float)radiusY
                     },

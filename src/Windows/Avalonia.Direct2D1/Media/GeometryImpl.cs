@@ -33,7 +33,7 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public bool FillContains(Point point)
         {
-            return Geometry.FillContainsPoint(point.ToSharpDX());
+            return Geometry.FillContainsPoint(point.ToVortice());
         }
 
         /// <inheritdoc/>
@@ -51,7 +51,7 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public bool StrokeContains(Avalonia.Media.IPen pen, Point point)
         {
-            return Geometry.StrokeContainsPoint(point.ToSharpDX(), (float)(pen?.Thickness ?? 0));
+            return Geometry.StrokeContainsPoint(point.ToVortice(), (float)(pen?.Thickness ?? 0));
         }
 
         public ITransformedGeometryImpl WithTransform(Matrix transform)

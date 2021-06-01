@@ -34,8 +34,8 @@ namespace Avalonia.Direct2D1.Media
                 PlatformBrush = target.CreateLinearGradientBrush(
                     new LinearGradientBrushProperties
                     {
-                        StartPoint = startPoint.ToSharpDX(),
-                        EndPoint = endPoint.ToSharpDX()
+                        StartPoint = startPoint.ToVortice(),
+                        EndPoint = endPoint.ToVortice()
                     },
                     new BrushProperties
                     {
