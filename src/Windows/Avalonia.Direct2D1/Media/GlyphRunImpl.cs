@@ -1,15 +1,16 @@
 ﻿using Avalonia.Platform;
+using Vortice.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
     internal class GlyphRunImpl : IGlyphRunImpl
     {
-        public GlyphRunImpl(Vortice.DirectWrite.GlyphRun glyphRun)
+        public GlyphRunImpl(GlyphRun glyphRun)
         {
             GlyphRun = glyphRun;
         }
 
-        public Vortice.DirectWrite.GlyphRun GlyphRun { get; }
+        public GlyphRun GlyphRun { get; }
 
         public void Dispose()
         {

@@ -1,6 +1,6 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <VorticeVersion>1.9.77</VorticeVersion>
+    <VorticeVersion>1.9.80</VorticeVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Vortice.DirectX" Version="$(VorticeVersion)" />

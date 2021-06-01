@@ -270,7 +270,7 @@ namespace Avalonia.Direct2D1
             var run = new Vortice.DirectWrite.GlyphRun
             {
                 FontFace = glyphTypeface.FontFace,
-                FontEmSize = (float)glyphRun.FontRenderingEmSize
+                FontSize = (float)glyphRun.FontRenderingEmSize
             };
 
             var indices = new ushort[glyphCount];
@@ -279,9 +279,9 @@ namespace Avalonia.Direct2D1
                 indices[i] = glyphRun.GlyphIndices[i];
             }
 
-            run.GlyphIndices = indices;
+            run.Indices = indices;
 
-            run.GlyphAdvances = new float[glyphCount];
+            run.Advances = new float[glyphCount];
 
             var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
 
@@ -291,7 +291,7 @@ namespace Avalonia.Direct2D1
                 {
                     var advance = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
 
-                    run.GlyphAdvances[i] = advance;
+                    run.Advances[i] = advance;
                 }
             }
             else
@@ -300,7 +300,7 @@ namespace Avalonia.Direct2D1
                 {
                     var advance = (float)glyphRun.GlyphAdvances[i];
 
-                    run.GlyphAdvances[i] = advance;
+                    run.Advances[i] = advance;
                 }
             }
 
@@ -309,13 +309,13 @@ namespace Avalonia.Direct2D1
                 return new GlyphRunImpl(run);
             }
 
-            run.GlyphOffsets = new GlyphOffset[glyphCount];
+            run.Offsets = new GlyphOffset[glyphCount];
 
             for (var i = 0; i < glyphCount; i++)
             {
                 var (x, y) = glyphRun.GlyphOffsets[i];
 
-                run.GlyphOffsets[i] = new GlyphOffset
+                run.Offsets[i] = new GlyphOffset
                 {
                     AdvanceOffset = (float)x,
                     AscenderOffset = (float)y

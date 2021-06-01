@@ -8,7 +8,7 @@ using Vortice.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
-    internal class AvaloniaTextRenderer : CallbackBase, IDWriteTextRenderer
+    internal class AvaloniaTextRenderer : TextRendererBase
     {
         private readonly DrawingContextImpl _context;
 
@@ -26,13 +26,13 @@ namespace Avalonia.Direct2D1.Media
             _foreground = foreground;
         }
 
-        public void DrawGlyphRun(
+        public override void DrawGlyphRun(
             IntPtr clientDrawingContext,
             float baselineOriginX,
             float baselineOriginY,
             MeasuringMode measuringMode,
             GlyphRun glyphRun,
-            ref GlyphRunDescription glyphRunDescription,
+            GlyphRunDescription glyphRunDescription,
             IUnknown clientDrawingEffect)
         {
             var wrapper = clientDrawingEffect as BrushWrapper;
@@ -54,37 +54,14 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        public void DrawUnderline(IntPtr clientDrawingContext, float baselineOriginX, float baselineOriginY, ref Underline underline,
-                                  IUnknown clientDrawingEffect)
-        {
-            throw new SharpGenException(Result.NotImplemented);
-        }
-
-        public void DrawStrikethrough(IntPtr clientDrawingContext, float baselineOriginX, float baselineOriginY,
-                                      ref Strikethrough strikethrough, IUnknown clientDrawingEffect)
-        {
-            throw new SharpGenException(Result.NotImplemented);
-        }
-
-        public void DrawInlineObject(IntPtr clientDrawingContext, float originX, float originY, IDWriteInlineObject inlineObject,
-                                     RawBool isSideways, RawBool isRightToLeft, IUnknown clientDrawingEffect)
-        {
-            throw new SharpGenException(Result.NotImplemented);
-        }
-
-        public Matrix3x2 GetCurrentTransform(IntPtr clientDrawingContext)
+        public override Matrix3x2 GetCurrentTransform(IntPtr clientDrawingContext)
         {
             return _renderTarget.Transform;
         }
 
-        public float GetPixelsPerDip(IntPtr clientDrawingContext)
+        public override  float GetPixelsPerDip(IntPtr clientDrawingContext)
         {
             return _renderTarget.Dpi.Width / 96;
-        }
-
-        public RawBool IsPixelSnappingDisabled(IntPtr clientDrawingContext)
-        {
-            return false;
         }
     }
 }
