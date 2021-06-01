@@ -3,6 +3,7 @@
     <VorticeVersion>1.9.80</VorticeVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     <PackageReference Include="Vortice.DirectX" Version="$(VorticeVersion)" />
     <PackageReference Include="Vortice.Direct2D1" Version="$(VorticeVersion)" />
     <PackageReference Include="Vortice.Direct3D11" Version="$(VorticeVersion)" />
