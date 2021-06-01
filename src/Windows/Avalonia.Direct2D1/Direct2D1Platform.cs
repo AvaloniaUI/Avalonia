@@ -68,9 +68,9 @@ namespace Avalonia.Direct2D1
                     },
                     out direct2D1Factory
                 );
-#endif
 
                 if (result.Failure)
+#endif
                 {
                     result = Vortice.Direct2D1.D2D1.D2D1CreateFactory(
                         Vortice.Direct2D1.FactoryType.MultiThreaded, new Vortice.Direct2D1.FactoryOptions
