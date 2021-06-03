@@ -1,57 +1,34 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:converters="using:Avalonia.Controls.Converters">
   <Styles.Resources>
-    <converters:ProgressRingEndsToPathDataConverter x:Key="ProgressRingEndsToPathDataConverter"/>
     <converters:FitSquarelyWithinAspectRatioConverter x:Key="FitSquarelyWithinAspectRatioConverter"/>
   </Styles.Resources>
   <Style Selector="ProgressRing">
     <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
     <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}"/>
     <Setter Property="BorderThickness" Value="9" />
-    <Setter Property="MinWidth" Value="20" />
-    <Setter Property="MinHeight" Value="20" />
+    <Setter Property="MinHeight" Value="16" />
+    <Setter Property="MinWidth" Value="16" />
     <Setter Property="Template">
       <ControlTemplate>
         <Panel x:Name="FluentRingRoot">
-          <Ellipse x:Name="Track" Stroke="{TemplateBinding Background}" StrokeThickness="{Binding BorderThickness.Left, RelativeSource={RelativeSource Mode=TemplatedParent}}">
-            <Ellipse.RenderTransform>
-              <RotateTransform/>
-            </Ellipse.RenderTransform>
-          </Ellipse>
-          <Rectangle x:Name="AnimationHelper" IsVisible="False"/>
-          <Path Classes="fill" Stroke="{TemplateBinding Foreground}" StrokeThickness="9" Tag="{Binding #FluentRingRoot}"/>
-          <Path Classes="fill" Stroke="{TemplateBinding Foreground}" StrokeThickness="9" Tag="{Binding #FluentRingRoot}" IsVisible="{TemplateBinding IsIndeterminate}">
-            <Path.RenderTransform>
-              <RotateTransform Angle="180"/>
-            </Path.RenderTransform>
-          </Path>
+          <Ellipse x:Name="Track" Stroke="{TemplateBinding Background}" StrokeThickness="{Binding BorderThickness.Left, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+          <Arc x:Name="Fill" Stroke="{TemplateBinding Foreground}" StrokeThickness="{Binding BorderThickness.Left, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+          <Arc x:Name="Fill2" Stroke="{TemplateBinding Foreground}" StrokeThickness="{Binding BorderThickness.Left, RelativeSource={RelativeSource Mode=TemplatedParent}}" IsVisible="{TemplateBinding IsIndeterminate}"/>
         </Panel>
       </ControlTemplate>
     </Setter>
   </Style>
 
-
-  <Style Selector="ProgressRing:not(:indeterminate) /template/ Path.fill">
-    <Setter Property="Data">
-      <MultiBinding Converter="{StaticResource ProgressRingEndsToPathDataConverter}">
-        <Binding Path="Tag.Children[0].Bounds" RelativeSource="{RelativeSource Mode=Self}"/>
-        <Binding Path="Tag.Children[0].StrokeThickness" RelativeSource="{RelativeSource Mode=Self}"/>
-        <Binding Path="Minimum" RelativeSource="{RelativeSource Mode=TemplatedParent}"/>
-        <Binding Path="Maximum" RelativeSource="{RelativeSource Mode=TemplatedParent}"/>
-        <Binding Path="Value" RelativeSource="{RelativeSource Mode=TemplatedParent}"/>
-      </MultiBinding>
-    </Setter>
-  </Style>
-  <Style Selector="ProgressRing:indeterminate /template/ Path.fill">
-    <Setter Property="Data">
-      <MultiBinding Converter="{StaticResource ProgressRingEndsToPathDataConverter}">
-        <Binding Path="Tag.Children[0].Bounds" RelativeSource="{RelativeSource Mode=Self}"/>
-        <Binding Path="Tag.Children[0].StrokeThickness" RelativeSource="{RelativeSource Mode=Self}"/>
-        <Binding Path="Tag.Children[1].Width" RelativeSource="{RelativeSource Mode=Self}"/>
-        <Binding Path="Tag.Children[1].Height" RelativeSource="{RelativeSource Mode=Self}"/>
-      </MultiBinding>
-    </Setter>
+  <Style Selector="ProgressRing:not(:indeterminate) /template/ Arc#Fill">
+    <Setter Property="EndAngle" Value="-90"/>
+    <Setter Property="StartAngle" Value="{Binding ValueAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
   </Style>
   
+
+  <Style Selector="ProgressRing:preserveaspect">
+    <Setter Property="MinWidth" Value="32" />
+    <Setter Property="MinHeight" Value="32" />
+  </Style>
 
   <Style Selector="ProgressRing:preserveaspect /template/ Panel#FluentRingRoot">
     <Setter Property="Width" Value="{TemplateBinding Bounds, Converter={StaticResource FitSquarelyWithinAspectRatioConverter}}"/>
@@ -59,24 +36,38 @@
   </Style>
 
   
-  <Style Selector="ProgressRing /template/ Rectangle#AnimationHelper">
-    <Setter Property="Width" Value="-90"/>
-    <Setter Property="Height" Value="-90"/>
-  </Style>
-  <Style Selector="ProgressRing[IsEnabled=True]:indeterminate /template/ Rectangle#AnimationHelper">
+  <Style Selector="ProgressRing[IsEnabled=True]:indeterminate /template/ Arc#Fill">
     <Style.Animations>
       <Animation Duration="0:0:1.5" IterationCount="INFINITE" FillMode="Both">
         <KeyFrame Cue="0%">
-          <Setter Property="Width" Value="-90"/>
-          <Setter Property="Height" Value="-90"/>
+          <Setter Property="StartAngle" Value="-90"/>
+          <Setter Property="EndAngle" Value="-90"/>
         </KeyFrame>
         <KeyFrame Cue="50%">
-          <Setter Property="Width" Value="90"/>
-          <Setter Property="Height" Value="-90"/>
+          <Setter Property="StartAngle" Value="90"/>
+          <Setter Property="EndAngle" Value="-90"/>
         </KeyFrame>
         <KeyFrame Cue="100%">
-          <Setter Property="Width" Value="90"/>
-          <Setter Property="Height" Value="90"/>
+          <Setter Property="StartAngle" Value="90"/>
+          <Setter Property="EndAngle" Value="90"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="ProgressRing[IsEnabled=True]:indeterminate /template/ Arc#Fill2">
+    <Style.Animations>
+      <Animation Duration="0:0:1.5" IterationCount="INFINITE" FillMode="Both">
+        <KeyFrame Cue="0%">
+          <Setter Property="StartAngle" Value="90"/>
+          <Setter Property="EndAngle" Value="90"/>
+        </KeyFrame>
+        <KeyFrame Cue="50%">
+          <Setter Property="StartAngle" Value="270"/>
+          <Setter Property="EndAngle" Value="90"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="StartAngle" Value="270"/>
+          <Setter Property="EndAngle" Value="270"/>
         </KeyFrame>
       </Animation>
     </Style.Animations>
