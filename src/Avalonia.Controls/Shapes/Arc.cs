@@ -20,9 +20,16 @@ namespace Avalonia.Controls.Shapes
             }
         };
 
+        
+        /// <summary>
+        /// Defines the <see cref="StartAngle"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> StartAngleProperty =
             AvaloniaProperty.Register<Arc, double>(nameof(StartAngle), 0.0);
 
+        /// <summary>
+        /// Defines the <see cref="EndAngle"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> EndAngleProperty =
             AvaloniaProperty.Register<Arc, double>(nameof(EndAngle), 0.0);
 
@@ -57,12 +64,18 @@ namespace Avalonia.Controls.Shapes
             };
         }
 
+        /// <summary>
+        /// Gets or sets the angle at which the arc starts, in degrees.
+        /// </summary>
         public double StartAngle
         {
             get { return GetValue(StartAngleProperty); }
             set { SetValue(StartAngleProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the angle at which the arc ends, in degrees.
+        /// </summary>
         public double EndAngle
         {
             get { return GetValue(EndAngleProperty); }
@@ -86,11 +99,11 @@ namespace Avalonia.Controls.Shapes
             {
                 return new EllipseGeometry(rect.Deflate(StrokeThickness / 2));
             }
-            else if ((normStart == normEnd) && (startAngle == endAngle)) //empty
+            else if ((normStart == normEnd) && (startAngle == endAngle)) //zero-degree arc
             {
                 return _emptyGeometry;
             }
-            else //partial ring
+            else //partial arc
             {
                 var deflatedRect = rect.Deflate(StrokeThickness / 2);
 
@@ -127,12 +140,23 @@ namespace Avalonia.Controls.Shapes
             double normEnd = RadToNormRad(endAngle);
 
 
-            if ((normStart == normEnd) && (startAngle == endAngle)) //empty
+            if ((normStart == normEnd) && (startAngle == endAngle))
             {
-
+                /*start and end angles are identical, so we don't call base.Render().
+                Doing so would cause the geometry to be drawn, which we don't want for
+                a zero-length arc, as this could result in something being drawn, which
+                would likely be interpreted by the user as "there's something there"
+                even though there's supposed to be "nothing there" when the angles
+                are identical. We can't just have CreateDefiningGeometry() return
+                null in this scenario either, as the base Shape class seems to use the
+                geometry for layouting, which needs to not work differently just because
+                the arc is empty.*/
             }
-            else //not empty
+            else
             {
+                /*We're going around the implied circle by more than 0.0 degrees, so
+                we let the base Shape class draw our geometry so it will actually be
+                visible.*/
                 base.Render(ctx);
             }
         }
