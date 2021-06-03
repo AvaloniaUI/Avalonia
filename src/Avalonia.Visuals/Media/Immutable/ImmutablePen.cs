@@ -23,7 +23,7 @@ namespace Avalonia.Media.Immutable
             ImmutableDashStyle dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
-            double miterLimit = 10.0) : this(new SolidColorBrush(color), thickness, dashStyle, lineCap, lineJoin, miterLimit)
+            double miterLimit = 10.0) : this(new ImmutableSolidColorBrush(color), thickness, dashStyle, lineCap, lineJoin, miterLimit)
         {
         }
 
