@@ -108,7 +108,7 @@ namespace Avalonia.Controls.Shapes
                 _arcFigure.StartPoint = startPoint;
                 
                 _arcSegment.Point = endPoint;
-                _arcSegment.IsLargeArc = angleGap >= HALF_TAU;
+                _arcSegment.IsLargeArc = angleGap >= Math.PI;
                 _arcSegment.Size = new Size(radiusX, radiusY);
                 
                 return _arcGeometry;
@@ -137,15 +137,10 @@ namespace Avalonia.Controls.Shapes
             }
         }
 
-        const double TAU = 6.2831853071795862; //Math.Tau doesn't exist pre-.NET 5 :(
-        const double HALF_TAU = TAU / 2.0;
-
         static double DegreesToRad(double inAngle) =>
             inAngle * Math.PI / 180;
         
-        static double RadToNormRad(double inAngle) =>
-            (0 + (inAngle % TAU) + TAU) % TAU;
-
+        static double RadToNormRad(double inAngle) => (0 + (inAngle % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
 
         static Point GetRingPoint(double radiusX, double radiusY, double centerX, double centerY, double angle) =>
             new Point((radiusX * Math.Cos(angle)) + centerX, (radiusY * Math.Sin(angle)) + centerY);
