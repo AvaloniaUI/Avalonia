@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -18,6 +19,36 @@ namespace Avalonia.Controls
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
 
         private LightDismissOverlayLayer? _overlay;
+
+        /// <summary>
+        /// Defines the <see cref="Opened"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> OpenedEvent =
+            RoutedEvent.Register<Menu, RoutedEventArgs>(nameof(Opened), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Closed"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> ClosedEvent =
+            RoutedEvent.Register<Menu, RoutedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Occurs when a <see cref="Menu"/> is opened.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs> Opened
+        {
+            add { AddHandler(OpenedEvent, value); }
+            remove { RemoveHandler(OpenedEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a <see cref="Menu"/> is closed.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs> Closed
+        {
+            add { AddHandler(ClosedEvent, value); }
+            remove { RemoveHandler(ClosedEvent, value); }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Menu"/> class.
@@ -58,7 +89,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuClosedEvent,
+                RoutedEvent = ClosedEvent,
                 Source = this,
             });
         }
@@ -75,7 +106,7 @@ namespace Avalonia.Controls
 
             RaiseEvent(new RoutedEventArgs
             {
-                RoutedEvent = MenuOpenedEvent,
+                RoutedEvent = OpenedEvent,
                 Source = this,
             });
         }
