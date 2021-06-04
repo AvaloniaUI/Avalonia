@@ -35,8 +35,9 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the ContextMenuEventArgs
-        /// class.
+        /// Gets the position of the cursor relative to the visual at
+        /// the time the context menu was opening. Returns null if such
+        /// a position isn't available.
         /// </summary>
         public Point? GetPosition(IVisual? relativeTo)
             => Pointer?.GetPosition(relativeTo);
