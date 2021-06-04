@@ -249,6 +249,8 @@ namespace Avalonia.Rendering.SceneGraph
                     {
                         var visualChildren = (IList<IVisual>) visual.VisualChildren;
 
+                        node.TryPreallocateChildren(visualChildren.Count);
+
                         if (visualChildren.Count == 1)
                         {
                             var childNode = GetOrCreateChildNode(scene, visualChildren[0], node);
