@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+
 using Avalonia.Animation.Animators;
 using Avalonia.Animation.Easings;
-using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Metadata;
 
@@ -292,7 +293,7 @@ namespace Avalonia.Animation
             return (newAnimatorInstances, subscriptions);
         }
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         public IDisposable Apply(Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
@@ -323,20 +324,23 @@ namespace Avalonia.Animation
             return new CompositeDisposable(subscriptions);
         }
 
-        /// <inheritdocs/>
-        public Task RunAsync(Animatable control, IClock clock = null)
+        /// <inheritdoc/>
+        public Task RunAsync(Animatable control, IClock clock = null, CancellationToken cancellationToken = default)
         {
             var run = new TaskCompletionSource<object>();
 
             if (this.IterationCount == IterationCount.Infinite)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
-            IDisposable subscriptions = null;
+            IDisposable subscriptions = null, cancellation = null;
             subscriptions = this.Apply(control, clock, Observable.Return(true), () =>
             {
                 run.SetResult(null);
                 subscriptions?.Dispose();
+                cancellation?.Dispose();
             });
+
+            cancellation = cancellationToken.Register(state => ((IDisposable)state).Dispose(), subscriptions);
 
             return run.Task;
         }
