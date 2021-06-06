@@ -327,6 +327,11 @@ namespace Avalonia.Animation
         /// <inheritdoc/>
         public Task RunAsync(Animatable control, IClock clock = null, CancellationToken cancellationToken = default)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
             var run = new TaskCompletionSource<object>();
 
             if (this.IterationCount == IterationCount.Infinite)
