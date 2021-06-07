@@ -141,8 +141,8 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<TextBox, int> UndoLimitProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(UndoLimit),
-                o => o._undoRedoHelper.Limit,
-                (o, v) => o._undoRedoHelper.Limit = v,
+                o => o.UndoLimit,
+                (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
         struct UndoRedoState : IEquatable<UndoRedoState>
@@ -481,10 +481,10 @@ namespace Avalonia.Controls
 
         public int UndoLimit
         {
-            get { return GetValue(UndoLimitProperty); }
+            get { return _undoRedoHelper.Limit; }
             set
             {
-                SetValue(UndoLimitProperty, value);
+                _undoRedoHelper.Limit = value;
                 // from docs at
                 // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
                 // "Setting UndoLimit clears the undo queue."
