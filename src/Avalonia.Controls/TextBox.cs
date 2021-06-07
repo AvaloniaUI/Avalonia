@@ -464,19 +464,7 @@ namespace Avalonia.Controls
         public bool IsUndoEnabled
         {
             get { return GetValue(IsUndoEnabledProperty); }
-            set 
-            { 
-                SetValue(IsUndoEnabledProperty, value);
-                if (value == false)
-                {
-                    // from docs at
-                    // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
-                    // "Setting this property to false clears the undo stack.
-                    // Therefore, if you disable undo and then re-enable it, undo commands still do not work
-                    // because the undo stack was emptied when you disabled undo."
-                    _undoRedoHelper.Clear();
-                }
-            }
+            set { SetValue(IsUndoEnabledProperty, value); }
         }
 
         public int UndoLimit
@@ -510,6 +498,15 @@ namespace Avalonia.Controls
             {
                 UpdatePseudoclasses();
                 UpdateCommandStates();
+            }
+            else if (change.Property == IsUndoEnabledProperty && change.NewValue.GetValueOrDefault<bool>() == false)
+            {
+                // from docs at
+                // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
+                // "Setting this property to false clears the undo stack.
+                // Therefore, if you disable undo and then re-enable it, undo commands still do not work
+                // because the undo stack was emptied when you disabled undo."
+                _undoRedoHelper.Clear();
             }
         }
 
