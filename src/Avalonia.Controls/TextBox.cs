@@ -472,7 +472,15 @@ namespace Avalonia.Controls
             get { return _undoRedoHelper.Limit; }
             set
             {
-                _undoRedoHelper.Limit = value;
+                if (_undoRedoHelper.Limit != value)
+                {
+                    // can't use SetAndRaise due to using _undoRedoHelper.Limit
+                    // (can't send a ref of a property to SetAndRaise),
+                    // so use RaisePropertyChanged instead.
+                    var oldValue = _undoRedoHelper.Limit;
+                    _undoRedoHelper.Limit = value;
+                    RaisePropertyChanged(UndoLimitProperty, oldValue, value);
+                } 
                 // from docs at
                 // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
                 // "Setting UndoLimit clears the undo queue."
