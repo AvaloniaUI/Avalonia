@@ -158,12 +158,9 @@ namespace Avalonia.Controls
 
             public bool Equals(UndoRedoState other) => ReferenceEquals(Text, other.Text) || Equals(Text, other.Text);
 
-            public override bool Equals(object obj)
-            {
-                if (ReferenceEquals(null, obj)) return false;
-                if (obj.GetType() != GetType()) return false;
-                return Equals((UndoRedoState)obj);
-            }
+            public override bool Equals(object obj) => obj is UndoRedoState other && Equals(other);
+
+            public override int GetHashCode() => Text.GetHashCode();
         }
 
         private string _text;
