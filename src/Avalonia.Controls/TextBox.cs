@@ -31,7 +31,7 @@ namespace Avalonia.Controls
 
         public static KeyGesture PasteGesture { get; } = AvaloniaLocator.Current
             .GetService<PlatformHotkeyConfiguration>()?.Paste.FirstOrDefault();
-        
+
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsReturn));
 
@@ -117,7 +117,7 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> RevealPasswordProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(RevealPassword));
-        
+
         public static readonly DirectProperty<TextBox, bool> CanCutProperty =
             AvaloniaProperty.RegisterDirect<TextBox, bool>(
                 nameof(CanCut),
@@ -135,7 +135,7 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> IsUndoEnabledProperty =
             AvaloniaProperty.Register<TextBox, bool>(
-                nameof(IsUndoEnabled), 
+                nameof(IsUndoEnabled),
                 defaultValue: true);
 
         public static readonly DirectProperty<TextBox, int> UndoLimitProperty =
@@ -174,6 +174,10 @@ namespace Avalonia.Controls
         private string _newLine = Environment.NewLine;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
+        private int _selectedTextChangesMadeSinceLastUndoSnapshot;
+        private bool _hasDoneSnapshotOnce;
+        private const int _maxCharsBeforeUndoSnapshot = 7;
+
         static TextBox()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
@@ -202,7 +206,8 @@ namespace Avalonia.Controls
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
             _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
-
+            _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
+            _hasDoneSnapshotOnce = false;
             UpdatePseudoclasses();
         }
 
@@ -331,6 +336,7 @@ namespace Avalonia.Controls
                     if (SetAndRaise(TextProperty, ref _text, value) && IsUndoEnabled && !_isUndoingRedoing)
                     {
                         _undoRedoHelper.Clear();
+                        SnapshotUndoRedo(); // so we always have an initial state
                     }
                 }
             }
@@ -341,7 +347,6 @@ namespace Avalonia.Controls
             get { return GetSelection(); }
             set
             {
-                SnapshotUndoRedo();
                 if (string.IsNullOrEmpty(value))
                 {
                     DeleteSelection();
@@ -350,7 +355,6 @@ namespace Avalonia.Controls
                 {
                     HandleTextInput(value);
                 }
-                SnapshotUndoRedo();
             }
         }
 
@@ -422,7 +426,7 @@ namespace Avalonia.Controls
             get { return _newLine; }
             set { SetAndRaise(NewLineProperty, ref _newLine, value); }
         }
-        
+
         /// <summary>
         /// Clears the current selection, maintaining the <see cref="CaretIndex"/>
         /// </summary>
@@ -480,11 +484,13 @@ namespace Avalonia.Controls
                     var oldValue = _undoRedoHelper.Limit;
                     _undoRedoHelper.Limit = value;
                     RaisePropertyChanged(UndoLimitProperty, oldValue, value);
-                } 
+                }
                 // from docs at
                 // https://docs.microsoft.com/en-us/dotnet/api/system.windows.controls.primitives.textboxbase.isundoenabled:
                 // "Setting UndoLimit clears the undo queue."
                 _undoRedoHelper.Clear();
+                _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
+                _hasDoneSnapshotOnce = false;
             }
         }
 
@@ -515,6 +521,8 @@ namespace Avalonia.Controls
                 // Therefore, if you disable undo and then re-enable it, undo commands still do not work
                 // because the undo stack was emptied when you disabled undo."
                 _undoRedoHelper.Clear();
+                _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
+                _hasDoneSnapshotOnce = false;
             }
         }
 
@@ -577,23 +585,25 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             input = RemoveInvalidCharacters(input);
-            
+
             if (string.IsNullOrEmpty(input))
             {
                 return;
             }
-            
+            _selectedTextChangesMadeSinceLastUndoSnapshot++;
+            SnapshotUndoRedo(ignoreChangeCount: false);
+
             string text = Text ?? string.Empty;
             int caretIndex = CaretIndex;
             int newLength = input.Length + text.Length - Math.Abs(SelectionStart - SelectionEnd);
-            
+
             if (MaxLength > 0 && newLength > MaxLength)
             {
                 input = input.Remove(Math.Max(0, input.Length - (newLength - MaxLength)));
             }
-            
+
             if (!string.IsNullOrEmpty(input))
             {
                 DeleteSelection();
@@ -696,6 +706,7 @@ namespace Avalonia.Controls
             {
                 try
                 {
+                    SnapshotUndoRedo();
                     _isUndoingRedoing = true;
                     _undoRedoHelper.Undo();
                 }
@@ -830,7 +841,6 @@ namespace Avalonia.Controls
                             CaretIndex -= removedCharacters;
                             ClearSelection();
                         }
-                        SnapshotUndoRedo();
 
                         handled = true;
                         break;
@@ -858,7 +868,6 @@ namespace Avalonia.Controls
                             SetTextInternal(text.Substring(0, caretIndex) +
                                             text.Substring(caretIndex + removedCharacters));
                         }
-                        SnapshotUndoRedo();
 
                         handled = true;
                         break;
@@ -868,7 +877,6 @@ namespace Avalonia.Controls
                         {
                             SnapshotUndoRedo();
                             HandleTextInput(NewLine);
-                            SnapshotUndoRedo();
                             handled = true;
                         }
 
@@ -879,7 +887,6 @@ namespace Avalonia.Controls
                         {
                             SnapshotUndoRedo();
                             HandleTextInput("\t");
-                            SnapshotUndoRedo();
                             handled = true;
                         }
                         else
@@ -887,6 +894,10 @@ namespace Avalonia.Controls
                             base.OnKeyDown(e);
                         }
 
+                        break;
+
+                    case Key.Space:
+                        SnapshotUndoRedo(); // always snapshot in between words
                         break;
 
                     default:
@@ -1306,11 +1317,19 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SnapshotUndoRedo()
+        private void SnapshotUndoRedo(bool ignoreChangeCount = true)
         {
             if (IsUndoEnabled)
             {
-                _undoRedoHelper.Snapshot();
+                if (ignoreChangeCount ||
+                    !_hasDoneSnapshotOnce ||
+                    (!ignoreChangeCount &&
+                        _selectedTextChangesMadeSinceLastUndoSnapshot >= _maxCharsBeforeUndoSnapshot))
+                {
+                    _undoRedoHelper.Snapshot();
+                    _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
+                    _hasDoneSnapshotOnce = true;
+                }
             }
         }
     }
