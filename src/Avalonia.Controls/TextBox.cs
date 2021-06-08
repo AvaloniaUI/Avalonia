@@ -349,6 +349,8 @@ namespace Avalonia.Controls
             {
                 if (string.IsNullOrEmpty(value))
                 {
+                    _selectedTextChangesMadeSinceLastUndoSnapshot++;
+                    SnapshotUndoRedo(ignoreChangeCount: false);
                     DeleteSelection();
                 }
                 else
