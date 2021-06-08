@@ -639,7 +639,6 @@ namespace Avalonia.Controls
             SnapshotUndoRedo();
             Copy();
             DeleteSelection();
-            SnapshotUndoRedo();
         }
 
         public async void Copy()
@@ -659,7 +658,6 @@ namespace Avalonia.Controls
 
             SnapshotUndoRedo();
             HandleTextInput(text);
-            SnapshotUndoRedo();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
