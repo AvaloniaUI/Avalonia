@@ -22,19 +22,11 @@ namespace Avalonia.Animation
 
             if (oldSolidColorBrush != null && newSolidColorBrush != null)
             {
-                EnsureImmutable(ref oldSolidColorBrush);
-                EnsureImmutable(ref newSolidColorBrush);
-
                 return new AnimatorTransitionObservable<ISolidColorBrush, ISolidColorBrushAnimator>(
                     s_animator, progress, Easing, oldSolidColorBrush, newSolidColorBrush);
             }
 
             return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
-        }
-
-        private static void EnsureImmutable(ref ISolidColorBrush brush)
-        {
-            brush = (ISolidColorBrush)brush.ToImmutable();
         }
 
         private static ISolidColorBrush? TryGetSolidColorBrush(IBrush? brush)
@@ -54,7 +46,7 @@ namespace Avalonia.Animation
 
             public IncompatibleTransitionObservable(IObservable<double> progress, Easing easing, IBrush? from, IBrush? to) : base(progress, easing)
             {
-                _from = @from;
+                _from = from;
                 _to = to;
             }
 
