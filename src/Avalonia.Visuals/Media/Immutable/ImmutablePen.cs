@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Avalonia.Media.Immutable
 {
@@ -44,6 +45,8 @@ namespace Avalonia.Media.Immutable
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0)
         {
+            Debug.Assert(!(brush is IMutableBrush));
+
             Brush = brush;
             Thickness = thickness;
             LineCap = lineCap;
