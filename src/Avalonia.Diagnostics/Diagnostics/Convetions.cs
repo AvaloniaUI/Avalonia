@@ -18,9 +18,15 @@ namespace Avalonia.Diagnostics
         /// <returns>full file path</returns>
         public static Func<IControl, string,string> DefaultScreenshotFileNameConvention = (control,screenshotRoot)  =>
         {
-            IVisual root = control.VisualRoot is null
-             ? control
-             : control.VisualRoot ?? control.GetVisualRoot();
+            IVisual root;
+            if ((control.VisualRoot ?? control.GetVisualRoot()) is IVisual vr)
+            {
+                root = vr;
+            }
+            else
+            {
+                root = control;
+            }
             var rootType = root.GetType();
             var windowName = rootType.Name;
             if (root is IControl rc && !string.IsNullOrWhiteSpace(rc.Name))
