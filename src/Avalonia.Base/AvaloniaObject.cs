@@ -7,6 +7,8 @@ using Avalonia.Logging;
 using Avalonia.PropertyStore;
 using Avalonia.Threading;
 
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
@@ -17,13 +19,13 @@ namespace Avalonia
     /// </remarks>
     public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged, IValueSink
     {
-        private IAvaloniaObject _inheritanceParent;
-        private List<IDisposable> _directBindings;
-        private PropertyChangedEventHandler _inpcChanged;
-        private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
-        private List<IAvaloniaObject> _inheritanceChildren;
-        private ValueStore _values;
-        private ValueStore Values => _values ?? (_values = new ValueStore(this));
+        private IAvaloniaObject? _inheritanceParent;
+        private List<IDisposable>? _directBindings;
+        private PropertyChangedEventHandler? _inpcChanged;
+        private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChanged;
+        private List<IAvaloniaObject>? _inheritanceChildren;
+        private ValueStore? _values;
+        private bool _batchUpdate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
@@ -36,7 +38,7 @@ namespace Avalonia
         /// <summary>
         /// Raised when a <see cref="AvaloniaProperty"/> value changes on this object.
         /// </summary>
-        public event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged
+        public event EventHandler<AvaloniaPropertyChangedEventArgs>? PropertyChanged
         {
             add { _propertyChanged += value; }
             remove { _propertyChanged -= value; }
@@ -58,7 +60,7 @@ namespace Avalonia
         /// <value>
         /// The inheritance parent.
         /// </value>
-        protected IAvaloniaObject InheritanceParent
+        protected IAvaloniaObject? InheritanceParent
         {
             get
             {
@@ -115,6 +117,22 @@ namespace Avalonia
         {
             get { return new IndexerBinding(this, binding.Property, binding.Mode); }
             set { this.Bind(binding.Property, value); }
+        }
+
+        private ValueStore Values
+        {
+            get
+            {
+                if (_values is null)
+                {
+                    _values = new ValueStore(this);
+
+                    if (_batchUpdate)
+                        _values.BeginBatchUpdate();
+                }
+
+                return _values;
+            }
         }
 
         public bool CheckAccess() => Dispatcher.UIThread.CheckAccess();
@@ -273,7 +291,8 @@ namespace Avalonia
         /// <returns>True if the property is animating, otherwise false.</returns>
         public bool IsAnimating(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
             VerifyAccess();
 
             return _values?.IsAnimating(property) ?? false;
@@ -290,7 +309,8 @@ namespace Avalonia
         /// </remarks>
         public bool IsSet(AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(property != null);
+            property = property ?? throw new ArgumentNullException(nameof(property));
+
             VerifyAccess();
 
             return _values?.IsSet(property) ?? false;
@@ -304,7 +324,7 @@ namespace Avalonia
         /// <param name="priority">The priority of the value.</param>
         public void SetValue(
             AvaloniaProperty property,
-            object value,
+            object? value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
@@ -322,7 +342,7 @@ namespace Avalonia
         /// <returns>
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
-        public IDisposable SetValue<T>(
+        public IDisposable? SetValue<T>(
             StyledPropertyBase<T> property,
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
@@ -434,6 +454,28 @@ namespace Avalonia
             _values?.CoerceValue(property);
         }
 
+        public void BeginBatchUpdate()
+        {
+            if (_batchUpdate)
+            {
+                throw new InvalidOperationException("Batch update already in progress.");
+            }
+
+            _batchUpdate = true;
+            _values?.BeginBatchUpdate();
+        }
+
+        public void EndBatchUpdate()
+        {
+            if (!_batchUpdate)
+            {
+                throw new InvalidOperationException("No batch update in progress.");
+            }
+
+            _batchUpdate = false;
+            _values?.EndBatchUpdate();
+        }
+
         /// <inheritdoc/>
         void IAvaloniaObject.AddInheritanceChild(IAvaloniaObject child)
         {
@@ -459,7 +501,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        Delegate[] IAvaloniaObjectDebug.GetPropertyChangedSubscribers()
+        Delegate[]? IAvaloniaObjectDebug.GetPropertyChangedSubscribers()
         {
             return _propertyChanged?.GetInvocationList();
         }
@@ -685,7 +727,8 @@ namespace Avalonia
             {
                 var values = o._values;
 
-                if (values?.TryGetValue(property, maxPriority, out value) == true)
+                if (values != null
+                    && values.TryGetValue(property, maxPriority, out value) == true)
                 {
                     return value;
                 }
@@ -835,7 +878,7 @@ namespace Avalonia
                 }
                 else
                 {
-                    LogBindingError(property, value.Error);
+                    LogBindingError(property, value.Error!);
                 }
             }
         }
@@ -869,14 +912,14 @@ namespace Avalonia
             {
                 _owner = owner;
                 _property = property;
-                _owner._directBindings.Add(this);
+                _owner._directBindings!.Add(this);
                 _subscription = source.Subscribe(this);
             }
 
             public void Dispose()
             {
                 _subscription.Dispose();
-                _owner._directBindings.Remove(this);
+                _owner._directBindings!.Remove(this);
             }
 
             public void OnCompleted() => Dispose();

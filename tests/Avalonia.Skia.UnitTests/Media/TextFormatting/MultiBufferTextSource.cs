@@ -20,6 +20,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         public TextRun GetTextRun(int textSourceIndex)
         {
+            if (textSourceIndex > 50)
+            {
+                return null;
+            }
+            
             if (textSourceIndex == 50)
             {
                 return new TextEndOfParagraph();

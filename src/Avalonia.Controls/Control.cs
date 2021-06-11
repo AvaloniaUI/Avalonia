@@ -8,6 +8,8 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -18,25 +20,31 @@ namespace Avalonia.Controls
     ///
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISupportInitialize, IVisualBrushInitialize, ISetterValue
+    public class Control : InputElement, IControl, INamed, IVisualBrushInitialize, ISetterValue
     {
         /// <summary>
         /// Defines the <see cref="FocusAdorner"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplate<IControl>> FocusAdornerProperty =
-            AvaloniaProperty.Register<Control, ITemplate<IControl>>(nameof(FocusAdorner));
+        public static readonly StyledProperty<ITemplate<IControl>?> FocusAdornerProperty =
+            AvaloniaProperty.Register<Control, ITemplate<IControl>?>(nameof(FocusAdorner));
 
         /// <summary>
         /// Defines the <see cref="Tag"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> TagProperty =
-            AvaloniaProperty.Register<Control, object>(nameof(Tag));
+        public static readonly StyledProperty<object?> TagProperty =
+            AvaloniaProperty.Register<Control, object?>(nameof(Tag));
         
         /// <summary>
         /// Defines the <see cref="ContextMenu"/> property.
         /// </summary>
-        public static readonly StyledProperty<ContextMenu> ContextMenuProperty =
-            AvaloniaProperty.Register<Control, ContextMenu>(nameof(ContextMenu));
+        public static readonly StyledProperty<ContextMenu?> ContextMenuProperty =
+            AvaloniaProperty.Register<Control, ContextMenu?>(nameof(ContextMenu));
+
+        /// <summary>
+        /// Defines the <see cref="ContextFlyout"/> property
+        /// </summary>
+        public static readonly StyledProperty<FlyoutBase?> ContextFlyoutProperty =
+            AvaloniaProperty.Register<Control, FlyoutBase?>(nameof(ContextFlyout));
 
         /// <summary>
         /// Event raised when an element wishes to be scrolled into view.
@@ -44,16 +52,16 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
 
-        private DataTemplates _dataTemplates;
-        private IControl _focusAdorner;
+        private DataTemplates? _dataTemplates;
+        private IControl? _focusAdorner;
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
         /// </summary>
-        public ITemplate<IControl> FocusAdorner
+        public ITemplate<IControl>? FocusAdorner
         {
-            get { return GetValue(FocusAdornerProperty); }
-            set { SetValue(FocusAdornerProperty, value); }
+            get => GetValue(FocusAdornerProperty);
+            set => SetValue(FocusAdornerProperty, value);
         }
 
         /// <summary>
@@ -63,27 +71,36 @@ namespace Avalonia.Controls
         /// Each control may define data templates which are applied to the control itself and its
         /// children.
         /// </remarks>
-        public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
+        public DataTemplates DataTemplates => _dataTemplates ??= new DataTemplates();
 
         /// <summary>
         /// Gets or sets a context menu to the control.
         /// </summary>
-        public ContextMenu ContextMenu
+        public ContextMenu? ContextMenu
         {
-            get { return GetValue(ContextMenuProperty); }
-            set { SetValue(ContextMenuProperty, value); }
+            get => GetValue(ContextMenuProperty);
+            set => SetValue(ContextMenuProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a context flyout to the control
+        /// </summary>
+        public FlyoutBase? ContextFlyout
+        {
+            get => GetValue(ContextFlyoutProperty);
+            set => SetValue(ContextFlyoutProperty, value);
         }
 
         /// <summary>
         /// Gets or sets a user-defined object attached to the control.
         /// </summary>
-        public object Tag
+        public object? Tag
         {
-            get { return GetValue(TagProperty); }
-            set { SetValue(TagProperty, value); }
+            get => GetValue(TagProperty);
+            set => SetValue(TagProperty, value);
         }
 
-        public new IControl Parent => (IControl)base.Parent;
+        public new IControl? Parent => (IControl?)base.Parent;
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
@@ -91,6 +108,11 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void ISetterValue.Initialize(ISetter setter)
         {
+            if (setter is Setter s && s.Property == ContextFlyoutProperty)
+            {
+                return; // Allow ContextFlyout to not need wrapping in <Template>
+            }
+
             throw new InvalidOperationException(
                 "Cannot use a control as a Setter value. Wrap the control in a <Template>.");
         }
@@ -106,15 +128,10 @@ namespace Avalonia.Controls
                     {
                         var c = i as IControl;
 
-                        if (c?.IsInitialized == false)
+                        if (c?.IsInitialized == false && c is ISupportInitialize init)
                         {
-                            var init = c as ISupportInitialize;
-
-                            if (init != null)
-                            {
-                                init.BeginInit();
-                                init.EndInit();
-                            }
+                            init.BeginInit();
+                            init.EndInit();
                         }
                     }
                 }
@@ -131,10 +148,7 @@ namespace Avalonia.Controls
         /// Gets the element that receives the focus adorner.
         /// </summary>
         /// <returns>The control that receives the focus adorner.</returns>
-        protected virtual IControl GetTemplateFocusTarget()
-        {
-            return this;
-        }
+        protected virtual IControl? GetTemplateFocusTarget() => this;
 
         /// <inheritdoc/>
         protected sealed override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
@@ -173,15 +187,10 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    if (_focusAdorner != null)
+                    if (_focusAdorner != null && GetTemplateFocusTarget() is Visual target)
                     {
-                        var target = (Visual)GetTemplateFocusTarget();
-
-                        if (target != null)
-                        {
-                            AdornerLayer.SetAdornedElement((Visual)_focusAdorner, target);
-                            adornerLayer.Children.Add(_focusAdorner);
-                        }
+                        AdornerLayer.SetAdornedElement((Visual)_focusAdorner, target);
+                        adornerLayer.Children.Add(_focusAdorner);
                     }
                 }
             }
@@ -192,7 +201,7 @@ namespace Avalonia.Controls
         {
             base.OnLostFocus(e);
 
-            if (_focusAdorner != null)
+            if (_focusAdorner?.Parent != null)
             {
                 var adornerLayer = (IPanel)_focusAdorner.Parent;
                 adornerLayer.Children.Remove(_focusAdorner);

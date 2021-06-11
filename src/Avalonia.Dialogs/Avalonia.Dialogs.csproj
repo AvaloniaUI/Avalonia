@@ -4,9 +4,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
     <AvaloniaResource Include="Assets\*" />
   </ItemGroup>
 

@@ -1,12 +1,21 @@
-using System;
 using Avalonia.Input;
 using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
-    internal class CursorFactory : IStandardCursorFactory
+    internal class CursorFactory : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
-            => new PlatformHandle(IntPtr.Zero, "ZeroCursor");
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => CursorImpl.ZeroCursor;
+
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => CursorImpl.ZeroCursor;
+
+        private sealed class CursorImpl : ICursorImpl
+        {
+            public static CursorImpl ZeroCursor { get; } = new CursorImpl();
+
+            private CursorImpl() { }
+
+            public void Dispose() { }
+        }
     }
 }

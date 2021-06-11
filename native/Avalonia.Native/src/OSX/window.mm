@@ -50,7 +50,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -112,6 +111,9 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
+            
+            [Window setContentView: StandardContainer];
+            
             if(ShouldTakeFocusOnShow() && activate)
             {
                 [Window makeKeyAndOrderFront:Window];
@@ -124,7 +126,7 @@ public:
             [Window setTitle:_lastTitle];
             
             _shown = true;
-        
+            
             return S_OK;
         }
     }
@@ -191,9 +193,11 @@ public:
         {
             if(ret == nullptr)
                 return E_POINTER;
+            
             auto frame = [View frame];
             ret->Width = frame.size.width;
             ret->Height = frame.size.height;
+            
             return S_OK;
         }
     }
@@ -254,6 +258,12 @@ public:
                 y = maxSize.height;
             }
             
+            if(!_shown)
+            {
+                BaseEvents->Resized(AvnSize{x,y});
+            }
+            
+            [StandardContainer setFrameSize:NSSize{x,y}];
             [Window setContentSize:NSSize{x, y}];
             
             return S_OK;
@@ -1877,7 +1887,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     for(int i = 0; i < numWindows; i++)
     {
-        [[windows objectAtIndex:i] performClose:nil];
+        auto window = (AvnWindow*)[windows objectAtIndex:i];
+        
+        if([window parentWindow] == nullptr) // Avalonia will handle the child windows.
+        {
+            [window performClose:nil];
+        }
     }
 }
 
@@ -1930,6 +1945,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         }
         
         [NSApp setMenu:_menu];
+    }
+    else
+    {
+        [self showAppMenuOnly];
     }
 }
 
@@ -1987,7 +2006,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _lastScaling = [self backingScaleFactor];
     [self setOpaque:NO];
     [self setBackgroundColor: [NSColor clearColor]];
-    [self invalidateShadow];
     _isExtended = false;
     return self;
 }
@@ -2226,9 +2244,13 @@ protected:
     {
         @autoreleasepool
         {
-            [Window setContentSize:NSSize{x, y}];
+            if (Window != nullptr)
+            {
+                [StandardContainer setFrameSize:NSSize{x,y}];
+                [Window setContentSize:NSSize{x, y}];
             
-            [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+                [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+            }
             
             return S_OK;
         }

@@ -8,6 +8,9 @@ using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Defines an area within which you can position and align child objects in relation to each other or the parent panel.
+    /// </summary>
     public partial class RelativePanel : Panel
     {
         private readonly Graph _childGraph;
@@ -55,7 +58,10 @@ namespace Avalonia.Controls
             _childGraph.Measure(availableSize);
 
             _childGraph.Reset(false);
-            var boundingSize = _childGraph.GetBoundingSize(Width.IsNaN(), Height.IsNaN());
+            var calcWidth = Width.IsNaN() && HorizontalAlignment != HorizontalAlignment.Stretch;
+            var calcHeight = Height.IsNaN() && VerticalAlignment != VerticalAlignment.Stretch;
+
+            var boundingSize = _childGraph.GetBoundingSize(calcWidth, calcHeight);
             _childGraph.Reset();
             _childGraph.Measure(boundingSize);
             return boundingSize;
