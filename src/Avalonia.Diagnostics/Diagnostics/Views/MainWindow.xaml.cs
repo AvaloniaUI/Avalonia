@@ -115,5 +115,8 @@ namespace Avalonia.Diagnostics.Views
         }
 
         private void RootClosed(object? sender, EventArgs e) => Close();
+
+        public void SetOptions(DevToolsOptions options) =>
+            (DataContext as MainViewModel)?.SetOptions(options);
     }
 }

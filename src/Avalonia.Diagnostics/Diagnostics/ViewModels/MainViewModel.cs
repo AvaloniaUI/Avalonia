@@ -27,6 +27,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
         private IDisposable _selectedNodeChanged;
+        private string _screenshotRoot;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -282,6 +283,13 @@ namespace Avalonia.Diagnostics.ViewModels
                 }, (Content as TreePageViewModel)?.SelectedNode?.Visual);
         }
 
+        public void SetOptions(DevToolsOptions options)
+        {
+            _screenshotRoot = string.IsNullOrWhiteSpace(options.ScreenshotRoot)
+                ? Convetions.DefaultScreenShotRoot
+                : options.ScreenshotRoot!;
+        }
+
         /// <summary>
         /// Return the path of the screenshot folder according to the rules indicated in issue <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>
         /// </summary>
@@ -297,11 +305,11 @@ namespace Avalonia.Diagnostics.ViewModels
                 ?? assembly.GetName().Name;
             var appVerions = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
                 ?? assembly.GetCustomAttribute<AssemblyVersionAttribute>().Version;
-            return System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures, Environment.SpecialFolderOption.Create)
-                , "ScreenShots"
+            return System.IO.Path.Combine(_screenshotRoot
                 , appName
                 , appVerions
                 , windowName);
+            ;
         }
     }
 
