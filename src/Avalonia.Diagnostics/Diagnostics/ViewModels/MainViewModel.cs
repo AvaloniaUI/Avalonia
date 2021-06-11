@@ -248,12 +248,11 @@ namespace Avalonia.Diagnostics.ViewModels
                 && tree.SelectedNode.Visual.VisualRoot != null;
         }
 
-        void Shot(object? parameter)
+        async void Shot(object? parameter)
         {
-            // This is a workaround because MethodToCommand does not support the asynchronous method.
-            Task.Factory.StartNew(arg =>
+            await Task.Run(() =>
                 {
-                    if (arg is IControl control)
+                    if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control)
                     {
                         try
                         {
@@ -263,24 +262,29 @@ namespace Avalonia.Diagnostics.ViewModels
                             {
                                 System.IO.Directory.CreateDirectory(folder);
                             }
-
                             var output = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
                             Dispatcher.UIThread.Post(() =>
                                 {
-                                    control.RenderTo(output);
-                                    output.Dispose();
+                                    try
+                                    {
+                                        control.RenderTo(output);
+                                        output.Dispose();
+                                    }
+                                    catch (Exception re)
+                                    {
+                                        //TODO: Notify error
+                                        System.Diagnostics.Debug.WriteLine(re.Message);
+                                    }                                    
                                 }
                             );
-
                         }
                         catch (Exception ex)
                         {
                             System.Diagnostics.Debug.WriteLine(ex.Message);
                             //TODO: Notify error
                         }
-
                     }
-                }, (Content as TreePageViewModel)?.SelectedNode?.Visual);
+                });
         }
 
         public void SetOptions(DevToolsOptions options)
