@@ -31,7 +31,7 @@ namespace Avalonia.Headless.Vnc
                 
                 Dispatcher.UIThread.Post(() =>
                 {
-                    Window?.MouseMove(pt);
+                    Window?.MouseMove(pt, modifiers);
                     foreach (var btn in CheckedButtons)
                         if (_previousButtons.HasAllFlags(btn) && !buttons.HasAllFlags(btn))
                             Window?.MouseUp(pt, TranslateButton(btn), modifiers);
