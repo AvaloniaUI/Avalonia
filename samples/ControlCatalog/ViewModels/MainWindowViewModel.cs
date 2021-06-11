@@ -29,8 +29,6 @@ namespace ControlCatalog.ViewModels
         public  double[] XAxisValues { get; }
         
         public double[] YAxisValues { get; }
-        
-        public string[] XAxisLabels { get; }
 
         public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
@@ -101,7 +99,6 @@ namespace ControlCatalog.ViewModels
             SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
             
-            string[] xAxisLabels;
             double[] xAxisValues;
             double[] yAxisValues;
             
@@ -110,15 +107,8 @@ namespace ControlCatalog.ViewModels
                 GetSmoothValuesSubdivide(s_xAxisValues, s_yAxisValues, out var ts, out var xts);
                 xAxisValues = ts.ToArray();
                 yAxisValues = xts.ToArray();
-                
-                // xAxisLabels = TestNetXAxisLabels;
-                var labels = s_xAxisValues.Select(x => x.ToString())
-                    .Reverse()
-                    .ToArray();
-                xAxisLabels = labels;
             }
 
-            XAxisLabels = xAxisLabels;
             XAxisValues = xAxisValues;
             YAxisValues = yAxisValues;
         }
