@@ -33,7 +33,7 @@ namespace Avalonia.Diagnostics
            
         /// <summary>
         /// Get or sets conventin for screenshot fileName.
-        ///For known default screen shot file name convection see <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>.
+        /// For known default screen shot file name convection see <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>.
         /// </summary>
         public Func<Avalonia.Controls.IControl, string, string>? ScreenshotFileNameConvention { get; set; }
     }
