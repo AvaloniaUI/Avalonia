@@ -49,6 +49,12 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
+        public override string Priority => 
+            string.Empty;
+
+        public override bool? IsAttached => 
+            default;
+
         // [MemberNotNull(nameof(_type))]
         public override void Update()
         {
