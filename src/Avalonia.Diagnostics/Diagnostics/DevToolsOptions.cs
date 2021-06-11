@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using System;
+using Avalonia.Input;
 
 namespace Avalonia.Diagnostics
 {
@@ -30,5 +31,10 @@ namespace Avalonia.Diagnostics
         /// </summary>
         public string? ScreenshotRoot { get; set; }
            
+        /// <summary>
+        /// Get or sets conventin for screenshot fileName.
+        ///For known default screen shot file name convection see <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>.
+        /// </summary>
+        public Func<Avalonia.Controls.IControl, string, string>? ScreenshotFileNameConvention { get; set; }
     }
 }

@@ -28,6 +28,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _showFpsOverlay;
         private IDisposable _selectedNodeChanged;
         private string _screenshotRoot;
+        private Func<IControl, string, string> _getScreenshotFileName;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -256,13 +257,12 @@ namespace Avalonia.Diagnostics.ViewModels
                     {
                         try
                         {
-                            var folder = GetScreenShotDirectory(_root);
+                            var filePath = _getScreenshotFileName(control, _screenshotRoot);
+                            var folder = System.IO.Path.GetDirectoryName(filePath);
                             if (System.IO.Directory.Exists(folder) == false)
                             {
                                 System.IO.Directory.CreateDirectory(folder);
                             }
-                            var filePath = System.IO.Path.Combine(folder
-                                , $"{DateTime.Now:yyyyMMddhhmmssfff}.png");
 
                             var output = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
                             Dispatcher.UIThread.Post(() =>
@@ -276,8 +276,8 @@ namespace Avalonia.Diagnostics.ViewModels
                         catch (Exception ex)
                         {
                             System.Diagnostics.Debug.WriteLine(ex.Message);
-                                //TODO: Notify error
-                            }
+                            //TODO: Notify error
+                        }
 
                     }
                 }, (Content as TreePageViewModel)?.SelectedNode?.Visual);
@@ -286,31 +286,11 @@ namespace Avalonia.Diagnostics.ViewModels
         public void SetOptions(DevToolsOptions options)
         {
             _screenshotRoot = string.IsNullOrWhiteSpace(options.ScreenshotRoot)
-                ? Convetions.DefaultScreenShotRoot
+                ? Convetions.DefaultScreenshotRoot
                 : options.ScreenshotRoot!;
-        }
 
-        /// <summary>
-        /// Return the path of the screenshot folder according to the rules indicated in issue <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>
-        /// </summary>
-        /// <param name="root"></param>
-        /// <returns></returns>
-        string GetScreenShotDirectory(TopLevel root)
-        {
-            var rootType = root.GetType();
-            var windowName = rootType.Name;
-            var assembly = Assembly.GetExecutingAssembly();
-            var appName = Application.Current?.Name
-                ?? assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product
-                ?? assembly.GetName().Name;
-            var appVerions = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
-                ?? assembly.GetCustomAttribute<AssemblyVersionAttribute>().Version;
-            return System.IO.Path.Combine(_screenshotRoot
-                , appName
-                , appVerions
-                , windowName);
-            ;
+            _getScreenshotFileName = options.ScreenshotFileNameConvention
+                ?? Convetions.DefaultScreenshotFileNameConvention;
         }
     }
-
 }
