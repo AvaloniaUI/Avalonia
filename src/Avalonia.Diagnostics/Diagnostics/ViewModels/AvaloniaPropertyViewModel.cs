@@ -26,9 +26,11 @@ namespace Avalonia.Diagnostics.ViewModels
         public AvaloniaProperty Property { get; }
         public override object Key => Property;
         public override string Name { get; }
-        public bool IsAttached => Property.IsAttached;
+        public override bool? IsAttached => 
+            Property.IsAttached;
 
-        public string Priority => _priority;
+        public override string Priority =>
+            _priority;
 
         public override string Type => _type;
 
@@ -69,7 +71,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 if (val != null)
                 {
                     RaiseAndSetIfChanged(ref _priority, val.Priority.ToString(), nameof(Priority));
-                    RaiseAndSetIfChanged(ref _group, IsAttached ? "Attached Properties" : "Properties", nameof(Group));
+                    RaiseAndSetIfChanged(ref _group, IsAttached == true ? "Attached Properties" : "Properties", nameof(Group));
                 }
                 else
                 {

@@ -16,7 +16,9 @@ namespace Avalonia.Diagnostics.ViewModels
         public abstract string Group { get; }
         public abstract string Type { get; }
         public abstract string Value { get; set; }
-        public abstract void Update();
+        public abstract string Priority { get; }
+        public abstract bool? IsAttached { get;  }
+        public abstract void Update();        
 
         protected static string ConvertToString(object? value)
         {
