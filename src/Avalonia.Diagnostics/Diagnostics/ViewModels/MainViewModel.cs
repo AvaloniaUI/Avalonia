@@ -250,41 +250,27 @@ namespace Avalonia.Diagnostics.ViewModels
 
         async void Shot(object? parameter)
         {
-            await Task.Run(() =>
+            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control)
+            {
+                try
                 {
-                    if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control)
+                    var filePath = _getScreenshotFileName(control, _screenshotRoot);
+                    var folder = System.IO.Path.GetDirectoryName(filePath);
+                    if (System.IO.Directory.Exists(folder) == false)
                     {
-                        try
-                        {
-                            var filePath = _getScreenshotFileName(control, _screenshotRoot);
-                            var folder = System.IO.Path.GetDirectoryName(filePath);
-                            if (System.IO.Directory.Exists(folder) == false)
-                            {
-                                System.IO.Directory.CreateDirectory(folder);
-                            }
-                            var output = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
-                            Dispatcher.UIThread.Post(() =>
-                                {
-                                    try
-                                    {
-                                        control.RenderTo(output);
-                                        output.Dispose();
-                                    }
-                                    catch (Exception re)
-                                    {
-                                        //TODO: Notify error
-                                        System.Diagnostics.Debug.WriteLine(re.Message);
-                                    }                                    
-                                }
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine(ex.Message);
-                            //TODO: Notify error
-                        }
+                        await Task.Run(new Action(() => System.IO.Directory.CreateDirectory(folder)));
                     }
-                });
+                    using var output = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
+                    await Dispatcher.UIThread.InvokeAsync(() => control.RenderTo(output));
+                    await output.FlushAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                    //TODO: Notify error
+                }
+            }
+
         }
 
         public void SetOptions(DevToolsOptions options)
