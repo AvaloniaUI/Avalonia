@@ -7,10 +7,10 @@ using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    public class ContextMenuPageViewModel
+    public class ContextPageViewModel
     {
         public Control View { get; set; }
-        public ContextMenuPageViewModel()
+        public ContextPageViewModel()
         {
             OpenCommand = MiniCommand.CreateFromTask(Open);
             SaveCommand = MiniCommand.Create(Save);
