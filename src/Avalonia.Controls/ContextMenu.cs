@@ -329,6 +329,7 @@ namespace Avalonia.Controls
 
                 _popup.Opened += PopupOpened;
                 _popup.Closed += PopupClosed;
+                _popup.Closing += PopupClosing;
             }
 
             if (_popup.Parent != control)
@@ -353,6 +354,11 @@ namespace Avalonia.Controls
         {
             _previousFocus = FocusManager.Instance?.Current;
             Focus();
+        }
+
+        private void PopupClosing(object sender, CancelEventArgs e)
+        {
+            e.Cancel = CancelClosing();
         }
 
         private void PopupClosed(object sender, EventArgs e)

@@ -78,12 +78,13 @@
       </Border>
       <Border x:Name="CancellableContextBorder">
         <Border.ContextFlyout>
-          <Flyout Content="Cancellable flyout" />
+          <Flyout>
+            <CheckBox x:Name="CancelCloseCheckBox" Content="Cancel close" />
+          </Flyout>
         </Border.ContextFlyout>
         <StackPanel>
           <TextBlock Text="Cancellable" />
           <CheckBox x:Name="CancelOpenCheckBox" Content="Cancel open" />
-          <CheckBox x:Name="CancelCloseCheckBox" Content="Cancel close" />
         </StackPanel>
       </Border>
     </UniformGrid>

@@ -71,13 +71,16 @@
       <Border x:Name="CancellableContextBorder">
         <Border.ContextMenu>
           <ContextMenu>
-            <MenuItem Header="Cancellable flyout" />
+            <MenuItem>
+              <MenuItem.Header>
+                <CheckBox x:Name="CancelCloseCheckBox" Content="Cancel close" />
+              </MenuItem.Header>
+            </MenuItem>
           </ContextMenu>
         </Border.ContextMenu>
         <StackPanel>
           <TextBlock Text="Cancellable" />
           <CheckBox x:Name="CancelOpenCheckBox" Content="Cancel open" />
-          <CheckBox x:Name="CancelCloseCheckBox" Content="Cancel close" />
         </StackPanel>
       </Border>
     </UniformGrid>

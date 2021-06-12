@@ -151,11 +151,7 @@ namespace Avalonia.Controls.Primitives
 
             if (canCancel)
             {
-                bool cancel = false;
-
-                var closing = new CancelEventArgs();
-                Closing?.Invoke(this, closing);
-                if (cancel || closing.Cancel)
+                if (CancelClosing())
                 {
                     return;
                 }
@@ -193,6 +189,11 @@ namespace Avalonia.Controls.Primitives
                 {
                     HideCore(false);
                 }
+            }
+
+            if (CancelOpening())
+            {
+                return;
             }
 
             if (Popup.Parent != null && Popup.Parent != placementTarget)
@@ -328,6 +329,7 @@ namespace Avalonia.Controls.Primitives
 
             Popup.Opened += OnPopupOpened;
             Popup.Closed += OnPopupClosed;
+            Popup.Closing += OnPopupClosing;
         }
 
         private void OnPopupOpened(object sender, EventArgs e)
@@ -335,9 +337,14 @@ namespace Avalonia.Controls.Primitives
             IsOpen = true;
         }
 
+        private void OnPopupClosing(object sender, CancelEventArgs e)
+        {
+            e.Cancel = CancelClosing();
+        }
+
         private void OnPopupClosed(object sender, EventArgs e)
         {
-            HideCore();
+            HideCore(false);
         }
 
         private void PositionPopup(bool showAtPointer)
@@ -481,6 +488,20 @@ namespace Avalonia.Controls.Primitives
                     }
                 }
             }            
+        }
+
+        private bool CancelClosing()
+        {
+            var eventArgs = new CancelEventArgs();
+            Closing?.Invoke(this, eventArgs);
+            return eventArgs.Cancel;
+        }
+
+        private bool CancelOpening()
+        {
+            var eventArgs = new CancelEventArgs();
+            Opening?.Invoke(this, eventArgs);
+            return eventArgs.Cancel;
         }
 
         internal static void SetPresenterClasses(IControl presenter, Classes classes)
