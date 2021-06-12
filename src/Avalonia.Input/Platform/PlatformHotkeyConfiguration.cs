@@ -73,8 +73,13 @@ namespace Avalonia.Input.Platform
             {
                 new KeyGesture(Key.End, commandModifiers | selectionModifiers)
             };
+            OpenContextMenu = new List<KeyGesture>
+            {
+                new KeyGesture(Key.F10, KeyModifiers.Shift),
+                new KeyGesture(Key.Apps),
+            };
         }
-        
+
         public KeyModifiers CommandModifiers { get; set; }
         public KeyModifiers WholeWordTextActionModifiers { get; set; }
         public KeyModifiers SelectionModifiers { get; set; }
@@ -92,7 +97,6 @@ namespace Avalonia.Input.Platform
         public List<KeyGesture> MoveCursorToTheEndOfLineWithSelection { get; set; }
         public List<KeyGesture> MoveCursorToTheStartOfDocumentWithSelection { get; set; }
         public List<KeyGesture> MoveCursorToTheEndOfDocumentWithSelection { get; set; }
-        
-        
+        public List<KeyGesture> OpenContextMenu { get; set; }
     }
 }
