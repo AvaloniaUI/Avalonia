@@ -40,7 +40,7 @@ namespace Avalonia.Diagnostics
                 var clipRegion = new Media.RectangleGeometry(new Rect(top.Value, bottomRight.Value));
                 root.ClipToBounds = true;
                 root.Clip = clipRegion;
-                // Traslate origin
+                // Translate origin
                 root.RenderTransformOrigin = new RelativePoint(top.Value, RelativeUnit.Absolute);
                 root.RenderTransform = new Media.TranslateTransform(-top.Value.X, -top.Value.Y);
                 using (var bitmap = new RenderTargetBitmap(pixelSize, dpiVector))

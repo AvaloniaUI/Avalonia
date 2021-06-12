@@ -14,8 +14,6 @@ namespace Avalonia.Diagnostics
         /// <summary>
         /// Return the path of the screenshot folder according to the rules indicated in issue <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>
         /// </summary>
-        /// <param name="control"></param>
-        /// <returns>full file path</returns>
         public static Func<IControl, string,string> DefaultScreenshotFileNameConvention = (control,screenshotRoot)  =>
         {
             IVisual root;
