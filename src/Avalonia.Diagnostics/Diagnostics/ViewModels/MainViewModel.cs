@@ -97,42 +97,26 @@ namespace Avalonia.Diagnostics.ViewModels
             // [MemberNotNull(nameof(_content))]
             private set
             {
-                TreePageViewModel oldTree = _content as TreePageViewModel;
-                TreePageViewModel newTree = value as TreePageViewModel;
-                if (oldTree != null)
+                if (_content is TreePageViewModel oldTree &&
+                    value is TreePageViewModel newTree &&
+                    oldTree?.SelectedNode?.Visual is IControl control)
                 {
-                    _selectedNodeChanged?.Dispose();
-                    _selectedNodeChanged = null;
-                }
-
-                if (newTree != null)
-                {
-                    if (oldTree != null &&
-                        oldTree?.SelectedNode?.Visual is IControl control)
-                    {
-                        // HACK: We want to select the currently selected control in the new tree, but
-                        // to select nested nodes in TreeView, currently the TreeView has to be able to
-                        // expand the parent nodes. Because at this point the TreeView isn't visible,
-                        // this will fail unless we schedule the selection to run after layout.
-                        DispatcherTimer.RunOnce(
-                            () =>
+                    // HACK: We want to select the currently selected control in the new tree, but
+                    // to select nested nodes in TreeView, currently the TreeView has to be able to
+                    // expand the parent nodes. Because at this point the TreeView isn't visible,
+                    // this will fail unless we schedule the selection to run after layout.
+                    DispatcherTimer.RunOnce(
+                        () =>
+                        {
+                            try
                             {
-                                try
-                                {
-                                    newTree.SelectControl(control);
-                                }
-                                catch { }
-                            },
-                            TimeSpan.FromMilliseconds(0),
-                            DispatcherPriority.ApplicationIdle);
-                    }
-                    _selectedNodeChanged = Observable
-                        .FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
-                            x => newTree.PropertyChanged += x,
-                            x => newTree.PropertyChanged -= x
-                        ).Subscribe(arg => RaisePropertyChanged(nameof(TreePageViewModel.SelectedNode)));
+                                newTree.SelectControl(control);
+                            }
+                            catch { }
+                        },
+                        TimeSpan.FromMilliseconds(0),
+                        DispatcherPriority.ApplicationIdle);
                 }
-
 
                 RaiseAndSetIfChanged(ref _content, value);
             }
