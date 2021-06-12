@@ -34,7 +34,7 @@ namespace Avalonia.Diagnostics
                 windowName = rc.Name;
             }
 
-            var assembly = Assembly.GetExecutingAssembly();
+            var assembly = Assembly.GetEntryAssembly();
             var appName = Application.Current?.Name
                 ?? assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product
                 ?? assembly.GetName().Name;
