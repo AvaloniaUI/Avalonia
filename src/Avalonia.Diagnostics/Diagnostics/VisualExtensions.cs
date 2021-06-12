@@ -22,7 +22,7 @@ namespace Avalonia.Diagnostics
             // get Visual root
             var root = (source.VisualRoot 
                 ?? source.GetVisualRoot())
-                as IControl;
+                as IControl ?? source;
 
             // Backup current vaules
             var oldgeometry = root.Clip;
@@ -33,8 +33,8 @@ namespace Avalonia.Diagnostics
             try
             {
                 // Translate coordinate clinet to root
-                var top = source.TranslatePoint(new Point(0,0), root);
-                var bottomRight = source.TranslatePoint(rect.BottomRight, root);
+                var top = source.TranslatePoint(new Point(0,0), root)!;
+                var bottomRight = source.TranslatePoint(rect.BottomRight, root)!;
 
                 // Set clip region
                 var clipRegion = new Media.RectangleGeometry(new Rect(top.Value, bottomRight.Value));
