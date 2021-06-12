@@ -1,10 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Metadata;
