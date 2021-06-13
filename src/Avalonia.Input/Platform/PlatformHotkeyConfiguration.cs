@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Avalonia.Input.Platform
 {
     public class PlatformHotkeyConfiguration
     {
         public PlatformHotkeyConfiguration() : this(KeyModifiers.Control)
         {
-            
+
         }
-        
+
         public PlatformHotkeyConfiguration(KeyModifiers commandModifiers,
             KeyModifiers selectionModifiers = KeyModifiers.Shift,
             KeyModifiers wholeWordTextActionModifiers = KeyModifiers.Control)
@@ -75,8 +77,7 @@ namespace Avalonia.Input.Platform
             };
             OpenContextMenu = new List<KeyGesture>
             {
-                new KeyGesture(Key.F10, KeyModifiers.Shift),
-                new KeyGesture(Key.Apps),
+                new KeyGesture(Key.Apps)
             };
         }
 
