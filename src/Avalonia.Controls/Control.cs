@@ -231,7 +231,8 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            if (!e.Handled
+            if (e.Source == this
+                && !e.Handled
                 && e.InitialPressMouseButton == MouseButton.Right)
             {
                 var args = new ContextRequestedEventArgs(e);
@@ -244,7 +245,8 @@ namespace Avalonia.Controls
         {
             base.OnKeyUp(e);
 
-            if (!e.Handled)
+            if (e.Source == this
+                && !e.Handled)
             {
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>().OpenContextMenu;
                 var matches = false;

@@ -1,11 +1,11 @@
 ﻿using System;
+
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
-using Castle.DynamicProxy.Generators;
 using Moq;
 using Xunit;
 
@@ -120,6 +120,90 @@ namespace Avalonia.Controls.UnitTests
                 sut.Close();
 
                 Assert.Equal(1, closedCount);
+            }
+        }
+
+        [Fact]
+        public void Cancel_Light_Dismiss_Closing_Keeps_Flyout_Open()
+        {
+            using (Application())
+            {
+                var renderer = new Mock<IRenderer>();
+                var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+                var windowImpl = Mock.Get(platform.CreateWindow());
+                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+
+                var window = new Window(windowImpl.Object);
+                window.Width = 100;
+                window.Height = 100;
+
+                var button = new Button
+                {
+                    Height = 10,
+                    Width = 10,
+                    HorizontalAlignment = Layout.HorizontalAlignment.Left,
+                    VerticalAlignment = Layout.VerticalAlignment.Top
+                };
+                window.Content = button;
+
+                window.ApplyTemplate();
+                window.Show();
+
+                var tracker = 0;
+
+                var c = new ContextMenu();
+                c.ContextMenuClosing += (s, e) =>
+                {
+                    tracker++;
+                    e.Cancel = true;
+                };
+                button.ContextMenu = c;
+                c.Open(button);
+
+                var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                overlay.RaiseEvent(e);
+
+                Assert.Equal(1, tracker);
+                Assert.True(c.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void Light_Dismiss_Closes_Flyout()
+        {
+            using (Application())
+            {
+                var renderer = new Mock<IRenderer>();
+                var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+                var windowImpl = Mock.Get(platform.CreateWindow());
+                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+
+                var window = new Window(windowImpl.Object);
+                window.Width = 100;
+                window.Height = 100;
+
+                var button = new Button
+                {
+                    Height = 10,
+                    Width = 10,
+                    HorizontalAlignment = Layout.HorizontalAlignment.Left,
+                    VerticalAlignment = Layout.VerticalAlignment.Top
+                };
+                window.Content = button;
+
+                window.ApplyTemplate();
+                window.Show();
+
+                var c = new ContextMenu();
+                c.PlacementMode = PlacementMode.Bottom;
+                c.Open(button);
+
+                var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                overlay.RaiseEvent(e);
+
+                Assert.False(c.IsOpen);
             }
         }
 
@@ -341,7 +425,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        [Fact(Skip = "The only reason this test was 'passing' before was that the author forgot to call Window.ApplyTemplate()")]
+        [Fact]
         public void Cancelling_Closing_Leaves_ContextMenuOpen()
         {
             using (Application())
@@ -395,6 +479,19 @@ namespace Avalonia.Controls.UnitTests
                                         windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => popupImpl.Object));
 
             return UnitTestApplication.Start(services);
+        }
+
+        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            return new PointerPressedEventArgs(
+                source,
+                pointer,
+                source,
+                p,
+                0,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None);
         }
     }
 }

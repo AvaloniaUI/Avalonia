@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -220,7 +223,7 @@ namespace Avalonia.Controls
 
             if (e.OldValue is ContextMenu oldMenu)
             {
-                control.PointerReleased -= ControlPointerReleased;
+                control.ContextRequested -= ControlContextRequested;
                 oldMenu._attachedControls?.Remove(control);
                 ((ISetLogicalParent?)oldMenu._popup)?.SetParent(null);
             }
@@ -229,7 +232,7 @@ namespace Avalonia.Controls
             {
                 newMenu._attachedControls ??= new List<Control>();
                 newMenu._attachedControls.Add(control);
-                control.PointerReleased += ControlPointerReleased;
+                control.ContextRequested += ControlContextRequested;
             }
         }
 
@@ -330,6 +333,7 @@ namespace Avalonia.Controls
                 _popup.Opened += PopupOpened;
                 _popup.Closed += PopupClosed;
                 _popup.Closing += PopupClosing;
+                _popup.KeyUp += PopupKeyUp;
             }
 
             if (_popup.Parent != control)
@@ -389,25 +393,28 @@ namespace Avalonia.Controls
             });
         }
 
-        private static void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
+        private void PopupKeyUp(object sender, KeyEventArgs e)
+        {
+            if (IsOpen)
+            {
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+
+                if (keymap.OpenContextMenu.Any(k => k.Matches(e))
+                    && !CancelClosing())
+                {
+                    Close();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private static void ControlContextRequested(object sender, ContextRequestedEventArgs e)
         {
             var control = (Control)sender;
-            var contextMenu = control.ContextMenu;
-
-            if (control.ContextMenu.IsOpen)
+            if (!e.Handled
+                && control.ContextMenu is ContextMenu contextMenu
+                && !contextMenu.CancelOpening())
             {
-                if (contextMenu.CancelClosing())
-                    return;
-
-                control.ContextMenu.Close();
-                e.Handled = true;
-            }
-
-            if (e.InitialPressMouseButton == MouseButton.Right)
-            {
-                if (contextMenu.CancelOpening())
-                    return;
-
                 contextMenu.Open(control, e.Source as Control ?? control);
                 e.Handled = true;
             }
