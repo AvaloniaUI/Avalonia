@@ -56,7 +56,7 @@ namespace ControlCatalog.Pages
             var textBlock = (TextBlock)border.Child;
 
             textBlock.Text = e.TryGetPosition(border, out var point)
-                ? $"Context was requested with pointer at: {point}"
+                ? $"Context was requested with pointer at: {point.X:N0}, {point.Y:N0}"
                 : "Context was requested without pointer";
             e.Handled = true;
         }
