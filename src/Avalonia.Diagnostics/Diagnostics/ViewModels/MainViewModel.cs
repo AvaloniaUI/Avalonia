@@ -243,7 +243,7 @@ namespace Avalonia.Diagnostics.ViewModels
                         await Task.Run(new Action(() => System.IO.Directory.CreateDirectory(folder)));
                     }
                     using var output = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
-                    await Dispatcher.UIThread.InvokeAsync(() => control.RenderTo(output));
+                    control.RenderTo(output);
                     await output.FlushAsync();
                 }
                 catch (Exception ex)
