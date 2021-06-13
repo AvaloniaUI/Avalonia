@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 
@@ -24,11 +26,11 @@ namespace Avalonia.Diagnostics
                 ?? source.GetVisualRoot())
                 as IControl ?? source;
 
-            // Backup current vaules
-            var oldgeometry = root.Clip;
-            var oldClipToBounds = root.ClipToBounds;
-            var oldRenderTransformOrigin = root.RenderTransformOrigin;
-            var oldrenderTransform = root.RenderTransform;
+         
+            IDisposable? clipSetter = default;
+            IDisposable? clipToBoundsSetter = default;
+            IDisposable? renderTransformOriginSetter = default;
+            IDisposable? renderTransformSetter = default;
 
             try
             {
@@ -38,11 +40,18 @@ namespace Avalonia.Diagnostics
 
                 // Set clip region
                 var clipRegion = new Media.RectangleGeometry(new Rect(top.Value, bottomRight.Value));
-                root.ClipToBounds = true;
-                root.Clip = clipRegion;
+                clipToBoundsSetter = root.SetValue(Visual.ClipToBoundsProperty, true, BindingPriority.Animation);
+                clipSetter = root.SetValue(Visual.ClipProperty,clipRegion, BindingPriority.Animation);
+
                 // Translate origin
-                root.RenderTransformOrigin = new RelativePoint(top.Value, RelativeUnit.Absolute);
-                root.RenderTransform = new Media.TranslateTransform(-top.Value.X, -top.Value.Y);
+                renderTransformOriginSetter = root.SetValue(Visual.RenderTransformOriginProperty,
+                    new RelativePoint(top.Value, RelativeUnit.Absolute),
+                    BindingPriority.Animation);
+
+                renderTransformSetter = root.SetValue(Visual.RenderTransformProperty,
+                    new Media.TranslateTransform(-top.Value.X, -top.Value.Y),
+                    BindingPriority.Animation);
+
                 using (var bitmap = new RenderTargetBitmap(pixelSize, dpiVector))
                 {
                     bitmap.Render(root);
@@ -53,10 +62,10 @@ namespace Avalonia.Diagnostics
             finally
             {
                 // Restore current vaules
-                root.ClipToBounds = oldClipToBounds;
-                root.Clip = oldgeometry;
-                root.RenderTransformOrigin = oldRenderTransformOrigin;
-                root.RenderTransform = oldrenderTransform;
+                clipSetter?.Dispose();
+                clipToBoundsSetter?.Dispose();
+                renderTransformOriginSetter?.Dispose();
+                renderTransformSetter?.Dispose();
             }
         }
     }
