@@ -5,6 +5,7 @@ using Avalonia.Animation.Animators;
 using Avalonia.Animation.Utils;
 using Avalonia.Data;
 using Avalonia.Reactive;
+using JetBrains.Annotations;
 
 namespace Avalonia.Animation
 {
@@ -45,8 +46,9 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
-            _neutralValue = (T)_targetControl.GetValue(_animator.Property);
+            control.PropertyChanged += ControlPropertyChanged;
 
+            UpdateNeutralValue();
             FetchProperties();
         }
 
@@ -214,6 +216,23 @@ namespace Avalonia.Animation
                     else
                         DoComplete();
                 }
+            }
+        }
+
+        private void UpdateNeutralValue()
+        {
+            var property = _animator.Property;
+            var baseValue = _targetControl.GetBaseValue(property, BindingPriority.LocalValue);
+
+            _neutralValue = baseValue != AvaloniaProperty.UnsetValue ?
+                (T)baseValue : (T)_targetControl.GetValue(property);
+        }
+
+        private void ControlPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == _animator.Property && e.Priority > BindingPriority.Animation)
+            {
+                UpdateNeutralValue();
             }
         }
     }
