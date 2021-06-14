@@ -361,9 +361,9 @@ namespace Avalonia.Controls.Presenters
 
             RenderInternal(context);
 
-            if (selectionStart == selectionEnd)
+            if (selectionStart == selectionEnd && _caretBlink)
             {
-                var caretBrush = CaretBrush;
+                var caretBrush = CaretBrush?.ToImmutable();
 
                 if (caretBrush is null)
                 {
@@ -382,13 +382,10 @@ namespace Avalonia.Controls.Presenters
                     }
                 }
 
-                if (_caretBlink)
-                {
-                    var (p1, p2) = GetCaretPoints();
-                    context.DrawLine(
-                        new ImmutablePen(caretBrush, 1),
-                        p1, p2);
-                }
+                var (p1, p2) = GetCaretPoints();
+                context.DrawLine(
+                    new ImmutablePen(caretBrush, 1),
+                    p1, p2);
             }
         }
 
