@@ -97,11 +97,16 @@ namespace Avalonia.Input.UnitTests
             var target = new KeyboardDevice();
             var button = new Button();
             var root = new TestRoot(button);
+            var raised = 0;
 
             button.KeyBindings.Add(new KeyBinding
             {
                 Gesture = new KeyGesture(Key.O, KeyModifiers.Control),
-                Command = new DelegateCommand(() => button.KeyBindings.Clear()),
+                Command = new DelegateCommand(() =>
+                {
+                    button.KeyBindings.Clear();
+                    ++raised;
+                }),
             });
 
             target.SetFocusedElement(button, NavigationMethod.Pointer, 0);
@@ -113,6 +118,8 @@ namespace Avalonia.Input.UnitTests
                     RawKeyEventType.KeyDown,
                     Key.O,
                     RawInputModifiers.Control));
+
+            Assert.Equal(1, raised);
         }
 
         private class DelegateCommand : ICommand
