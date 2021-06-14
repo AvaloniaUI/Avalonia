@@ -42,16 +42,16 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         private static Point GetAnchorPoint(Rect anchorRect, PopupAnchor edge)
         {
             double x, y;
-            if ((edge & PopupAnchor.Left) != 0)
+            if (edge.HasAllFlags(PopupAnchor.Left))
                 x = anchorRect.X;
-            else if ((edge & PopupAnchor.Right) != 0)
+            else if (edge.HasAllFlags(PopupAnchor.Right))
                 x = anchorRect.Right;
             else
                 x = anchorRect.X + anchorRect.Width / 2;
             
-            if ((edge & PopupAnchor.Top) != 0)
+            if (edge.HasAllFlags(PopupAnchor.Top))
                 y = anchorRect.Y;
-            else if ((edge & PopupAnchor.Bottom) != 0)
+            else if (edge.HasAllFlags(PopupAnchor.Bottom))
                 y = anchorRect.Bottom;
             else
                 y = anchorRect.Y + anchorRect.Height / 2;
@@ -61,16 +61,16 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         private static Point Gravitate(Point anchorPoint, Size size, PopupGravity gravity)
         {
             double x, y;
-            if ((gravity & PopupGravity.Left) != 0)
+            if (gravity.HasAllFlags(PopupGravity.Left))
                 x = -size.Width;
-            else if ((gravity & PopupGravity.Right) != 0)
+            else if (gravity.HasAllFlags(PopupGravity.Right))
                 x = 0;
             else
                 x = -size.Width / 2;
             
-            if ((gravity & PopupGravity.Top) != 0)
+            if (gravity.HasAllFlags(PopupGravity.Top))
                 y = -size.Height;
-            else if ((gravity & PopupGravity.Bottom) != 0)
+            else if (gravity.HasAllFlags(PopupGravity.Bottom))
                 y = 0;
             else
                 y = -size.Height / 2;
@@ -125,21 +125,13 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
             bool FitsInBounds(Rect rc, PopupAnchor edge = PopupAnchor.AllMask)
             {
-                if ((edge & PopupAnchor.Left) != 0
-                    && rc.X < bounds.X)
+                if (edge.HasAllFlags(PopupAnchor.Left) && rc.X < bounds.X ||
+                    edge.HasAllFlags(PopupAnchor.Top) && rc.Y < bounds.Y ||
+                    edge.HasAllFlags(PopupAnchor.Right) && rc.Right > bounds.Right ||
+                    edge.HasAllFlags(PopupAnchor.Bottom) && rc.Bottom > bounds.Bottom)
+                {
                     return false;
-
-                if ((edge & PopupAnchor.Top) != 0
-                    && rc.Y < bounds.Y)
-                    return false;
-
-                if ((edge & PopupAnchor.Right) != 0
-                    && rc.Right > bounds.Right)
-                    return false;
-
-                if ((edge & PopupAnchor.Bottom) != 0
-                    && rc.Bottom > bounds.Bottom)
-                    return false;
+                }
 
                 return true;
             }
@@ -155,7 +147,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             // If flipping geometry and anchor is allowed and helps, use the flipped one,
             // otherwise leave it as is
             if (!FitsInBounds(geo, PopupAnchor.HorizontalMask)
-                && (constraintAdjustment & PopupPositionerConstraintAdjustment.FlipX) != 0)
+                && constraintAdjustment.HasAllFlags(PopupPositionerConstraintAdjustment.FlipX))
             {
                 var flipped = GetUnconstrained(anchor.FlipX(), gravity.FlipX());
                 if (FitsInBounds(flipped, PopupAnchor.HorizontalMask))
@@ -163,7 +155,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             }
 
             // If sliding is allowed, try moving the rect into the bounds
-            if ((constraintAdjustment & PopupPositionerConstraintAdjustment.SlideX) != 0)
+            if (constraintAdjustment.HasAllFlags(PopupPositionerConstraintAdjustment.SlideX))
             {
                 geo = geo.WithX(Math.Max(geo.X, bounds.X));
                 if (geo.Right > bounds.Right)
@@ -171,7 +163,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             }
             
             // Resize the rect horizontally if allowed.
-            if ((constraintAdjustment & PopupPositionerConstraintAdjustment.ResizeX) != 0)
+            if (constraintAdjustment.HasAllFlags(PopupPositionerConstraintAdjustment.ResizeX))
             {
                 var unconstrainedRect = geo;
 
@@ -194,7 +186,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             // If flipping geometry and anchor is allowed and helps, use the flipped one,
             // otherwise leave it as is
             if (!FitsInBounds(geo, PopupAnchor.VerticalMask)
-                && (constraintAdjustment & PopupPositionerConstraintAdjustment.FlipY) != 0)
+                && constraintAdjustment.HasAllFlags(PopupPositionerConstraintAdjustment.FlipY))
             {
                 var flipped = GetUnconstrained(anchor.FlipY(), gravity.FlipY());
                 if (FitsInBounds(flipped, PopupAnchor.VerticalMask))
@@ -202,7 +194,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             }
 
             // If sliding is allowed, try moving the rect into the bounds
-            if ((constraintAdjustment & PopupPositionerConstraintAdjustment.SlideY) != 0)
+            if (constraintAdjustment.HasAllFlags(PopupPositionerConstraintAdjustment.SlideY))
             {
                 geo = geo.WithY(Math.Max(geo.Y, bounds.Y));
                 if (geo.Bottom > bounds.Bottom)
@@ -210,7 +202,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             }
 
             // Resize the rect vertically if allowed.
-            if ((constraintAdjustment & PopupPositionerConstraintAdjustment.ResizeY) != 0)
+            if (constraintAdjustment.HasAllFlags(PopupPositionerConstraintAdjustment.ResizeY))
             {
                 var unconstrainedRect = geo;
 

@@ -22,7 +22,6 @@ using XamlX.IL;
 
 namespace Avalonia.Build.Tasks
 {
-    
     public static partial class XamlCompilerTaskExecutor
     {
         static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
@@ -46,7 +45,9 @@ namespace Avalonia.Build.Tasks
             string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
             bool skipXamlCompilation)
         {
-            var typeSystem = new CecilTypeSystem(references.Concat(new[] { input }), input);
+            var typeSystem = new CecilTypeSystem(references
+                .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
+                .Concat(new[] { input }), input);
             
             var asm = typeSystem.TargetAssemblyDefinition;
 
@@ -97,7 +98,8 @@ namespace Avalonia.Build.Tasks
                 XamlXmlnsMappings.Resolve(typeSystem, xamlLanguage),
                 AvaloniaXamlIlLanguage.CustomValueConverter,
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
-                new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)));
+                new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
+                new DeterministicIdGenerator());
 
 
             var contextDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlContext", 

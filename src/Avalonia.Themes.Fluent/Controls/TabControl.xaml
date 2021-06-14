@@ -1,0 +1,65 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Width="400">
+      <TabControl>
+        <TabItem Header="Arch">
+          <Border Background="AntiqueWhite"
+                  Height="100">
+            <TextBlock Text="Content" Foreground="Black" FontSize="20"/>
+          </Border>
+        </TabItem>
+        <TabItem Header="Leaf">
+          <Border Background="Green"
+                  Height="100" />
+        </TabItem>
+        <TabItem Header="Disabled"
+                 IsEnabled="False" />
+      </TabControl>
+    </Border>
+  </Design.PreviewWith>
+
+  <Styles.Resources>
+    <Thickness x:Key="TabControlTopPlacementItemMargin">0 0 0 2</Thickness>
+  </Styles.Resources>
+  
+  <Style Selector="TabControl">
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Padding" Value="{DynamicResource TabItemMargin}" />
+    <Setter Property="Background" Value="{DynamicResource TabControlBackground}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Margin="{TemplateBinding Margin}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}">
+          <DockPanel>
+            <ItemsPresenter Name="PART_ItemsPresenter"
+                            Items="{TemplateBinding Items}"
+                            ItemsPanel="{TemplateBinding ItemsPanel}"
+                            ItemTemplate="{TemplateBinding ItemTemplate}"
+                            DockPanel.Dock="{TemplateBinding TabStripPlacement}"/>
+            <ContentPresenter Name="PART_SelectedContentHost"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding SelectedContent}"
+                              ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="TabControl[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+    <Setter Property="Orientation" Value="Vertical" />
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+    <Setter Property="Orientation" Value="Vertical" />
+  </Style>
+  <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter#PART_ItemsPresenter">
+    <Setter Property="Margin" Value="{DynamicResource TabControlTopPlacementItemMargin}" />
+  </Style>
+</Styles>

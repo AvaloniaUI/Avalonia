@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
 
 #nullable enable
@@ -10,11 +12,16 @@ namespace Avalonia
     /// <summary>
     /// Defines a vector.
     /// </summary>
-    public readonly struct Vector : IEquatable<Vector>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Vector : IEquatable<Vector>
     {
         static Vector()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<VectorAnimator>(prop => typeof(Vector).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>
@@ -73,6 +80,15 @@ namespace Avalonia
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector operator *(Vector vector, double scale)
+            => Multiply(vector, scale);
+
+        /// <summary>
+        /// Scales a vector.
+        /// </summary>
+        /// <param name="vector">The vector.</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector operator *(double scale, Vector vector)
             => Multiply(vector, scale);
 
         /// <summary>

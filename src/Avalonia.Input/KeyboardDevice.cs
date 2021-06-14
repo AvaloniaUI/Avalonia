@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -18,6 +19,10 @@ namespace Avalonia.Input
         public IInputManager InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
 
         public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
+        
+        // This should live in the FocusManager, but with the current outdated architecture
+        // the source of truth about the input focus is in KeyboardDevice
+        private readonly TextInputMethodManager _textInputManager = new TextInputMethodManager();
 
         public IInputElement? FocusedElement
         {
@@ -40,6 +45,7 @@ namespace Avalonia.Input
                 }
                 
                 RaisePropertyChanged();
+                _textInputManager.SetFocusedElement(value);
             }
         }
 
@@ -54,7 +60,7 @@ namespace Avalonia.Input
                     ie.IsKeyboardFocusWithin = false;
                 }
 
-                el = (IInputElement)el.VisualParent;
+                el = (IInputElement?)el.VisualParent;
             }
         }
         
@@ -206,7 +212,7 @@ namespace Avalonia.Input
                             Source = element,
                         };
 
-                        IVisual currentHandler = element;
+                        IVisual? currentHandler = element;
                         while (currentHandler != null && !ev.Handled && keyInput.Type == RawKeyEventType.KeyDown)
                         {
                             var bindings = (currentHandler as IInputElement)?.KeyBindings;

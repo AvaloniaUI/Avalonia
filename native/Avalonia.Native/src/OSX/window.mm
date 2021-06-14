@@ -50,7 +50,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -106,13 +105,16 @@ public:
         return Window;
     }
     
-    virtual HRESULT Show() override
+    virtual HRESULT Show(bool activate) override
     {
         @autoreleasepool
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
-            if(ShouldTakeFocusOnShow())
+            
+            [Window setContentView: StandardContainer];
+            
+            if(ShouldTakeFocusOnShow() && activate)
             {
                 [Window makeKeyAndOrderFront:Window];
                 [NSApp activateIgnoringOtherApps:YES];
@@ -124,7 +126,7 @@ public:
             [Window setTitle:_lastTitle];
             
             _shown = true;
-        
+            
             return S_OK;
         }
     }
@@ -191,9 +193,11 @@ public:
         {
             if(ret == nullptr)
                 return E_POINTER;
+            
             auto frame = [View frame];
             ret->Width = frame.size.width;
             ret->Height = frame.size.height;
+            
             return S_OK;
         }
     }
@@ -254,6 +258,12 @@ public:
                 y = maxSize.height;
             }
             
+            if(!_shown)
+            {
+                BaseEvents->Resized(AvnSize{x,y});
+            }
+            
+            [StandardContainer setFrameSize:NSSize{x,y}];
             [Window setContentSize:NSSize{x, y}];
             
             return S_OK;
@@ -561,11 +571,11 @@ private:
         }
     }
     
-    virtual HRESULT Show () override
+    virtual HRESULT Show (bool activate) override
     {
         @autoreleasepool
         {            
-            WindowBaseImpl::Show();
+            WindowBaseImpl::Show(activate);
             
             HideOrShowTrafficLights();
             
@@ -1391,17 +1401,20 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [super viewDidChangeBackingProperties];
 }
 
-- (bool) ignoreUserInput
+- (bool) ignoreUserInput:(bool)trigerInputWhenDisabled
 {
     auto parentWindow = objc_cast<AvnWindow>([self window]);
     
     if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
     {
-        auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
-        
-        if(window != nullptr)
+        if(trigerInputWhenDisabled)
         {
-            window->WindowEvents->GotInputWhenDisabled();
+            auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
+            
+            if(window != nullptr)
+            {
+                window->WindowEvents->GotInputWhenDisabled();
+            }
         }
         
         return TRUE;
@@ -1412,7 +1425,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
-    if([self ignoreUserInput])
+    bool triggerInputWhenDisabled = type != Move;
+    
+    if([self ignoreUserInput: triggerInputWhenDisabled])
     {
         return;
     }
@@ -1578,7 +1593,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput])
+    if([self ignoreUserInput: false])
     {
         return;
     }
@@ -1872,7 +1887,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     for(int i = 0; i < numWindows; i++)
     {
-        [[windows objectAtIndex:i] performClose:nil];
+        auto window = (AvnWindow*)[windows objectAtIndex:i];
+        
+        if([window parentWindow] == nullptr) // Avalonia will handle the child windows.
+        {
+            [window performClose:nil];
+        }
     }
 }
 
@@ -1925,6 +1945,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         }
         
         [NSApp setMenu:_menu];
+    }
+    else
+    {
+        [self showAppMenuOnly];
     }
 }
 
@@ -1982,7 +2006,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _lastScaling = [self backingScaleFactor];
     [self setOpaque:NO];
     [self setBackgroundColor: [NSColor clearColor]];
-    [self invalidateShadow];
     _isExtended = false;
     return self;
 }
@@ -2063,17 +2086,17 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void)becomeKeyWindow
 {
+    [self showWindowMenuWithAppMenu];
+    
     if([self activateAppropriateChild: true])
     {
-        [self showWindowMenuWithAppMenu];
-        
         if(_parent != nullptr)
         {
             _parent->BaseEvents->Activated();
         }
-        
-        [super becomeKeyWindow];
     }
+    
+    [super becomeKeyWindow];
 }
 
 -(void) restoreParentWindow;
@@ -2221,9 +2244,13 @@ protected:
     {
         @autoreleasepool
         {
-            [Window setContentSize:NSSize{x, y}];
+            if (Window != nullptr)
+            {
+                [StandardContainer setFrameSize:NSSize{x,y}];
+                [Window setContentSize:NSSize{x, y}];
             
-            [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+                [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+            }
             
             return S_OK;
         }

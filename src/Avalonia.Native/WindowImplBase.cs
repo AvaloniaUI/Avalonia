@@ -53,7 +53,7 @@ namespace Avalonia.Native
         private bool _gpu = false;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
-        private readonly IStandardCursorFactory _cursorFactory;
+        private readonly ICursorFactory _cursorFactory;
         private Size _savedLogicalSize;
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
@@ -68,7 +68,7 @@ namespace Avalonia.Native
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
-            _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
+            _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
@@ -174,7 +174,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Resized(AvnSize* size)
             {
-                if (_parent._native != null)
+                if (_parent?._native != null)
                 {
                     var s = new Size(size->Width, size->Height);
                     _parent._savedLogicalSize = s;
@@ -192,14 +192,14 @@ namespace Avalonia.Native
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
 
-            bool IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+            int IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
             {
-                return _parent.RawKeyEvent(type, timeStamp, modifiers, key);
+                return _parent.RawKeyEvent(type, timeStamp, modifiers, key).AsComBool();
             }
 
-            bool IAvnWindowBaseEvents.RawTextInputEvent(uint timeStamp, string text)
+            int IAvnWindowBaseEvents.RawTextInputEvent(uint timeStamp, string text)
             {
-                return _parent.RawTextInputEvent(timeStamp, text);
+                return _parent.RawTextInputEvent(timeStamp, text).AsComBool();
             }
 
 
@@ -351,9 +351,9 @@ namespace Avalonia.Native
         }
 
 
-        public virtual void Show()
+        public virtual void Show(bool activate)
         {
-            _native.Show();
+            _native.Show(activate.AsComBool());
         }
 
 
@@ -383,12 +383,12 @@ namespace Avalonia.Native
             _native.BeginMoveDrag();
         }
 
-        public Size MaxAutoSizeHint => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
+        public Size MaxAutoSizeHint => Screen.AllScreens.Select(s => s.Bounds.Size.ToSize(1))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
         public void SetTopmost(bool value)
         {
-            _native.SetTopMost(value);
+            _native.SetTopMost(value.AsComBool());
         }
 
         public double RenderScaling => _native?.Scaling ?? 1;
@@ -398,7 +398,7 @@ namespace Avalonia.Native
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
             if (_native == null)
             {
@@ -414,9 +414,7 @@ namespace Avalonia.Native
 
         public Action<RawInputEventArgs> Input { get; set; }
 
-        Action<double> ScalingChanged { get; set; }
-
-        Action<double> ITopLevelImpl.ScalingChanged { get; set; }
+        public Action<double> ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
@@ -456,7 +454,7 @@ namespace Avalonia.Native
 
                 TransparencyLevel = transparencyLevel;
 
-                _native?.SetBlurEnabled(TransparencyLevel >= WindowTransparencyLevel.Blur);
+                _native?.SetBlurEnabled((TransparencyLevel >= WindowTransparencyLevel.Blur).AsComBool());
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }

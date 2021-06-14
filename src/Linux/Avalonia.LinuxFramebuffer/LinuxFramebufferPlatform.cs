@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using Avalonia.Controls;
@@ -8,12 +8,15 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.LinuxFramebuffer;
+using Avalonia.LinuxFramebuffer.Input;
+using Avalonia.LinuxFramebuffer.Input.EvDev;
 using Avalonia.LinuxFramebuffer.Input.LibInput;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -38,7 +41,7 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
+                .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
@@ -58,6 +61,7 @@ namespace Avalonia.LinuxFramebuffer
     class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
     {
         private readonly IOutputBackend _fb;
+        [CanBeNull] private readonly IInputBackend _inputBackend;
         private TopLevel _topLevel;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         public CancellationToken Token => _cts.Token;
@@ -67,6 +71,12 @@ namespace Avalonia.LinuxFramebuffer
             _fb = fb;
         }
         
+        public LinuxFramebufferLifetime(IOutputBackend fb, IInputBackend input)
+        {
+            _fb = fb;
+            _inputBackend = input;
+        }
+        
         public Control MainView
         {
             get => (Control)_topLevel?.Content;
@@ -74,11 +84,24 @@ namespace Avalonia.LinuxFramebuffer
             {
                 if (_topLevel == null)
                 {
+                    var inputBackend = _inputBackend;
+                    if (inputBackend == null)
+                    {
+                        if (Environment.GetEnvironmentVariable("AVALONIA_USE_EVDEV") == "1")
+                            inputBackend = EvDevBackend.CreateFromEnvironment();
+                        else
+                            inputBackend = new LibInputBackend();
+                    }
 
-                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, new LibInputBackend()));
+                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, inputBackend));
                     tl.Prepare();
                     _topLevel = tl;
                     _topLevel.Renderer.Start();
+
+                    if (_topLevel is IFocusScope scope)
+                    {
+                        FocusManager.Instance?.SetFocusScope(scope);
+                    }
                 }
 
                 _topLevel.Content = value;

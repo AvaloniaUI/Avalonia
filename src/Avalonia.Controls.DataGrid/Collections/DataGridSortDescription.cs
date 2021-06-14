@@ -265,6 +265,43 @@ namespace Avalonia.Collections
         {
             return new DataGridPathSortDescription(propertyPath, direction, comparer, null);
         }
+
+        public static DataGridSortDescription FromComparer(IComparer comparer, ListSortDirection direction = ListSortDirection.Ascending)
+        {
+            return new DataGridComparerSortDesctiption(comparer, direction);
+        }
+    }
+
+    public class DataGridComparerSortDesctiption : DataGridSortDescription
+    {
+        private readonly IComparer _innerComparer;
+        private readonly ListSortDirection _direction;
+        private readonly IComparer<object> _comparer;
+
+        public IComparer SourceComparer => _innerComparer;
+        public override IComparer<object> Comparer => _comparer;
+        public override ListSortDirection Direction => _direction;
+        public DataGridComparerSortDesctiption(IComparer comparer, ListSortDirection direction)
+        {
+            _innerComparer = comparer;
+            _direction = direction;
+            _comparer = Comparer<object>.Create((x, y) => Compare(x, y));
+        }
+
+        private int Compare(object x, object y)
+        {
+            int result = _innerComparer.Compare(x, y);
+
+            if (Direction == ListSortDirection.Descending)
+                return -result;
+            else
+                return result;
+        }
+        public override DataGridSortDescription SwitchSortDirection()
+        {
+            var newDirection = _direction == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+            return new DataGridComparerSortDesctiption(_innerComparer, newDirection);
+        }
     }
 
     public class DataGridSortDescriptionCollection : AvaloniaList<DataGridSortDescription>

@@ -3,6 +3,7 @@
     <TargetFrameworks>netcoreapp3.1;net47</TargetFrameworks>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />
@@ -10,6 +11,7 @@
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />

@@ -10,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -76,6 +77,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
 
+        /// <summary>
+        /// Defines the <see cref="IsTextSearchEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
+            AvaloniaProperty.Register<ComboBox, bool>(nameof(IsTextSearchEnabled), true);
+
+        private string _textSearchTerm = string.Empty;
+        private DispatcherTimer _textSearchTimer;
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
@@ -164,6 +173,15 @@ namespace Avalonia.Controls
             set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that specifies whether a user can jump to a value by typing.
+        /// </summary>
+        public bool IsTextSearchEnabled
+        {
+            get { return GetValue(IsTextSearchEnabledProperty); }
+            set { SetValue(IsTextSearchEnabledProperty, value); }
+        }
+
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
@@ -173,11 +191,10 @@ namespace Avalonia.Controls
                 ComboBoxItem.ContentTemplateProperty);
         }
 
-        /// <inheritdoc/>
-        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToLogicalTree(e);
-            this.UpdateSelectionBoxItem(this.SelectedItem);
+            base.OnAttachedToVisualTree(e);
+            this.UpdateSelectionBoxItem(SelectedItem);
         }
 
         /// <inheritdoc/>
@@ -189,7 +206,7 @@ namespace Avalonia.Controls
                 return;
 
             if (e.Key == Key.F4 ||
-                ((e.Key == Key.Down || e.Key == Key.Up) && ((e.KeyModifiers & KeyModifiers.Alt) != 0)))
+                ((e.Key == Key.Down || e.Key == Key.Up) && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt)))
             {
                 IsDropDownOpen = !IsDropDownOpen;
                 e.Handled = true;
@@ -228,6 +245,32 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
+        }
+
+        /// <inheritdoc />
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            if (!IsTextSearchEnabled || e.Handled)
+                return;
+
+            StopTextSearchTimer();
+
+            _textSearchTerm += e.Text;
+
+            bool match(ItemContainerInfo info) => 
+                info.ContainerControl is IContentControl control &&
+                control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+
+            var info = ItemContainerGenerator.Containers.FirstOrDefault(match);
+
+            if (info != null)
+            {
+                SelectedIndex = info.Index;
+            }
+
+            StartTextSearchTimer();
+
+            e.Handled = true;
         }
 
         /// <inheritdoc/>
@@ -373,19 +416,22 @@ namespace Avalonia.Controls
 
             if (control != null)
             {
-                control.Measure(Size.Infinity);
-
-                SelectionBoxItem = new Rectangle
+                if (VisualRoot is object)
                 {
-                    Width = control.DesiredSize.Width,
-                    Height = control.DesiredSize.Height,
-                    Fill = new VisualBrush
+                    control.Measure(Size.Infinity);
+
+                    SelectionBoxItem = new Rectangle
                     {
-                        Visual = control,
-                        Stretch = Stretch.None,
-                        AlignmentX = AlignmentX.Left,
-                    }
-                };
+                        Width = control.DesiredSize.Width,
+                        Height = control.DesiredSize.Height,
+                        Fill = new VisualBrush
+                        {
+                            Visual = control,
+                            Stretch = Stretch.None,
+                            AlignmentX = AlignmentX.Left,
+                        }
+                    };
+                }
             }
             else
             {
@@ -423,6 +469,32 @@ namespace Avalonia.Controls
                 prev = ItemCount - 1;
 
             SelectedIndex = prev;
+        }
+
+        private void StartTextSearchTimer()
+        {
+            _textSearchTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _textSearchTimer.Tick += TextSearchTimer_Tick;
+            _textSearchTimer.Start();
+        }
+
+        private void StopTextSearchTimer()
+        {
+            if (_textSearchTimer == null)
+            {
+                return;
+            }
+
+            _textSearchTimer.Stop();
+            _textSearchTimer.Tick -= TextSearchTimer_Tick;
+
+            _textSearchTimer = null;
+        }
+
+        private void TextSearchTimer_Tick(object sender, EventArgs e)
+        {
+            _textSearchTerm = string.Empty;
+            StopTextSearchTimer();
         }
     }
 }

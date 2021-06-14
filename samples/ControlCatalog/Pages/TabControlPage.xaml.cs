@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.Pages
 {
@@ -56,7 +56,7 @@ namespace ControlCatalog.Pages
             return new Bitmap(assets.Open(new Uri(uri)));
         }
 
-        private class PageViewModel : ReactiveObject
+        private class PageViewModel : ViewModelBase
         {
             private Dock _tabPlacement;
 

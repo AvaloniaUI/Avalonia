@@ -8,6 +8,7 @@
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.ttf" />
   </ItemGroup>

@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public virtual PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, 1);
 
-        public virtual void SetCursor(IPlatformHandle cursor)
+        public virtual void SetCursor(ICursorImpl cursor)
         {
         }
 

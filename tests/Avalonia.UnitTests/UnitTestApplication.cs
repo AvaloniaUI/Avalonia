@@ -25,6 +25,7 @@ namespace Avalonia.UnitTests
         public UnitTestApplication(TestServices services)
         {
             _services = services ?? new TestServices();
+            AvaloniaLocator.CurrentMutable.BindToSelf<Application>(this);
             RegisterServices();
         }
 
@@ -36,7 +37,6 @@ namespace Avalonia.UnitTests
         {
             var scope = AvaloniaLocator.EnterScope();
             var app = new UnitTestApplication(services);
-            AvaloniaLocator.CurrentMutable.BindToSelf<Application>(app);
             Dispatcher.UIThread.UpdateServices();
             return Disposable.Create(() =>
             {
@@ -62,7 +62,7 @@ namespace Avalonia.UnitTests
                 .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
                 .Bind<IScheduler>().ToConstant(Services.Scheduler)
-                .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)
+                .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IStyler>().ToConstant(Services.Styler)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();

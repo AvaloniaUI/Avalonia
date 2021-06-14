@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -16,6 +17,11 @@ namespace Avalonia.Controls.Primitives
     public class LightDismissOverlayLayer : Border, ICustomHitTest
     {
         public IInputElement? InputPassThroughElement { get; set; }
+
+        static LightDismissOverlayLayer()
+        {
+            BackgroundProperty.OverrideDefaultValue<LightDismissOverlayLayer>(Brushes.Transparent);
+        }
 
         /// <summary>
         /// Returns the light dismiss overlay for a specified visual.
@@ -46,8 +52,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (InputPassThroughElement is object)
             {
-                var p = point.Transform(this.TransformToVisual(VisualRoot)!.Value);
-                var hit = VisualRoot.GetVisualAt(p, x => x != this);
+                var hit = VisualRoot.GetVisualAt(point, x => x != this);
 
                 if (hit is object)
                 {

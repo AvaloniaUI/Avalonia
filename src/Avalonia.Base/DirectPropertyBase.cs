@@ -26,7 +26,7 @@ namespace Avalonia
         protected DirectPropertyBase(
             string name,
             Type ownerType,
-            PropertyMetadata metadata)
+            AvaloniaPropertyMetadata metadata)
             : base(name, ownerType, metadata)
         {
         }
@@ -41,7 +41,7 @@ namespace Avalonia
         protected DirectPropertyBase(
             AvaloniaProperty source,
             Type ownerType,
-            PropertyMetadata metadata)
+            AvaloniaPropertyMetadata metadata)
             : this(source as DirectPropertyBase<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
         {
         }
@@ -55,7 +55,7 @@ namespace Avalonia
         protected DirectPropertyBase(
             DirectPropertyBase<TValue> source,
             Type ownerType,
-            PropertyMetadata metadata)
+            AvaloniaPropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
         }

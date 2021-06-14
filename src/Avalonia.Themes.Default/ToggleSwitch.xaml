@@ -5,7 +5,7 @@
     <Thickness x:Key="ToggleSwitchTopHeaderMargin">0,0,0,6</Thickness>
     <GridLength x:Key="ToggleSwitchPreContentMargin">6</GridLength>
     <GridLength x:Key="ToggleSwitchPostContentMargin">6</GridLength>
-    <x:Double x:Key="ToggleSwitchThemeMinWidth">154</x:Double>
+    <x:Double x:Key="ToggleSwitchThemeMinWidth">0</x:Double>
     <Thickness x:Key="ToggleSwitchOnStrokeThickness">0</Thickness>
     <Thickness x:Key="ToggleSwitchOuterBorderStrokeThickness">1</Thickness>
     <SolidColorBrush x:Key="ToggleSwitchContentForeground" Color="{DynamicResource ThemeForegroundColor}" />

@@ -75,7 +75,9 @@ namespace Avalonia.Input
                 // If control is null, set focus to the topmost focus scope.
                 foreach (var scope in GetFocusScopeAncestors(Current).Reverse().ToList())
                 {
-                    if (_focusScopes.TryGetValue(scope, out var element) && element != null)
+                    if (scope != Scope &&
+                        _focusScopes.TryGetValue(scope, out var element) &&
+                        element != null)
                     {
                         Focus(element, method);
                         return;

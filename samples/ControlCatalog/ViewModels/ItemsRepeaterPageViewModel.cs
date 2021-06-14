@@ -2,11 +2,11 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Media;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    public class ItemsRepeaterPageViewModel : ReactiveObject
+    public class ItemsRepeaterPageViewModel : ViewModelBase
     {
         private int _newItemIndex = 1;
         private int _newGenerationIndex = 0;
@@ -59,7 +59,7 @@ namespace ControlCatalog.ViewModels
                 }));
         }
 
-        public class Item : ReactiveObject
+        public class Item : ViewModelBase
         {
             private double _height = double.NaN;
 

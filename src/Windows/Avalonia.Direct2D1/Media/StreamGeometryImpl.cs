@@ -29,9 +29,12 @@ namespace Avalonia.Direct2D1.Media
         public IStreamGeometryImpl Clone()
         {
             var result = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
-            var sink = result.Open();
-            ((PathGeometry)Geometry).Stream(sink);
-            sink.Close();
+            using (var sink = result.Open())
+            {
+                ((PathGeometry)Geometry).Stream(sink);
+                sink.Close();
+            }
+
             return new StreamGeometryImpl(result);
         }
 

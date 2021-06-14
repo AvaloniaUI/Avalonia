@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -24,7 +24,8 @@ namespace Avalonia.Rendering.SceneGraph
             using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
             using (var context = new DrawingContext(impl))
             {
-                Update(context, scene, (VisualNode)scene.Root, scene.Root.Visual.Bounds, true);
+                var clip = new Rect(scene.Root.Visual.Bounds.Size);
+                Update(context, scene, (VisualNode)scene.Root, clip, true);
             }
         }
 
@@ -77,7 +78,7 @@ namespace Avalonia.Rendering.SceneGraph
                         using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
                         using (var context = new DrawingContext(impl))
                         {
-                            var clip = scene.Root.Visual.Bounds;
+                            var clip = new Rect(scene.Root.Visual.Bounds.Size);
 
                             if (node.Parent != null)
                             {
@@ -174,7 +175,9 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (visual.IsVisible)
             {
-                var m = Matrix.CreateTranslation(visual.Bounds.Position);
+                var m = node != scene.Root ? 
+                    Matrix.CreateTranslation(visual.Bounds.Position) :
+                    Matrix.Identity;
 
                 var renderTransform = Matrix.Identity;
 
@@ -244,10 +247,27 @@ namespace Avalonia.Rendering.SceneGraph
 
                     if (forceRecurse)
                     {
-                        foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
+                        var visualChildren = (IList<IVisual>) visual.VisualChildren;
+
+                        node.TryPreallocateChildren(visualChildren.Count);
+
+                        if (visualChildren.Count == 1)
                         {
-                            var childNode = GetOrCreateChildNode(scene, child, node);
+                            var childNode = GetOrCreateChildNode(scene, visualChildren[0], node);
                             Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
+                        }
+                        else if (visualChildren.Count > 1)
+                        {
+                            var sortedChildren = new IVisual[visualChildren.Count];
+                            visualChildren.CopyTo(sortedChildren, 0);
+
+                            Array.Sort(sortedChildren, ZIndexComparer.ComparisonInstance);
+
+                            foreach (var child in sortedChildren)
+                            {
+                                var childNode = GetOrCreateChildNode(scene, child, node);
+                                Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
+                            }
                         }
 
                         node.SubTreeUpdated = true;
@@ -305,13 +325,17 @@ namespace Avalonia.Rendering.SceneGraph
 
         private static void Deindex(Scene scene, VisualNode node)
         {
-            foreach (VisualNode child in node.Children)
+            var nodeChildren = node.Children;
+            var nodeChildrenCount = nodeChildren.Count;
+
+            for (var i = 0; i < nodeChildrenCount; i++)
             {
-                if (child is VisualNode visual)
+                if (nodeChildren[i] is VisualNode visual)
                 {
                     Deindex(scene, visual);
                 }
             }
+
             scene.Remove(node);
 
             node.SubTreeUpdated = true;
@@ -319,7 +343,6 @@ namespace Avalonia.Rendering.SceneGraph
             scene.Layers[node.LayerRoot].Dirty.Add(node.Bounds);
 
             node.Visual.TransformedBounds = null;
-
 
             if (node.LayerRoot == node.Visual && node.Visual != scene.Root.Visual)
             {
