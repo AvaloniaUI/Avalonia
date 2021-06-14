@@ -33,6 +33,6 @@ namespace Avalonia.Styling.Activators
 
         void IObserver<object>.OnCompleted() { }
         void IObserver<object>.OnError(Exception error) { }
-        void IObserver<object>.OnNext(object value) => PublishNext(Equals(value, _value));
+        void IObserver<object>.OnNext(object value) => PublishNext(PropertyEqualsSelector.Compare(_property.PropertyType, value, _value));
     }
 }
