@@ -218,15 +218,28 @@ namespace Avalonia.Input
                             var bindings = (currentHandler as IInputElement)?.KeyBindings;
                             if (bindings != null)
                             {
-                                // Create a copy of the KeyBindings list.
+                                KeyBinding[]? bindingsCopy = null;
+
+                                // Create a copy of the KeyBindings list if there's a binding which matches the event.
                                 // If we don't do this the foreach loop will throw an InvalidOperationException when the KeyBindings list is changed.
                                 // This can happen when a new view is loaded which adds its own KeyBindings to the handler.
-                                var cpy = bindings.ToArray();
-                                foreach (var binding in cpy)
+                                foreach (var binding in bindings)
                                 {
-                                    if (ev.Handled)
+                                    if (binding.Gesture?.Matches(ev) == true)
+                                    {
+                                        bindingsCopy = bindings.ToArray();
                                         break;
-                                    binding.TryHandle(ev);
+                                    }
+                                }
+
+                                if (bindingsCopy is object)
+                                {
+                                    foreach (var binding in bindingsCopy)
+                                    {
+                                        if (ev.Handled)
+                                            break;
+                                        binding.TryHandle(ev);
+                                    }
                                 }
                             }
                             currentHandler = currentHandler.VisualParent;
