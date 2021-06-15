@@ -26,7 +26,7 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.200
+        dotnet-version: 5.0.301
 
     - name: NBGV
       id: nbgv
