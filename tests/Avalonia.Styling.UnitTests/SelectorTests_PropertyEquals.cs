@@ -22,6 +22,23 @@ namespace Avalonia.Styling.UnitTests
             Assert.False(await activator.Take(1));
         }
 
+        [Theory]
+        [InlineData("Bar", FooBar.Bar)]
+        [InlineData("352", 352)]
+        [InlineData("0.1", 0.1)]
+        public async Task PropertyEquals_Matches_When_Property_Has_Matching_Value_And_Different_Type(string literal, object value)
+        {
+            var control = new TextBlock();
+            var target = default(Selector).PropertyEquals(TextBlock.TagProperty, literal);
+            var activator = target.Match(control).Activator.ToObservable();
+
+            Assert.False(await activator.Take(1));
+            control.Tag = value;
+            Assert.True(await activator.Take(1));
+            control.Tag = null;
+            Assert.False(await activator.Take(1));
+        }
+
         [Fact]
         public void OfType_PropertyEquals_Doesnt_Match_Control_Of_Wrong_Type()
         {
@@ -39,6 +56,12 @@ namespace Avalonia.Styling.UnitTests
                 .PropertyEquals(TextBlock.TextProperty, "foo");
 
             Assert.Equal("TextBlock[Text=foo]", target.ToString());
+        }
+
+        private enum FooBar
+        {
+            Foo,
+            Bar
         }
     }
 }
