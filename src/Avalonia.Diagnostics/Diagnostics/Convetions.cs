@@ -7,9 +7,9 @@ namespace Avalonia.Diagnostics
 {
     static class Convetions
     {
-        public static string DefaultScreenshotRoot =>
+        public static string DefaultScreenshotsRoot =>
              System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures, Environment.SpecialFolderOption.Create),
-                "Screenshot");
+                "Screenshots");
 
         /// <summary>
         /// Return the path of the screenshot folder according to the rules indicated in issue <see href="https://github.com/AvaloniaUI/Avalonia/issues/4743">GH-4743</see>

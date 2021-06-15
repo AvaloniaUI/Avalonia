@@ -26,10 +26,10 @@ namespace Avalonia.Diagnostics
 
 
         /// <summary>
-        /// Get or sets the root folder where screeshot well be stored.
-        /// The default root folder is MyPictures/ScreenShot.
+        /// Get or sets the root folder where screeshots well be stored.
+        /// The default root folder is [Environment.SpecialFolder.MyPictures]/Screenshots.
         /// </summary>
-        public string? ScreenshotRoot { get; set; }
+        public string? ScreenshotsRoot { get; set; }
            
         /// <summary>
         /// Get or sets conventin for screenshot fileName.

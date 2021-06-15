@@ -257,9 +257,9 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void SetOptions(DevToolsOptions options)
         {
-            _screenshotRoot = string.IsNullOrWhiteSpace(options.ScreenshotRoot)
-                ? Convetions.DefaultScreenshotRoot
-                : options.ScreenshotRoot!;
+            _screenshotRoot = string.IsNullOrWhiteSpace(options.ScreenshotsRoot)
+                ? Convetions.DefaultScreenshotsRoot
+                : options.ScreenshotsRoot!;
 
             _getScreenshotFileName = options.ScreenshotFileNameConvention
                 ?? Convetions.DefaultScreenshotFileNameConvention;
