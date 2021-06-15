@@ -32,7 +32,7 @@ namespace Avalonia.Diagnostics.Views
                   if ((DataContext as MainViewModel)?.StartupScreenIndex is int index)
                   {
                       var screens = this.Screens;
-                      if (index < screens.ScreenCount)                          
+                      if (index > -1 && index < screens.ScreenCount)                          
                       {
                           var screen = screens.All[index];
                           this.Position = screen.Bounds.TopLeft;
