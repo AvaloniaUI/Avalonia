@@ -168,6 +168,7 @@ namespace Avalonia.Controls
             styler?.ApplyStyles(this);
 
             ClientSize = impl.ClientSize;
+            FrameSize = impl.FrameSize;
             
             this.GetObservable(PointerOverElementProperty)
                 .Select(
@@ -207,7 +208,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the total size of the window.
         /// </summary>
-        public Size FrameSize => _frameSize;
+        public Size FrameSize
+        {
+            get { return _frameSize; }
+            protected set { SetAndRaise(FrameSizeProperty, ref _frameSize, value); }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="WindowTransparencyLevel"/> that the TopLevel should use when possible.
@@ -378,6 +383,7 @@ namespace Avalonia.Controls
         protected virtual void HandleResized(Size clientSize)
         {
             ClientSize = clientSize;
+            FrameSize = PlatformImpl.FrameSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.ExecuteLayoutPass();
@@ -456,14 +462,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
-
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
-        {
-            if (change.Property == ClientSizeProperty)
-            {
-                SetAndRaise(FrameSizeProperty, ref _frameSize, PlatformImpl.FrameSize);
-            }
-        }
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
