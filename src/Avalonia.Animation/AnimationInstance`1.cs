@@ -46,9 +46,6 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
-            control.PropertyChanged += ControlPropertyChanged;
-
-            UpdateNeutralValue();
             FetchProperties();
         }
 
@@ -82,6 +79,7 @@ namespace Avalonia.Animation
             // Animation may have been stopped before it has finished.
             ApplyFinalFill();
 
+            _targetControl.PropertyChanged -= ControlPropertyChanged;
             _timerSub?.Dispose();
             _clock.PlayState = PlayState.Stop;
         }
@@ -90,6 +88,8 @@ namespace Avalonia.Animation
         {
             _clock = new Clock(_baseClock);
             _timerSub = _clock.Subscribe(Step);
+            _targetControl.PropertyChanged += ControlPropertyChanged;
+            UpdateNeutralValue();
         }
 
         public void Step(TimeSpan frameTick)
