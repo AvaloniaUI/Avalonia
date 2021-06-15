@@ -104,6 +104,20 @@ namespace Avalonia.Native
             }
         }
 
+        public Size TotalSize
+        {
+            get
+            {
+                if (_native != null)
+                {
+                    var s = _native.TotalSize;
+                    return new Size(s.Width, s.Height);
+                }
+
+                return default;
+            }
+        }
+
         public IEnumerable<object> Surfaces => new[] {
             (_gpu ? _glSurface : (object)null),
             this 

@@ -62,6 +62,7 @@ namespace Avalonia.LinuxFramebuffer
         }
 
         public Size ClientSize => ScaledSize;
+        public Size TotalSize => ClientSize;
         public IMouseDevice MouseDevice => new MouseDevice();
         public IPopupImpl CreatePopup() => null;
 

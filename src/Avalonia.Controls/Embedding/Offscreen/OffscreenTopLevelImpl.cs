@@ -35,6 +35,16 @@ namespace Avalonia.Controls.Embedding.Offscreen
             }
         }
 
+        public Size TotalSize
+        {
+            get { return _clientSize; }
+            set
+            {
+                _clientSize = value;
+                Resized?.Invoke(value);
+            }
+        }
+
         public double RenderScaling
         {
             get { return _scaling; }

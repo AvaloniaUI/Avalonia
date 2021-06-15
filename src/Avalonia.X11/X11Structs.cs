@@ -1740,6 +1740,16 @@ namespace Avalonia.X11 {
         public short W;
         public short H;
     }
+    
+    [StructLayout (LayoutKind.Sequential)]
+    [Serializable]
+    internal struct XFrameExtents
+    {
+        public int Left;
+        public int Right;
+        public int Top;
+        public int Bottom;
+    }
 
 
 	[StructLayout (LayoutKind.Sequential)]

@@ -29,6 +29,7 @@ namespace Avalonia.UnitTests
 
             windowImpl.SetupAllProperties();
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
+            windowImpl.Setup(x => x.TotalSize).Returns(() => clientSize);
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);

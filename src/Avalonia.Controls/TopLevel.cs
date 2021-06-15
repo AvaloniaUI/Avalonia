@@ -43,6 +43,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(ClientSize), o => o.ClientSize);
 
         /// <summary>
+        /// Defines the <see cref="TotalSize"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TopLevel, Size> TotalSizeProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(TotalSize), o => o.TotalSize);
+
+        /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
         /// </summary>
         public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
@@ -74,6 +80,7 @@ namespace Avalonia.Controls
         private readonly IPlatformRenderInterface _renderInterface;
         private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
+        private Size _totalSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager _layoutManager;
         private Border _transparencyFallbackBorder;
@@ -84,6 +91,7 @@ namespace Avalonia.Controls
         static TopLevel()
         {
             AffectsMeasure<TopLevel>(ClientSizeProperty);
+            AffectsMeasure<TopLevel>(TotalSizeProperty);
 
             TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
                 (tl, e) => 
@@ -194,8 +202,17 @@ namespace Avalonia.Controls
         public Size ClientSize
         {
             get { return _clientSize; }
-            protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
+            protected set
+            {
+                SetAndRaise(ClientSizeProperty, ref _clientSize, value);
+                SetAndRaise(TotalSizeProperty, ref _totalSize, PlatformImpl.TotalSize);
+            }
         }
+
+        /// <summary>
+        /// Gets or sets the total size of the window.
+        /// </summary>
+        public Size TotalSize => _totalSize;
 
         /// <summary>
         /// Gets or sets the <see cref="WindowTransparencyLevel"/> that the TopLevel should use when possible.

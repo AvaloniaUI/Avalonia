@@ -213,6 +213,16 @@ namespace Avalonia.Win32
             }
         }
 
+        public Size TotalSize
+        {
+            get
+            {
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf(typeof(RECT)));
+
+                return new Size(rect.Width, rect.Height) / RenderScaling;
+            }
+        }
+
         public IScreenImpl Screen { get; }
 
         public IPlatformHandle Handle { get; private set; }
