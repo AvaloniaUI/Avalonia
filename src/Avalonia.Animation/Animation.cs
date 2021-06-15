@@ -248,7 +248,7 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    var handler = GetAnimatorType(setter.Property);
+                    var handler = setter.Animator ?? GetAnimatorType(setter.Property);
 
                     if (handler == null)
                     {
