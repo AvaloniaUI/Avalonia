@@ -2,6 +2,7 @@
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using System;
 using System.Globalization;
 
@@ -44,7 +45,8 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<TimePicker, TimeSpan?> SelectedTimeProperty =
             AvaloniaProperty.RegisterDirect<TimePicker, TimeSpan?>(nameof(SelectedTime),
-                x => x.SelectedTime, (x, v) => x.SelectedTime = v);
+                x => x.SelectedTime, (x, v) => x.SelectedTime = v,
+                defaultBindingMode: BindingMode.TwoWay);
 
         // Template Items
         private TimePickerPresenter _presenter;
