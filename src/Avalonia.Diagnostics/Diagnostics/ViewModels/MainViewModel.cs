@@ -151,7 +151,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get { return _pointerOverElement; }
             private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
         }
-
+        
         private void UpdateConsoleContext(ConsoleContext context)
         {
             context.root = _root;
@@ -212,6 +212,13 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 tree.SelectControl(control);
             }
+        }
+
+        public int? StartupScreenIndex { get; private set; } = default;
+
+        public void SetOptions(DevToolsOptions options)
+        {
+            StartupScreenIndex = options.StartupScreen;
         }
     }
 }
