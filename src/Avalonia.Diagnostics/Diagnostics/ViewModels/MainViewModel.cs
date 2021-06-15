@@ -218,7 +218,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void SetOptions(DevToolsOptions options)
         {
-            StartupScreenIndex = options.StartupScreen;
+            StartupScreenIndex = options.StartupScreenIndex;
         }
     }
 }

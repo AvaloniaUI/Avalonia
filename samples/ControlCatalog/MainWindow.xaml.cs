@@ -19,7 +19,7 @@ namespace ControlCatalog
             this.InitializeComponent();
             this.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
             {
-                StartupScreen = 1,
+                StartupScreenIndex = 1,
             });
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
