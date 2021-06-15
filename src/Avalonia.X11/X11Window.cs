@@ -297,7 +297,7 @@ namespace Avalonia.X11
 
         public Size ClientSize => new Size(_realSize.Width / RenderScaling, _realSize.Height / RenderScaling);
 
-        public Size TotalSize
+        public Size FrameSize
         {
             get
             {
@@ -616,7 +616,7 @@ namespace Avalonia.X11
             if (atom == _x11.Atoms._NET_FRAME_EXTENTS)
             {
                 // Occurs once the window has been mapped, which is the earliest the extents
-                // can be retrieved, so invoke event to force update of TopLevel.TotalSize.
+                // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
                 Resized.Invoke(ClientSize);
             }
 

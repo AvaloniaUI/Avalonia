@@ -25,7 +25,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets the total size of the toplevel, excluding shadows.
         /// </summary>
-        Size TotalSize { get; }
+        Size FrameSize { get; }
 
         /// <summary>
         /// Gets the scaling factor for the toplevel. This is used for rendering.

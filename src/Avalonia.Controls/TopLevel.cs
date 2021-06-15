@@ -43,10 +43,10 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(ClientSize), o => o.ClientSize);
 
         /// <summary>
-        /// Defines the <see cref="TotalSize"/> property.
+        /// Defines the <see cref="FrameSize"/> property.
         /// </summary>
-        public static readonly DirectProperty<TopLevel, Size> TotalSizeProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(TotalSize), o => o.TotalSize);
+        public static readonly DirectProperty<TopLevel, Size> FrameSizeProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(FrameSize), o => o.FrameSize);
 
         /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
@@ -80,7 +80,7 @@ namespace Avalonia.Controls
         private readonly IPlatformRenderInterface _renderInterface;
         private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
-        private Size _totalSize;
+        private Size _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager _layoutManager;
         private Border _transparencyFallbackBorder;
@@ -91,7 +91,6 @@ namespace Avalonia.Controls
         static TopLevel()
         {
             AffectsMeasure<TopLevel>(ClientSizeProperty);
-            AffectsMeasure<TopLevel>(TotalSizeProperty);
 
             TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
                 (tl, e) => 
@@ -202,17 +201,13 @@ namespace Avalonia.Controls
         public Size ClientSize
         {
             get { return _clientSize; }
-            protected set
-            {
-                SetAndRaise(ClientSizeProperty, ref _clientSize, value);
-                SetAndRaise(TotalSizeProperty, ref _totalSize, PlatformImpl.TotalSize);
-            }
+            protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
         }
 
         /// <summary>
         /// Gets or sets the total size of the window.
         /// </summary>
-        public Size TotalSize => _totalSize;
+        public Size FrameSize => _frameSize;
 
         /// <summary>
         /// Gets or sets the <see cref="WindowTransparencyLevel"/> that the TopLevel should use when possible.
@@ -461,6 +456,14 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            if (change.Property == ClientSizeProperty)
+            {
+                SetAndRaise(FrameSizeProperty, ref _frameSize, PlatformImpl.FrameSize);
+            }
+        }
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a

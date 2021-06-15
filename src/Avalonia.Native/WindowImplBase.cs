@@ -104,13 +104,13 @@ namespace Avalonia.Native
             }
         }
 
-        public Size TotalSize
+        public Size FrameSize
         {
             get
             {
                 if (_native != null)
                 {
-                    var s = _native.TotalSize;
+                    var s = _native.FrameSize;
                     return new Size(s.Width, s.Height);
                 }
 

@@ -202,7 +202,7 @@ public:
         }
     }
     
-    virtual HRESULT GetTotalSize(AvnSize* ret) override
+    virtual HRESULT GetFrameSize(AvnSize* ret) override
     {
         @autoreleasepool
         {
