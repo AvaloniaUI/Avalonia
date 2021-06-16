@@ -22,5 +22,10 @@ namespace Avalonia.Diagnostics
         /// Gets or sets the initial size of the DevTools window. The default value is 1280x720.
         /// </summary>
         public Size Size { get; set; } = new Size(1280, 720);
+
+        /// <summary>
+        /// Get or set the startup screen index where the DevTools window will be displayed.
+        /// </summary>
+        public int? StartupScreenIndex { get; set; }
     }
 }
