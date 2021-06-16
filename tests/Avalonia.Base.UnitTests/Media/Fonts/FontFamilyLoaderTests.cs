@@ -76,7 +76,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             {
                 var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-                var fontFamily = new FontFamily("resm:Avalonia.Visuals.UnitTests.Assets?assembly=Avalonia.Visuals.UnitTests#Noto Mono");
+                var fontFamily = new FontFamily("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono");
 
                 var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key).ToArray();
 
