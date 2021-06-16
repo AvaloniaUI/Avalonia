@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Avalonia.Platform;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media.Imaging
 {

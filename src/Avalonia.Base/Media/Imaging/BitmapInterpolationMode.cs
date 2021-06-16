@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Visuals.Media.Imaging
+﻿namespace Avalonia.Media.Imaging
 {
     /// <summary>
     /// Controls the performance and quality of bitmap scaling.

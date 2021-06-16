@@ -10,7 +10,7 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;

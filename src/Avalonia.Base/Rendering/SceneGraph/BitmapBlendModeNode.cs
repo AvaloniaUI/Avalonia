@@ -1,5 +1,5 @@
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Rendering.SceneGraph
 {

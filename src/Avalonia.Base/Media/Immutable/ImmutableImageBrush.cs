@@ -1,5 +1,4 @@
 ﻿using Avalonia.Media.Imaging;
-using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media.Immutable
 {

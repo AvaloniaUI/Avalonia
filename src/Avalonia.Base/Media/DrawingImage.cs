@@ -1,8 +1,6 @@
 ﻿using System;
-using Avalonia.Data;
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Media
 {

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media.Imaging
 {

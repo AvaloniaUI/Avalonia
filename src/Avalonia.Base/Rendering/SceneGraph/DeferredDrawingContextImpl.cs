@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph

@@ -1,4 +1,4 @@
-﻿using Avalonia.Visuals.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media.Immutable
@@ -31,7 +31,7 @@ namespace Avalonia.Media.Immutable
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
             TileMode tileMode = TileMode.None,
-            BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
+            Imaging.BitmapInterpolationMode bitmapInterpolationMode = Imaging.BitmapInterpolationMode.Default)
             : base(
                   alignmentX,
                   alignmentY,
