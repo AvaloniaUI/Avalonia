@@ -220,6 +220,8 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
+        public int? StartupScreenIndex { get; private set; } = default;
+        
         [DependsOn(nameof(TreePageViewModel.SelectedNode))]
         [DependsOn(nameof(Content))]
         bool CanShot(object? paramter)
@@ -263,6 +265,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             _getScreenshotFileName = options.ScreenshotFileNameConvention
                 ?? Convetions.DefaultScreenshotFileNameConvention;
+            StartupScreenIndex = options.StartupScreenIndex;
         }
     }
 }

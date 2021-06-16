@@ -10,7 +10,7 @@ namespace Avalonia.Diagnostics
 {
     public static class DevTools
     {
-        private static readonly Dictionary<TopLevel, MainWindow> s_open = 
+        private static readonly Dictionary<TopLevel, MainWindow> s_open =
             new Dictionary<TopLevel, MainWindow>();
 
         public static IDisposable Attach(TopLevel root, KeyGesture gesture)
@@ -53,7 +53,6 @@ namespace Avalonia.Diagnostics
                     Width = options.Size.Width,
                     Height = options.Size.Height,
                 };
-
                 window.SetOptions(options);
 
                 window.Closed += DevToolsClosed;

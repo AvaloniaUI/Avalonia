@@ -24,6 +24,23 @@ namespace Avalonia.Diagnostics.Views
             _keySubscription = InputManager.Instance.Process
                 .OfType<RawKeyEventArgs>()
                 .Subscribe(RawKeyDown);
+
+            EventHandler? lh = default;
+            lh = (s, e) =>
+              {
+                  this.Opened -= lh;
+                  if ((DataContext as MainViewModel)?.StartupScreenIndex is int index)
+                  {
+                      var screens = this.Screens;
+                      if (index > -1 && index < screens.ScreenCount)                          
+                      {
+                          var screen = screens.All[index];
+                          this.Position = screen.Bounds.TopLeft;
+                          this.WindowState = WindowState.Maximized;
+                      }
+                  }
+              };
+            this.Opened += lh;
         }
 
         public TopLevel? Root
