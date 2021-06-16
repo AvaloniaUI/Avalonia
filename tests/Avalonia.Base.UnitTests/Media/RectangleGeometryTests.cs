@@ -1,11 +1,10 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media
+namespace Avalonia.Base.UnitTests.Media
 {
     public class RectangleGeometryTests
     {

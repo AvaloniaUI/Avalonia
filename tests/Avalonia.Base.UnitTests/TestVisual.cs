@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Visuals.UnitTests
+namespace Avalonia.Base.UnitTests
 {
     public class ParamEventArgs<T> : EventArgs
     {

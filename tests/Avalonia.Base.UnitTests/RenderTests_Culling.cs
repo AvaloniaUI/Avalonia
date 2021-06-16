@@ -1,12 +1,12 @@
-using Moq;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Rendering;
-using Xunit;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
+using Moq;
+using Xunit;
 
-namespace Avalonia.Visuals.UnitTests
+namespace Avalonia.Base.UnitTests
 {
     public class RenderTests_Culling
     {

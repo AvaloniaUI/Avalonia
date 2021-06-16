@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Windows.Input;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Input.UnitTests
+namespace Avalonia.Base.UnitTests.Input
 {
     public class KeyboardDeviceTests
     {

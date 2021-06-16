@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Xunit;
 
-namespace Avalonia.Interactivity.UnitTests
+namespace Avalonia.Base.UnitTests.Interactivity
 {
     public class InteractiveTests
     {

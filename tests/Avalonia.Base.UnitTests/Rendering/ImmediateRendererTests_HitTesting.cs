@@ -9,7 +9,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering
+namespace Avalonia.Base.UnitTests.Rendering
 {
     public class ImmediateRendererTests_HitTesting
     {

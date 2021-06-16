@@ -1,11 +1,12 @@
 using System;
+using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Xunit;
 
-namespace Avalonia.Animation.UnitTests
+namespace Avalonia.Base.UnitTests.Animation
 {
     public class KeySplineTests
     {
@@ -123,7 +124,7 @@ namespace Avalonia.Animation.UnitTests
                                           0.499999999999999999)
             };
 
-            var animation = new Animation()
+            var animation = new Avalonia.Animation.Animation()
             {
                 Duration = TimeSpan.FromSeconds(5),
                 Children =
@@ -190,7 +191,7 @@ namespace Avalonia.Animation.UnitTests
                 KeyTime = TimeSpan.FromSeconds(5),
             };
 
-            var animation = new Animation()
+            var animation = new Avalonia.Animation.Animation()
             {
                 Duration = TimeSpan.FromSeconds(5),
                 Children =

@@ -1,16 +1,12 @@
 using System;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Styling;
-using Avalonia.UnitTests;
-using Avalonia.Data;
 using Xunit;
-using Avalonia.Animation.Easings;
 
-namespace Avalonia.Animation.UnitTests
+namespace Avalonia.Base.UnitTests.Animation
 {
     public class AnimationIterationTests
     {
@@ -35,7 +31,7 @@ namespace Avalonia.Animation.UnitTests
                 KeyTime = TimeSpan.FromSeconds(0)
             };
 
-            var animation = new Animation()
+            var animation = new Avalonia.Animation.Animation()
             {
                 Duration = TimeSpan.FromSeconds(1),
                 Children =
@@ -84,7 +80,7 @@ namespace Avalonia.Animation.UnitTests
                 Cue = new Cue(0d)
             };
 
-            var animation = new Animation()
+            var animation = new Avalonia.Animation.Animation()
             {
                 Duration = TimeSpan.FromSeconds(3),
                 Delay = TimeSpan.FromSeconds(3),
@@ -145,7 +141,7 @@ namespace Avalonia.Animation.UnitTests
                 Cue = new Cue(1.0d)
             };
 
-            var animation = new Animation()
+            var animation = new Avalonia.Animation.Animation()
             {
                 Duration = TimeSpan.FromSeconds(0.05d),
                 Delay = TimeSpan.FromSeconds(0.05d),

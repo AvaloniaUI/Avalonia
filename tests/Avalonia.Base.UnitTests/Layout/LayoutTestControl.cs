@@ -1,7 +1,8 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Layout;
 
-namespace Avalonia.Layout.UnitTests
+namespace Avalonia.Base.UnitTests.Layout
 {
     internal class LayoutTestControl : Decorator
     {

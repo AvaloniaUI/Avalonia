@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
+namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {
     public class TextNodeTests
     {

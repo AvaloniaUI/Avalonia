@@ -1,16 +1,14 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
-using Avalonia.Layout;
-using System.Reactive.Subjects;
-using Avalonia.Data;
 
-namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
+namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {
     public partial class SceneBuilderTests
     {

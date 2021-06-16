@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
-namespace Avalonia.Input.UnitTests
+namespace Avalonia.Base.UnitTests.Input
 {
     public class PointerTests
     {

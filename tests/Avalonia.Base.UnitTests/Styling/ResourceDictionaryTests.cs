@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     public class ResourceDictionaryTests
     {

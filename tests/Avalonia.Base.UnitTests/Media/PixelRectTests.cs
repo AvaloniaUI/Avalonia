@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
+﻿using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media
+namespace Avalonia.Base.UnitTests.Media
 {
     public class PixelRectTests
     {

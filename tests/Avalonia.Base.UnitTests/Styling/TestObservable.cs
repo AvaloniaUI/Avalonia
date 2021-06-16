@@ -1,7 +1,7 @@
 using System;
 using System.Reactive.Disposables;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     public class TestObservable : IObservable<bool>
     {

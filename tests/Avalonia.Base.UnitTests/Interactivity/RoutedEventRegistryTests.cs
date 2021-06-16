@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Xunit;
 
-namespace Avalonia.Interactivity.UnitTests
+namespace Avalonia.Base.UnitTests.Interactivity
 {
     public class RoutedEventRegistryTests
     {

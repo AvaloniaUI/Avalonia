@@ -6,7 +6,7 @@ using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Visuals.Media.Imaging;
 
-namespace Avalonia.Visuals.UnitTests.VisualTree
+namespace Avalonia.Base.UnitTests.VisualTree
 {
     class MockRenderInterface : IPlatformRenderInterface
     {

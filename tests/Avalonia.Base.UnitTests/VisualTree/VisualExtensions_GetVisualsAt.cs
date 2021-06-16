@@ -8,7 +8,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.VisualTree
+namespace Avalonia.Base.UnitTests.VisualTree
 {
     public class VisualExtensions_GetVisualsAt
     {

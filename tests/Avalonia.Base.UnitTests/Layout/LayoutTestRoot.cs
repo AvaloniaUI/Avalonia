@@ -1,7 +1,8 @@
 using System;
+using Avalonia.Layout;
 using Avalonia.UnitTests;
 
-namespace Avalonia.Layout.UnitTests
+namespace Avalonia.Base.UnitTests.Layout
 {
     internal class LayoutTestRoot : TestRoot, ILayoutable
     {

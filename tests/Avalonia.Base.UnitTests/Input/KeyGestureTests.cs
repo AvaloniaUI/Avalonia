@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Input;
 using Xunit;
 
-namespace Avalonia.Input.UnitTests
+namespace Avalonia.Base.UnitTests.Input
 {
     public class KeyGestureTests
     {

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
+namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {
     public class SceneTests
     {

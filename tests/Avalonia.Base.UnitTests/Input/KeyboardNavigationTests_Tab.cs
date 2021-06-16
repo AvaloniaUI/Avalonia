@@ -1,7 +1,8 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Xunit;
 
-namespace Avalonia.Input.UnitTests
+namespace Avalonia.Base.UnitTests.Input
 {
     public class KeyboardNavigationTests_Tab
     {

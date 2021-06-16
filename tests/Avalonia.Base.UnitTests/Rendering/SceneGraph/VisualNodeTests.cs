@@ -1,11 +1,10 @@
-﻿using System;
-using Avalonia.Rendering.SceneGraph;
+﻿using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
+namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {
     public class VisualNodeTests
     {

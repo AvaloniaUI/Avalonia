@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Xunit;
 
-namespace Avalonia.Input.UnitTests
+namespace Avalonia.Base.UnitTests.Input
 {
     public class InputElement_Enabled
     {

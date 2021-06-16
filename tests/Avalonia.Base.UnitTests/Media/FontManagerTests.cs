@@ -3,7 +3,7 @@ using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media
+namespace Avalonia.Base.UnitTests.Media
 {
     public class FontManagerTests
     {

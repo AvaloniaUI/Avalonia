@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
+using Avalonia.Styling;
 using Xunit;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     public class SelectorTests_Child
     {

@@ -1,7 +1,8 @@
 using System;
+using Avalonia.Layout;
 using Xunit;
 
-namespace Avalonia.Layout.UnitTests
+namespace Avalonia.Base.UnitTests.Layout
 {
     public class LayoutHelperTests
     {

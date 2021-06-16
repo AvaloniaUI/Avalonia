@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Xunit;
 
-namespace Avalonia.Layout.UnitTests
+namespace Avalonia.Base.UnitTests.Layout
 {
     public class MeasureTests
     {

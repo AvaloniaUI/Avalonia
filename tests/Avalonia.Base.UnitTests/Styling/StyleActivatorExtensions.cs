@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Reactive;
 using Avalonia.Styling.Activators;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     internal static class StyleActivatorExtensions
     {

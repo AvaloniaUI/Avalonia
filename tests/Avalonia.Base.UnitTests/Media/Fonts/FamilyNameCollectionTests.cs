@@ -2,7 +2,7 @@
 using Avalonia.Media.Fonts;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media.Fonts
+namespace Avalonia.Base.UnitTests.Media.Fonts
 {
     public class FamilyNameCollectionTests
     {

@@ -2,7 +2,7 @@
 using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
+namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     /// <summary>
     ///     This class is intended for use when the Unicode spec changes. Otherwise the containing tests are redundant.

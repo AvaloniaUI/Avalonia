@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Avalonia.Visuals.UnitTests
+namespace Avalonia.Base.UnitTests
 {
     public class RelativeRectComparer : IEqualityComparer<RelativeRect>
     {

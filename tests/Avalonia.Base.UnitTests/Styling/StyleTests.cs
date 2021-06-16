@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     public class StyleTests
     {

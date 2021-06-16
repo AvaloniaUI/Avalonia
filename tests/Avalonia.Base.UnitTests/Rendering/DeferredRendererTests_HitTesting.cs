@@ -3,7 +3,6 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
-using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -13,7 +12,7 @@ using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering
+namespace Avalonia.Base.UnitTests.Rendering
 {
     public class DeferredRendererTests_HitTesting
     {

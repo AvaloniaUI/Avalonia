@@ -10,7 +10,7 @@ using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests
+namespace Avalonia.Base.UnitTests
 {
     public class VisualTests
     {

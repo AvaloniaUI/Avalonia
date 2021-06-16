@@ -1,8 +1,7 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Rendering;
 
-namespace Avalonia.Visuals.UnitTests.Rendering
+namespace Avalonia.Base.UnitTests.Rendering
 {
     internal class CustomHitTestBorder : Border, ICustomHitTest
     {

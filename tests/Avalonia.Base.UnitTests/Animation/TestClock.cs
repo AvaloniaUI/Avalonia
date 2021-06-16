@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
+using Avalonia.Animation;
 
-namespace Avalonia.Animation.UnitTests
+namespace Avalonia.Base.UnitTests.Animation
 {
     internal class TestClock : IClock, IDisposable
     {

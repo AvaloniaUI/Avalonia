@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
+namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     public class UnicodeDataGeneratorTests
     {

@@ -1,8 +1,7 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media
+namespace Avalonia.Base.UnitTests.Media
 {
     public class SolidColorBrushTests
     {

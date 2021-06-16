@@ -1,14 +1,12 @@
-using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Moq;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using Moq;
 using Xunit;
-using System.Collections.Generic;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     public class SelectorTests_Class
     {

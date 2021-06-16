@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -6,10 +7,8 @@ using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media.Fonts
+namespace Avalonia.Base.UnitTests.Media.Fonts
 {
-    using System.Diagnostics;
-
     public class FontFamilyLoaderTests : IDisposable
     {
         private const string FontName = "#MyFont";

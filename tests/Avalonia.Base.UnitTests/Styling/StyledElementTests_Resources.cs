@@ -1,11 +1,11 @@
-using System;
+using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Controls.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     public class StyledElementTests_Resources
     {

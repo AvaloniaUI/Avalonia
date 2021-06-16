@@ -8,7 +8,7 @@ using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
+namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     public class LineBreakEnumeratorTests
     {

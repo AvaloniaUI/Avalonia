@@ -1,9 +1,9 @@
 using System;
+using Avalonia.Animation;
 using Avalonia.Controls;
-using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Animation.UnitTests
+namespace Avalonia.Base.UnitTests.Animation
 {
     public class TransitionsTests
     {

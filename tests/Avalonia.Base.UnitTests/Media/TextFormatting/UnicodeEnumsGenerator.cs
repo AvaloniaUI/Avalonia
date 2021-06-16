@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 
-namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
+namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     internal static class UnicodeEnumsGenerator
     {

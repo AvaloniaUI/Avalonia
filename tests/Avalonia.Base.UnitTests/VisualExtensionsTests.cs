@@ -5,7 +5,7 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests
+namespace Avalonia.Base.UnitTests
 {
     public class VisualExtensionsTests
     {

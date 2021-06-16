@@ -4,11 +4,12 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Layout.UnitTests
+namespace Avalonia.Base.UnitTests.Layout
 {
     public class LayoutableTests_EffectiveViewportChanged
     {

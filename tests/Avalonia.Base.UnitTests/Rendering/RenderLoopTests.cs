@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering
+namespace Avalonia.Base.UnitTests.Rendering
 {
     public class RenderLoopTests
     {

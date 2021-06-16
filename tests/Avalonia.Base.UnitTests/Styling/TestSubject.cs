@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     internal class TestSubject<T> : IObserver<T>, IObservable<T>
     {

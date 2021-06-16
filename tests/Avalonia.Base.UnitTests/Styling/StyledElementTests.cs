@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
-using Moq;
-using Avalonia.Styling;
-using Avalonia.UnitTests;
-using Xunit;
-using Avalonia.LogicalTree;
-using Avalonia.Controls;
 using System.ComponentModel;
-using Avalonia.Controls.Primitives;
-using Avalonia.Markup.Xaml.Templates;
+using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.LogicalTree;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Moq;
+using Xunit;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     public class StyledElementTests
     {

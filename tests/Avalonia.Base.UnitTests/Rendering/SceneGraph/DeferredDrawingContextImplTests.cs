@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
@@ -9,7 +7,7 @@ using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
+namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {
     public class DeferredDrawingContextImplTests
     {

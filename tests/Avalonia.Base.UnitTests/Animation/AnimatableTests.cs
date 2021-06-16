@@ -1,14 +1,14 @@
 ﻿using System;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Animation.UnitTests
+namespace Avalonia.Base.UnitTests.Animation
 {
     public class AnimatableTests
     {

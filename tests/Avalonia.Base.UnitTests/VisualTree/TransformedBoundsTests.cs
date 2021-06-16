@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
-using Avalonia.VisualTree;
-using Avalonia.Rendering;
-using Xunit;
 using Avalonia.Media;
-using Moq;
-using Avalonia.UnitTests;
 using Avalonia.Platform;
+using Avalonia.Rendering;
+using Avalonia.UnitTests;
+using Avalonia.VisualTree;
+using Moq;
+using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.VisualTree
+namespace Avalonia.Base.UnitTests.VisualTree
 {
     public class TransformedBoundsTests
     {

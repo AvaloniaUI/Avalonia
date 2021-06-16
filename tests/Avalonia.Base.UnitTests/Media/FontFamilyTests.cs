@@ -4,7 +4,7 @@ using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media
+namespace Avalonia.Base.UnitTests.Media
 {
     public class FontFamilyTests
     {

@@ -1,10 +1,9 @@
-﻿using System;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Rendering.Utilities;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering.Utilities
+namespace Avalonia.Base.UnitTests.Rendering.Utilities
 {
     public class TileBrushCalculatorTests
     {

@@ -1,14 +1,13 @@
+using System.Globalization;
+using System.IO;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Visuals.Platform;
+using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Media
+namespace Avalonia.Base.UnitTests.Media
 {
-    using System.Globalization;
-    using System.IO;
-    using Avalonia.Platform;
-    using Moq;
-
     public class PathMarkupParserTests
     {
         [Fact]

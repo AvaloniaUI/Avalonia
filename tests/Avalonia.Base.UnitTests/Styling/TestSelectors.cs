@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Styling;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     public static class TestSelectors
     {

@@ -6,7 +6,7 @@ using Avalonia.Visuals.Media.Imaging;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
+namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {  
     public class DrawOperationTests
     {

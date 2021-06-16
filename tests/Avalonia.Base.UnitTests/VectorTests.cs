@@ -1,8 +1,7 @@
-using Xunit;
-using Avalonia;
 using System;
+using Xunit;
 
-namespace Avalonia.Visuals.UnitTests
+namespace Avalonia.Base.UnitTests
 {
     public class VectorTests
     {

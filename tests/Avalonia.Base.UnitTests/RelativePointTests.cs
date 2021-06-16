@@ -1,7 +1,6 @@
-using System.Globalization;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests
+namespace Avalonia.Base.UnitTests
 {
     public class RelativePointTests
     {

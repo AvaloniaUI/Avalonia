@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using Avalonia.Media.TextFormatting.Unicode;
 
-namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
+namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     internal static class UnicodeDataGenerator
     {

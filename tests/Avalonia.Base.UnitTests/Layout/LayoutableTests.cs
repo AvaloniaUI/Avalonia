@@ -1,10 +1,11 @@
 ﻿using System;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Layout.UnitTests
+namespace Avalonia.Base.UnitTests.Layout
 {
     public class LayoutableTests
     {

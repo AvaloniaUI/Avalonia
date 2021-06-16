@@ -2,7 +2,7 @@
 using Avalonia.Utilities;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Utilities
+namespace Avalonia.Base.UnitTests.Utilities
 {
     public class ReadOnlySpanTests
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Avalonia.Styling.UnitTests
+namespace Avalonia.Base.UnitTests.Styling
 {
     internal class TestObserver<T> : IObserver<T>
     {
