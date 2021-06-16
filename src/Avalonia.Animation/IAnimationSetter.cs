@@ -6,6 +6,5 @@ namespace Avalonia.Animation
     {
         AvaloniaProperty Property { get; set; }
         object Value { get; set; }
-        Type Animator { get; set; }
     }
 }

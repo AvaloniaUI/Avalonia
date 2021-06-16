@@ -194,6 +194,22 @@ namespace Avalonia.Animation
         [Content]
         public KeyFrames Children { get; } = new KeyFrames();
 
+        private static readonly Dictionary<object, Type> s_animators = new Dictionary<object, Type>();
+
+        public static Type GetAnimator(object obj)
+        {
+            if (s_animators.TryGetValue(obj, out var type))
+            {
+                return type;
+            }
+            return null;
+        }
+
+        public static void SetAnimator(object obj, Type value)
+        {
+            s_animators[obj] = value;
+        }
+
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {
             ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator) ),
@@ -248,7 +264,7 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    var handler = setter.Animator ?? GetAnimatorType(setter.Property);
+                    var handler = Animation.GetAnimator(setter) ?? GetAnimatorType(setter.Property);
 
                     if (handler == null)
                     {

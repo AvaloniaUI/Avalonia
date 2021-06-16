@@ -59,11 +59,6 @@ namespace Avalonia.Styling
             }
         }
 
-        /// <summary>
-        /// Gets or sets the property animator.
-        /// </summary>
-        public Type? Animator { get; set; }
-
         public ISetterInstance Instance(IStyleable target)
         {
             target = target ?? throw new ArgumentNullException(nameof(target));
