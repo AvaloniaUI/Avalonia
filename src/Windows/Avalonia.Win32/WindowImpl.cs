@@ -217,8 +217,13 @@ namespace Avalonia.Win32
         {
             get
             {
-                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf(typeof(RECT)));
+                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+                {
+                    GetWindowRect(_hwnd, out var rcWindow);
+                    return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
+                }
 
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf(typeof(RECT)));
                 return new Size(rect.Width, rect.Height) / RenderScaling;
             }
         }
