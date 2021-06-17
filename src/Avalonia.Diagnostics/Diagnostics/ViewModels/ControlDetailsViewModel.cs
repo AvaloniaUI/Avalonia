@@ -18,7 +18,7 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly IVisual _control;
         private readonly IDictionary<object, List<PropertyViewModel>> _propertyIndex;
-        private AvaloniaPropertyViewModel? _selectedProperty;
+        private PropertyViewModel? _selectedProperty;
         private bool _snapshotStyles;
         private bool _showInactiveStyles;
         private string? _styleStatus;
@@ -139,7 +139,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public ObservableCollection<PseudoClassViewModel> PseudoClasses { get; }
 
-        public AvaloniaPropertyViewModel? SelectedProperty
+        public PropertyViewModel? SelectedProperty
         {
             get => _selectedProperty;
             set => RaiseAndSetIfChanged(ref _selectedProperty, value);
