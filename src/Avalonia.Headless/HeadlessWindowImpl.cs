@@ -41,7 +41,7 @@ namespace Avalonia.Headless
         }
 
         public Size ClientSize { get; set; }
-        public Size FrameSize => ClientSize;
+        public Size? FrameSize => null;
         public double RenderScaling { get; } = 1;
         public double DesktopScaling => RenderScaling;
         public IEnumerable<object> Surfaces { get; }

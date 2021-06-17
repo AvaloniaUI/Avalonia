@@ -213,7 +213,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public Size FrameSize
+        public Size? FrameSize
         {
             get
             {

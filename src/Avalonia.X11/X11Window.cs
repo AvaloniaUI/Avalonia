@@ -297,7 +297,7 @@ namespace Avalonia.X11
 
         public Size ClientSize => new Size(_realSize.Width / RenderScaling, _realSize.Height / RenderScaling);
 
-        public Size FrameSize
+        public Size? FrameSize
         {
             get
             {
@@ -308,7 +308,7 @@ namespace Avalonia.X11
                 if (nitems.ToInt64() != 4)
                 {
                     // Window hasn't been mapped by the WM yet, so can't get the extents.
-                    return ClientSize;
+                    return null;
                 }
 
                 var data = (IntPtr*)prop.ToPointer();

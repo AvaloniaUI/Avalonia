@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
             }
         }
 
-        public Size FrameSize => _clientSize;
+        public Size? FrameSize => null;
 
         public double RenderScaling
         {

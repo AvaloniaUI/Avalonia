@@ -104,7 +104,7 @@ namespace Avalonia.Native
             }
         }
 
-        public Size FrameSize
+        public Size? FrameSize
         {
             get
             {

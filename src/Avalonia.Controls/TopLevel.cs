@@ -45,8 +45,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="FrameSize"/> property.
         /// </summary>
-        public static readonly DirectProperty<TopLevel, Size> FrameSizeProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(FrameSize), o => o.FrameSize);
+        public static readonly DirectProperty<TopLevel, Size?> FrameSizeProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, Size?>(nameof(FrameSize), o => o.FrameSize);
 
         /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
@@ -80,7 +80,7 @@ namespace Avalonia.Controls
         private readonly IPlatformRenderInterface _renderInterface;
         private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
-        private Size _frameSize;
+        private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager _layoutManager;
         private Border _transparencyFallbackBorder;
@@ -208,7 +208,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the total size of the window.
         /// </summary>
-        public Size FrameSize
+        public Size? FrameSize
         {
             get { return _frameSize; }
             protected set { SetAndRaise(FrameSizeProperty, ref _frameSize, value); }
