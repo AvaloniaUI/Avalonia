@@ -1,5 +1,0 @@
-Compat issues with assembly Avalonia.Animation:
-InterfacesShouldHaveSameMembers : Interface member 'public System.Type Avalonia.Animation.IAnimationSetter.Animator' is present in the implementation but not in the contract.
-InterfacesShouldHaveSameMembers : Interface member 'public System.Type Avalonia.Animation.IAnimationSetter.Animator.get()' is present in the implementation but not in the contract.
-InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Animation.IAnimationSetter.Animator.set(System.Type)' is present in the implementation but not in the contract.
-Total Issues: 3
