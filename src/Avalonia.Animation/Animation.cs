@@ -218,7 +218,7 @@ namespace Avalonia.Animation
         /// <param name="value">The property animator value.</param>
         public static void SetAnimator(IAnimationSetter setter, Type value)
         {
-            s_animators[obj] = value;
+            s_animators[setter] = value;
         }
 
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
