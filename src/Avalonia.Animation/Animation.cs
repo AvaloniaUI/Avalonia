@@ -194,17 +194,17 @@ namespace Avalonia.Animation
         [Content]
         public KeyFrames Children { get; } = new KeyFrames();
 
-        // Store values for the Animator attached properties.
-        private static readonly Dictionary<object, Type> s_animators = new Dictionary<object, Type>();
+        // Store values for the Animator attached properties for IAnimationSetter objects.
+        private static readonly Dictionary<IAnimationSetter, Type> s_animators = new Dictionary<IAnimationSetter, Type>();
 
         /// <summary>
-        /// Gets the value of the Animator attached property for an object.
+        /// Gets the value of the Animator attached property for a setter.
         /// </summary>
-        /// <param name="obj">The object.</param>
+        /// <param name="setter">The animation setter.</param>
         /// <returns>The property animator type.</returns>
-        public static Type GetAnimator(object obj)
+        public static Type GetAnimator(IAnimationSetter setter)
         {
-            if (s_animators.TryGetValue(obj, out var type))
+            if (s_animators.TryGetValue(setter, out var type))
             {
                 return type;
             }
@@ -212,11 +212,11 @@ namespace Avalonia.Animation
         }
 
         /// <summary>
-        /// Sets the value of the Animator attached property for an object.
+        /// Sets the value of the Animator attached property for a setter.
         /// </summary>
-        /// <param name="obj">The object.</param>
+        /// <param name="setter">The animation setter.</param>
         /// <param name="value">The property animator value.</param>
-        public static void SetAnimator(object obj, Type value)
+        public static void SetAnimator(IAnimationSetter setter, Type value)
         {
             s_animators[obj] = value;
         }
