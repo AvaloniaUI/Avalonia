@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.Rendering;
 
 #nullable enable
 
@@ -252,7 +253,8 @@ namespace Avalonia.Controls.Primitives
                     if (Popup?.Host is PopupRoot root)
                     { 
                         // Get the popup root bounds and convert to screen coordinates
-                        var tmp = root.Bounds.Inflate(root.PointToClient(new PixelPoint(100, 100)).X);
+                        
+                        var tmp = root.Bounds.Inflate(100 * (root as IRenderRoot).RenderScaling);
                         var scPt = root.PointToScreen(tmp.TopLeft);
                         enlargedPopupRect = new Rect(scPt.X, scPt.Y, tmp.Width, tmp.Height);
                     }
