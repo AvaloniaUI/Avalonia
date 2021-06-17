@@ -52,8 +52,9 @@ namespace Avalonia.Controls.Primitives
         private bool _isOpen;
         private Control? _target;
         private FlyoutShowMode _showMode = FlyoutShowMode.Standard;
-        private Rect? enlargedPopupRect;
-        private IDisposable? transientDisposable;
+        private Rect? _enlargedPopupRect;
+        private PixelRect? _enlargePopupRectScreenPixelRect;
+        private IDisposable? _transientDisposable;
 
         protected Popup? Popup { get; private set; }
 
@@ -164,8 +165,10 @@ namespace Avalonia.Controls.Primitives
             Popup.IsOpen = false;
 
             // Ensure this isn't active
-            transientDisposable?.Dispose();
-            transientDisposable = null;
+            _transientDisposable?.Dispose();
+            _transientDisposable = null;
+            _enlargedPopupRect = null;
+            _enlargePopupRectScreenPixelRect = null;
 
             OnClosed();
         }
@@ -231,7 +234,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (ShowMode == FlyoutShowMode.TransientWithDismissOnPointerMoveAway)
             {
-                transientDisposable = InputManager.Instance?.Process.Subscribe(HandleTransientDismiss);
+                _transientDisposable = InputManager.Instance?.Process.Subscribe(HandleTransientDismiss);
             }
         }
 
@@ -247,21 +250,20 @@ namespace Avalonia.Controls.Primitives
                 // For windowed popups, enlargedPopupRect is in screen coordinates,
                 // for overlay popups, its in OverlayLayer coordinates
 
-                if (enlargedPopupRect == null)
+                if (_enlargedPopupRect == null && _enlargePopupRectScreenPixelRect == null)
                 {
                     // Only do this once when the Flyout opens & cache the result
                     if (Popup?.Host is PopupRoot root)
                     { 
                         // Get the popup root bounds and convert to screen coordinates
                         
-                        var tmp = root.Bounds.Inflate(100 * (root as IRenderRoot).RenderScaling);
-                        var scPt = root.PointToScreen(tmp.TopLeft);
-                        enlargedPopupRect = new Rect(scPt.X, scPt.Y, tmp.Width, tmp.Height);
+                        var tmp = root.Bounds.Inflate(100);
+                        _enlargePopupRectScreenPixelRect = new PixelRect(root.PointToScreen(tmp.TopLeft), root.PointToScreen(tmp.BottomRight));
                     }
                     else if (Popup?.Host is OverlayPopupHost host)
                     {
                         // Overlay popups are in OverlayLayer coordinates, just use that
-                        enlargedPopupRect = host.Bounds.Inflate(100);
+                        _enlargedPopupRect = host.Bounds.Inflate(100);
                     }
 
                     return;
@@ -275,24 +277,18 @@ namespace Avalonia.Controls.Primitives
                     // window will not close this (as pointer events stop), which 
                     // does match UWP
                     var pt = pArgs.Root.PointToScreen(pArgs.Position);
-                    if (!enlargedPopupRect?.Contains(new Point(pt.X, pt.Y)) ?? false)
+                    if (!_enlargePopupRectScreenPixelRect?.Contains(pt) ?? false)
                     {
                         HideCore(false);
-                        enlargedPopupRect = null;
-                        transientDisposable?.Dispose();
-                        transientDisposable = null;
                     }
                 }
                 else if (Popup?.Host is OverlayPopupHost)
                 {
                     // Same as above here, but just different coordinate space
                     // so we don't need to translate
-                    if (!enlargedPopupRect?.Contains(pArgs.Position) ?? false)
+                    if (!_enlargedPopupRect?.Contains(pArgs.Position) ?? false)
                     {
                         HideCore(false);
-                        enlargedPopupRect = null;
-                        transientDisposable?.Dispose();
-                        transientDisposable = null;
                     }
                 }
             }
