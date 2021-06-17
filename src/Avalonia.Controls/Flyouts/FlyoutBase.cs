@@ -252,7 +252,9 @@ namespace Avalonia.Controls.Primitives
                     if (Popup?.Host is PopupRoot root)
                     { 
                         // Get the popup root bounds and convert to screen coordinates
-                        var tmp = root.Bounds.Inflate(100);
+                        var topLevel = root.Parent as TopLevel;
+
+                        var tmp = root.Bounds.Inflate(topLevel.PointToClient(new PixelPoint(100, 100)).X);
                         var scPt = root.PointToScreen(tmp.TopLeft);
                         enlargedPopupRect = new Rect(scPt.X, scPt.Y, tmp.Width, tmp.Height);
                     }
