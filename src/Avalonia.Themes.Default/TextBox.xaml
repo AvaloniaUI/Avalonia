@@ -57,7 +57,8 @@
                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
                 <ScrollViewer Grid.Column="1" Grid.ColumnSpan="1"
                               HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                              VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                              VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                              AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
                   <Panel>
                     <TextBlock Name="watermark"
                               Opacity="0.5"
