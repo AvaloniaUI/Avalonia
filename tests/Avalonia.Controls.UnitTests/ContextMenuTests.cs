@@ -6,6 +6,8 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
+
 using Moq;
 using Xunit;
 
@@ -128,12 +130,10 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                var renderer = new Mock<IRenderer>();
-                var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-                var windowImpl = Mock.Get(platform.CreateWindow());
-                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+                popupImpl.Setup(x => x.Show(true)).Verifiable();
+                popupImpl.Setup(x => x.Hide()).Verifiable();
 
-                var window = new Window(windowImpl.Object);
+                var window = PreparedWindow();
                 window.Width = 100;
                 window.Height = 100;
 
@@ -160,12 +160,15 @@ namespace Avalonia.Controls.UnitTests
                 button.ContextMenu = c;
                 c.Open(button);
 
-                var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
-                overlay.RaiseEvent(e);
+                _mouse.Down(overlay, MouseButton.Left, new Point(90, 90));
+                _mouse.Up(button, MouseButton.Left, new Point(90, 90));
 
                 Assert.Equal(1, tracker);
                 Assert.True(c.IsOpen);
+
+                popupImpl.Verify(x => x.Hide(), Times.Never);
+                popupImpl.Verify(x => x.Show(true), Times.Exactly(1));
             }
         }
 
@@ -174,12 +177,10 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                var renderer = new Mock<IRenderer>();
-                var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-                var windowImpl = Mock.Get(platform.CreateWindow());
-                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+                popupImpl.Setup(x => x.Show(true)).Verifiable();
+                popupImpl.Setup(x => x.Hide()).Verifiable();
 
-                var window = new Window(windowImpl.Object);
+                var window = PreparedWindow();
                 window.Width = 100;
                 window.Height = 100;
 
@@ -199,11 +200,13 @@ namespace Avalonia.Controls.UnitTests
                 c.PlacementMode = PlacementMode.Bottom;
                 c.Open(button);
 
-                var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
                 var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
-                overlay.RaiseEvent(e);
+                _mouse.Down(overlay, MouseButton.Left, new Point(90, 90));
+                _mouse.Up(button, MouseButton.Left, new Point(90, 90));
 
                 Assert.False(c.IsOpen);
+                popupImpl.Verify(x => x.Hide(), Times.Exactly(1));
+                popupImpl.Verify(x => x.Show(true), Times.Exactly(1));
             }
         }
 
@@ -221,15 +224,17 @@ namespace Avalonia.Controls.UnitTests
                     ContextMenu = sut
                 };
 
-                var window = new Window {Content = target};
+                var window = PreparedWindow(target);
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
                 _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
 
-                _mouse.Click(target);
+                _mouse.Down(overlay);
+                _mouse.Up(target);
 
                 Assert.False(sut.IsOpen);
                 popupImpl.Verify(x => x.Show(true), Times.Once);
@@ -251,15 +256,16 @@ namespace Avalonia.Controls.UnitTests
                     ContextMenu = sut
                 };
 
-                var window = new Window {Content = target};
+                var window = PreparedWindow(target);
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
                 _mouse.Click(target, MouseButton.Right);
-
                 Assert.True(sut.IsOpen);
 
-                _mouse.Click(target, MouseButton.Right);
+                _mouse.Down(overlay, MouseButton.Right);
+                _mouse.Up(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
                 popupImpl.Verify(x => x.Hide(), Times.Once);
@@ -293,12 +299,10 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(sut.IsOpen);
 
-                _mouse.Click(target2, MouseButton.Left);
-                
-                Assert.False(sut.IsOpen);
-                
                 sp.Children.Remove(target1);
-                
+
+                Assert.False(sut.IsOpen);
+
                 _mouse.Click(target2, MouseButton.Right);
                 
                 Assert.True(sut.IsOpen);
@@ -439,17 +443,20 @@ namespace Avalonia.Controls.UnitTests
                 {
                     ContextMenu = sut
                 };
-                
-                var window = new Window {Content = target};
-                window.ApplyTemplate();
+
+                var window = PreparedWindow(target);
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
                 sut.ContextMenuClosing += (c, e) => { eventCalled = true; e.Cancel = true; };
+
+                window.Show();
 
                 _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
 
-                _mouse.Click(target, MouseButton.Right);
+                _mouse.Down(overlay, MouseButton.Right);
+                _mouse.Up(target, MouseButton.Right);
 
                 Assert.True(eventCalled);
                 Assert.True(sut.IsOpen);
@@ -457,6 +464,18 @@ namespace Avalonia.Controls.UnitTests
                 popupImpl.Verify(x => x.Show(true), Times.Once());
                 popupImpl.Verify(x => x.Hide(), Times.Never);
             }
+        }
+
+        private Window PreparedWindow(object content = null)
+        {
+            var renderer = new Mock<IRenderer>();
+            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+            var windowImpl = Mock.Get(platform.CreateWindow());
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+
+            var w = new Window(windowImpl.Object) { Content = content };
+            w.ApplyTemplate();
+            return w;
         }
 
         private IDisposable Application()
@@ -479,19 +498,6 @@ namespace Avalonia.Controls.UnitTests
                                         windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object, x => popupImpl.Object));
 
             return UnitTestApplication.Start(services);
-        }
-
-        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
-        {
-            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
-            return new PointerPressedEventArgs(
-                source,
-                pointer,
-                source,
-                p,
-                0,
-                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
-                KeyModifiers.None);
         }
     }
 }

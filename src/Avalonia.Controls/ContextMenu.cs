@@ -224,6 +224,7 @@ namespace Avalonia.Controls
             if (e.OldValue is ContextMenu oldMenu)
             {
                 control.ContextRequested -= ControlContextRequested;
+                control.DetachedFromVisualTree -= ControlDetachedFromVisualTree;
                 oldMenu._attachedControls?.Remove(control);
                 ((ISetLogicalParent?)oldMenu._popup)?.SetParent(null);
             }
@@ -233,6 +234,7 @@ namespace Avalonia.Controls
                 newMenu._attachedControls ??= new List<Control>();
                 newMenu._attachedControls.Add(control);
                 control.ContextRequested += ControlContextRequested;
+                control.DetachedFromVisualTree += ControlDetachedFromVisualTree;
             }
         }
 
@@ -410,13 +412,22 @@ namespace Avalonia.Controls
 
         private static void ControlContextRequested(object sender, ContextRequestedEventArgs e)
         {
-            var control = (Control)sender;
-            if (!e.Handled
+            if (sender is Control control
                 && control.ContextMenu is ContextMenu contextMenu
+                && !e.Handled
                 && !contextMenu.CancelOpening())
             {
                 contextMenu.Open(control, e.Source as Control ?? control);
                 e.Handled = true;
+            }
+        }
+
+        private static void ControlDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (sender is Control control
+                && control.ContextMenu is ContextMenu contextMenu)
+            {
+                contextMenu.Close();
             }
         }
 
