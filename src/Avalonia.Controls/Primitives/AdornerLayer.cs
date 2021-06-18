@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Resources;
 using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -45,10 +46,27 @@ namespace Avalonia.Controls.Primitives
                 ?.AdornerLayer;
         }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            foreach (var child in Children)
+            {
+                var info = child.GetValue(s_adornedElementInfoProperty);
+
+                if (info != null && info.Bounds.HasValue)
+                {
+                    child.Measure(info.Bounds.Value.Bounds.Size);
+                }
+                else
+                {
+                    child.Measure(availableSize);
+                }
+            }
+
+            return default;
+        }
+
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var parent = Parent;
-
             foreach (var child in Children)
             {
                 var info = child.GetValue(s_adornedElementInfoProperty);
