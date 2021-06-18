@@ -112,9 +112,9 @@ namespace Avalonia.LinuxFramebuffer
 
 public static class LinuxFramebufferPlatformExtensions
 {
-    public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev = null, double scaling = 1)
+    public static int StartLinuxFbDev<T>(this T builder, string[] args, PixelFormat? format = null, string fbdev = null, double scaling = 1)
         where T : AppBuilderBase<T>, new() =>
-        StartLinuxDirect(builder, args, new FbdevOutput(fbdev) {Scaling = scaling});
+        StartLinuxDirect(builder, args, new FbdevOutput(format: format, fileName: fbdev) { Scaling = scaling });
 
     public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, double scaling = 1)
         where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card) {Scaling = scaling});
