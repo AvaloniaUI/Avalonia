@@ -36,8 +36,6 @@ namespace Avalonia.Diagnostics
             IDisposable? clipToBoundsSetter = default;
             IDisposable? renderTransformOriginSetter = default;
             IDisposable? renderTransformSetter = default;
-            // Save current TransformerBounds
-            var currentTransformerBounds = source.TransformedBounds.Value;
             try
             {                
                 // Set clip region
@@ -68,13 +66,7 @@ namespace Avalonia.Diagnostics
                 renderTransformOriginSetter?.Dispose();
                 clipSetter?.Dispose();
                 clipToBoundsSetter?.Dispose();
-                /* Restore TransformerBounds
-                 * this is workaraund for issue. When i call bitmap.Render(root), 
-                 * ImmediateRenderer set TransformedBounds.Clip to empty rect
-                 * (see https://github.com/AvaloniaUI/Avalonia/blob/151a7a010d477436b37dde0eb89deb1f0df42c7d/src/Avalonia.Visuals/Rendering/ImmediateRenderer.cs#L303-L308).
-                 * If you remake a screenshot of same control, the clip bounds of screenshot is not correct.                
-                 */
-                source.TransformedBounds = currentTransformerBounds;
+                source?.InvalidateVisual();
             }
         }
     }
