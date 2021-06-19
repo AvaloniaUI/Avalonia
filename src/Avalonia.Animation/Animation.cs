@@ -318,7 +318,9 @@ namespace Avalonia.Animation
 
                 if (onComplete != null)
                 {
-                    Task.WhenAll(completionTasks).ContinueWith(_ => onComplete());
+                    Task.WhenAll(completionTasks).ContinueWith(
+                        (_, state) => ((Action)state).Invoke(),
+                        onComplete);
                 }
             }
             return new CompositeDisposable(subscriptions);
@@ -340,12 +342,17 @@ namespace Avalonia.Animation
             IDisposable subscriptions = null, cancellation = null;
             subscriptions = this.Apply(control, clock, Observable.Return(true), () =>
             {
-                run.SetResult(null);
+                run.TrySetResult(null);
                 subscriptions?.Dispose();
                 cancellation?.Dispose();
             });
 
-            cancellation = cancellationToken.Register(state => ((IDisposable)state).Dispose(), subscriptions);
+            cancellation = cancellationToken.Register(() =>
+            {
+                run.TrySetResult(null);
+                subscriptions?.Dispose();
+                cancellation?.Dispose();
+            });
 
             return run.Task;
         }

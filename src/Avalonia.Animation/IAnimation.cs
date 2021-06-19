@@ -17,6 +17,6 @@ namespace Avalonia.Animation
         /// <summary>
         /// Run the animation on the specified control.
         /// </summary>
-        Task RunAsync(Animatable control, IClock clock, CancellationToken cancellationToken);
+        Task RunAsync(Animatable control, IClock clock, CancellationToken cancellationToken = default);
     }
 }

@@ -176,5 +176,200 @@ namespace Avalonia.Animation.UnitTests
             clock.Step(TimeSpan.FromSeconds(0.100d));
             Assert.Equal(border.Width, 300d);
         }
+
+        [Fact]
+        public void Do_Not_Run_Cancelled_Animation()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 200d),
+                },
+                Cue = new Cue(1d)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 100d),
+                },
+                Cue = new Cue(0d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(10),
+                Delay = TimeSpan.FromSeconds(0),
+                DelayBetweenIterations = TimeSpan.FromSeconds(0),
+                IterationCount = new IterationCount(1),
+                Children =
+                {
+                    keyframe2,
+                    keyframe1
+                }
+            };
+
+            var border = new Border()
+            {
+                Height = 100d,
+                Width = 100d
+            };
+            var propertyChangedCount = 0;
+            border.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == Control.WidthProperty)
+                {
+                    propertyChangedCount++;
+                }
+            };
+
+            var clock = new TestClock();
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+            var animationRun = animation.RunAsync(border, clock, cancellationTokenSource.Token);
+
+            clock.Step(TimeSpan.FromSeconds(10));
+            Assert.Equal(0, propertyChangedCount);
+            Assert.True(animationRun.IsCompleted);
+        }
+
+        [Fact]
+        public void Cancellation_Should_Stop_Animation()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 200d),
+                },
+                Cue = new Cue(1d)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 100d),
+                },
+                Cue = new Cue(0d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(10),
+                Delay = TimeSpan.FromSeconds(0),
+                DelayBetweenIterations = TimeSpan.FromSeconds(0),
+                IterationCount = new IterationCount(1),
+                Children =
+                {
+                    keyframe2,
+                    keyframe1
+                }
+            };
+
+            var border = new Border()
+            {
+                Height = 100d,
+                Width = 50d
+            };
+            var propertyChangedCount = 0;
+            border.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == Control.WidthProperty)
+                {
+                    propertyChangedCount++;
+                }
+            };
+
+            var clock = new TestClock();
+            var cancellationTokenSource = new CancellationTokenSource();
+            var animationRun = animation.RunAsync(border, clock, cancellationTokenSource.Token);
+
+            Assert.Equal(0, propertyChangedCount);
+
+            clock.Step(TimeSpan.FromSeconds(0));
+            Assert.False(animationRun.IsCompleted);
+            Assert.Equal(1, propertyChangedCount);
+
+            cancellationTokenSource.Cancel();
+            clock.Step(TimeSpan.FromSeconds(1));
+            clock.Step(TimeSpan.FromSeconds(2));
+            clock.Step(TimeSpan.FromSeconds(3));
+            //Assert.Equal(2, propertyChangedCount);
+
+            animationRun.Wait();
+
+            clock.Step(TimeSpan.FromSeconds(6));
+            Assert.True(animationRun.IsCompleted);
+            Assert.Equal(2, propertyChangedCount);
+        }
+
+        [Fact]
+        public void Cancellation_Of_Completed_Animation_Does_Not_Fail()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 200d),
+                },
+                Cue = new Cue(1d)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 100d),
+                },
+                Cue = new Cue(0d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(10),
+                Delay = TimeSpan.FromSeconds(0),
+                DelayBetweenIterations = TimeSpan.FromSeconds(0),
+                IterationCount = new IterationCount(1),
+                Children =
+                {
+                    keyframe2,
+                    keyframe1
+                }
+            };
+
+            var border = new Border()
+            {
+                Height = 100d,
+                Width = 50d
+            };
+            var propertyChangedCount = 0;
+            border.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == Control.WidthProperty)
+                {
+                    propertyChangedCount++;
+                }
+            };
+
+            var clock = new TestClock();
+            var cancellationTokenSource = new CancellationTokenSource();
+            var animationRun = animation.RunAsync(border, clock, cancellationTokenSource.Token);
+
+            Assert.Equal(0, propertyChangedCount);
+
+            clock.Step(TimeSpan.FromSeconds(0));
+            Assert.False(animationRun.IsCompleted);
+            Assert.Equal(1, propertyChangedCount);
+
+            clock.Step(TimeSpan.FromSeconds(10));
+            Assert.True(animationRun.IsCompleted);
+            Assert.Equal(2, propertyChangedCount);
+
+            cancellationTokenSource.Cancel();
+            animationRun.Wait();
+        }
     }
 }
