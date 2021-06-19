@@ -330,6 +330,109 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ContextRequested_Opens_ContextFlyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyout = new Flyout();
+                var target = new Panel
+                {
+                    ContextFlyout = flyout
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                int openedCount = 0;
+
+                flyout.Opened += (sender, args) =>
+                {
+                    openedCount++;
+                };
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(flyout.IsOpen);
+                Assert.Equal(1, openedCount);
+            }
+        }
+
+        [Fact]
+        public void KeyUp_Raised_On_Target_Opens_ContextFlyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyout = new Flyout();
+                var target = new Panel
+                {
+                    ContextFlyout = flyout
+                };
+                var contextRequestedCount = 0;
+                target.AddHandler(Control.ContextRequestedEvent, (s, a) => contextRequestedCount++, Interactivity.RoutingStrategies.Tunnel);
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Apps, Source = window });
+
+                Assert.True(flyout.IsOpen);
+                Assert.Equal(1, contextRequestedCount);
+            }
+        }
+
+        [Fact]
+        public void KeyUp_Raised_On_Target_Closes_Opened_ContextFlyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyout = new Flyout();
+                var target = new Panel
+                {
+                    ContextFlyout = flyout
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(flyout.IsOpen);
+
+                target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Apps, Source = window });
+
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void KeyUp_Raised_On_Flyout_Closes_Opened_ContextFlyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyoutContent = new Button();
+                var flyout = new Flyout()
+                {
+                    Content = flyoutContent
+                };
+                var target = new Panel
+                {
+                    ContextFlyout = flyout
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(flyout.IsOpen);
+
+                flyoutContent.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Apps, Source = window });
+
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
+        [Fact]
         public void ContextFlyout_Can_Be_Set_In_Styles()
         {
             using (CreateServicesWithFocus())
