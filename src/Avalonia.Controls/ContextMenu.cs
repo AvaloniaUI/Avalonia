@@ -274,7 +274,7 @@ namespace Avalonia.Controls
             }
 
             control ??= _attachedControls![0];
-            Open(control, PlacementTarget ?? control);
+            Open(control, PlacementTarget ?? control, false);
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace Avalonia.Controls
             return new MenuItemContainerGenerator(this);
         }
 
-        private void Open(Control control, Control placementTarget)
+        private void Open(Control control, Control placementTarget, bool requestedByPointer)
         {
             if (IsOpen)
             {
@@ -343,6 +343,10 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup).SetParent(null);
                 ((ISetLogicalParent)_popup).SetParent(control);
             }
+
+            _popup.PlacementMode = !requestedByPointer && PlacementMode == PlacementMode.Pointer
+                ? PlacementMode.Bottom
+                : PlacementMode;
 
             _popup.PlacementTarget = placementTarget;
             _popup.Child = this;
@@ -417,7 +421,8 @@ namespace Avalonia.Controls
                 && !e.Handled
                 && !contextMenu.CancelOpening())
             {
-                contextMenu.Open(control, e.Source as Control ?? control);
+                var requestedByPointer = e.TryGetPosition(null, out _);
+                contextMenu.Open(control, e.Source as Control ?? control, requestedByPointer);
                 e.Handled = true;
             }
         }
