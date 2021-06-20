@@ -9,6 +9,8 @@ using Avalonia.UnitTests;
 using Avalonia.Data;
 using Xunit;
 using Avalonia.Animation.Easings;
+using System.Threading;
+using System.Reactive.Linq;
 
 namespace Avalonia.Animation.UnitTests
 {
@@ -175,6 +177,77 @@ namespace Avalonia.Animation.UnitTests
 
             clock.Step(TimeSpan.FromSeconds(0.100d));
             Assert.Equal(border.Width, 300d);
+        }
+
+        [Fact]
+        public void Dispose_Subscription_Should_Stop_Animation()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 200d),
+                },
+                Cue = new Cue(1d)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Border.WidthProperty, 100d),
+                },
+                Cue = new Cue(0d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(10),
+                Delay = TimeSpan.FromSeconds(0),
+                DelayBetweenIterations = TimeSpan.FromSeconds(0),
+                IterationCount = new IterationCount(1),
+                Children =
+                {
+                    keyframe2,
+                    keyframe1
+                }
+            };
+
+            var border = new Border()
+            {
+                Height = 100d,
+                Width = 50d
+            };
+            var propertyChangedCount = 0;
+            var animationCompletedCount = 0;
+            border.PropertyChanged += (sender, e) =>
+            {
+                if (e.Property == Control.WidthProperty)
+                {
+                    propertyChangedCount++;
+                }
+            };
+
+            var clock = new TestClock();
+            var disposable = animation.Apply(border, clock, Observable.Return(true), () => animationCompletedCount++);
+
+            Assert.Equal(0, propertyChangedCount);
+
+            clock.Step(TimeSpan.FromSeconds(0));
+            Assert.Equal(0, animationCompletedCount);
+            Assert.Equal(1, propertyChangedCount);
+
+            disposable.Dispose();
+
+            // Clock ticks should be ignored after Dispose
+            clock.Step(TimeSpan.FromSeconds(5));
+            clock.Step(TimeSpan.FromSeconds(6));
+            clock.Step(TimeSpan.FromSeconds(7));
+
+            // On animation disposing (cancellation) on completed is not invoked (is it expected?)
+            Assert.Equal(0, animationCompletedCount);
+            // Initial property changed before cancellation + animation value removal.
+            Assert.Equal(2, propertyChangedCount);
         }
 
         [Fact]
