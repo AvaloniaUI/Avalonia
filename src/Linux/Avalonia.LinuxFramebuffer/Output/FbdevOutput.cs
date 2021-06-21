@@ -19,11 +19,21 @@ namespace Avalonia.LinuxFramebuffer
         /// <summary>
         /// Create a Linux frame buffer device output
         /// </summary>
+        /// <param name="fileName">The frame buffer device name.
+        /// Defaults to the value in environment variable FRAMEBUFFER or /dev/fb0 when FRAMEBUFFER is not set</param>
+        public FbdevOutput(string fileName = null) : this(null, null)
+        {
+        }
+
+        /// <summary>
+        /// Create a Linux frame buffer device output
+        /// </summary>
+        /// <param name="fileName">The frame buffer device name.
+        /// Defaults to the value in environment variable FRAMEBUFFER or /dev/fb0 when FRAMEBUFFER is not set</param>
         /// <param name="format">The required pixel format for the frame buffer.
         /// A null value will leave the frame buffer in the current pixel format.
         /// Otherwise sets the frame buffer to the required format</param>
-        /// <param name="fileName">the frame buffer device name</param>
-        public FbdevOutput(PixelFormat? format = null, string fileName = null)
+        public FbdevOutput(string fileName, PixelFormat? format)
         {
             fileName ??= Environment.GetEnvironmentVariable("FRAMEBUFFER") ?? "/dev/fb0";
             _fd = NativeUnsafeMethods.open(fileName, 2, 0);
@@ -126,17 +136,17 @@ namespace Avalonia.LinuxFramebuffer
             get
             {
                 fb_var_screeninfo nfo;
-                return (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOGET_VSCREENINFO, &nfo))
-                    ? throw new Exception("FBIOGET_VSCREENINFO error: " + Marshal.GetLastWin32Error())
-                    : new PixelSize((int)nfo.xres, (int)nfo.yres);
+                if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOGET_VSCREENINFO, &nfo))
+                    throw new Exception("FBIOGET_VSCREENINFO error: " + Marshal.GetLastWin32Error());
+                return new PixelSize((int)nfo.xres, (int)nfo.yres);
             }
         }
 
         public ILockedFramebuffer Lock()
         {
-            return _fd <= 0
-                ? throw new ObjectDisposedException("LinuxFramebuffer")
-                : new LockedFramebuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, new Vector(96, 96) * Scaling);
+            if (_fd <= 0)
+                throw new ObjectDisposedException("LinuxFramebuffer");
+            return new LockedFramebuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, new Vector(96, 96) * Scaling);
         }
 
 
