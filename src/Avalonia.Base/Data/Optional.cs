@@ -153,4 +153,18 @@ namespace Avalonia.Data
         /// </summary>
         public static Optional<T> Empty => default;
     }
+
+    public static class OptionalExtensions
+    {
+        /// <summary>
+        /// Casts the type of an <see cref="Optional{T}"/> using only the C# cast operator.
+        /// </summary>
+        /// <typeparam name="T">The target type.</typeparam>
+        /// <param name="value">The binding value.</param>
+        /// <returns>The cast value.</returns>
+        public static Optional<T> Cast<T>(this Optional<object> value)
+        {
+            return value.HasValue ? new Optional<T>((T)value.Value) : Optional<T>.Empty;
+        }
+    }
 }

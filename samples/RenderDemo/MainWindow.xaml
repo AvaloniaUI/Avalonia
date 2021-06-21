@@ -36,6 +36,9 @@
       <TabItem Header="Transitions">
         <pages:TransitionsPage/>
       </TabItem>
+      <TabItem Header="Custom Animator">
+        <pages:CustomAnimatorPage/>
+      </TabItem>
       <TabItem Header="Clipping">
         <pages:ClippingPage/>
       </TabItem>
@@ -56,6 +59,9 @@
       </TabItem>
       <TabItem Header="LineBounds">
         <pages:LineBoundsPage />
+      </TabItem>
+      <TabItem Header="Path Measurement">
+        <pages:PathMeasurementPage />
       </TabItem>
     </TabControl>
   </DockPanel>

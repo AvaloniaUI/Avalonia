@@ -120,7 +120,7 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
             AvaloniaProperty.RegisterAttached<ScrollViewer, Control, ScrollBarVisibility>(
                 nameof(HorizontalScrollBarVisibility),
-                ScrollBarVisibility.Hidden);
+                ScrollBarVisibility.Disabled);
 
         /// <summary>
         /// Defines the VerticalScrollBarMaximum property.
@@ -176,8 +176,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="AllowAutoHide"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> AllowAutoHideProperty =
-            ScrollBar.AllowAutoHideProperty.AddOwner<ScrollViewer>();
+        public static readonly AttachedProperty<bool> AllowAutoHideProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(AllowAutoHide),
+                true);
 
         /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
@@ -207,8 +209,8 @@ namespace Avalonia.Controls
         /// </summary>
         static ScrollViewer()
         {
-            HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.ScrollBarVisibilityChanged(e));
-            VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer>((x, e) => x.ScrollBarVisibilityChanged(e));
+            HorizontalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer, ScrollBarVisibility>((x, e) => x.ScrollBarVisibilityChanged(e));
+            VerticalScrollBarVisibilityProperty.Changed.AddClassHandler<ScrollViewer, ScrollBarVisibility>((x, e) => x.ScrollBarVisibilityChanged(e));
         }
 
         /// <summary>
@@ -527,6 +529,26 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the value of the AllowAutoHideProperty attached property.
+        /// </summary>
+        /// <param name="control">The control to set the value on.</param>
+        /// <param name="value">The value of the property.</param>
+        public static void SetAllowAutoHide(Control control, bool value)
+        {
+            control.SetValue(AllowAutoHideProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the value of the AllowAutoHideProperty attached property.
+        /// </summary>
+        /// <param name="control">The control to read the value from.</param>
+        /// <returns>The value of the property.</returns>
+        public static bool GetAllowAutoHide(Control control)
+        {
+            return control.GetValue(AllowAutoHideProperty);
+        }
+
+        /// <summary>
         /// Gets the value of the VerticalScrollBarVisibility attached property.
         /// </summary>
         /// <param name="control">The control to set the value on.</param>
@@ -604,10 +626,10 @@ namespace Avalonia.Controls
             CalculatedPropertiesChanged();
         }
 
-        private void ScrollBarVisibilityChanged(AvaloniaPropertyChangedEventArgs e)
+        private void ScrollBarVisibilityChanged(AvaloniaPropertyChangedEventArgs<ScrollBarVisibility> e)
         {
-            var wasEnabled = !ScrollBarVisibility.Disabled.Equals(e.OldValue);
-            var isEnabled = !ScrollBarVisibility.Disabled.Equals(e.NewValue);
+            var wasEnabled = e.OldValue.GetValueOrDefault() != ScrollBarVisibility.Disabled;
+            var isEnabled = e.NewValue.GetValueOrDefault() != ScrollBarVisibility.Disabled;
 
             if (wasEnabled != isEnabled)
             {

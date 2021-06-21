@@ -60,7 +60,7 @@ namespace Avalonia.Input
                     ie.IsKeyboardFocusWithin = false;
                 }
 
-                el = (IInputElement)el.VisualParent;
+                el = (IInputElement?)el.VisualParent;
             }
         }
         
@@ -212,17 +212,36 @@ namespace Avalonia.Input
                             Source = element,
                         };
 
-                        IVisual currentHandler = element;
+                        IVisual? currentHandler = element;
                         while (currentHandler != null && !ev.Handled && keyInput.Type == RawKeyEventType.KeyDown)
                         {
                             var bindings = (currentHandler as IInputElement)?.KeyBindings;
                             if (bindings != null)
+                            {
+                                KeyBinding[]? bindingsCopy = null;
+
+                                // Create a copy of the KeyBindings list if there's a binding which matches the event.
+                                // If we don't do this the foreach loop will throw an InvalidOperationException when the KeyBindings list is changed.
+                                // This can happen when a new view is loaded which adds its own KeyBindings to the handler.
                                 foreach (var binding in bindings)
                                 {
-                                    if (ev.Handled)
+                                    if (binding.Gesture?.Matches(ev) == true)
+                                    {
+                                        bindingsCopy = bindings.ToArray();
                                         break;
-                                    binding.TryHandle(ev);
+                                    }
                                 }
+
+                                if (bindingsCopy is object)
+                                {
+                                    foreach (var binding in bindingsCopy)
+                                    {
+                                        if (ev.Handled)
+                                            break;
+                                        binding.TryHandle(ev);
+                                    }
+                                }
+                            }
                             currentHandler = currentHandler.VisualParent;
                         }
 

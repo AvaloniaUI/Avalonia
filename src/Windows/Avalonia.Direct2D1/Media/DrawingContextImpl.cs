@@ -5,6 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -121,7 +122,9 @@ namespace Avalonia.Direct2D1.Media
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             {
                 var interpolationMode = GetInterpolationMode(bitmapInterpolationMode);
-
+                
+                // TODO: How to implement CompositeMode here?
+                
                 _deviceContext.DrawBitmap(
                     d2d.Value,
                     destRect.ToSharpDX(),
@@ -149,6 +152,35 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
+        public static CompositeMode GetCompositeMode(BitmapBlendingMode blendingMode)
+        {
+            switch (blendingMode)
+            {  
+                case BitmapBlendingMode.SourceIn:
+                    return CompositeMode.SourceIn;
+                case BitmapBlendingMode.SourceOut:
+                    return CompositeMode.SourceOut;
+                case BitmapBlendingMode.SourceOver:
+                    return CompositeMode.SourceOver;
+                case BitmapBlendingMode.SourceAtop:
+                    return CompositeMode.SourceAtop; 
+                case BitmapBlendingMode.DestinationIn:
+                    return CompositeMode.DestinationIn;
+                case BitmapBlendingMode.DestinationOut:
+                    return CompositeMode.DestinationOut;
+                case BitmapBlendingMode.DestinationOver:
+                    return CompositeMode.DestinationOver;
+                case BitmapBlendingMode.DestinationAtop:
+                    return CompositeMode.DestinationAtop;
+                case BitmapBlendingMode.Xor:
+                    return CompositeMode.Xor;
+                case BitmapBlendingMode.Plus:
+                    return CompositeMode.Plus;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(blendingMode), blendingMode, null);
+            }
+        }
+
         /// <summary>
         /// Draws a bitmap image.
         /// </summary>
@@ -160,7 +192,7 @@ namespace Avalonia.Direct2D1.Media
         {
             using (var d2dSource = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             using (var sourceBrush = new BitmapBrush(_deviceContext, d2dSource.Value))
-            using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
+            using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect))
             using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(Direct2D1Platform.Direct2D1Factory, destRect.ToDirect2D()))
             {
                 if (d2dOpacityMask.PlatformBrush != null)
@@ -185,9 +217,7 @@ namespace Avalonia.Direct2D1.Media
         {
             if (pen != null)
             {
-                var size = new Rect(p1, p2).Size;
-
-                using (var d2dBrush = CreateBrush(pen.Brush, size))
+                using (var d2dBrush = CreateBrush(pen.Brush, new Rect(p1, p2).Normalize()))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
                 {
                     if (d2dBrush.PlatformBrush != null)
@@ -213,7 +243,7 @@ namespace Avalonia.Direct2D1.Media
         {
             if (brush != null)
             {
-                using (var d2dBrush = CreateBrush(brush, geometry.Bounds.Size))
+                using (var d2dBrush = CreateBrush(brush, geometry.Bounds))
                 {
                     if (d2dBrush.PlatformBrush != null)
                     {
@@ -225,7 +255,7 @@ namespace Avalonia.Direct2D1.Media
 
             if (pen != null)
             {
-                using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen).Size))
+                using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen)))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
                 {
                     if (d2dBrush.PlatformBrush != null)
@@ -250,7 +280,7 @@ namespace Avalonia.Direct2D1.Media
 
             if (brush != null)
             {
-                using (var b = CreateBrush(brush, rect.Size))
+                using (var b = CreateBrush(brush, rect))
                 {
                     if (b.PlatformBrush != null)
                     {
@@ -279,7 +309,7 @@ namespace Avalonia.Direct2D1.Media
 
             if (pen?.Brush != null)
             {
-                using (var wrapper = CreateBrush(pen.Brush, rect.Size))
+                using (var wrapper = CreateBrush(pen.Brush, rect))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
                 {
                     if (wrapper.PlatformBrush != null)
@@ -317,7 +347,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text;
 
-                using (var brush = CreateBrush(foreground, impl.Bounds.Size))
+                using (var brush = CreateBrush(foreground, impl.Bounds))
                 using (var renderer = new AvaloniaTextRenderer(this, _deviceContext, brush.PlatformBrush))
                 {
                     if (brush.PlatformBrush != null)
@@ -335,7 +365,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="glyphRun">The glyph run.</param>
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Size))
+            using (var brush = CreateBrush(foreground, new Rect(glyphRun.Size)))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
 
@@ -426,9 +456,9 @@ namespace Avalonia.Direct2D1.Media
         /// Creates a Direct2D brush wrapper for a Avalonia brush.
         /// </summary>
         /// <param name="brush">The avalonia brush.</param>
-        /// <param name="destinationSize">The size of the brush's target area.</param>
+        /// <param name="destinationRect">The brush's target area.</param>
         /// <returns>The Direct2D brush wrapper.</returns>
-        public BrushImpl CreateBrush(IBrush brush, Size destinationSize)
+        public BrushImpl CreateBrush(IBrush brush, Rect destinationRect)
         {
             var solidColorBrush = brush as ISolidColorBrush;
             var linearGradientBrush = brush as ILinearGradientBrush;
@@ -443,11 +473,11 @@ namespace Avalonia.Direct2D1.Media
             }
             else if (linearGradientBrush != null)
             {
-                return new LinearGradientBrushImpl(linearGradientBrush, _deviceContext, destinationSize);
+                return new LinearGradientBrushImpl(linearGradientBrush, _deviceContext, destinationRect);
             }
             else if (radialGradientBrush != null)
             {
-                return new RadialGradientBrushImpl(radialGradientBrush, _deviceContext, destinationSize);
+                return new RadialGradientBrushImpl(radialGradientBrush, _deviceContext, destinationRect);
             }
             else if (conicGradientBrush != null)
             {
@@ -460,7 +490,7 @@ namespace Avalonia.Direct2D1.Media
                     imageBrush,
                     _deviceContext,
                     (BitmapImpl)imageBrush.Source.PlatformImpl.Item,
-                    destinationSize);
+                    destinationRect.Size);
             }
             else if (visualBrush != null)
             {
@@ -491,7 +521,7 @@ namespace Avalonia.Direct2D1.Media
                                 visualBrush,
                                 _deviceContext,
                                 new D2DBitmapImpl(intermediate.Bitmap),
-                                destinationSize);
+                                destinationRect.Size);
                         }
                     }
                 }
@@ -525,6 +555,16 @@ namespace Avalonia.Direct2D1.Media
             PopLayer();
         }
 
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            // TODO: Stubs for now
+        }
+
+        public void PopBitmapBlendMode()
+        {
+            // TODO: Stubs for now
+        }
+
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
             var parameters = new LayerParameters
@@ -532,7 +572,7 @@ namespace Avalonia.Direct2D1.Media
                 ContentBounds = PrimitiveExtensions.RectangleInfinite,
                 MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
                 Opacity = 1,
-                OpacityBrush = CreateBrush(mask, bounds.Size).PlatformBrush
+                OpacityBrush = CreateBrush(mask, bounds).PlatformBrush
             };
             var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_deviceContext);
             _deviceContext.PushLayer(ref parameters, layer);

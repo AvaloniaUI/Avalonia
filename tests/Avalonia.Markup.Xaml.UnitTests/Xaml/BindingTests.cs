@@ -377,5 +377,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             public string Greeting1 { get; set; } = "Hello";
             public string Greeting2 { get; set; } = "World";
         }
+        
+        [Fact]
+        public void Binding_Classes_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                // Note, this test also checks `Classes` reordering, so it should be kept AFTER the last single class
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Button Name='button' Classes.MyClass='{Binding Foo}' Classes.MySecondClass='True' Classes='foo bar'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+
+                button.DataContext = new { Foo = true };
+                window.ApplyTemplate();
+
+                Assert.True(button.Classes.Contains("MyClass"));
+                Assert.True(button.Classes.Contains("MySecondClass"));
+                Assert.True(button.Classes.Contains("foo"));
+                Assert.True(button.Classes.Contains("bar"));
+
+                button.DataContext = new { Foo = false };
+                
+                Assert.False(button.Classes.Contains("MyClass"));
+                Assert.True(button.Classes.Contains("MySecondClass"));
+                Assert.True(button.Classes.Contains("foo"));
+                Assert.True(button.Classes.Contains("bar"));
+            }
+        }
     }
 }
