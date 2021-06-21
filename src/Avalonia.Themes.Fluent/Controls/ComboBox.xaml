@@ -112,9 +112,7 @@
                 <Panel Height="12"
                        Width="12" />
                 <Path x:Name="DropDownGlyph"
-                      Stretch="Uniform"
-                      VerticalAlignment="Center"
-                      Data="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
+                      VerticalAlignment="Center" />
               </Panel>
             </Viewbox>
             <Popup Name="PART_Popup"
@@ -160,6 +158,8 @@
 
   <Style Selector="ComboBox /template/ Path#DropDownGlyph">
     <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
+    <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
+    <Setter Property="Stretch" Value="Uniform" />
   </Style>
 
   <!--  PointerOver State  -->
