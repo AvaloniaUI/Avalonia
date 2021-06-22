@@ -3,6 +3,8 @@ using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Threading;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -20,6 +22,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A scrollbar control.
     /// </summary>
+    [PseudoClasses(":vertical", ":horizontal")]
     public class ScrollBar : RangeBase
     {
         /// <summary>
@@ -32,7 +35,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="Visibility"/> property.
         /// </summary>
         public static readonly StyledProperty<ScrollBarVisibility> VisibilityProperty =
-            AvaloniaProperty.Register<ScrollBar, ScrollBarVisibility>(nameof(Visibility));
+            AvaloniaProperty.Register<ScrollBar, ScrollBarVisibility>(nameof(Visibility), ScrollBarVisibility.Visible);
 
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
@@ -40,10 +43,26 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ScrollBar, Orientation>(nameof(Orientation), Orientation.Vertical);
 
+        /// <summary>
+        /// Defines the <see cref="IsExpandedProperty"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollBar, bool> IsExpandedProperty =
+            AvaloniaProperty.RegisterDirect<ScrollBar, bool>(
+                nameof(IsExpanded),
+                o => o.IsExpanded);
+
+        /// <summary>
+        /// Defines the <see cref="AllowAutoHide"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AllowAutoHideProperty =
+            AvaloniaProperty.Register<ScrollBar, bool>(nameof(AllowAutoHide), true);
+
         private Button _lineUpButton;
         private Button _lineDownButton;
         private Button _pageUpButton;
         private Button _pageDownButton;
+        private DispatcherTimer _timer;
+        private bool _isExpanded;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -90,6 +109,24 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(OrientationProperty, value); }
         }
 
+        /// <summary>
+        /// Gets a value that indicates whether the scrollbar is expanded.
+        /// </summary>
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            private set => SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the scrollbar can hide itself when user is not interacting with it.
+        /// </summary>
+        public bool AllowAutoHide
+        {
+            get => GetValue(AllowAutoHideProperty);
+            set => SetValue(AllowAutoHideProperty, value);
+        }
+
         public event EventHandler<ScrollEventArgs> Scroll;
 
         /// <summary>
@@ -106,7 +143,7 @@ namespace Avalonia.Controls.Primitives
                 _ => throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.")
             };
 
-            SetValue(IsVisibleProperty, isVisible, BindingPriority.Style);
+            SetValue(IsVisibleProperty, isVisible);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -131,6 +168,10 @@ namespace Avalonia.Controls.Primitives
             {
                 UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
             }
+            else if (change.Property == AllowAutoHideProperty)
+            {
+                UpdateIsExpandedState();
+            }
             else
             {
                 if (change.Property == MinimumProperty ||
@@ -140,6 +181,26 @@ namespace Avalonia.Controls.Primitives
                 {
                     UpdateIsVisible();
                 }
+            }
+        }
+
+        protected override void OnPointerEnter(PointerEventArgs e)
+        {
+            base.OnPointerEnter(e);
+
+            if (AllowAutoHide)
+            {
+                ExpandAfterDelay();
+            }
+        }
+
+        protected override void OnPointerLeave(PointerEventArgs e)
+        {
+            base.OnPointerLeave(e);
+
+            if (AllowAutoHide)
+            {
+                CollapseAfterDelay();
             }
         }
 
@@ -170,8 +231,6 @@ namespace Avalonia.Controls.Primitives
             _pageUpButton = e.NameScope.Find<Button>("PART_PageUpButton");
             _pageDownButton = e.NameScope.Find<Button>("PART_PageDownButton");
 
-
-
             if (_lineUpButton != null)
             {
                 _lineUpButton.Click += LineUpClick;
@@ -191,6 +250,68 @@ namespace Avalonia.Controls.Primitives
             {
                 _pageDownButton.Click += PageDownClick;
             }
+        }
+
+        private void InvokeAfterDelay(Action handler, TimeSpan delay)
+        {
+            if (_timer != null)
+            {
+                _timer.Stop();
+            }
+            else
+            {
+                _timer = new DispatcherTimer(DispatcherPriority.Normal);
+                _timer.Tick += (sender, args) =>
+                {
+                    var senderTimer = (DispatcherTimer)sender;
+
+                    if (senderTimer.Tag is Action action)
+                    {
+                        action();
+                    }
+
+                    senderTimer.Stop();
+                };
+            }
+
+            _timer.Tag = handler;
+            _timer.Interval = delay;
+
+            _timer.Start();
+        }
+
+        private void UpdateIsExpandedState()
+        {
+            if (!AllowAutoHide)
+            {
+                _timer?.Stop();
+
+                IsExpanded = true;
+            }
+            else
+            {
+                IsExpanded = IsPointerOver;
+            }
+        }
+
+        private void CollapseAfterDelay()
+        {
+            InvokeAfterDelay(Collapse, TimeSpan.FromSeconds(2));
+        }
+
+        private void ExpandAfterDelay()
+        {
+            InvokeAfterDelay(Expand, TimeSpan.FromMilliseconds(400));
+        }
+
+        private void Collapse()
+        {
+            IsExpanded = false;
+        }
+
+        private void Expand()
+        {
+            IsExpanded = true;
         }
 
         private void LineUpClick(object sender, RoutedEventArgs e)

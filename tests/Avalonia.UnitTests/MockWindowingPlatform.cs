@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Moq;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 
 namespace Avalonia.UnitTests
 {
@@ -28,7 +29,9 @@ namespace Avalonia.UnitTests
 
             windowImpl.SetupAllProperties();
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
             windowImpl.Setup(x => x.Position).Returns(() => position);
             SetupToplevel(windowImpl);
@@ -55,7 +58,7 @@ namespace Avalonia.UnitTests
                 windowImpl.Object.Resized?.Invoke(clientSize);
             });
 
-            windowImpl.Setup(x => x.Show()).Callback(() =>
+            windowImpl.Setup(x => x.Show(true)).Callback(() =>
             {
                 windowImpl.Object.Activated?.Invoke();
             });
@@ -79,7 +82,8 @@ namespace Avalonia.UnitTests
 
             popupImpl.SetupAllProperties();
             popupImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
-            popupImpl.Setup(x => x.Scaling).Returns(1);
+            popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
+            popupImpl.Setup(x => x.RenderScaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
             
             SetupToplevel(popupImpl);
@@ -116,7 +120,7 @@ namespace Avalonia.UnitTests
             }
         }
 
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
+        public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
         }

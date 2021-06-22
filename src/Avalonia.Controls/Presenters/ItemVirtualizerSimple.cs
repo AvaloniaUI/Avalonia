@@ -113,7 +113,7 @@ namespace Avalonia.Controls.Presenters
         {
             var scrollable = (ILogicalScrollable)Owner;
             var visualRoot = Owner.GetVisualRoot();
-            var maxAvailableSize = (visualRoot as WindowBase)?.PlatformImpl?.MaxClientSize
+            var maxAvailableSize = (visualRoot as WindowBase)?.PlatformImpl?.MaxAutoSizeHint
                  ?? (visualRoot as TopLevel)?.ClientSize;
 
             // If infinity is passed as the available size and we're virtualized then we need to
@@ -511,6 +511,21 @@ namespace Avalonia.Controls.Presenters
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
             var newOffset = -1.0;
+
+            //better not trigger any container generation/recycle while  or layout stuff
+            //before panel is attached/visible
+            if (!panel.IsAttachedToVisualTree)
+            {
+                return null;
+            }
+
+            if (!panel.IsMeasureValid && panel.PreviousMeasure.HasValue)
+            {
+                //before any kind of scrolling we need to make sure panel measure is valid
+                //or we risk get panel into not valid state
+                //we make a preemptive quick measure so scrolling is valid
+                panel.Measure(panel.PreviousMeasure.Value);
+            }
 
             if (index >= 0 && index < ItemCount)
             {

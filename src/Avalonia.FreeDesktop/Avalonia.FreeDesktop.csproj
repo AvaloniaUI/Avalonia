@@ -1,15 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>    
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Tmds.DBus" Version="0.7.0" />
+    <PackageReference Include="Tmds.DBus" Version="0.9.0" />
   </ItemGroup>
 
 </Project>

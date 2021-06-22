@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -112,7 +113,7 @@ namespace Avalonia.Animation.UnitTests
                 It.IsAny<IClock>(),
                 1.0,
                 0.5));
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             control.SetValue(Visual.OpacityProperty, 0.8, BindingPriority.StyleTrigger);
 
@@ -134,7 +135,7 @@ namespace Avalonia.Animation.UnitTests
             target.Setup(x => x.Apply(control, It.IsAny<IClock>(), 1.0, 0.5)).Returns(sub.Object);
 
             control.Opacity = 0.5;
-            sub.ResetCalls();
+            sub.Invocations.Clear();
             control.Opacity = 0.4;
 
             sub.Verify(x => x.Dispose());
@@ -157,7 +158,7 @@ namespace Avalonia.Animation.UnitTests
             control.Opacity = 0.5;
 
             Assert.Equal(0.9, control.Opacity);
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             control.Opacity = 0.4;
 
@@ -181,7 +182,7 @@ namespace Avalonia.Animation.UnitTests
                 It.IsAny<IClock>(),
                 1.0,
                 0.5));
-            target.ResetCalls();
+            target.Invocations.Clear();
 
             var root = (TestRoot)control.Parent;
             root.Child = null;
@@ -263,6 +264,101 @@ namespace Avalonia.Animation.UnitTests
                     100.0),
                     Times.Once);
             }
+        }
+
+        [Fact]
+        public void Replacing_Transitions_During_Animation_Does_Not_Throw_KeyNotFound()
+        {
+            // Issue #4059
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                Border target;
+                var clock = new TestClock();
+                var root = new TestRoot
+                {
+                    Clock = clock,
+                    Styles =
+                    {
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Setters =
+                            {
+                                new Setter(Border.TransitionsProperty,
+                                    new Transitions
+                                    {
+                                        new DoubleTransition
+                                        {
+                                            Property = Border.OpacityProperty,
+                                            Duration = TimeSpan.FromSeconds(1),
+                                        },
+                                    }),
+                            },
+                        },
+                        new Style(x => x.OfType<Border>().Class("foo"))
+                        {
+                            Setters =
+                            {
+                                new Setter(Border.TransitionsProperty,
+                                    new Transitions
+                                    {
+                                        new DoubleTransition
+                                        {
+                                            Property = Border.OpacityProperty,
+                                            Duration = TimeSpan.FromSeconds(1),
+                                        },
+                                    }),
+                                new Setter(Border.OpacityProperty, 0.0),
+                            },
+                        },
+                    },
+                    Child = target = new Border
+                    {
+                        Background = Brushes.Red,
+                    }
+                };
+
+                root.Measure(Size.Infinity);
+                root.Arrange(new Rect(root.DesiredSize));
+
+                target.Classes.Add("foo");
+                clock.Step(TimeSpan.FromSeconds(0));
+                clock.Step(TimeSpan.FromSeconds(0.5));
+
+                Assert.Equal(0.5, target.Opacity);
+
+                target.Classes.Remove("foo");
+            }
+        }
+
+        [Fact]
+        public void Transitions_Can_Be_Changed_To_Collection_That_Contains_The_Same_Transitions()
+        {
+            var target = CreateTarget();
+            var control = CreateControl(target.Object);
+
+            control.Transitions = new Transitions { target.Object };
+        }
+
+        [Fact]
+        public void Transitions_Can_Re_Set_During_Batch_Update()
+        {
+            var target = CreateTarget();
+            var control = CreateControl(target.Object);
+
+            // Assigning and then clearing Transitions ensures we have a transition state
+            // collection created.
+            control.Transitions = null;
+
+            control.BeginBatchUpdate();
+
+            // Setting opacity then Transitions means that we receive the Transitions change
+            // after the Opacity change when EndBatchUpdate is called.
+            control.Opacity = 0.5;
+            control.Transitions = new Transitions { target.Object };
+
+            // Which means that the transition state hasn't been initialized with the new
+            // Transitions when the Opacity change notification gets raised here.
+            control.EndBatchUpdate();
         }
 
         private static Mock<ITransition> CreateTarget()

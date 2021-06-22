@@ -2,7 +2,15 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Avalonia</RootNamespace>
+    <Nullable>Enable</Nullable>
+    <WarningsAsErrors>CS8600;CS8602;CS8603</WarningsAsErrors>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Markup\Parsers\Nodes\ExpressionGrammer" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Markup\Parsers\BindingExpressionGrammar.cs" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
@@ -10,4 +18,5 @@
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\System.Memory.props" />
+  <Import Project="..\..\..\build\ApiDiff.props" />
 </Project>

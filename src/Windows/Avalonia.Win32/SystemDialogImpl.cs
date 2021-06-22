@@ -9,7 +9,6 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-
     class SystemDialogImpl : ISystemDialogImpl
     {
         private const UnmanagedMethods.FOS DefaultDialogOptions = UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE |
@@ -113,6 +112,7 @@ namespace Avalonia.Win32
                 frm.GetOptions(out options);
                 options |= (uint)(UnmanagedMethods.FOS.FOS_PICKFOLDERS | DefaultDialogOptions);
                 frm.SetOptions(options);
+                frm.SetTitle(dialog.Title ?? "");
 
                 if (dialog.Directory != null)
                 {

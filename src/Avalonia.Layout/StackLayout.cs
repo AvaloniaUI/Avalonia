@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Specialized;
 using Avalonia.Data;
+using Avalonia.Logging;
 
 namespace Avalonia.Layout
 {
@@ -107,8 +108,15 @@ namespace Avalonia.Layout
                             _orientation.MajorStart(extent) + 
                             (remainingItems * averageElementSize));
                 }
+                else
+                {
+                    Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Estimating extent with no realized elements",
+                        LayoutId);
+                }
             }
 
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Extent is ({Size}). Based on average {Average}",
+                LayoutId, extent.Size, averageElementSize);
             return extent;
         }
 
@@ -241,8 +249,8 @@ namespace Avalonia.Layout
                     realizationWindowOffsetInExtent + _orientation.MajorSize(realizationRect) >= 0 && realizationWindowOffsetInExtent <= majorSize)
                 {
                     anchorIndex = (int) (realizationWindowOffsetInExtent / averageElementSize);
-                    offset = anchorIndex* averageElementSize + _orientation.MajorStart(lastExtent);
                     anchorIndex = Math.Max(0, Math.Min(itemsCount - 1, anchorIndex));
+                    offset = anchorIndex* averageElementSize + _orientation.MajorStart(lastExtent);
                 }
         }
 

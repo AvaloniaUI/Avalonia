@@ -8,19 +8,17 @@ namespace Avalonia.Media
     /// Represents a typeface.
     /// </summary>
     [DebuggerDisplay("Name = {FontFamily.Name}, Weight = {Weight}, Style = {Style}")]
-    public class Typeface : IEquatable<Typeface>
+    public readonly struct Typeface : IEquatable<Typeface>
     {
-        private GlyphTypeface _glyphTypeface;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Typeface"/> class.
         /// </summary>
         /// <param name="fontFamily">The font family.</param>
-        /// <param name="weight">The font weight.</param>
         /// <param name="style">The font style.</param>
-        public Typeface([NotNull]FontFamily fontFamily,
-            FontWeight weight = FontWeight.Normal,
-            FontStyle style = FontStyle.Normal)
+        /// <param name="weight">The font weight.</param>
+        public Typeface([NotNull] FontFamily fontFamily,
+            FontStyle style = FontStyle.Normal,
+            FontWeight weight = FontWeight.Normal)
         {
             if (weight <= 0)
             {
@@ -39,13 +37,13 @@ namespace Avalonia.Media
         /// <param name="style">The font style.</param>
         /// <param name="weight">The font weight.</param>
         public Typeface(string fontFamilyName,
-            FontWeight weight = FontWeight.Normal,
-            FontStyle style = FontStyle.Normal)
-            : this(new FontFamily(fontFamilyName), weight, style)
+            FontStyle style = FontStyle.Normal,
+            FontWeight weight = FontWeight.Normal)
+            : this(new FontFamily(fontFamilyName), style, weight)
         {
         }
 
-        public static Typeface Default => FontManager.Current?.GetOrAddTypeface(FontFamily.Default);
+        public static Typeface Default { get; } = new Typeface(FontFamily.Default);
 
         /// <summary>
         /// Gets the font family.
@@ -68,7 +66,7 @@ namespace Avalonia.Media
         /// <value>
         /// The glyph typeface.
         /// </value>
-        public GlyphTypeface GlyphTypeface => _glyphTypeface ?? (_glyphTypeface = new GlyphTypeface(this));
+        public GlyphTypeface GlyphTypeface => FontManager.Current.GetOrAddGlyphTypeface(this);
 
         public static bool operator !=(Typeface a, Typeface b)
         {
@@ -77,32 +75,17 @@ namespace Avalonia.Media
 
         public static bool operator ==(Typeface a, Typeface b)
         {
-            if (ReferenceEquals(a, b))
-            {
-                return true;
-            }
-
-            return !(a is null) && a.Equals(b);
+            return  a.Equals(b);
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is Typeface typeface)
-            {
-                return Equals(typeface);
-            }
-
-            return false;
+            return obj is Typeface typeface && Equals(typeface);
         }
 
         public bool Equals(Typeface other)
         {
-            if (other is null)
-            {
-                return false;
-            }
-
-            return FontFamily.Equals(other.FontFamily) && Style == other.Style && Weight == other.Weight;
+            return FontFamily == other.FontFamily && Style == other.Style && Weight == other.Weight;
         }
 
         public override int GetHashCode()

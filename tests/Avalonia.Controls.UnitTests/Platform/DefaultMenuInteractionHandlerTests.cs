@@ -125,6 +125,24 @@ namespace Avalonia.Controls.UnitTests.Platform
             }
 
             [Fact]
+            public void Click_On_TopLevel_Calls_MainMenu_Open()
+            {
+                var target = new DefaultMenuInteractionHandler(false);
+                var menu = new Mock<IMainMenu>();
+                menu.As<IMenuElement>();
+
+                var item = Mock.Of<IMenuItem>(x =>
+                    x.IsTopLevel == true &&
+                    x.HasSubMenu == true &&
+                    x.Parent == menu.Object);
+
+                var e = CreatePressed(item);
+
+                target.PointerPressed(item, e);
+                menu.Verify(x => x.Open());
+            }
+
+            [Fact]
             public void Click_On_Open_TopLevel_Menu_Closes_Menu()
             {
                 var target = new DefaultMenuInteractionHandler(false);
@@ -485,26 +503,26 @@ namespace Avalonia.Controls.UnitTests.Platform
                 target.PointerEnter(item, enter);
                 Assert.True(timer.ActionIsQueued);
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = item);
-                Mock.Get(parentItem).ResetCalls();
+                Mock.Get(parentItem).Invocations.Clear();
 
                 // SubMenu shown after a delay.
                 timer.Pulse();
                 Mock.Get(item).Verify(x => x.Open());
                 Mock.Get(item).SetupGet(x => x.IsSubMenuOpen).Returns(true);
-                Mock.Get(item).ResetCalls();
+                Mock.Get(item).Invocations.Clear();
 
                 // Pointer briefly exits item, but submenu remains open.
                 target.PointerLeave(item, leave);
                 Mock.Get(item).Verify(x => x.Close(), Times.Never);
-                Mock.Get(item).ResetCalls();
+                Mock.Get(item).Invocations.Clear();
 
                 // Pointer enters child item; is selected.
                 enter.Source = childItem;
                 target.PointerEnter(childItem, enter);
                 Mock.Get(item).VerifySet(x => x.SelectedItem = childItem);
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = item);
-                Mock.Get(item).ResetCalls();
-                Mock.Get(parentItem).ResetCalls();
+                Mock.Get(item).Invocations.Clear();
+                Mock.Get(parentItem).Invocations.Clear();
             }
 
             [Fact]

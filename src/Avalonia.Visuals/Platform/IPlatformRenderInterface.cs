@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Platform
@@ -82,9 +81,10 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
-        /// <param name="format">Pixel format (optional).</param>
+        /// <param name="format">Pixel format.</param>
+        /// <param name="alphaFormat">Alpha format .</param>
         /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
-        IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null);
+        IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat);
 
         /// <summary>
         /// Loads a bitmap implementation from a file..
@@ -99,6 +99,38 @@ namespace Avalonia.Platform
         /// <param name="stream">The stream to read the bitmap from.</param>        
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(Stream stream);
+
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a stream to a specified width maintaining aspect ratio.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param> 
+        /// <param name="width">The desired width of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should resizing be required.</param>
+        /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a stream to a specified height maintaining aspect ratio.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param> 
+        /// <param name="height">The desired height of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should resizing be required.</param>
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+        
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a file.
+        /// </summary>
+        /// <param name="fileName">The filename of the bitmap.</param>        
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmap(string fileName);
+
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a file.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param>        
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmap(Stream stream);
 
         /// <summary>
         /// Loads a bitmap implementation from a stream to a specified width maintaining aspect ratio.
@@ -124,21 +156,31 @@ namespace Avalonia.Platform
         /// Loads a bitmap implementation from a pixels in memory.
         /// </summary>
         /// <param name="format">The pixel format.</param>
+        /// <param name="alphaFormat">The alpha format.</param>
         /// <param name="data">The pointer to source bytes.</param>
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="stride">The number of bytes per row.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
-        IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride);
+        IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride);
 
         /// <summary>
         /// Creates a platform implementation of a glyph run.
         /// </summary>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="width">The glyph run's width.</param>
         /// <returns></returns>
-        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width);
+        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun);
 
         bool SupportsIndividualRoundRects { get; }
+
+        /// <summary>
+        /// Default <see cref="AlphaFormat"/> used on this platform.
+        /// </summary>
+        public AlphaFormat DefaultAlphaFormat { get; }
+
+        /// <summary>
+        /// Default <see cref="PixelFormat"/> used on this platform.
+        /// </summary>
+        public PixelFormat DefaultPixelFormat { get; }
     }
 }

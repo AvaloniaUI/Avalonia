@@ -4,9 +4,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
     <AvaloniaResource Include="Assets\*" />
   </ItemGroup>
 
@@ -15,4 +12,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
   </ItemGroup>
+
+  <Import Project="..\..\build\ApiDiff.props" />
 </Project>

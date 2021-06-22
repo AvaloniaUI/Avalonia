@@ -1,6 +1,8 @@
 ﻿using System;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
 {
@@ -113,13 +115,13 @@ namespace Avalonia.Controls.Utils
                 var borderThickness = _borderThickness.Top;
                 IPen pen = null;
 
-                if (borderThickness > 0)
+                if (borderBrush != null && borderThickness > 0)
                 {
-                    pen = new Pen(borderBrush, borderThickness);
+                    pen = new ImmutablePen(borderBrush.ToImmutable(), borderThickness);
                 }
 
                 var rect = new Rect(_size);
-                if (Math.Abs(borderThickness) > double.Epsilon)
+                if (!MathUtilities.IsZero(borderThickness))
                     rect = rect.Deflate(borderThickness * 0.5);
                 var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                     _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
@@ -140,7 +142,7 @@ namespace Avalonia.Controls.Utils
             var radiusY = keypoints.RightTop.Y - boundRect.TopRight.Y;
             if (radiusX != 0 || radiusY != 0)
             {
-                context.ArcTo(keypoints.RightTop, new Size(radiusY, radiusY), 0, false, SweepDirection.Clockwise);
+                context.ArcTo(keypoints.RightTop, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
             }
 
             // Right

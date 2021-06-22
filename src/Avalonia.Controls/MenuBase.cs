@@ -8,6 +8,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -51,9 +53,7 @@ namespace Avalonia.Controls
         /// <param name="interactionHandler">The menu interaction handler.</param>
         public MenuBase(IMenuInteractionHandler interactionHandler)
         {
-            Contract.Requires<ArgumentNullException>(interactionHandler != null);
-
-            InteractionHandler = interactionHandler;
+            InteractionHandler = interactionHandler ?? throw new ArgumentNullException(nameof(interactionHandler));
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Avalonia.Controls
         IMenuInteractionHandler IMenu.InteractionHandler => InteractionHandler;
 
         /// <inheritdoc/>
-        IMenuItem IMenuElement.SelectedItem
+        IMenuItem? IMenuElement.SelectedItem
         {
             get
             {

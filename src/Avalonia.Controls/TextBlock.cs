@@ -3,6 +3,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -71,6 +72,15 @@ namespace Avalonia.Controls
                 inherits: true);
 
         /// <summary>
+        /// Defines the <see cref="LineHeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LineHeightProperty =
+            AvaloniaProperty.Register<TextBlock, double>(
+                nameof(LineHeight),
+                double.NaN,
+                validate: IsValidLineHeight);
+
+        /// <summary>
         /// Defines the <see cref="MaxLines"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MaxLinesProperty =
@@ -122,19 +132,19 @@ namespace Avalonia.Controls
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
 
-            AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty, 
+            AffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty,
                 TextAlignmentProperty, TextDecorationsProperty);
 
-            AffectsMeasure<TextBlock>(FontSizeProperty, FontWeightProperty, 
-                FontStyleProperty, TextWrappingProperty, FontFamilyProperty, 
-                TextTrimmingProperty, TextProperty, PaddingProperty);
+            AffectsMeasure<TextBlock>(FontSizeProperty, FontWeightProperty,
+                FontStyleProperty, TextWrappingProperty, FontFamilyProperty,
+                TextTrimmingProperty, TextProperty, PaddingProperty, LineHeightProperty, MaxLinesProperty);
 
-            Observable.Merge(TextProperty.Changed, ForegroundProperty.Changed,
+            Observable.Merge<AvaloniaPropertyChangedEventArgs>(TextProperty.Changed, ForegroundProperty.Changed,
                 TextAlignmentProperty.Changed, TextWrappingProperty.Changed,
                 TextTrimmingProperty.Changed, FontSizeProperty.Changed,
                 FontStyleProperty.Changed, FontWeightProperty.Changed,
                 FontFamilyProperty.Changed, TextDecorationsProperty.Changed,
-                PaddingProperty.Changed
+                PaddingProperty.Changed, MaxLinesProperty.Changed, LineHeightProperty.Changed
             ).AddClassHandler<TextBlock>((x, _) => x.InvalidateTextLayout());
         }
 
@@ -228,6 +238,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ForegroundProperty); }
             set { SetValue(ForegroundProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the height of each line of content.
+        /// </summary>
+        public double LineHeight
+        {
+            get => GetValue(LineHeightProperty);
+            set => SetValue(LineHeightProperty, value);
         }
 
         /// <summary>
@@ -393,9 +412,30 @@ namespace Avalonia.Controls
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
+            if (TextLayout is null)
+            {
+                return;
+            }
+            
             var padding = Padding;
+            var top = padding.Top;
+            var textSize = TextLayout.Size;
 
-            TextLayout?.Draw(context.PlatformImpl, new Point(padding.Left, padding.Top));
+            if (Bounds.Height < textSize.Height)
+            {
+                switch (VerticalAlignment)
+                {
+                    case VerticalAlignment.Center:
+                        top += (Bounds.Height - textSize.Height) / 2;
+                        break;
+
+                    case VerticalAlignment.Bottom:
+                        top += (Bounds.Height - textSize.Height);
+                        break;
+                }
+            }
+
+            TextLayout.Draw(context, new Point(padding.Left, top));
         }
 
         /// <summary>
@@ -413,7 +453,7 @@ namespace Avalonia.Controls
 
             return new TextLayout(
                 text ?? string.Empty,
-                FontManager.Current?.GetOrAddTypeface(FontFamily, FontWeight, FontStyle),
+                new Typeface(FontFamily, FontStyle, FontWeight),
                 FontSize,
                 Foreground,
                 TextAlignment,
@@ -422,7 +462,8 @@ namespace Avalonia.Controls
                 TextDecorations,
                 constraint.Width,
                 constraint.Height,
-                MaxLines);
+                maxLines: MaxLines,
+                lineHeight: LineHeight);
         }
 
         /// <summary>
@@ -451,12 +492,12 @@ namespace Avalonia.Controls
 
             if (_constraint != availableSize)
             {
+                _constraint = availableSize;
+
                 InvalidateTextLayout();
             }
 
-            _constraint = availableSize;
-
-            var measuredSize = TextLayout?.Bounds.Size ?? Size.Empty;
+            var measuredSize = TextLayout?.Size ?? Size.Empty;
 
             return measuredSize.Inflate(padding);
         }
@@ -471,5 +512,7 @@ namespace Avalonia.Controls
         }
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;
+
+        private static bool IsValidLineHeight(double lineHeight) => double.IsNaN(lineHeight) || lineHeight > 0;
     }
 }

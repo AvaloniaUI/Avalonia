@@ -49,12 +49,20 @@ namespace Avalonia.Shared.PlatformSupport
             
             public UnmanagedBlob(StandardRuntimePlatform plat, int size)
             {
-                if (size <= 0)
-                    throw new ArgumentException("Positive number required", nameof(size));
-                _plat = plat;
-                _address = plat.Alloc(size);
-                GC.AddMemoryPressure(size);
-                Size = size;
+                try
+                {
+                    if (size <= 0)
+                        throw new ArgumentException("Positive number required", nameof(size));
+                    _plat = plat;
+                    _address = plat.Alloc(size);
+                    GC.AddMemoryPressure(size);
+                    Size = size;
+                }
+                catch
+                {
+                    GC.SuppressFinalize(this);
+                    throw;
+                }
 #if DEBUG
                 _backtrace = Environment.StackTrace;
                 lock (_btlock)
@@ -86,11 +94,15 @@ namespace Avalonia.Shared.PlatformSupport
 #if DEBUG
                 if (Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId)
                 {
-                    lock(_lock)
+                    lock (_lock)
+                    {
                         if (!IsDisposed)
+                        {
                             Console.Error.WriteLine("Native blob disposal from finalizer thread\nBacktrace: "
-                                                    + Environment.StackTrace
-                                                    + "\n\nBlob created by " + _backtrace);
+                                                 + Environment.StackTrace
+                                                 + "\n\nBlob created by " + _backtrace);
+                        }
+                    }
                 }
 #endif
                 DoDispose();

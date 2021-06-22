@@ -16,11 +16,13 @@ namespace Avalonia.Skia
         /// <summary>
         /// Canvas that will be used to render.
         /// </summary>
-        SKCanvas Canvas { get; }
+        SKSurface SkSurface { get; }
 
         /// <summary>
         /// Scaling factor.
         /// </summary>
         double ScaleFactor { get; }
+        
+        GRSurfaceOrigin SurfaceOrigin { get; }
     }
 }

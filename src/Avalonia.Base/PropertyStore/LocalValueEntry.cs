@@ -1,4 +1,5 @@
-﻿using Avalonia.Data;
+﻿using System.Diagnostics.CodeAnalysis;
+using Avalonia.Data;
 
 #nullable enable
 
@@ -11,9 +12,9 @@ namespace Avalonia.PropertyStore
     /// <typeparam name="T">The property type.</typeparam>
     internal class LocalValueEntry<T> : IValue<T>
     {
-        private T _value;
+        [AllowNull] private T _value;
 
-        public LocalValueEntry(T value) => _value = value;
+        public LocalValueEntry([AllowNull] T value) => _value = value;
         public BindingPriority Priority => BindingPriority.LocalValue;
         Optional<object> IValue.GetValue() => new Optional<object>(_value);
         
@@ -23,5 +24,21 @@ namespace Avalonia.PropertyStore
         }
 
         public void SetValue(T value) => _value = value;
+        public void Start() { }
+
+        public void RaiseValueChanged(
+            IValueSink sink,
+            IAvaloniaObject owner,
+            AvaloniaProperty property,
+            Optional<object> oldValue,
+            Optional<object> newValue)
+        {
+            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                owner,
+                (AvaloniaProperty<T>)property,
+                oldValue.Cast<T>(),
+                newValue.Cast<T>(),
+                BindingPriority.LocalValue));
+        }
     }
 }

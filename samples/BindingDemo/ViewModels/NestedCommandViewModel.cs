@@ -1,18 +1,18 @@
-﻿using ReactiveUI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using MiniMvvm;
 
 namespace BindingDemo.ViewModels
 {
-    public class NestedCommandViewModel : ReactiveObject
+    public class NestedCommandViewModel : ViewModelBase
     {
         public NestedCommandViewModel()
         {
-            Command = ReactiveCommand.Create(() => { });
+            Command = MiniCommand.Create(() => { });
         }
 
         public ICommand Command { get; }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -35,6 +36,7 @@ namespace Avalonia.Skia
                 IsAntialias = true,
                 LcdRenderText = true,
                 SubpixelText = true,
+                IsLinearText = true,
                 Typeface = glyphTypeface.Typeface,
                 TextSize = (float)fontSize,
                 TextAlign = textAlignment.ToSKTextAlign()
@@ -174,7 +176,8 @@ namespace Avalonia.Skia
 
             foreach (var line in _skiaLines.Where(l =>
                                                     (l.Start + l.Length) > index &&
-                                                    lastIndex >= l.Start))
+                                                    lastIndex >= l.Start &&
+                                                    !l.IsEmptyTrailingLine))
             {
                 int lineEndIndex = line.Start + (line.Length > 0 ? line.Length - 1 : 0);
 
@@ -275,9 +278,9 @@ namespace Avalonia.Skia
 
                                 if (fb != null)
                                 {
-                                    //TODO: figure out how to get the brush size
+                                    //TODO: figure out how to get the brush rect
                                     currentWrapper = context.CreatePaint(new SKPaint { IsAntialias = true }, fb,
-                                        new Size());
+                                        default);
                                 }
                                 else
                                 {
@@ -465,7 +468,8 @@ namespace Avalonia.Skia
 
                 for (int i = line.Start; i < line.Start + line.TextLength; i++)
                 {
-                    float w = _paint.MeasureText(Text[i].ToString());
+                    var c = Text[i];
+                    var w = line.IsEmptyTrailingLine ? 0 :_paint.MeasureText(Text[i].ToString());
 
                     _rects.Add(new Rect(
                         prevRight,
@@ -610,6 +614,7 @@ namespace Avalonia.Skia
                         lastLine.Width = lastLineWidth;
                         lastLine.Height = _lineHeight;
                         lastLine.Top = curY;
+                        lastLine.IsEmptyTrailingLine = true;
 
                         _skiaLines.Add(lastLine);
 
@@ -712,6 +717,7 @@ namespace Avalonia.Skia
             public int TextLength;
             public float Top;
             public float Width;
+            public bool IsEmptyTrailingLine;
         };
 
         private struct FBrushRange

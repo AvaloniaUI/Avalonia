@@ -1,7 +1,11 @@
+using System;
 using System.Threading.Tasks;
+
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
+
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 
@@ -43,5 +47,11 @@ namespace Avalonia.Android.Platform
 
             return Task.FromResult<object>(null);
         }
+
+        public Task SetDataObjectAsync(IDataObject data) => throw new PlatformNotSupportedException();
+
+        public Task<string[]> GetFormatsAsync() => throw new PlatformNotSupportedException();
+
+        public Task<object> GetDataAsync(string format) => throw new PlatformNotSupportedException();
     }
 }

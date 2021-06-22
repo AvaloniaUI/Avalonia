@@ -6,37 +6,45 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class TreePageViewModel : ViewModelBase, IDisposable
     {
-        private TreeNode _selected;
-        private ControlDetailsViewModel _details;
-        private string _propertyFilter;
+        private TreeNode? _selectedNode;
+        private ControlDetailsViewModel? _details;
 
-        public TreePageViewModel(TreeNode[] nodes)
+        public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
         {
+            MainView = mainView;
             Nodes = nodes;
+
+            PropertiesFilter = new FilterViewModel();
+            PropertiesFilter.RefreshFilter += (s, e) => Details?.PropertiesView.Refresh();
+
+            SettersFilter = new FilterViewModel();
+            SettersFilter.RefreshFilter += (s, e) => Details?.UpdateStyleFilters();
         }
+
+        public MainViewModel MainView { get; }
+
+        public FilterViewModel PropertiesFilter { get; }
+
+        public FilterViewModel SettersFilter { get; }
 
         public TreeNode[] Nodes { get; protected set; }
 
-        public TreeNode SelectedNode
+        public TreeNode? SelectedNode
         {
-            get => _selected;
-            set
+            get => _selectedNode;
+            private set
             {
-                if (Details != null)
-                {
-                    _propertyFilter = Details.PropertyFilter;
-                }
-
-                if (RaiseAndSetIfChanged(ref _selected, value))
+                if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
                     Details = value != null ?
-                        new ControlDetailsViewModel(value.Visual, _propertyFilter) :
+                        new ControlDetailsViewModel(this, value.Visual) :
                         null;
+                    Details?.UpdateStyleFilters();
                 }
             }
         }
 
-        public ControlDetailsViewModel Details
+        public ControlDetailsViewModel? Details
         {
             get => _details;
             private set
@@ -50,9 +58,17 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void Dispose() => _details?.Dispose();
+        public void Dispose()
+        {
+            foreach (var node in Nodes)
+            {
+                node.Dispose();
+            }
 
-        public TreeNode FindNode(IControl control)
+            _details?.Dispose();
+        }
+
+        public TreeNode? FindNode(IControl control)
         {
             foreach (var node in Nodes)
             {
@@ -88,7 +104,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private void ExpandNode(TreeNode node)
+        private void ExpandNode(TreeNode? node)
         {
             if (node != null)
             {
@@ -97,7 +113,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private TreeNode FindNode(TreeNode node, IControl control)
+        private TreeNode? FindNode(TreeNode node, IControl control)
         {
             if (node.Visual == control)
             {

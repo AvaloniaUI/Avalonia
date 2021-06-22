@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Media.Immutable;
-using Avalonia.Media.TextFormatting.Unicode;
-using Avalonia.Platform;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -13,11 +10,12 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public class TextLayout
     {
-        private static readonly ReadOnlySlice<char> s_empty = new ReadOnlySlice<char>(new[] { '\u200B' });
+        private static readonly char[] s_empty = { '\u200B' };
 
         private readonly ReadOnlySlice<char> _text;
         private readonly TextParagraphProperties _paragraphProperties;
-        private readonly IReadOnlyList<TextStyleRun> _textStyleOverrides;
+        private readonly IReadOnlyList<ValueSpan<TextRunProperties>> _textStyleOverrides;
+        private readonly TextTrimming _textTrimming;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextLayout" /> class.
@@ -32,6 +30,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textDecorations">The text decorations.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="lineHeight">The height of each line of text.</param>
         /// <param name="maxLines">The maximum number of text lines.</param>
         /// <param name="textStyleOverrides">The text style overrides.</param>
         public TextLayout(
@@ -45,17 +44,23 @@ namespace Avalonia.Media.TextFormatting
             TextDecorationCollection textDecorations = null,
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
+            double lineHeight = double.NaN,
             int maxLines = 0,
-            IReadOnlyList<TextStyleRun> textStyleOverrides = null)
+            IReadOnlyList<ValueSpan<TextRunProperties>> textStyleOverrides = null)
         {
             _text = string.IsNullOrEmpty(text) ?
                 new ReadOnlySlice<char>() :
                 new ReadOnlySlice<char>(text.AsMemory());
 
             _paragraphProperties =
-                CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping, textTrimming, textDecorations?.ToImmutable());
+                CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
+                    textDecorations, lineHeight);
+
+            _textTrimming = textTrimming;
 
             _textStyleOverrides = textStyleOverrides;
+
+            LineHeight = lineHeight;
 
             MaxWidth = maxWidth;
 
@@ -67,21 +72,28 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Gets or sets the height of each line of text.
+        /// </summary>
+        /// <remarks>
+        /// A value of NaN (equivalent to an attribute value of "Auto") indicates that the line height
+        /// is determined automatically from the current font characteristics. The default is NaN.
+        /// </remarks>
+        public double LineHeight { get; }
+
+        /// <summary>
         /// Gets the maximum width.
         /// </summary>
         public double MaxWidth { get; }
-
 
         /// <summary>
         /// Gets the maximum height.
         /// </summary>
         public double MaxHeight { get; }
 
-
         /// <summary>
         /// Gets the maximum number of text lines.
         /// </summary>
-        public double MaxLines { get; }
+        public int MaxLines { get; }
 
         /// <summary>
         /// Gets the text lines.
@@ -92,33 +104,176 @@ namespace Avalonia.Media.TextFormatting
         public IReadOnlyList<TextLine> TextLines { get; private set; }
 
         /// <summary>
-        /// Gets the bounds of the layout.
+        /// Gets the size of the layout.
         /// </summary>
         /// <value>
         /// The bounds.
         /// </value>
-        public Rect Bounds { get; private set; }
+        public Size Size { get; private set; }
 
         /// <summary>
         /// Draws the text layout.
         /// </summary>
         /// <param name="context">The drawing context.</param>
         /// <param name="origin">The origin.</param>
-        public void Draw(IDrawingContextImpl context, Point origin)
+        public void Draw(DrawingContext context, Point origin)
         {
             if (!TextLines.Any())
             {
                 return;
             }
 
-            var currentY = origin.Y;
+            var (currentX, currentY) = origin;
 
             foreach (var textLine in TextLines)
             {
-                textLine.Draw(context, new Point(origin.X, currentY));
+                textLine.Draw(context, new Point(currentX + textLine.Start, currentY));
 
-                currentY += textLine.LineMetrics.Size.Height;
+                currentY += textLine.Height;
             }
+        }
+
+        /// <summary>
+        /// Get the pixel location relative to the top-left of the layout box given the text position.
+        /// </summary>
+        /// <param name="textPosition">The text position.</param>
+        /// <returns></returns>
+        public Rect HitTestTextPosition(int textPosition)
+        {
+            if (TextLines.Count == 0)
+            {
+                return new Rect();
+            }
+
+            if (textPosition < 0 || textPosition >= _text.Length)
+            {
+                var lastLine = TextLines[TextLines.Count - 1];
+
+                var lineX = lastLine.Width;
+
+                var lineY = Size.Height - lastLine.Height;
+
+                return new Rect(lineX, lineY, 0, lastLine.Height);
+            }
+
+            var currentY = 0.0;
+
+            foreach (var textLine in TextLines)
+            {
+                if (textLine.TextRange.End < textPosition)
+                {
+                    currentY += textLine.Height;
+
+                    continue;
+                }
+
+                var characterHit = new CharacterHit(textPosition);
+
+                var startX = textLine.GetDistanceFromCharacterHit(characterHit);
+
+                var nextCharacterHit = textLine.GetNextCaretCharacterHit(characterHit);
+
+                var endX = textLine.GetDistanceFromCharacterHit(nextCharacterHit);
+
+                return new Rect(startX, currentY, endX - startX, textLine.Height);
+            }
+
+            return new Rect();
+        }
+
+        public IEnumerable<Rect> HitTestTextRange(int start, int length)
+        {
+            if (start + length <= 0)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var result = new List<Rect>(TextLines.Count);
+
+            var currentY = 0d;
+
+            foreach (var textLine in TextLines)
+            {
+                var currentX = textLine.Start;
+
+                if (textLine.TextRange.End < start)
+                {
+                    currentY += textLine.Height;
+
+                    continue;
+                }
+
+                if (start > textLine.TextRange.Start)
+                {
+                    currentX += textLine.GetDistanceFromCharacterHit(new CharacterHit(start));
+                }
+
+                var endX = textLine.GetDistanceFromCharacterHit(new CharacterHit(start + length));
+
+                result.Add(new Rect(currentX, currentY, endX - currentX, textLine.Height));
+
+                if (textLine.TextRange.Start + textLine.TextRange.Length >= start + length)
+                {
+                    break;
+                }
+
+                currentY += textLine.Height;
+            }
+
+            return result;
+        }
+
+        public TextHitTestResult HitTestPoint(in Point point)
+        {
+            var currentY = 0d;
+
+            var lineIndex = 0;
+            TextLine currentLine = null;
+            CharacterHit characterHit;
+
+            for (; lineIndex < TextLines.Count; lineIndex++)
+            {
+                currentLine = TextLines[lineIndex];
+
+                if (currentY + currentLine.Height > point.Y)
+                {
+                    characterHit = currentLine.GetCharacterHitFromDistance(point.X);
+
+                    return GetHitTestResult(currentLine, characterHit, point);
+                }
+
+                currentY += currentLine.Height;
+            }
+
+            if (currentLine is null)
+            {
+                return new TextHitTestResult();
+            }
+
+            characterHit = currentLine.GetNextCaretCharacterHit(new CharacterHit(currentLine.TextRange.End));
+
+            return GetHitTestResult(currentLine, characterHit, point);
+        }
+
+        private TextHitTestResult GetHitTestResult(TextLine textLine, CharacterHit characterHit, Point point)
+        {
+            var (x, y) = point;
+
+            var lastTrailingIndex = textLine.TextRange.Start + textLine.TextRange.Length;
+
+            var isInside = x >= 0 && x <= textLine.Width && y >= 0 && y <= textLine.Height;
+
+            if (x >= textLine.Width && textLine.TextRange.Length > 0 && textLine.NewLineLength > 0)
+            {
+                lastTrailingIndex -= textLine.NewLineLength;
+            }
+
+            var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+
+            var isTrailing = lastTrailingIndex == textPosition && characterHit.TrailingLength > 0 ||
+                             y > Size.Height;
+
+            return new TextHitTestResult { IsInside = isInside, IsTrailing = isTrailing, TextPosition = textPosition };
         }
 
         /// <summary>
@@ -129,38 +284,35 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="foreground">The foreground.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="textWrapping">The text wrapping.</param>
-        /// <param name="textTrimming">The text trimming.</param>
         /// <param name="textDecorations">The text decorations.</param>
+        /// <param name="lineHeight">The height of each line of text.</param>
         /// <returns></returns>
         private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
-            IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping, TextTrimming textTrimming,
-            ImmutableTextDecoration[] textDecorations)
+            IBrush foreground, TextAlignment textAlignment, TextWrapping textWrapping,
+            TextDecorationCollection textDecorations, double lineHeight)
         {
-            var textRunStyle = new TextStyle(typeface, fontSize, foreground, textDecorations);
+            var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
 
-            return new TextParagraphProperties(textRunStyle, textAlignment, textWrapping, textTrimming);
+            return new GenericTextParagraphProperties(FlowDirection.LeftToRight, textAlignment, true, false,
+                textRunStyle, textWrapping, lineHeight, 0);
         }
 
         /// <summary>
         /// Updates the current bounds.
         /// </summary>
         /// <param name="textLine">The text line.</param>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <param name="bottom">The bottom.</param>
-        private static void UpdateBounds(TextLine textLine, ref double left, ref double right, ref double bottom)
+        /// <param name="width">The current width.</param>
+        /// <param name="height">The current height.</param>
+        private static void UpdateBounds(TextLine textLine, ref double width, ref double height)
         {
-            if (right < textLine.LineMetrics.BaselineOrigin.X + textLine.LineMetrics.Size.Width)
+            var lineWidth = textLine.Width + textLine.Start * 2;
+            
+            if (width < lineWidth)
             {
-                right = textLine.LineMetrics.BaselineOrigin.X + textLine.LineMetrics.Size.Width;
+                width = lineWidth;
             }
 
-            if (left < textLine.LineMetrics.BaselineOrigin.X)
-            {
-                left = textLine.LineMetrics.BaselineOrigin.X;
-            }
-
-            bottom += textLine.LineMetrics.Size.Height;
+            height += textLine.Height;
         }
 
         /// <summary>
@@ -169,14 +321,19 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The empty text line.</returns>
         private TextLine CreateEmptyTextLine(int startingIndex)
         {
-            var textFormat = _paragraphProperties.DefaultTextStyle.TextFormat;
+            var properties = _paragraphProperties.DefaultTextRunProperties;
 
-            var glyphRun = TextShaper.Current.ShapeText(s_empty, textFormat);
+            var glyphRun = TextShaper.Current.ShapeText(new ReadOnlySlice<char>(s_empty, startingIndex, 1),
+                properties.Typeface, properties.FontRenderingEmSize, properties.CultureInfo);
 
-            var textRuns = new[] { new ShapedTextRun(glyphRun, _paragraphProperties.DefaultTextStyle) };
+            var textRuns = new List<ShapedTextCharacters>
+            {
+                new ShapedTextCharacters(glyphRun, _paragraphProperties.DefaultTextRunProperties)
+            };
 
-            return new SimpleTextLine(new TextPointer(startingIndex, 0), textRuns,
-                TextLineMetrics.Create(textRuns, MaxWidth, _paragraphProperties.TextAlignment));
+            var textRange = new TextRange(startingIndex, 1);
+
+            return new TextLineImpl(textRuns, textRange, MaxWidth, _paragraphProperties);
         }
 
         /// <summary>
@@ -184,147 +341,270 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         private void UpdateLayout()
         {
-            if (_text.IsEmpty || Math.Abs(MaxWidth) < double.Epsilon || Math.Abs(MaxHeight) < double.Epsilon)
+            if (_text.IsEmpty || MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
                 var textLine = CreateEmptyTextLine(0);
 
                 TextLines = new List<TextLine> { textLine };
 
-                Bounds = new Rect(textLine.LineMetrics.BaselineOrigin.X, 0, 0, textLine.LineMetrics.Size.Height);
+                Size = new Size(0, textLine.Height);
             }
             else
             {
                 var textLines = new List<TextLine>();
 
-                double left = 0.0, right = 0.0, bottom = 0.0;
-
-                var lineBreaker = new LineBreakEnumerator(_text);
+                double width = 0.0, height = 0.0;
 
                 var currentPosition = 0;
 
-                while (currentPosition < _text.Length && (MaxLines == 0 || textLines.Count < MaxLines))
+                var textSource = new FormattedTextSource(_text,
+                    _paragraphProperties.DefaultTextRunProperties, _textStyleOverrides);
+
+                TextLine previousLine = null;
+
+                while (currentPosition < _text.Length)
                 {
-                    int length;
+                    var textLine = TextFormatter.Current.FormatLine(textSource, currentPosition, MaxWidth,
+                        _paragraphProperties, previousLine?.TextLineBreak);
 
-                    if (lineBreaker.MoveNext())
+                    currentPosition += textLine.TextRange.Length;
+
+                    if (textLines.Count > 0)
                     {
-                        if (!lineBreaker.Current.Required)
+                        if (textLines.Count == MaxLines || !double.IsPositiveInfinity(MaxHeight) &&
+                            height + textLine.Height > MaxHeight)
                         {
-                            continue;
-                        }
-
-                        length = lineBreaker.Current.PositionWrap - currentPosition;
-
-                        if (currentPosition + length < _text.Length)
-                        {
-                            //The line breaker isn't treating \n\r as a pair so we have to fix that here.
-                            if (_text[lineBreaker.Current.PositionMeasure] == '\n'
-                             && _text[lineBreaker.Current.PositionWrap] == '\r')
+                            if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
                             {
-                                length++;
+                                var collapsedLine =
+                                    previousLine.Collapse(GetCollapsingProperties(MaxWidth));
+
+                                textLines[textLines.Count - 1] = collapsedLine;
                             }
-                        }
-                    }
-                    else
-                    {
-                        length = _text.Length - currentPosition;
-                    }
-
-                    var remainingLength = length;
-
-                    while (remainingLength > 0 && (MaxLines == 0 || textLines.Count < MaxLines))
-                    {
-                        var textSlice = _text.AsSlice(currentPosition, remainingLength);
-
-                        var textSource = new FormattedTextSource(textSlice, _paragraphProperties.DefaultTextStyle, _textStyleOverrides);
-
-                        var textLine = TextFormatter.Current.FormatLine(textSource, 0, MaxWidth, _paragraphProperties);
-
-                        UpdateBounds(textLine, ref left, ref right, ref bottom);
-
-                        textLines.Add(textLine);
-
-                        if (!double.IsPositiveInfinity(MaxHeight) && bottom + textLine.LineMetrics.Size.Height > MaxHeight)
-                        {
-                            currentPosition = _text.Length;
-                            break;
-                        }
-
-                        if (_paragraphProperties.TextTrimming != TextTrimming.None)
-                        {
-                            currentPosition += remainingLength;
 
                             break;
                         }
-
-                        remainingLength -= textLine.Text.Length;
-
-                        currentPosition += textLine.Text.Length;
                     }
-                }
 
-                if (lineBreaker.Current.Required && currentPosition == _text.Length)
-                {
+                    var hasOverflowed = textLine.HasOverflowed;
+
+                    if (hasOverflowed && _textTrimming != TextTrimming.None)
+                    {
+                        textLine = textLine.Collapse(GetCollapsingProperties(MaxWidth));
+                    }
+
+                    textLines.Add(textLine);
+
+                    UpdateBounds(textLine, ref width, ref height);
+
+                    previousLine = textLine;
+
+                    if (currentPosition != _text.Length || textLine.TextLineBreak?.RemainingCharacters == null)
+                    {
+                        continue;
+                    }
+
                     var emptyTextLine = CreateEmptyTextLine(currentPosition);
-
-                    UpdateBounds(emptyTextLine, ref left, ref right, ref bottom);
 
                     textLines.Add(emptyTextLine);
                 }
 
-                Bounds = new Rect(left, 0, right, bottom);
+                Size = new Size(width, height);
 
                 TextLines = textLines;
             }
         }
 
-        private struct FormattedTextSource : ITextSource
+        /// <summary>
+        /// Gets the <see cref="TextCollapsingProperties"/> for current text trimming mode.
+        /// </summary>
+        /// <param name="width">The collapsing width.</param>
+        /// <returns>The <see cref="TextCollapsingProperties"/>.</returns>
+        private TextCollapsingProperties GetCollapsingProperties(double width)
+        {
+            return _textTrimming switch
+            {
+                TextTrimming.CharacterEllipsis => new TextTrailingCharacterEllipsis(width,
+                    _paragraphProperties.DefaultTextRunProperties),
+                TextTrimming.WordEllipsis => new TextTrailingWordEllipsis(width,
+                    _paragraphProperties.DefaultTextRunProperties),
+                _ => throw new ArgumentOutOfRangeException(),
+            };
+        }
+
+        public int GetLineIndexFromCharacterIndex(int charIndex)
+        {
+            if (TextLines is null)
+            {
+                return -1;
+            }
+
+            if (charIndex < 0)
+            {
+                return -1;
+            }
+
+            if (charIndex > _text.Length - 1)
+            {
+                return TextLines.Count - 1;
+            }
+
+            for (var index = 0; index < TextLines.Count; index++)
+            {
+                var textLine = TextLines[index];
+
+                if (textLine.TextRange.End < charIndex)
+                {
+                    continue;
+                }
+
+                if (charIndex >= textLine.Start && charIndex <= textLine.TextRange.End)
+                {
+                    return index;
+                }
+            }
+
+            return TextLines.Count - 1;
+        }
+
+        public int GetCharacterIndexFromPoint(Point point, bool snapToText)
+        {
+            if (TextLines is null)
+            {
+                return -1;
+            }
+
+            var (x, y) = point;
+
+            if (!snapToText && y > Size.Height)
+            {
+                return -1;
+            }
+
+            var currentY = 0d;
+
+            foreach (var textLine in TextLines)
+            {
+                if (currentY + textLine.Height <= y)
+                {
+                    currentY += textLine.Height;
+
+                    continue;
+                }
+
+                if (x > textLine.WidthIncludingTrailingWhitespace)
+                {
+                    if (snapToText)
+                    {
+                        return textLine.TextRange.End;
+                    }
+
+                    return -1;
+                }
+
+                var characterHit = textLine.GetCharacterHitFromDistance(x);
+
+                return characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+            }
+
+            return _text.Length;
+        }
+
+        public Rect GetRectFromCharacterIndex(int characterIndex, bool trailingEdge)
+        {
+            if (TextLines is null)
+            {
+                return Rect.Empty;
+            }
+
+            var distanceY = 0d;
+
+            var currentIndex = 0;
+
+            foreach (var textLine in TextLines)
+            {
+                if (currentIndex + textLine.TextRange.Length < characterIndex)
+                {
+                    distanceY += textLine.Height;
+
+                    currentIndex += textLine.TextRange.Length;
+
+                    continue;
+                }
+
+                var characterHit = new CharacterHit(characterIndex);
+
+                while (characterHit.FirstCharacterIndex < characterIndex)
+                {
+                    characterHit = textLine.GetNextCaretCharacterHit(characterHit);
+                }
+
+                var distanceX = textLine.GetDistanceFromCharacterHit(trailingEdge ?
+                    characterHit :
+                    new CharacterHit(characterHit.FirstCharacterIndex));
+
+                if (characterHit.TrailingLength > 0)
+                {
+                    distanceX += 1;
+                }
+
+                return new Rect(distanceX, distanceY, 0, textLine.Height);
+            }
+
+            return Rect.Empty;
+        }
+
+        private readonly struct FormattedTextSource : ITextSource
         {
             private readonly ReadOnlySlice<char> _text;
-            private readonly TextStyle _defaultStyle;
-            private readonly IReadOnlyList<TextStyleRun> _textStyleOverrides;
+            private readonly TextRunProperties _defaultProperties;
+            private readonly IReadOnlyList<ValueSpan<TextRunProperties>> _textModifier;
 
-            public FormattedTextSource(ReadOnlySlice<char> text, TextStyle defaultStyle,
-                IReadOnlyList<TextStyleRun> textStyleOverrides)
+            public FormattedTextSource(ReadOnlySlice<char> text, TextRunProperties defaultProperties,
+                IReadOnlyList<ValueSpan<TextRunProperties>> textModifier)
             {
                 _text = text;
-                _defaultStyle = defaultStyle;
-                _textStyleOverrides = textStyleOverrides;
+                _defaultProperties = defaultProperties;
+                _textModifier = textModifier;
             }
 
             public TextRun GetTextRun(int textSourceIndex)
             {
+                if (textSourceIndex > _text.Length)
+                {
+                    return null;
+                }
+
                 var runText = _text.Skip(textSourceIndex);
 
                 if (runText.IsEmpty)
                 {
-                    return new TextEndOfLine();
+                    return new TextEndOfParagraph();
                 }
 
-                var textStyleRun = CreateTextStyleRunWithOverride(runText, _defaultStyle, _textStyleOverrides);
+                var textStyleRun = CreateTextStyleRun(runText, _defaultProperties, _textModifier);
 
-                return new TextCharacters(runText.Take(textStyleRun.TextPointer.Length), textStyleRun.Style);
+                return new TextCharacters(runText.Take(textStyleRun.Length), textStyleRun.Value);
             }
 
             /// <summary>
-            /// Creates a text style run that has overrides applied. Only overrides with equal TextStyle.
-            /// If optimizeForShaping is <c>true</c> Foreground is ignored.
+            /// Creates a span of text run properties that has modifier applied.
             /// </summary>
-            /// <param name="text">The text to create the run for.</param>
-            /// <param name="defaultTextStyle">The default text style for segments that don't have an override.</param>
-            /// <param name="textStyleOverrides">The text style overrides.</param>
+            /// <param name="text">The text to create the properties for.</param>
+            /// <param name="defaultProperties">The default text properties.</param>
+            /// <param name="textModifier">The text properties modifier.</param>
             /// <returns>
             /// The created text style run.
             /// </returns>
-            private static TextStyleRun CreateTextStyleRunWithOverride(ReadOnlySlice<char> text,
-                TextStyle defaultTextStyle, IReadOnlyList<TextStyleRun> textStyleOverrides)
+            private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySlice<char> text,
+                TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>> textModifier)
             {
-                if(textStyleOverrides == null || textStyleOverrides.Count == 0)
+                if (textModifier == null || textModifier.Count == 0)
                 {
-                    return new TextStyleRun(new TextPointer(text.Start, text.Length), defaultTextStyle);
+                    return new ValueSpan<TextRunProperties>(text.Start, text.Length, defaultProperties);
                 }
 
-                var currentTextStyle = defaultTextStyle;
+                var currentProperties = defaultProperties;
 
                 var hasOverride = false;
 
@@ -332,35 +612,34 @@ namespace Avalonia.Media.TextFormatting
 
                 var length = 0;
 
-                for (; i < textStyleOverrides.Count; i++)
+                for (; i < textModifier.Count; i++)
                 {
-                    var styleOverride = textStyleOverrides[i];
+                    var propertiesOverride = textModifier[i];
 
-                    var textPointer = styleOverride.TextPointer;
+                    var textRange = new TextRange(propertiesOverride.Start, propertiesOverride.Length);
 
-                    if (textPointer.End < text.Start)
+                    if (textRange.End < text.Start)
                     {
                         continue;
                     }
 
-                    if (textPointer.Start > text.End)
+                    if (textRange.Start > text.End)
                     {
                         length = text.Length;
                         break;
                     }
 
-                    if (textPointer.Start > text.Start)
+                    if (textRange.Start > text.Start)
                     {
-                        if (styleOverride.Style.TextFormat != currentTextStyle.TextFormat ||
-                            !currentTextStyle.Foreground.Equals(styleOverride.Style.Foreground))
+                        if (propertiesOverride.Value != currentProperties)
                         {
-                            length = Math.Min(Math.Abs(textPointer.Start - text.Start), text.Length);
+                            length = Math.Min(Math.Abs(textRange.Start - text.Start), text.Length);
 
                             break;
                         }
                     }
 
-                    length += Math.Min(text.Length - length, textPointer.Length);
+                    length += Math.Min(text.Length - length, textRange.Length);
 
                     if (hasOverride)
                     {
@@ -369,13 +648,12 @@ namespace Avalonia.Media.TextFormatting
 
                     hasOverride = true;
 
-                    currentTextStyle = styleOverride.Style;
+                    currentProperties = propertiesOverride.Value;
                 }
 
-                if (length < text.Length && i == textStyleOverrides.Count)
+                if (length < text.Length && i == textModifier.Count)
                 {
-                    if (currentTextStyle.Foreground.Equals(defaultTextStyle.Foreground) &&
-                        currentTextStyle.TextFormat == defaultTextStyle.TextFormat)
+                    if (currentProperties == defaultProperties)
                     {
                         length = text.Length;
                     }
@@ -386,7 +664,7 @@ namespace Avalonia.Media.TextFormatting
                     text = text.Take(length);
                 }
 
-                return new TextStyleRun(new TextPointer(text.Start, length), currentTextStyle);
+                return new ValueSpan<TextRunProperties>(text.Start, length, currentProperties);
             }
         }
     }

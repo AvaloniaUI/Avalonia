@@ -35,6 +35,44 @@ namespace Avalonia.Controls
                 control.PointerEnter += ControlPointerEnter;
                 control.PointerLeave += ControlPointerLeave;
             }
+
+            if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
+            {
+                if (e.NewValue is null)
+                {
+                    Close(control);
+                }
+                else
+                {
+                    var tip = control.GetValue(ToolTip.ToolTipProperty);
+
+                    tip.Content = e.NewValue;
+                }
+            }
+        }
+
+        internal void TipOpenChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var control = (Control)e.Sender;
+
+            if (e.OldValue is false && e.NewValue is true)
+            {
+                control.DetachedFromVisualTree += ControlDetaching;
+                control.EffectiveViewportChanged += ControlEffectiveViewportChanged;
+            }
+            else if(e.OldValue is true && e.NewValue is false)
+            {
+                control.DetachedFromVisualTree -= ControlDetaching;
+                control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
+            }
+        }
+        
+        private void ControlDetaching(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            var control = (Control)sender;
+            control.DetachedFromVisualTree -= ControlDetaching;
+            control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
+            Close(control);
         }
 
         /// <summary>
@@ -67,6 +105,13 @@ namespace Avalonia.Controls
         {
             var control = (Control)sender;
             Close(control);
+        }
+
+        private void ControlEffectiveViewportChanged(object sender, Layout.EffectiveViewportChangedEventArgs e)
+        {
+            var control = (Control)sender;
+            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            toolTip?.RecalculatePosition(control);
         }
 
         private void StartShowTimer(int showDelay, Control control)

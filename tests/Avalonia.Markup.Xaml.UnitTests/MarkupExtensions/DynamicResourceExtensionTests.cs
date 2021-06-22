@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -27,8 +28,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -50,8 +50,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Grid.Column='{DynamicResource col}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -76,8 +75,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -105,8 +103,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -138,8 +135,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -161,8 +157,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = window.FindControl<Border>("border");
 
                 var brush = (SolidColorBrush)border.Background;
@@ -183,8 +178,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-                var loader = new AvaloniaXamlLoader();
-                var userControl = (UserControl)loader.Load(xaml);
+                var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = userControl.FindControl<Border>("border");
 
                 // We don't actually know where the global styles are until we attach the control
@@ -216,8 +210,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
                 var brush = (SolidColorBrush)button.Background;
 
@@ -246,8 +239,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
                 var brush = (SolidColorBrush)button.Background;
 
@@ -281,8 +273,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = window.FindControl<Border>("border");
                 var brush = (SolidColorBrush)border.Background;
 
@@ -320,8 +311,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Button Name='button'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
 
                 window.Show();
@@ -347,8 +337,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -357,6 +346,23 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
+        [Fact]
+        public void DynamicResource_Can_Be_Assigned_To_Resource_Property_In_Application()
+        {
+            var xaml = @"
+<Application xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Application.Resources>
+        <Color x:Key='color'>#ff506070</Color>
+        <SolidColorBrush x:Key='brush' Color='{DynamicResource color}'/>
+    </Application.Resources>
+</Application>";
+
+            var application = (Application)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var brush = (SolidColorBrush)application.Resources["brush"];
+
+            Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
 
         [Fact]
         public void DynamicResource_Can_Be_Assigned_To_ItemTemplate_Property()
@@ -373,8 +379,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <ListBox Name='listBox' ItemTemplate='{DynamicResource PurpleData}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var listBox = userControl.FindControl<ListBox>("listBox");
 
             DelayedBinding.ApplyBindings(listBox);
@@ -391,8 +396,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -415,8 +419,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -443,8 +446,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -474,8 +476,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -498,8 +499,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -531,8 +531,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -582,8 +581,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource RedBrush}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = window.FindControl<Border>("border");
                 var borderBrush = (ISolidColorBrush)border.Background;
 
@@ -621,8 +619,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource RedBrush}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = window.FindControl<Border>("border");
                 var borderBrush = (ISolidColorBrush)border.Background;
 
@@ -646,8 +643,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </Window>";
 
-                var loader = new AvaloniaXamlLoader();
-                var window = (Window)loader.Load(xaml);
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = window.FindControl<Border>("border");
 
                 DelayedBinding.ApplyBindings(border);
@@ -679,8 +675,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -726,8 +721,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -771,8 +765,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource brush}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             DelayedBinding.ApplyBindings(border);
@@ -810,12 +803,87 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Border Name='border' Background='{DynamicResource color}'/>
 </UserControl>";
 
-            var loader = new AvaloniaXamlLoader();
-            var userControl = (UserControl)loader.Load(xaml);
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = userControl.FindControl<Border>("border");
 
             var brush = (ISolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
+        }
+
+        [Fact]
+        public void Resource_In_Non_Matching_Style_Is_Not_Resolved()
+        {
+            using var app = StyledWindow();
+
+            var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <local:TrackingResourceProvider/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector='Border.nomatch'>
+            <Setter Property='Tag' Value='{DynamicResource foo}'/>
+        </Style>
+        <Style Selector='Border'>
+            <Setter Property='Tag' Value='{DynamicResource bar}'/>
+        </Style>
+    </Window.Styles>
+
+    <Border Name='border'/>
+</Window>";
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var border = window.FindControl<Border>("border");
+
+            Assert.Equal("bar", border.Tag);
+
+            var resourceProvider = (TrackingResourceProvider)window.Resources.MergedDictionaries[0];
+            Assert.Equal(new[] { "bar" }, resourceProvider.RequestedResources);
+        }
+
+        [Fact]
+        public void Resource_In_Non_Active_Style_Is_Not_Resolved()
+        {
+            using var app = StyledWindow();
+
+            var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <local:TrackingResourceProvider/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector='Border'>
+            <Setter Property='Tag' Value='{DynamicResource foo}'/>
+        </Style>
+        <Style Selector='Border'>
+            <Setter Property='Tag' Value='{DynamicResource bar}'/>
+        </Style>
+    </Window.Styles>
+
+    <Border Name='border'/>
+</Window>";
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var border = window.FindControl<Border>("border");
+
+            Assert.Equal("bar", border.Tag);
+
+            var resourceProvider = (TrackingResourceProvider)window.Resources.MergedDictionaries[0];
+            Assert.Equal(new[] { "bar" }, resourceProvider.RequestedResources);
         }
 
         private IDisposable StyledWindow(params (string, string)[] assets)
@@ -846,6 +914,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                             }.RegisterInNameScope(scope)))
                 }
             };
+        }
+    }
+
+    public class TrackingResourceProvider : IResourceProvider
+    {
+        public IResourceHost Owner { get; private set; }
+        public bool HasResources => true;
+        public List<object> RequestedResources { get; } = new List<object>();
+
+        public event EventHandler OwnerChanged;
+
+        public void AddOwner(IResourceHost owner) => Owner = owner;
+        public void RemoveOwner(IResourceHost owner) => Owner = null;
+
+        public bool TryGetResource(object key, out object value)
+        {
+            RequestedResources.Add(key);
+            value = key;
+            return true;
         }
     }
 }

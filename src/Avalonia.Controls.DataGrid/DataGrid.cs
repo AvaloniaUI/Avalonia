@@ -1,6 +1,6 @@
 ﻿// This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
-// All other rights reserved. 
+// All other rights reserved.
 
 using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
@@ -24,12 +24,14 @@ using Avalonia.Input.Platform;
 using System.ComponentModel.DataAnnotations;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Displays data in a customizable grid.
     /// </summary>
+    [PseudoClasses(":invalid", ":empty-rows", ":empty-columns")]
     public partial class DataGrid : TemplatedControl
     {
         private const string DATAGRID_elementRowsPresenterName = "PART_RowsPresenter";
@@ -39,6 +41,7 @@ namespace Avalonia.Controls
         private const string DATAGRID_elementRowHeadersPresenterName = "PART_RowHeadersPresenter";
         private const string DATAGRID_elementTopLeftCornerHeaderName = "PART_TopLeftCornerHeader";
         private const string DATAGRID_elementTopRightCornerHeaderName = "PART_TopRightCornerHeader";
+        private const string DATAGRID_elementBottomRightCornerHeaderName = "PART_BottomRightCorner";
         private const string DATAGRID_elementValidationSummary = "PART_ValidationSummary";
         private const string DATAGRID_elementVerticalScrollbarName = "PART_VerticalScrollbar";
 
@@ -79,6 +82,7 @@ namespace Avalonia.Controls
         private INotifyCollectionChanged _topLevelGroup;
         private ContentControl _clipboardContentControl;
 
+        private IVisual _bottomRightCorner;
         private DataGridColumnHeadersPresenter _columnHeadersPresenter;
         private DataGridRowsPresenter _rowsPresenter;
         private ScrollBar _vScrollBar;
@@ -88,7 +92,7 @@ namespace Avalonia.Controls
         private ContentControl _topRightCornerHeader;
         private Control _frozenColumnScrollBarSpacer;
 
-        // the sum of the widths in pixels of the scrolling columns preceding 
+        // the sum of the widths in pixels of the scrolling columns preceding
         // the first displayed scrolling column
         private double _horizontalOffset;
 
@@ -139,7 +143,7 @@ namespace Avalonia.Controls
         private object _uneditedValue; // Represents the original current cell value at the time it enters editing mode.
         private ICellEditBinding _currentCellEditBinding;
 
-        // An approximation of the sum of the heights in pixels of the scrolling rows preceding 
+        // An approximation of the sum of the heights in pixels of the scrolling rows preceding
         // the first displayed scrolling row.  Since the scrolled off rows are discarded, the grid
         // does not know their actual height. The heights used for the approximation are the ones
         // set as the rows were scrolled off.
@@ -158,7 +162,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserReorderColumns));
 
         /// <summary>
-        /// Gets or sets a value that indicates whether the user can change 
+        /// Gets or sets a value that indicates whether the user can change
         /// the column display order by dragging column headers with the mouse.
         /// </summary>
         public bool CanUserReorderColumns
@@ -243,8 +247,8 @@ namespace Avalonia.Controls
         /// Gets or sets the <see cref="T:System.Windows.Media.Brush" /> that is used to paint the background of odd-numbered rows.
         /// </summary>
         /// <returns>
-        /// The brush that is used to paint the background of odd-numbered rows. The default is a 
-        /// <see cref="T:System.Windows.Media.SolidColorBrush" /> with a 
+        /// The brush that is used to paint the background of odd-numbered rows. The default is a
+        /// <see cref="T:System.Windows.Media.SolidColorBrush" /> with a
         /// <see cref="P:System.Windows.Media.SolidColorBrush.Color" /> value of white (ARGB value #00FFFFFF).
         /// </returns>
         public IBrush AlternatingRowBackground
@@ -375,8 +379,8 @@ namespace Avalonia.Controls
         public bool IsValid
         {
             get { return _isValid; }
-            internal set 
-            { 
+            internal set
+            {
                 SetAndRaise(IsValidProperty, ref _isValid, value);
                 PseudoClasses.Set(":invalid", !value);
             }
@@ -394,7 +398,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the maximum width of columns in the <see cref="T:Avalonia.Controls.DataGrid" /> . 
+        /// Gets or sets the maximum width of columns in the <see cref="T:Avalonia.Controls.DataGrid" /> .
         /// </summary>
         public double MaxColumnWidth
         {
@@ -414,7 +418,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the minimum width of columns in the <see cref="T:Avalonia.Controls.DataGrid" />. 
+        /// Gets or sets the minimum width of columns in the <see cref="T:Avalonia.Controls.DataGrid" />.
         /// </summary>
         public double MinColumnWidth
         {
@@ -492,7 +496,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGrid, IBrush>(nameof(VerticalGridLinesBrush));
 
         /// <summary>
-        /// Gets or sets the <see cref="T:System.Windows.Media.Brush" /> that is used to paint grid lines separating columns. 
+        /// Gets or sets the <see cref="T:System.Windows.Media.Brush" /> that is used to paint grid lines separating columns.
         /// </summary>
         public IBrush VerticalGridLinesBrush
         {
@@ -531,14 +535,15 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<DataGrid, int>(
                 nameof(SelectedIndex),
                 o => o.SelectedIndex,
-                (o, v) => o.SelectedIndex = v);
+                (o, v) => o.SelectedIndex = v,
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Gets or sets the index of the current selection.
         /// </summary>
         /// <returns>
         /// The index of the current selection, or -1 if the selection is empty.
-        /// </returns> 
+        /// </returns>
         public int SelectedIndex
         {
             get { return _selectedIndex; }
@@ -549,7 +554,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<DataGrid, object>(
                 nameof(SelectedItem),
                 o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v);
+                (o, v) => o.SelectedItem = v,
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Gets or sets the data item corresponding to the selected row.
@@ -578,7 +584,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGrid, bool>(nameof(AutoGenerateColumns));
 
         /// <summary>
-        /// Gets or sets a value that indicates whether columns are created 
+        /// Gets or sets a value that indicates whether columns are created
         /// automatically when the <see cref="P:Avalonia.Controls.DataGrid.ItemsSource" /> property is set.
         /// </summary>
         public bool AutoGenerateColumns
@@ -622,7 +628,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGrid, bool>(nameof(AreRowDetailsFrozen));
 
         /// <summary>
-        /// Gets or sets a value that indicates whether the row details sections remain 
+        /// Gets or sets a value that indicates whether the row details sections remain
         /// fixed at the width of the display area or can scroll horizontally.
         /// </summary>
         public bool AreRowDetailsFrozen
@@ -707,6 +713,7 @@ namespace Avalonia.Controls
 
             DisplayData = new DataGridDisplayData(this);
             ColumnsInternal = CreateColumnsInstance();
+            ColumnsInternal.CollectionChanged += ColumnsInternal_CollectionChanged;
 
             RowHeightEstimate = DATAGRID_defaultRowHeight;
             RowDetailsHeightEstimate = 0;
@@ -723,6 +730,8 @@ namespace Avalonia.Controls
             CurrentCellCoordinates = new DataGridCellCoordinates(-1, -1);
 
             RowGroupHeaderHeightEstimate = DATAGRID_defaultRowHeight;
+
+            UpdatePseudoClasses();
         }
 
         private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
@@ -847,7 +856,25 @@ namespace Avalonia.Controls
                 // can be set when the DataGrid is not part of the visual tree
                 _measured = false;
                 InvalidateMeasure();
+
+                UpdatePseudoClasses();
             }
+        }
+
+        private void ColumnsInternal_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add
+                || e.Action == NotifyCollectionChangedAction.Remove
+                || e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                UpdatePseudoClasses();
+            }
+        }
+
+        internal void UpdatePseudoClasses()
+        {
+            PseudoClasses.Set(":empty-columns", !ColumnsInternal.GetVisibleColumns().Any());
+            PseudoClasses.Set(":empty-rows", !DataConnection.Any());
         }
 
         private void OnSelectedIndexChanged(AvaloniaPropertyChangedEventArgs e)
@@ -856,7 +883,7 @@ namespace Avalonia.Controls
             {
                 int index = (int)e.NewValue;
 
-                // GetDataItem returns null if index is >= Count, we do not check newValue 
+                // GetDataItem returns null if index is >= Count, we do not check newValue
                 // against Count here to avoid enumerating through an Enumerable twice
                 // Setting SelectedItem coerces the finally value of the SelectedIndex
                 object newSelectedItem = (index < 0) ? null : DataConnection.GetDataItem(index);
@@ -885,6 +912,11 @@ namespace Avalonia.Controls
 
                     // Clear all row selections
                     ClearRowSelection(resetAnchorSlot: true);
+
+                    if (DataConnection.CollectionView != null)
+                    {
+                        DataConnection.CollectionView.MoveCurrentTo(null);
+                    }
                 }
                 else
                 {
@@ -1143,14 +1175,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Occurs one time for each public, non-static property in the bound data type when the 
-        /// <see cref="P:Avalonia.Controls.DataGrid.ItemsSource" /> property is changed and the 
+        /// Occurs one time for each public, non-static property in the bound data type when the
+        /// <see cref="P:Avalonia.Controls.DataGrid.ItemsSource" /> property is changed and the
         /// <see cref="P:Avalonia.Controls.DataGrid.AutoGenerateColumns" /> property is true.
         /// </summary>
         public event EventHandler<DataGridAutoGeneratingColumnEventArgs> AutoGeneratingColumn;
 
         /// <summary>
-        /// Occurs before a cell or row enters editing mode. 
+        /// Occurs before a cell or row enters editing mode.
         /// </summary>
         public event EventHandler<DataGridBeginningEditEventArgs> BeginningEdit;
 
@@ -1170,7 +1202,7 @@ namespace Avalonia.Controls
         public event EventHandler<DataGridCellPointerPressedEventArgs> CellPointerPressed;
 
         /// <summary>
-        /// Occurs when the <see cref="P:Avalonia.Controls.DataGridColumn.DisplayIndex" /> 
+        /// Occurs when the <see cref="P:Avalonia.Controls.DataGridColumn.DisplayIndex" />
         /// property of a column changes.
         /// </summary>
         public event EventHandler<DataGridColumnEventArgs> ColumnDisplayIndexChanged;
@@ -1193,14 +1225,14 @@ namespace Avalonia.Controls
         public event EventHandler<EventArgs> CurrentCellChanged;
 
         /// <summary>
-        /// Occurs after a <see cref="T:Avalonia.Controls.DataGridRow" /> 
+        /// Occurs after a <see cref="T:Avalonia.Controls.DataGridRow" />
         /// is instantiated, so that you can customize it before it is used.
         /// </summary>
         public event EventHandler<DataGridRowEventArgs> LoadingRow;
 
         /// <summary>
         /// Occurs when a cell in a <see cref="T:Avalonia.Controls.DataGridTemplateColumn" /> enters editing mode.
-        /// 
+        ///
         /// </summary>
         public event EventHandler<DataGridPreparingCellForEditEventArgs> PreparingCellForEdit;
 
@@ -1218,7 +1250,7 @@ namespace Avalonia.Controls
             RoutedEvent.Register<DataGrid, SelectionChangedEventArgs>(nameof(SelectionChanged), RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Occurs when the <see cref="P:Avalonia.Controls.DataGrid.SelectedItem" /> or 
+        /// Occurs when the <see cref="P:Avalonia.Controls.DataGrid.SelectedItem" /> or
         /// <see cref="P:Avalonia.Controls.DataGrid.SelectedItems" /> property value changes.
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs> SelectionChanged
@@ -1228,19 +1260,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Occurs when a <see cref="T:Avalonia.Controls.DataGridRow" /> 
+        /// Occurs when the <see cref="DataGridColumn"/> sorting request is triggered.
+        /// </summary>
+        public event EventHandler<DataGridColumnEventArgs> Sorting;
+
+        /// <summary>
+        /// Occurs when a <see cref="T:Avalonia.Controls.DataGridRow" />
         /// object becomes available for reuse.
         /// </summary>
         public event EventHandler<DataGridRowEventArgs> UnloadingRow;
 
         /// <summary>
-        /// Occurs when a new row details template is applied to a row, so that you can customize 
+        /// Occurs when a new row details template is applied to a row, so that you can customize
         /// the details section before it is used.
         /// </summary>
         public event EventHandler<DataGridRowDetailsEventArgs> LoadingRowDetails;
 
         /// <summary>
-        /// Occurs when the <see cref="P:Avalonia.Controls.DataGrid.RowDetailsVisibilityMode" /> 
+        /// Occurs when the <see cref="P:Avalonia.Controls.DataGrid.RowDetailsVisibilityMode" />
         /// property value changes.
         /// </summary>
         public event EventHandler<DataGridRowDetailsEventArgs> RowDetailsVisibilityChanged;
@@ -1252,7 +1289,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets a collection that contains all the columns in the control.
-        /// </summary>      
+        /// </summary>
         public ObservableCollection<DataGridColumn> Columns
         {
             get
@@ -1339,7 +1376,6 @@ namespace Avalonia.Controls
         internal DataGridColumnCollection ColumnsInternal
         {
             get;
-            private set;
         }
 
         internal int AnchorSlot
@@ -1427,7 +1463,7 @@ namespace Avalonia.Controls
         }
 
         // Height currently available for cells this value is smaller.  This height is reduced by the existence of ColumnHeaders
-        // or a horizontal scrollbar.  Layout is asynchronous so changes to the ColumnHeaders or the horizontal scrollbar are 
+        // or a horizontal scrollbar.  Layout is asynchronous so changes to the ColumnHeaders or the horizontal scrollbar are
         // not reflected immediately.
         internal double CellsHeight
         {
@@ -1526,7 +1562,7 @@ namespace Avalonia.Controls
 
         internal static double HorizontalGridLinesThickness => DATAGRID_horizontalGridLinesThickness;
 
-        // the sum of the widths in pixels of the scrolling columns preceding 
+        // the sum of the widths in pixels of the scrolling columns preceding
         // the first displayed scrolling column
         internal double HorizontalOffset
         {
@@ -1825,6 +1861,22 @@ namespace Avalonia.Controls
             }
         }
 
+        private bool IsHorizontalScrollBarOverCells
+        {
+            get
+            {
+                return _columnHeadersPresenter != null && Grid.GetColumnSpan(_columnHeadersPresenter) == 2;
+            }
+        }
+
+        private bool IsVerticalScrollBarOverCells
+        {
+            get
+            {
+                return _rowsPresenter != null && Grid.GetRowSpan(_rowsPresenter) == 2;
+            }
+        }
+
         private int NoSelectionChangeCount
         {
             get
@@ -2038,20 +2090,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Measures the children of a <see cref="T:Avalonia.Controls.DataGridRow" /> to prepare for 
-        /// arranging them during the 
-        /// <see cref="M:Avalonia.Controls.DataGridRow.ArrangeOverride(System.Windows.Size)" /> pass. 
+        /// Measures the children of a <see cref="T:Avalonia.Controls.DataGridRow" /> to prepare for
+        /// arranging them during the
+        /// <see cref="M:Avalonia.Controls.DataGridRow.ArrangeOverride(System.Windows.Size)" /> pass.
         /// </summary>
         /// <returns>
         /// The size that the <see cref="T:Avalonia.Controls.DataGridRow" /> determines it needs during layout, based on its calculations of child object allocated sizes.
         /// </returns>
         /// <param name="availableSize">
-        /// The available size that this element can give to child elements. Indicates an upper limit that 
+        /// The available size that this element can give to child elements. Indicates an upper limit that
         /// child elements should not exceed.
         /// </param>
         protected override Size MeasureOverride(Size availableSize)
         {
-            // Delay layout until after the initial measure to avoid invalid calculations when the 
+            // Delay layout until after the initial measure to avoid invalid calculations when the
             // DataGrid is not part of the visual tree
             if (!_measured)
             {
@@ -2241,6 +2293,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Comparator class so we can sort list by the display index
+        /// </summary>
+        public class DisplayIndexComparer : IComparer<DataGridColumn>
+        {
+            int IComparer<DataGridColumn>.Compare(DataGridColumn x, DataGridColumn y)
+            {
+                return (x.DisplayIndexWithFiller < y.DisplayIndexWithFiller) ? -1 : 1;
+            }
+        }
+
+        /// <summary>
         /// Builds the visual tree for the column header when a new template is applied.
         /// </summary>
         //TODO Validation UI
@@ -2264,8 +2327,11 @@ namespace Avalonia.Controls
                     ColumnsInternal.FillerColumn.IsRepresented = false;
                 }
                 _columnHeadersPresenter.OwningGrid = this;
-                // Columns were added before before our Template was applied, add the ColumnHeaders now
-                foreach (DataGridColumn column in ColumnsItemsInternal)
+
+                // Columns were added before our Template was applied, add the ColumnHeaders now
+                List<DataGridColumn> sortedInternal = new List<DataGridColumn>(ColumnsItemsInternal);
+                sortedInternal.Sort(new DisplayIndexComparer());
+                foreach (DataGridColumn column in sortedInternal)
                 {
                     InsertDisplayedColumnHeader(column);
                 }
@@ -2323,6 +2389,7 @@ namespace Avalonia.Controls
             _topLeftCornerHeader = e.NameScope.Find<ContentControl>(DATAGRID_elementTopLeftCornerHeaderName);
             EnsureTopLeftCornerHeader(); // EnsureTopLeftCornerHeader checks for a null _topLeftCornerHeader;
             _topRightCornerHeader = e.NameScope.Find<ContentControl>(DATAGRID_elementTopRightCornerHeaderName);
+            _bottomRightCorner = e.NameScope.Find<IVisual>(DATAGRID_elementBottomRightCornerHeaderName);
         }
 
         /// <summary>
@@ -2681,7 +2748,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            Debug.Assert(DoubleUtil.LessThanOrClose(_vScrollBar.Value, _vScrollBar.Maximum));
+            Debug.Assert(MathUtilities.LessThanOrClose(_vScrollBar.Value, _vScrollBar.Maximum));
 
             _verticalScrollChangesIgnored++;
             try
@@ -2698,7 +2765,7 @@ namespace Avalonia.Controls
                 }
                 else if (scrollEventType == ScrollEventType.SmallDecrement)
                 {
-                    if (DoubleUtil.GreaterThan(NegVerticalOffset, 0))
+                    if (MathUtilities.GreaterThan(NegVerticalOffset, 0))
                     {
                         DisplayData.PendingVerticalScrollHeight -= NegVerticalOffset;
                     }
@@ -2717,7 +2784,7 @@ namespace Avalonia.Controls
                     DisplayData.PendingVerticalScrollHeight = _vScrollBar.Value - _verticalOffset;
                 }
 
-                if (!DoubleUtil.IsZero(DisplayData.PendingVerticalScrollHeight))
+                if (!MathUtilities.IsZero(DisplayData.PendingVerticalScrollHeight))
                 {
                     // Invalidate so the scroll happens on idle
                     InvalidateRowsMeasure(invalidateIndividualElements: false);
@@ -2753,7 +2820,7 @@ namespace Avalonia.Controls
                         //We don't need to refresh the state of AutoGenerated column headers because they're up-to-date
                         if (!column.IsAutoGenerated && column.HasHeaderCell)
                         {
-                            column.HeaderCell.ApplyState();
+                            column.HeaderCell.UpdatePseudoClasses();
                         }
                     }
 
@@ -2960,7 +3027,7 @@ namespace Avalonia.Controls
         /// If the editing element has focus, this method will set focus to the DataGrid itself
         /// in order to force the element to lose focus.  It will then wait for the editing element's
         /// LostFocus event, at which point it will perform the specified action.
-        /// 
+        ///
         /// NOTE: It is important to understand that the specified action will be performed when the editing
         /// element loses focus only if this method returns true.  If it returns false, then the action
         /// will not be performed later on, and should instead be performed by the caller, if necessary.
@@ -3019,7 +3086,7 @@ namespace Avalonia.Controls
         {
             if (!_scrollingByHeight)
             {
-                // Update layout when RowDetails are expanded or collapsed, just updating the vertical scroll bar is not enough 
+                // Update layout when RowDetails are expanded or collapsed, just updating the vertical scroll bar is not enough
                 // since rows could be added or removed
                 InvalidateMeasure();
             }
@@ -3232,7 +3299,7 @@ namespace Avalonia.Controls
             {
                 // Current cell was reset because the commit deleted row(s).
                 // Since the user wants to change the current cell, we don't
-                // want to end up with no current cell. We pick the last row 
+                // want to end up with no current cell. We pick the last row
                 // in the grid which may be the 'new row'.
                 int lastSlot = LastVisibleSlot;
                 if (forCurrentCellChange &&
@@ -3290,9 +3357,13 @@ namespace Avalonia.Controls
             if (_ignoreNextScrollBarsLayout)
             {
                 _ignoreNextScrollBarsLayout = false;
-                //  
+                //
 
             }
+
+            bool isHorizontalScrollBarOverCells = IsHorizontalScrollBarOverCells;
+            bool isVerticalScrollBarOverCells = IsVerticalScrollBarOverCells;
+
             double cellsWidth = CellsWidth;
             double cellsHeight = CellsHeight;
 
@@ -3308,10 +3379,17 @@ namespace Avalonia.Controls
                 // Compensate if the horizontal scrollbar is already taking up space
                 if (!forceHorizScrollbar && _hScrollBar.IsVisible)
                 {
-                    cellsHeight += _hScrollBar.DesiredSize.Height;
+                    if (!isHorizontalScrollBarOverCells)
+                    {
+                        cellsHeight += _hScrollBar.DesiredSize.Height;
+                    }
                 }
-                horizScrollBarHeight = _hScrollBar.Height + _hScrollBar.Margin.Top + _hScrollBar.Margin.Bottom;
+                if (!isHorizontalScrollBarOverCells)
+                {
+                    horizScrollBarHeight = _hScrollBar.Height + _hScrollBar.Margin.Top + _hScrollBar.Margin.Bottom;
+                }
             }
+
             bool allowVertScrollbar = false;
             bool forceVertScrollbar = false;
             double vertScrollBarWidth = 0;
@@ -3324,13 +3402,19 @@ namespace Avalonia.Controls
                 // Compensate if the vertical scrollbar is already taking up space
                 if (!forceVertScrollbar && _vScrollBar.IsVisible)
                 {
-                    cellsWidth += _vScrollBar.DesiredSize.Width;
+                    if (!isVerticalScrollBarOverCells)
+                    {
+                        cellsWidth += _vScrollBar.DesiredSize.Width;
+                    }
                 }
-                vertScrollBarWidth = _vScrollBar.Width + _vScrollBar.Margin.Left + _vScrollBar.Margin.Right;
+                if (!isVerticalScrollBarOverCells)
+                {
+                    vertScrollBarWidth = _vScrollBar.Width + _vScrollBar.Margin.Left + _vScrollBar.Margin.Right;
+                }
             }
 
             // Now cellsWidth is the width potentially available for displaying data cells.
-            // Now cellsHeight is the height potentially available for displaying data cells. 
+            // Now cellsHeight is the height potentially available for displaying data cells.
 
             bool needHorizScrollbar = false;
             bool needVertScrollbar = false;
@@ -3346,22 +3430,24 @@ namespace Avalonia.Controls
                 bool needHorizScrollbarWithoutVertScrollbar = false;
 
                 if (allowHorizScrollbar &&
-                    DoubleUtil.GreaterThan(totalVisibleWidth, cellsWidth) &&
-                    DoubleUtil.LessThan(totalVisibleFrozenWidth, cellsWidth) &&
-                    DoubleUtil.LessThanOrClose(horizScrollBarHeight, cellsHeight))
+                    MathUtilities.GreaterThan(totalVisibleWidth, cellsWidth) &&
+                    MathUtilities.LessThan(totalVisibleFrozenWidth, cellsWidth) &&
+                    MathUtilities.LessThanOrClose(horizScrollBarHeight, cellsHeight))
                 {
                     double oldDataHeight = cellsHeight;
                     cellsHeight -= horizScrollBarHeight;
                     Debug.Assert(cellsHeight >= 0);
                     needHorizScrollbarWithoutVertScrollbar = needHorizScrollbar = true;
-                    if (allowVertScrollbar && (DoubleUtil.LessThanOrClose(totalVisibleWidth - cellsWidth, vertScrollBarWidth) ||
-                        DoubleUtil.LessThanOrClose(cellsWidth - totalVisibleFrozenWidth, vertScrollBarWidth)))
+
+                    if (vertScrollBarWidth > 0 &&
+                        allowVertScrollbar && (MathUtilities.LessThanOrClose(totalVisibleWidth - cellsWidth, vertScrollBarWidth) ||
+                        MathUtilities.LessThanOrClose(cellsWidth - totalVisibleFrozenWidth, vertScrollBarWidth)))
                     {
                         // Would we still need a horizontal scrollbar without the vertical one?
                         UpdateDisplayedRows(DisplayData.FirstScrollingSlot, cellsHeight);
                         if (DisplayData.NumTotallyDisplayedScrollingElements != VisibleSlotCount)
                         {
-                            needHorizScrollbar = DoubleUtil.LessThan(totalVisibleFrozenWidth, cellsWidth - vertScrollBarWidth);
+                            needHorizScrollbar = MathUtilities.LessThan(totalVisibleFrozenWidth, cellsWidth - vertScrollBarWidth);
                         }
                     }
 
@@ -3372,10 +3458,15 @@ namespace Avalonia.Controls
                     }
                 }
 
-                UpdateDisplayedRows(DisplayData.FirstScrollingSlot, cellsHeight);
+                // Store the current FirstScrollingSlot because removing the horizontal scrollbar could scroll
+                // the DataGrid up; however, if we realize later that we need to keep the horizontal scrollbar
+                // then we should use the first slot stored here which is not scrolled.
+                int firstScrollingSlot = DisplayData.FirstScrollingSlot;
+
+                UpdateDisplayedRows(firstScrollingSlot, cellsHeight);
                 if (allowVertScrollbar &&
-                    DoubleUtil.GreaterThan(cellsHeight, 0) &&
-                    DoubleUtil.LessThanOrClose(vertScrollBarWidth, cellsWidth) &&
+                    MathUtilities.GreaterThan(cellsHeight, 0) &&
+                    MathUtilities.LessThanOrClose(vertScrollBarWidth, cellsWidth) &&
                     DisplayData.NumTotallyDisplayedScrollingElements != VisibleSlotCount)
                 {
                     cellsWidth -= vertScrollBarWidth;
@@ -3384,21 +3475,23 @@ namespace Avalonia.Controls
                 }
 
                 DisplayData.FirstDisplayedScrollingCol = ComputeFirstVisibleScrollingColumn();
+
                 // we compute the number of visible columns only after we set up the vertical scroll bar.
                 ComputeDisplayedColumns();
 
-                if (allowHorizScrollbar &&
+                if ((vertScrollBarWidth > 0 || horizScrollBarHeight > 0) &&
+                    allowHorizScrollbar &&
                     needVertScrollbar && !needHorizScrollbar &&
-                    DoubleUtil.GreaterThan(totalVisibleWidth, cellsWidth) &&
-                    DoubleUtil.LessThan(totalVisibleFrozenWidth, cellsWidth) &&
-                    DoubleUtil.LessThanOrClose(horizScrollBarHeight, cellsHeight))
+                    MathUtilities.GreaterThan(totalVisibleWidth, cellsWidth) &&
+                    MathUtilities.LessThan(totalVisibleFrozenWidth, cellsWidth) &&
+                    MathUtilities.LessThanOrClose(horizScrollBarHeight, cellsHeight))
                 {
                     cellsWidth += vertScrollBarWidth;
                     cellsHeight -= horizScrollBarHeight;
                     Debug.Assert(cellsHeight >= 0);
                     needVertScrollbar = false;
 
-                    UpdateDisplayedRows(DisplayData.FirstScrollingSlot, cellsHeight);
+                    UpdateDisplayedRows(firstScrollingSlot, cellsHeight);
                     if (cellsHeight > 0 &&
                         vertScrollBarWidth <= cellsWidth &&
                         DisplayData.NumTotallyDisplayedScrollingElements != VisibleSlotCount)
@@ -3422,7 +3515,7 @@ namespace Avalonia.Controls
                 if (allowVertScrollbar)
                 {
                     if (cellsHeight > 0 &&
-                        DoubleUtil.LessThanOrClose(vertScrollBarWidth, cellsWidth) &&
+                        MathUtilities.LessThanOrClose(vertScrollBarWidth, cellsWidth) &&
                         DisplayData.NumTotallyDisplayedScrollingElements != VisibleSlotCount)
                     {
                         cellsWidth -= vertScrollBarWidth;
@@ -3439,9 +3532,9 @@ namespace Avalonia.Controls
                 if (allowHorizScrollbar)
                 {
                     if (cellsWidth > 0 &&
-                        DoubleUtil.LessThanOrClose(horizScrollBarHeight, cellsHeight) &&
-                        DoubleUtil.GreaterThan(totalVisibleWidth, cellsWidth) &&
-                        DoubleUtil.LessThan(totalVisibleFrozenWidth, cellsWidth))
+                        MathUtilities.LessThanOrClose(horizScrollBarHeight, cellsHeight) &&
+                        MathUtilities.GreaterThan(totalVisibleWidth, cellsWidth) &&
+                        MathUtilities.LessThan(totalVisibleFrozenWidth, cellsWidth))
                     {
                         cellsHeight -= horizScrollBarHeight;
                         Debug.Assert(cellsHeight >= 0);
@@ -3479,6 +3572,15 @@ namespace Avalonia.Controls
                     _topRightCornerHeader.IsVisible = false;
                 }
             }
+
+            if (_bottomRightCorner != null)
+            {
+                // Show the BottomRightCorner when both scrollbars are visible.
+                _bottomRightCorner.IsVisible =
+                    _hScrollBar != null && _hScrollBar.IsVisible &&
+                    _vScrollBar != null && _vScrollBar.IsVisible;
+            }
+
             DisplayData.FullyRecycleElements();
         }
 
@@ -3882,7 +3984,8 @@ namespace Avalonia.Controls
                         {
                             var errorList =
                                 binding.ValidationErrors
-                                       .SelectMany(ex => ValidationUtil.UnpackException(ex))
+                                       .SelectMany(ValidationUtil.UnpackException)
+                                       .Select(ValidationUtil.UnpackDataValidationException)
                                        .ToList();
 
                             DataValidationErrors.SetErrors(editingElement, errorList);
@@ -3920,6 +4023,14 @@ namespace Avalonia.Controls
                     dataGridColumn: CurrentColumn,
                     dataGridRow: EditingRow,
                     dataGridCell: editingCell);
+
+                EditingRow.InvalidateDesiredHeight();
+                var column = editingCell.OwningColumn;
+                if (column.Width.IsSizeToCells || column.Width.IsAuto)
+                {// Invalidate desired width and force recalculation
+                    column.SetWidthDesiredValue(0);
+                    EditingRow.OwningGrid.AutoSizeColumn(column, editingCell.DesiredSize.Width);
+                }
             }
 
             // We're done, so raise the CellEditEnded event
@@ -4035,7 +4146,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Exits editing mode without trying to commit or revert the editing, and 
+        /// Exits editing mode without trying to commit or revert the editing, and
         /// without repopulating the edited row's cell.
         /// </summary>
         //TODO TabStop
@@ -5014,9 +5125,9 @@ namespace Avalonia.Controls
         {
             if (ctrl || _editingColumnIndex == -1 || IsReadOnly)
             {
-                //Go to the next/previous control on the page when 
+                //Go to the next/previous control on the page when
                 // - Ctrl key is used
-                // - Potential current cell is not edited, or the datagrid is read-only. 
+                // - Potential current cell is not edited, or the datagrid is read-only.
                 return false;
             }
 
@@ -5248,7 +5359,7 @@ namespace Avalonia.Controls
             _focusedRow = null;
         }
 
-        private void SelectAll()
+        public void SelectAll()
         {
             SetRowsSelection(0, SlotCount - 1);
         }
@@ -5387,7 +5498,7 @@ namespace Avalonia.Controls
         private void SetVerticalOffset(double newVerticalOffset)
         {
             _verticalOffset = newVerticalOffset;
-            if (_vScrollBar != null && !DoubleUtil.AreClose(newVerticalOffset, _vScrollBar.Value))
+            if (_vScrollBar != null && !MathUtilities.AreClose(newVerticalOffset, _vScrollBar.Value))
             {
                 _vScrollBar.Value = _verticalOffset;
             }
@@ -5409,7 +5520,7 @@ namespace Avalonia.Controls
             }
             else if (displayedElement is DataGridRowGroupHeader groupHeader)
             {
-                groupHeader.ApplyState(useTransitions: true);
+                groupHeader.UpdatePseudoClasses();
                 if (AreRowHeadersVisible)
                 {
                     groupHeader.ApplyHeaderStatus();
@@ -5427,11 +5538,11 @@ namespace Avalonia.Controls
                     //        v---v
                     //|<|_____|###|>|
                     //  ^     ^
-                    //  min   max 
+                    //  min   max
 
                     // we want to make the relative size of the thumb reflect the relative size of the viewing area
                     // viewportSize / (max + viewportSize) = cellsWidth / max
-                    // -> viewportSize = max * cellsWidth / (max - cellsWidth) 
+                    // -> viewportSize = max * cellsWidth / (max - cellsWidth)
 
                     // always zero
                     _hScrollBar.Minimum = 0;
@@ -5483,7 +5594,7 @@ namespace Avalonia.Controls
                     _hScrollBar.Maximum = 0;
                     if (_hScrollBar.IsVisible)
                     {
-                        // This will trigger a call to this method via Cells_SizeChanged for 
+                        // This will trigger a call to this method via Cells_SizeChanged for
                         // which no processing is needed.
                         _hScrollBar.IsVisible = false;
                         _ignoreNextScrollBarsLayout = true;
@@ -5502,14 +5613,14 @@ namespace Avalonia.Controls
                     //        v---v
                     //|<|_____|###|>|
                     //  ^     ^
-                    //  min   max 
+                    //  min   max
 
                     // we want to make the relative size of the thumb reflect the relative size of the viewing area
                     // viewportSize / (max + viewportSize) = cellsWidth / max
                     // -> viewportSize = max * cellsHeight / (totalVisibleHeight - cellsHeight)
                     // ->              = max * cellsHeight / (totalVisibleHeight - cellsHeight)
                     // ->              = max * cellsHeight / max
-                    // ->              = cellsHeight 
+                    // ->              = cellsHeight
 
                     // always zero
                     _vScrollBar.Minimum = 0;
@@ -5532,7 +5643,7 @@ namespace Avalonia.Controls
 
                     if (!_vScrollBar.IsVisible)
                     {
-                        // This will trigger a call to this method via Cells_SizeChanged for 
+                        // This will trigger a call to this method via Cells_SizeChanged for
                         // which no processing is needed.
                         _vScrollBar.IsVisible = true;
                         if (_vScrollBar.DesiredSize.Width == 0)
@@ -5548,7 +5659,7 @@ namespace Avalonia.Controls
                     _vScrollBar.Maximum = 0;
                     if (_vScrollBar.IsVisible)
                     {
-                        // This will trigger a call to this method via Cells_SizeChanged for 
+                        // This will trigger a call to this method via Cells_SizeChanged for
                         // which no processing is needed.
                         _vScrollBar.IsVisible = false;
                         _ignoreNextScrollBarsLayout = true;
@@ -5571,8 +5682,8 @@ namespace Avalonia.Controls
             Debug.Assert(slot >= 0);
 
             // Before changing selection, check if the current cell needs to be committed, and
-            // check if the current row needs to be committed. If any of those two operations are required and fail, 
-            // do not change selection, and do not change current cell. 
+            // check if the current row needs to be committed. If any of those two operations are required and fail,
+            // do not change selection, and do not change current cell.
 
             bool wasInEdit = EditingColumnIndex != -1;
 

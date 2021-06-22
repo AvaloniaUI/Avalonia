@@ -18,10 +18,11 @@ namespace Avalonia.DesignerSupport
             Control control;
             using (PlatformManager.DesignerMode())
             {
-                var loader = new AvaloniaXamlLoader() {IsDesignMode = true};
+                var loader = AvaloniaLocator.Current.GetService<AvaloniaXamlLoader.IRuntimeXamlLoader>();
                 var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
 
-
+                if (loader == null)
+                    throw new XamlLoadException("Runtime XAML loader is not registered");
                 
                 Uri baseUri = null;
                 if (assemblyPath != null)
@@ -34,7 +35,7 @@ namespace Avalonia.DesignerSupport
                 }
 
                 var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
-                var loaded = loader.Load(stream, localAsm, null, baseUri);
+                var loaded = loader.Load(stream, localAsm, null, baseUri, true);
                 var style = loaded as IStyle;
                 if (style != null)
                 {
@@ -68,6 +69,8 @@ namespace Avalonia.DesignerSupport
                     window = new Window() {Content = (Control)control};
                 }
 
+                Design.ApplyDesignModeProperties(window, control);
+
                 if (!window.IsSet(Window.SizeToContentProperty))
                 {
                     if (double.IsNaN(window.Width))
@@ -82,7 +85,6 @@ namespace Avalonia.DesignerSupport
                 }
             }
             window.Show();
-            Design.ApplyDesignModeProperties(window, control);
             return window;
         }
     }

@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.ConstrainedExecution;
 using System.Threading;
 
 namespace Avalonia.Threading
@@ -39,5 +41,7 @@ namespace Avalonia.Threading
             else
                 Dispatcher.UIThread.InvokeAsync(() => d(state), DispatcherPriority.Send).Wait();
         }
+
+
     }
 }

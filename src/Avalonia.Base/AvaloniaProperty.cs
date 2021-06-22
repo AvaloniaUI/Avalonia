@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Subjects;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -9,7 +9,7 @@ namespace Avalonia
     /// <summary>
     /// Base class for avalonia properties.
     /// </summary>
-    public abstract class AvaloniaProperty : IEquatable<AvaloniaProperty>
+    public abstract class AvaloniaProperty : IEquatable<AvaloniaProperty>, IPropertyInfo
     {
         /// <summary>
         /// Represents an unset property value.
@@ -17,10 +17,9 @@ namespace Avalonia
         public static readonly object UnsetValue = new UnsetValueType();
 
         private static int s_nextId;
-        private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
-        private readonly PropertyMetadata _defaultMetadata;
-        private readonly Dictionary<Type, PropertyMetadata> _metadata;
-        private readonly Dictionary<Type, PropertyMetadata> _metadataCache = new Dictionary<Type, PropertyMetadata>();
+        private readonly AvaloniaPropertyMetadata _defaultMetadata;
+        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadata;
+        private readonly Dictionary<Type, AvaloniaPropertyMetadata> _metadataCache = new Dictionary<Type, AvaloniaPropertyMetadata>();
 
         private bool _hasMetadataOverrides;
 
@@ -36,7 +35,7 @@ namespace Avalonia
             string name,
             Type valueType,
             Type ownerType,
-            PropertyMetadata metadata,
+            AvaloniaPropertyMetadata metadata,
             Action<IAvaloniaObject, bool> notifying = null)
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -49,8 +48,7 @@ namespace Avalonia
                 throw new ArgumentException("'name' may not contain periods.");
             }
 
-            _changed = new Subject<AvaloniaPropertyChangedEventArgs>();
-            _metadata = new Dictionary<Type, PropertyMetadata>();
+            _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
 
             Name = name;
             PropertyType = valueType;
@@ -71,13 +69,12 @@ namespace Avalonia
         protected AvaloniaProperty(
             AvaloniaProperty source,
             Type ownerType,
-            PropertyMetadata metadata)
+            AvaloniaPropertyMetadata metadata)
         {
             Contract.Requires<ArgumentNullException>(source != null);
             Contract.Requires<ArgumentNullException>(ownerType != null);
 
-            _changed = source._changed;
-            _metadata = new Dictionary<Type, PropertyMetadata>();
+            _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
 
             Name = source.Name;
             PropertyType = source.PropertyType;
@@ -138,7 +135,7 @@ namespace Avalonia
         /// An observable that is fired when this property changes on any
         /// <see cref="AvaloniaObject"/> instance.
         /// </value>
-        public IObservable<AvaloniaPropertyChangedEventArgs> Changed => _changed;
+        public IObservable<AvaloniaPropertyChangedEventArgs> Changed => GetChanged();
 
         /// <summary>
         /// Gets a method that gets called before and after the property starts being notified on an
@@ -158,8 +155,6 @@ namespace Avalonia
         /// Gets the integer ID that represents this property.
         /// </summary>
         internal int Id { get; }
-
-        internal bool HasChangedSubscriptions => _changed?.HasObservers ?? false;
 
         /// <summary>
         /// Provides access to a property's binding via the <see cref="AvaloniaObject"/>
@@ -370,14 +365,14 @@ namespace Avalonia
 
             var metadata = new DirectPropertyMetadata<TValue>(
                 unsetValue: unsetValue,
-                defaultBindingMode: defaultBindingMode);
+                defaultBindingMode: defaultBindingMode,
+                enableDataValidation: enableDataValidation);
 
             var result = new DirectProperty<TOwner, TValue>(
                 name,
                 getter,
                 setter,
-                metadata,
-                enableDataValidation);
+                metadata);
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
             return result;
         }
@@ -424,7 +419,7 @@ namespace Avalonia
         /// <returns>
         /// The property metadata.
         /// </returns>
-        public PropertyMetadata GetMetadata<T>() where T : IAvaloniaObject
+        public AvaloniaPropertyMetadata GetMetadata<T>() where T : IAvaloniaObject
         {
             return GetMetadata(typeof(T));
         }
@@ -437,7 +432,7 @@ namespace Avalonia
         /// The property metadata.
         /// </returns>
         ///
-        public PropertyMetadata GetMetadata(Type type)
+        public AvaloniaPropertyMetadata GetMetadata(Type type)
         {
             if (!_hasMetadataOverrides)
             {
@@ -476,15 +471,6 @@ namespace Avalonia
             where TData : struct;
 
         /// <summary>
-        /// Notifies the <see cref="Changed"/> observable.
-        /// </summary>
-        /// <param name="e">The observable arguments.</param>
-        internal void NotifyChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            _changed.OnNext(e);
-        }
-
-        /// <summary>
         /// Routes an untyped ClearValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
@@ -512,7 +498,7 @@ namespace Avalonia
         /// <returns>
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
-        internal abstract IDisposable? RouteSetValue(
+        internal abstract IDisposable RouteSetValue(
             IAvaloniaObject o,
             object value,
             BindingPriority priority);
@@ -535,7 +521,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="metadata">The metadata.</param>
-        protected void OverrideMetadata(Type type, PropertyMetadata metadata)
+        protected void OverrideMetadata(Type type, AvaloniaPropertyMetadata metadata)
         {
             Contract.Requires<ArgumentNullException>(type != null);
             Contract.Requires<ArgumentNullException>(metadata != null);
@@ -554,14 +540,16 @@ namespace Avalonia
             _hasMetadataOverrides = true;
         }
 
-        private PropertyMetadata GetMetadataWithOverrides(Type type)
+        protected abstract IObservable<AvaloniaPropertyChangedEventArgs> GetChanged();
+
+        private AvaloniaPropertyMetadata GetMetadataWithOverrides(Type type)
         {
             if (type is null)
             {
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (_metadataCache.TryGetValue(type, out PropertyMetadata result))
+            if (_metadataCache.TryGetValue(type, out AvaloniaPropertyMetadata result))
             {
                 return result;
             }
@@ -584,6 +572,11 @@ namespace Avalonia
 
             return _defaultMetadata;
         }
+
+        bool IPropertyInfo.CanGet => true;
+        bool IPropertyInfo.CanSet => true;
+        object IPropertyInfo.Get(object target) => ((AvaloniaObject)target).GetValue(this);
+        void IPropertyInfo.Set(object target, object value) => ((AvaloniaObject)target).SetValue(this, value);
     }
 
     /// <summary>

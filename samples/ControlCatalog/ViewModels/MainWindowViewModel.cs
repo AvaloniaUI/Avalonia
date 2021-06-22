@@ -3,38 +3,46 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
-using ReactiveUI;
+using Avalonia.Platform;
+using System;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    class MainWindowViewModel : ReactiveObject
+    class MainWindowViewModel : ViewModelBase
     {
         private IManagedNotificationManager _notificationManager;
 
         private bool _isMenuItemChecked = true;
         private WindowState _windowState;
         private WindowState[] _windowStates;
+        private int _transparencyLevel;
+        private ExtendClientAreaChromeHints _chromeHints;
+        private bool _extendClientAreaEnabled;
+        private bool _systemTitleBarEnabled;        
+        private bool _preferSystemChromeEnabled;
+        private double _titleBarHeight;
 
         public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
             _notificationManager = notificationManager;
 
-            ShowCustomManagedNotificationCommand = ReactiveCommand.Create(() =>
+            ShowCustomManagedNotificationCommand = MiniCommand.Create(() =>
             {
                 NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });
             });
 
-            ShowManagedNotificationCommand = ReactiveCommand.Create(() =>
+            ShowManagedNotificationCommand = MiniCommand.Create(() =>
             {
                 NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
             });
 
-            ShowNativeNotificationCommand = ReactiveCommand.Create(() =>
+            ShowNativeNotificationCommand = MiniCommand.Create(() =>
             {
                 NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
             });
 
-            AboutCommand = ReactiveCommand.CreateFromTask(async () =>
+            AboutCommand = MiniCommand.CreateFromTask(async () =>
             {
                 var dialog = new AboutAvaloniaDialog();
 
@@ -43,12 +51,12 @@ namespace ControlCatalog.ViewModels
                 await dialog.ShowDialog(mainWindow);
             });
 
-            ExitCommand = ReactiveCommand.Create(() =>
+            ExitCommand = MiniCommand.Create(() =>
             {
                 (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
             });
 
-            ToggleMenuItemCheckedCommand = ReactiveCommand.Create(() =>
+            ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
             {
                 IsMenuItemChecked = !IsMenuItemChecked;
             });
@@ -62,6 +70,63 @@ namespace ControlCatalog.ViewModels
                 WindowState.Maximized,
                 WindowState.FullScreen,
             };
+
+            this.WhenAnyValue(x => x.SystemTitleBarEnabled, x=>x.PreferSystemChromeEnabled)
+                .Subscribe(x =>
+                {
+                    var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
+
+                    if(x.Item1)
+                    {
+                        hints |= ExtendClientAreaChromeHints.SystemChrome;
+                    }
+
+                    if(x.Item2)
+                    {
+                        hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
+                    }
+
+                    ChromeHints = hints;
+                });
+
+            SystemTitleBarEnabled = true;            
+            TitleBarHeight = -1;
+        }        
+
+        public int TransparencyLevel
+        {
+            get { return _transparencyLevel; }
+            set { this.RaiseAndSetIfChanged(ref _transparencyLevel, value); }
+        }        
+
+        public ExtendClientAreaChromeHints ChromeHints
+        {
+            get { return _chromeHints; }
+            set { this.RaiseAndSetIfChanged(ref _chromeHints, value); }
+        }        
+
+        public bool ExtendClientAreaEnabled
+        {
+            get { return _extendClientAreaEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
+        }        
+
+        public bool SystemTitleBarEnabled
+        {
+            get { return _systemTitleBarEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _systemTitleBarEnabled, value); }
+        }        
+
+        public bool PreferSystemChromeEnabled
+        {
+            get { return _preferSystemChromeEnabled; }
+            set { this.RaiseAndSetIfChanged(ref _preferSystemChromeEnabled, value); }
+        }        
+
+        public double TitleBarHeight
+        {
+            get { return _titleBarHeight; }
+            set { this.RaiseAndSetIfChanged(ref _titleBarHeight, value); }
         }
 
         public WindowState WindowState
@@ -88,16 +153,16 @@ namespace ControlCatalog.ViewModels
             set { this.RaiseAndSetIfChanged(ref _isMenuItemChecked, value); }
         }
 
-        public ReactiveCommand<Unit, Unit> ShowCustomManagedNotificationCommand { get; }
+        public MiniCommand ShowCustomManagedNotificationCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> ShowManagedNotificationCommand { get; }
+        public MiniCommand ShowManagedNotificationCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> ShowNativeNotificationCommand { get; }
+        public MiniCommand ShowNativeNotificationCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> AboutCommand { get; }
+        public MiniCommand AboutCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> ExitCommand { get; }
+        public MiniCommand ExitCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> ToggleMenuItemCheckedCommand { get; }
+        public MiniCommand ToggleMenuItemCheckedCommand { get; }
     }
 }

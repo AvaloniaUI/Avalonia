@@ -15,7 +15,7 @@ namespace Avalonia.Styling.UnitTests
             var style = new Mock<IStyle>();
             var rp = style.As<IResourceProvider>();
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             target.Add(style.Object);
 
             rp.Verify(x => x.AddOwner(host.Object));
@@ -29,7 +29,7 @@ namespace Avalonia.Styling.UnitTests
             var style = new Mock<IStyle>();
             var rp = style.As<IResourceProvider>();
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             target.Add(style.Object);
             target.Remove(style.Object);
 
@@ -58,7 +58,7 @@ namespace Avalonia.Styling.UnitTests
             var resources = new Mock<IResourceDictionary>();
             target.Resources = resources.Object;
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             ((IResourceProvider)target).AddOwner(host.Object);
             resources.Verify(x => x.AddOwner(host.Object), Times.Once);
         }
@@ -87,7 +87,7 @@ namespace Avalonia.Styling.UnitTests
             var resourceProvider = style.As<IResourceProvider>();
             target.Add(style.Object);
 
-            host.ResetCalls();
+            host.Invocations.Clear();
             ((IResourceProvider)target).AddOwner(host.Object);
             resourceProvider.Verify(x => x.AddOwner(host.Object), Times.Once);
         }

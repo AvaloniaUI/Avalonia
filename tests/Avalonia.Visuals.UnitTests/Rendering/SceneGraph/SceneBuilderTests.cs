@@ -34,6 +34,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Background = Brushes.Red,
                         Child = textBlock = new TextBlock
                         {
+                            TextWrapping = TextWrapping.NoWrap,
                             Text = "Hello World",
                         }
                     }
@@ -653,7 +654,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -696,7 +697,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -744,7 +745,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 var layout = tree.LayoutManager;
-                layout.ExecuteInitialLayoutPass(tree);
+                layout.ExecuteInitialLayoutPass();
 
                 var scene = new Scene(tree);
                 var sceneBuilder = new SceneBuilder();
@@ -810,7 +811,9 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 };
 
                 Assert.Equal(expected, scene.Layers[tree].Dirty.ToArray());
-                Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
+                
+                // Layers are disabled. See #2244
+                // Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
             }
         }
 

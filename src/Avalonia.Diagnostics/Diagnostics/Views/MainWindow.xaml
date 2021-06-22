@@ -12,6 +12,11 @@
     <StyleInclude Source="resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default"/>
     <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
     <StyleInclude Source="resm:Avalonia.Controls.DataGrid.Themes.Default.xaml?assembly=Avalonia.Controls.DataGrid"/>
+    <Style Selector="DataGrid ContextMenu">
+      <Setter Property="Foreground" Value="Black"/>
+    </Style>
+    <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
+    <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/FilterTextBox.axaml" />
   </Window.Styles>
   
   <views:MainView/>

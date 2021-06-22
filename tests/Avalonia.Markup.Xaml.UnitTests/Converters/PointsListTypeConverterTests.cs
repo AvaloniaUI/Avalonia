@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls.Shapes;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.Converters;
 using Xunit;
 
@@ -7,6 +9,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
     public class PointsListTypeConverterTests
     {
+        static PointsListTypeConverterTests()
+        {
+            RuntimeHelpers.RunClassConstructor(typeof(RelativeSource).TypeHandle);
+        }
+
         [Theory]
         [InlineData("1,2 3,4")]
         [InlineData("1 2 3 4")]
@@ -31,8 +38,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         public void Should_Parse_Points_in_Xaml(string input)
         {
             var xaml = $"<Polygon xmlns='https://github.com/avaloniaui' Points='{input}' />";
-            var loader = new AvaloniaXamlLoader();
-            var polygon = (Polygon)loader.Load(xaml);
+            var polygon = (Polygon)AvaloniaRuntimeXamlLoader.Load(xaml);
 
             var points = polygon.Points;
 

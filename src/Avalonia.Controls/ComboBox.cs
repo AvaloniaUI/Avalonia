@@ -7,8 +7,10 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -63,6 +65,26 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> PlaceholderForegroundProperty =
             AvaloniaProperty.Register<ComboBox, IBrush>(nameof(PlaceholderForeground));
 
+        /// <summary>
+        /// Defines the <see cref="HorizontalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<ComboBox>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
+
+        /// <summary>
+        /// Defines the <see cref="IsTextSearchEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
+            AvaloniaProperty.Register<ComboBox, bool>(nameof(IsTextSearchEnabled), true);
+
+        private string _textSearchTerm = string.Empty;
+        private DispatcherTimer _textSearchTimer;
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
@@ -133,6 +155,33 @@ namespace Avalonia.Controls
             set { SetValue(VirtualizationModeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the horizontal alignment of the content within the control.
+        /// </summary>
+        public HorizontalAlignment HorizontalContentAlignment
+        {
+            get { return GetValue(HorizontalContentAlignmentProperty); }
+            set { SetValue(HorizontalContentAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get { return GetValue(VerticalContentAlignmentProperty); }
+            set { SetValue(VerticalContentAlignmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that specifies whether a user can jump to a value by typing.
+        /// </summary>
+        public bool IsTextSearchEnabled
+        {
+            get { return GetValue(IsTextSearchEnabledProperty); }
+            set { SetValue(IsTextSearchEnabledProperty, value); }
+        }
+
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
@@ -142,11 +191,10 @@ namespace Avalonia.Controls
                 ComboBoxItem.ContentTemplateProperty);
         }
 
-        /// <inheritdoc/>
-        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToLogicalTree(e);
-            this.UpdateSelectionBoxItem(this.SelectedItem);
+            base.OnAttachedToVisualTree(e);
+            this.UpdateSelectionBoxItem(SelectedItem);
         }
 
         /// <inheritdoc/>
@@ -158,7 +206,7 @@ namespace Avalonia.Controls
                 return;
 
             if (e.Key == Key.F4 ||
-                ((e.Key == Key.Down || e.Key == Key.Up) && ((e.KeyModifiers & KeyModifiers.Alt) != 0)))
+                ((e.Key == Key.Down || e.Key == Key.Up) && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt)))
             {
                 IsDropDownOpen = !IsDropDownOpen;
                 e.Handled = true;
@@ -199,6 +247,32 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc />
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            if (!IsTextSearchEnabled || e.Handled)
+                return;
+
+            StopTextSearchTimer();
+
+            _textSearchTerm += e.Text;
+
+            bool match(ItemContainerInfo info) => 
+                info.ContainerControl is IContentControl control &&
+                control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+
+            var info = ItemContainerGenerator.Containers.FirstOrDefault(match);
+
+            if (info != null)
+            {
+                SelectedIndex = info.Index;
+            }
+
+            StartTextSearchTimer();
+
+            e.Handled = true;
+        }
+
         /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
@@ -226,7 +300,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (!e.Handled)
             {
@@ -245,7 +319,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            base.OnPointerPressed(e);
+            base.OnPointerReleased(e);
         }
 
         /// <inheritdoc/>
@@ -259,24 +333,6 @@ namespace Avalonia.Controls
 
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
-            _popup.Closed += PopupClosed;
-        }
-
-        /// <summary>
-        /// Called when the ComboBox popup is closed, with the <see cref="PopupClosedEventArgs"/>
-        /// that caused the popup to close.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        /// <remarks>
-        /// This method can be overridden to control whether the event that caused the popup to close
-        /// is swallowed or passed through.
-        /// </remarks>
-        protected virtual void PopupClosedOverride(PopupClosedEventArgs e)
-        {
-            if (e.CloseEvent is PointerEventArgs pointerEvent)
-            {
-                pointerEvent.Handled = true;
-            }
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)
@@ -287,12 +343,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private void PopupClosed(object sender, PopupClosedEventArgs e)
+        private void PopupClosed(object sender, EventArgs e)
         {
             _subscriptionsOnOpen?.Dispose();
             _subscriptionsOnOpen = null;
-
-            PopupClosedOverride(e);
 
             if (CanFocus(this))
             {
@@ -362,19 +416,22 @@ namespace Avalonia.Controls
 
             if (control != null)
             {
-                control.Measure(Size.Infinity);
-
-                SelectionBoxItem = new Rectangle
+                if (VisualRoot is object)
                 {
-                    Width = control.DesiredSize.Width,
-                    Height = control.DesiredSize.Height,
-                    Fill = new VisualBrush
+                    control.Measure(Size.Infinity);
+
+                    SelectionBoxItem = new Rectangle
                     {
-                        Visual = control,
-                        Stretch = Stretch.None,
-                        AlignmentX = AlignmentX.Left,
-                    }
-                };
+                        Width = control.DesiredSize.Width,
+                        Height = control.DesiredSize.Height,
+                        Fill = new VisualBrush
+                        {
+                            Visual = control,
+                            Stretch = Stretch.None,
+                            AlignmentX = AlignmentX.Left,
+                        }
+                    };
+                }
             }
             else
             {
@@ -412,6 +469,32 @@ namespace Avalonia.Controls
                 prev = ItemCount - 1;
 
             SelectedIndex = prev;
+        }
+
+        private void StartTextSearchTimer()
+        {
+            _textSearchTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _textSearchTimer.Tick += TextSearchTimer_Tick;
+            _textSearchTimer.Start();
+        }
+
+        private void StopTextSearchTimer()
+        {
+            if (_textSearchTimer == null)
+            {
+                return;
+            }
+
+            _textSearchTimer.Stop();
+            _textSearchTimer.Tick -= TextSearchTimer_Tick;
+
+            _textSearchTimer = null;
+        }
+
+        private void TextSearchTimer_Tick(object sender, EventArgs e)
+        {
+            _textSearchTerm = string.Empty;
+            StopTextSearchTimer();
         }
     }
 }

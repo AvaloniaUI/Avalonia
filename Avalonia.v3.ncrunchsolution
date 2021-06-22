@@ -3,8 +3,14 @@
     <AdditionalFilesToIncludeForSolution>
       <Value>tests\TestFiles\**.*</Value>
       <Value>src\Avalonia.Build.Tasks\bin\Debug\netstandard2.0\Avalonia.Build.Tasks.dll</Value>
+      <Value>src\Avalonia.Build.Tasks\bin\Debug\netstandard2.0\Mono.Cecil.dll</Value>
+      <Value>src\Avalonia.Build.Tasks\bin\Debug\netstandard2.0\Mono.Cecil.Rocks.dll</Value>
+      <Value>src\Avalonia.Build.Tasks\bin\Debug\netstandard2.0\Mono.Cecil.Pdb.dll</Value>
     </AdditionalFilesToIncludeForSolution>
     <AllowParallelTestExecution>True</AllowParallelTestExecution>
+    <CustomBuildProperties>
+      <Value>RunApiCompat = false</Value>
+    </CustomBuildProperties>
     <ProjectConfigStoragePathRelativeToSolutionDir>.ncrunch</ProjectConfigStoragePathRelativeToSolutionDir>
     <SolutionConfigured>True</SolutionConfigured>
   </Settings>

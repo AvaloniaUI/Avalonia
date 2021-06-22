@@ -1,0 +1,85 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"       
+        xmlns:sys="clr-namespace:System;assembly=netstandard">
+
+  <Design.PreviewWith>
+    <Grid RowDefinitions="Auto,Auto"
+          ColumnDefinitions="Auto,Auto"
+          HorizontalAlignment="Center">
+      <Border Grid.Column="0"
+              Grid.Row="1"
+              Background="{DynamicResource SystemControlBackgroundAccentBrush}"
+              Margin="5"
+              Padding="50"
+              ToolTip.Tip="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.">
+        <TextBlock>Hover Here</TextBlock>
+      </Border>
+      <CheckBox Grid.Column="1"
+                Margin="5"
+                Grid.Row="0"
+                IsChecked="{Binding ElementName=Border, Path=(ToolTip.IsOpen)}"
+                Content="ToolTip Open" />
+      <Border Name="Border"
+              Grid.Column="1"
+              Grid.Row="1"
+              Background="{DynamicResource SystemControlBackgroundAccentBrush}"
+              Margin="5"
+              Padding="50"
+              ToolTip.Placement="Bottom">
+        <ToolTip.Tip>
+          <StackPanel>
+            <TextBlock Classes="h1">ToolTip</TextBlock>
+            <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
+          </StackPanel>
+        </ToolTip.Tip>
+        <TextBlock>ToolTip bottom placement</TextBlock>
+      </Border>
+    </Grid>
+  </Design.PreviewWith>
+
+  <Styles.Resources>
+    <sys:Double x:Key="ToolTipContentMaxWidth">320</sys:Double>
+  </Styles.Resources>
+
+  <Style Selector="ToolTip">
+    <Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
+    <Setter Property="Background" Value="{DynamicResource ToolTipBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ToolTipBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ToolTipBorderThemeThickness}" />    
+    <Setter Property="FontSize" Value="{DynamicResource ToolTipContentThemeFontSize}" />
+    <Setter Property="Padding" Value="{DynamicResource ToolTipBorderThemePadding}" />
+    <Setter Property="MaxWidth" Value="{DynamicResource ToolTipContentMaxWidth}" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+      </Transitions>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                Padding="{TemplateBinding Padding}"
+                CornerRadius="{DynamicResource OverlayCornerRadius}">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            MaxWidth="{TemplateBinding MaxWidth}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="ToolTip > TextBlock">
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <Style Selector="ToolTip">
+    <Setter Property="Opacity" Value="0" />
+  </Style>
+
+  <Style Selector="ToolTip:open">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+</Styles>

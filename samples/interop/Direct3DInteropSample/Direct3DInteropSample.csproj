@@ -22,11 +22,10 @@
       </EmbeddedResource>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
         <ProjectReference Include="..\..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
         <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
+        <ProjectReference Include="..\..\MiniMvvm\MiniMvvm.csproj" />
     </ItemGroup>
-    <Import Project="..\..\..\build\Serilog.props" />
     <Import Project="..\..\..\build\Rx.props" />
     <Import Project="..\..\..\build\ReferenceCoreLibraries.props" />
 </Project>

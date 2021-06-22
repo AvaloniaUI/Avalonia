@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CalendarDatePickerPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">CalendarDatePicker</TextBlock>
+    <TextBlock Classes="h2">A control for selecting dates with a calendar drop-down</TextBlock>
+        
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <StackPanel Orientation="Vertical"
+                  Width="200">
+        <TextBlock Text="SelectedDateFormat: Short"/>
+        <CalendarDatePicker Name="DatePicker1"
+                    SelectedDateFormat="Short"
+                    Margin="0,0,0,8"/>
+
+        <TextBlock Text="SelectedDateFormat: Long"/>
+        <CalendarDatePicker Name="DatePicker2"
+                    SelectedDateFormat="Long"
+                    Margin="0,0,0,8"/>
+
+        <TextBlock Text="SelectedDateFormat: Custom"/>
+        <CalendarDatePicker Name="DatePicker3"
+                    SelectedDateFormat="Custom"
+                    CustomDateFormatString="ddd, MMM d"
+                    Margin="0,0,0,8"/>
+
+        <TextBlock Text="Blackout Dates"/>
+        <CalendarDatePicker Name="DatePicker4"
+                    Margin="0,0,0,8"/>
+
+        <CalendarDatePicker Margin="0,0,0,8"
+                    Watermark="Watermark"/>
+        <CalendarDatePicker Margin="0,0,0,8"
+                    Name="DatePicker5"
+                    Watermark="Floating Watermark"
+                    UseFloatingWatermark="True"/>
+                
+        <TextBlock Text="Disabled"/>
+        <CalendarDatePicker IsEnabled="False"/>
+      </StackPanel>
+
+    </StackPanel> 
+  </StackPanel>
+</UserControl>

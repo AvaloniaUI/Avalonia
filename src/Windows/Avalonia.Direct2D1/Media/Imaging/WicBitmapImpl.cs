@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
 using Avalonia.Win32.Interop;
 using SharpDX.WIC;
 using APixelFormat = Avalonia.Platform.PixelFormat;
+using AlphaFormat = Avalonia.Platform.AlphaFormat;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media
@@ -13,7 +13,7 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class WicBitmapImpl : BitmapImpl
     {
-        private BitmapDecoder _decoder;
+        private readonly BitmapDecoder _decoder;
 
         private static BitmapInterpolationMode ConvertInterpolationMode(Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
         {
@@ -41,9 +41,10 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="fileName">The filename of the bitmap to load.</param>
         public WicBitmapImpl(string fileName)
         {
-            using (BitmapDecoder decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, fileName, DecodeOptions.CacheOnDemand))
+            using (var decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, fileName, DecodeOptions.CacheOnDemand))
+            using (var frame = decoder.GetFrame(0))
             {
-                WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnDemand);
+                WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnDemand);
                 Dpi = new Vector(96, 96);
             }
         }
@@ -63,7 +64,8 @@ namespace Avalonia.Direct2D1.Media
             // https://stackoverflow.com/questions/48982749/decoding-image-from-stream-using-wic/48982889#48982889
             _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
 
-            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, _decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
+            using var frame = _decoder.GetFrame(0);
+            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, frame, BitmapCreateCacheOption.CacheOnLoad);
             Dpi = new Vector(96, 96);
         }
 
@@ -73,11 +75,17 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="size">The size of the bitmap in device pixels.</param>
         /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="pixelFormat">Pixel format</param>
-        public WicBitmapImpl(PixelSize size, Vector dpi, APixelFormat? pixelFormat = null)
+        /// <param name="alphaFormat">Alpha format.</param>
+        public WicBitmapImpl(PixelSize size, Vector dpi, APixelFormat? pixelFormat = null, AlphaFormat? alphaFormat = null)
         {
             if (!pixelFormat.HasValue)
             {
                 pixelFormat = APixelFormat.Bgra8888;
+            }
+
+            if (!alphaFormat.HasValue)
+            {
+                alphaFormat = AlphaFormat.Premul;
             }
 
             PixelFormat = pixelFormat;
@@ -85,17 +93,16 @@ namespace Avalonia.Direct2D1.Media
                 Direct2D1Platform.ImagingFactory,
                 size.Width,
                 size.Height,
-                pixelFormat.Value.ToWic(),
+                pixelFormat.Value.ToWic(alphaFormat.Value),
                 BitmapCreateCacheOption.CacheOnLoad);
 
             Dpi = dpi;
         }
 
-        public WicBitmapImpl(APixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
+        public WicBitmapImpl(APixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, size.Width, size.Height, format.ToWic(), BitmapCreateCacheOption.CacheOnDemand);
+            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, size.Width, size.Height, format.ToWic(alphaFormat), BitmapCreateCacheOption.CacheOnDemand);
             WicImpl.SetResolution(dpi.X, dpi.Y);
-
             PixelFormat = format;
             Dpi = dpi;
 
@@ -115,7 +122,7 @@ namespace Avalonia.Direct2D1.Media
         {
             _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
 
-            var frame = _decoder.GetFrame(0);
+            using var frame = _decoder.GetFrame(0);
 
             // now scale that to the size that we want
             var realScale = horizontal ? ((double)frame.Size.Height / frame.Size.Width) : ((double)frame.Size.Width / frame.Size.Height);
@@ -172,7 +179,7 @@ namespace Avalonia.Direct2D1.Media
         /// <returns>The Direct2D bitmap.</returns>
         public override OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget renderTarget)
         {
-            FormatConverter converter = new FormatConverter(Direct2D1Platform.ImagingFactory);
+            using var converter = new FormatConverter(Direct2D1Platform.ImagingFactory);
             converter.Initialize(WicImpl, SharpDX.WIC.PixelFormat.Format32bppPBGRA);
             return new OptionalDispose<D2DBitmap>(D2DBitmap.FromWicBitmap(renderTarget, converter), true);
         }

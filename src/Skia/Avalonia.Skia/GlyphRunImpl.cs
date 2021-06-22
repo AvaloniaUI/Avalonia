@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Platform;
+using JetBrains.Annotations;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -7,9 +8,9 @@ namespace Avalonia.Skia
     /// <inheritdoc />
     public class GlyphRunImpl : IGlyphRunImpl
     {
-        public GlyphRunImpl(SKTextBlob textBlob)
+        public GlyphRunImpl([NotNull] SKTextBlob textBlob)
         {
-            TextBlob = textBlob;
+            TextBlob = textBlob ?? throw new ArgumentNullException (nameof (textBlob));
         }
 
         /// <summary>

@@ -6,6 +6,8 @@
     <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
     <LangVersion>latest</LangVersion>
+    <AssemblyOriginatorKeyFile>..\..\build\avalonia.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.UnitTests\Assets\*.ttf" />
@@ -26,4 +28,5 @@
   <Import Project="..\..\src\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
 </Project>

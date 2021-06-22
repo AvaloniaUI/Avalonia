@@ -1,7 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Utilities;
 
@@ -13,8 +12,11 @@ namespace Avalonia.Data.Core.Plugins
     /// </summary>
     public class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
+        private readonly Dictionary<(Type, string), PropertyInfo> _propertyLookup =
+            new Dictionary<(Type, string), PropertyInfo>();
+
         /// <inheritdoc/>
-        public bool Match(object obj, string propertyName) => true;
+        public bool Match(object obj, string propertyName) => GetFirstPropertyWithName(obj.GetType(), propertyName) != null;
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.
@@ -31,7 +33,8 @@ namespace Avalonia.Data.Core.Plugins
             Contract.Requires<ArgumentNullException>(propertyName != null);
 
             reference.TryGetTarget(out object instance);
-            var p = instance.GetType().GetRuntimeProperties().FirstOrDefault(x => x.Name == propertyName);
+
+            var p = GetFirstPropertyWithName(instance.GetType(), propertyName);
 
             if (p != null)
             {
@@ -45,13 +48,49 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
+        private PropertyInfo GetFirstPropertyWithName(Type type, string propertyName)
+        {
+            var key = (type, propertyName);
+
+            if (!_propertyLookup.TryGetValue(key, out PropertyInfo propertyInfo))
+            {
+                propertyInfo = TryFindAndCacheProperty(type, propertyName);
+            }
+
+            return propertyInfo;
+        }
+
+        private PropertyInfo TryFindAndCacheProperty(Type type, string propertyName)
+        {
+            PropertyInfo found = null;
+
+            const BindingFlags bindingFlags =
+                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
+
+            var properties = type.GetProperties(bindingFlags);
+
+            foreach (PropertyInfo propertyInfo in properties)
+            {
+                if (propertyInfo.Name == propertyName)
+                {
+                    found = propertyInfo;
+
+                    break;
+                }
+            }
+
+            _propertyLookup.Add((type, propertyName), found);
+
+            return found;
+        }
+
         private class Accessor : PropertyAccessorBase, IWeakSubscriber<PropertyChangedEventArgs>
         {
             private readonly WeakReference<object> _reference;
             private readonly PropertyInfo _property;
             private bool _eventRaised;
 
-            public Accessor(WeakReference<object> reference,  PropertyInfo property)
+            public Accessor(WeakReference<object> reference, PropertyInfo property)
             {
                 Contract.Requires<ArgumentNullException>(reference != null);
                 Contract.Requires<ArgumentNullException>(property != null);

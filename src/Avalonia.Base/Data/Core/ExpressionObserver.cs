@@ -54,6 +54,7 @@ namespace Avalonia.Data.Core
         private object _root;
         private IDisposable _rootSubscription;
         private WeakReference<object> _value;
+        private IReadOnlyList<ITransformNode> _transformNodes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -188,6 +189,24 @@ namespace Avalonia.Data.Core
                 description ?? expression.ToString());
         }
 
+        private IReadOnlyList<ITransformNode> GetTransformNodesFromChain()
+        {
+            LinkedList<ITransformNode> transforms = new LinkedList<ITransformNode>();
+            var node = _node;
+            while (node != null)
+            {
+                if (node is ITransformNode transform)
+                {
+                    transforms.AddFirst(transform);
+                }
+                node = node.Next;
+            }
+
+            return new List<ITransformNode>(transforms);
+        }
+
+        private IReadOnlyList<ITransformNode> TransformNodes => (_transformNodes ?? (_transformNodes = GetTransformNodesFromChain()));
+
         /// <summary>
         /// Attempts to set the value of a property expression.
         /// </summary>
@@ -203,18 +222,13 @@ namespace Avalonia.Data.Core
         {
             if (Leaf is SettableNode settable)
             {
-                var node = _node;
-                while (node != null)
+                foreach (var transform in TransformNodes)
                 {
-                    if (node is ITransformNode transform)
+                    value = transform.Transform(value);
+                    if (value is BindingNotification)
                     {
-                        value = transform.Transform(value);
-                        if (value is BindingNotification)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
-                    node = node.Next;
                 }
                 return settable.SetTargetValue(value, priority);
             }

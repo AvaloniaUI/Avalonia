@@ -1,36 +1,44 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
-using JetBrains.Annotations;
+
+#nullable enable
 
 namespace Avalonia
 {
     /// <summary>
     /// Defines a vector.
     /// </summary>
-    public readonly struct Vector : IEquatable<Vector>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Vector : IEquatable<Vector>
     {
         static Vector()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<VectorAnimator>(prop => typeof(Vector).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>
-        /// The X vector.
+        /// The X component.
         /// </summary>
         private readonly double _x;
 
         /// <summary>
-        /// The Y vector.
+        /// The Y component.
         /// </summary>
         private readonly double _y;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Vector"/> structure.
         /// </summary>
-        /// <param name="x">The X vector.</param>
-        /// <param name="y">The Y vector.</param>
+        /// <param name="x">The X component.</param>
+        /// <param name="y">The Y component.</param>
         public Vector(double x, double y)
         {
             _x = x;
@@ -38,12 +46,12 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets the X vector.
+        /// Gets the X component.
         /// </summary>
         public double X => _x;
 
         /// <summary>
-        /// Gets the Y vector.
+        /// Gets the Y component.
         /// </summary>
         public double Y => _y;
 
@@ -57,18 +65,18 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Calculates the dot product of two vectors
+        /// Calculates the dot product of two vectors.
         /// </summary>
-        /// <param name="a">First vector</param>
-        /// <param name="b">Second vector</param>
-        /// <returns>The dot product</returns>
+        /// <param name="a">First vector.</param>
+        /// <param name="b">Second vector.</param>
+        /// <returns>The dot product.</returns>
         public static double operator *(Vector a, Vector b)
             => Dot(a, b);
 
         /// <summary>
         /// Scales a vector.
         /// </summary>
-        /// <param name="vector">The vector</param>
+        /// <param name="vector">The vector.</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector operator *(Vector vector, double scale)
@@ -77,7 +85,16 @@ namespace Avalonia
         /// <summary>
         /// Scales a vector.
         /// </summary>
-        /// <param name="vector">The vector</param>
+        /// <param name="vector">The vector.</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector operator *(double scale, Vector vector)
+            => Multiply(vector, scale);
+
+        /// <summary>
+        /// Scales a vector.
+        /// </summary>
+        /// <param name="vector">The vector.</param>
         /// <param name="scale">The divisor.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector operator /(Vector vector, double scale)
@@ -100,12 +117,12 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Length of the vector
+        /// Length of the vector.
         /// </summary>
         public double Length => Math.Sqrt(SquaredLength);
 
         /// <summary>
-        /// Squared Length of the vector
+        /// Squared Length of the vector.
         /// </summary>
         public double SquaredLength => _x * _x + _y * _y;
 
@@ -154,9 +171,8 @@ namespace Avalonia
         /// <returns>True if vectors are nearly equal.</returns>
         public bool NearlyEquals(Vector other)
         {
-            const float tolerance = float.Epsilon;
-
-            return Math.Abs(_x - other._x) < tolerance && Math.Abs(_y - other._y) < tolerance;
+            return MathUtilities.AreClose(_x, other._x) && 
+                   MathUtilities.AreClose(_y, other._y);
         }
 
         public override bool Equals(object obj) => obj is Vector other && Equals(other);
@@ -189,9 +205,9 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Returns a new vector with the specified X coordinate.
+        /// Returns a new vector with the specified X component.
         /// </summary>
-        /// <param name="x">The X coordinate.</param>
+        /// <param name="x">The X component.</param>
         /// <returns>The new vector.</returns>
         public Vector WithX(double x)
         {
@@ -199,9 +215,9 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Returns a new vector with the specified Y coordinate.
+        /// Returns a new vector with the specified Y component.
         /// </summary>
-        /// <param name="y">The Y coordinate.</param>
+        /// <param name="y">The Y component.</param>
         /// <returns>The new vector.</returns>
         public Vector WithY(double y)
         {
@@ -311,27 +327,46 @@ namespace Avalonia
             => new Vector(-vector._x, -vector._y);
 
         /// <summary>
-        /// Returnes the vector (0.0, 0.0)
+        /// Returns the vector (0.0, 0.0).
         /// </summary>
         public static Vector Zero
             => new Vector(0, 0);
 
         /// <summary>
-        /// Returnes the vector (1.0, 1.0)
+        /// Returns the vector (1.0, 1.0).
         /// </summary>
         public static Vector One
             => new Vector(1, 1);
 
         /// <summary>
-        /// Returnes the vector (1.0, 0.0)
+        /// Returns the vector (1.0, 0.0).
         /// </summary>
         public static Vector UnitX
             => new Vector(1, 0);
 
         /// <summary>
-        /// Returnes the vector (0.0, 1.0)
+        /// Returns the vector (0.0, 1.0).
         /// </summary>
         public static Vector UnitY
             => new Vector(0, 1);
+
+        /// <summary>
+        /// Deconstructs the vector into its X and Y components.
+        /// </summary>
+        /// <param name="x">The X component.</param>
+        /// <param name="y">The Y component.</param>
+        public void Deconstruct(out double x, out double y)
+        {
+            x = this._x;
+            y = this._y;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the X and Y components are zero.
+        /// </summary>
+        public bool IsDefault
+        {
+            get { return (_x == 0) && (_y == 0); }
+        }
     }
 }

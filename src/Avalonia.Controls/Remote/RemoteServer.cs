@@ -10,13 +10,13 @@ namespace Avalonia.Controls.Remote
     {
         private EmbeddableControlRoot _topLevel;
 
-        class EmbeddableRemoteServerTopLevelImpl : RemoteServerTopLevelImpl, IEmbeddableWindowImpl
+        class EmbeddableRemoteServerTopLevelImpl : RemoteServerTopLevelImpl
         {
             public EmbeddableRemoteServerTopLevelImpl(IAvaloniaRemoteTransportConnection transport) : base(transport)
             {
             }
 #pragma warning disable 67
-            public event Action LostFocus;
+            public Action LostFocus { get; set; }
 
         }
         

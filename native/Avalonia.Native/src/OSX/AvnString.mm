@@ -29,6 +29,13 @@ public:
         memcpy((void*)_cstring, (void*)cstring, _length);
     }
     
+    AvnStringImpl(void*ptr, int len)
+    {
+        _length = len;
+        _cstring = (const char*)malloc(_length);
+        memcpy((void*)_cstring, ptr, len);
+    }
+    
     virtual ~AvnStringImpl()
     {
         free((void*)_cstring);
@@ -78,6 +85,16 @@ public:
         }
     }
     
+    AvnStringArrayImpl(NSArray<NSURL*>* array)
+    {
+        for(int c = 0; c < [array count]; c++)
+        {
+            ComPtr<IAvnString> s;
+            *s.getPPV() = new AvnStringImpl([array objectAtIndex:c].absoluteString);
+            _list.push_back(s);
+        }
+    }
+    
     AvnStringArrayImpl(NSString* string)
     {
         ComPtr<IAvnString> s;
@@ -110,7 +127,17 @@ IAvnStringArray* CreateAvnStringArray(NSArray<NSString*> * array)
     return new AvnStringArrayImpl(array);
 }
 
+IAvnStringArray* CreateAvnStringArray(NSArray<NSURL*> * array)
+{
+    return new AvnStringArrayImpl(array);
+}
+
 IAvnStringArray* CreateAvnStringArray(NSString* string)
 {
     return new AvnStringArrayImpl(string);
+}
+
+IAvnString* CreateByteArray(void* data, int len)
+{
+    return new AvnStringImpl(data, len);
 }

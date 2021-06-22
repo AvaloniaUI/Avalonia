@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using ReactiveUI;
+using Avalonia.Media;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    public class ItemsRepeaterPageViewModel : ReactiveObject
+    public class ItemsRepeaterPageViewModel : ViewModelBase
     {
         private int _newItemIndex = 1;
         private int _newGenerationIndex = 0;
@@ -27,7 +28,7 @@ namespace ControlCatalog.ViewModels
         public void AddItem()
         {
             var index = SelectedItem != null ? Items.IndexOf(SelectedItem) : -1;
-            Items.Insert(index + 1, new Item { Text = $"New Item {_newItemIndex++}" });
+            Items.Insert(index + 1, new Item(index + 1) { Text = $"New Item {_newItemIndex++}" });
         }
 
         public void RandomizeHeights()
@@ -52,16 +53,18 @@ namespace ControlCatalog.ViewModels
             _newGenerationIndex++;
 
             return new ObservableCollection<Item>(
-                Enumerable.Range(1, 100000).Select(i => new Item
+                Enumerable.Range(1, 100000).Select(i => new Item(i)
                 {
                     Text = $"Item {i.ToString()} {suffix}"
                 }));
         }
 
-        public class Item : ReactiveObject
+        public class Item : ViewModelBase
         {
             private double _height = double.NaN;
 
+            public Item(int index) => Index = index;
+            public int Index { get; }
             public string Text { get; set; }
             
             public double Height 

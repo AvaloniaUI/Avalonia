@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -119,11 +122,86 @@ namespace Avalonia.Controls.UnitTests
                 Items = collection,
             };
 
-            target.ApplyTemplate();
+            Prepare(target);
             target.SelectedItem = collection[1];
+
+            Assert.Same(collection[1], target.SelectedItem);
+            Assert.Equal(collection[1].Content, target.SelectedContent);
+
             collection.RemoveAt(1);
 
             Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0].Content, target.SelectedContent);
+        }
+
+        [Fact]
+        public void Removal_Should_Set_New_Item0_When_Item0_Selected()
+        {
+            var collection = new ObservableCollection<TabItem>()
+            {
+                new TabItem
+                {
+                    Name = "first",
+                    Content = "foo",
+                },
+                new TabItem
+                {
+                    Name = "second",
+                    Content = "bar",
+                },
+                new TabItem
+                {
+                    Name = "3rd",
+                    Content = "barf",
+                },
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items = collection,
+            };
+
+            Prepare(target);
+            target.SelectedItem = collection[0];
+
+            Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0].Content, target.SelectedContent);
+
+            collection.RemoveAt(0);
+
+            Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0].Content, target.SelectedContent);
+        }
+
+        [Fact]
+        public void Removal_Should_Set_New_Item0_When_Item0_Selected_With_DataTemplate()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var collection = new ObservableCollection<Item>()
+            {
+                new Item("first"),
+                new Item("second"),
+                new Item("3rd"),
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                Items = collection,
+            };
+
+            Prepare(target);
+            target.SelectedItem = collection[0];
+
+            Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0], target.SelectedContent);
+
+            collection.RemoveAt(0);
+
+            Assert.Same(collection[0], target.SelectedItem);
+            Assert.Equal(collection[0], target.SelectedContent);
         }
 
         [Fact]
@@ -296,6 +374,7 @@ namespace Avalonia.Controls.UnitTests
                     new TextBlock { Tag = "bar", Text = x }),
                 Items = new[] { "Foo" },
             };
+            var root = new TestRoot(target);
 
             ApplyTemplate(target);
             ((ContentPresenter)target.ContentPart).UpdateChild();
@@ -323,6 +402,27 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
 
             Assert.NotEqual(dataContext, tabItem.Content);
+        }
+
+        [Fact]
+        public void Can_Have_Empty_Tab_Control()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TabControl Name='tabs' Items='{Binding Tabs}'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var tabControl = window.FindControl<TabControl>("tabs");
+
+                tabControl.DataContext = new { Tabs = new List<string>() };
+                window.ApplyTemplate();
+
+                Assert.Equal(0, tabControl.Items.Count());
+            }
         }
 
         private IControlTemplate TabControlTemplate()
@@ -357,6 +457,13 @@ namespace Avalonia.Controls.UnitTests
                     [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
                     [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]
                 }.RegisterInNameScope(scope));
+        }
+
+        private void Prepare(TabControl target)
+        {
+            ApplyTemplate(target);
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
         }
 
         private void ApplyTemplate(TabControl target)

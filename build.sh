@@ -47,7 +47,7 @@ if [ -f "$DOTNET_GLOBAL_FILE" ]; then
 fi
 
 # If dotnet is installed locally, and expected version is not set or installation matches the expected version
-if [[ -x "$(command -v dotnet)" && (-z ${DOTNET_VERSION+x} || $(dotnet --version) == "$DOTNET_VERSION") ]]; then
+if [[ -x "$(command -v dotnet)" && (-z ${DOTNET_VERSION+x} || $(dotnet --version) == "$DOTNET_VERSION") || "$SKIP_DOTNET_DOWNLOAD" == "1" ]]; then
     export DOTNET_EXE="$(command -v dotnet)"
 else
     DOTNET_DIRECTORY="$TEMP_DIRECTORY/dotnet-unix"
@@ -66,6 +66,8 @@ else
         "$DOTNET_INSTALL_FILE" --install-dir "$DOTNET_DIRECTORY" --version "$DOTNET_VERSION" --no-path
     fi
 fi
+
+export PATH=$DOTNET_DIRECTORY:$PATH
 
 echo "Microsoft (R) .NET Core SDK version $("$DOTNET_EXE" --version)"
 

@@ -998,10 +998,10 @@ namespace Avalonia.Controls
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether DatePicker should change its 
+        /// Gets or sets a value indicating whether CalendarDatePicker should change its 
         /// DisplayDate because of a SelectedDate change on its Calendar.
         /// </summary>
-        internal bool DatePickerDisplayDateFlag { get; set; }
+        internal bool CalendarDatePickerDisplayDateFlag { get; set; }
 
         internal CalendarDayButton FindDayButtonFromDay(DateTime day)
         {

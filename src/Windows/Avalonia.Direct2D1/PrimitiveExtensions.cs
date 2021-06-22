@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia.Platform;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -89,14 +90,16 @@ namespace Avalonia.Direct2D1
                 return CapStyle.Triangle;
         }
 
-        public static Guid ToWic(this Platform.PixelFormat format)
+        public static Guid ToWic(this Platform.PixelFormat format, Platform.AlphaFormat alphaFormat)
         {
+            bool isPremul = alphaFormat == AlphaFormat.Premul;
+
             if (format == Platform.PixelFormat.Rgb565)
                 return SharpDX.WIC.PixelFormat.Format16bppBGR565;
             if (format == Platform.PixelFormat.Bgra8888)
-                return SharpDX.WIC.PixelFormat.Format32bppPBGRA;
+                return isPremul ? SharpDX.WIC.PixelFormat.Format32bppPBGRA : SharpDX.WIC.PixelFormat.Format32bppBGRA;
             if (format == Platform.PixelFormat.Rgba8888)
-                return SharpDX.WIC.PixelFormat.Format32bppPRGBA;
+                return isPremul ? SharpDX.WIC.PixelFormat.Format32bppPRGBA : SharpDX.WIC.PixelFormat.Format32bppRGBA;
             throw new ArgumentException("Unknown pixel format");
         }
 
@@ -108,7 +111,7 @@ namespace Avalonia.Direct2D1
         /// <returns>The Direct2D brush.</returns>
         public static StrokeStyle ToDirect2DStrokeStyle(this Avalonia.Media.IPen pen, SharpDX.Direct2D1.RenderTarget renderTarget)
         {
-            return pen.ToDirect2DStrokeStyle(renderTarget.Factory);
+            return pen.ToDirect2DStrokeStyle(Direct2D1Platform.Direct2D1Factory);
         }
 
         /// <summary>

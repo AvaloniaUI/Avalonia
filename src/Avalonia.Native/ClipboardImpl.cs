@@ -35,17 +35,12 @@ namespace Avalonia.Native
                 return Task.FromResult(text.String);
         }
 
-        public Task SetTextAsync(string text)
+        public unsafe Task SetTextAsync(string text)
         {
             _native.Clear();
 
-            if (text != null)
-            {
-                using (var buffer = new Utf8Buffer(text))
-                {
-                    _native.SetText(NSPasteboardTypeString, buffer.DangerousGetHandle());
-                }
-            }
+            if (text != null) 
+                _native.SetText(NSPasteboardTypeString, text);
 
             return Task.CompletedTask;
         }
@@ -81,6 +76,37 @@ namespace Avalonia.Native
         {
             using (var strings = _native.GetStrings(NSFilenamesPboardType))
                 return strings.ToStringArray();
+        }
+
+        public unsafe Task SetDataObjectAsync(IDataObject data)
+        {
+            _native.Clear();
+            foreach (var fmt in data.GetDataFormats())
+            {
+                var o = data.Get(fmt);
+                if(o is string s)
+                    _native.SetText(fmt, s);
+                else if(o is byte[] bytes)
+                    fixed (byte* pbytes = bytes)
+                        _native.SetBytes(fmt, pbytes, bytes.Length);
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task<string[]> GetFormatsAsync()
+        {
+            using (var n = _native.ObtainFormats())
+                return Task.FromResult(n.ToStringArray());
+        }
+
+        public async Task<object> GetDataAsync(string format)
+        {
+            if (format == DataFormats.Text)
+                return await GetTextAsync();
+            if (format == DataFormats.FileNames)
+                return GetFileNames();
+            using (var n = _native.GetBytes(format))
+                return n.Bytes;
         }
     }
     

@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Animation;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
 
@@ -67,18 +68,10 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException("Setter.Property must be set.");
             }
 
-            var value = Value;
-
-            if (value is ITemplate template &&
-                !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
-            {
-                value = template.Build();
-            }
-
             var data = new SetterVisitorData
             {
                 target = target,
-                value = value,
+                value = Value,
             };
 
             Property.Accept(this, ref data);
@@ -95,6 +88,13 @@ namespace Avalonia.Styling
                     data.target,
                     property,
                     binding);
+            }
+            else if (data.value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(property.PropertyType))
+            {
+                data.result = new PropertySetterLazyInstance<T>(
+                    data.target,
+                    property,
+                    () => (T)template.Build());
             }
             else
             {
@@ -115,6 +115,13 @@ namespace Avalonia.Styling
                     data.target,
                     property,
                     binding);
+            }
+            else if (data.value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(property.PropertyType))
+            {
+                data.result = new PropertySetterLazyInstance<T>(
+                    data.target,
+                    property,
+                    () => (T)template.Build());
             }
             else
             {

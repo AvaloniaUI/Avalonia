@@ -299,6 +299,11 @@ namespace Avalonia.Controls.Primitives
             DesiredHeight = 0;
         }
 
+        internal void InvalidateDesiredHeight()
+        {
+            DesiredHeight = 0;
+        }
+
         private bool ShouldDisplayCell(DataGridColumn column, double frozenLeftEdge, double scrollingLeftEdge)
         {
             if (!column.IsVisible)
@@ -310,9 +315,9 @@ namespace Avalonia.Controls.Primitives
             double leftEdge = column.IsFrozen ? frozenLeftEdge : scrollingLeftEdge;
             double rightEdge = leftEdge + column.ActualWidth;
             return 
-                DoubleUtil.GreaterThan(rightEdge, 0) &&
-                DoubleUtil.LessThanOrClose(leftEdge, OwningGrid.CellsWidth) &&
-                DoubleUtil.GreaterThan(rightEdge, frozenLeftEdge); // scrolling column covered up by frozen column(s)
+                MathUtilities.GreaterThan(rightEdge, 0) &&
+                MathUtilities.LessThanOrClose(leftEdge, OwningGrid.CellsWidth) &&
+                MathUtilities.GreaterThan(rightEdge, frozenLeftEdge); // scrolling column covered up by frozen column(s)
         }
     }
 }

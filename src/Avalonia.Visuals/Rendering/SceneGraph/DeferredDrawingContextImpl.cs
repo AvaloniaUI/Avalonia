@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// A drawing context which builds a scene graph.
     /// </summary>
-    internal class DeferredDrawingContextImpl : IDrawingContextImpl
+    internal class DeferredDrawingContextImpl : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
     {
         private readonly ISceneBuilder _sceneBuilder;
         private VisualNode _node;
@@ -163,7 +163,22 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
-        
+
+        /// <inheritdoc/>
+        public void DrawRectangle(IExperimentalAcrylicMaterial material, RoundedRect rect)
+        {
+            var next = NextDrawAs<ExperimentalAcrylicNode>();
+
+            if (next == null || !next.Item.Equals(Transform, material, rect))
+            {
+                Add(new ExperimentalAcrylicNode(Transform, material, rect));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
         public void Custom(ICustomDrawOperation custom)
         {
             var next = NextDrawAs<CustomDrawOperation>();
@@ -189,13 +204,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
             var next = NextDrawAs<GlyphRunNode>();
 
             if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
             {
-                Add(new GlyphRunNode(Transform, foreground, glyphRun, baselineOrigin, CreateChildScene(foreground)));
+                Add(new GlyphRunNode(Transform, foreground, glyphRun, CreateChildScene(foreground)));
             }
 
             else
@@ -203,7 +218,7 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             throw new NotSupportedException("Creating layers on a deferred drawing context not supported");
         }
@@ -239,6 +254,21 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
+        public void PopBitmapBlendMode()
+        {
+            var next = NextDrawAs<BitmapBlendModeNode>();
+
+            if (next == null || !next.Item.Equals(null))
+            {
+                Add(new BitmapBlendModeNode());
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
+        /// <inheritdoc/>
         public void PopOpacity()
         {
             var next = NextDrawAs<OpacityNode>();
@@ -270,6 +300,21 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <inheritdoc/>
         public void PushClip(Rect clip)
+        {
+            var next = NextDrawAs<ClipNode>();
+
+            if (next == null || !next.Item.Equals(clip))
+            {
+                Add(new ClipNode(clip));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
+        /// <inheritdoc />
+        public void PushClip(RoundedRect clip)
         {
             var next = NextDrawAs<ClipNode>();
 
@@ -328,6 +373,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <inheritdoc/>
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            var next = NextDrawAs<BitmapBlendModeNode>();
+
+            if (next == null || !next.Item.Equals(blendingMode))
+            {
+                Add(new BitmapBlendModeNode(blendingMode));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+        
         public readonly struct UpdateState : IDisposable
         {
             public UpdateState(
@@ -348,9 +408,12 @@ namespace Avalonia.Rendering.SceneGraph
 
                 var dirty = Owner.Layers.GetOrAdd(Owner._node.LayerRoot).Dirty;
 
-                foreach (var operation in Owner._node.DrawOperations)
+                var drawOperations = Owner._node.DrawOperations;
+                var drawOperationsCount = drawOperations.Count;
+
+                for (var i = 0; i < drawOperationsCount; i++)
                 {
-                    dirty.Add(operation.Item.Bounds);
+                    dirty.Add(drawOperations[i].Item.Bounds);
                 }
 
                 Owner._node = Node;
@@ -368,7 +431,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             using (var refCounted = RefCountable.Create(node))
             {
-                Add(refCounted); 
+                Add(refCounted);
             }
         }
 

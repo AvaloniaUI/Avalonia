@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
-using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 using FontFamily = Avalonia.Media.FontFamily;
@@ -32,8 +31,9 @@ namespace Avalonia.Direct2D1.Media
             return fontFamilies;
         }
 
-        public bool TryMatchCharacter(int codepoint, FontWeight fontWeight, FontStyle fontStyle,
-            FontFamily fontFamily, CultureInfo culture, out FontKey fontKey)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
+            FontWeight fontWeight,
+            FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
         {
             var familyCount = Direct2D1FontCollectionCache.InstalledFontCollection.FontFamilyCount;
 
@@ -50,12 +50,12 @@ namespace Avalonia.Direct2D1.Media
 
                 var fontFamilyName = font.FontFamily.FamilyNames.GetString(0);
 
-                fontKey = new FontKey(fontFamilyName, fontWeight, fontStyle);
+                typeface = new Typeface(fontFamilyName, fontStyle, fontWeight);
 
                 return true;
             }
 
-            fontKey = default;
+            typeface = default;
 
             return false;
         }

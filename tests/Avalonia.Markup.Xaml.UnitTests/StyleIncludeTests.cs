@@ -12,7 +12,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             var styleXaml = @"
 <Style xmlns='https://github.com/avaloniaui'
-                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Style.Resources>
         <StaticResource x:Key='brush' ResourceKey='missing' />
     </Style.Resources>
@@ -28,12 +28,11 @@ namespace Avalonia.Markup.Xaml.UnitTests
     </Application.Styles>
 </Application>";
 
-                var loader = new AvaloniaXamlLoader();
                 var app = Application.Current;
 
                 try
                 {
-                    loader.Load(xaml, null, app);
+                    AvaloniaRuntimeXamlLoader.Load(xaml, null, app);
                 }
                 catch (KeyNotFoundException)
                 {

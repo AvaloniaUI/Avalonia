@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
@@ -100,7 +99,8 @@ namespace Avalonia.Controls.UnitTests
         {
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.SetupProperty(x => x.Closed);
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             var services = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object));
@@ -134,6 +134,129 @@ namespace Avalonia.Controls.UnitTests
                 window.Close();
 
                 Assert.Equal(1, count);
+            }
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Child_windows_should_be_closed_before_parent(bool programaticClose)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var child = new Window();
+
+                int count = 0;
+                int windowClosing = 0;
+                int childClosing = 0;
+                int windowClosed = 0;
+                int childClosed = 0;
+
+                window.Closing += (sender, e) =>
+                {
+                    count++;
+                    windowClosing = count;
+                };
+                
+                child.Closing += (sender, e) =>
+                {
+                    count++;
+                    childClosing = count;
+                };
+                
+                window.Closed += (sender, e) =>
+                {
+                    count++;
+                    windowClosed = count;
+                };
+                
+                child.Closed += (sender, e) =>
+                {
+                    count++;
+                    childClosed = count;
+                };
+
+                window.Show();
+                child.Show(window);
+
+                if (programaticClose)
+                {
+                    window.Close();
+                }
+                else
+                {
+                    var cancel = window.PlatformImpl.Closing();
+
+                    Assert.Equal(false, cancel);
+                }
+
+                Assert.Equal(2, windowClosing);
+                Assert.Equal(1, childClosing);
+                Assert.Equal(4, windowClosed);
+                Assert.Equal(3, childClosed);
+            }
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Child_windows_must_not_close_before_parent_has_chance_to_Cancel_OSCloseButton(bool programaticClose)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var child = new Window();
+
+                int count = 0;
+                int windowClosing = 0;
+                int childClosing = 0;
+                int windowClosed = 0;
+                int childClosed = 0;
+
+                window.Closing += (sender, e) =>
+                {
+                    count++;
+                    windowClosing = count;
+                    e.Cancel = true;
+                };
+                
+                child.Closing += (sender, e) =>
+                {
+                    count++;
+                    childClosing = count;
+                };
+                
+                window.Closed += (sender, e) =>
+                {
+                    count++;
+                    windowClosed = count;
+                };
+                
+                child.Closed += (sender, e) =>
+                {
+                    count++;
+                    childClosed = count;
+                };
+
+                window.Show();
+                child.Show(window);
+                
+                if (programaticClose)
+                {
+                    window.Close();
+                }
+                else
+                {
+                    var cancel = window.PlatformImpl.Closing();
+
+                    Assert.Equal(true, cancel);
+                }
+
+                Assert.Equal(2, windowClosing);
+                Assert.Equal(1, childClosing);
+                Assert.Equal(0, windowClosed);
+                Assert.Equal(0, childClosed);
             }
         }
 
@@ -206,7 +329,8 @@ namespace Avalonia.Controls.UnitTests
                 var parent = new Mock<Window>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
-                windowImpl.Setup(x => x.Scaling).Returns(1);
+                windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+                windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent.Object);
@@ -245,7 +369,8 @@ namespace Avalonia.Controls.UnitTests
                 var parent = new Mock<Window>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
-                windowImpl.Setup(x => x.Scaling).Returns(1);
+                windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+                windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent.Object);
@@ -273,7 +398,8 @@ namespace Avalonia.Controls.UnitTests
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -297,13 +423,15 @@ namespace Avalonia.Controls.UnitTests
         {
             var parentWindowImpl = MockWindowingPlatform.CreateWindowMock();
             parentWindowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
-            parentWindowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
-            parentWindowImpl.Setup(x => x.Scaling).Returns(1);
+            parentWindowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1920, 1080));
+            parentWindowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            parentWindowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(320, 200));
-            windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
-            windowImpl.Setup(x => x.Scaling).Returns(1);
+            windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1920, 1080));
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
             var parentWindowServices = TestServices.StyledWindow.With(
                 windowingPlatform: new MockWindowingPlatform(() => parentWindowImpl.Object));
@@ -381,12 +509,15 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
-            public void Child_Should_Be_Measured_With_Infinity_If_SizeToContent_Is_WidthAndHeight()
+            public void Child_Should_Be_Measured_With_MaxAutoSizeHint_If_SizeToContent_Is_WidthAndHeight()
             {
                 using (UnitTestApplication.Start(TestServices.StyledWindow))
                 {
+                    var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                    windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(new Size(1200, 1000));
+
                     var child = new ChildControl();
-                    var target = new Window
+                    var target = new Window(windowImpl.Object)
                     {
                         Width = 100,
                         Height = 50,
@@ -394,10 +525,10 @@ namespace Avalonia.Controls.UnitTests
                         Content = child
                     };
 
-                    Show(target);
+                    target.Show();
 
                     Assert.Equal(1, child.MeasureSizes.Count);
-                    Assert.Equal(Size.Infinity, child.MeasureSizes[0]);
+                    Assert.Equal(new Size(1200, 1000), child.MeasureSizes[0]);
                 }
             }
 
@@ -562,7 +693,7 @@ namespace Avalonia.Controls.UnitTests
         private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
         {
             return Mock.Of<IWindowImpl>(x =>
-                x.Scaling == 1 &&
+                x.RenderScaling == 1 &&
                 x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer.Object);
         }
 

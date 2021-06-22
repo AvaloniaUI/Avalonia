@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Avalonia.Media.TextFormatting
+﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Represents a metric for a <see cref="TextLine"/> objects,
@@ -8,96 +6,58 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public readonly struct TextLineMetrics
     {
-        public TextLineMetrics(double width, double xOrigin, double ascent, double descent, double lineGap)
+        public TextLineMetrics(bool hasOverflowed, double height, int newLineLength, double start, double textBaseline,
+            int trailingWhitespaceLength, double width,
+            double widthIncludingTrailingWhitespace)
         {
-            Ascent = ascent;
-            Descent = descent;
-            LineGap = lineGap;
-            Size = new Size(width, descent - ascent + lineGap);
-            BaselineOrigin = new Point(xOrigin, -ascent);
+            HasOverflowed = hasOverflowed;
+            Height = height;
+            NewLineLength = newLineLength;
+            Start = start;
+            TextBaseline = textBaseline;
+            TrailingWhitespaceLength = trailingWhitespaceLength;
+            Width = width;
+            WidthIncludingTrailingWhitespace = widthIncludingTrailingWhitespace;
         }
+        
+        /// <summary>
+        /// Gets a value that indicates whether content of the line overflows the specified paragraph width.
+        /// </summary>
+        public bool HasOverflowed { get; }
 
         /// <summary>
-        /// Gets the overall recommended distance above the baseline.
+        /// Gets the height of a line of text.
         /// </summary>
-        /// <value>
-        /// The ascent.
-        /// </value>
-        public double Ascent { get; }
+        public double Height { get; }
+        
+        /// <summary>
+        /// Gets the number of newline characters at the end of a line.
+        /// </summary>
+        public int NewLineLength { get; }
+        
+        /// <summary>
+        /// Gets the distance from the start of a paragraph to the starting point of a line.
+        /// </summary>
+        public double Start { get; }
 
         /// <summary>
-        /// Gets the overall recommended distance under the baseline.
+        /// Gets the distance from the top to the baseline of the line of text.
         /// </summary>
-        /// <value>
-        /// The descent.
-        /// </value>
-        public double Descent { get; }
+        public double TextBaseline { get; }
 
         /// <summary>
-        /// Gets the overall recommended additional space between two lines of text.
+        /// Gets the number of whitespace code points beyond the last non-blank character in a line.
         /// </summary>
-        /// <value>
-        /// The leading.
-        /// </value>
-        public double LineGap { get; }
+        public int TrailingWhitespaceLength { get; }
 
         /// <summary>
-        /// Gets the size of the text line.
+        /// Gets the width of a line of text, excluding trailing whitespace characters.
         /// </summary>
-        /// <value>
-        /// The size.
-        /// </value>
-        public Size Size { get; }
+        public double Width { get; }
 
         /// <summary>
-        /// Gets the baseline origin.
+        /// Gets the width of a line of text, including trailing whitespace characters.
         /// </summary>
-        /// <value>
-        /// The baseline origin.
-        /// </value>
-        public Point BaselineOrigin { get; }
-
-        /// <summary>
-        /// Creates the text line metrics.
-        /// </summary>
-        /// <param name="textRuns">The text runs.</param>
-        /// <param name="paragraphWidth">The paragraph width.</param>
-        /// <param name="textAlignment">The text alignment.</param>
-        /// <returns></returns>
-        public static TextLineMetrics Create(IEnumerable<TextRun> textRuns, double paragraphWidth, TextAlignment textAlignment)
-        {
-            var lineWidth = 0.0;
-            var ascent = 0.0;
-            var descent = 0.0;
-            var lineGap = 0.0;
-
-            foreach (var textRun in textRuns)
-            {
-                var shapedRun = (ShapedTextRun)textRun;
-
-                lineWidth += shapedRun.Bounds.Width;
-
-                var textFormat = textRun.Style.TextFormat;
-
-                if (ascent > textRun.Style.TextFormat.FontMetrics.Ascent)
-                {
-                    ascent = textFormat.FontMetrics.Ascent;
-                }
-
-                if (descent < textFormat.FontMetrics.Descent)
-                {
-                    descent = textFormat.FontMetrics.Descent;
-                }
-
-                if (lineGap < textFormat.FontMetrics.LineGap)
-                {
-                    lineGap = textFormat.FontMetrics.LineGap;
-                }
-            }
-
-            var xOrigin = TextLine.GetParagraphOffsetX(lineWidth, paragraphWidth, textAlignment);
-
-            return new TextLineMetrics(lineWidth, xOrigin, ascent, descent, lineGap);
-        }
+        public double WidthIncludingTrailingWhitespace { get; }
     }
 }

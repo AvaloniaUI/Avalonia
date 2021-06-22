@@ -23,10 +23,10 @@ namespace Avalonia.Platform
         Size ClientSize { get; }
 
         /// <summary>
-        /// Gets the scaling factor for the toplevel.
+        /// Gets the scaling factor for the toplevel. This is used for rendering.
         /// </summary>
-        double Scaling { get; }
-
+        double RenderScaling { get; }
+        
         /// <summary>
         /// The list of native platform's surfaces that can be consumed by rendering subsystems.
         /// </summary>
@@ -98,12 +98,17 @@ namespace Avalonia.Platform
         /// Sets the cursor associated with the toplevel.
         /// </summary>
         /// <param name="cursor">The cursor. Use null for default cursor</param>
-        void SetCursor(IPlatformHandle cursor);
+        void SetCursor(ICursorImpl cursor);
 
         /// <summary>
         /// Gets or sets a method called when the underlying implementation is destroyed.
         /// </summary>
         Action Closed { get; set; }
+        
+        /// <summary>
+        /// Gets or sets a method called when the input focus is lost.
+        /// </summary>
+        Action LostFocus { get; set; }
 
         /// <summary>
         /// Gets a mouse device associated with toplevel
@@ -122,5 +127,10 @@ namespace Avalonia.Platform
         /// Gets the current <see cref="WindowTransparencyLevel"/> of the TopLevel.
         /// </summary>
         WindowTransparencyLevel TransparencyLevel { get; }
+
+        /// <summary>
+        /// Gets the <see cref="AcrylicPlatformCompensationLevels"/> for the platform.        
+        /// </summary>
+        AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
     }
 }

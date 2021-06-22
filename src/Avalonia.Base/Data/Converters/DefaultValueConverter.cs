@@ -33,7 +33,7 @@ namespace Avalonia.Data.Converters
 
             if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d && d.Method.GetParameters().Length <= 1)
             {
-                return new AlwaysEnabledDelegateCommand(d);
+                return new MethodToCommandConverter(d);
             }
 
             if (TypeUtilities.TryConvert(targetType, value, culture, out object result))

@@ -4,7 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System.Runtime.InteropServices;
-using Avalonia.Utility;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {

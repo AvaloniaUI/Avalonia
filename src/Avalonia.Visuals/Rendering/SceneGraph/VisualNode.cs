@@ -47,6 +47,9 @@ namespace Avalonia.Rendering.SceneGraph
         public IVisualNode Parent { get; }
 
         /// <inheritdoc/>
+        public CornerRadius ClipToBoundsRadius { get; set; }
+
+        /// <inheritdoc/>
         public Matrix Transform { get; set; }
 
         /// <inheritdoc/>
@@ -262,6 +265,7 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 Transform = Transform,
                 ClipBounds = ClipBounds,
+                ClipToBoundsRadius =  ClipToBoundsRadius,
                 ClipToBounds = ClipToBounds,
                 LayoutBounds = LayoutBounds,
                 GeometryClip = GeometryClip,
@@ -301,7 +305,10 @@ namespace Avalonia.Rendering.SceneGraph
             if (ClipToBounds)
             {
                 context.Transform = Matrix.Identity;
-                context.PushClip(ClipBounds);
+                if (ClipToBoundsRadius.IsEmpty)
+                    context.PushClip(ClipBounds);
+                else
+                    context.PushClip(new RoundedRect(ClipBounds, ClipToBoundsRadius));
             }
 
             context.Transform = Transform;
@@ -351,6 +358,11 @@ namespace Avalonia.Rendering.SceneGraph
 
         internal void TryPreallocateChildren(int count)
         {
+            if (count == 0)
+            {
+                return;
+            }
+
             EnsureChildrenCreated(count);
         }
 
@@ -358,9 +370,12 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var result = new Rect();
 
-            foreach (var operation in DrawOperations)
+            if (_drawOperations != null)
             {
-                result = result.Union(operation.Item.Bounds);
+                foreach (var operation in _drawOperations)
+                {
+                    result = result.Union(operation.Item.Bounds);
+                }
             }
 
             _bounds = result;

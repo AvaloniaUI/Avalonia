@@ -1,17 +1,39 @@
 using Avalonia.Animation;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Direction in which an <see cref="Expander"/> control opens.
+    /// </summary>
     public enum ExpandDirection
     {
+        /// <summary>
+        /// Opens down.
+        /// </summary>
         Down,
+
+        /// <summary>
+        /// Opens up.
+        /// </summary>
         Up,
+
+        /// <summary>
+        /// Opens left.
+        /// </summary>
         Left,
+
+        /// <summary>
+        /// Opens right.
+        /// </summary>
         Right
     }
 
+    /// <summary>
+    /// A control with a header that has a collapsible content section.
+    /// </summary>
+    [PseudoClasses(":expanded", ":up", ":down", ":left", ":right")]
     public class Expander : HeaderedContentControl
     {
         public static readonly StyledProperty<IPageTransition> ContentTransitionProperty =

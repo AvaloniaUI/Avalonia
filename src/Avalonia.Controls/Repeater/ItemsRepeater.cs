@@ -7,9 +7,10 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Logging;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -80,6 +81,7 @@ namespace Avalonia.Controls
         static ItemsRepeater()
         {
             ClipToBoundsProperty.OverrideDefaultValue<ItemsRepeater>(true);
+            RequestBringIntoViewEvent.AddClassHandler<ItemsRepeater>((x, e) => x.OnRequestBringIntoView(e));
         }
 
         /// <summary>
@@ -139,7 +141,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsSourceView ItemsSourceView { get; private set; }
 
-        internal ItemTemplateWrapper ItemTemplateShim { get; set; }
+        internal IElementFactory ItemTemplateShim { get; set; }
         internal Point LayoutOrigin { get; set; }
         internal object LayoutState { get; set; }
         internal IControl MadeAnchor => _viewportManager.MadeAnchor;
@@ -265,6 +267,11 @@ namespace Avalonia.Controls
             return result;
         }
 
+        private protected override void InvalidateMeasureOnChildrenChanged()
+        {
+            // Don't invalidate measure when children change.
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_isLayoutInProgress)
@@ -305,6 +312,7 @@ namespace Avalonia.Controls
                             virtInfo.AutoRecycleCandidate &&
                             !virtInfo.KeepAlive)
                         {
+                            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "AutoClear - {Index}", virtInfo.Index);
                             ClearElementImpl(element);
                         }
                     }
@@ -361,6 +369,12 @@ namespace Avalonia.Controls
                     {
                         var newBounds = element.Bounds;
                         virtInfo.ArrangeBounds = newBounds;
+
+                        if (!virtInfo.IsRegisteredAsAnchorCandidate)
+                        {
+                            _viewportManager.RegisterScrollAnchorCandidate(element);
+                            virtInfo.IsRegisteredAsAnchorCandidate = true;
+                        }
                     }
                 }
 
@@ -512,11 +526,14 @@ namespace Avalonia.Controls
             return element;
         }
 
-        internal void OnElementPrepared(IControl element, int index)
+        internal void OnElementPrepared(IControl element, VirtualizationInfo virtInfo)
         {
-            _viewportManager.OnElementPrepared(element);
+            _viewportManager.OnElementPrepared(element, virtInfo);
+
             if (ElementPrepared != null)
             {
+                var index = virtInfo.Index;
+
                 if (_elementPreparedArgs == null)
                 {
                     _elementPreparedArgs = new ItemsRepeaterElementPreparedEventArgs(element, index);
@@ -661,7 +678,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            ItemTemplateShim = new ItemTemplateWrapper(newValue);
+            ItemTemplateShim = newValue as IElementFactory ?? new ItemTemplateWrapper(newValue);
 
             InvalidateMeasure();
         }
@@ -678,8 +695,15 @@ namespace Avalonia.Controls
             if (oldValue != null)
             {
                 oldValue.UninitializeForContext(LayoutContext);
-                oldValue.MeasureInvalidated -= InvalidateMeasureForLayout;
-                oldValue.ArrangeInvalidated -= InvalidateArrangeForLayout;
+
+                WeakEventHandlerManager.Unsubscribe<EventArgs, ItemsRepeater>(
+                    oldValue,
+                    nameof(AttachedLayout.MeasureInvalidated),
+                    InvalidateMeasureForLayout);
+                WeakEventHandlerManager.Unsubscribe<EventArgs, ItemsRepeater>(
+                    oldValue,
+                    nameof(AttachedLayout.ArrangeInvalidated),
+                    InvalidateArrangeForLayout);
 
                 // Walk through all the elements and make sure they are cleared
                 foreach (var element in Children)
@@ -696,8 +720,15 @@ namespace Avalonia.Controls
             if (newValue != null)
             {
                 newValue.InitializeForContext(LayoutContext);
-                newValue.MeasureInvalidated += InvalidateMeasureForLayout;
-                newValue.ArrangeInvalidated += InvalidateArrangeForLayout;
+
+                WeakEventHandlerManager.Subscribe<AttachedLayout, EventArgs, ItemsRepeater>(
+                    newValue,
+                    nameof(AttachedLayout.MeasureInvalidated),
+                    InvalidateMeasureForLayout);
+                WeakEventHandlerManager.Subscribe<AttachedLayout, EventArgs, ItemsRepeater>(
+                    newValue,
+                    nameof(AttachedLayout.ArrangeInvalidated),
+                    InvalidateArrangeForLayout);
             }
 
             bool isVirtualizingLayout = newValue != null && newValue is VirtualizingLayout;
@@ -741,6 +772,11 @@ namespace Avalonia.Controls
             {
                 _processingItemsSourceChange = null;
             }
+        }
+
+        private void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
+        {
+            _viewportManager.OnBringIntoViewRequested(e);
         }
 
         private void InvalidateMeasureForLayout(object sender, EventArgs e) => InvalidateMeasure();

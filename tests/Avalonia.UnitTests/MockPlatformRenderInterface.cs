@@ -34,7 +34,7 @@ namespace Avalonia.UnitTests
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
         {
-            return Mock.Of<IGeometryImpl>();
+            return Mock.Of<IGeometryImpl>(x => x.Bounds == rect);
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -55,7 +55,8 @@ namespace Avalonia.UnitTests
         public IWriteableBitmapImpl CreateWriteableBitmap(
             PixelSize size,
             Vector dpi,
-            PixelFormat? format = default(PixelFormat?))
+            PixelFormat format,
+            AlphaFormat alphaFormat)
         {
             throw new NotImplementedException();
         }
@@ -63,6 +64,28 @@ namespace Avalonia.UnitTests
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return Mock.Of<IBitmapImpl>();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
+        {
+            throw new NotImplementedException();
         }
 
         public IBitmapImpl LoadBitmap(string fileName)
@@ -87,6 +110,7 @@ namespace Avalonia.UnitTests
 
         public IBitmapImpl LoadBitmap(
             PixelFormat format,
+            AlphaFormat alphaFormat,
             IntPtr data,
             PixelSize size,
             Vector dpi,
@@ -95,12 +119,15 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
-            width = 0;
             return Mock.Of<IGlyphRunImpl>();
         }
 
         public bool SupportsIndividualRoundRects { get; set; }
+
+        public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
+
+        public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
     }
 }

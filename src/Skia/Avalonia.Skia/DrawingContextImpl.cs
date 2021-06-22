@@ -17,23 +17,28 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
     {
         private IDisposable[] _disposables;
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new Stack<PaintWrapper>();
         private readonly Stack<double> _opacityStack = new Stack<double>();
+        private readonly Stack<BitmapBlendingMode> _blendingModeStack = new Stack<BitmapBlendingMode>();
         private readonly Matrix? _postTransform;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private double _currentOpacity = 1.0f;
+        private BitmapBlendingMode _currentBlendingMode = BitmapBlendingMode.SourceOver;
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
         private bool _disposed;
         private GRContext _grContext;
         public GRContext GrContext => _grContext;
+        private ISkiaGpu _gpu;
         private readonly SKPaint _strokePaint = new SKPaint();
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
+        private static SKShader s_acrylicNoiseShader;
+        private readonly ISkiaGpuRenderSession _session; 
 
         /// <summary>
         /// Context create info.
@@ -44,6 +49,11 @@ namespace Avalonia.Skia
             /// Canvas to draw to.
             /// </summary>
             public SKCanvas Canvas;
+
+            /// <summary>
+            /// Surface to draw to.
+            /// </summary>
+            public SKSurface Surface;
 
             /// <summary>
             /// Dpi of drawings.
@@ -64,6 +74,13 @@ namespace Avalonia.Skia
             /// GPU-accelerated context (optional)
             /// </summary>
             public GRContext GrContext;
+
+            /// <summary>
+            /// Skia GPU provider context (optional)
+            /// </summary>
+            public ISkiaGpu Gpu;
+
+            public ISkiaGpuRenderSession CurrentSession;
         }
 
         /// <summary>
@@ -78,10 +95,13 @@ namespace Avalonia.Skia
             _disposables = disposables;
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
+            _gpu = createInfo.Gpu;
             if (_grContext != null)
                 Monitor.Enter(_grContext);
-            
-            Canvas = createInfo.Canvas;
+            Surface = createInfo.Surface;
+            Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas;
+
+            _session = createInfo.CurrentSession;
 
             if (Canvas == null)
             {
@@ -101,8 +121,10 @@ namespace Avalonia.Skia
         /// Skia canvas.
         /// </summary>
         public SKCanvas Canvas { get; }
+        public SKSurface Surface { get; }
 
         SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
+        SKSurface ISkiaDrawingContextImpl.SkSurface => Surface;
         GRContext ISkiaDrawingContextImpl.GrContext => _grContext;
 
         /// <inheritdoc />
@@ -125,6 +147,7 @@ namespace Avalonia.Skia
                 })
             {
                 paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
+                paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
 
                 drawableImage.Draw(this, s, d, paint);
             }
@@ -141,9 +164,12 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawLine(IPen pen, Point p1, Point p2)
         {
-            using (var paint = CreatePaint(_strokePaint, pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
+            using (var paint = CreatePaint(_strokePaint, pen, new Rect(p1, p2).Normalize()))
             {
-                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, paint.Paint);
+                if (paint.Paint is object)
+                {
+                    Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
+                }
             }
         }
 
@@ -151,10 +177,10 @@ namespace Avalonia.Skia
         public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
             var impl = (GeometryImpl) geometry;
-            var size = geometry.Bounds.Size;
+            var rect = geometry.Bounds;
 
-            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
-            using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, size) : default(PaintWrapper))
+            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, rect) : default(PaintWrapper))
+            using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, rect) : default(PaintWrapper))
             {
                 if (fill.Paint != null)
                 {
@@ -227,6 +253,41 @@ namespace Avalonia.Skia
             return bounds;
         }
 
+        /// <inheritdoc />
+        public void DrawRectangle(IExperimentalAcrylicMaterial material, RoundedRect rect)
+        {
+            if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
+                return;
+            
+            var rc = rect.Rect.ToSKRect();
+            var isRounded = rect.IsRounded;
+            var needRoundRect = rect.IsRounded;
+            using var skRoundRect = needRoundRect ? new SKRoundRect() : null;
+
+            if (needRoundRect)
+                skRoundRect.SetRectRadii(rc,
+                    new[]
+                    {
+                        rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
+                        rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
+                    });
+
+            if (material != null)
+            {
+                using (var paint = CreateAcrylicPaint(_fillPaint, material))
+                {
+                    if (isRounded)
+                    {
+                        Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                    }
+                    else
+                    {
+                        Canvas.DrawRect(rc, paint.Paint);
+                    }
+
+                }
+            }
+        }
 
         /// <inheritdoc />
         public void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect, BoxShadows boxShadows = default)
@@ -293,7 +354,7 @@ namespace Avalonia.Skia
 
             if (brush != null)
             {
-                using (var paint = CreatePaint(_fillPaint, brush, rect.Rect.Size))
+                using (var paint = CreatePaint(_fillPaint, brush, rect.Rect))
                 {
                     if (isRounded)
                     {
@@ -303,7 +364,6 @@ namespace Avalonia.Skia
                     {
                         Canvas.DrawRect(rc, paint.Paint);
                     }
-                  
                 }
             }
 
@@ -337,17 +397,19 @@ namespace Avalonia.Skia
 
             if (pen?.Brush != null)
             {
-                using (var paint = CreatePaint(_strokePaint, pen, rect.Rect.Size))
+                using (var paint = CreatePaint(_strokePaint, pen, rect.Rect))
                 {
-                    if (isRounded)
+                    if (paint.Paint is object)
                     {
-                        Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                        if (isRounded)
+                        {
+                            Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                        }
+                        else
+                        {
+                            Canvas.DrawRect(rc, paint.Paint);
+                        }
                     }
-                    else
-                    {
-                        Canvas.DrawRect(rc, paint.Paint);
-                    }
-                   
                 }
             }
         }
@@ -355,7 +417,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            using (var paint = CreatePaint(_fillPaint, foreground, text.Bounds.Size))
+            using (var paint = CreatePaint(_fillPaint, foreground, text.Bounds))
             {
                 var textImpl = (FormattedTextImpl) text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
@@ -363,23 +425,23 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin)
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
-            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Bounds.Size))
+            using (var paintWrapper = CreatePaint(_fillPaint, foreground, new Rect(glyphRun.Size)))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
 
                 ConfigureTextRendering(paintWrapper);
 
-                Canvas.DrawText(glyphRunImpl.TextBlob, (float)baselineOrigin.X,
-                    (float)baselineOrigin.Y, paintWrapper.Paint);
+                Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.BaselineOrigin.X,
+                    (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
             }
         }
 
         /// <inheritdoc />
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
-            return CreateRenderTarget(size);
+            return CreateRenderTarget(size, true);
         }
 
         /// <inheritdoc />
@@ -387,6 +449,12 @@ namespace Avalonia.Skia
         {
             Canvas.Save();
             Canvas.ClipRect(clip.ToSKRect());
+        }
+
+        public void PushClip(RoundedRect clip)
+        {
+            Canvas.Save();
+            Canvas.ClipRoundRect(clip.ToSKRoundRect());
         }
 
         /// <inheritdoc />
@@ -447,6 +515,19 @@ namespace Avalonia.Skia
             Canvas.Restore();
         }
 
+        /// <inheritdoc />
+        public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
+        {
+            _blendingModeStack.Push(_currentBlendingMode);
+            _currentBlendingMode = blendingMode;
+        }
+
+        /// <inheritdoc />
+        public void PopBitmapBlendMode()
+        {
+            _currentBlendingMode = _blendingModeStack.Pop();
+        }
+
         public void Custom(ICustomDrawOperation custom) => custom.Render(this);
 
         /// <inheritdoc />
@@ -456,7 +537,7 @@ namespace Avalonia.Skia
             var paint = new SKPaint();
 
             Canvas.SaveLayer(paint);
-            _maskStack.Push(CreatePaint(paint, mask, bounds.Size, true));
+            _maskStack.Push(CreatePaint(paint, mask, bounds, true));
         }
 
         /// <inheritdoc />
@@ -512,18 +593,19 @@ namespace Avalonia.Skia
         /// <param name="paintWrapper">Paint wrapper.</param>
         /// <param name="targetSize">Target size.</param>
         /// <param name="gradientBrush">Gradient brush.</param>
-        private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
+        private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Rect targetRect, IGradientBrush gradientBrush)
         {
             var tileMode = gradientBrush.SpreadMethod.ToSKShaderTileMode();
             var stopColors = gradientBrush.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
             var stopOffsets = gradientBrush.GradientStops.Select(s => (float)s.Offset).ToArray();
+            var position = targetRect.Position.ToSKPoint();
 
             switch (gradientBrush)
             {
                 case ILinearGradientBrush linearGradient:
                 {
-                    var start = linearGradient.StartPoint.ToPixels(targetSize).ToSKPoint();
-                    var end = linearGradient.EndPoint.ToPixels(targetSize).ToSKPoint();
+                    var start = position + linearGradient.StartPoint.ToPixels(targetRect.Size).ToSKPoint();
+                    var end = position + linearGradient.EndPoint.ToPixels(targetRect.Size).ToSKPoint();
 
                     // would be nice to cache these shaders possibly?
                     using (var shader =
@@ -536,15 +618,63 @@ namespace Avalonia.Skia
                 }
                 case IRadialGradientBrush radialGradient:
                 {
-                    var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
-                    var radius = (float)(radialGradient.Radius * targetSize.Width);
+                    var center = position + radialGradient.Center.ToPixels(targetRect.Size).ToSKPoint();
+                    var radius = (float)(radialGradient.Radius * targetRect.Width);
 
-                    // TODO: There is no SetAlpha in SkiaSharp
-                    //paint.setAlpha(128);
+                    var origin = position + radialGradient.GradientOrigin.ToPixels(targetRect.Size).ToSKPoint();
 
-                    // would be nice to cache these shaders possibly?
-                    using (var shader =
-                        SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                    if (origin.Equals(center))
+                    {
+                        // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
+                        using (var shader =
+                            SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
+                    }
+                    else
+                    {
+                        // when the origin is different to the center use a two point ConicalGradient to match the behaviour of D2D
+
+                        // reverse the order of the stops to match D2D
+                        var reversedColors = new SKColor[stopColors.Length];
+                        Array.Copy(stopColors, reversedColors, stopColors.Length);
+                        Array.Reverse(reversedColors);
+
+                        // and then reverse the reference point of the stops
+                        var reversedStops = new float[stopOffsets.Length];
+                        for (var i = 0; i < stopOffsets.Length; i++)
+                        {
+                            reversedStops[i] = stopOffsets[i];
+                            if (reversedStops[i] > 0 && reversedStops[i] < 1)
+                            {
+                                reversedStops[i] = Math.Abs(1 - stopOffsets[i]);
+                            }
+                        }
+                            
+                        // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
+                        using (var shader = SKShader.CreateCompose(
+                            SKShader.CreateColor(reversedColors[0]),
+                            SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode)
+                        ))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
+                    }
+
+                    break;
+                }
+                case IConicGradientBrush conicGradient:
+                {
+                    var center = position + conicGradient.Center.ToPixels(targetRect.Size).ToSKPoint();
+
+                    // Skia's default is that angle 0 is from the right hand side of the center point
+                    // but we are matching CSS where the vertical point above the center is 0.
+                    var angle = (float)(conicGradient.Angle - 90);
+                    var rotation = SKMatrix.CreateRotationDegrees(angle, center.X, center.Y);
+
+                    using (var shader = 
+                        SKShader.CreateSweepGradient(center, stopColors, stopOffsets, rotation))
                     {
                         paintWrapper.Paint.Shader = shader;
                     }
@@ -564,7 +694,7 @@ namespace Avalonia.Skia
         private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
         {
             var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSizeWithDpi(_dpi), targetSize);
-            var intermediate = CreateRenderTarget(calc.IntermediateSize);
+            var intermediate = CreateRenderTarget(calc.IntermediateSize, false);
 
             paintWrapper.AddDisposable(intermediate);
 
@@ -587,8 +717,8 @@ namespace Avalonia.Skia
 
             var tileTransform =
                 tileBrush.TileMode != TileMode.None
-                    ? SKMatrix.MakeTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y)
-                    : SKMatrix.MakeIdentity();
+                    ? SKMatrix.CreateTranslation(-(float)calc.DestinationRect.X, -(float)calc.DestinationRect.Y)
+                    : SKMatrix.CreateIdentity();
 
             SKShaderTileMode tileX =
                 tileBrush.TileMode == TileMode.None
@@ -613,7 +743,7 @@ namespace Avalonia.Skia
             SKMatrix.Concat(
                 ref paintTransform,
                 tileTransform,
-                SKMatrix.MakeScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
+                SKMatrix.CreateScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
 
             using (var shader = image.ToShader(tileX, tileY, paintTransform))
             {
@@ -639,7 +769,7 @@ namespace Avalonia.Skia
 
             if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
             {
-                var intermediate = CreateRenderTarget(intermediateSize);
+                var intermediate = CreateRenderTarget(intermediateSize, false);
 
                 using (var ctx = intermediate.CreateDrawingContext(visualBrushRenderer))
                 {
@@ -653,15 +783,95 @@ namespace Avalonia.Skia
             }
         }
 
+        static SKColorFilter CreateAlphaColorFilter(double opacity)
+        {
+            if (opacity > 1)
+                opacity = 1;
+            var c = new byte[256];
+            var a = new byte[256];
+            for (var i = 0; i < 256; i++)
+            {
+                c[i] = (byte)i;
+                a[i] = (byte)(i * opacity);
+            }
+
+            return SKColorFilter.CreateTable(a, c, c, c);
+        }
+
+        static byte Blend(byte leftColor, byte leftAlpha, byte rightColor, byte rightAlpha)
+        {
+            var ca = leftColor / 255d;
+            var aa = leftAlpha / 255d;
+            var cb = rightColor / 255d;
+            var ab = rightAlpha / 255d;
+            var r = (ca * aa + cb * ab * (1 - aa)) / (aa + ab * (1 - aa));
+            return (byte)(r * 255);
+        }
+
+        static Color Blend(Color left, Color right)
+        {
+            var aa = left.A / 255d;
+            var ab = right.A / 255d;
+            return new Color(
+                (byte)((aa + ab * (1 - aa)) * 255),
+                Blend(left.R, left.A, right.R, right.A),
+                Blend(left.G, left.A, right.G, right.A),
+                Blend(left.B, left.A, right.B, right.A)                
+            );
+        }
+
+        internal PaintWrapper CreateAcrylicPaint (SKPaint paint, IExperimentalAcrylicMaterial material, bool disposePaint = false)
+        {
+            var paintWrapper = new PaintWrapper(paint, disposePaint);
+
+            paint.IsAntialias = true;
+
+            double opacity = _currentOpacity;
+
+            var tintOpacity =
+                material.BackgroundSource == AcrylicBackgroundSource.Digger ?
+                material.TintOpacity : 1;
+
+            const double noiseOpcity = 0.0225;
+
+            var tintColor = material.TintColor;
+            var tint = new SKColor(tintColor.R, tintColor.G, tintColor.B, tintColor.A);
+
+            if (s_acrylicNoiseShader == null)
+            {
+                using (var stream = typeof(DrawingContextImpl).Assembly.GetManifestResourceStream("Avalonia.Skia.Assets.NoiseAsset_256X256_PNG.png"))
+                using (var bitmap = SKBitmap.Decode(stream))
+                {
+                    s_acrylicNoiseShader = SKShader.CreateBitmap(bitmap, SKShaderTileMode.Repeat, SKShaderTileMode.Repeat)
+                        .WithColorFilter(CreateAlphaColorFilter(noiseOpcity));
+                }
+            }
+
+            using (var backdrop = SKShader.CreateColor(new SKColor(material.MaterialColor.R, material.MaterialColor.G, material.MaterialColor.B, material.MaterialColor.A)))
+            using (var tintShader = SKShader.CreateColor(tint))
+            using (var effectiveTint = SKShader.CreateCompose(backdrop, tintShader))
+            using (var compose = SKShader.CreateCompose(effectiveTint, s_acrylicNoiseShader))
+            {
+                paint.Shader = compose;
+
+                if (material.BackgroundSource == AcrylicBackgroundSource.Digger)
+                {
+                    paint.BlendMode = SKBlendMode.Src;
+                }
+
+                return paintWrapper;
+            }
+        }
+
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
         /// <param name="paint">The paint to wrap.</param>
         /// <param name="brush">Source brush.</param>
-        /// <param name="targetSize">Target size.</param>
+        /// <param name="targetRect">Target rect.</param>
         /// <param name="disposePaint">Optional dispose of the supplied paint.</param>
         /// <returns>Paint wrapper for given brush.</returns>
-        internal PaintWrapper CreatePaint(SKPaint paint, IBrush brush, Size targetSize, bool disposePaint = false)
+        internal PaintWrapper CreatePaint(SKPaint paint, IBrush brush, Rect targetRect, bool disposePaint = false)
         {
             var paintWrapper = new PaintWrapper(paint, disposePaint);
 
@@ -680,7 +890,7 @@ namespace Avalonia.Skia
 
             if (brush is IGradientBrush gradient)
             {
-                ConfigureGradientBrush(ref paintWrapper, targetSize, gradient);
+                ConfigureGradientBrush(ref paintWrapper, targetRect, gradient);
 
                 return paintWrapper;
             }
@@ -700,7 +910,7 @@ namespace Avalonia.Skia
 
             if (tileBrush != null && tileBrushImage != null)
             {
-                ConfigureTileBrush(ref paintWrapper, targetSize, tileBrush, tileBrushImage);
+                ConfigureTileBrush(ref paintWrapper, targetRect.Size, tileBrush, tileBrushImage);
             }
             else
             {
@@ -715,10 +925,10 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="paint">The paint to wrap.</param>
         /// <param name="pen">Source pen.</param>
-        /// <param name="targetSize">Target size.</param>
+        /// <param name="targetRect">Target rect.</param>
         /// <param name="disposePaint">Optional dispose of the supplied paint.</param>
         /// <returns></returns>
-        private PaintWrapper CreatePaint(SKPaint paint, IPen pen, Size targetSize, bool disposePaint = false)
+        private PaintWrapper CreatePaint(SKPaint paint, IPen pen, Rect targetRect, bool disposePaint = false)
         {
             // In Skia 0 thickness means - use hairline rendering
             // and for us it means - there is nothing rendered.
@@ -727,7 +937,7 @@ namespace Avalonia.Skia
                 return default;
             }
 
-            var rv = CreatePaint(paint, pen.Brush, targetSize, disposePaint);
+            var rv = CreatePaint(paint, pen.Brush, targetRect, disposePaint);
 
             paint.IsStroke = true;
             paint.StrokeWidth = (float) pen.Thickness;
@@ -789,9 +999,10 @@ namespace Avalonia.Skia
         /// Create new render target compatible with this drawing context.
         /// </summary>
         /// <param name="size">The size of the render target in DIPs.</param>
+        /// <param name="isLayer">Whether the render target is being created for a layer.</param>
         /// <param name="format">Pixel format.</param>
         /// <returns></returns>
-        private SurfaceRenderTarget CreateRenderTarget(Size size, PixelFormat? format = null)
+        private SurfaceRenderTarget CreateRenderTarget(Size size, bool isLayer, PixelFormat? format = null)
         {
             var pixelSize = PixelSize.FromSizeWithDpi(size, _dpi);
             var createInfo = new SurfaceRenderTarget.CreateInfo
@@ -801,11 +1012,14 @@ namespace Avalonia.Skia
                 Dpi = _dpi,
                 Format = format,
                 DisableTextLcdRendering = !_canTextUseLcdRendering,
-                GrContext = _grContext
+                GrContext = _grContext,
+                Gpu = _gpu,
+                Session = _session,
+                DisableManualFbo = !isLayer,
             };
 
             return new SurfaceRenderTarget(createInfo);
-        }
+        }        
 
         /// <summary>
         /// Skia cached paint state.

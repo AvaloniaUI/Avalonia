@@ -67,88 +67,13 @@ namespace Avalonia.Controls.Primitives
 
             if (underscore != -1 && ShowAccessKey)
             {
-                var rect = HitTestTextPosition(underscore);
+                var rect = TextLayout.HitTestTextPosition(underscore);
                 var offset = new Vector(0, -0.5);
                 context.DrawLine(
                     new Pen(Foreground, 1),
                     rect.BottomLeft + offset,
                     rect.BottomRight + offset);
             }
-        }
-
-        /// <summary>
-        /// Get the pixel location relative to the top-left of the layout box given the text position.
-        /// </summary>
-        /// <param name="textPosition">The text position.</param>
-        /// <returns></returns>
-        private Rect HitTestTextPosition(int textPosition)
-        {
-            if (TextLayout == null)
-            {
-                return new Rect();
-            }
-
-            if (TextLayout.TextLines.Count == 0)
-            {
-                return new Rect();
-            }
-
-            if (textPosition < 0 || textPosition >= Text.Length)
-            {
-                var lastLine = TextLayout.TextLines[TextLayout.TextLines.Count - 1];
-
-                var offsetX = lastLine.LineMetrics.BaselineOrigin.X;
-
-                var lineX = offsetX + lastLine.LineMetrics.Size.Width;
-
-                var lineY = Bounds.Height - lastLine.LineMetrics.Size.Height;
-
-                return new Rect(lineX, lineY, 0, lastLine.LineMetrics.Size.Height);
-            }
-
-            var currentY = 0.0;
-
-            foreach (var textLine in TextLayout.TextLines)
-            {
-                if (textLine.Text.End < textPosition)
-                {
-                    currentY += textLine.LineMetrics.Size.Height;
-
-                    continue;
-                }
-
-                var currentX = textLine.LineMetrics.BaselineOrigin.X;
-
-                foreach (var textRun in textLine.TextRuns)
-                {
-                    if (!(textRun is ShapedTextRun shapedRun))
-                    {
-                        continue;
-                    }
-
-                    if (shapedRun.GlyphRun.Characters.End < textPosition)
-                    {
-                        currentX += shapedRun.GlyphRun.Bounds.Width;
-
-                        continue;
-                    }
-
-                    var characterHit = shapedRun.GlyphRun.FindNearestCharacterHit(textPosition, out var width);
-
-                    var distance = shapedRun.GlyphRun.GetDistanceFromCharacterHit(characterHit);
-
-                    currentX += distance - width;
-
-                    if (characterHit.TrailingLength == 0)
-                    {
-                        width = 0.0;
-                    }
-
-                    return new Rect(currentX, currentY, width, shapedRun.GlyphRun.Bounds.Height);
-                }
-            }
-
-            return new Rect();
         }
 
         /// <inheritdoc/>

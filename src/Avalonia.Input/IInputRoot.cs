@@ -20,7 +20,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets the input element that the pointer is currently over.
         /// </summary>
-        IInputElement PointerOverElement { get; set; }
+        IInputElement? PointerOverElement { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether access keys are shown in the window.
@@ -31,6 +31,6 @@ namespace Avalonia.Input
         /// Gets associated mouse device
         /// </summary>
         [CanBeNull]
-        IMouseDevice MouseDevice { get; }
+        IMouseDevice? MouseDevice { get; }
     }
 }

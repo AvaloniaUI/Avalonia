@@ -55,8 +55,8 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="Router"/> property.
         /// </summary>
-        public static readonly StyledProperty<RoutingState> RouterProperty =
-            AvaloniaProperty.Register<RoutedViewHost, RoutingState>(nameof(Router));
+        public static readonly StyledProperty<RoutingState?> RouterProperty =
+            AvaloniaProperty.Register<RoutedViewHost, RoutingState?>(nameof(Router));
     
         /// <summary>
         /// Initializes a new instance of the <see cref="RoutedViewHost"/> class.
@@ -65,8 +65,15 @@ namespace Avalonia.ReactiveUI
         {
             this.WhenActivated(disposables =>
             {
-                this.WhenAnyObservable(x => x.Router.CurrentViewModel)
-                    .DistinctUntilChanged()
+                var routerRemoved = this
+                    .WhenAnyValue(x => x.Router)
+                    .Where(router => router == null)!
+                    .Cast<object?>();
+
+                this.WhenAnyValue(x => x.Router)
+                    .Where(router => router != null)
+                    .SelectMany(router => router!.CurrentViewModel)
+                    .Merge(routerRemoved)
                     .Subscribe(NavigateToViewModel)
                     .DisposeWith(disposables);
             });
@@ -75,7 +82,7 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// Gets or sets the <see cref="RoutingState"/> of the view model stack.
         /// </summary>
-        public RoutingState Router
+        public RoutingState? Router
         {
             get => GetValue(RouterProperty);
             set => SetValue(RouterProperty, value);
@@ -84,14 +91,21 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// Gets or sets the ReactiveUI view locator used by this router.
         /// </summary>
-        public IViewLocator ViewLocator { get; set; }
+        public IViewLocator? ViewLocator { get; set; }
     
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.
         /// </summary>
         /// <param name="viewModel">ViewModel to which the user navigates.</param>
-        private void NavigateToViewModel(object viewModel)
+        private void NavigateToViewModel(object? viewModel)
         {
+            if (Router == null)
+            {
+                this.Log().Warn("Router property is null. Falling back to default content.");
+                Content = DefaultContent;
+                return;
+            }
+
             if (viewModel == null)
             {
                 this.Log().Info("ViewModel is null. Falling back to default content.");
@@ -110,8 +124,8 @@ namespace Avalonia.ReactiveUI
     
             this.Log().Info($"Ready to show {viewInstance} with autowired {viewModel}.");
             viewInstance.ViewModel = viewModel;
-            if (viewInstance is IStyledElement styled)
-                styled.DataContext = viewModel;
+            if (viewInstance is IDataContextProvider provider)
+                provider.DataContext = viewModel;
             Content = viewInstance;
         }
     }

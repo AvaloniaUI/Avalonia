@@ -1,7 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
+
+#nullable enable
 
 namespace Avalonia
 {
@@ -10,17 +13,13 @@ namespace Avalonia
         IStyleHost,
         ILogical,
         IResourceHost,
-        IDataContextProvider
+        IDataContextProvider,
+        ISupportInitialize
     {
         /// <summary>
         /// Occurs when the control has finished initialization.
         /// </summary>
-        event EventHandler Initialized;
-
-        /// <summary>
-        /// Raised when resources on the element are changed.
-        /// </summary>
-        event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        event EventHandler? Initialized;
 
         /// <summary>
         /// Gets a value that indicates whether the element has finished initialization.
@@ -35,6 +34,6 @@ namespace Avalonia
         /// <summary>
         /// Gets the control's logical parent.
         /// </summary>
-        IStyledElement Parent { get; }
+        IStyledElement? Parent { get; }
     }
 }

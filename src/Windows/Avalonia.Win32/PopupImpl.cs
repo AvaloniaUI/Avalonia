@@ -7,18 +7,71 @@ namespace Avalonia.Win32
 {
     class PopupImpl : WindowImpl, IPopupImpl
     {
+        private readonly IWindowBaseImpl _parent;
         private bool _dropShadowHint = true;
+        private Size? _maxAutoSize;
 
-        public override void Show()
+
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        [ThreadStatic]
+        private static IntPtr s_parentHandle;
+
+        public override void Show(bool activate)
         {
+            // Popups are always shown non-activated.
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
+
+            // We need to steal focus if it's held by a child window of our toplevel window
+            var parent = _parent;
+            while(parent != null)
+            {
+                if(parent is PopupImpl pi)
+                   parent = pi._parent;
+                else
+                    break;
+            }
+
+            if(parent == null)
+                return;
+
+            var focusOwner = UnmanagedMethods.GetFocus();
+            if (focusOwner != IntPtr.Zero &&
+                UnmanagedMethods.GetAncestor(focusOwner, UnmanagedMethods.GetAncestorFlags.GA_ROOT)
+                == parent.Handle.Handle)
+                UnmanagedMethods.SetFocus(parent.Handle.Handle);
+        }
+
+        protected override bool ShouldTakeFocusOnClick => false;
+
+        public override Size MaxAutoSizeHint
+        {
+            get
+            {
+                if (_maxAutoSize is null)
+                {
+                    var monitor = UnmanagedMethods.MonitorFromWindow(
+                        Hwnd,
+                        UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+                    
+                    if (monitor != IntPtr.Zero)
+                    {
+                        var info = UnmanagedMethods.MONITORINFO.Create();
+                        UnmanagedMethods.GetMonitorInfo(monitor, ref info);
+                        _maxAutoSize = info.rcWork.ToPixelRect().ToRect(RenderScaling).Size;
+                    }
+                }
+
+                return _maxAutoSize ?? Size.Infinity;
+            }
         }
 
         protected override IntPtr CreateWindowOverride(ushort atom)
         {
             UnmanagedMethods.WindowStyles style =
                 UnmanagedMethods.WindowStyles.WS_POPUP |
-                UnmanagedMethods.WindowStyles.WS_CLIPSIBLINGS;
+                UnmanagedMethods.WindowStyles.WS_CLIPSIBLINGS |
+                UnmanagedMethods.WindowStyles.WS_CLIPCHILDREN;
 
             UnmanagedMethods.WindowStyles exStyle =
                 UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW |
@@ -33,10 +86,11 @@ namespace Avalonia.Win32
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
-                IntPtr.Zero,
+                s_parentHandle,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+            s_parentHandle = IntPtr.Zero;
 
             EnableBoxShadow(result, _dropShadowHint);
 
@@ -47,6 +101,9 @@ namespace Avalonia.Win32
         {
             switch ((UnmanagedMethods.WindowsMessage)msg)
             {
+                case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
+                    _maxAutoSize = null;
+                    goto default;
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEACTIVATE:
                     return (IntPtr)UnmanagedMethods.MouseActivate.MA_NOACTIVATE;
                 default:
@@ -54,8 +111,24 @@ namespace Avalonia.Win32
             }
         }
 
-        public PopupImpl(IWindowBaseImpl parent)
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        static IWindowBaseImpl SaveParentHandle(IWindowBaseImpl parent)
         {
+            s_parentHandle = parent.Handle.Handle;
+            return parent;
+        }
+
+        // This is needed because we are calling virtual methods from constructors
+        // One fabulous design decision leads to another, I guess
+        public PopupImpl(IWindowBaseImpl parent) : this(SaveParentHandle(parent), false)
+        {
+
+        }
+
+        private PopupImpl(IWindowBaseImpl parent, bool dummy) : base()
+        {
+            _parent = parent;
             PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
 

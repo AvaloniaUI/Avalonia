@@ -6,11 +6,12 @@ namespace Avalonia.Logging
     public interface ILogSink
     {
         /// <summary>
-        /// Checks if given log level is enabled.
+        /// Checks if given log level and area is enabled.
         /// </summary>
         /// <param name="level">The log event level.</param>
+        /// <param name="area">The log area.</param>
         /// <returns><see langword="true"/> if given log level is enabled.</returns>
-        bool IsEnabled(LogEventLevel level);
+        bool IsEnabled(LogEventLevel level, string area);
 
         /// <summary>
         /// Logs an event.

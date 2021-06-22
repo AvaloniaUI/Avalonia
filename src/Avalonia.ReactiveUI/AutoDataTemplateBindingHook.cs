@@ -29,7 +29,7 @@ namespace Avalonia.ReactiveUI
 
         /// <inheritdoc/>
         public bool ExecuteHook(
-            object source, object target,
+            object? source, object target,
             Func<IObservedChange<object, object>[]> getCurrentViewModelProperties,
             Func<IObservedChange<object, object>[]> getCurrentViewProperties,
             BindingDirection direction)
@@ -46,6 +46,10 @@ namespace Avalonia.ReactiveUI
                 return true;
             
             if (itemsControl.ItemTemplate != null)
+                return true;
+
+            if (itemsControl.DataTemplates != null &&
+                itemsControl.DataTemplates.Count > 0)
                 return true;
 
             itemsControl.ItemTemplate = DefaultItemTemplate;

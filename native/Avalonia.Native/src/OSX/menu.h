@@ -31,21 +31,21 @@ private:
     NSMenuItem* _native; // here we hold a pointer to an AvnMenuItem
     IAvnActionCallback* _callback;
     IAvnPredicateCallback* _predicate;
-    bool _isSeperator;
+    bool _isSeparator;
     bool _isCheckable;
     
 public:
     FORWARD_IUNKNOWN()
     
-    AvnAppMenuItem(bool isSeperator);
+    AvnAppMenuItem(bool isSeparator);
     
     NSMenuItem* GetNative();
     
     virtual HRESULT SetSubMenu (IAvnMenu* menu) override;
     
-    virtual HRESULT SetTitle (void* utf8String) override;
+    virtual HRESULT SetTitle (char* utf8String) override;
     
-    virtual HRESULT SetGesture (void* key, AvnInputModifiers modifiers) override;
+    virtual HRESULT SetGesture (AvnKey key, AvnInputModifiers modifiers) override;
     
     virtual HRESULT SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback) override;
     
@@ -60,7 +60,6 @@ public:
     void RaiseOnClicked();
 };
 
-
 class AvnAppMenu : public ComSingleObject<IAvnMenu, &IID_IAvnMenu>
 {
 private:
@@ -71,16 +70,18 @@ public:
     FORWARD_IUNKNOWN()
     
     AvnAppMenu(IAvnMenuEvents* events);
-        
+
     AvnMenu* GetNative();
     
     void RaiseNeedsUpdate ();
+    void RaiseOpening();
+    void RaiseClosed();
     
     virtual HRESULT InsertItem (int index, IAvnMenuItem* item) override;
     
     virtual HRESULT RemoveItem (IAvnMenuItem* item) override;
     
-    virtual HRESULT SetTitle (void* utf8String) override;
+    virtual HRESULT SetTitle (char* utf8String) override;
     
     virtual HRESULT Clear () override;
 };

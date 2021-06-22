@@ -113,6 +113,73 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("(null)", target.Text);
         }
 
+        [Fact]
+        public void Should_Pass_UnsetValue_To_Converter_For_Broken_Binding()
+        {
+            var source = new { A = 1, B = 2, C = 3 };
+            var target = new TextBlock { DataContext = source };
+
+            var binding = new MultiBinding
+            {
+                Converter = new ConcatConverter(),
+                Bindings = new[]
+                {
+                    new Binding { Path = "A" },
+                    new Binding { Path = "B" },
+                    new Binding { Path = "Missing" },
+                },
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("1,2,(unset)", target.Text);
+        }
+
+        [Fact]
+        public void Should_Pass_FallbackValue_To_Converter_For_Broken_Binding()
+        {
+            var source = new { A = 1, B = 2, C = 3 };
+            var target = new TextBlock { DataContext = source };
+
+            var binding = new MultiBinding
+            {
+                Converter = new ConcatConverter(),
+                Bindings = new[]
+                {
+                    new Binding { Path = "A" },
+                    new Binding { Path = "B" },
+                    new Binding { Path = "Missing", FallbackValue = "Fallback" },
+                },
+            };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("1,2,Fallback", target.Text);
+        }
+
+        [Fact]
+        public void MultiBinding_Without_StringFormat_And_Converter()
+        {
+            var source = new { A = 1, B = 2, C = 3 };
+            var target = new ItemsControl {  };
+
+            var binding = new MultiBinding
+            {                
+                Bindings = new[]
+                {
+                    new Binding { Path = "A", Source = source },
+                    new Binding { Path = "B", Source = source },
+                    new Binding { Path = "C", Source = source },
+                },
+            };
+
+            target.Bind(ItemsControl.ItemsProperty, binding);
+            Assert.Equal(target.ItemCount, 3);
+            Assert.Equal(target.Items.ElementAt(0), source.A);
+            Assert.Equal(target.Items.ElementAt(1), source.B);
+            Assert.Equal(target.Items.ElementAt(2), source.C);
+        }
+
         private class ConcatConverter : IMultiValueConverter
         {
             public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)

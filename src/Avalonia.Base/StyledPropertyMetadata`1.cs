@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Data;
 
 namespace Avalonia
@@ -7,7 +6,7 @@ namespace Avalonia
     /// <summary>
     /// Metadata for styled avalonia properties.
     /// </summary>
-    public class StyledPropertyMetadata<TValue> : PropertyMetadata, IStyledPropertyMetadata
+    public class StyledPropertyMetadata<TValue> : AvaloniaPropertyMetadata, IStyledPropertyMetadata
     {
         private Optional<TValue> _defaultValue;
 
@@ -35,12 +34,12 @@ namespace Avalonia
         /// <summary>
         /// Gets the value coercion callback, if any.
         /// </summary>
-        public Func<IAvaloniaObject, TValue, TValue>? CoerceValue { get; private set; }
+        public Func<IAvaloniaObject, TValue, TValue> CoerceValue { get; private set; }
 
         object IStyledPropertyMetadata.DefaultValue => DefaultValue;
 
         /// <inheritdoc/>
-        public override void Merge(PropertyMetadata baseMetadata, AvaloniaProperty property)
+        public override void Merge(AvaloniaPropertyMetadata baseMetadata, AvaloniaProperty property)
         {
             base.Merge(baseMetadata, property);
 

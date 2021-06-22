@@ -1,13 +1,13 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 #nullable enable
@@ -38,10 +38,43 @@ namespace Avalonia.Controls.Primitives
                 (o, v) => o.IsOpen = v);
 
         /// <summary>
+        /// Defines the <see cref="PlacementAnchor"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
+            AvaloniaProperty.Register<Popup, PopupAnchor>(nameof(PlacementAnchor));
+
+        /// <summary>
+        /// Defines the <see cref="PlacementConstraintAdjustment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
+            AvaloniaProperty.Register<Popup, PopupPositionerConstraintAdjustment>(
+                nameof(PlacementConstraintAdjustment),
+                PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY |
+                PopupPositionerConstraintAdjustment.ResizeX | PopupPositionerConstraintAdjustment.ResizeY);
+
+        /// <summary>
+        /// Defines the <see cref="PlacementGravity"/> property.
+        /// </summary>
+        public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
+            AvaloniaProperty.Register<Popup, PopupGravity>(nameof(PlacementGravity));
+
+        /// <summary>
         /// Defines the <see cref="PlacementMode"/> property.
         /// </summary>
         public static readonly StyledProperty<PlacementMode> PlacementModeProperty =
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
+
+        /// <summary>
+        /// Defines the <see cref="PlacementRect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Rect?> PlacementRectProperty =
+            AvaloniaProperty.Register<Popup, Rect?>(nameof(PlacementRect));
+
+        /// <summary>
+        /// Defines the <see cref="PlacementTarget"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Control?> PlacementTargetProperty =
+            AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
 
 #pragma warning disable 618
         /// <summary>
@@ -51,11 +84,26 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges), true);
 #pragma warning restore 618
 
+        public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
+            AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
+
+        public static readonly DirectProperty<Popup, IInputElement> OverlayInputPassThroughElementProperty =
+            AvaloniaProperty.RegisterDirect<Popup, IInputElement>(
+                nameof(OverlayInputPassThroughElement),
+                o => o.OverlayInputPassThroughElement,
+                (o, v) => o.OverlayInputPassThroughElement = v);
+
         /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
         /// </summary>
         public static readonly StyledProperty<double> HorizontalOffsetProperty =
             AvaloniaProperty.Register<Popup, double>(nameof(HorizontalOffset));
+
+        /// <summary>
+        /// Defines the <see cref="IsLightDismissEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsLightDismissEnabledProperty =
+            AvaloniaProperty.Register<Popup, bool>(nameof(IsLightDismissEnabled));
 
         /// <summary>
         /// Defines the <see cref="VerticalOffset"/> property.
@@ -64,16 +112,15 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, double>(nameof(VerticalOffset));
 
         /// <summary>
-        /// Defines the <see cref="PlacementTarget"/> property.
-        /// </summary>
-        public static readonly StyledProperty<Control?> PlacementTargetProperty =
-            AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
-
-        /// <summary>
         /// Defines the <see cref="StaysOpen"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> StaysOpenProperty =
-            AvaloniaProperty.Register<Popup, bool>(nameof(StaysOpen), true);
+        [Obsolete("Use IsLightDismissEnabledProperty")]
+        public static readonly DirectProperty<Popup, bool> StaysOpenProperty =
+            AvaloniaProperty.RegisterDirect<Popup, bool>(
+                nameof(StaysOpen),
+                o => o.StaysOpen,
+                (o, v) => o.StaysOpen = v,
+                true);
 
         /// <summary>
         /// Defines the <see cref="Topmost"/> property.
@@ -81,9 +128,11 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
+        private bool _isOpenRequested = false;
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
+        private IInputElement _overlayInputPassThroughElement;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -98,7 +147,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Raised when the popup closes.
         /// </summary>
-        public event EventHandler<PopupClosedEventArgs>? Closed;
+        public event EventHandler<EventArgs>? Closed;
 
         /// <summary>
         /// Raised when the popup opens.
@@ -137,12 +186,54 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets a value that determines how the <see cref="Popup"/> can be dismissed.
+        /// </summary>
+        /// <remarks>
+        /// Light dismiss is when the user taps on any area other than the popup.
+        /// </remarks>
+        public bool IsLightDismissEnabled
+        {
+            get => GetValue(IsLightDismissEnabledProperty);
+            set => SetValue(IsLightDismissEnabledProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the popup is currently open.
         /// </summary>
         public bool IsOpen
         {
             get { return _isOpen; }
             set { SetAndRaise(IsOpenProperty, ref _isOpen, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the anchor point on the <see cref="PlacementRect"/> when <see cref="PlacementMode"/>
+        /// is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        public PopupAnchor PlacementAnchor
+        {
+            get { return GetValue(PlacementAnchorProperty); }
+            set { SetValue(PlacementAnchorProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value describing how the popup position will be adjusted if the
+        /// unadjusted position would result in the popup being partly constrained.
+        /// </summary>
+        public PopupPositionerConstraintAdjustment PlacementConstraintAdjustment
+        {
+            get { return GetValue(PlacementConstraintAdjustmentProperty); }
+            set { SetValue(PlacementConstraintAdjustmentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value which defines in what direction the popup should open
+        /// when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        public PopupGravity PlacementGravity
+        {
+            get { return GetValue(PlacementGravityProperty); }
+            set { SetValue(PlacementGravityProperty, value); }
         }
 
         /// <summary>
@@ -154,6 +245,33 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(PlacementModeProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the the anchor rectangle within the parent that the popup will be placed
+        /// relative to when <see cref="PlacementMode"/> is <see cref="PlacementMode.AnchorAndGravity"/>.
+        /// </summary>
+        /// <remarks>
+        /// The placement rect defines a rectangle relative to <see cref="PlacementTarget"/> around
+        /// which the popup will be opened, with <see cref="PlacementAnchor"/> determining which edge
+        /// of the placement target is used.
+        /// 
+        /// If unset, the anchor rectangle will be the bounds of the <see cref="PlacementTarget"/>.
+        /// </remarks>
+        public Rect? PlacementRect
+        {
+            get { return GetValue(PlacementRectProperty); }
+            set { SetValue(PlacementRectProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the control that is used to determine the popup's position.
+        /// </summary>
+        [ResolveByName]
+        public Control? PlacementTarget
+        {
+            get { return GetValue(PlacementTargetProperty); }
+            set { SetValue(PlacementTargetProperty, value); }
+        }
+
         [Obsolete("This property has no effect")]
         public bool ObeyScreenEdges
         {
@@ -162,7 +280,33 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// Gets or sets a value indicating whether the event that closes the popup is passed
+        /// through to the parent window.
+        /// </summary>
+        /// <remarks>
+        /// When <see cref="IsLightDismissEnabled"/> is set to true, clicks outside the the popup
+        /// cause the popup to close. When <see cref="OverlayDismissEventPassThrough"/> is set to
+        /// false, these clicks will be handled by the popup and not be registered by the parent
+        /// window. When set to true, the events will be passed through to the parent window.
+        /// </remarks>
+        public bool OverlayDismissEventPassThrough
+        {
+            get => GetValue(OverlayDismissEventPassThroughProperty);
+            set => SetValue(OverlayDismissEventPassThroughProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets an element that should receive pointer input events even when underneath
+        /// the popup's overlay.
+        /// </summary>
+        public IInputElement OverlayInputPassThroughElement
+        {
+            get => _overlayInputPassThroughElement;
+            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
         public double HorizontalOffset
         {
@@ -171,7 +315,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the Vertical offset of the popup in relation to the <see cref="PlacementTarget"/>
+        /// Gets or sets the Vertical offset of the popup in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
         public double VerticalOffset
         {
@@ -180,22 +324,14 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets the control that is used to determine the popup's position.
-        /// </summary>
-        public Control? PlacementTarget
-        {
-            get { return GetValue(PlacementTargetProperty); }
-            set { SetValue(PlacementTargetProperty, value); }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the popup should stay open when the popup is
         /// pressed or loses focus.
         /// </summary>
+        [Obsolete("Use IsLightDismissEnabled")]
         public bool StaysOpen
         {
-            get { return GetValue(StaysOpenProperty); }
-            set { SetValue(StaysOpenProperty, value); }
+            get => !IsLightDismissEnabled;
+            set => IsLightDismissEnabled = !value;
         }
 
         /// <summary>
@@ -223,21 +359,23 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            var placementTarget = PlacementTarget ?? this.GetLogicalAncestors().OfType<IVisual>().FirstOrDefault();
+            var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
 
             if (placementTarget == null)
             {
-                throw new InvalidOperationException("Popup has no logical parent and PlacementTarget is null");
+                _isOpenRequested = true;
+                return;
             }
             
             var topLevel = placementTarget.VisualRoot as TopLevel;
 
             if (topLevel == null)
             {
-                throw new InvalidOperationException(
-                    "Attempted to open a popup not attached to a TopLevel");
+                _isOpenRequested = true;
+                return;
             }
 
+            _isOpenRequested = false;
             var popupHost = OverlayPopupHost.CreatePopupHost(placementTarget, DependencyResolver);
 
             var handlerCleanup = new CompositeDisposable(5);
@@ -260,8 +398,12 @@ namespace Avalonia.Controls.Primitives
 
             popupHost.ConfigurePosition(
                 placementTarget,
-                PlacementMode, 
-                new Point(HorizontalOffset, VerticalOffset));
+                PlacementMode,
+                new Point(HorizontalOffset, VerticalOffset),
+                PlacementAnchor,
+                PlacementGravity,
+                PlacementConstraintAdjustment,
+                PlacementRect);
 
             DeferCleanup(SubscribeToEventHandler<IPopupHost, EventHandler<TemplateAppliedEventArgs>>(popupHost, RootTemplateApplied,
                 (x, handler) => x.TemplateApplied += handler,
@@ -272,6 +414,10 @@ namespace Avalonia.Controls.Primitives
                 DeferCleanup(SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
                     (x, handler) => x.Deactivated += handler,
                     (x, handler) => x.Deactivated -= handler));
+                
+                DeferCleanup(SubscribeToEventHandler<IWindowImpl, Action>(window.PlatformImpl, WindowLostFocus,
+                        (x, handler) => x.LostFocus += handler,
+                        (x, handler) => x.LostFocus -= handler));
             }
             else
             {
@@ -279,13 +425,11 @@ namespace Avalonia.Controls.Primitives
 
                 if (parentPopupRoot?.Parent is Popup popup)
                 {
-                    DeferCleanup(SubscribeToEventHandler<Popup, EventHandler<PopupClosedEventArgs>>(popup, ParentClosed,
+                    DeferCleanup(SubscribeToEventHandler<Popup, EventHandler<EventArgs>>(popup, ParentClosed,
                         (x, handler) => x.Closed += handler,
                         (x, handler) => x.Closed -= handler));
                 }
             }
-
-            DeferCleanup(topLevel.AddDisposableHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel));
 
             DeferCleanup(InputManager.Instance?.Process.Subscribe(ListenForNonClientClick));
 
@@ -299,6 +443,29 @@ namespace Avalonia.Controls.Primitives
                 ((ISetLogicalParent)state.popupHost).SetParent(null);
                 state.popupHost.Dispose();
             });
+
+            if (IsLightDismissEnabled)
+            {
+                var dismissLayer = LightDismissOverlayLayer.GetLightDismissOverlayLayer(placementTarget);
+
+                if (dismissLayer != null)
+                {
+                    dismissLayer.IsVisible = true;
+                    dismissLayer.InputPassThroughElement = _overlayInputPassThroughElement;
+                    
+                    DeferCleanup(Disposable.Create(() =>
+                    {
+                        dismissLayer.IsVisible = false;
+                        dismissLayer.InputPassThroughElement = null;
+                    }));
+                    
+                    DeferCleanup(SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
+                        dismissLayer,
+                        PointerPressedDismissOverlay,
+                        (x, handler) => x.PointerPressed += handler,
+                        (x, handler) => x.PointerPressed -= handler));
+                }
+            }
 
             _openState = new PopupOpenState(topLevel, popupHost, cleanupPopup);
 
@@ -317,7 +484,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Closes the popup.
         /// </summary>
-        public void Close() => CloseCore(null);
+        public void Close() => CloseCore();
 
         /// <summary>
         /// Measures the control.
@@ -327,6 +494,17 @@ namespace Avalonia.Controls.Primitives
         protected override Size MeasureCore(Size availableSize)
         {
             return new Size();
+        }
+
+
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_isOpenRequested)
+            {
+                Open();
+            }
         }
 
         /// <inheritdoc/>
@@ -387,8 +565,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void CloseCore(EventArgs? closeEvent)
+        private void CloseCore()
         {
+            _isOpenRequested = false;
             if (_openState is null)
             {
                 using (BeginIgnoringIsOpen())
@@ -407,24 +586,66 @@ namespace Avalonia.Controls.Primitives
                 IsOpen = false;
             }
 
-            Closed?.Invoke(this, new PopupClosedEventArgs(closeEvent));
+            Closed?.Invoke(this, EventArgs.Empty);
+
+            var focusCheck = FocusManager.Instance?.Current;
+
+            // Focus is set to null as part of popup closing, so we only want to
+            // set focus to PlacementTarget if this is the case
+            if (focusCheck == null)
+            {
+                if (PlacementTarget != null)
+                {
+                    FocusManager.Instance?.Focus(PlacementTarget);
+                }
+                else
+                {
+                    var anc = this.FindLogicalAncestorOfType<IControl>();
+                    if (anc != null)
+                    {
+                        FocusManager.Instance?.Focus(anc);
+                    }
+                }
+            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)
         {
             var mouse = e as RawPointerEventArgs;
 
-            if (!StaysOpen && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
+            if (IsLightDismissEnabled && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
-                CloseCore(e);
+                CloseCore();
             }
         }
 
-        private void PointerPressedOutside(object sender, PointerPressedEventArgs e)
+        private void PointerPressedDismissOverlay(object sender, PointerPressedEventArgs e)
         {
-            if (!StaysOpen && e.Source is IVisual v && !IsChildOrThis(v))
+            if (IsLightDismissEnabled && e.Source is IVisual v && !IsChildOrThis(v))
             {
-                CloseCore(e);
+                CloseCore();
+
+                if (OverlayDismissEventPassThrough)
+                {
+                    PassThroughEvent(e);
+                }
+            }
+        }
+
+        private void PassThroughEvent(PointerPressedEventArgs e)
+        {
+            if (e.Source is LightDismissOverlayLayer layer &&
+                layer.GetVisualRoot() is IInputElement root)
+            {
+                var p = e.GetCurrentPoint(root);
+                var hit = root.InputHitTest(p.Position, x => x != layer);
+
+                if (hit != null)
+                {
+                    e.Pointer.Capture(hit);
+                    hit.RaiseEvent(e);
+                    e.Handled = true;
+                }
             }
         }
 
@@ -518,7 +739,7 @@ namespace Avalonia.Controls.Primitives
 
         private void WindowDeactivated(object sender, EventArgs e)
         {
-            if (!StaysOpen)
+            if (IsLightDismissEnabled)
             {
                 Close();
             }
@@ -526,10 +747,16 @@ namespace Avalonia.Controls.Primitives
 
         private void ParentClosed(object sender, EventArgs e)
         {
-            if (!StaysOpen)
+            if (IsLightDismissEnabled)
             {
                 Close();
             }
+        }
+        
+        private void WindowLostFocus()
+        {
+            if (IsLightDismissEnabled)
+                Close();
         }
 
         private IgnoreIsOpenScope BeginIgnoringIsOpen()

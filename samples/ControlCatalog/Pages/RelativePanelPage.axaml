@@ -1,0 +1,60 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.RelativePanelPage">
+    <RelativePanel Width="620" Height="700" Margin="32">
+        <Border Name="Rect1" Background="Red" Height="50" Width="50">
+            <TextBlock Text="Rect1" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect2" Background="Blue" Height="50" Width="50" RelativePanel.AlignHorizontalCenterWithPanel="True">
+            <TextBlock Text="Rect2" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect3" Background="Green" Height="50" Width="50" RelativePanel.AlignRightWithPanel="True">
+            <TextBlock Text="Rect3" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect4" Background="Red" Height="50" Width="50" RelativePanel.AlignBottomWithPanel="True">
+            <TextBlock Text="Rect4" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect5" Background="Blue" Height="50" Width="50" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignHorizontalCenterWithPanel="True">
+            <TextBlock Text="Rect5" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect6" Background="Green" Height="50" Width="50" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignRightWithPanel="True">
+            <TextBlock Text="Rect6" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect7" Background="Blue" Height="50" RelativePanel.RightOf="Rect1">
+            <TextBlock Text="Rect7 (RightOf Rect1)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect8" Background="Green" Height="50" RelativePanel.Below="Rect7">
+            <TextBlock Text="Rect8 (Below Rect7)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect9" Background="Blue" Height="140" Width="460" RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True">
+            <TextBlock Text="Rect9" Padding="10" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        </Border>
+        <Border Name="Rect10" Background="Red" Width="50" RelativePanel.RightOf="Rect9" RelativePanel.AlignVerticalCenterWith="Rect9">
+            <TextBlock Text="Rect14 (RightOf Rect9, AlignVerticalCenterWith Rect9)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock.RenderTransform>
+                    <TransformGroup>
+                        <RotateTransform Angle="-90"/>
+                    </TransformGroup>
+                </TextBlock.RenderTransform>
+            </TextBlock>
+        </Border>
+        <Border Name="Rect11" Background="Red" Height="50" RelativePanel.AlignBottomWith="Rect9" RelativePanel.AlignHorizontalCenterWith="Rect9">
+            <TextBlock Text="Rect11 (AlignBottomWith Rect9, AlignHorizontalCenterWith Rect9)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect12" Background="Red" Height="50" RelativePanel.Below="Rect8" RelativePanel.AlignLeftWith="Rect7">
+            <TextBlock Text="Rect12 (Below Rect8, AlignLeftWith Rect7)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect13" Background="Blue" Height="50" RelativePanel.Below="Rect12" RelativePanel.AlignRightWith="Rect12">
+            <TextBlock Text="Rect13 (Below Rect12, AlignRightWith Rect12)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect14" Background="Green" Height="50" RelativePanel.Above="Rect9" RelativePanel.AlignRightWith="Rect9">
+            <TextBlock Text="Rect14 (Above Rect9, AlignRightWith Rect9)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <Border Name="Rect15" Background="Red" Height="50" RelativePanel.LeftOf="Rect2" RelativePanel.AlignTopWith="Rect9">
+            <TextBlock Text="Rect15 (LeftOf Rect2, AlignTopWith Rect9)" Padding="10,0" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+    </RelativePanel>
+</UserControl>

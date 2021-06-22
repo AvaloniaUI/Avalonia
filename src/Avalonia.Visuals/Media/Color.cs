@@ -1,17 +1,24 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// An ARGB color.
     /// </summary>
-    public readonly struct Color : IEquatable<Color>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Color : IEquatable<Color>
     {
         static Color()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<ColorAnimator>(prop => typeof(Color).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>
@@ -89,33 +96,69 @@ namespace Avalonia.Media
         /// <returns>The <see cref="Color"/>.</returns>
         public static Color Parse(string s)
         {
-            if (s == null) throw new ArgumentNullException(nameof(s));
-            if (s.Length == 0) throw new FormatException();
-
-            if (s[0] == '#')
+            if (s is null)
             {
-                var or = 0u;
+                throw new ArgumentNullException(nameof(s));
+            }
 
-                if (s.Length == 7)
-                {
-                    or = 0xff000000;
-                }
-                else if (s.Length != 9)
-                {
-                    throw new FormatException($"Invalid color string: '{s}'.");
-                }
+            if (TryParse(s, out Color color))
+            {
+                return color;
+            }
 
-                return FromUInt32(uint.Parse(s.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture) | or);
+            throw new FormatException($"Invalid color string: '{s}'.");
+        }
+
+        /// <summary>
+        /// Parses a color string.
+        /// </summary>
+        /// <param name="s">The color string.</param>
+        /// <returns>The <see cref="Color"/>.</returns>
+        public static Color Parse(ReadOnlySpan<char> s)
+        {
+            if (TryParse(s, out Color color))
+            {
+                return color;
+            }
+
+            throw new FormatException($"Invalid color string: '{s.ToString()}'.");
+        }
+
+        /// <summary>
+        /// Parses a color string.
+        /// </summary>
+        /// <param name="s">The color string.</param>
+        /// <param name="color">The parsed color</param>
+        /// <returns>The status of the operation.</returns>
+        public static bool TryParse(string s, out Color color)
+        {
+            color = default;
+
+            if (s is null)
+            {
+                return false;
+            }
+
+            if (s.Length == 0)
+            {
+                return false;
+            }
+
+            if (s[0] == '#' && TryParseInternal(s.AsSpan(), out color))
+            {
+                return true;
             }
 
             var knownColor = KnownColors.GetKnownColor(s);
 
             if (knownColor != KnownColor.None)
             {
-                return knownColor.ToColor();
+                color = knownColor.ToColor();
+
+                return true;
             }
 
-            throw new FormatException($"Invalid color string: '{s}'.");
+            return false;
         }
 
         /// <summary>
@@ -126,29 +169,16 @@ namespace Avalonia.Media
         /// <returns>The status of the operation.</returns>
         public static bool TryParse(ReadOnlySpan<char> s, out Color color)
         {
-            color = default;
-            if (s == null)
-                return false;
             if (s.Length == 0)
+            {
+                color = default;
+
                 return false;
+            }
 
             if (s[0] == '#')
             {
-                var or = 0u;
-
-                if (s.Length == 7)
-                {
-                    or = 0xff000000;
-                }
-                else if (s.Length != 9)
-                {
-                    return false;
-                }
-
-                if(!uint.TryParse(s.Slice(1).ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var parsed))
-                    return false;
-                color = FromUInt32(parsed| or);
-                return true;
+                return TryParseInternal(s, out color);
             }
 
             var knownColor = KnownColors.GetKnownColor(s.ToString());
@@ -156,10 +186,67 @@ namespace Avalonia.Media
             if (knownColor != KnownColor.None)
             {
                 color = knownColor.ToColor();
+
                 return true;
             }
 
+            color = default;
+
             return false;
+        }
+
+        private static bool TryParseInternal(ReadOnlySpan<char> s, out Color color)
+        {
+            static bool TryParseCore(ReadOnlySpan<char> input, ref Color color)
+            {
+                var alphaComponent = 0u;
+
+                if (input.Length == 6)
+                {
+                    alphaComponent = 0xff000000;
+                }
+                else if (input.Length != 8)
+                {
+                    return false;
+                }
+
+                // TODO: (netstandard 2.1) Can use allocation free parsing.
+                if (!uint.TryParse(input.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+                    out var parsed))
+                {
+                    return false;
+                }
+
+                color = FromUInt32(parsed | alphaComponent);
+
+                return true;
+            }
+
+            color = default;
+
+            ReadOnlySpan<char> input = s.Slice(1);
+
+            // Handle shorthand cases like #FFF (RGB) or #FFFF (ARGB).
+            if (input.Length == 3 || input.Length == 4)
+            {
+                var extendedLength = 2 * input.Length;
+                
+#if !BUILDTASK
+                Span<char> extended = stackalloc char[extendedLength];
+#else
+                char[] extended = new char[extendedLength];
+#endif
+
+                for (int i = 0; i < input.Length; i++)
+                {
+                    extended[2 * i + 0] = input[i];
+                    extended[2 * i + 1] = input[i];
+                }
+
+                return TryParseCore(extended, ref color);
+            }
+
+            return TryParseCore(input, ref color);
         }
 
         /// <summary>

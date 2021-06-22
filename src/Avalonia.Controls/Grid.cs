@@ -8,10 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
-using Avalonia;
-using Avalonia.Collections;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -19,7 +17,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Grid
+    /// Defines a flexible grid area that consists of columns and rows.
     /// </summary>
     public class Grid : Panel
     {
@@ -639,7 +637,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool MeasureOverrideInProgress
         {
-            get { return (CheckFlagsAnd(Flags.MeasureOverrideInProgress)); }
+            get { return CheckFlags(Flags.MeasureOverrideInProgress); }
             set { SetFlags(value, Flags.MeasureOverrideInProgress); }
         }
 
@@ -648,7 +646,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal bool ArrangeOverrideInProgress
         {
-            get { return (CheckFlagsAnd(Flags.ArrangeOverrideInProgress)); }
+            get { return CheckFlags(Flags.ArrangeOverrideInProgress); }
             set { SetFlags(value, Flags.ArrangeOverrideInProgress); }
         }
 
@@ -1228,7 +1226,7 @@ namespace Avalonia.Controls
             Debug.Assert(1 < count && 0 <= start && (start + count) <= definitions.Count);
 
             //  avoid processing when asked to distribute "0"
-            if (!_IsZero(requestedSize))
+            if (!MathUtilities.IsZero(requestedSize))
             {
                 DefinitionBase[] tempDefinitions = TempDefinitions; //  temp array used to remember definitions for sorting
                 int end = start + count;
@@ -1306,7 +1304,7 @@ namespace Avalonia.Controls
                         }
 
                         //  sanity check: requested size must all be distributed
-                        Debug.Assert(_IsZero(sizeToDistribute));
+                        Debug.Assert(MathUtilities.IsZero(sizeToDistribute));
                     }
                     else if (requestedSize <= rangeMaxSize)
                     {
@@ -1346,7 +1344,7 @@ namespace Avalonia.Controls
                         }
 
                         //  sanity check: requested size must all be distributed
-                        Debug.Assert(_IsZero(sizeToDistribute));
+                        Debug.Assert(MathUtilities.IsZero(sizeToDistribute));
                     }
                     else
                     {
@@ -1358,7 +1356,7 @@ namespace Avalonia.Controls
                         double equalSize = requestedSize / count;
 
                         if (equalSize < maxMaxSize
-                            && !_AreClose(equalSize, maxMaxSize))
+                            && !MathUtilities.AreClose(equalSize, maxMaxSize))
                         {
                             //  equi-size is less than maximum of maxSizes.
                             //  in this case distribute so that smaller definitions grow faster than
@@ -2103,7 +2101,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < definitions.Count; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = MathUtilities.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = LayoutHelper.RoundLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -2151,7 +2149,7 @@ namespace Avalonia.Controls
                 // and precision of floating-point computation.  (However, the resulting
                 // display is subject to anti-aliasing problems.   TANSTAAFL.)
 
-                if (!_AreClose(roundedTakenSize, finalSize))
+                if (!MathUtilities.AreClose(roundedTakenSize, finalSize))
                 {
                     // Compute deltas
                     for (int i = 0; i < definitions.Count; ++i)
@@ -2168,7 +2166,7 @@ namespace Avalonia.Controls
                     if (roundedTakenSize > finalSize)
                     {
                         int i = definitions.Count - 1;
-                        while ((adjustedSize > finalSize && !_AreClose(adjustedSize, finalSize)) && i >= 0)
+                        while ((adjustedSize > finalSize && !MathUtilities.AreClose(adjustedSize, finalSize)) && i >= 0)
                         {
                             DefinitionBase definition = definitions[definitionIndices[i]];
                             double final = definition.SizeCache - dpiIncrement;
@@ -2184,7 +2182,7 @@ namespace Avalonia.Controls
                     else if (roundedTakenSize < finalSize)
                     {
                         int i = 0;
-                        while ((adjustedSize < finalSize && !_AreClose(adjustedSize, finalSize)) && i < definitions.Count)
+                        while ((adjustedSize < finalSize && !MathUtilities.AreClose(adjustedSize, finalSize)) && i < definitions.Count)
                         {
                             DefinitionBase definition = definitions[definitionIndices[i]];
                             double final = definition.SizeCache + dpiIncrement;
@@ -2352,25 +2350,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// CheckFlagsAnd returns <c>true</c> if all the flags in the
+        /// CheckFlags returns <c>true</c> if all the flags in the
         /// given bitmask are set on the object.
         /// </summary>
-        private bool CheckFlagsAnd(Flags flags)
+        private bool CheckFlags(Flags flags)
         {
-            return ((_flags & flags) == flags);
-        }
-
-        /// <summary>
-        /// CheckFlagsOr returns <c>true</c> if at least one flag in the
-        /// given bitmask is set.
-        /// </summary>
-        /// <remarks>
-        /// If no bits are set in the given bitmask, the method returns
-        /// <c>true</c>.
-        /// </remarks>
-        private bool CheckFlagsOr(Flags flags)
-        {
-            return (flags == 0 || (_flags & flags) != 0);
+            return _flags.HasAllFlags(flags);
         }
 
         private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
@@ -2537,7 +2522,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool CellsStructureDirty
         {
-            get { return (!CheckFlagsAnd(Flags.ValidCellsStructure)); }
+            get { return !CheckFlags(Flags.ValidCellsStructure); }
             set { SetFlags(!value, Flags.ValidCellsStructure); }
         }
 
@@ -2546,7 +2531,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool ListenToNotifications
         {
-            get { return (CheckFlagsAnd(Flags.ListenToNotifications)); }
+            get { return CheckFlags(Flags.ListenToNotifications); }
             set { SetFlags(value, Flags.ListenToNotifications); }
         }
 
@@ -2555,7 +2540,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SizeToContentU
         {
-            get { return (CheckFlagsAnd(Flags.SizeToContentU)); }
+            get { return CheckFlags(Flags.SizeToContentU); }
             set { SetFlags(value, Flags.SizeToContentU); }
         }
 
@@ -2564,7 +2549,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool SizeToContentV
         {
-            get { return (CheckFlagsAnd(Flags.SizeToContentV)); }
+            get { return CheckFlags(Flags.SizeToContentV); }
             set { SetFlags(value, Flags.SizeToContentV); }
         }
 
@@ -2573,7 +2558,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasStarCellsU
         {
-            get { return (CheckFlagsAnd(Flags.HasStarCellsU)); }
+            get { return CheckFlags(Flags.HasStarCellsU); }
             set { SetFlags(value, Flags.HasStarCellsU); }
         }
 
@@ -2582,7 +2567,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasStarCellsV
         {
-            get { return (CheckFlagsAnd(Flags.HasStarCellsV)); }
+            get { return CheckFlags(Flags.HasStarCellsV); }
             set { SetFlags(value, Flags.HasStarCellsV); }
         }
 
@@ -2591,29 +2576,8 @@ namespace Avalonia.Controls
         /// </summary>
         private bool HasGroup3CellsInAutoRows
         {
-            get { return (CheckFlagsAnd(Flags.HasGroup3CellsInAutoRows)); }
+            get { return CheckFlags(Flags.HasGroup3CellsInAutoRows); }
             set { SetFlags(value, Flags.HasGroup3CellsInAutoRows); }
-        }
-
-        /// <summary>
-        /// fp version of <c>d == 0</c>.
-        /// </summary>
-        /// <param name="d">Value to check.</param>
-        /// <returns><c>true</c> if d == 0.</returns>
-        private static bool _IsZero(double d)
-        {
-            return (Math.Abs(d) < double.Epsilon);
-        }
-
-        /// <summary>
-        /// fp version of <c>d1 == d2</c>
-        /// </summary>
-        /// <param name="d1">First value to compare</param>
-        /// <param name="d2">Second value to compare</param>
-        /// <returns><c>true</c> if d1 == d2</returns>
-        private static bool _AreClose(double d1, double d2)
-        {
-            return (Math.Abs(d1 - d2) < double.Epsilon);
         }
 
         /// <summary>
@@ -2826,10 +2790,10 @@ namespace Avalonia.Controls
             internal LayoutTimeSizeType SizeTypeU;
             internal LayoutTimeSizeType SizeTypeV;
             internal int Next;
-            internal bool IsStarU { get { return ((SizeTypeU & LayoutTimeSizeType.Star) != 0); } }
-            internal bool IsAutoU { get { return ((SizeTypeU & LayoutTimeSizeType.Auto) != 0); } }
-            internal bool IsStarV { get { return ((SizeTypeV & LayoutTimeSizeType.Star) != 0); } }
-            internal bool IsAutoV { get { return ((SizeTypeV & LayoutTimeSizeType.Auto) != 0); } }
+            internal bool IsStarU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Auto);
+            internal bool IsStarV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Auto);
         }
 
         /// <summary>

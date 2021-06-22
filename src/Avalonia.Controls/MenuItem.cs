@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Windows.Input;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -12,17 +14,20 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A menu item control.
     /// </summary>
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
+    [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly DirectProperty<MenuItem, ICommand> CommandProperty =
+        public static readonly DirectProperty<MenuItem, ICommand?> CommandProperty =
             Button.CommandProperty.AddOwner<MenuItem>(
                 menuItem => menuItem.Command,
                 (menuItem, command) => menuItem.Command = command,
@@ -65,6 +70,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<MenuItem, bool>(nameof(IsSubMenuOpen));
 
         /// <summary>
+        /// Defines the <see cref="StaysOpenOnClick"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> StaysOpenOnClickProperty =
+            AvaloniaProperty.Register<MenuItem, bool>(nameof(StaysOpenOnClick));
+
+        /// <summary>
         /// Defines the <see cref="Click"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
@@ -94,10 +105,11 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 
-        private ICommand _command;
+        private ICommand? _command;
         private bool _commandCanExecute = true;
-        private Popup _popup;
-        private IDisposable _gridHack;
+        private Popup? _popup;
+        private KeyGesture _hotkey;
+        private bool _isEmbeddedInMenu;
 
         /// <summary>
         /// Initializes static members of the <see cref="MenuItem"/> class.
@@ -105,7 +117,9 @@ namespace Avalonia.Controls
         static MenuItem()
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
+            PressedMixin.Attach<MenuItem>();
             CommandProperty.Changed.Subscribe(CommandChanged);
+            CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             HeaderProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.HeaderChanged(e));
             IconProperty.Changed.AddClassHandler<MenuItem>((x, e) => x.IconChanged(e));
@@ -118,6 +132,32 @@ namespace Avalonia.Controls
 
         public MenuItem()
         {
+            // HACK: This nasty but it's all WPF's fault. Grid uses an inherited attached
+            // property to store SharedSizeGroup state, except property inheritance is done
+            // down the logical tree. In this case, the control which is setting
+            // Grid.IsSharedSizeScope="True" is not in the logical tree. Instead of fixing
+            // the way Grid stores shared size state, the developers of WPF just created a
+            // binding of the internal state of the visual parent to the menu item. We don't
+            // have much choice but to do the same for now unless we want to refactor Grid,
+            // which I honestly am not brave enough to do right now. Here's the same hack in
+            // the WPF codebase:
+            //
+            // https://github.com/dotnet/wpf/blob/89537909bdf36bc918e88b37751add46a8980bb0/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/MenuItem.cs#L2126-L2141
+            //
+            // In addition to the hack from WPF, we also make sure to return null when we have
+            // no parent. If we don't do this, inheritance falls back to the logical tree,
+            // causing the shared size scope in the parent MenuItem to be used, breaking
+            // menu layout.
+
+            var parentSharedSizeScope = this.GetObservable(VisualParentProperty)
+                .SelectMany(x =>
+                {
+                    var parent = x as Control;
+                    return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
+                           Observable.Return<DefinitionBase.SharedSizeScope?>(null);
+                });
+
+            this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
         }
 
         /// <summary>
@@ -165,7 +205,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the command associated with the menu item.
         /// </summary>
-        public ICommand Command
+        public ICommand? Command
         {
             get { return _command; }
             set { SetAndRaise(CommandProperty, ref _command, value); }
@@ -232,6 +272,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value that indicates the submenu that this <see cref="MenuItem"/> is
+        /// within should not close when this item is clicked.
+        /// </summary>
+        public bool StaysOpenOnClick
+        {
+            get { return GetValue(StaysOpenOnClickProperty); }
+            set { SetValue(StaysOpenOnClickProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets a value that indicates whether the <see cref="MenuItem"/> has a submenu.
         /// </summary>
         public bool HasSubMenu => !Classes.Contains(":empty");
@@ -242,10 +292,10 @@ namespace Avalonia.Controls
         public bool IsTopLevel => Parent is Menu;
 
         /// <inheritdoc/>
-        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false; 
+        bool IMenuItem.IsPointerOverSubMenu => _popup?.IsPointerOverPopup ?? false;
 
         /// <inheritdoc/>
-        IMenuElement IMenuItem.Parent => Parent as IMenuElement;
+        IMenuElement? IMenuItem.Parent => Parent as IMenuElement;
 
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
@@ -253,7 +303,7 @@ namespace Avalonia.Controls
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
         /// <inheritdoc/>
-        IMenuItem IMenuElement.SelectedItem
+        IMenuItem? IMenuElement.SelectedItem
         {
             get
             {
@@ -277,7 +327,7 @@ namespace Avalonia.Controls
                     .Select(x => x.ContainerControl)
                     .OfType<IMenuItem>();
             }
-        }            
+        }
 
         /// <summary>
         /// Opens the submenu.
@@ -304,49 +354,56 @@ namespace Avalonia.Controls
             return new MenuItemContainerGenerator(this);
         }
 
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            if (!_isEmbeddedInMenu)
+            {
+                //Normally the Menu's IMenuInteractionHandler is sending the click events for us
+                //However when the item is not embedded into a menu we need to send them ourselves.
+                RaiseEvent(new RoutedEventArgs(ClickEvent));
+            }
+        }
+
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            if (_hotkey != null) // Control attached again, set Hotkey to create a hotkey manager for this control
+            {
+                HotKey = _hotkey;
+            }
+            
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
             {
                 Command.CanExecuteChanged += CanExecuteChanged;
             }
+
+            var parent = Parent;
+
+            while (parent is MenuItem)
+            {
+                parent = parent.Parent;
+            }
+
+            _isEmbeddedInMenu = parent is IMenu;
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
+            // This will cause the hotkey manager to dispose the observer and the reference to this control
+            if (HotKey != null)
+            {
+                _hotkey = HotKey;
+                HotKey = null;
+            }
+
             base.OnDetachedFromLogicalTree(e);
 
             if (Command != null)
             {
                 Command.CanExecuteChanged -= CanExecuteChanged;
-            }
-
-            _gridHack?.Dispose();
-            _gridHack = null;
-        }
-
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            if (this.GetVisualParent() is IControl parent)
-            {
-                // HACK: This nasty but it's all WPF's fault. Grid uses an inherited attached
-                // property to store SharedSizeGroup state, except property inheritance is done
-                // down the logical tree. In this case, the control which is setting
-                // Grid.IsSharedSizeScope="True" is not in the logical tree. Instead of fixing
-                // the way Grid stores shared size state, the developers of WPF just created a
-                // binding of the internal state of the visual parent to the menu item. We don't
-                // have much choice but to do the same for now unless we want to refactor Grid,
-                // which I honestly am not brave enough to do right now. Here's the same hack in
-                // the WPF codebase:
-                //
-                // https://github.com/dotnet/wpf/blob/89537909bdf36bc918e88b37751add46a8980bb0/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/MenuItem.cs#L2126-L2141
-                _gridHack = Bind(
-                    DefinitionBase.PrivateSharedSizeScopeProperty,
-                    parent.GetBindingObservable(DefinitionBase.PrivateSharedSizeScopeProperty));
             }
         }
 
@@ -489,6 +546,18 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called when the <see cref="CommandParameter"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandParameterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is MenuItem menuItem)
+            {
+                menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
         /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
         /// </summary>
         /// <param name="sender">The event sender.</param>
@@ -534,11 +603,13 @@ namespace Avalonia.Controls
             if (oldValue != null)
             {
                 LogicalChildren.Remove(oldValue);
+                PseudoClasses.Remove(":icon");
             }
 
             if (newValue != null)
             {
                 LogicalChildren.Add(newValue);
+                PseudoClasses.Add(":icon");
             }
         }
 
@@ -548,7 +619,7 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if ((bool)e.NewValue!)
             {
                 Focus();
             }
@@ -560,17 +631,19 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void SubMenuOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var value = (bool)e.NewValue;
+            var value = (bool)e.NewValue!;
 
             if (value)
             {
                 RaiseEvent(new RoutedEventArgs(SubmenuOpenedEvent));
                 IsSelected = true;
+                PseudoClasses.Add(":open");
             }
             else
             {
                 CloseSubmenus();
                 SelectedIndex = -1;
+                PseudoClasses.Remove(":open");
             }
         }
 
@@ -599,6 +672,8 @@ namespace Avalonia.Controls
         {
             SelectedItem = null;
         }
+
+        void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
 
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.

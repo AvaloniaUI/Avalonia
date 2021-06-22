@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Input
 {
     /// <summary>
@@ -78,7 +80,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets or sets the associated mouse cursor.
         /// </summary>
-        Cursor Cursor { get; }
+        Cursor? Cursor { get; }
 
         /// <summary>
         /// Gets a value indicating whether this control and all its parents are enabled.
@@ -89,6 +91,11 @@ namespace Avalonia.Input
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
         bool IsEffectivelyEnabled { get; }
+        
+        /// <summary>
+        /// Gets a value indicating whether keyboard focus is anywhere within the element or its visual tree child elements.
+        /// </summary>
+        bool IsKeyboardFocusWithin { get; }
 
         /// <summary>
         /// Gets a value indicating whether the control is focused.

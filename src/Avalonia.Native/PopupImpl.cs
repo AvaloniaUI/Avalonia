@@ -9,22 +9,24 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
-        private readonly GlPlatformFeature _glFeature;
+        private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
+        private readonly IWindowBaseImpl _parent;
 
         public PopupImpl(IAvaloniaNativeFactory factory,
             AvaloniaNativePlatformOptions opts,
-            GlPlatformFeature glFeature,
+            AvaloniaNativePlatformOpenGlInterface glFeature,
             IWindowBaseImpl parent) : base(opts, glFeature)
         {
             _factory = factory;
             _opts = opts;
             _glFeature = glFeature;
+            _parent = parent;
             using (var e = new PopupEvents(this))
             {
-                var context = _opts.UseGpu ? glFeature?.DeferredContext : null;
+                var context = _opts.UseGpu ? glFeature?.MainContext : null;
                 Init(factory.CreatePopup(e, context?.Context), factory.CreateScreens(), context);
             }
-            PopupPositioner = new ManagedPopupPositioner(new OsxManagedPopupPositionerPopupImplHelper(parent, MoveResize));
+            PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent, MoveResize));
         }
 
         private void MoveResize(PixelPoint position, Size size, double scaling)
@@ -48,14 +50,24 @@ namespace Avalonia.Native
                 // NOP on Popup
             }
 
-            bool IAvnWindowEvents.Closing()
+            int IAvnWindowEvents.Closing()
             {
-                return true;
+                return true.AsComBool();
             }
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
             }
+        }
+
+        public override void Show(bool activate)
+        {
+            var parent = _parent;
+            while (parent is PopupImpl p) 
+                parent = p._parent;
+            if (parent is WindowImpl w)
+                w.Native.TakeFocusFromChildren();
+            base.Show(false);
         }
 
         public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, _glFeature, this);

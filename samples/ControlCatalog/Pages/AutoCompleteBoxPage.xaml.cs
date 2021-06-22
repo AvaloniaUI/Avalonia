@@ -92,13 +92,28 @@ namespace ControlCatalog.Pages
         }
         public StateData[] States { get; private set; }
         
+        private LinkedList<string>[] BuildAllSentences()
+        {
+            return new string[]
+            {
+                "Hello world",
+                "No this is Patrick",
+                "Never gonna give you up",
+                "How does one patch KDE2 under FreeBSD"
+            }
+            .Select(x => new LinkedList<string>(x.Split(' ')))
+            .ToArray();
+        }
+        public LinkedList<string>[] Sentences { get; private set; }
+
         public AutoCompleteBoxPage()
         {
             this.InitializeComponent();
 
             States = BuildAllStates();
+            Sentences = BuildAllSentences();
 
-            foreach (AutoCompleteBox box in GetAllAutoCompleteBox())
+            foreach (AutoCompleteBox box in GetAllAutoCompleteBox().Where(x => x.Name != "CustomAutocompleteBox"))
             {
                 box.Items = States;
             }
@@ -116,6 +131,11 @@ namespace ControlCatalog.Pages
 
             var asyncBox = this.FindControl<AutoCompleteBox>("AsyncBox");
             asyncBox.AsyncPopulator = PopulateAsync;
+
+            var customAutocompleteBox = this.FindControl<AutoCompleteBox>("CustomAutocompleteBox");
+            customAutocompleteBox.Items = Sentences.SelectMany(x => x);
+            customAutocompleteBox.TextFilter = LastWordContains;
+            customAutocompleteBox.TextSelector = AppendWord;
         }
         private IEnumerable<AutoCompleteBox> GetAllAutoCompleteBox()
         {
@@ -135,6 +155,42 @@ namespace ControlCatalog.Pages
             return
                 States.Where(data => StringContains(data.Name, searchText) || StringContains(data.Capital, searchText))
                       .ToList();
+        }
+
+        private bool LastWordContains(string searchText, string item)
+        {
+            var words = searchText.Split(' ');
+            var options = Sentences.Select(x => x.First).ToArray();
+            for (var i = 0; i < words.Length; ++i)
+            {
+                var word = words[i];
+                for (var j = 0; j < options.Length; ++j)
+                {
+                    var option = options[j];
+                    if (option == null)
+                        continue;
+
+                    if (i == words.Length - 1)
+                    {
+                        options[j] = option.Value.ToLower().Contains(word.ToLower()) ? option : null;
+                    }
+                    else
+                    {
+                        options[j] = option.Value.Equals(word, StringComparison.InvariantCultureIgnoreCase) ? option.Next : null;
+                    }
+                }
+            }
+
+            return options.Any(x => x != null && x.Value == item);
+        }
+        private string AppendWord(string text, string item)
+        {
+            string[] parts = text.Split(' ');
+            if (parts.Length == 0)
+                return item;
+
+            parts[parts.Length - 1] = item;
+            return string.Join(" ", parts);
         }
 
         private void InitializeComponent()

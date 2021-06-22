@@ -19,9 +19,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public IPlatformHandle Handle { get; }
-        public Size MaxClientSize { get; }
+        public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
-        public double Scaling { get; } = 1.0;
+        public double RenderScaling { get; } = 1.0;
+        public double DesktopScaling => 1.0;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -29,6 +30,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<double> ScalingChanged { get; set; }
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
+        public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
         public IPopupImpl CreatePopup() => new WindowStub(this);
 
@@ -37,7 +39,13 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }        
+
+        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+
+        public Thickness ExtendedMargins { get; } = new Thickness();
+
+        public Thickness OffScreenMargin { get; } = new Thickness();
 
         public WindowStub(IWindowImpl parent = null)
         {
@@ -65,11 +73,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
-        public void SetCursor(IPlatformHandle cursor)
+        public void SetCursor(ICursorImpl cursor)
         {
         }
 
-        public void Show()
+        public void Show(bool activate)
         {
         }
 
@@ -140,6 +148,18 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
+        {
+        }
+
+        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
+        {
+        }
+
+        public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+        }
+
         public IPopupPositioner PopupPositioner { get; }
 
         public Action GotInputWhenDisabled { get; set; }
@@ -151,6 +171,12 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public bool IsClientAreaExtendedToDecorations { get; }
+
+        public bool NeedsManagedDecorations => false;
+        
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 
     class ClipboardStub : IClipboard
@@ -160,11 +186,21 @@ namespace Avalonia.DesignerSupport.Remote
         public Task SetTextAsync(string text) => Task.CompletedTask;
 
         public Task ClearAsync() => Task.CompletedTask;
+        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+
+        public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
 
-    class CursorFactoryStub : IStandardCursorFactory
+    class CursorFactoryStub : ICursorFactory
     {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType) => new PlatformHandle(IntPtr.Zero, "STUB");
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
+        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
+
+        private class CursorStub : ICursorImpl
+        {
+            public void Dispose() { }
+        }
     }
 
     class IconLoaderStub : IPlatformIconLoader

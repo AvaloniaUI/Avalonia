@@ -112,8 +112,9 @@ namespace Avalonia.DesignerSupport.Remote
             return rv;
         }
 
-        static IAvaloniaRemoteTransportConnection CreateTransport(Uri transport)
+        static IAvaloniaRemoteTransportConnection CreateTransport(CommandLineArgs args)
         {
+            var transport = args.Transport;
             if (transport.Scheme == "tcp-bson")
             {
                 return new BsonTcpTransport().Connect(IPAddress.Parse(transport.Host), transport.Port).Result;
@@ -121,7 +122,7 @@ namespace Avalonia.DesignerSupport.Remote
 
             if (transport.Scheme == "file")
             {
-                return new FileWatcherTransport(transport);
+                return new FileWatcherTransport(transport, args.AppPath);
             }
             PrintUsage();
             return null;
@@ -160,7 +161,7 @@ namespace Avalonia.DesignerSupport.Remote
         public static void Main(string[] cmdline)
         {
             var args = ParseCommandLineArgs(cmdline);
-            var transport = CreateTransport(args.Transport);
+            var transport = CreateTransport(args);
             if (transport is ITransportWithEnforcedMethod enforcedMethod)
                 args.Method = enforcedMethod.PreviewerMethod;
             var asm = Assembly.LoadFile(System.IO.Path.GetFullPath(args.AppPath));
@@ -168,7 +169,7 @@ namespace Avalonia.DesignerSupport.Remote
             if (entryPoint == null)
                 throw Die($"Assembly {args.AppPath} doesn't have an entry point");
             var builderMethod = entryPoint.DeclaringType.GetMethod(BuilderMethodName,
-                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, Array.Empty<Type>(), null);
             if (builderMethod == null)
                 throw Die($"{entryPoint.DeclaringType.FullName} doesn't have a method named {BuilderMethodName}");
             Design.IsDesignMode = true;
