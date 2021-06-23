@@ -513,6 +513,7 @@ private:
     bool _fullScreenActive;
     SystemDecorations _decorations;
     AvnWindowState _lastWindowState;
+    AvnWindowState _actualWindowState;
     bool _inSetWindowState;
     NSRect _preZoomSize;
     bool _transitioningWindowState;
@@ -539,6 +540,7 @@ private:
         _transitioningWindowState = false;
         _inSetWindowState = false;
         _lastWindowState = Normal;
+        _actualWindowState = Normal;
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
@@ -633,7 +635,7 @@ private:
     
     void WindowStateChanged () override
     {
-        if(!_inSetWindowState && !_transitioningWindowState)
+        if(_shown && !_inSetWindowState && !_transitioningWindowState)
         {
             AvnWindowState state;
             GetWindowState(&state);
@@ -963,14 +965,14 @@ private:
     {
         @autoreleasepool
         {
-            if(_lastWindowState == state)
+            if(_actualWindowState == state)
             {
                 return S_OK;
             }
             
             _inSetWindowState = true;
             
-            auto currentState = _lastWindowState;
+            auto currentState = _actualWindowState;
             _lastWindowState = state;
             
             if(currentState == Normal)
@@ -1049,7 +1051,10 @@ private:
                         }
                         break;
                 }
+                
+                _actualWindowState = _lastWindowState;
             }
+            
             
             _inSetWindowState = false;
             
