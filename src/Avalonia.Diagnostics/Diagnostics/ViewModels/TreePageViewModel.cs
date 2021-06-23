@@ -6,8 +6,8 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class TreePageViewModel : ViewModelBase, IDisposable
     {
-        private TreeNode _selectedNode;
-        private ControlDetailsViewModel _details;
+        private TreeNode? _selectedNode;
+        private ControlDetailsViewModel? _details;
 
         public TreePageViewModel(MainViewModel mainView, TreeNode[] nodes)
         {
@@ -29,7 +29,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public TreeNode[] Nodes { get; protected set; }
 
-        public TreeNode SelectedNode
+        public TreeNode? SelectedNode
         {
             get => _selectedNode;
             private set
@@ -44,7 +44,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public ControlDetailsViewModel Details
+        public ControlDetailsViewModel? Details
         {
             get => _details;
             private set
@@ -68,7 +68,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _details?.Dispose();
         }
 
-        public TreeNode FindNode(IControl control)
+        public TreeNode? FindNode(IControl control)
         {
             foreach (var node in Nodes)
             {
@@ -104,7 +104,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private void ExpandNode(TreeNode node)
+        private void ExpandNode(TreeNode? node)
         {
             if (node != null)
             {
@@ -113,7 +113,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private TreeNode FindNode(TreeNode node, IControl control)
+        private TreeNode? FindNode(TreeNode node, IControl control)
         {
             if (node.Visual == control)
             {

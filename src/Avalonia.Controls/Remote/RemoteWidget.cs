@@ -70,7 +70,7 @@ namespace Avalonia.Controls.Remote
 
         public override void Render(DrawingContext context)
         {
-            if (_lastFrame != null)
+            if (_lastFrame != null && _lastFrame.Width != 0 && _lastFrame.Height != 0)
             {
                 var fmt = (PixelFormat) _lastFrame.Format;
                 if (_bitmap == null || _bitmap.PixelSize.Width != _lastFrame.Width ||

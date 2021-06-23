@@ -65,7 +65,8 @@
                              Text="{TemplateBinding Watermark}"
                              DockPanel.Dock="Top" />
                   <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                                VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                                VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                                AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
                       <Panel>
                         <TextBlock Name="PART_Watermark"
                                 Opacity="0.5"

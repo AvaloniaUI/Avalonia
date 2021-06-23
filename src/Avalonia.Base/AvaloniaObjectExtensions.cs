@@ -590,6 +590,30 @@ namespace Avalonia
         /// <typeparamref name="TTarget"/>.
         /// </summary>
         /// <typeparam name="TTarget">The type of the property change sender.</typeparam>
+        /// /// <typeparam name="TValue">The type of the property..</typeparam>
+        /// <param name="observable">The property changed observable.</param>
+        /// <param name="action">
+        /// The method to call. The parameters are the sender and the event args.
+        /// </param>
+        /// <returns>A disposable that can be used to terminate the subscription.</returns>
+        public static IDisposable AddClassHandler<TTarget, TValue>(
+            this IObservable<AvaloniaPropertyChangedEventArgs<TValue>> observable,
+            Action<TTarget, AvaloniaPropertyChangedEventArgs<TValue>> action) where TTarget : AvaloniaObject
+        {
+            return observable.Subscribe(e =>
+            {
+                if (e.Sender is TTarget target)
+                {
+                    action(target, e);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Subscribes to a property changed notifications for changes that originate from a
+        /// <typeparamref name="TTarget"/>.
+        /// </summary>
+        /// <typeparam name="TTarget">The type of the property change sender.</typeparam>
         /// <param name="observable">The property changed observable.</param>
         /// <param name="handler">Given a TTarget, returns the handler.</param>
         /// <returns>A disposable that can be used to terminate the subscription.</returns>
