@@ -1,0 +1,6 @@
+Compat issues with assembly Avalonia.Animation:
+MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.Animation.RunAsync(Avalonia.Animation.Animatable, Avalonia.Animation.IClock)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Animation.IAnimation.RunAsync(Avalonia.Animation.Animatable, Avalonia.Animation.IClock)' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.IAnimation.RunAsync(Avalonia.Animation.Animatable, Avalonia.Animation.IClock)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Animation.IAnimation.RunAsync(Avalonia.Animation.Animatable, Avalonia.Animation.IClock, System.Threading.CancellationToken)' is present in the implementation but not in the contract.
+Total Issues: 4
