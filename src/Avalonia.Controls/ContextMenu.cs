@@ -386,14 +386,19 @@ namespace Avalonia.Controls
         private static void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
         {
             var control = (Control)sender;
-            var contextMenu = control.ContextMenu;
+            var contextMenu = control?.ContextMenu;
 
-            if (control.ContextMenu.IsOpen)
+            if (control == null || contextMenu == null)
+            {
+                return;
+            }
+
+            if (contextMenu.IsOpen)
             {
                 if (contextMenu.CancelClosing())
                     return;
 
-                control.ContextMenu.Close();
+                contextMenu.Close();
                 e.Handled = true;
             }
 
