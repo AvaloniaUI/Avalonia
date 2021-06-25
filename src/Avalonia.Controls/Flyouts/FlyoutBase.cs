@@ -162,7 +162,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             IsOpen = false;
-            Popup.IsOpen = false;
+            Popup!.IsOpen = false;
 
             // Ensure this isn't active
             _transientDisposable?.Dispose();
@@ -195,7 +195,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (Popup.Parent != null && Popup.Parent != placementTarget)
+            if (Popup!.Parent != null && Popup.Parent != placementTarget)
             {
                 ((ISetLogicalParent)Popup).SetParent(null);
             }
@@ -343,7 +343,7 @@ namespace Avalonia.Controls.Primitives
         private void PositionPopup(bool showAtPointer)
         {
             Size sz;
-            if(Popup.Child.DesiredSize == Size.Empty)
+            if(Popup!.Child!.DesiredSize == Size.Empty)
             {
                 // Popup may not have been shown yet. Measure content
                 sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
@@ -483,8 +483,10 @@ namespace Avalonia.Controls.Primitives
             }            
         }
 
-        internal static void SetPresenterClasses(IControl presenter, Classes classes)
+        internal static void SetPresenterClasses(IControl? presenter, Classes classes)
         {
+            if (presenter == null)
+                return;
             //Remove any classes no longer in use, ignoring pseudoclasses
             for (int i = presenter.Classes.Count - 1; i >= 0; i--)
             {

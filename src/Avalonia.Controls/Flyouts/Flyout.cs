@@ -42,7 +42,7 @@ namespace Avalonia.Controls
         {
             if (_classes != null)
             {
-                SetPresenterClasses(Popup.Child, FlyoutPresenterClasses);
+                SetPresenterClasses(Popup?.Child, FlyoutPresenterClasses);
             }
             base.OnOpened();
         }
