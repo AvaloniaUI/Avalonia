@@ -22,6 +22,8 @@ namespace Avalonia.Styling.Activators
             _match = match;
         }
 
+        public override bool IsActive => AreClassesMatching(_classes, _match);
+
         private NotifyCollectionChangedEventHandler ClassesChangedHandler =>
             _classesChangedHandler ??= ClassesChanged;
 

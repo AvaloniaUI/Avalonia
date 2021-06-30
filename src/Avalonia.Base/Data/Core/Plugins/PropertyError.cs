@@ -30,7 +30,7 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
-        public bool SetValue(object value, BindingPriority priority)
+        public bool SetValue(object value)
         {
             return false;
         }

@@ -211,14 +211,13 @@ namespace Avalonia.Data.Core
         /// Attempts to set the value of a property expression.
         /// </summary>
         /// <param name="value">The value to set.</param>
-        /// <param name="priority">The binding priority to use.</param>
         /// <returns>
         /// True if the value could be set; false if the expression does not evaluate to a 
         /// property. Note that the <see cref="ExpressionObserver"/> must be subscribed to
         /// before setting the target value can work, as setting the value requires the
         /// expression to be evaluated.
         /// </returns>
-        public bool SetValue(object value, BindingPriority priority = BindingPriority.LocalValue)
+        public bool SetValue(object value)
         {
             if (Leaf is SettableNode settable)
             {
@@ -230,7 +229,7 @@ namespace Avalonia.Data.Core
                         return false;
                     }
                 }
-                return settable.SetTargetValue(value, priority);
+                return settable.SetTargetValue(value);
             }
             return false;
         }

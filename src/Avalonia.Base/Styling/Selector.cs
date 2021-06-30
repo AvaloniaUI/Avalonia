@@ -73,7 +73,7 @@ namespace Avalonia.Styling
         /// or simply return an immediate result.
         /// </param>
         /// <returns>A <see cref="SelectorMatch"/>.</returns>
-        protected abstract SelectorMatch Evaluate(IStyleable control, bool subscribe);
+        protected internal abstract SelectorMatch Evaluate(IStyleable control, bool subscribe);
 
         /// <summary>
         /// Moves to the previous selector.

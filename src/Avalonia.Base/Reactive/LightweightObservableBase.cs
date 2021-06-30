@@ -109,8 +109,8 @@ namespace Avalonia.Reactive
             }
         }
 
-        protected abstract void Initialize();
-        protected abstract void Deinitialize();
+        protected virtual void Initialize() { }
+        protected virtual void Deinitialize() { }
 
         protected void PublishNext(T value)
         {

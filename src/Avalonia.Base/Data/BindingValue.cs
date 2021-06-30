@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Utilities;
@@ -109,12 +110,12 @@ namespace Avalonia.Data
         /// Gets a value indicating whether the binding value represents either a binding or data
         /// validation error.
         /// </summary>
-        public bool HasError => Type.HasAllFlags(BindingValueType.HasError);
+        public bool HasError => (Type & BindingValueType.HasError) != 0;
 
         /// <summary>
         /// Gets a value indicating whether the binding value has a value.
         /// </summary>
-        public bool HasValue => Type.HasAllFlags(BindingValueType.HasValue);
+        public bool HasValue => (Type & BindingValueType.HasValue) != 0;
 
         /// <summary>
         /// Gets the type of the binding value.
@@ -127,7 +128,15 @@ namespace Avalonia.Data
         /// <exception cref="InvalidOperationException">
         /// <see cref="HasValue"/> is false.
         /// </exception>
-        public T Value => HasValue ? _value : throw new InvalidOperationException("BindingValue has no value.");
+        public T Value
+        {
+            get
+            {
+                if ((Type & BindingValueType.HasValue) == 0)
+                    ThrowNoValue();
+                return _value;
+            }
+        }
 
         /// <summary>
         /// Gets the binding or data validation error.
@@ -236,19 +245,61 @@ namespace Avalonia.Data
 
         /// <summary>
         /// Creates a <see cref="BindingValue{T}"/> from an object, handling the special values
-        /// <see cref="AvaloniaProperty.UnsetValue"/> and <see cref="BindingOperations.DoNothing"/>.
+        /// <see cref="AvaloniaProperty.UnsetValue"/> and <see cref="BindingOperations.DoNothing"/>, and
+        /// producing <see cref="BindingValue{T}"/> with an error if the value could not be converted to
+        /// <typeparamref name="T"/>.
         /// </summary>
         /// <param name="value">The untyped value.</param>
         /// <returns>The typed binding value.</returns>
         public static BindingValue<T> FromUntyped(object? value)
         {
+            static BindingValue<T> CastValueOrError(object? value)
+            {
+                try
+                {
+                    return new BindingValue<T>((T?)value);
+                }
+                catch (Exception e)
+                {
+                    return new BindingValue<T>(BindingValueType.BindingError, default, e);
+                }
+            }
+
             return value switch
             {
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => new BindingValue<T>((T)value)
+                _ => CastValueOrError(value),
             };
+        }
+
+        public static bool operator !=(BindingValue<T> x, Optional<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return true;
+            return !EqualityComparer<T>.Default.Equals(x.Value, y.Value);
+        }
+
+        public static bool operator ==(BindingValue<T> x, Optional<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return false;
+            return EqualityComparer<T>.Default.Equals(x.Value, y.Value);
+        }
+
+        public static bool operator !=(Optional<T> x, BindingValue<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return true;
+            return !EqualityComparer<T>.Default.Equals(x.Value, y.Value);
+        }
+
+        public static bool operator ==(Optional<T> x, BindingValue<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return false;
+            return EqualityComparer<T>.Default.Equals(x.Value, y.Value);
         }
 
         /// <summary>
@@ -377,6 +428,8 @@ namespace Avalonia.Data
                 throw new InvalidOperationException("BindingValue<object> cannot be wrapped in a BindingValue<>.");
             }
         }
+
+        private static void ThrowNoValue() => throw new InvalidOperationException("BindingValue has no value.");
     }
 
     public static class BindingValueExtensions

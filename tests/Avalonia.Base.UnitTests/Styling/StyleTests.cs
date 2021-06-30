@@ -25,7 +25,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, null);
+            ((IStyleable)target).ApplyStyle(style);
 
             Assert.Equal("Foo", target.Foo);
         }
@@ -43,7 +43,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, null);
+            ((IStyleable)target).ApplyStyle(style);
             Assert.Equal("foodefault", target.Foo);
             target.Classes.Add("foo");
             Assert.Equal("Foo", target.Foo);
@@ -64,7 +64,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, target);
+            ((IStyleable)target).ApplyStyle(style, target);
 
             Assert.Equal("Foo", target.Foo);
         }
@@ -83,7 +83,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var target = new Class1();
             var other = new Class1();
 
-            style.TryAttach(target, other);
+            ((IStyleable)target).ApplyStyle(style, other);
 
             Assert.Equal("foodefault", target.Foo);
         }
@@ -104,7 +104,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 Foo = "Original",
             };
 
-            style.TryAttach(target, null);
+            ((IStyleable)target).ApplyStyle(style);
             Assert.Equal("Original", target.Foo);
         }
 
@@ -135,11 +135,11 @@ namespace Avalonia.Base.UnitTests.Styling
             List<string> values = new List<string>();
             target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
 
-            styles.TryAttach(target, null);
+            Apply(target, styles);
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
 
-            Assert.Equal(new[] { "foodefault", "Foo", "Bar", "foodefault" }, values);
+            Assert.Equal(new[] { "foodefault", "Bar", "foodefault" }, values);
         }
 
         [Fact]
@@ -169,7 +169,7 @@ namespace Avalonia.Base.UnitTests.Styling
             List<string> values = new List<string>();
             target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
 
-            styles.TryAttach(target, null);
+            Apply(target, styles);
             target.Classes.Add("bar");
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
@@ -211,7 +211,7 @@ namespace Avalonia.Base.UnitTests.Styling
             List<string> values = new List<string>();
             target.GetObservable(Class1.FooProperty).Subscribe(x => values.Add(x));
 
-            styles.TryAttach(target, null);
+            Apply(target, styles);
             target.Classes.Add("bar");
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
@@ -447,7 +447,7 @@ namespace Avalonia.Base.UnitTests.Styling
             };
 
             var target = new Class1();
-            styles.TryAttach(target, null);
+            Apply(target, styles);
 
             Assert.NotNull(target.Child);
             Assert.Equal(1, instantiationCount);
@@ -483,9 +483,7 @@ namespace Avalonia.Base.UnitTests.Styling
             };
 
             var target = new Class1();
-            target.BeginBatchUpdate();
-            styles.TryAttach(target, null);
-            target.EndBatchUpdate();
+            Apply(target, styles);
 
             Assert.NotNull(target.Child);
             Assert.Equal(1, instantiationCount);
@@ -509,7 +507,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 Child = border = new Border(),
             };
 
-            style.TryAttach(border, null);
+            ((IStyleable)border).ApplyStyle(style);
 
             Assert.Equal(new Thickness(4), border.BorderThickness);
             root.Child = null;
@@ -720,6 +718,18 @@ namespace Avalonia.Base.UnitTests.Styling
             host.Invocations.Clear();
             ((IResourceProvider)target).AddOwner(host.Object);
             resources.Verify(x => x.AddOwner(host.Object), Times.Once);
+        }
+
+        private void Apply(IStyleable target, IReadOnlyList<IStyle> styles)
+        {
+            target.BeginStyling();
+
+            foreach (var style in styles)
+            {
+                target.ApplyStyle((Style)style);
+            }
+
+            target.EndStyling();
         }
 
         private class Class1 : Control

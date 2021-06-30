@@ -1,5 +1,7 @@
 #nullable enable
 
+using System;
+
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -13,9 +15,15 @@ namespace Avalonia.Controls
     public interface ISetInheritanceParent
     {
         /// <summary>
+        /// Clears any explicit inheritance parent set via <see cref="SetParent(StyledElement?)"/>
+        /// and reverts to the default value.
+        /// </summary>
+        void ClearParent();
+
+        /// <summary>
         /// Sets the control's inheritance parent.
         /// </summary>
         /// <param name="parent">The parent.</param>
-        void SetParent(IAvaloniaObject? parent);
+        void SetParent(StyledElement parent);
     }
 }

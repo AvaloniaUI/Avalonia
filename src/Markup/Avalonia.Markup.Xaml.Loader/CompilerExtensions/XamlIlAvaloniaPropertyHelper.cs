@@ -256,7 +256,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .Pop()
                     .Ldsfld(AvaloniaProperty)
                     .Ldsfld(unsetValue)
-                    .Ldc_I4(0)
                     .EmitCall(Types.AvaloniaObjectSetValueMethod, true);
             }
         }

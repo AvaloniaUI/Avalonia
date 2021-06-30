@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -310,19 +309,22 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Should_Set_InheritanceParent_Even_When_LogicalParent_Is_Already_Set()
+        public void Should_Have_Correct_DataContext_Even_When_LogicalParent_Is_Already_Set()
         {
             var logicalParent = new Canvas();
             var child = new TextBlock();
             var (target, host) = CreateTarget();
 
+            // Here we explicitly set the logical parent meaning that the ContentPresenter will not
+            // be the logical parent of its child and therefore won't inherit its data context via
+            // normal inheritance.
             ((ISetLogicalParent)child).SetParent(logicalParent);
             target.Content = child;
 
             Assert.Same(logicalParent, child.Parent);
 
-            // InheritanceParent is exposed via StylingParent.
-            Assert.Same(target, ((IStyledElement)child).StylingParent);
+            // Despite this, the data context should still be correct.
+            Assert.Same(target.DataContext, child.DataContext);
         }
 
         [Fact]

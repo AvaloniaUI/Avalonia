@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
             public override object Value => _reference.TryGetTarget(out var arr) ? arr.GetValue(_indices) : null;
 
-            public override bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object value)
             {
                 if (_reference.TryGetTarget(out var arr))
                 {

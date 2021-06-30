@@ -46,7 +46,15 @@ namespace Avalonia.Data
         /// <exception cref="InvalidOperationException">
         /// <see cref="HasValue"/> is false.
         /// </exception>
-        public T Value => HasValue ? _value : throw new InvalidOperationException("Optional has no value.");
+        public T Value
+        {
+            get
+            {
+                if (!HasValue)
+                    ThrowNoValue();
+                return _value;
+            }
+        }
 
         /// <inheritdoc/>
         public override bool Equals(object? obj) => obj is Optional<T> o && this == o;
@@ -124,7 +132,12 @@ namespace Avalonia.Data
         /// <param name="x">The first value.</param>
         /// <param name="y">The second value.</param>
         /// <returns>True if the values are unequal; otherwise false.</returns>
-        public static bool operator !=(Optional<T> x, Optional<T> y) => !(x == y);
+        public static bool operator !=(Optional<T> x, Optional<T> y)
+        {
+            if (x.HasValue != y.HasValue)
+                return true;
+            return !EqualityComparer<T>.Default.Equals(x.Value, y.Value);
+        }
 
         /// <summary>
         /// Compares two <see cref="Optional{T}"/>s for equality.
@@ -134,24 +147,17 @@ namespace Avalonia.Data
         /// <returns>True if the values are equal; otherwise false.</returns>
         public static bool operator ==(Optional<T> x, Optional<T> y)
         {
-            if (!x.HasValue && !y.HasValue)
-            {
-                return true;
-            }
-            else if (x.HasValue && y.HasValue)
-            {
-                return EqualityComparer<T>.Default.Equals(x.Value, y.Value);
-            }
-            else
-            {
+            if (x.HasValue != y.HasValue)
                 return false;
-            }
+            return EqualityComparer<T>.Default.Equals(x.Value, y.Value);
         }
 
         /// <summary>
         /// Returns an <see cref="Optional{T}"/> without a value.
         /// </summary>
         public static Optional<T> Empty => default;
+
+        private static void ThrowNoValue() => throw new InvalidOperationException("Optional has no value.");
     }
 
     public static class OptionalExtensions

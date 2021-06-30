@@ -27,13 +27,13 @@ namespace Avalonia.Data.Core
         public string PropertyName { get; }
         public override Type PropertyType => _accessor?.PropertyType;
 
-        protected override bool SetTargetValueCore(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value)
         {
             if (_accessor != null)
             {
                 try
                 {
-                    return _accessor.SetValue(value, priority);
+                    return _accessor.SetValue(value);
                 }
                 catch { }
             }

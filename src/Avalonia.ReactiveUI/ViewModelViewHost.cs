@@ -15,7 +15,7 @@ namespace Avalonia.ReactiveUI
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="ViewModel"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<object?> ViewModelProperty =
+        public static readonly StyledProperty<object?> ViewModelProperty =
             AvaloniaProperty.Register<ViewModelViewHost, object?>(nameof(ViewModel));
 
         /// <summary>

@@ -110,7 +110,7 @@ namespace Avalonia.Data.Core.Plugins
                 }
             }
 
-            public override bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object value)
             {
                 if (_property.CanWrite)
                 {

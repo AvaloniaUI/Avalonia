@@ -20,7 +20,6 @@ namespace Avalonia.Styling
         private readonly AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
         private IResourceHost? _owner;
         private IResourceDictionary? _resources;
-        private Dictionary<Type, List<IStyle>?>? _cache;
 
         public Styles()
         {
@@ -101,53 +100,10 @@ namespace Avalonia.Styling
 
         IStyle IReadOnlyList<IStyle>.this[int index] => _styles[index];
 
-        IReadOnlyList<IStyle> IStyle.Children => this;
-
         public IStyle this[int index]
         {
             get => _styles[index];
             set => _styles[index] = value;
-        }
-
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
-        {
-            _cache ??= new Dictionary<Type, List<IStyle>?>();
-
-            if (_cache.TryGetValue(target.StyleKey, out var cached))
-            {
-                if (cached is object)
-                {
-                    foreach (var style in cached)
-                    {
-                        style.TryAttach(target, host);
-                    }
-
-                    return SelectorMatchResult.AlwaysThisType;
-                }
-                else
-                {
-                    return SelectorMatchResult.NeverThisType;
-                }
-            }
-            else
-            {
-                List<IStyle>? matches = null;
-
-                foreach (var child in this)
-                {
-                    if (child.TryAttach(target, host) != SelectorMatchResult.NeverThisType)
-                    {
-                        matches ??= new List<IStyle>();
-                        matches.Add(child);
-                    }
-                }
-
-                _cache.Add(target.StyleKey, matches);
-                
-                return matches is null ?
-                    SelectorMatchResult.NeverThisType :
-                    SelectorMatchResult.AlwaysThisType;
-            }
         }
 
         /// <inheritdoc/>
@@ -288,8 +244,6 @@ namespace Avalonia.Styling
                     {
                         resourceProvider.AddOwner(Owner);
                     }
-
-                    _cache = null;
                 }
 
                 (Owner as IStyleHost)?.StylesAdded(ToReadOnlyList<IStyle>(items));
@@ -305,8 +259,6 @@ namespace Avalonia.Styling
                     {
                         resourceProvider.RemoveOwner(Owner);
                     }
-
-                    _cache = null;
                 }
 
                 (Owner as IStyleHost)?.StylesRemoved(ToReadOnlyList<IStyle>(items));

@@ -577,7 +577,7 @@ namespace Avalonia.Controls
 
             if (base.RegisterContentPresenter(presenter))
             {
-                _childSubscription = Presenter?
+                _childSubscription = ((Control)Presenter)?
                     .GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(ChildChanged);
                 return true;

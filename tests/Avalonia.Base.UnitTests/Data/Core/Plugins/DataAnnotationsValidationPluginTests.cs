@@ -51,9 +51,9 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var errmsg = new RangeAttribute(5, 10).FormatErrorMessage(nameof(Data.Between5And10));
 
             validator.Subscribe(x => result.Add(x));
-            validator.SetValue(3, BindingPriority.LocalValue);
-            validator.SetValue(7, BindingPriority.LocalValue);
-            validator.SetValue(11, BindingPriority.LocalValue);
+            validator.SetValue(3);
+            validator.SetValue(7);
+            validator.SetValue(11);
 
             Assert.Equal(new[]
             {
@@ -81,8 +81,8 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var result = new List<object>();
 
             validator.Subscribe(x => result.Add(x));
-            validator.SetValue("123456", BindingPriority.LocalValue);
-            validator.SetValue("abcdefghijklm", BindingPriority.LocalValue);
+            validator.SetValue("123456");
+            validator.SetValue("abcdefghijklm");
 
             Assert.Equal(3, result.Count);
             Assert.Equal(new BindingNotification(null), result[0]);

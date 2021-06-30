@@ -17,6 +17,8 @@ namespace Avalonia.Controls
     /// </summary>
     public abstract class DefinitionBase : AvaloniaObject
     {
+        private Grid _parent;
+
         /// <summary>
         /// SharedSizeGroup property.
         /// </summary>
@@ -26,12 +28,13 @@ namespace Avalonia.Controls
             set { SetValue(SharedSizeGroupProperty, value); }
         }
 
+        protected override AvaloniaObject GetInheritanceParent() => Parent;
+
         /// <summary>
         /// Callback to notify about entering model tree.
         /// </summary>
         internal void OnEnterParentTree()
         {
-            this.InheritanceParent = Parent;
             if (_sharedState == null)
             {
                 //  start with getting SharedSizeGroup value. 
@@ -300,7 +303,18 @@ namespace Avalonia.Controls
         /// </summary>
         internal abstract double UserMaxSizeValueCache { get; }
 
-        internal Grid Parent { get; set; }
+        internal Grid Parent 
+        {
+            get => _parent;
+            set
+            {
+                if (_parent != value)
+                {
+                    _parent = value;
+                    InheritanceParentChanged();
+                }
+            }
+        }
 
         /// <summary>
         /// SetFlags is used to set or unset one or multiple

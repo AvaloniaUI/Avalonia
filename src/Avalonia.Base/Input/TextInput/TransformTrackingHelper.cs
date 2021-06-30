@@ -96,7 +96,7 @@ namespace Avalonia.Input.TextInput
 
         private void PropertyChangedHandler(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.IsEffectiveValueChange && e.Property == Visual.BoundsProperty)
+            if (e.Property == Visual.BoundsProperty)
                 EnqueueForUpdate();
         }
 

@@ -25,7 +25,7 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
-        public abstract bool SetValue(object value, BindingPriority priority);
+        public abstract bool SetValue(object value);
 
         /// <inheritdoc/>
         public void Subscribe(Action<object> listener)

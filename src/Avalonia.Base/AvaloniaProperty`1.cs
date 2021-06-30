@@ -3,6 +3,8 @@ using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
@@ -24,7 +26,7 @@ namespace Avalonia
             string name,
             Type ownerType,
             AvaloniaPropertyMetadata metadata,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Action<IAvaloniaObject, bool>? notifying = null)
             : base(name, typeof(TValue), ownerType, metadata, notifying)
         {
             _changed = new Subject<AvaloniaPropertyChangedEventArgs<TValue>>();
@@ -78,6 +80,21 @@ namespace Avalonia
         internal void NotifyChanged(AvaloniaPropertyChangedEventArgs<TValue> e)
         {
             _changed.OnNext(e);
+        }
+
+        internal override void RaisePropertyChanged(
+            AvaloniaObject owner,
+            object? oldValue,
+            object? newValue,
+            BindingPriority priority,
+            bool isEffectiveValueChange)
+        {
+            owner.RaisePropertyChanged(
+                this,
+                (TValue?)oldValue,
+                (TValue?)newValue,
+                priority,
+                isEffectiveValueChange);
         }
 
         protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;

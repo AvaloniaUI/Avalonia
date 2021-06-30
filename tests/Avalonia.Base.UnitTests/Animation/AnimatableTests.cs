@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Subjects;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -89,8 +90,9 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var target = CreateTarget();
             var control = CreateControl(target.Object);
+            var source = new BehaviorSubject<BindingValue<double>>(0.5);
 
-            control.SetValue(Visual.OpacityProperty, 0.5, BindingPriority.Animation);
+            control.Bind(Visual.OpacityProperty, source, BindingPriority.Animation);
 
             target.Verify(x => x.Apply(
                 control,
@@ -105,6 +107,7 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var target = CreateTarget();
             var control = CreateControl(target.Object);
+            var source = new BehaviorSubject<BindingValue<double>>(0.8);
 
             control.SetValue(Visual.OpacityProperty, 0.5);
 
@@ -115,7 +118,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 0.5));
             target.Invocations.Clear();
 
-            control.SetValue(Visual.OpacityProperty, 0.8, BindingPriority.StyleTrigger);
+            control.Bind(Visual.OpacityProperty, source, BindingPriority.StyleTrigger);
 
             target.Verify(x => x.Apply(
                 It.IsAny<Control>(),
@@ -146,12 +149,13 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var target = CreateTarget();
             var control = CreateControl(target.Object);
+            var source = new BehaviorSubject<BindingValue<double>>(0.9);
 
             target.Setup(x => x.Property).Returns(Visual.OpacityProperty);
             target.Setup(x => x.Apply(control, It.IsAny<IClock>(), 1.0, 0.5))
                 .Callback(() =>
                 {
-                    control.SetValue(Visual.OpacityProperty, 0.9, BindingPriority.Animation);
+                    control.Bind(Visual.OpacityProperty, source, BindingPriority.Animation);
                 })
                 .Returns(Mock.Of<IDisposable>());
 
@@ -337,28 +341,6 @@ namespace Avalonia.Base.UnitTests.Animation
             var control = CreateControl(target.Object);
 
             control.Transitions = new Transitions { target.Object };
-        }
-
-        [Fact]
-        public void Transitions_Can_Re_Set_During_Batch_Update()
-        {
-            var target = CreateTarget();
-            var control = CreateControl(target.Object);
-
-            // Assigning and then clearing Transitions ensures we have a transition state
-            // collection created.
-            control.Transitions = null;
-
-            control.BeginBatchUpdate();
-
-            // Setting opacity then Transitions means that we receive the Transitions change
-            // after the Opacity change when EndBatchUpdate is called.
-            control.Opacity = 0.5;
-            control.Transitions = new Transitions { target.Object };
-
-            // Which means that the transition state hasn't been initialized with the new
-            // Transitions when the Opacity change notification gets raised here.
-            control.EndBatchUpdate();
         }
 
         private static Mock<ITransition> CreateTarget()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
+using Avalonia.PropertyStore;
 
 #nullable enable
 
@@ -17,6 +18,7 @@ namespace Avalonia.Styling
         private IResourceDictionary? _resources;
         private List<ISetter>? _setters;
         private List<IAnimation>? _animations;
+        private StyleInstance? _sharedInstance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -90,24 +92,44 @@ namespace Avalonia.Styling
         public IList<IAnimation> Animations => _animations ??= new List<IAnimation>();
 
         bool IResourceNode.HasResources => _resources?.Count > 0;
-        IReadOnlyList<IStyle> IStyle.Children => Array.Empty<IStyle>();
 
         public event EventHandler? OwnerChanged;
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host)
+        internal SelectorMatchResult Instance(IStyleable target, IStyleHost? host, out IValueFrame? frame)
         {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-
-            var match = Selector is object ? Selector.Match(target) :
+            var match = Selector is object ?
+                Selector.Match(target, true) :
                 target == host ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
 
-            if (match.IsMatch && (_setters is object || _animations is object))
+            if (match.IsMatch != true)
             {
-                var instance = new StyleInstance(this, target, _setters, _animations, match.Activator);
-                target.StyleApplied(instance);
-                instance.Start();
+                frame = null;
+                return match.Result;
             }
 
+            if (_sharedInstance is object)
+            {
+                frame = _sharedInstance;
+                return SelectorMatchResult.AlwaysThisType;
+            }
+
+            var instance = new StyleInstance(this, match.Activator);
+            var canShareInstance = match.Activator is null;
+
+            if (_setters is object)
+            {
+                foreach (var setter in _setters)
+                {
+                    var setterInstance = setter.Instance(instance, target);
+                    instance.Add(setterInstance);
+                    canShareInstance &= setterInstance == setter;
+                }
+            }
+
+            if (canShareInstance)
+                _sharedInstance = instance;
+
+            frame = instance;
             return match.Result;
         }
 

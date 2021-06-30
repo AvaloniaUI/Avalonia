@@ -41,7 +41,7 @@ namespace Avalonia
         private readonly Lazy<IClipboard> _clipboard =
             new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
-        private Styles? _styles;
+        private ControlStyles? _styles;
         private IResourceDictionary? _resources;
         private bool _notifyingResourcesChanged;
         private Action<IReadOnlyList<IStyle>>? _stylesAdded;
@@ -151,7 +151,7 @@ namespace Avalonia
         /// <remarks>
         /// Global styles apply to all windows in the application.
         /// </remarks>
-        public Styles Styles => _styles ??= new Styles(this);
+        public Styles Styles => _styles ??= new ControlStyles(this);
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
@@ -207,13 +207,20 @@ namespace Avalonia
             ResourcesChanged?.Invoke(this, e);
         }
 
+        void IStyleHost.ApplyStyles(IStyleable target)
+        {
+            _styles?.Apply(target);
+        }
+
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
         {
+            _styles?.InvalidateCache();
             _stylesAdded?.Invoke(styles);
         }
 
         void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
         {
+            _styles?.InvalidateCache();
             _stylesRemoved?.Invoke(styles);
         }
 

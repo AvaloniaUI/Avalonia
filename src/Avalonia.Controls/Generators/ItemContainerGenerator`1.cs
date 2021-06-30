@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls.Generators
 {

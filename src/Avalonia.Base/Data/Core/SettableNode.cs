@@ -4,13 +4,13 @@ namespace Avalonia.Data.Core
 {
     public abstract class SettableNode : ExpressionNode
     {
-        public bool SetTargetValue(object value, BindingPriority priority)
+        public bool SetTargetValue(object value)
         {
             if (ShouldNotSet(value))
             {
                 return true;
             }
-            return SetTargetValueCore(value, priority);
+            return SetTargetValueCore(value);
         }
 
         private bool ShouldNotSet(object value)
@@ -46,7 +46,7 @@ namespace Avalonia.Data.Core
             return ReferenceEquals(lastValue, value);
         }
 
-        protected abstract bool SetTargetValueCore(object value, BindingPriority priority);
+        protected abstract bool SetTargetValueCore(object value);
 
         public abstract Type PropertyType { get; }
     }

@@ -5,9 +5,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Base.UnitTests.Styling
 {
@@ -27,13 +31,13 @@ namespace Avalonia.Base.UnitTests.Styling
             var control = new TextBlock();
             var subject = new BehaviorSubject<object>("foo");
             var descriptor = InstancedBinding.OneWay(subject);
-            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TextProperty, null, false) == descriptor);
+            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TagProperty, null, false) == descriptor);
             var style = Mock.Of<IStyle>();
-            var setter = new Setter(TextBlock.TextProperty, binding);
+            var setter = new Setter(TextBlock.TagProperty, binding);
 
-            setter.Instance(control).Start(false);
+            Apply(setter, control);
 
-            Assert.Equal("foo", control.Text);
+            Assert.Equal("foo", control.Tag);
         }
 
         [Fact]
@@ -46,7 +50,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var style = Mock.Of<IStyle>();
             var setter = new Setter(TextBlock.TagProperty, binding);
 
-            setter.Instance(control).Start(false);
+            Apply(setter, control);
 
             Assert.Equal("", control.Text);
         }
@@ -59,106 +63,309 @@ namespace Avalonia.Base.UnitTests.Styling
             var style = Mock.Of<IStyle>();
             var setter = new Setter(Decorator.ChildProperty, template);
 
-            setter.Instance(control).Start(false);
+            Apply(setter, control);
 
             Assert.IsType<Canvas>(control.Child);
         }
 
         [Fact]
+        public void Can_Set_Direct_Property_In_Style_Without_Activator()
+        {
+            var control = new TextBlock();
+            var target = new Setter();
+            var style = new Style(x => x.Is<TextBlock>())
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextProperty, "foo"),
+                }
+            };
+
+            Apply(style, control);
+
+            Assert.Equal("foo", control.Text);
+        }
+
+        [Fact]
+        public void Can_Set_Direct_Property_Binding_In_Style_Without_Activator()
+        {
+            var control = new TextBlock();
+            var target = new Setter();
+            var source = new BehaviorSubject<object?>("foo");
+            var style = new Style(x => x.Is<TextBlock>())
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextProperty, source.ToBinding()),
+                }
+            };
+
+            Apply(style, control);
+
+            Assert.Equal("foo", control.Text);
+        }
+
+        [Fact]
+        public void Cannot_Set_Direct_Property_Binding_In_Style_With_Activator()
+        {
+            var control = new TextBlock();
+            var target = new Setter();
+            var source = new BehaviorSubject<object?>("foo");
+            var style = new Style(x => x.Is<TextBlock>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextProperty, source.ToBinding()),
+                }
+            };
+
+            Assert.Throws<InvalidOperationException>(() => Apply(style, control));
+        }
+
+        [Fact]
+        public void Cannot_Set_Direct_Property_In_Style_With_Activator()
+        {
+            var control = new TextBlock();
+            var target = new Setter();
+            var style = new Style(x => x.Is<TextBlock>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextProperty, "foo"),
+                }
+            };
+
+            Assert.Throws<InvalidOperationException>(() => Apply(style, control));
+        }
+
+        [Fact]
         public void Does_Not_Call_Converter_ConvertBack_On_OneWay_Binding()
         {
-            var control = new Decorator { Name = "foo" };
-            var style = Mock.Of<IStyle>();
+            var control = new Decorator 
+            { 
+                Name = "foo",
+                Classes = { "foo" },
+            };
+
             var binding = new Binding("Name", BindingMode.OneWay)
             {
                 Converter = new TestConverter(),
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
             };
-            var setter = new Setter(Decorator.TagProperty, binding);
 
-            var instance = setter.Instance(control);
-            instance.Start(true);
-            instance.Activate();
+            var style = new Style(x => x.OfType<Decorator>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Decorator.TagProperty, binding)
+                },
+            };
+
+            Apply(style, control);
 
             Assert.Equal("foobar", control.Tag);
 
             // Issue #1218 caused TestConverter.ConvertBack to throw here.
-            instance.Deactivate();
+            control.Classes.Remove("foo");
             Assert.Null(control.Tag);
         }
 
         [Fact]
         public void Setter_Should_Apply_Value_Without_Activator_With_Style_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TagProperty, "foo");
+            var control = new Border();
+            var style = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter(Control.TagProperty, "foo"),
+                },
+            };
+            var raised = 0;
 
-            setter.Instance(control.Object).Start(false);
+            control.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Control.TagProperty, e.Property);
+                Assert.Equal(BindingPriority.Style, e.Priority);
+                ++raised;
+            };
 
-            control.Verify(x => x.SetValue(
-                TextBlock.TagProperty,
-                "foo",
-                BindingPriority.Style));
+            Apply(style, control);
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
-        public void Setter_Should_Apply_Value_With_Activator_As_Binding_With_StyleTrigger_Priority()
+        public void Setter_Should_Apply_Value_With_Activator_With_StyleTrigger_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TagProperty, "foo");
+            var control = new Border { Classes = { "foo" } };
+            var style = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Control.TagProperty, "foo"),
+                },
+            };
             var activator = new Subject<bool>();
+            var raised = 0;
 
-            var instance = setter.Instance(control.Object);
-            instance.Start(true);
-            instance.Activate();
+            control.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Border.TagProperty, e.Property);
+                Assert.Equal(BindingPriority.StyleTrigger, e.Priority);
+                ++raised;
+            };
 
-            control.Verify(x => x.Bind(
-                TextBlock.TagProperty,
-                It.IsAny<IObservable<BindingValue<object>>>(),
-                BindingPriority.StyleTrigger));
+            Apply(style, control);
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
         public void Setter_Should_Apply_Binding_Without_Activator_With_Style_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TagProperty, CreateMockBinding(TextBlock.TagProperty));
+            var control = new Border
+            {
+                DataContext = "foo",
+            };
 
-            setter.Instance(control.Object).Start(false);
+            var style = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter(Control.TagProperty, new Binding()),
+                },
+            };
 
-            control.Verify(x => x.Bind(
-                TextBlock.TagProperty,
-                It.IsAny<PropertySetterBindingInstance<object>>(),
-                BindingPriority.Style));
+            var raised = 0;
+
+            control.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Control.TagProperty, e.Property);
+                Assert.Equal(BindingPriority.Style, e.Priority);
+                ++raised;
+            };
+
+            Apply(style, control);
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
         public void Setter_Should_Apply_Binding_With_Activator_With_StyleTrigger_Priority()
         {
-            var control = new Mock<IStyleable>();
-            var style = Mock.Of<Style>();
-            var setter = new Setter(TextBlock.TagProperty, CreateMockBinding(TextBlock.TagProperty));
+            var control = new Border
+            { 
+                Classes = { "foo" },
+                DataContext = "foo",
+            };
 
-            var instance = setter.Instance(control.Object);
-            instance.Start(true);
-            instance.Activate();
+            var style = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Control.TagProperty, new Binding()),
+                },
+            };
 
-            control.Verify(x => x.Bind(
-                TextBlock.TagProperty,
-                It.IsAny<IObservable<BindingValue<object>>>(),
-                BindingPriority.StyleTrigger));
+            var raised = 0;
+
+            control.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Control.TagProperty, e.Property);
+                Assert.Equal(BindingPriority.StyleTrigger, e.Priority);
+                ++raised;
+            };
+
+            Apply(style, control);
+
+            Assert.Equal(1, raised);
         }
 
-        private IBinding CreateMockBinding(AvaloniaProperty property)
+        [Fact]
+        public void Direct_Property_Setter_With_TwoWay_Binding_Should_Update_Source()
         {
-            var subject = new Subject<object>();
-            var descriptor = InstancedBinding.OneWay(subject);
-            var binding = Mock.Of<IBinding>(x => 
-                x.Initiate(It.IsAny<IAvaloniaObject>(), property, null, false) == descriptor);
-            return binding;
+            using var app = UnitTestApplication.Start(TestServices.MockThreadingInterface);
+            var data = new Data { Foo = "foo" };
+            var control = new TextBox
+            {
+                DataContext = data,
+            };
+
+            var style = new Style(x => x.OfType<TextBox>())
+            {
+                Setters = 
+                {
+                    new Setter
+                    {
+                        Property = TextBox.TextProperty,
+                        Value = new Binding
+                        {
+                            Path = "Foo",
+                            Mode = BindingMode.TwoWay
+                        }
+                    }
+                },
+            };
+
+            Apply(style, control);
+            Assert.Equal("foo", control.Text);
+
+            control.Text = "bar";
+            Assert.Equal("bar", data.Foo);
+        }
+
+        [Fact]
+        public void Styled_Property_Setter_With_TwoWay_Binding_Should_Update_Source()
+        {
+            var data = new Data { Bar = Brushes.Red };
+            var control = new Border
+            {
+                DataContext = data,
+            };
+
+            var style = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = new Binding
+                        {
+                            Path = "Bar",
+                            Mode = BindingMode.TwoWay
+                        }
+                    }
+                },
+            };
+
+            Apply(style, control);
+            Assert.Equal(Brushes.Red, control.Background);
+
+            control.Background = Brushes.Green;
+            Assert.Equal(Brushes.Green, data.Bar);
+        }
+
+        private void Apply(Style style, Control control)
+        {
+            ((IStyleable)control).ApplyStyle(style);
+        }
+
+        private void Apply(Setter setter, Control control)
+        {
+            var style = new Style(x => x.Is<Control>())
+            {
+                Setters = { setter },
+            };
+
+            Apply(style, control);
+        }
+
+        private class Data
+        {
+            public string? Foo { get; set; }
+            public IBrush? Bar { get; set; }
         }
 
         private class TestConverter : IValueConverter

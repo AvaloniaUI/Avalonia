@@ -14,17 +14,14 @@ namespace Avalonia.Diagnostics
         /// <param name="property">The property.</param>
         /// <param name="value">The current property value.</param>
         /// <param name="priority">The priority of the current value.</param>
-        /// <param name="diagnostic">A diagnostic string.</param>
         public AvaloniaPropertyValue(
             AvaloniaProperty property,
             object value,
-            BindingPriority priority,
-            string diagnostic)
+            BindingPriority priority)
         {
             Property = property;
             Value = value;
             Priority = priority;
-            Diagnostic = diagnostic;
         }
 
         /// <summary>
@@ -41,10 +38,5 @@ namespace Avalonia.Diagnostics
         /// Gets the priority of the current value.
         /// </summary>
         public BindingPriority Priority { get; }
-
-        /// <summary>
-        /// Gets a diagnostic string.
-        /// </summary>
-        public string Diagnostic { get; }
     }
 }

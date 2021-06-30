@@ -24,6 +24,15 @@ namespace Avalonia.Styling.Activators
             _value = value;
         }
 
+        public override bool IsActive
+        {
+            get
+            {
+                var value = _control.GetValue(_property);
+                return PropertyEqualsSelector.Compare(_property.PropertyType, value, _value);
+            }
+        }
+
         protected override void Initialize()
         {
             _subscription = _control.GetObservable(_property).Subscribe(this);

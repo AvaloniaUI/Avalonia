@@ -143,12 +143,12 @@ namespace Avalonia.Controls
             Cells.CellRemoved += DataGridCellCollection_CellRemoved;
         }
 
-        private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+        private void SetValueNoCallback<T>(StyledPropertyBase<T> property, T value)
         {
             _areHandlersSuspended = true;
             try
             {
-                SetValue(property, value, priority);
+                SetValue(property, value);
             }
             finally
             {
@@ -1054,7 +1054,7 @@ namespace Avalonia.Controls
                             _detailsContentSizeSubscription =
                                 System.Reactive.Disposables.StableCompositeDisposable.Create(
                                     System.Reactive.Disposables.Disposable.Create(() => layoutableContent.LayoutUpdated -= DetailsContent_LayoutUpdated),
-                                    _detailsContent.GetObservable(MarginProperty)
+                                    ((Control)_detailsContent).GetObservable(MarginProperty)
                                                    .Subscribe(DetailsContent_MarginChanged));
 
 
@@ -1062,7 +1062,7 @@ namespace Avalonia.Controls
                         else
                         {
                             _detailsContentSizeSubscription =
-                                _detailsContent.GetObservable(MarginProperty)
+                                ((Control)_detailsContent).GetObservable(MarginProperty)
                                                .Subscribe(DetailsContent_MarginChanged);
 
                         }

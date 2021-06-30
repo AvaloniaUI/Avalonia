@@ -31,7 +31,7 @@ namespace Avalonia.Data.Core.Plugins
         public override object Value => _inner.Value;
 
         /// <inheritdoc/>
-        public override bool SetValue(object value, BindingPriority priority) => _inner.SetValue(value, priority);
+        public override bool SetValue(object value) => _inner.SetValue(value);
 
         /// <summary>
         /// Should never be called: the inner <see cref="IPropertyAccessor"/> should never notify

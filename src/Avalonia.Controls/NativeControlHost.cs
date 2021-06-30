@@ -37,7 +37,7 @@ namespace Avalonia.Controls
 
         private void PropertyChangedHandler(object sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.IsEffectiveValueChange && (e.Property == BoundsProperty || e.Property == IsVisibleProperty))
+            if (e.Property == BoundsProperty || e.Property == IsVisibleProperty)
                 EnqueueForMoveResize();
         }
 

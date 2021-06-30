@@ -238,7 +238,7 @@ namespace Avalonia.Controls
 
         internal static VirtualizationInfo TryGetVirtualizationInfo(IControl element)
         {
-            var value = element.GetValue(VirtualizationInfoProperty);
+            var value = ((Control)element).GetValue(VirtualizationInfoProperty);
             return value;
         }
 
@@ -250,13 +250,13 @@ namespace Avalonia.Controls
             }
 
             var result = new VirtualizationInfo();
-            element.SetValue(VirtualizationInfoProperty, result);
+            ((Control)element).SetValue(VirtualizationInfoProperty, result);
             return result;
         }
 
         internal static VirtualizationInfo GetVirtualizationInfo(IControl element)
         {
-            var result = element.GetValue(VirtualizationInfoProperty);
+            var result = ((Control)element).GetValue(VirtualizationInfoProperty);
 
             if (result == null)
             {

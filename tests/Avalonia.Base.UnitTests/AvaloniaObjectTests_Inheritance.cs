@@ -1,160 +1,272 @@
 using System.Collections.Generic;
+using Avalonia.Data;
 using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Base.UnitTests
 {
     public class AvaloniaObjectTests_Inheritance
     {
         [Fact]
-        public void GetValue_Returns_Inherited_Value()
+        public void GetValue_Returns_Already_Set_Inherited_Value()
         {
-            Class1 parent = new Class1();
-            Class2 child = new Class2 { Parent = parent };
+            var parent = new Class1 { Foo = "changed" };
+            var child = new Class1();
 
-            parent.SetValue(Class1.BazProperty, "changed");
+            child.Parent = parent;
 
-            Assert.Equal("changed", child.GetValue(Class1.BazProperty));
+            Assert.Equal("changed", child.GetValue(Class1.FooProperty));
         }
 
         [Fact]
-        public void Setting_InheritanceParent_Raises_PropertyChanged_When_Value_Changed_In_Parent()
+        public void GetValue_Returns_New_Inherited_Value()
         {
-            bool raised = false;
+            var parent = new Class1();
+            var child = new Class1 { Parent = parent };
 
-            Class1 parent = new Class1();
-            parent.SetValue(Class1.BazProperty, "changed");
+            parent.Foo = "changed";
 
-            Class2 child = new Class2();
+            Assert.Equal("changed", child.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void GetValue_Returns_Already_Set_Inherited_Value_From_Grandparent()
+        {
+            var grandparent = new Class1 { Foo = "changed" };
+            var parent = new Class1 { Parent = grandparent };
+            var child = new Class1 { Parent = parent };
+
+            Assert.Equal("changed", child.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void GetValue_Returns_New_Inherited_Value_From_Grandparent()
+        {
+            var grandparent = new Class1();
+            var parent = new Class1 { Parent = grandparent };
+            var child = new Class1 { Parent = parent };
+
+            grandparent.Foo = "changed";
+
+            Assert.Equal("changed", child.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void GetValue_Returns_Already_Set_Inherited_Value_From_Grandparent_With_Another_Inherited_Value_Set_In_Parent()
+        {
+            var grandparent = new Class1 { Foo = "changed" };
+            var parent = new Class1 { Parent = grandparent, Baz = "baz" };
+            var child = new Class1 { Parent = parent };
+
+            Assert.Equal("changed", child.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void GetValue_Returns_New_Inherited_Value_From_Grandparent_With_Another_Inherited_Value_Set_In_Parent()
+        {
+            var grandparent = new Class1();
+            var parent = new Class1 { Parent = grandparent, Baz = "baz" };
+            var child = new Class1 { Parent = parent };
+
+            grandparent.Foo = "changed";
+
+            Assert.Equal("changed", child.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Setting_Parent_Raises_PropertyChanged_When_Value_Changed_In_Parent()
+        {
+            var parent = new Class1 { Foo = "changed" };
+            var child = new Class1();
+            var raised = 0;
+
             child.PropertyChanged += (s, e) =>
-                raised = s == child &&
-                         e.Property == Class1.BazProperty &&
-                         (string)e.OldValue == "bazdefault" &&
-                         (string)e.NewValue == "changed";
+            {
+                Assert.Same(s, child);
+                Assert.Equal(e.Property, Class1.FooProperty);
+                Assert.Equal("foodefault", e.OldValue);
+                Assert.Equal("changed", e.NewValue);
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
 
             child.Parent = parent;
 
-            Assert.True(raised);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
-        public void Setting_InheritanceParent_Raises_PropertyChanged_For_Attached_Property_When_Value_Changed_In_Parent()
+        public void Setting_Parent_Doesnt_Raise_PropertyChanged_When_Local_Value_Set()
         {
-            bool raised = false;
+            var parent = new Class1 { Foo = "changed" };
+            var child = new Class1 { Foo = "localvalue " };
+            var raised = 0;
 
-            Class1 parent = new Class1();
-            parent.SetValue(AttachedOwner.AttachedProperty, "changed");
+            child.PropertyChanged += (s, e) => ++raised;
+            child.Parent = parent;
 
-            Class2 child = new Class2();
+            Assert.Equal(0, raised);
+        }
+
+        [Fact]
+        public void Setting_Value_In_Parent_Raises_PropertyChanged()
+        {
+            var parent = new Class1();
+            var child = new Class1 { Parent = parent };
+            var raised = 0;
+
             child.PropertyChanged += (s, e) =>
-                raised = s == child &&
-                         e.Property == AttachedOwner.AttachedProperty &&
-                         (string)e.OldValue == null &&
-                         (string)e.NewValue == "changed";
+            {
+                Assert.Same(s, child);
+                Assert.Equal(e.Property, Class1.FooProperty);
+                Assert.Equal("foodefault", e.OldValue);
+                Assert.Equal("changed", e.NewValue);
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
 
-            child.Parent = parent;
+            parent.Foo = "changed";
 
-            Assert.True(raised);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
-        public void Setting_InheritanceParent_Doesnt_Raise_PropertyChanged_When_Local_Value_Set()
+        public void Clearing_Value_In_Parent_Raises_PropertyChanged()
         {
-            bool raised = false;
+            var parent = new Class1 { Foo = "foo" };
+            var child = new Class1 { Parent = parent };
+            var raised = 0;
 
-            Class1 parent = new Class1();
-            parent.SetValue(Class1.BazProperty, "changed");
-
-            Class2 child = new Class2();
-            child.SetValue(Class1.BazProperty, "localvalue");
-            child.PropertyChanged += (s, e) => raised = true;
-
-            child.Parent = parent;
-
-            Assert.False(raised);
-        }
-
-        [Fact]
-        public void Setting_Value_In_InheritanceParent_Raises_PropertyChanged()
-        {
-            bool raised = false;
-
-            Class1 parent = new Class1();
-
-            Class2 child = new Class2();
             child.PropertyChanged += (s, e) =>
-                raised = s == child &&
-                         e.Property == Class1.BazProperty &&
-                         (string)e.OldValue == "bazdefault" &&
-                         (string)e.NewValue == "changed";
-            child.Parent = parent;
+            {
+                Assert.Same(s, child);
+                Assert.Equal(e.Property, Class1.FooProperty);
+                Assert.Equal("foo", e.OldValue);
+                Assert.Equal("foodefault", e.NewValue);
+                Assert.Equal(BindingPriority.Unset, e.Priority);
+                ++raised;
+            };
 
-            parent.SetValue(Class1.BazProperty, "changed");
+            parent.ClearValue(Class1.FooProperty);
 
-            Assert.True(raised);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
-        public void Setting_Value_Of_Attached_Property_In_InheritanceParent_Raises_PropertyChanged()
+        public void Setting_Value_In_GrandParent_Raises_PropertyChanged()
         {
-            bool raised = false;
+            var parent = new Class1();
+            var child = new Class1 { Parent = parent };
+            var grandchild = new Class1 { Parent = child };
+            var raised = 0;
 
-            Class1 parent = new Class1();
+            grandchild.PropertyChanged += (s, e) =>
+            {
+                Assert.Same(s, grandchild);
+                Assert.Equal(e.Property, Class1.FooProperty);
+                Assert.Equal("foodefault", e.OldValue);
+                Assert.Equal("changed", e.NewValue);
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
 
-            Class2 child = new Class2();
-            child.PropertyChanged += (s, e) =>
-                raised = s == child &&
-                         e.Property == AttachedOwner.AttachedProperty &&
-                         (string)e.OldValue == null &&
-                         (string)e.NewValue == "changed";
-            child.Parent = parent;
+            parent.Foo = "changed";
 
-            parent.SetValue(AttachedOwner.AttachedProperty, "changed");
+            Assert.Equal(1, raised);
+        }
 
-            Assert.True(raised);
+        [Fact]
+        public void Setting_Value_In_GrandParent_With_Another_Inherited_Value_Set_In_Parent_Raises_PropertyChanged()
+        {
+            var parent = new Class1();
+            var child = new Class1 { Parent = parent };
+            var grandchild = new Class1 { Parent = child };
+            var raised = 0;
+
+            child.Baz = "baz";
+
+            grandchild.PropertyChanged += (s, e) =>
+            {
+                Assert.Same(s, grandchild);
+                Assert.Equal(e.Property, Class1.FooProperty);
+                Assert.Equal("foodefault", e.OldValue);
+                Assert.Equal("changed", e.NewValue);
+                Assert.Equal(BindingPriority.Inherited, e.Priority);
+                ++raised;
+            };
+
+            parent.Foo = "changed";
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
         public void PropertyChanged_Is_Raised_In_Parent_Before_Child()
         {
             var parent = new Class1();
-            var child = new Class2 { Parent = parent };
+            var child = new Class1 { Parent = parent };
             var result = new List<object>();
 
             parent.PropertyChanged += (s, e) => result.Add(parent);
             child.PropertyChanged += (s, e) => result.Add(child);
 
-            parent.SetValue(Class1.BazProperty, "changed");
+            parent.Foo = "changed";
 
             Assert.Equal(new[] { parent, child }, result);
         }
 
+        [Fact]
+        public void Setting_LocalValue_Overrides_Inherited_Value()
+        {
+            var parent = new Class1();
+            var child = new Class1 { Parent = parent };
+
+            child.Foo = "changed";
+
+            Assert.Equal("changed", child.Foo);
+            Assert.Equal("foodefault", parent.Foo);
+        }
+
         private class Class1 : AvaloniaObject
         {
-            public static readonly StyledProperty<string> FooProperty =
-                AvaloniaProperty.Register<Class1, string>("Foo", "foodefault");
+            public static readonly StyledProperty<string?> FooProperty =
+                AvaloniaProperty.Register<Class1, string?>("Foo", "foodefault", inherits: true);
+            public static readonly StyledProperty<string?> BazProperty =
+                AvaloniaProperty.Register<Class1, string?>("Baz", "bazdefault", inherits: true);
+            private Class1? _parent;
+            private List<Class1> _inheritanceChildren = new();
 
-            public static readonly StyledProperty<string> BazProperty =
-                AvaloniaProperty.Register<Class1, string>("Baz", "bazdefault", true);
-        }
-
-        private class Class2 : Class1
-        {
-            static Class2()
+            public string? Foo
             {
-                FooProperty.OverrideDefaultValue(typeof(Class2), "foooverride");
+                get => GetValue(FooProperty);
+                set => SetValue(FooProperty, value);
             }
 
-            public Class1 Parent
+            public string? Baz
             {
-                get { return (Class1)InheritanceParent; }
-                set { InheritanceParent = value; }
+                get => GetValue(BazProperty);
+                set => SetValue(BazProperty, value);
             }
-        }
 
-        private class AttachedOwner : AvaloniaObject
-        {
-            public static readonly AttachedProperty<string> AttachedProperty =
-                AvaloniaProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached", inherits: true);
+            public Class1? Parent
+            {
+                get { return _parent; }
+                set
+                {
+                    if (_parent != value)
+                    {
+                        _parent?._inheritanceChildren.Remove(this);
+                        _parent = value;
+                        _parent?._inheritanceChildren.Add(this);
+                        InheritanceParentChanged();
+                    }
+                }
+            }
+
+            protected internal override int GetInheritanceChildCount() => _inheritanceChildren.Count;
+            protected internal override AvaloniaObject GetInheritanceChild(int index) => _inheritanceChildren[index];
+            protected internal override AvaloniaObject? GetInheritanceParent() => _parent;
         }
     }
 }

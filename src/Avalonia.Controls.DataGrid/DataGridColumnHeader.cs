@@ -140,12 +140,12 @@ namespace Avalonia.Controls
             set;
         }
 
-        private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
+        private void SetValueNoCallback<T>(StyledPropertyBase<T> property, T value)
         {
             _areHandlersSuspended = true;
             try
             {
-                SetValue(property, value, priority);
+                SetValue(property, value);
             }
             finally
             {

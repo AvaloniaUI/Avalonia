@@ -335,7 +335,7 @@ namespace Avalonia.Controls
 
             this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
 
-            foreach (var parent in this.GetVisualAncestors().OfType<IControl>())
+            foreach (var parent in this.GetVisualAncestors().OfType<Control>())
             {
                 parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
             }

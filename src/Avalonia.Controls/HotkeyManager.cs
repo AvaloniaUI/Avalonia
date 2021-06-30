@@ -36,7 +36,7 @@ namespace Avalonia.Controls
 
         class Manager
         {
-            private readonly IControl _control;
+            private readonly Control _control;
             private TopLevel _root;
             private IDisposable _parentSub;
             private IDisposable _hotkeySub;
@@ -44,7 +44,7 @@ namespace Avalonia.Controls
             private readonly HotkeyCommandWrapper _wrapper;
             private KeyBinding _binding;
 
-            public Manager(IControl control)
+            public Manager(Control control)
             {
                 _control = control;
                 _wrapper = new HotkeyCommandWrapper(_control as ICommandSource);
@@ -104,7 +104,7 @@ namespace Avalonia.Controls
         {
             HotKeyProperty.Changed.Subscribe(args =>
             {
-                var control = args.Sender as IControl;
+                var control = args.Sender as Control;
                 if (args.OldValue != null || control == null || !(control is ICommandSource))
                 {
                     Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.

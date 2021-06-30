@@ -1,5 +1,7 @@
 using Avalonia.Data;
 
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
@@ -18,7 +20,7 @@ namespace Avalonia
         /// Whether the property is interested in data validation.
         /// </param>
         public DirectPropertyMetadata(
-            TValue unsetValue = default(TValue),
+            TValue? unsetValue = default,
             BindingMode defaultBindingMode = BindingMode.Default,
             bool? enableDataValidation = null)
                 : base(defaultBindingMode)
@@ -30,7 +32,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the value to use when the property is set to <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </summary>
-        public TValue UnsetValue { get; private set; }
+        public TValue? UnsetValue { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the property is interested in data validation.
@@ -44,7 +46,7 @@ namespace Avalonia
         public bool? EnableDataValidation { get; private set; }
 
         /// <inheritdoc/>
-        object IDirectPropertyMetadata.UnsetValue => UnsetValue;
+        object? IDirectPropertyMetadata.UnsetValue => UnsetValue;
 
         /// <inheritdoc/>
         public override void Merge(AvaloniaPropertyMetadata baseMetadata, AvaloniaProperty property)

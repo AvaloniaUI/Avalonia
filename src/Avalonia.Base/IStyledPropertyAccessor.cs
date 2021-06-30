@@ -1,5 +1,7 @@
 using System;
 
+#nullable enable
+
 namespace Avalonia
 {
     /// <summary>
@@ -14,6 +16,13 @@ namespace Avalonia
         /// <returns>
         /// The default value.
         /// </returns>
-        object GetDefaultValue(Type type);
+        object? GetDefaultValue(Type type);
+
+        /// <summary>
+        /// Validates the specified property value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>True if the value is valid, otherwise false.</returns>
+        bool ValidateValue(object? value);
     }
 }

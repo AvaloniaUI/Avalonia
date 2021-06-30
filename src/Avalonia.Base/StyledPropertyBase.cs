@@ -1,8 +1,11 @@
 using System;
 using System.Diagnostics;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
+
+#nullable enable
 
 namespace Avalonia
 {
@@ -27,12 +30,12 @@ namespace Avalonia
             Type ownerType,            
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
-            Func<TValue, bool> validate = null,
-            Action<IAvaloniaObject, bool> notifying = null)
+            Func<TValue?, bool>? validate = null,
+            Action<IAvaloniaObject, bool>? notifying = null)
                 : base(name, ownerType, metadata, notifying)
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+            _ = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
 
             if (name.Contains("."))
             {
@@ -72,7 +75,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the value validation callback for the property.
         /// </summary>
-        public Func<TValue, bool> ValidateValue { get; }
+        public Func<TValue?, bool>? ValidateValue { get; }
 
         /// <summary>
         /// Gets a value indicating whether this property has any value coercion callbacks defined
@@ -99,7 +102,7 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         public TValue GetDefaultValue(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             return GetMetadata(type).DefaultValue;
         }
@@ -183,72 +186,61 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        object IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
+        object? IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
 
-        /// <inheritdoc/>
-        internal override void RouteClearValue(IAvaloniaObject o)
+        bool IStyledPropertyAccessor.ValidateValue(object? value)
         {
-            o.ClearValue<TValue>(this);
+            if (value is TValue typed)
+                return ValidateValue?.Invoke(typed) ?? true;
+            return false;
         }
 
-        /// <inheritdoc/>
-        internal override object RouteGetValue(IAvaloniaObject o)
+        internal override IObservable<object?> GetObservable(AvaloniaObject target)
         {
-            return o.GetValue<TValue>(this);
+            return (AvaloniaPropertyObservable)target.GetObservable(this);
         }
 
-        /// <inheritdoc/>
-        internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
-        {
-            var value = o.GetBaseValue<TValue>(this, maxPriority);
-            return value.HasValue ? value.Value : AvaloniaProperty.UnsetValue;
-        }
+        internal override object? GetValue(AvaloniaObject target) => target.GetValue(this);
 
-        /// <inheritdoc/>
-        internal override IDisposable RouteSetValue(
-            IAvaloniaObject o,
-            object value,
-            BindingPriority priority)
-        {
-            var v = TryConvert(value);
-
-            if (v.HasValue)
-            {
-                return o.SetValue<TValue>(this, (TValue)v.Value, priority);
-            }
-            else if (v.Type == BindingValueType.UnsetValue)
-            {
-                o.ClearValue(this);
-            }
-            else if (v.HasError)
-            {
-                throw v.Error;
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc/>
-        internal override IDisposable RouteBind(
-            IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
-            BindingPriority priority)
-        {
-            var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
-            return o.Bind<TValue>(this, adapter, priority);
-        }
-
-        /// <inheritdoc/>
-        internal override void RouteInheritanceParentChanged(
+        internal override object GetValueByPriority(
             AvaloniaObject o,
-            IAvaloniaObject oldParent)
+            BindingPriority minPriority,
+            BindingPriority maxPriority)
         {
-            o.InheritanceParentChanged(this, oldParent);
+            var v = o.GetValueByPriority(this, minPriority, maxPriority);
+            return v.HasValue ? v.Value : AvaloniaProperty.UnsetValue;
         }
 
-        private object GetDefaultBoxedValue(Type type)
+        internal override void RaisePropertyChanged(
+            AvaloniaObject owner,
+            object? oldValue,
+            object? newValue,
+            BindingPriority priority,
+            bool isEffectiveValueChange)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            var o = oldValue != UnsetValue ? new Optional<TValue>((TValue?)oldValue) : default;
+            var n = BindingValue<TValue>.FromUntyped(newValue);
+            owner.RaisePropertyChanged(this, o, n, priority, isEffectiveValueChange);
+        }
+
+        internal override void SetValue(AvaloniaObject target, object? value)
+        {
+            if (value == BindingOperations.DoNothing)
+                return;
+            else if (value == UnsetValue)
+                target.ClearValue(this);
+            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
+                target.SetValue<TValue>(this, (TValue?)converted);
+            else
+            {
+                var type = value?.GetType().FullName ?? "(null)";
+                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
+            }
+        }
+
+        private object? GetDefaultBoxedValue(Type type)
+        {
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             return GetMetadata(type).DefaultValue;
         }

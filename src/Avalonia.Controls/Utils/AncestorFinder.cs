@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Utils
 
             public void Init()
             {
-                _disposable = _control.GetObservable(Control.ParentProperty).Subscribe(OnValueChanged);
+                _disposable = ((StyledElement)_control).GetObservable(Control.ParentProperty).Subscribe(OnValueChanged);
             }
 
             private void OnValueChanged(IStyledElement next)

@@ -1,6 +1,9 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Data;
 using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Base.UnitTests
 {
@@ -29,8 +32,8 @@ namespace Avalonia.Base.UnitTests
                 Assert.Same(target, s);
                 Assert.Equal(BindingPriority.Unset, e.Priority);
                 Assert.Equal(Class1.FooProperty, e.Property);
-                Assert.Equal("newvalue", (string)e.OldValue);
-                Assert.Equal("foodefault", (string)e.NewValue);
+                Assert.Equal("newvalue", (string?)e.OldValue);
+                Assert.Equal("foodefault", (string?)e.NewValue);
                 ++raised;
             };
 
@@ -63,7 +66,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
 
             target.SetValue(Class1.FooProperty, "foo");
-            target.SetValue(Class1.FooProperty, AvaloniaProperty.UnsetValue);
+            target.ClearValue(Class1.FooProperty);
 
             Assert.False(target.IsSet(Class1.FooProperty));
         }
@@ -98,8 +101,24 @@ namespace Avalonia.Base.UnitTests
             {
                 raised = s == target &&
                          e.Property == Class1.FooProperty &&
-                         (string)e.OldValue == "foodefault" &&
-                         (string)e.NewValue == "newvalue";
+                         (string?)e.OldValue == "foodefault" &&
+                         (string?)e.NewValue == "newvalue";
+            };
+
+            target.SetValue(Class1.FooProperty, "newvalue");
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void SetValue_Raises_Inpc_PropertyChanged()
+        {
+            Class1 target = new Class1();
+            bool raised = false;
+
+            ((INotifyPropertyChanged)target).PropertyChanged += (s, e) =>
+            {
+                raised = e.PropertyName == "Foo";
             };
 
             target.SetValue(Class1.FooProperty, "newvalue");
@@ -117,8 +136,8 @@ namespace Avalonia.Base.UnitTests
             {
                 raised = s == target &&
                          e.Property == Class1.FooProperty &&
-                         (string)e.OldValue == "foodefault" &&
-                         (string)e.NewValue == "newvalue";
+                         (string?)e.OldValue == "foodefault" &&
+                         (string?)e.NewValue == "newvalue";
             };
 
             target.SetValue(Class1.FooProperty, "newvalue", BindingPriority.Style);
@@ -316,7 +335,7 @@ namespace Avalonia.Base.UnitTests
             Class1 target = new Class1();
 
             var d = target.SetValue(Class1.FooProperty, "foo", BindingPriority.Style);
-            d.Dispose();
+            d!.Dispose();
 
             Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
         }
@@ -328,7 +347,7 @@ namespace Avalonia.Base.UnitTests
 
             target.SetValue(Class1.FooProperty, "foo", BindingPriority.Style);
             var d = target.SetValue(Class1.FooProperty, "bar", BindingPriority.Style);
-            d.Dispose();
+            d!.Dispose();
 
             Assert.Equal("foo", target.GetValue(Class1.FooProperty));
         }
@@ -340,7 +359,7 @@ namespace Avalonia.Base.UnitTests
 
             target.SetValue(Class1.FooProperty, "foo", BindingPriority.LocalValue);
             var d = target.SetValue(Class1.FooProperty, "bar", BindingPriority.Animation);
-            d.Dispose();
+            d!.Dispose();
 
             Assert.Equal("foo", target.GetValue(Class1.FooProperty));
         }
@@ -364,12 +383,6 @@ namespace Avalonia.Base.UnitTests
 
             public static readonly StyledProperty<double?> FredProperty =
                 AvaloniaProperty.Register<Class2, double?>("Fred");
-
-            public Class1 Parent
-            {
-                get { return (Class1)InheritanceParent; }
-                set { InheritanceParent = value; }
-            }
         }
 
         private class AttachedOwner
@@ -387,7 +400,7 @@ namespace Avalonia.Base.UnitTests
 
             public double Value { get; }
 
-            public static implicit operator double (ImplictDouble v)
+            public static implicit operator double(ImplictDouble v)
             {
                 return v.Value;
             }

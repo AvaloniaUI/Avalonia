@@ -106,7 +106,7 @@ namespace Avalonia.Data
 
                 // Use LocalValue priority here, as TemplatedParent doesn't make sense on controls
                 // that aren't template children.
-                _target.TemplatedParent.SetValue(Property, value, BindingPriority.LocalValue);
+                _target.TemplatedParent.SetValue(Property, value);
             }
         }
 

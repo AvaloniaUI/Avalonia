@@ -25,10 +25,7 @@ namespace Avalonia.Styling
                 ApplyStyles(target, parent);
             }
 
-            if (host.IsStylesInitialized)
-            {
-                host.Styles.TryAttach(target, host);
-            }
+            host.ApplyStyles(target);
         }
     }
 }

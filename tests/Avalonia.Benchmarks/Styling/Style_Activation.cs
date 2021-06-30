@@ -27,7 +27,7 @@ namespace Avalonia.Benchmarks.Styling
                 Setters = { new Setter(TestClass.StringProperty, "foo") }
             };
 
-            style.TryAttach(_target, null);
+            ((IStyleable)_target).ApplyStyle(style);
         }
 
         [Benchmark]

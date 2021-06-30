@@ -101,11 +101,11 @@ namespace Avalonia.Data.Core.Plugins
             public override Type PropertyType => _property.PropertyType;
             public override object Value => Instance?.GetValue(_property);
 
-            public override bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object value)
             {
                 if (!_property.IsReadOnly)
                 {
-                    Instance.SetValue(_property, value, priority);
+                    Instance.SetValue(_property, value);
                     return true;
                 }
 

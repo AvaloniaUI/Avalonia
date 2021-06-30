@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -62,11 +63,11 @@ namespace Avalonia
         private ILogicalRoot? _logicalRoot;
         private IAvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
-        private Styles? _styles;
+        private ControlStyles? _styles;
         private bool _styled;
-        private List<IStyleInstance>? _appliedStyles;
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
+        private InheritanceOverride? _inheritanceOverride;
 
         /// <summary>
         /// Initializes static members of the <see cref="StyledElement"/> class.
@@ -204,7 +205,7 @@ namespace Avalonia
         /// each styled element may in addition define its own styles which are applied to the styled element
         /// itself and its children.
         /// </remarks>
-        public Styles Styles => _styles ??= new Styles(this);
+        public Styles Styles => _styles ??= new ControlStyles(this);
 
         /// <summary>
         /// Gets or sets the styled element's resource dictionary.
@@ -300,7 +301,7 @@ namespace Avalonia
         bool IStyleHost.IsStylesInitialized => _styles != null;
 
         /// <inheritdoc/>
-        IStyleHost? IStyleHost.StylingParent => (IStyleHost?)InheritanceParent;
+        IStyleHost? IStyleHost.StylingParent => Parent;
 
         /// <inheritdoc/>
         public virtual void BeginInit()
@@ -334,14 +335,13 @@ namespace Avalonia
         {
             if (_initCount == 0 && !_styled)
             {
-                try
+                var styler = AvaloniaLocator.Current.GetService<IStyler>();
+
+                if (styler is object)
                 {
-                    BeginBatchUpdate();
-                    AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
-                }
-                finally
-                {
-                    EndBatchUpdate();
+                    GetValueStore().BeginStyling();
+                    try { styler.ApplyStyles(this); }
+                    finally{ GetValueStore().EndStyling(); }
                 }
 
                 _styled = true;
@@ -365,16 +365,39 @@ namespace Avalonia
             }
         }
 
+        protected internal override int GetInheritanceChildCount()
+        {
+            return _inheritanceOverride?._inheritanceChildren.Count ?? _logicalChildren?.Count ?? 0;
+        }
+
+        protected internal override AvaloniaObject GetInheritanceChild(int index)
+        {
+            if (_inheritanceOverride is object)
+                return _inheritanceOverride._inheritanceChildren[index];
+            else if (_logicalChildren is object)
+                return (AvaloniaObject)_logicalChildren[index];
+            else
+                throw new IndexOutOfRangeException();
+        }
+
+        protected internal override AvaloniaObject? GetInheritanceParent()
+        {
+            if (_inheritanceOverride?._inheritanceParentSet == true)
+                return _inheritanceOverride._inheritanceParent;
+            return (AvaloniaObject?)Parent;
+        }
+
         internal StyleDiagnostics GetStyleDiagnosticsInternal()
         {
-            IReadOnlyList<IStyleInstance>? appliedStyles = _appliedStyles;
+            var styles = new List<IStyleInstance>();
 
-            if (appliedStyles is null)
+            foreach (var frame in GetValueStore().Frames)
             {
-                appliedStyles = Array.Empty<IStyleInstance>();
+                if (frame is IStyleInstance style)
+                    styles.Add(style);
             }
 
-            return new StyleDiagnostics(appliedStyles);
+            return new StyleDiagnostics(styles);
         }
 
         /// <inheritdoc/>
@@ -418,12 +441,8 @@ namespace Avalonia
                     throw new InvalidOperationException("The Control already has a parent.");
                 }
 
-                if (InheritanceParent == null || parent == null)
-                {
-                    InheritanceParent = parent as AvaloniaObject;
-                }
-
                 Parent = (IStyledElement?)parent;
+                InheritanceParentChanged();
 
                 if (_logicalRoot != null)
                 {
@@ -451,47 +470,61 @@ namespace Avalonia
                     NotifyResourcesChanged();
                 }
 
-#nullable disable
                 RaisePropertyChanged(
                     ParentProperty,
-                    new Optional<IStyledElement>(old),
-                    new BindingValue<IStyledElement>(Parent),
+                    new Optional<IStyledElement?>(old),
+                    new BindingValue<IStyledElement?>(Parent),
                     BindingPriority.LocalValue);
-#nullable enable
             }
         }
 
-        /// <summary>
-        /// Sets the styled element's inheritance parent.
-        /// </summary>
-        /// <param name="parent">The parent.</param>
-        void ISetInheritanceParent.SetParent(IAvaloniaObject? parent)
+        void ISetInheritanceParent.ClearParent()
         {
-            InheritanceParent = parent;
+            if (_inheritanceOverride?._inheritanceParentSet == true)
+            {
+                var parent = _inheritanceOverride._inheritanceParent;
+                _inheritanceOverride._inheritanceParent = null;
+                _inheritanceOverride._inheritanceParentSet = false;
+                parent?.RemoveInheritanceChild(this);
+                InheritanceParentChanged();
+            }
         }
 
-        void IStyleable.StyleApplied(IStyleInstance instance)
+        void ISetInheritanceParent.SetParent(StyledElement parent)
         {
-            instance = instance ?? throw new ArgumentNullException(nameof(instance));
-
-            _appliedStyles ??= new List<IStyleInstance>();
-            _appliedStyles.Add(instance);
+            if (parent != GetInheritanceParent())
+            {
+                _inheritanceOverride ??= new(this);
+                _inheritanceOverride._inheritanceParent = parent;
+                _inheritanceOverride._inheritanceParentSet = true;
+                parent?.AddInheritanceChild(this);
+                (Parent as StyledElement)?.RemoveInheritanceChild(this);
+                InheritanceParentChanged();
+            }
         }
 
-        void IStyleable.DetachStyles() => DetachStyles();
+        SelectorMatchResult IStyleable.ApplyStyle(Style style, IStyleHost? host)
+        {
+            var result = style.Instance(this, host, out var frame);
+            if (frame is object)
+                GetValueStore().AddFrame(frame);
+            return result;
+        }
 
-        void IStyleable.DetachStyles(IReadOnlyList<IStyle> styles) => DetachStyles(styles);
-
-        void IStyleable.InvalidateStyles() => InvalidateStyles();
+        void IStyleable.BeginStyling() => GetValueStore().BeginStyling();
+        void IStyleable.EndStyling() => GetValueStore().EndStyling();
+        void IStyleHost.ApplyStyles(IStyleable target) => _styles?.Apply(target);
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
         {
+            _styles?.InvalidateCache();
             InvalidateStylesOnThisAndDescendents();
         }
 
         void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
         {
             var allStyles = RecurseStyles(styles);
+            _styles?.InvalidateCache();
             DetachStylesFromThisAndDescendents(allStyles);
         }
 
@@ -585,6 +618,18 @@ namespace Avalonia
         {
         }
 
+        private void AddInheritanceChild(StyledElement child)
+        {
+            _inheritanceOverride ??= new(this);
+            _inheritanceOverride._inheritanceChildren.Add(child);
+        }
+
+        public void RemoveInheritanceChild(StyledElement child)
+        {
+            _inheritanceOverride ??= new(this);
+            _inheritanceOverride._inheritanceChildren.Remove(child);
+        }
+
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
         {
             if (o is StyledElement element)
@@ -608,7 +653,7 @@ namespace Avalonia
                     for (var i = 0; i < logicalChildrenCount; i++)
                     {
                         if (element.LogicalChildren[i] is StyledElement s &&
-                            s.InheritanceParent == element &&
+                            s.GetInheritanceParent() == element &&
                             !s.IsSet(DataContextProperty))
                         {
                             DataContextNotifying(s, updateStarted);
@@ -726,6 +771,7 @@ namespace Avalonia
         private void SetLogicalParent(IList children)
         {
             var count = children.Count;
+            var overridesInheritance = false;
 
             for (var i = 0; i < count; i++)
             {
@@ -735,7 +781,16 @@ namespace Avalonia
                 {
                     ((ISetLogicalParent)logical).SetParent(this);
                 }
+
+                if (logical is StyledElement se &&
+                    se._inheritanceOverride?._inheritanceParentSet == true)
+                {
+                    overridesInheritance = true;
+                }
             }
+
+            if (overridesInheritance)
+                _inheritanceOverride = new(this);
         }
 
         private void ClearLogicalParent(IList children)
@@ -753,54 +808,24 @@ namespace Avalonia
             }
         }
 
-        private void DetachStyles()
+        private void DetachStyles(IReadOnlyList<Style>? styles = null)
         {
-            if (_appliedStyles is object)
+            var valueStore = GetValueStore();
+
+            valueStore.BeginStyling();
+
+            for (var i = valueStore.Frames.Count - 1; i >= 0; --i)
             {
-                BeginBatchUpdate();
-
-                try
+                if (valueStore.Frames[i] is StyleInstance si &&
+                    (styles is null || styles.Contains(si.Source)))
                 {
-                    foreach (var i in _appliedStyles)
-                    {
-                        i.Dispose();
-                    }
-
-                    _appliedStyles.Clear();
-                }
-                finally
-                {
-                    EndBatchUpdate();
+                    valueStore.RemoveFrame(si);
+                    si.Dispose();
                 }
             }
 
+            valueStore.EndStyling();
             _styled = false;
-        }
-
-        private void DetachStyles(IReadOnlyList<IStyle> styles)
-        {
-            styles = styles ?? throw new ArgumentNullException(nameof(styles));
-
-            if (_appliedStyles is null)
-            {
-                return;
-            }
-
-            var count = styles.Count;
-
-            for (var i = 0; i < count; ++i)
-            {
-                for (var j = _appliedStyles.Count - 1; j >= 0; --j)
-                {
-                    var applied = _appliedStyles[j];
-
-                    if (applied.Source == styles[i])
-                    {
-                        applied.Dispose();
-                        _appliedStyles.RemoveAt(j);
-                    }
-                }
-            }
         }
 
         private void InvalidateStylesOnThisAndDescendents()
@@ -818,7 +843,7 @@ namespace Avalonia
             }
         }
 
-        private void DetachStylesFromThisAndDescendents(IReadOnlyList<IStyle> styles)
+        private void DetachStylesFromThisAndDescendents(IReadOnlyList<Style> styles)
         {
             DetachStyles(styles);
 
@@ -850,39 +875,43 @@ namespace Avalonia
             }
         }
 
-        private static IReadOnlyList<IStyle> RecurseStyles(IReadOnlyList<IStyle> styles)
+        private static IReadOnlyList<Style> RecurseStyles(IReadOnlyList<IStyle> styles)
         {
-            var count = styles.Count;
-            List<IStyle>? result = null;
+            var result = new List<Style>();
+            RecurseStyles(styles, result);
+            return result;
+        }
 
-            for (var i = 0; i < count; ++i)
+        private static void RecurseStyles(IEnumerable<IStyle> styles, List<Style> result)
+        {
+            foreach (var i in styles)
             {
-                var style = styles[i];
+                if (i is Style style)
+                    result.Add(style);
+                else if (i is IEnumerable<IStyle> children)
+                    RecurseStyles(children, result);
+            }
+        }
 
-                if (style.Children.Count > 0)
+        private class InheritanceOverride
+        {
+            public InheritanceOverride(StyledElement owner)
+            {
+                _inheritanceChildren = new();
+
+                if (owner._logicalChildren is object)
                 {
-                    if (result is null)
+                    foreach (StyledElement i in owner._logicalChildren)
                     {
-                        result = new List<IStyle>(styles);
+                        if (i.GetInheritanceParent() == owner)
+                            _inheritanceChildren.Add((StyledElement)i);
                     }
-
-                    RecurseStyles(style.Children, result);
                 }
             }
 
-            return result ?? styles;
-        }
-
-        private static void RecurseStyles(IReadOnlyList<IStyle> styles, List<IStyle> result)
-        {
-            var count = styles.Count;
-
-            for (var i = 0; i < count; ++i)
-            {
-                var style = styles[i];
-                result.Add(style);
-                RecurseStyles(style.Children, result);
-            }
+            public List<StyledElement> _inheritanceChildren;
+            public StyledElement? _inheritanceParent;
+            public bool _inheritanceParentSet;
         }
     }
 }

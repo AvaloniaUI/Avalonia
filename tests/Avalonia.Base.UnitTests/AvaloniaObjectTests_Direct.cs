@@ -32,11 +32,12 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void GetValue_On_Unregistered_Property_Throws_Exception()
+        public void GetValue_On_Unregistered_Property_Returns_Default_Value()
         {
             var target = new Class2();
+            var result = target.GetValue(Class1.BarProperty);
 
-            Assert.Throws<ArgumentException>(() => target.GetValue(Class1.BarProperty));
+            Assert.Null(result);
         }
 
         [Fact]

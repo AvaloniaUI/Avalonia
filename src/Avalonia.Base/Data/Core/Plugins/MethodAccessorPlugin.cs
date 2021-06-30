@@ -127,7 +127,7 @@ namespace Avalonia.Data.Core.Plugins
 
             public override object Value { get; }
 
-            public override bool SetValue(object value, BindingPriority priority) => false;
+            public override bool SetValue(object value) => false;
 
             protected override void SubscribeCore()
             {

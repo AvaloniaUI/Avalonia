@@ -24,11 +24,11 @@ namespace Avalonia.Data.Core.Plugins
             {
             }
 
-            public override bool SetValue(object value, BindingPriority priority)
+            public override bool SetValue(object value)
             {
                 try
                 {
-                    return base.SetValue(value, priority);
+                    return base.SetValue(value);
                 }
                 catch (TargetInvocationException ex)
                 {

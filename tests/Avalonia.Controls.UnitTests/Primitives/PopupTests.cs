@@ -359,8 +359,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     PlacementTarget = PreparedWindow()
                 };
 
-                var beginCalled = false;
-                child.DataContextBeginUpdate += (s, e) => beginCalled = true;
+                var beginCount = 0;
+                var endCount = 0;
+                child.DataContextBeginUpdate += (s, e) => ++beginCount;
+                child.DataContextEndUpdate += (s, e) => ++endCount;
 
                 // Test for #1245. Here, the child's logical parent is the popup but it's not yet
                 // attached to a visual tree because the popup hasn't been opened.
@@ -371,9 +373,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 popup.Open();
 
                 // #1245 was caused by the fact that DataContextBeginUpdate was called on `target`
-                // when the PopupRoot was created, even though PopupRoot isn't the
-                // InheritanceParent of child.
-                Assert.False(beginCalled);
+                // when the PopupRoot was created but no accompanying DataContextEndUpdate was called.
+                Assert.Equal(beginCount, endCount);
             }
         }
         
@@ -631,13 +632,20 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private class TestControl : Decorator
         {
             public event EventHandler DataContextBeginUpdate;
+            public event EventHandler DataContextEndUpdate;
 
-            public new IAvaloniaObject InheritanceParent => base.InheritanceParent;
+            public IAvaloniaObject InheritanceParent => base.GetInheritanceParent();
 
             protected override void OnDataContextBeginUpdate()
             {
                 DataContextBeginUpdate?.Invoke(this, EventArgs.Empty);
                 base.OnDataContextBeginUpdate();
+            }
+
+            protected override void OnDataContextEndUpdate()
+            {
+                DataContextEndUpdate?.Invoke(this, EventArgs.Empty);
+                base.OnDataContextEndUpdate();
             }
         }
     }

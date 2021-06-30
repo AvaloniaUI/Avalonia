@@ -65,7 +65,7 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected internal override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
             var activators = new OrActivatorBuilder();
             var neverThisInstance = false;

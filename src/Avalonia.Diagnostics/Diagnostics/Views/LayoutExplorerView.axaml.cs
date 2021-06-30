@@ -41,8 +41,7 @@ namespace Avalonia.Diagnostics.Views
 
             void SubscribeToBounds(Visual visual)
             {
-                visual.GetPropertyChangedObservable(TransformedBoundsProperty)
-                    .Subscribe(UpdateSizeGuidelines);
+                visual.PropertyChanged += UpdateSizeGuidelines;
             }
 
             SubscribeToBounds(_borderArea);
@@ -55,7 +54,7 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void UpdateSizeGuidelines(AvaloniaPropertyChangedEventArgs e)
+        private void UpdateSizeGuidelines(object sender, AvaloniaPropertyChangedEventArgs e)
         {
             void UpdateGuidelines(Visual area)
             {

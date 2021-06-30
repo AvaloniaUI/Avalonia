@@ -45,7 +45,7 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected internal override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
             var innerResult = _argument.Match(control, subscribe);
 

@@ -11,6 +11,8 @@ namespace Avalonia.Styling.Activators
         private int _tag;
         private bool? _value;
 
+        public abstract bool IsActive { get; }
+
         public void Subscribe(IStyleActivatorSink sink, int tag = 0)
         {
             if (_sink is null)

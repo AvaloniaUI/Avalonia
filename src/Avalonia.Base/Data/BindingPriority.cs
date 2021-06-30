@@ -37,6 +37,11 @@ namespace Avalonia.Data
         Style,
 
         /// <summary>
+        /// The value is inherited from an ancestor element.
+        /// </summary>
+        Inherited,
+
+        /// <summary>
         /// The binding is uninitialized.
         /// </summary>
         Unset = int.MaxValue,

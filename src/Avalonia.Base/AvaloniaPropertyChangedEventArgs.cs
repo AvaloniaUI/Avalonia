@@ -16,14 +16,13 @@ namespace Avalonia
         {
             Sender = sender;
             Priority = priority;
-            IsEffectiveValueChange = true;
         }
 
         /// <summary>
         /// Gets the <see cref="AvaloniaObject"/> that the property changed on.
         /// </summary>
         /// <value>The sender object.</value>
-        public IAvaloniaObject Sender { get; }
+        public IAvaloniaObject Sender { get; private protected set; }
 
         /// <summary>
         /// Gets the property that changed.
@@ -49,22 +48,8 @@ namespace Avalonia
         /// <value>
         /// The priority of the new value.
         /// </value>
-        public BindingPriority Priority { get; private set; }
+        public BindingPriority Priority { get; private protected set; }
 
-        /// <summary>
-        /// Gets a value indicating whether the change represents a change to the effective value of
-        /// the property.
-        /// </summary>
-        /// <remarks>
-        /// This will usually be true, except in
-        /// <see cref="AvaloniaObject.OnPropertyChangedCore{T}(AvaloniaPropertyChangedEventArgs{T})"/>
-        /// which receives notifications for all changes to property values, whether a value with a higher
-        /// priority is present or not. When this property is false, the change that is being signaled
-        /// has not resulted in a change to the property value on the object.
-        /// </remarks>
-        public bool IsEffectiveValueChange { get; private set; }
-
-        internal void MarkNonEffectiveValue() => IsEffectiveValueChange = false;
         protected abstract AvaloniaProperty GetProperty();
         protected abstract object? GetOldValue();
         protected abstract object? GetNewValue();

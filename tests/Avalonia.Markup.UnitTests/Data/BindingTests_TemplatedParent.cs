@@ -1,16 +1,12 @@
 using System;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Moq;
+using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Styling;
+using Moq;
 using Xunit;
-using System.Reactive.Disposables;
-using Avalonia.UnitTests;
-using Avalonia.VisualTree;
-using System.Linq;
-using Avalonia.Markup.Data;
+
+#nullable enable
 
 namespace Avalonia.Markup.UnitTests.Data
 {
@@ -31,8 +27,9 @@ namespace Avalonia.Markup.UnitTests.Data
             target.Object.Bind(TextBox.TextProperty, binding);
 
             target.Verify(x => x.Bind(
-                TextBox.TextProperty, 
-                It.IsAny<IObservable<BindingValue<string>>>()));
+                TextBox.TextProperty,
+                It.IsAny<IObservable<object?>>(),
+                BindingPriority.TemplatedParent));
         }
 
         [Fact]
@@ -51,19 +48,25 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Verify(x => x.Bind(
                 TextBox.TextProperty,
-                It.IsAny<IObservable<BindingValue<string>>>()));
+                It.IsAny<IObservable<object?>>(),
+                BindingPriority.TemplatedParent));
         }
 
         private Mock<IControl> CreateTarget(
-            ITemplatedControl templatedParent = null,
-            string text = null)
+            ITemplatedControl? templatedParent = null,
+            string? text = null)
         {
             var result = new Mock<IControl>();
 
             result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
             result.Setup(x => x.GetValue(Control.TemplatedParentProperty)).Returns(templatedParent);
             result.Setup(x => x.GetValue(TextBox.TextProperty)).Returns(text);
-            result.Setup(x => x.Bind(It.IsAny<DirectPropertyBase<string>>(), It.IsAny<IObservable<BindingValue<string>>>()))
+            result.Setup(x => x.GetObservable(TextBlock.TextProperty))
+                .Returns(Mock.Of<IObservable<object?>>());
+            result.Setup(x => x.Bind(
+                It.IsAny<DirectPropertyBase<string>>(),
+                It.IsAny<IObservable<object?>>(),
+                BindingPriority.TemplatedParent))
                 .Returns(Disposable.Empty);
             return result;
         }

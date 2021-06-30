@@ -17,7 +17,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
         /// </summary>
-        /// <param name="subject">The binding source.</param>
+        /// <param name="source">The binding source.</param>
         /// <param name="mode">The binding mode.</param>
         /// <param name="priority">The priority of the binding.</param>
         /// <remarks>
@@ -26,13 +26,13 @@ namespace Avalonia.Data
         /// source which can be used for all binding modes. If you wish to create an instance with
         /// something other than a subject, use one of the static creation methods on this class.
         /// </remarks>
-        public InstancedBinding(ISubject<object> subject, BindingMode mode, BindingPriority priority)
+        public InstancedBinding(ISubject<object> source, BindingMode mode, BindingPriority priority)
         {
-            Contract.Requires<ArgumentNullException>(subject != null);
+            _ = source ?? throw new ArgumentNullException(nameof(source));
 
             Mode = mode;
             Priority = priority;
-            Value = subject;
+            Value = source;
         }
 
         private InstancedBinding(object value, BindingMode mode, BindingPriority priority)

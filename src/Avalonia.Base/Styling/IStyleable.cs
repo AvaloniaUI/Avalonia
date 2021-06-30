@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Avalonia.Collections;
 
 #nullable enable
@@ -12,7 +11,7 @@ namespace Avalonia.Styling
     public interface IStyleable : IAvaloniaObject, INamed
     {
         /// <summary>
-        /// Gets the list of classes for the control.
+        /// Gets the list of style classes for the control.
         /// </summary>
         IAvaloniaReadOnlyList<string> Classes { get; }
 
@@ -27,24 +26,25 @@ namespace Avalonia.Styling
         ITemplatedControl? TemplatedParent { get; }
 
         /// <summary>
-        /// Notifies the element that a style has been applied.
+        /// Applies a style to the element.
         /// </summary>
-        /// <param name="instance">The style instance.</param>
-        void StyleApplied(IStyleInstance instance);
+        /// <param name="style">The style.</param>
+        /// <param name="host">The control that hosts the style.</param>
+        SelectorMatchResult ApplyStyle(Style style, IStyleHost? host = null);
 
         /// <summary>
-        /// Detaches all styles applied to the element.
+        /// Begins a styling update.
         /// </summary>
-        void DetachStyles();
+        /// <remarks>
+        /// Surrounding a set of <see cref="ApplyStyle(Style, IStyleHost)"/> calls with calls to
+        /// <see cref="BeginStyling"/> and <see cref="EndStyling"/> will cause evaluation of
+        /// style changes to only take place once, when <see cref="EndStyling"/> is called.
+        /// </remarks>
+        void BeginStyling();
 
         /// <summary>
-        /// Detaches a collection of styles, if applied to the element.
+        /// Ends a styling update.
         /// </summary>
-        void DetachStyles(IReadOnlyList<IStyle> styles);
-
-        /// <summary>
-        /// Detaches all styles from the element and queues a restyle.
-        /// </summary>
-        void InvalidateStyles();
+        void EndStyling();
     }
 }

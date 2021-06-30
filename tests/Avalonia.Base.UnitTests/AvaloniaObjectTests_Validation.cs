@@ -1,7 +1,9 @@
 using System;
 using System.Reactive.Subjects;
-using Avalonia.Controls;
+using Avalonia.Data;
 using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Base.UnitTests
 {
@@ -41,7 +43,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Reverts_To_DefaultValue_If_Binding_Fails_Validation()
+        public void Reverts_To_DefaultValue_If_LocalValue_Binding_Fails_Validation()
         {
             var target = new Class1();
             var source = new Subject<int>();
@@ -53,16 +55,37 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Reverts_To_DefaultValue_Even_In_Presence_Of_Other_Bindings()
+        public void Reverts_To_DefaultValue_If_Untyped_LocalValue_Binding_Fails_Validation()
         {
             var target = new Class1();
-            var source1 = new Subject<int>();
-            var source2 = new Subject<int>();
+            var source = new Subject<object?>();
 
-            target.Bind(Class1.FooProperty, source1);
-            target.Bind(Class1.FooProperty, source2);
-            source1.OnNext(42);
-            source2.OnNext(150);
+            target.Bind(Class1.FooProperty, source);
+            source.OnNext(150);
+
+            Assert.Equal(11, target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Reverts_To_DefaultValue_If_Style_Binding_Fails_Validation()
+        {
+            var target = new Class1();
+            var source = new Subject<int>();
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Style);
+            source.OnNext(150);
+
+            Assert.Equal(11, target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Reverts_To_DefaultValue_If_Untyped_Style_Binding_Fails_Validation()
+        {
+            var target = new Class1();
+            var source = new Subject<object?>();
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Style);
+            source.OnNext(150);
 
             Assert.Equal(11, target.GetValue(Class1.FooProperty));
         }

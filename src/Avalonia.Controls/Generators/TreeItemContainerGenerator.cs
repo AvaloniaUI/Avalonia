@@ -76,7 +76,7 @@ namespace Avalonia.Controls.Generators
                 var template = GetTreeDataTemplate(item, ItemTemplate);
                 var result = new T();
 
-                result.SetValue(ContentProperty, template.Build(item), BindingPriority.Style);
+                result.SetValue(ContentProperty, template.Build(item));
 
                 var itemsSelector = template.ItemsSelector(item);
 

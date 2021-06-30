@@ -21,9 +21,9 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var result = new List<object>();
 
             validator.Subscribe(x => result.Add(x));
-            validator.SetValue(5, BindingPriority.LocalValue);
-            validator.SetValue(-2, BindingPriority.LocalValue);
-            validator.SetValue(6, BindingPriority.LocalValue);
+            validator.SetValue(5);
+            validator.SetValue(-2);
+            validator.SetValue(6);
 
             Assert.Equal(new[]
             {

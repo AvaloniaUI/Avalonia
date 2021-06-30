@@ -1,10 +1,4 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Xunit;
@@ -31,68 +25,148 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Property_Value_Change()
+        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Local_Value_Change()
         {
             var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("animation");
 
-            target.SetValue(Class1.FooProperty, "newvalue");
-            target.SetValue(Class1.FooProperty, "styled", BindingPriority.Style);
+            target.Bind(Class1.FooProperty, source, BindingPriority.Animation);
+            target.SetValue(Class1.FooProperty, "localvalue");
 
             Assert.Equal(2, target.CoreChanges.Count);
+            Assert.Equal(1, target.Changes.Count);
 
             var change = (AvaloniaPropertyChangedEventArgs<string>)target.CoreChanges[1];
 
-            Assert.Equal("styled", change.NewValue.Value);
+            Assert.Equal("localvalue", change.NewValue.Value);
+            Assert.False(change.OldValue.HasValue);
+            Assert.Equal(BindingPriority.LocalValue, change.Priority);
+            Assert.False(change.IsEffectiveValueChange);
+
+            target.SetValue(Class1.FooProperty, "localvalue2");
+
+            Assert.Equal(3, target.CoreChanges.Count);
+            Assert.Equal(1, target.Changes.Count);
+        }
+
+        [Fact]
+        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Local_Binding_Change()
+        {
+            var target = new Class1();
+            var source1 = new BehaviorSubject<BindingValue<string>>("animation");
+            var source2 = new BehaviorSubject<BindingValue<string>>("localvalue");
+
+            target.Bind(Class1.FooProperty, source1, BindingPriority.Animation);
+            target.Bind(Class1.FooProperty, source2);
+
+            Assert.Equal(2, target.CoreChanges.Count);
+            Assert.Equal(1, target.Changes.Count);
+
+            var change = (AvaloniaPropertyChangedEventArgs<string>)target.CoreChanges[1];
+
+            Assert.Equal("localvalue", change.NewValue.Value);
+            Assert.False(change.OldValue.HasValue);
+            Assert.Equal(BindingPriority.LocalValue, change.Priority);
+            Assert.False(change.IsEffectiveValueChange);
+
+            source2.OnNext("localvalue2");
+
+            Assert.Equal(3, target.CoreChanges.Count);
+            Assert.Equal(1, target.Changes.Count);
+        }
+
+        [Fact]
+        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Local_Value_Clear()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("animation");
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Animation);
+            target.SetValue(Class1.FooProperty, "localvalue");
+            target.CoreChanges.Clear();
+            target.Changes.Clear();
+            target.ClearValue(Class1.FooProperty);
+
+            Assert.Equal(1, target.CoreChanges.Count);
+            Assert.Equal(0, target.Changes.Count);
+
+            var change = (AvaloniaPropertyChangedEventArgs<string>)target.CoreChanges[0];
+
+            Assert.Equal("foodefault", change.NewValue.Value);
+            Assert.False(change.OldValue.HasValue);
+            Assert.Equal(BindingPriority.Unset, change.Priority);
+            Assert.False(change.IsEffectiveValueChange);
+        }
+
+        [Fact]
+        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Style_Value_Change()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("animation");
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Animation);
+
+            Assert.Equal(1, target.CoreChanges.Count);
+            Assert.Equal(1, target.Changes.Count);
+
+            target.SetValue(Class1.FooProperty, "style", BindingPriority.StyleTrigger);
+
+            Assert.Equal(2, target.CoreChanges.Count);
+            Assert.Equal(1, target.Changes.Count);
+
+            var change = (AvaloniaPropertyChangedEventArgs<string>)target.CoreChanges[1];
+
+            Assert.Equal("style", change.NewValue.Value);
+            Assert.False(change.OldValue.HasValue);
+            Assert.Equal(BindingPriority.StyleTrigger, change.Priority);
+            Assert.False(change.IsEffectiveValueChange);
+        }
+
+        [Fact]
+        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Setter_Binding_Change()
+        {
+            var target = new Class1();
+            var animation = new BehaviorSubject<BindingValue<string>>("animation");
+            var binding = new TestStyleBinding("foo");
+
+            target.Bind(Class1.FooProperty, binding, BindingPriority.Style);
+            target.Bind(Class1.FooProperty, animation, BindingPriority.Animation);
+
+            Assert.Equal(2, target.CoreChanges.Count);
+            Assert.Equal(2, target.Changes.Count);
+
+            binding.OnNext("bar");
+
+            Assert.Equal(3, target.CoreChanges.Count);
+            Assert.Equal(2, target.Changes.Count);
+
+            var change = (AvaloniaPropertyChangedEventArgs<string>)target.CoreChanges[2];
+
+            Assert.Equal("bar", change.NewValue.Value);
             Assert.False(change.OldValue.HasValue);
             Assert.Equal(BindingPriority.Style, change.Priority);
             Assert.False(change.IsEffectiveValueChange);
         }
 
         [Fact]
-        public void OnPropertyChangedCore_Is_Called_On_All_Binding_Property_Changes()
+        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Style_Binding_Change()
         {
             var target = new Class1();
-            var style = new Subject<BindingValue<string>>();
-            var animation = new Subject<BindingValue<string>>();
-            var templatedParent = new Subject<BindingValue<string>>();
+            var source1 = new BehaviorSubject<BindingValue<string>>("animation");
+            var source2 = new BehaviorSubject<BindingValue<string>>("style");
 
-            target.Bind(Class1.FooProperty, style, BindingPriority.Style);
-            target.Bind(Class1.FooProperty, animation, BindingPriority.Animation);
-            target.Bind(Class1.FooProperty, templatedParent, BindingPriority.TemplatedParent);
+            target.Bind(Class1.FooProperty, source1, BindingPriority.Animation);
+            target.Bind(Class1.FooProperty, source2, BindingPriority.Style);
 
-            style.OnNext("style1");
-            templatedParent.OnNext("tp1");
-            animation.OnNext("a1");
-            templatedParent.OnNext("tp2");
-            templatedParent.OnCompleted();
-            animation.OnNext("a2");
-            style.OnNext("style2");
-            style.OnCompleted();
-            animation.OnCompleted();
-
-            var changes = target.CoreChanges.Cast<AvaloniaPropertyChangedEventArgs<string>>();
-
-            Assert.Equal(
-                new[] { true, true, true, false, false, true, false, false, true },
-                changes.Select(x => x.IsEffectiveValueChange).ToList());
-            Assert.Equal(
-                new[] { "style1", "tp1", "a1", "tp2", "$unset", "a2", "style2", "$unset", "foodefault" },
-                changes.Select(x => x.NewValue.GetValueOrDefault("$unset")).ToList());
-            Assert.Equal(
-                new[] { "foodefault", "style1", "tp1", "$unset", "$unset", "a1", "$unset", "$unset", "a2" },
-                changes.Select(x => x.OldValue.GetValueOrDefault("$unset")).ToList());
-        }
-
-        [Fact]
-        public void OnPropertyChanged_Is_Called_Only_For_Effective_Value_Changes()
-        {
-            var target = new Class1();
-
-            target.SetValue(Class1.FooProperty, "newvalue");
-            target.SetValue(Class1.FooProperty, "styled", BindingPriority.Style);
-
-            Assert.Equal(1, target.Changes.Count);
             Assert.Equal(2, target.CoreChanges.Count);
+            Assert.Equal(1, target.Changes.Count);
+
+            var change = (AvaloniaPropertyChangedEventArgs<string>)target.CoreChanges[1];
+
+            Assert.Equal("style", change.NewValue.Value);
+            Assert.False(change.OldValue.HasValue);
+            Assert.Equal(BindingPriority.Style, change.Priority);
+            Assert.False(change.IsEffectiveValueChange);
         }
 
         private class Class1 : AvaloniaObject
@@ -123,19 +197,13 @@ namespace Avalonia.Base.UnitTests
 
             private static AvaloniaPropertyChangedEventArgs<T> Clone<T>(AvaloniaPropertyChangedEventArgs<T> change)
             {
-                var result = new AvaloniaPropertyChangedEventArgs<T>(
+                return new AvaloniaPropertyChangedEventArgs<T>(
                     change.Sender,
                     change.Property,
                     change.OldValue,
                     change.NewValue,
-                    change.Priority);
-
-                if (!change.IsEffectiveValueChange)
-                {
-                    result.MarkNonEffectiveValue();
-                }
-
-                return result;
+                    change.Priority,
+                    change.IsEffectiveValueChange);
             }
         }
     }

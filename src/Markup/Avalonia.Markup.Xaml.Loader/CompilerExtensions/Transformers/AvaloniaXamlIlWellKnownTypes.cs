@@ -125,7 +125,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 XamlIlTypes.Void, StyledElement, INameScope)
             { IsStatic = true });
             AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", XamlIlTypes.Void,
-                false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
+                false, AvaloniaProperty, XamlIlTypes.Object);
             IPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.IPropertyInfo");
             ClrPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
             PropertyPath = cfg.TypeSystem.GetType("Avalonia.Data.Core.PropertyPath");

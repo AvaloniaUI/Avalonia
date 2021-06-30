@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
@@ -128,60 +129,39 @@ namespace Avalonia
             visitor.Visit(this, ref data);
         }
 
-        /// <inheritdoc/>
-        internal override void RouteClearValue(IAvaloniaObject o)
+        internal override IDisposable Bind(AvaloniaObject target, IObservable<object?> source, BindingPriority priority)
         {
-            o.ClearValue<TValue>(this);
+            return target.Bind<TValue>(this, source);
         }
 
-        /// <inheritdoc/>
-        internal override object? RouteGetValue(IAvaloniaObject o)
+        internal override IObservable<object?> GetObservable(AvaloniaObject target)
         {
-            return o.GetValue<TValue>(this);
+            return (AvaloniaPropertyObservable)target.GetObservable(this);
         }
 
-        internal override object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        internal override object? GetValue(AvaloniaObject target) => target.GetValue(this);
+
+        internal override object GetValueByPriority(
+            AvaloniaObject avaloniaObject,
+            BindingPriority minPriority,
+            BindingPriority maxPriority)
         {
-            return o.GetValue<TValue>(this);
+             throw new NotSupportedException("Direct properties do not support binding priorities.");
         }
 
-        /// <inheritdoc/>
-        internal override IDisposable? RouteSetValue(
-            IAvaloniaObject o,
-            object value,
-            BindingPriority priority)
+        internal override void SetValue(AvaloniaObject target, object? value)
         {
-            var v = TryConvert(value);
-
-            if (v.HasValue)
+            if (value == BindingOperations.DoNothing)
+                return;
+            else if (value == UnsetValue)
+                target.ClearValue(this);
+            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
+                target.SetValue<TValue>(this, (TValue?)converted);
+            else
             {
-                o.SetValue<TValue>(this, (TValue)v.Value);
+                var type = value?.GetType().FullName ?? "(null)";
+                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
             }
-            else if (v.Type == BindingValueType.UnsetValue)
-            {
-                o.ClearValue(this);
-            }
-            else if (v.HasError)
-            {
-                throw v.Error!;
-            }
-
-            return null;
-        }
-
-        /// <inheritdoc/>
-        internal override IDisposable RouteBind(
-            IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
-            BindingPriority priority)
-        {
-            var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
-            return o.Bind<TValue>(this, adapter);
-        }
-
-        internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
-        {
-            throw new NotSupportedException("Direct properties do not support inheritance.");
         }
     }
 }

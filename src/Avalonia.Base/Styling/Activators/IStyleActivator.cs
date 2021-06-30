@@ -19,6 +19,11 @@ namespace Avalonia.Styling.Activators
     public interface IStyleActivator : IDisposable
     {
         /// <summary>
+        /// Gets a value indicating whether the style is activated.
+        /// </summary>
+        bool IsActive { get; }
+
+        /// <summary>
         /// Subscribes to the activator.
         /// </summary>
         /// <param name="sink">The listener.</param>

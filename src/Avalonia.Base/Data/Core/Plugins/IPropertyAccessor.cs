@@ -27,13 +27,10 @@ namespace Avalonia.Data.Core.Plugins
         /// <param name="value">
         /// The value to set. Guaranteed to be of a valid type for the property.
         /// </param>
-        /// <param name="priority">
-        /// The priority with which to set the value.
-        /// </param>
         /// <returns>
         /// True if the property was set; false if the property could not be set.
         /// </returns>
-        bool SetValue(object value, BindingPriority priority);
+        bool SetValue(object value);
 
         /// <summary>
         /// Subscribes to the value of the member.

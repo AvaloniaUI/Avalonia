@@ -94,7 +94,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected internal override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
             if (TargetType != null)
             {

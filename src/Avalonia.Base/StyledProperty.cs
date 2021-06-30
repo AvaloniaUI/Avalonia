@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Data;
 
 namespace Avalonia
 {
@@ -46,6 +47,14 @@ namespace Avalonia
         {
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), this);
             return this;
+        }
+
+        internal override IDisposable Bind(
+            AvaloniaObject target,
+            IObservable<object> source,
+            BindingPriority priority)
+        {
+            return target.Bind<TValue>(this, source, priority);
         }
     }
 }

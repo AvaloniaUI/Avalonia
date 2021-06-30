@@ -9,6 +9,7 @@ namespace Avalonia.Styling.Activators
     {
         private readonly IStyleActivator _source;
         public NotActivator(IStyleActivator source) => _source = source;
+        public override bool IsActive => !_source.IsActive;
         void IStyleActivatorSink.OnNext(bool value, int tag) => PublishNext(!value);
         protected override void Initialize() => _source.Subscribe(this, 0);
         protected override void Deinitialize() => _source.Unsubscribe(this);

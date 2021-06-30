@@ -20,13 +20,13 @@ namespace Avalonia.Data.Core
         public string PropertyName { get; }
         public override Type PropertyType => _property.PropertyType;
 
-        protected override bool SetTargetValueCore(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value)
         {
             try
             {
                 if (Target.TryGetTarget(out object target) && target is IAvaloniaObject obj)
                 {
-                    obj.SetValue(_property, value, priority);
+                    obj.SetValue(_property, value);
                     return true;
                 }
                 return false;
@@ -41,7 +41,7 @@ namespace Avalonia.Data.Core
         {
             if (reference.TryGetTarget(out object target) && target is IAvaloniaObject obj)
             {
-                _subscription = new AvaloniaPropertyObservable<object>(obj, _property).Subscribe(ValueChanged);
+                _subscription = obj.GetObservable(_property).Subscribe(ValueChanged);
             }
             else
             {

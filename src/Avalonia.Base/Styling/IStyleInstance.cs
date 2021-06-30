@@ -5,9 +5,9 @@
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// Represents a style that has been instanced on a control.
+    /// Represents a <see cref="Style"/> that has been instanced on a control.
     /// </summary>
-    public interface IStyleInstance : IDisposable
+    public interface IStyleInstance
     {
         /// <summary>
         /// Gets the source style.
@@ -15,13 +15,16 @@ namespace Avalonia.Styling
         IStyle Source { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this style instance has an activator.
+        /// </summary>
+        /// <remarks>
+        /// A style instance without an activator will always be active.
+        /// </remarks>
+        bool HasActivator { get; }
+
+        /// <summary>
         /// Gets a value indicating whether this style is active.
         /// </summary>
         bool IsActive { get; }
-
-        /// <summary>
-        /// Instructs the style to start acting upon the control.
-        /// </summary>
-        void Start();
     }
 }

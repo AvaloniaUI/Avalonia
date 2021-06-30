@@ -16,6 +16,23 @@ namespace Avalonia.Styling.Activators
 
         public int Count => _sources?.Count ?? 0;
 
+        public override bool IsActive
+        {
+            get
+            {
+                if (_sources is null)
+                    return false;
+
+                foreach (var source in _sources)
+                {
+                    if (source.IsActive)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
         public void Add(IStyleActivator activator)
         {
             _sources ??= new List<IStyleActivator>();

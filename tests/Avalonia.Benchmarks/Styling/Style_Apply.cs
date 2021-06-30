@@ -50,14 +50,14 @@ namespace Avalonia.Benchmarks.Styling
         [Benchmark]
         public void Apply_Simple_Styles()
         {
-            var target = new TestClass();
+            var target = (IStyleable)new TestClass();
 
-            target.BeginBatchUpdate();
+            target.BeginStyling();
 
             foreach (var style in _styles)
-                style.TryAttach(target, null);
+                target.ApplyStyle(style);
 
-            target.EndBatchUpdate();
+            target.EndStyling();
         }
 
         private class TestClass : Control

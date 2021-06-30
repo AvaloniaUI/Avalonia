@@ -142,7 +142,7 @@ namespace Avalonia.Data.Core
                     if (converted == AvaloniaProperty.UnsetValue)
                     {
                         converted = TypeUtilities.Default(type);
-                        _inner.SetValue(converted, _priority);
+                        _inner.SetValue(converted);
                     }
                     else if (converted is BindingNotification)
                     {
@@ -164,7 +164,7 @@ namespace Avalonia.Data.Core
                                 CultureInfo.InvariantCulture,
                                 out converted))
                             {
-                                _inner.SetValue(converted, _priority);
+                                _inner.SetValue(converted);
                             }
                             else
                             {
@@ -178,7 +178,7 @@ namespace Avalonia.Data.Core
                     }
                     else
                     {
-                        _inner.SetValue(converted, _priority);
+                        _inner.SetValue(converted);
                     }
                 }
             }

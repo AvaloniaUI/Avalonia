@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -17,10 +18,10 @@ namespace Avalonia.Themes.Fluent
     /// <summary>
     /// Includes the fluent theme in an application.
     /// </summary>
-    public class FluentTheme : IStyle, IResourceProvider
+    public class FluentTheme : IStyle, IResourceProvider, IEnumerable<IStyle>
     {
         private readonly Uri _baseUri;
-        private IStyle[]? _loaded;
+        private IStyle? _loaded;
         private bool _isLoading;
 
         /// <summary>
@@ -58,18 +59,15 @@ namespace Avalonia.Themes.Fluent
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    var loaded = (IStyle)AvaloniaXamlLoader.Load(GetUri(), _baseUri);
-                    _loaded = new[] { loaded };
+                    _loaded = (IStyle)AvaloniaXamlLoader.Load(GetUri(), _baseUri);
                     _isLoading = false;
                 }
 
-                return _loaded?[0]!;
+                return _loaded;
             }
         }
 
         bool IResourceNode.HasResources => (Loaded as IResourceProvider)?.HasResources ?? false;
-
-        IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
         public event EventHandler OwnerChanged
         {
@@ -88,8 +86,6 @@ namespace Avalonia.Themes.Fluent
                 }
             }
         }
-
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
 
         public bool TryGetResource(object key, out object? value)
         {
@@ -110,5 +106,15 @@ namespace Avalonia.Themes.Fluent
             FluentThemeMode.Dark => new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml", UriKind.Absolute),
             _ => new Uri("avares://Avalonia.Themes.Fluent/FluentLight.xaml", UriKind.Absolute),
         };
+
+        IEnumerator<IStyle> IEnumerable<IStyle>.GetEnumerator()
+        {
+            return ((IEnumerable<IStyle>)new[] { Loaded }).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return new[] { Loaded }.GetEnumerator();
+        }
     }
 }

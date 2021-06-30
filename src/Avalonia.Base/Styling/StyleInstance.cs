@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Subjects;
-using Avalonia.Animation;
+using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Styling.Activators;
 
 #nullable enable
@@ -9,78 +9,57 @@ using Avalonia.Styling.Activators;
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// A <see cref="Style"/> which has been instanced on a control.
+    /// Stores state for a <see cref="Style"/> that has been instanced on a control.
     /// </summary>
-    internal class StyleInstance : IStyleInstance, IStyleActivatorSink
+    /// <remarks>
+    /// <see cref="StyleInstance"/> implements the <see cref="IValueFrame"/> interface meaning that
+    /// it is injected directly into the value store of an <see cref="AvaloniaObject"/>. Depending
+    /// on the setters present on the style, it may be possible to share a single style instance
+    /// among all controls that the style is applied to; meaning that a single style instance can
+    /// apply to multiple controls.
+    /// </remarks>
+    internal class StyleInstance : ValueFrameBase, IStyleInstance, IStyleActivatorSink, IDisposable
     {
-        private readonly List<ISetterInstance>? _setters;
-        private readonly List<IDisposable>? _animations;
         private readonly IStyleActivator? _activator;
-        private readonly Subject<bool>? _animationTrigger;
+        private List<ISetterInstance>? _setters;
+        private bool _isActivatorSubscribed;
 
-        public StyleInstance(
-            IStyle source,
-            IStyleable target,
-            IReadOnlyList<ISetter>? setters,
-            IReadOnlyList<IAnimation>? animations,
-            IStyleActivator? activator = null)
+        public StyleInstance(IStyle style, IStyleActivator? activator)
         {
-            Source = source ?? throw new ArgumentNullException(nameof(source));
-            Target = target ?? throw new ArgumentNullException(nameof(target));
             _activator = activator;
-            IsActive = _activator is null;
-
-            if (setters is object)
-            {
-                var setterCount = setters.Count;
-
-                _setters = new List<ISetterInstance>(setterCount);
-
-                for (var i = 0; i < setterCount; ++i)
-                {
-                    _setters.Add(setters[i].Instance(Target));
-                }
-            }
-
-            if (animations is object && target is Animatable animatable)
-            {
-                var animationsCount = animations.Count;
-
-                _animations = new List<IDisposable>(animationsCount);
-                _animationTrigger = new Subject<bool>();
-
-                for (var i = 0; i < animationsCount; ++i)
-                {
-                    _animations.Add(animations[i].Apply(animatable, null, _animationTrigger));
-                }
-            }
+            Priority = activator is object ? BindingPriority.StyleTrigger : BindingPriority.Style;
+            Source = style;
         }
 
-        public bool IsActive { get; private set; }
-        public IStyle Source { get; }
-        public IStyleable Target { get; }
+        public bool HasActivator => _activator is object;
 
-        public void Start()
+        public override bool IsActive
         {
-            var hasActivator = _activator is object;
-
-            if (_setters is object)
+            get
             {
-                foreach (var setter in _setters)
+                if (_activator is object && !_isActivatorSubscribed)
                 {
-                    setter.Start(hasActivator);
+                    _isActivatorSubscribed = true;
+                    _activator.Subscribe(this);
                 }
-            }
 
-            if (hasActivator)
-            {
-                _activator!.Subscribe(this, 0);
-            }
-            else if (_animationTrigger != null)
-            {
-                _animationTrigger.OnNext(true);
+                return _activator?.IsActive ?? true;
             }
         }
+
+        public override BindingPriority Priority { get; }
+        public IStyle Source { get; }
+        public ValueStore? ValueStore { get; private set; }
+
+        public void Add(ISetterInstance instance)
+        {
+            if (instance is IValueEntry valueEntry)
+                base.Add(valueEntry);
+            else
+                (_setters ??= new()).Add(instance);
+        }
+
+        public override void SetOwner(ValueStore? owner) => ValueStore = owner;
 
         public void Dispose()
         {
@@ -88,49 +67,16 @@ namespace Avalonia.Styling
             {
                 foreach (var setter in _setters)
                 {
-                    setter.Dispose();
-                }
-            }
-
-            if (_animations is object)
-            {
-                foreach (var subscripion in _animations)
-                {
-                    subscripion.Dispose();
+                    (setter as IDisposable)?.Dispose();
                 }
             }
 
             _activator?.Dispose();
         }
 
-        private void ActivatorChanged(bool value)
+        void IStyleActivatorSink.OnNext(bool value, int tag)
         {
-            if (IsActive != value)
-            {
-                IsActive = value;
-
-                _animationTrigger?.OnNext(value);
-
-                if (_setters is object)
-                {
-                    if (IsActive)
-                    {
-                        foreach (var setter in _setters)
-                        {
-                            setter.Activate();
-                        }
-                    }
-                    else
-                    {
-                        foreach (var setter in _setters)
-                        {
-                            setter.Deactivate();
-                        }
-                    }
-                }
-            }
+            ValueStore?.FrameActivationChanged(this);
         }
-
-        void IStyleActivatorSink.OnNext(bool value, int tag) => ActivatorChanged(value);
     }
 }
