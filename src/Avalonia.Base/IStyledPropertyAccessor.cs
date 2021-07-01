@@ -9,6 +9,10 @@ namespace Avalonia
     /// </summary>
     internal interface IStyledPropertyAccessor
     {
+        bool HasCoercion { get; }
+
+        object? CoerceValue(IAvaloniaObject instance, object? baseValue);
+
         /// <summary>
         /// Gets the default value for the property for the specified type.
         /// </summary>

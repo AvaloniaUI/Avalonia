@@ -71,7 +71,7 @@ namespace Avalonia
         protected AvaloniaProperty(
             AvaloniaProperty source,
             Type ownerType,
-            AvaloniaPropertyMetadata metadata)
+            AvaloniaPropertyMetadata? metadata)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
             _ = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
@@ -244,7 +244,7 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null,
+            Func<IAvaloniaObject, TValue?, TValue?>? coerce = null,
             Action<IAvaloniaObject, bool>? notifying = null)
                 where TOwner : IAvaloniaObject
         {
@@ -285,7 +285,7 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
+            Func<IAvaloniaObject, TValue?, TValue?>? coerce = null)
                 where THost : IAvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
@@ -322,7 +322,7 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
+            Func<IAvaloniaObject, TValue?, TValue?>? coerce = null)
                 where THost : IAvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));

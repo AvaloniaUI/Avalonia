@@ -81,9 +81,9 @@ namespace Avalonia
         /// Gets a value indicating whether this property has any value coercion callbacks defined
         /// in its metadata.
         /// </summary>
-        internal bool HasCoercion { get; private set; }
+        public bool HasCoercion { get; private set; }
 
-        public TValue CoerceValue(IAvaloniaObject instance, TValue baseValue)
+        public TValue? CoerceValue(IAvaloniaObject instance, TValue? baseValue)
         {
             var metadata = GetMetadata(instance.GetType());
 
@@ -100,7 +100,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The default value.</returns>
-        public TValue GetDefaultValue(Type type)
+        public TValue? GetDefaultValue(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
 
@@ -183,6 +183,11 @@ namespace Avalonia
         public override string ToString()
         {
             return Name;
+        }
+
+        object? IStyledPropertyAccessor.CoerceValue(IAvaloniaObject instance, object? baseValue)
+        {
+            return CoerceValue(instance, (TValue?)baseValue);
         }
 
         /// <inheritdoc/>

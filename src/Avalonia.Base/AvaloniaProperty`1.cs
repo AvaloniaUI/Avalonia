@@ -42,7 +42,7 @@ namespace Avalonia
         protected AvaloniaProperty(
             AvaloniaProperty source,
             Type ownerType,
-            AvaloniaPropertyMetadata metadata)
+            AvaloniaPropertyMetadata? metadata)
             : this(source as AvaloniaProperty<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
         {
         }
@@ -56,7 +56,7 @@ namespace Avalonia
         protected AvaloniaProperty(
             AvaloniaProperty<TValue> source,
             Type ownerType,
-            AvaloniaPropertyMetadata metadata)
+            AvaloniaPropertyMetadata? metadata)
             : base(source, ownerType, metadata)
         {
             _changed = source._changed;

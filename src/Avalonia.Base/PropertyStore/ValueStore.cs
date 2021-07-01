@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Dynamic;
 using Avalonia.Collections.Pooled;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
@@ -239,6 +240,15 @@ namespace Avalonia.PropertyStore
             return default;
         }
 
+        public void CoerceValue<T>(StyledPropertyBase<T> property)
+        {
+            if (!property.HasCoercion)
+                return;
+
+            if (_effectiveValues is object && _effectiveValues.TryGetValue(property.Id, out var v))
+                SetEffectiveValue(v.Entry!, v.Priority);
+        }
+
         public void InheritanceParentChanged(ValueStore? newParent)
         {
             var newParentFrame = newParent?.GetInheritanceFrame();
@@ -416,7 +426,7 @@ namespace Avalonia.PropertyStore
             var newValue = AvaloniaProperty.UnsetValue;
 
             if (EvaluateEffectiveValue(property, out var value, out var priority))
-                newValue = SetEffectiveValue(property, value, priority);
+                newValue = SetEffectiveValue(value, priority);
             else
                 ClearEffectiveValue(property);
 
@@ -428,7 +438,9 @@ namespace Avalonia.PropertyStore
             BindingValue<T> newValue = default;
 
             if (EvaluateEffectiveValue(property, out var value, out var priority))
+            {
                 newValue = SetEffectiveValue(property, value, priority);
+            }
             else
                 ClearEffectiveValue(property);
 
@@ -442,7 +454,7 @@ namespace Avalonia.PropertyStore
                 if (effective == changed)
                 {
                     _nonAnimatedValues ??= new Dictionary<int, EffectiveValue>();
-                    _nonAnimatedValues.Add(property.Id, new(effective, priority));
+                    _nonAnimatedValues.Add(property.Id, EffectiveValue.Create(this, effective, priority));
                     effective.TryGetValue(out var newValue);
                     RaisePropertyChanged(property, changed, AvaloniaProperty.UnsetValue, newValue, priority, false);
                 }
@@ -462,7 +474,7 @@ namespace Avalonia.PropertyStore
                 if (effective == changed)
                 {
                     _nonAnimatedValues ??= new Dictionary<int, EffectiveValue>();
-                    _nonAnimatedValues[property.Id] = new(effective, priority);
+                    _nonAnimatedValues[property.Id] = EffectiveValue.Create(this, property, effective, priority);
 
                     BindingValue<T> newValue;
 
@@ -580,7 +592,7 @@ namespace Avalonia.PropertyStore
                     if (found == FoundValue.None)
                     {
                         _effectiveValues ??= new();
-                        _effectiveValues[property.Id] = new(entry, frame.Priority);
+                        _effectiveValues[property.Id] = EffectiveValue.Create(this, entry, frame.Priority);
                     }
 
                     RaisePropertyChanged(
@@ -651,16 +663,18 @@ namespace Avalonia.PropertyStore
         {
             if (_effectiveValues is object && _effectiveValues.TryGetValue(property.Id, out var value))
                 return value;
-            return new EffectiveValue(null!, BindingPriority.Unset);
+            return EffectiveValue.Unset;
         }
 
-        private object? SetEffectiveValue(AvaloniaProperty property, IValueEntry value, BindingPriority priority)
+        private object? SetEffectiveValue(IValueEntry value, BindingPriority priority)
         {
+            var propertyId = value.Property.Id;
+
             _effectiveValues ??= new();
-            _effectiveValues[property.Id] = new(value, priority);
+            _effectiveValues[propertyId] = EffectiveValue.Create(this, value, priority);
 
             if (priority > BindingPriority.Animation)
-                _nonAnimatedValues?.Remove(property.Id);
+                _nonAnimatedValues?.Remove(propertyId);
 
             value.TryGetValue(out var result);
             return result;
@@ -669,7 +683,7 @@ namespace Avalonia.PropertyStore
         private T? SetEffectiveValue<T>(StyledPropertyBase<T> property, IValueEntry value, BindingPriority priority)
         {
             _effectiveValues ??= new();
-            _effectiveValues[property.Id] = new(value, priority);
+            _effectiveValues[property.Id] = EffectiveValue.Create(this, property, value, priority);
 
             if (priority > BindingPriority.Animation)
                 _nonAnimatedValues?.Remove(property.Id);
@@ -796,34 +810,54 @@ namespace Avalonia.PropertyStore
 
         private readonly struct EffectiveValue
         {
-            public EffectiveValue(IValueEntry? value, BindingPriority priority)
+            private EffectiveValue(IValueEntry? entry, BindingPriority priority, object? boxedValue)
             {
-                Entry = value;
+                Entry = entry;
                 Priority = priority;
+                BoxedValue = boxedValue;
             }
 
             public readonly IValueEntry? Entry;
             public readonly BindingPriority Priority;
+            public readonly object? BoxedValue;
+            public static readonly EffectiveValue Unset = new(null, BindingPriority.Unset, AvaloniaProperty.UnsetValue);
 
-            public object? GetValue()
+            public static EffectiveValue Create(ValueStore store, IValueEntry entry, BindingPriority priority)
             {
-                Entry!.TryGetValue(out var result);
-                return result;
+                var p = (IStyledPropertyAccessor)entry.Property;
+                object? value;
+
+                entry.TryGetValue(out value);
+
+                if (p.HasCoercion)
+                    value = p.CoerceValue(store.Owner, value);
+
+                return new EffectiveValue(entry, priority, value);
             }
 
-            public T? GetValue<T>()
+            public static EffectiveValue Create<T>(
+                ValueStore store,
+                StyledPropertyBase<T> property,
+                IValueEntry entry,
+                BindingPriority priority)
             {
-                if (Entry is IValueEntry<T> typed)
+                object? boxed;
+
+                if (property.HasCoercion)
                 {
-                    typed.TryGetValue(out var result);
-                    return result;
+                    entry.TryGetValue(out var v);
+                    boxed = property.CoerceValue(store.Owner, (T?)v);
                 }
                 else
                 {
-                    Entry!.TryGetValue(out var result);
-                    return (T?)result;
+                    entry.TryGetValue(out boxed);
                 }
+
+                return new EffectiveValue(entry, priority, boxed);
             }
+
+            public object? GetValue() => BoxedValue;
+            public T? GetValue<T>() => (T?)BoxedValue;
         }
 
         private class FrameInsertionComparer : IComparer<IValueFrame>

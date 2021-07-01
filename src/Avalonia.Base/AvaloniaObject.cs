@@ -575,8 +575,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void CoerceValue<T>(StyledPropertyBase<T> property)
         {
-            throw new NotImplementedException();
-            ////_values?.CoerceValue(property);
+            _values.CoerceValue(property);
         }
 
         /// <inheritdoc/>
