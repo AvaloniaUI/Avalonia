@@ -10,16 +10,6 @@
                 HorizontalAlignment="Center"
                 Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8" Width="200">
-        <Button Content="RetemplatedButton">
-          <Button.Template>
-            <ControlTemplate TargetType="Button">
-              <Border CornerRadius="3"
-                      Background="Red"
-                      Width="220"
-                      Height="30"/>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
         <Button>Standard XAML Button</Button>
         <Button Foreground="White">Foreground</Button>
         <Button Background="{DynamicResource SystemAccentColor}">Background</Button>
