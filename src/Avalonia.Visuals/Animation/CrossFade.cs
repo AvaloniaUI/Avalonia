@@ -147,6 +147,7 @@ namespace Avalonia.Animation
         /// <param name="forward">
         /// Unused for cross-fades.
         /// </param>
+        /// <param name="cancellationToken">allowed cancel transition</param>
         /// <returns>
         /// A <see cref="Task"/> that tracks the progress of the animation.
         /// </returns>

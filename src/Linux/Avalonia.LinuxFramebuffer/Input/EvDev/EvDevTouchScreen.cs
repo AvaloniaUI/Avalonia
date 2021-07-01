@@ -7,7 +7,6 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
     internal class EvDevSingleTouchScreen : EvDevDeviceHandler
     {
         private readonly IScreenInfoProvider _screenInfo;
-        private readonly int _width, _height;
         private readonly Matrix _calibration;
         private input_absinfo _axisX;
         private input_absinfo _axisY;
