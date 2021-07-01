@@ -12,7 +12,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : AvaloniaObject, IStyleExtra, IStyleWithCancel, IResourceProvider
+    public class Style : AvaloniaObject, IStyleExtra, IStyleSelectorContainer, IResourceProvider
     {
         private IResourceHost? _owner;
         private IResourceDictionary? _resources;
@@ -99,7 +99,7 @@ namespace Avalonia.Styling
 
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => TryAttach(target, host, null);
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host, IEnumerable<IStyleWithCancel>? cancelStylesFromBelow)
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host, IEnumerable<Style>? cancelStylesFromBelow)
         {
             if (IsCancel)
             {

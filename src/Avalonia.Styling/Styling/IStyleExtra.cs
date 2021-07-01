@@ -14,6 +14,6 @@ namespace Avalonia.Styling
         /// <returns>
         /// A <see cref="SelectorMatchResult"/> describing how the style matches the control.
         /// </returns>
-        SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host, IEnumerable<IStyleWithCancel>? cancelStylesFromBelow);
+        SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host, IEnumerable<Style> cancelStylesFromBelow);
     }
 }

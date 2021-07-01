@@ -1,9 +1,7 @@
 ﻿namespace Avalonia.Styling
 {
-    public interface IStyleWithCancel : IStyle
+    public interface IStyleSelectorContainer
     {
-        bool IsCancel { get; }
-
         Selector Selector { get; }
     }
 }

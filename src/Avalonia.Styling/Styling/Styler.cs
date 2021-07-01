@@ -14,24 +14,26 @@ namespace Avalonia.Styling
 
             if (target is IStyleHost styleHost)
             {
-                ApplyStyles(target, styleHost, new IStyleWithCancel[] { });
+                ApplyStyles(target, styleHost, new Style[] { });
             }
         }
 
-        private void ApplyStyles(IStyleable target, IStyleHost host, IEnumerable<IStyleWithCancel>? cancelStylesFromBelow)
+        private void ApplyStyles(IStyleable target, IStyleHost host, Style[]? cancelStylesFromBelow)
         {
             var parent = host.StylingParent;
 
-            var currentCancelStyles = (cancelStylesFromBelow.Union(host.Styles.OfType<IStyleWithCancel>().Where(style => style.IsCancel))).ToArray();
+            var currentCancelStyles = (host as IStyleHostExtra)?.CanceledStyles;
+
+            var cancelStylesForAbove = (cancelStylesFromBelow?.Union(currentCancelStyles ?? Enumerable.Empty<Style>())).ToArray();
 
             if (parent != null)
             {
-                ApplyStyles(target, parent, currentCancelStyles);
+                ApplyStyles(target, parent, cancelStylesForAbove);
             }
 
             if (host.IsStylesInitialized)
             {
-                host.Styles.TryAttach(target, host, currentCancelStyles);
+                host.Styles.TryAttach(target, host, cancelStylesForAbove);
             }
         }
     }

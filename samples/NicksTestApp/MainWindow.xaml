@@ -15,9 +15,9 @@
 
 
     <StackPanel x:Name="PanelWithCanceledButtonStyle1">
-      <StackPanel.Styles>
-        <Style IsCancel="True" Selector="Button"/>
-      </StackPanel.Styles>
+      <StackPanel.CanceledStyles>
+        <Style Selector="Button"/>
+      </StackPanel.CanceledStyles>
       <Button x:Name="RetemplatedButton1"
               Width="250"
               HorizontalAlignment="Center"
@@ -42,9 +42,9 @@
         Content="Hello World"/>
 
     <StackPanel x:Name="PanelWithCanceledButtonStyle2">
-        <StackPanel.Styles>
-          <Style IsCancel="True" Selector="Button"/>
-        </StackPanel.Styles>
+        <StackPanel.CanceledStyles>
+          <Style Selector="Button"/>
+        </StackPanel.CanceledStyles>
         <Button x:Name="RetemplatedButton2"
                 Width="250"
                 HorizontalAlignment="Center"

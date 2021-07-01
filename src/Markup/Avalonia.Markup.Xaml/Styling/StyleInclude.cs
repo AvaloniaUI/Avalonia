@@ -84,7 +84,7 @@ namespace Avalonia.Markup.Xaml.Styling
 
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => TryAttach(target, host, null);
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host, IEnumerable<IStyleWithCancel>? cancelStylesFromBelow) => 
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host, IEnumerable<Style>? cancelStylesFromBelow) => 
             (Loaded as IStyleExtra)?.TryAttach(target, host, cancelStylesFromBelow) ?? SelectorMatchResult.NeverThisInstance;
 
         public bool TryGetResource(object key, out object? value)

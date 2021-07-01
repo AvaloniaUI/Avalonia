@@ -111,7 +111,7 @@ namespace Avalonia.Styling
 
         public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => TryAttach(target, host, null);
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host, IEnumerable<IStyleWithCancel>? cancelStylesFromBelow)
+        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host, IEnumerable<Style>? cancelStylesFromBelow)
         {
             _cache ??= new Dictionary<Type, List<IStyle>?>();
 
@@ -137,12 +137,6 @@ namespace Avalonia.Styling
 
                 foreach (var child in this)
                 {
-                    // no need to clutter the cache
-                    if ((child as Style)?.IsCancel == true)
-                    {
-                        continue;
-                    }
-
                     if ((child as IStyleExtra)?.TryAttach(target, host, cancelStylesFromBelow) != SelectorMatchResult.NeverThisType)
                     {
                         matches ??= new List<IStyle>();

@@ -41,6 +41,7 @@ namespace Avalonia
             new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
         private Styles _styles;
+        private List<Style> _canceledStyles;
         private IResourceDictionary _resources;
         private bool _notifyingResourcesChanged;
         private Action<IReadOnlyList<IStyle>> _stylesAdded;
@@ -151,6 +152,8 @@ namespace Avalonia
         /// Global styles apply to all windows in the application.
         /// </remarks>
         public Styles Styles => _styles ??= new Styles(this);
+
+        public List<Style> CanceledStyles => _canceledStyles ??= new List<Style>();
 
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
