@@ -21,13 +21,5 @@ namespace NicksTestApp
 
             base.OnFrameworkInitializationCompleted();
         }
-
-        //public override void RegisterServices()
-        //{
-        //    base.RegisterServices();
-
-        //    // replacing the styler implementation
-        //    AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToConstant(new MyStyler());
-        //}
     }
 }
