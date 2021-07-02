@@ -54,7 +54,7 @@ namespace Avalonia.Media
 
             foreach (var boxShadow in this)
             {
-                sb.Append(boxShadow + " ");
+                sb.Append($"{boxShadow} ");
             }
 
             return sb.ToString();
