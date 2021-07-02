@@ -137,12 +137,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
             if (Windows.Count > 0)
                 e.Cancel = true;
         }
-
-        private bool TryCloseAllWindows()
-        {
-
-            return Windows.Count == 0;
-        }
     }
     
     public class ClassicDesktopStyleApplicationLifetimeOptions
