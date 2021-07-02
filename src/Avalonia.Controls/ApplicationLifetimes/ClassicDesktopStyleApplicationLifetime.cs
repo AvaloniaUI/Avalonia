@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using Avalonia.Controls;
@@ -42,7 +43,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     "Can not have multiple active ClassicDesktopStyleApplicationLifetime instances and the previously created one was not disposed");
             _activeLifetime = this;
         }
-        
+
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeStartupEventArgs> Startup;
         /// <inheritdoc/>
@@ -111,6 +112,11 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
             }
 
+            var lifetimeEvents = AvaloniaLocator.Current.GetService<IPlatformLifetimeEventsImpl>(); 
+
+            if (lifetimeEvents != null)
+                lifetimeEvents.ShutdownRequested += ShutdownRequested;
+
             _cts = new CancellationTokenSource();
             MainWindow?.Show();
             Dispatcher.UIThread.MainLoop(_cts.Token);
@@ -122,6 +128,20 @@ namespace Avalonia.Controls.ApplicationLifetimes
         {
             if (_activeLifetime == this)
                 _activeLifetime = null;
+        }
+        
+        private void ShutdownRequested(object sender, CancelEventArgs e)
+        {
+            foreach (var w in Windows.ToArray())
+                w.Close();
+            if (Windows.Count > 0)
+                e.Cancel = true;
+        }
+
+        private bool TryCloseAllWindows()
+        {
+
+            return Windows.Count == 0;
         }
     }
     
