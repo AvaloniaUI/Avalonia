@@ -2055,22 +2055,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return _canBecomeKeyAndMain;
 }
 
--(bool) activateAppropriateChild: (bool)activating
-{
-    for(NSWindow* uch in [self childWindows])
-    {
-        auto ch = objc_cast<AvnWindow>(uch);
-        if(ch == nil)
-            continue;
-        [ch activateAppropriateChild:false];
-        return FALSE;
-    }
-    
-    if(!activating)
-        [self makeKeyAndOrderFront:self];
-    return TRUE;
-}
-
 -(bool)shouldTryToHandleEvents
 {
     return _isEnabled;
@@ -2081,26 +2065,15 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isEnabled = enable;
 }
 
--(void)makeKeyWindow
-{
-    if([self activateAppropriateChild: true])
-    {
-        [super makeKeyWindow];
-    }
-}
-
 -(void)becomeKeyWindow
 {
     [self showWindowMenuWithAppMenu];
     
-    if([self activateAppropriateChild: true])
+    if(_parent != nullptr)
     {
-        if(_parent != nullptr)
-        {
-            _parent->BaseEvents->Activated();
-        }
+        _parent->BaseEvents->Activated();
     }
-    
+
     [super becomeKeyWindow];
 }
 
@@ -2110,7 +2083,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     if(parent != nil)
     {
         [parent removeChildWindow:self];
-        [parent activateAppropriateChild: false];
     }
 }
 
