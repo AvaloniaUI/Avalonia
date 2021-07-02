@@ -1,5 +1,4 @@
 using System.Linq;
-using Avalonia.Collections;
 
 namespace Avalonia.Controls
 {
@@ -23,6 +22,11 @@ namespace Avalonia.Controls
             : this()
         {
             AddRange(GridLength.ParseLengths(s).Select(x => new RowDefinition(x)));
+        }
+
+        public override string ToString()
+        {
+            return string.Join(",", this.Select(x => x.Height));
         }
 
         /// <summary>
