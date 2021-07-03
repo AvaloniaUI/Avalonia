@@ -132,7 +132,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         
         private void ShutdownRequested(object sender, CancelEventArgs e)
         {
-            foreach (var w in Windows.ToArray())
+            foreach (var w in Windows)
                 w.Close();
             if (Windows.Count > 0)
                 e.Cancel = true;
