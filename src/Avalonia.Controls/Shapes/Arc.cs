@@ -33,7 +33,7 @@ namespace Avalonia.Controls.Shapes
         }
 
         /// <summary>
-        /// Gets or sets the angle at which the arc ends relative to the start angle, in degrees.
+        /// Gets or sets the angle, in degrees, added to the <see cref="StartAngle"/> defining where the arc ends. A positive value is clockwise, negative is counter-clockwise.
         /// </summary>
         public double SweepAngle
         {
@@ -54,7 +54,7 @@ namespace Avalonia.Controls.Shapes
 
             var rect = new Rect(Bounds.Size);
 
-            if ((normStart == normEnd) && (startAngle != sweepAngle)) //complete ring
+            if ((normStart == normEnd) && (startAngle != sweepAngle)) // complete ring
             {
                 return new EllipseGeometry(rect.Deflate(StrokeThickness / 2));
             }
@@ -62,7 +62,7 @@ namespace Avalonia.Controls.Shapes
             {
                 return new StreamGeometry();
             }
-            else //partial arc
+            else // partial arc
             {
                 var deflatedRect = rect.Deflate(StrokeThickness / 2);
 
