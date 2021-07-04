@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+
 using Avalonia.Animation.Animators;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
@@ -9,34 +11,34 @@ namespace Avalonia.Animation
 {
     /// <summary>
     /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="IBrush"/> type.
-    /// Only values of <see cref="ISolidColorBrush"/> will transition correctly at the moment.
     /// </summary>
     public class BrushTransition : Transition<IBrush?>
     {
-        private static readonly ISolidColorBrushAnimator s_animator = new ISolidColorBrushAnimator();
-
         public override IObservable<IBrush?> DoTransition(IObservable<double> progress, IBrush? oldValue, IBrush? newValue)
         {
-            var oldSolidColorBrush = TryGetSolidColorBrush(oldValue);
-            var newSolidColorBrush = TryGetSolidColorBrush(newValue);
-
-            if (oldSolidColorBrush != null && newSolidColorBrush != null)
+            var type = oldValue?.GetType() ?? newValue?.GetType();
+            if (type == null)
             {
-                return new AnimatorTransitionObservable<ISolidColorBrush, ISolidColorBrushAnimator>(
-                    s_animator, progress, Easing, oldSolidColorBrush, newSolidColorBrush);
+                return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
             }
 
-            return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
-        }
-
-        private static ISolidColorBrush? TryGetSolidColorBrush(IBrush? brush)
-        {
-            if (brush is null)
+            var animator = BaseBrushAnimator.CreateAnimatorFromType(type);
+            if (animator == null)
             {
-                return Brushes.Transparent;
+                return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
             }
 
-            return brush as ISolidColorBrush;
+            var animatorType = animator.GetType();
+            var animatorGenericArgument = animatorType.BaseType.GetGenericArguments().FirstOrDefault() ?? type;
+
+            var observableType = typeof(AnimatorTransitionObservable<,>).MakeGenericType(animatorGenericArgument, animatorType);
+            var observable = Activator.CreateInstance(observableType, animator, progress, Easing, oldValue, newValue) as IObservable<IBrush>;
+            if (observable == null)
+            {
+                return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
+            }
+
+            return observable;
         }
 
         private class IncompatibleTransitionObservable : TransitionObservableBase<IBrush?>

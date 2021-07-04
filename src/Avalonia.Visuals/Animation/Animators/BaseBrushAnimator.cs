@@ -4,6 +4,8 @@ using System.Reactive.Disposables;
 using Avalonia.Logging;
 using Avalonia.Media;
 
+#nullable enable
+
 namespace Avalonia.Animation.Animators
 {
     /// <summary>
@@ -12,9 +14,9 @@ namespace Avalonia.Animation.Animators
     /// redirect them to the properly registered
     /// animators in this class.
     /// </summary>
-    public class BaseBrushAnimator : Animator<IBrush>
+    public class BaseBrushAnimator : Animator<IBrush?>
     {
-        private IAnimator _targetAnimator;
+        private IAnimator? _targetAnimator;
 
         private static readonly List<(Func<Type, bool> Match, Type AnimatorType)> _brushAnimators =
             new List<(Func<Type, bool> Match, Type AnimatorType)>();
@@ -31,7 +33,7 @@ namespace Avalonia.Animation.Animators
         /// The type of the animator to instantiate.
         /// </typeparam>
         public static void RegisterBrushAnimator<TAnimator>(Func<Type, bool> condition)
-            where TAnimator : IAnimator
+            where TAnimator : IAnimator, new()
         {
             _brushAnimators.Insert(0, (condition, typeof(TAnimator)));
         }
@@ -40,20 +42,18 @@ namespace Avalonia.Animation.Animators
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock,
             IObservable<bool> match, Action onComplete)
         {
-            foreach (var valueType in _brushAnimators)
+            _targetAnimator = CreateAnimatorFromType(this[0].Value.GetType());
+
+            if (_targetAnimator != null)
             {
-                if (!valueType.Match(this[0].Value.GetType())) continue;
-
-                _targetAnimator = (IAnimator)Activator.CreateInstance(valueType.AnimatorType);
-
                 foreach (var keyframe in this)
                 {
                     _targetAnimator.Add(keyframe);
                 }
 
                 _targetAnimator.Property = this.Property;
-                
-               return _targetAnimator.Apply(animation, control, clock, match, onComplete);
+
+                return _targetAnimator.Apply(animation, control, clock, match, onComplete);
             }
 
             Logger.TryGet(LogEventLevel.Error, LogArea.Animations)?.Log(
@@ -64,6 +64,19 @@ namespace Avalonia.Animation.Animators
         }
 
         /// <inheritdoc/>
-        public override IBrush Interpolate(double progress, IBrush oldValue, IBrush newValue) => null;
+        public override IBrush? Interpolate(double progress, IBrush? oldValue, IBrush? newValue) => null;
+
+        internal static IAnimator? CreateAnimatorFromType(Type type)
+        {
+            foreach (var (match, animatorType) in _brushAnimators)
+            {
+                if (!match(type))
+                    continue;
+
+                return (IAnimator)Activator.CreateInstance(animatorType);
+            }
+
+            return null;
+        }
     }
 }

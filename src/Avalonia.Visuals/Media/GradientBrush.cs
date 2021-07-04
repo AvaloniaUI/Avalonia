@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+
+using Avalonia.Animation.Animators;
 using Avalonia.Collections;
 using Avalonia.Metadata;
 
@@ -28,6 +30,7 @@ namespace Avalonia.Media
 
         static GradientBrush()
         {
+            BaseBrushAnimator.RegisterBrushAnimator<IGradientBrushAnimator>(match => typeof(IGradientBrush).IsAssignableFrom(match));
             GradientStopsProperty.Changed.Subscribe(GradientStopsChanged);
             AffectsRender<LinearGradientBrush>(SpreadMethodProperty);
         }
