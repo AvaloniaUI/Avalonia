@@ -351,7 +351,7 @@ namespace Avalonia.Native
         }
 
 
-        public virtual void Show(bool activate)
+        public virtual void Show(bool activate, bool isDialog)
         {
             _native.Show(activate.AsComBool());
         }
