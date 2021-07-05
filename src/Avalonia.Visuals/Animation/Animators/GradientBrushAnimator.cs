@@ -19,8 +19,7 @@ namespace Avalonia.Animation.Animators
 
         public override IGradientBrush? Interpolate(double progress, IGradientBrush? oldValue, IGradientBrush? newValue)
         {
-            if (oldValue is null || newValue is null
-                || oldValue.GradientStops.Count != newValue.GradientStops.Count)
+            if (oldValue is null || newValue is null)
             {
                 return progress >= 0.5 ? newValue : oldValue;
             }
@@ -64,13 +63,26 @@ namespace Avalonia.Animation.Animators
 
         private IReadOnlyList<ImmutableGradientStop> InterpolateStops(double progress, IReadOnlyList<IGradientStop> oldValue, IReadOnlyList<IGradientStop> newValue)
         {
-            var stops = new ImmutableGradientStop[oldValue.Count];
-            for (int index = 0; index < oldValue.Count; index++)
+            var resultCount = Math.Max(oldValue.Count, newValue.Count);
+            var stops = new ImmutableGradientStop[resultCount];
+
+            for (int index = 0, oldIndex = 0, newIndex = 0; index < resultCount; index++)
             {
                 stops[index] = new ImmutableGradientStop(
-                    s_doubleAnimator.Interpolate(progress, oldValue[index].Offset, newValue[index].Offset),
-                    ColorAnimator.InterpolateCore(progress, oldValue[index].Color, newValue[index].Color));
+                    s_doubleAnimator.Interpolate(progress, oldValue[oldIndex].Offset, newValue[newIndex].Offset),
+                    ColorAnimator.InterpolateCore(progress, oldValue[oldIndex].Color, newValue[newIndex].Color));
+
+                if (oldIndex < oldValue.Count - 1)
+                {
+                    oldIndex++;
+                }
+
+                if (newIndex < newValue.Count - 1)
+                {
+                    newIndex++;
+                }
             }
+            
             return stops;
         }
 
@@ -80,29 +92,29 @@ namespace Avalonia.Animation.Animators
             {
                 case IRadialGradientBrush oldRadial:
                     return new ImmutableRadialGradientBrush(
-                        CreateStopsFromSolidColorBrush(solidColorBrush, oldRadial), solidColorBrush.Opacity,
+                        CreateStopsFromSolidColorBrush(solidColorBrush, oldRadial.GradientStops), solidColorBrush.Opacity,
                         oldRadial.SpreadMethod, oldRadial.Center, oldRadial.GradientOrigin, oldRadial.Radius);
 
                 case IConicGradientBrush oldConic:
                     return new ImmutableConicGradientBrush(
-                        CreateStopsFromSolidColorBrush(solidColorBrush, oldConic), solidColorBrush.Opacity,
+                        CreateStopsFromSolidColorBrush(solidColorBrush, oldConic.GradientStops), solidColorBrush.Opacity,
                         oldConic.SpreadMethod, oldConic.Center, oldConic.Angle);
 
                 case ILinearGradientBrush oldLinear:
                     return new ImmutableLinearGradientBrush(
-                        CreateStopsFromSolidColorBrush(solidColorBrush, oldLinear), solidColorBrush.Opacity,
+                        CreateStopsFromSolidColorBrush(solidColorBrush, oldLinear.GradientStops), solidColorBrush.Opacity,
                         oldLinear.SpreadMethod, oldLinear.StartPoint, oldLinear.EndPoint);
 
                 default:
                     throw new NotSupportedException($"Gradient of type {gradientBrush?.GetType()} is not supported");
             }
 
-            static IReadOnlyList<ImmutableGradientStop> CreateStopsFromSolidColorBrush(ISolidColorBrush solidColorBrush, IGradientBrush baseGradient)
+            static IReadOnlyList<ImmutableGradientStop> CreateStopsFromSolidColorBrush(ISolidColorBrush solidColorBrush, IReadOnlyList<IGradientStop> baseStops)
             {
-                var stops = new ImmutableGradientStop[baseGradient.GradientStops.Count];
-                for (int index = 0; index < baseGradient.GradientStops.Count; index++)
+                var stops = new ImmutableGradientStop[baseStops.Count];
+                for (int index = 0; index < baseStops.Count; index++)
                 {
-                    stops[index] = new ImmutableGradientStop(baseGradient.GradientStops[index].Offset, solidColorBrush.Color);
+                    stops[index] = new ImmutableGradientStop(baseStops[index].Offset, solidColorBrush.Color);
                 }
                 return stops;
             }
