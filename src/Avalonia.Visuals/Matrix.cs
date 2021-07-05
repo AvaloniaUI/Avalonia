@@ -14,7 +14,7 @@ namespace Avalonia
     /// 2nd row | skrewX  | scaleY  | persY  |
     /// 3rd row | transX  | transY  | persZ  |
     /// 
-    /// Note: Skia.SkMatrix uses a transposed layout (where for example skrewX/skrewY and perspp0/tranX are swapped).
+    /// Note: Skia.SkMatrix uses a transposed layout (where for example skrewX/skrewY and persX/transX are swapped).
     /// </remakrs>
 #if !BUILDTASK
     public
@@ -333,7 +333,7 @@ namespace Avalonia
         {
 
             // ReSharper disable CompareOfFloatsByEqualityOperator
-            return _m31 != 0 || _m32 != 0 || _m33 != 1;
+            return _m13 != 0 || _m23 != 0 || _m33 != 1;
             // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
