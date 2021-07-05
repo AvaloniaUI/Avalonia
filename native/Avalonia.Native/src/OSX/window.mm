@@ -105,7 +105,7 @@ public:
         return Window;
     }
     
-    virtual HRESULT Show(bool activate) override
+    virtual HRESULT Show(bool activate, bool isDialog) override
     {
         @autoreleasepool
         {
@@ -488,6 +488,11 @@ public:
         return S_OK;
     }
 
+    virtual bool IsDialog()
+    {
+        return false;
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {
@@ -518,6 +523,7 @@ private:
     NSRect _preZoomSize;
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
+    bool _isDialog;
     AvnExtendClientAreaChromeHints _extendClientHints;
     
     FORWARD_IUNKNOWN()
@@ -573,11 +579,12 @@ private:
         }
     }
     
-    virtual HRESULT Show (bool activate) override
+    virtual HRESULT Show (bool activate, bool isDialog) override
     {
         @autoreleasepool
-        {            
-            WindowBaseImpl::Show(activate);
+        {
+            _isDialog = isDialog;
+            WindowBaseImpl::Show(activate, isDialog);
             
             HideOrShowTrafficLights();
             
@@ -1068,6 +1075,11 @@ private:
         {
             WindowStateChanged();
         }
+    }
+    
+    virtual bool IsDialog() override
+    {
+        return _isDialog;
     }
     
 protected:
@@ -1858,6 +1870,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isExtended = value;
 }
 
+-(bool) isDialog
+{
+    return _parent->IsDialog();
+}
+
 -(double) getScaling
 {
     return _lastScaling;
@@ -2047,7 +2064,22 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(BOOL)canBecomeKeyWindow
 {
-    return _canBecomeKeyAndMain;
+    if (_canBecomeKeyAndMain)
+    {
+        // If the window has a child window being shown as a dialog then don't allow it to become the key window.
+        for(NSWindow* uch in [self childWindows])
+        {
+            auto ch = objc_cast<AvnWindow>(uch);
+            if(ch == nil)
+                continue;
+            if (ch.isDialog)
+                return false;
+        }
+        
+        return true;
+    }
+    
+    return false;
 }
 
 -(BOOL)canBecomeMainWindow
