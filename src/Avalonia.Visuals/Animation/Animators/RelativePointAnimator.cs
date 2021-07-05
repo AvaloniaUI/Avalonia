@@ -11,7 +11,7 @@
         {
             if (oldValue.Unit != newValue.Unit)
             {
-                return progress >= 1 ? newValue : oldValue;
+                return progress >= 0.5 ? newValue : oldValue;
             }
 
             return new RelativePoint(s_pointAnimator.Interpolate(progress, oldValue.Point, newValue.Point), oldValue.Unit);
