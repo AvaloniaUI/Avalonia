@@ -1,27 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+
+#nullable enable
 
 namespace Avalonia.Animation.Animators
 {
     /// <summary>
     /// Animator that handles <see cref="SolidColorBrush"/> values. 
     /// </summary>
-    public class IGradientBrushAnimator : Animator<IGradientBrush>
+    public class IGradientBrushAnimator : Animator<IGradientBrush?>
     {
         private static readonly RelativePointAnimator s_relativePointAnimator = new RelativePointAnimator();
         private static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();
 
-        public override IGradientBrush Interpolate(double progress, IGradientBrush oldValue, IGradientBrush newValue)
+        public override IGradientBrush? Interpolate(double progress, IGradientBrush? oldValue, IGradientBrush? newValue)
         {
             if (oldValue is null || newValue is null
-                || oldValue.GradientStops.Count != oldValue.GradientStops.Count)
+                || oldValue.GradientStops.Count != newValue.GradientStops.Count)
             {
-                return progress >= 1 ? newValue : oldValue;
+                return progress >= 0.5 ? newValue : oldValue;
             }
 
             switch (oldValue)
@@ -52,23 +53,59 @@ namespace Avalonia.Animation.Animators
                         s_relativePointAnimator.Interpolate(progress, oldLinear.EndPoint, newLinear.EndPoint));
 
                 default:
-                    return progress >= 1 ? newValue : oldValue;
+                    return progress >= 0.5 ? newValue : oldValue;
             }
         }
 
-        public override IDisposable BindAnimation(Animatable control, IObservable<IGradientBrush> instance)
+        public override IDisposable BindAnimation(Animatable control, IObservable<IGradientBrush?> instance)
         {
-            return control.Bind((AvaloniaProperty<IBrush>)Property, instance, BindingPriority.Animation);
+            return control.Bind((AvaloniaProperty<IBrush?>)Property, instance, BindingPriority.Animation);
         }
 
         private IReadOnlyList<ImmutableGradientStop> InterpolateStops(double progress, IReadOnlyList<IGradientStop> oldValue, IReadOnlyList<IGradientStop> newValue)
         {
-            // pool
-            return oldValue
-                .Zip(newValue, (f, s) => new ImmutableGradientStop(
-                    s_doubleAnimator.Interpolate(progress, f.Offset, s.Offset),
-                    ColorAnimator.InterpolateCore(progress, f.Color, s.Color)))
-                .ToArray();
+            var stops = new ImmutableGradientStop[oldValue.Count];
+            for (int index = 0; index < oldValue.Count; index++)
+            {
+                stops[index] = new ImmutableGradientStop(
+                    s_doubleAnimator.Interpolate(progress, oldValue[index].Offset, newValue[index].Offset),
+                    ColorAnimator.InterpolateCore(progress, oldValue[index].Color, newValue[index].Color));
+            }
+            return stops;
+        }
+
+        internal static IGradientBrush ConvertSolidColorBrushToGradient(IGradientBrush gradientBrush, ISolidColorBrush solidColorBrush)
+        {
+            switch (gradientBrush)
+            {
+                case IRadialGradientBrush oldRadial:
+                    return new ImmutableRadialGradientBrush(
+                        CreateStopsFromSolidColorBrush(solidColorBrush, oldRadial), solidColorBrush.Opacity,
+                        oldRadial.SpreadMethod, oldRadial.Center, oldRadial.GradientOrigin, oldRadial.Radius);
+
+                case IConicGradientBrush oldConic:
+                    return new ImmutableConicGradientBrush(
+                        CreateStopsFromSolidColorBrush(solidColorBrush, oldConic), solidColorBrush.Opacity,
+                        oldConic.SpreadMethod, oldConic.Center, oldConic.Angle);
+
+                case ILinearGradientBrush oldLinear:
+                    return new ImmutableLinearGradientBrush(
+                        CreateStopsFromSolidColorBrush(solidColorBrush, oldLinear), solidColorBrush.Opacity,
+                        oldLinear.SpreadMethod, oldLinear.StartPoint, oldLinear.EndPoint);
+
+                default:
+                    throw new NotSupportedException($"Gradient of type {gradientBrush?.GetType()} is not supported");
+            }
+
+            static IReadOnlyList<ImmutableGradientStop> CreateStopsFromSolidColorBrush(ISolidColorBrush solidColorBrush, IGradientBrush baseGradient)
+            {
+                var stops = new ImmutableGradientStop[baseGradient.GradientStops.Count];
+                for (int index = 0; index < baseGradient.GradientStops.Count; index++)
+                {
+                    stops[index] = new ImmutableGradientStop(baseGradient.GradientStops[index].Offset, solidColorBrush.Color);
+                }
+                return stops;
+            }
         }
     }
 }

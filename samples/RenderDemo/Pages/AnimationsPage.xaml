@@ -168,6 +168,37 @@
                      IterationCount="Infinite"
                      PlaybackDirection="Alternate">
             <KeyFrame Cue="0%">
+              <Setter Property="Background" Value="Red" />
+            </KeyFrame>
+            <KeyFrame Cue="30%">
+              <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                  <GradientStop Offset="0" Color="Red"/>
+                  <GradientStop Offset="1" Color="Blue"/>
+                </LinearGradientBrush>
+              </Setter>
+            </KeyFrame>
+            <KeyFrame Cue="60%">
+              <Setter Property="Background" Value="Blue" />
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="Background">
+                <LinearGradientBrush StartPoint="100%,0%" EndPoint="0%,100%">
+                  <GradientStop Offset="0" Color="Green"/>
+                  <GradientStop Offset="1" Color="Yellow"/>
+                </LinearGradientBrush>
+              </Setter>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>
+
+      <Style Selector="Border.Rect8">
+        <Style.Animations>
+          <Animation Duration="0:0:3"
+                     IterationCount="Infinite"
+                     PlaybackDirection="Alternate">
+            <KeyFrame Cue="0%">
               <Setter Property="Background">
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
                   <GradientStop Offset="0" Color="Red"/>
@@ -187,7 +218,7 @@
         </Style.Animations>
       </Style>
 
-      <Style Selector="Border.Rect8">
+      <Style Selector="Border.Rect9">
         <Style.Animations>
           <Animation Duration="0:0:3"
                      IterationCount="Infinite"
@@ -212,7 +243,7 @@
         </Style.Animations>
       </Style>
 
-      <Style Selector="Border.Rect9">
+      <Style Selector="Border.Rect10">
         <Style.Animations>
           <Animation Duration="0:0:3"
                      IterationCount="Infinite"
@@ -259,6 +290,7 @@
         <Border Classes="Test Rect7" Child="{x:Null}" />
         <Border Classes="Test Rect8" Child="{x:Null}" />
         <Border Classes="Test Rect9" Child="{x:Null}" />
+        <Border Classes="Test Rect10" Child="{x:Null}" />
       </WrapPanel>
     </StackPanel>
   </Grid>

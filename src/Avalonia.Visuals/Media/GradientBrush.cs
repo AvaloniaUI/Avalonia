@@ -30,7 +30,6 @@ namespace Avalonia.Media
 
         static GradientBrush()
         {
-            BaseBrushAnimator.RegisterBrushAnimator<IGradientBrushAnimator>(match => typeof(IGradientBrush).IsAssignableFrom(match));
             GradientStopsProperty.Changed.Subscribe(GradientStopsChanged);
             AffectsRender<LinearGradientBrush>(SpreadMethodProperty);
         }

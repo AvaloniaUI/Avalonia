@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 using Avalonia.Animation.Animators;
 using Avalonia.Animation.Easings;
@@ -14,34 +13,43 @@ namespace Avalonia.Animation
     /// </summary>
     public class BrushTransition : Transition<IBrush?>
     {
+        private static readonly IGradientBrushAnimator s_gradientAnimator = new IGradientBrushAnimator();
+        private static readonly ISolidColorBrushAnimator s_solidColorBrushAnimator = new ISolidColorBrushAnimator();
+
         public override IObservable<IBrush?> DoTransition(IObservable<double> progress, IBrush? oldValue, IBrush? newValue)
         {
-            var type = oldValue?.GetType() ?? newValue?.GetType();
-            if (type == null)
+            if (oldValue is null || newValue is null)
             {
                 return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
             }
 
-            var animator = BaseBrushAnimator.CreateAnimatorFromType(type);
-            if (animator == null)
+            if (oldValue is IGradientBrush oldGradient)
             {
-                return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
+                if (newValue is IGradientBrush newGradient)
+                {
+                    return new AnimatorTransitionObservable<IGradientBrush?, IGradientBrushAnimator>(s_gradientAnimator, progress, Easing, oldGradient, newGradient);
+                }
+                else if (newValue is ISolidColorBrush newSolidColorBrushToConvert)
+                {
+                    var convertedSolidColorBrush = IGradientBrushAnimator.ConvertSolidColorBrushToGradient(oldGradient, newSolidColorBrushToConvert);
+                    return new AnimatorTransitionObservable<IGradientBrush?, IGradientBrushAnimator>(s_gradientAnimator, progress, Easing, oldGradient, convertedSolidColorBrush);
+                }
+            }
+            else if (newValue is IGradientBrush newGradient && oldValue is ISolidColorBrush oldSolidColorBrushToConvert)
+            {
+                var convertedSolidColorBrush = IGradientBrushAnimator.ConvertSolidColorBrushToGradient(newGradient, oldSolidColorBrushToConvert);
+                return new AnimatorTransitionObservable<IGradientBrush?, IGradientBrushAnimator>(s_gradientAnimator, progress, Easing, convertedSolidColorBrush, newGradient);
             }
 
-            var animatorType = animator.GetType();
-            var animatorGenericArgument = animatorType.BaseType.GetGenericArguments().FirstOrDefault() ?? type;
-
-            var observableType = typeof(AnimatorTransitionObservable<,>).MakeGenericType(animatorGenericArgument, animatorType);
-            var observable = Activator.CreateInstance(observableType, animator, progress, Easing, oldValue, newValue) as IObservable<IBrush>;
-            if (observable == null)
+            if (oldValue is ISolidColorBrush oldSolidColorBrush && newValue is ISolidColorBrush newSolidColorBrush)
             {
-                return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
+                return new AnimatorTransitionObservable<ISolidColorBrush?, ISolidColorBrushAnimator>(s_solidColorBrushAnimator, progress, Easing, oldSolidColorBrush, newSolidColorBrush);
             }
 
-            return observable;
+            return new IncompatibleTransitionObservable(progress, Easing, oldValue, newValue);
         }
 
-        private class IncompatibleTransitionObservable : TransitionObservableBase<IBrush?>
+        private sealed class IncompatibleTransitionObservable : TransitionObservableBase<IBrush?>
         {
             private readonly IBrush? _from;
             private readonly IBrush? _to;
@@ -54,7 +62,7 @@ namespace Avalonia.Animation
 
             protected override IBrush? ProduceValue(double progress)
             {
-                return progress < 0.5 ? _from : _to;
+                return progress >= 0.5 ? _to : _from;
             }
         }
     }
