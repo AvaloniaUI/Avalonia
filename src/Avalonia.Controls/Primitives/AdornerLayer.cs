@@ -151,6 +151,7 @@ namespace Avalonia.Controls.Primitives
                     adorner.SetValue(s_adornedElementInfoProperty, info);
                 }
 
+                info.Bounds = adorned.TransformedBounds;
                 info.Subscription = adorned.GetObservable(TransformedBoundsProperty).Subscribe(x =>
                 {
                     info.Bounds = x;
