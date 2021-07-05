@@ -63,5 +63,8 @@
     <TabItem Header="Path Measurement">
       <pages:PathMeasurementPage />
     </TabItem>
+    <TabItem Header="3D Transformation">
+      <pages:Transform3DPage />
+    </TabItem>
   </controls:HamburgerMenu>
 </Window>

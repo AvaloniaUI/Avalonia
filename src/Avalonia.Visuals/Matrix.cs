@@ -14,7 +14,7 @@ namespace Avalonia
     /// 2nd row | skrewX  | scaleY  | persY  |
     /// 3rd row | transX  | transY  | persZ  |
     /// 
-    /// Note: Skia.SkMatrix uses a transposed layout (where for example skrewX/skrewY and persX/transX are swapped).
+    /// Note: Skia.SkMatrix uses a transposed layout (where for example skrewX/skrewY and perspp0/tranX are swapped).
     /// </remakrs>
 #if !BUILDTASK
     public
@@ -30,8 +30,7 @@ namespace Avalonia
         private readonly double _m31;
         private readonly double _m32;
         private readonly double _m33;
-
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Matrix"/> struct (equivalent to a 2x3 Matrix without perspective).
         /// </summary>
@@ -159,12 +158,15 @@ namespace Avalonia
         public static Matrix operator *(Matrix value1, Matrix value2)
         {
             return new Matrix(
-                (value1.M11 * value2.M11) + (value1.M12 * value2.M21),
-                (value1.M11 * value2.M12) + (value1.M12 * value2.M22),
-                (value1.M21 * value2.M11) + (value1.M22 * value2.M21),
-                (value1.M21 * value2.M12) + (value1.M22 * value2.M22),
-                (value1._m31 * value2.M11) + (value1._m32 * value2.M21) + value2._m31,
-                (value1._m31 * value2.M12) + (value1._m32 * value2.M22) + value2._m32); //TODO: include perspective
+                (value1.M11 * value2.M11) + (value1.M12 * value2.M21) + (value1.M13 * value2.M31),
+                (value1.M11 * value2.M12) + (value1.M12 * value2.M22) + (value1.M13 * value2.M32),
+                (value1.M11 * value2.M13) + (value1.M12 * value2.M23) + (value1.M13 * value2.M33),
+                (value1.M21 * value2.M11) + (value1.M22 * value2.M21) + (value1.M23 * value2.M31),
+                (value1.M21 * value2.M12) + (value1.M22 * value2.M22) + (value1.M23 * value2.M32),
+                (value1.M21 * value2.M13) + (value1.M22 * value2.M23) + (value1.M23 * value2.M33),
+                (value1.M31 * value2.M11) + (value1.M32 * value2.M21) + (value1.M33 * value2.M31),
+                (value1.M31 * value2.M12) + (value1.M32 * value2.M22) + (value1.M33 * value2.M32), 
+                (value1.M31 * value2.M13) + (value1.M32 * value2.M23) + (value1.M33 * value2.M33));
         }
 
         /// <summary>
@@ -288,7 +290,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Prpends another matrix as pre-multiplication operation.
+        /// Prepends another matrix as pre-multiplication operation.
         /// Equivalent to value * this;
         /// </summary>
         /// <param name="value">A matrix.</param>
@@ -359,7 +361,7 @@ namespace Avalonia
         {
 
             // ReSharper disable CompareOfFloatsByEqualityOperator
-            return _m13 != 0 || _m23 != 0 || _m33 != 1;
+            return _m31 != 0 || _m32 != 0 || _m33 != 1;
             // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
@@ -399,21 +401,27 @@ namespace Avalonia
         {
             double d = GetDeterminant();
 
-            if (MathUtilities.IsZero(d)) //TODO: decide if special handling is required for perspective
+            if (MathUtilities.IsZero(d))
             {
                 inverted = default;
                 
                 return false;
             }
 
+            var invdet = 1 / d;
+            
             inverted = new Matrix(
-                _m22 / d,
-                -_m12 / d,
-                -_m21 / d,
-                _m11 / d,
-                ((_m21 * _m32) - (_m22 * _m31)) / d,
-                ((_m12 * _m31) - (_m11 * _m32)) / d);
-
+                (_m22 * _m33 - _m32 * _m23) * invdet,
+                (_m13 * _m31 - _m12 * _m33) * invdet,
+                (_m12 * _m23 - _m13 * _m22) * invdet,
+                (_m23 * _m31 - _m21 * _m33) * invdet,
+                (_m11 * _m33 - _m13 * _m31) * invdet,
+                (_m21 * _m13 - _m11 * _m23) * invdet,
+                (_m21 * _m32 - _m31 * _m22) * invdet,
+                (_m21 * _m12 - _m11 * _m32) * invdet,
+                (_m11 * _m22 - _m21 * _m12) * invdet
+                );
+            
             return true;
         }
 
@@ -424,7 +432,7 @@ namespace Avalonia
         /// <returns>The inverted matrix.</returns>
         public Matrix Invert()
         {
-            if (!TryInvert(out Matrix inverted))
+            if (!TryInvert(out var inverted))
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
@@ -467,7 +475,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="matrix">Matrix to decompose.</param>
         /// <param name="decomposed">Decomposed matrix.</param>
-        /// <returns>The status of the operation.</returns>
+        /// <returns>The status of the operation.</returns>        
         public static bool TryDecomposeTransform(Matrix matrix, out Decomposed decomposed)
         {
             decomposed = default;

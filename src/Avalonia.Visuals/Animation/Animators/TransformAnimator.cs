@@ -43,6 +43,7 @@ namespace Avalonia.Animation.Animators
                     normalTransform.Children.Add(new SkewTransform());
                     normalTransform.Children.Add(new RotateTransform());
                     normalTransform.Children.Add(new TranslateTransform());
+                    normalTransform.Children.Add(new Transform3D());
 
                     ctrl.RenderTransform = normalTransform;
                 }
