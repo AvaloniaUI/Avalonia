@@ -1,5 +1,6 @@
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {   
@@ -30,13 +31,14 @@ namespace Avalonia.Controls
 
         static Image()
         {
-            AffectsRender<Image>(SourceProperty, StretchProperty);
-            AffectsMeasure<Image>(SourceProperty, StretchProperty);
+            AffectsRender<Image>(SourceProperty, StretchProperty, StretchDirectionProperty);
+            AffectsMeasure<Image>(SourceProperty, StretchProperty, StretchDirectionProperty);
         }
 
         /// <summary>
         /// Gets or sets the image that will be displayed.
         /// </summary>
+        [Content]
         public IImage Source
         {
             get { return GetValue(SourceProperty); }

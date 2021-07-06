@@ -425,7 +425,7 @@ namespace Avalonia.Controls
                 UpdateDisplayedRows(DisplayData.FirstScrollingSlot, CellsHeight);
             }
 
-            if (DisplayData.FirstScrollingSlot < slot && DisplayData.LastScrollingSlot > slot)
+            if (DisplayData.FirstScrollingSlot < slot && (DisplayData.LastScrollingSlot > slot || DisplayData.LastScrollingSlot == -1))
             {
                 // The row is already displayed in its entirety
                 return true;

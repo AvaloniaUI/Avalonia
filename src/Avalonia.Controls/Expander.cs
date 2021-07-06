@@ -1,22 +1,47 @@
+using System.Threading;
+
 using Avalonia.Animation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Direction in which an <see cref="Expander"/> control opens.
+    /// </summary>
     public enum ExpandDirection
     {
+        /// <summary>
+        /// Opens down.
+        /// </summary>
         Down,
+
+        /// <summary>
+        /// Opens up.
+        /// </summary>
         Up,
+
+        /// <summary>
+        /// Opens left.
+        /// </summary>
         Left,
+
+        /// <summary>
+        /// Opens right.
+        /// </summary>
         Right
     }
 
+    /// <summary>
+    /// A control with a header that has a collapsible content section.
+    /// </summary>
     [PseudoClasses(":expanded", ":up", ":down", ":left", ":right")]
     public class Expander : HeaderedContentControl
     {
-        public static readonly StyledProperty<IPageTransition> ContentTransitionProperty =
-            AvaloniaProperty.Register<Expander, IPageTransition>(nameof(ContentTransition));
+        public static readonly StyledProperty<IPageTransition?> ContentTransitionProperty =
+            AvaloniaProperty.Register<Expander, IPageTransition?>(nameof(ContentTransition));
 
         public static readonly StyledProperty<ExpandDirection> ExpandDirectionProperty =
             AvaloniaProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);
@@ -29,6 +54,7 @@ namespace Avalonia.Controls
                 defaultBindingMode: Data.BindingMode.TwoWay);
 
         private bool _isExpanded;
+        private CancellationTokenSource? _lastTransitionCts;
 
         static Expander()
         {
@@ -40,7 +66,7 @@ namespace Avalonia.Controls
             UpdatePseudoClasses(ExpandDirection);
         }
 
-        public IPageTransition ContentTransition
+        public IPageTransition? ContentTransition
         {
             get => GetValue(ContentTransitionProperty);
             set => SetValue(ContentTransitionProperty, value);
@@ -62,19 +88,23 @@ namespace Avalonia.Controls
             }
         }
 
-        protected virtual void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs e)
+        protected virtual async void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (Content != null && ContentTransition != null && Presenter is Visual visualContent)
             {
                 bool forward = ExpandDirection == ExpandDirection.Left ||
                                 ExpandDirection == ExpandDirection.Up;
+
+                _lastTransitionCts?.Cancel();
+                _lastTransitionCts = new CancellationTokenSource();
+
                 if (IsExpanded)
                 {
-                    ContentTransition.Start(null, visualContent, forward);
+                    await ContentTransition.Start(null, visualContent, forward, _lastTransitionCts.Token);
                 }
                 else
                 {
-                    ContentTransition.Start(visualContent, null, !forward);
+                    await ContentTransition.Start(visualContent, null, forward, _lastTransitionCts.Token);
                 }
             }
         }
