@@ -639,12 +639,15 @@ namespace Avalonia.Controls
             {
                 if (parent.PlatformImpl == null)
                 {
-                    throw new InvalidOperationException("Cannot Show a Window with a closed parent.");
+                    throw new InvalidOperationException("Cannot show a window with a closed parent.");
                 }
-
-                if (parent == this)
+                else if (parent == this)
                 {
                     throw new InvalidOperationException("A Window cannot be its own parent.");
+                }
+                else if (!parent.IsVisible)
+                {
+                    throw new InvalidOperationException("Cannot show window with non-visible parent.");
                 }
             }
 
@@ -721,20 +724,21 @@ namespace Avalonia.Controls
             {
                 throw new ArgumentNullException(nameof(owner));
             }
-
-            if (owner.PlatformImpl == null)
+            else if (owner.PlatformImpl == null)
             {
-                throw new InvalidOperationException("Cannot Show a Window with a closed owner.");
+                throw new InvalidOperationException("Cannot show a window with a closed owner.");
             }
-
-            if (owner == this)
+            else if (owner == this)
             {
                 throw new InvalidOperationException("A Window cannot be its own owner.");
             }
-
-            if (IsVisible)
+            else if (IsVisible)
             {
                 throw new InvalidOperationException("The window is already being shown.");
+            }
+            else if (!owner.IsVisible)
+            {
+                throw new InvalidOperationException("Cannot show window with non-visible parent.");
             }
 
             RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
