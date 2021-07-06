@@ -418,6 +418,30 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Calling_Show_With_Self_As_Parent_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new Window();
+
+                var ex = Assert.Throws<InvalidOperationException>(() => target.Show(target));
+                Assert.Equal("A Window cannot be its own parent.", ex.Message);
+            }
+        }
+
+        [Fact]
+        public async Task Calling_ShowDialog_With_Self_As_Parent_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new Window();
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog(target));
+                Assert.Equal("A Window cannot be its own owner.", ex.Message);
+            }
+        }
+
+        [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
             var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);

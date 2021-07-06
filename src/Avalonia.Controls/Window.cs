@@ -635,9 +635,17 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("Cannot re-show a closed window.");
             }
 
-            if (parent != null && parent.PlatformImpl == null)
+            if (parent != null)
             {
-                throw new InvalidOperationException("Cannot Show a Window with a closed parent.");
+                if (parent.PlatformImpl == null)
+                {
+                    throw new InvalidOperationException("Cannot Show a Window with a closed parent.");
+                }
+
+                if (parent == this)
+                {
+                    throw new InvalidOperationException("A Window cannot be its own parent.");
+                }
             }
 
             if (IsVisible)
@@ -717,6 +725,11 @@ namespace Avalonia.Controls
             if (owner.PlatformImpl == null)
             {
                 throw new InvalidOperationException("Cannot Show a Window with a closed owner.");
+            }
+
+            if (owner == this)
+            {
+                throw new InvalidOperationException("A Window cannot be its own owner.");
             }
 
             if (IsVisible)
