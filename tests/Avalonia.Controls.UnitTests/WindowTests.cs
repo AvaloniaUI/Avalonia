@@ -279,10 +279,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = Mock.Of<Window>();
+                var parent = new Window();
                 var renderer = new Mock<IRenderer>();
                 var target = new Window(CreateImpl(renderer));
 
+                parent.Show();
                 target.ShowDialog<object>(parent);
 
                 renderer.Verify(x => x.Start(), Times.Once);
@@ -294,10 +295,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = Mock.Of<Window>();
+                var parent = new Window();
                 var target = new Window();
                 var raised = false;
 
+                parent.Show();
                 target.Opened += (s, e) => raised = true;
 
                 target.ShowDialog<object>(parent);
@@ -326,14 +328,15 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = new Mock<Window>();
+                var parent = new Window();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
+                parent.Show();
                 var target = new Window(windowImpl.Object);
-                var task = target.ShowDialog<bool>(parent.Object);
+                var task = target.ShowDialog<bool>(parent);
 
                 windowImpl.Object.Closed();
 
@@ -366,14 +369,16 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parent = new Mock<Window>();
+                var parent = new Window();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
+                parent.Show();
+
                 var target = new Window(windowImpl.Object);
-                var task = target.ShowDialog<bool>(parent.Object);
+                var task = target.ShowDialog<bool>(parent);
 
                 windowImpl.Object.Closed();
                 await task;
@@ -381,7 +386,7 @@ namespace Avalonia.Controls.UnitTests
                 var openedRaised = false;
                 target.Opened += (s, e) => openedRaised = true;
 
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog<bool>(parent.Object));
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog<bool>(parent));
                 Assert.Equal("Cannot re-show a closed window.", ex.Message);
                 Assert.False(openedRaised);
             }
@@ -398,7 +403,7 @@ namespace Avalonia.Controls.UnitTests
                 parent.Close();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
-                Assert.Equal("Cannot Show a Window with a closed parent.", ex.Message);
+                Assert.Equal("Cannot show a window with a closed parent.", ex.Message);
             }
         }
 
@@ -413,7 +418,33 @@ namespace Avalonia.Controls.UnitTests
                 parent.Close();
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog(parent));
-                Assert.Equal("Cannot Show a Window with a closed owner.", ex.Message);
+                Assert.Equal("Cannot show a window with a closed owner.", ex.Message);
+            }
+        }
+
+        [Fact]
+        public void Calling_Show_With_Invisible_Parent_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parent = new Window();
+                var target = new Window();
+
+                var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
+                Assert.Equal("Cannot show window with non-visible parent.", ex.Message);
+            }
+        }
+
+        [Fact]
+        public async Task Calling_ShowDialog_With_Invisible_Parent_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parent = new Window();
+                var target = new Window();
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog(parent));
+                Assert.Equal("Cannot show window with non-visible parent.", ex.Message);
             }
         }
 
@@ -740,6 +771,7 @@ namespace Avalonia.Controls.UnitTests
             protected override void Show(Window window)
             {
                 var owner = new Window();
+                owner.Show();
                 window.ShowDialog(owner);
             }
         }
