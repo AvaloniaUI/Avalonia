@@ -592,6 +592,14 @@ namespace Avalonia.Controls
                     owner.RemoveChild(this);
                 }
 
+                if (_children.Count > 0)
+                {
+                    foreach (var child in _children.ToArray())
+                    {
+                        child.child.Hide();
+                    }
+                }
+
                 Owner = null;
 
                 PlatformImpl?.Hide();

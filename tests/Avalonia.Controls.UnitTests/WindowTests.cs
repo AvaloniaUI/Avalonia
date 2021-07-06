@@ -473,6 +473,42 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Hiding_Parent_Window_Should_Close_Children()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var parent = new Window();
+                var child = new Window();
+
+                parent.Show();
+                child.Show(parent);
+
+                parent.Hide();
+
+                Assert.False(parent.IsVisible);
+                Assert.False(child.IsVisible);
+            }
+        }
+
+        [Fact]
+        public void Hiding_Parent_Window_Should_Close_Dialog_Children()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var parent = new Window();
+                var child = new Window();
+
+                parent.Show();
+                child.ShowDialog(parent);
+
+                parent.Hide();
+
+                Assert.False(parent.IsVisible);
+                Assert.False(child.IsVisible);
+            }
+        }
+
+        [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
             var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
