@@ -91,6 +91,7 @@ namespace Avalonia.iOS
             }
 
             public Size ClientSize => new Size(_view.Bounds.Width, _view.Bounds.Height);
+            public Size? FrameSize => null;
             public double RenderScaling => _view.ContentScaleFactor;
             public IEnumerable<object> Surfaces { get; set; }
             public Action<RawInputEventArgs> Input { get; set; }

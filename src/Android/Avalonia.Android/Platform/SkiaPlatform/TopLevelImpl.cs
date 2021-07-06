@@ -55,6 +55,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public virtual Size ClientSize => Size.ToSize(RenderScaling);
 
+        public Size? FrameSize => null;
+
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public Action Closed { get; set; }

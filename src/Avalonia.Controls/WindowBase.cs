@@ -212,6 +212,7 @@ namespace Avalonia.Controls
         protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
             ClientSize = clientSize;
+            FrameSize = PlatformImpl.FrameSize;
             LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }

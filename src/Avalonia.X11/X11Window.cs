@@ -296,6 +296,30 @@ namespace Avalonia.X11
 
         public Size ClientSize => new Size(_realSize.Width / RenderScaling, _realSize.Height / RenderScaling);
 
+        public Size? FrameSize
+        {
+            get
+            {
+                XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_FRAME_EXTENTS, IntPtr.Zero,
+                    new IntPtr(4), false, (IntPtr)Atom.AnyPropertyType, out var _,
+                    out var _, out var nitems, out var _, out var prop);
+
+                if (nitems.ToInt64() != 4)
+                {
+                    // Window hasn't been mapped by the WM yet, so can't get the extents.
+                    return null;
+                }
+
+                var data = (IntPtr*)prop.ToPointer();
+                var extents = new Thickness(data[0].ToInt32(), data[2].ToInt32(), data[1].ToInt32(), data[3].ToInt32());
+                XFree(prop);
+                
+                return new Size(
+                    (_realSize.Width + extents.Left + extents.Right) / RenderScaling,
+                    (_realSize.Height + extents.Top + extents.Bottom) / RenderScaling);
+            }
+        }
+
         public double RenderScaling
         {
             get
