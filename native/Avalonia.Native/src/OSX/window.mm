@@ -113,9 +113,11 @@ public:
             UpdateStyle();
             
             [Window setContentView: StandardContainer];
+            [Window setTitle:_lastTitle];
             
             if(ShouldTakeFocusOnShow() && activate)
             {
+                [Window orderFront: Window];
                 [Window makeKeyAndOrderFront:Window];
                 [NSApp activateIgnoringOtherApps:YES];
             }
@@ -123,7 +125,6 @@ public:
             {
                 [Window orderFront: Window];
             }
-            [Window setTitle:_lastTitle];
             
             _shown = true;
             
@@ -180,7 +181,10 @@ public:
         {
             if (Window != nullptr)
             {
-                [Window close];
+                auto window = Window;
+                Window = nullptr;
+                
+                [window close];
             }
             
             return S_OK;
@@ -549,6 +553,11 @@ private:
     
     void HideOrShowTrafficLights ()
     {
+        if (Window == nil)
+        {
+            return;
+        }
+        
         for (id subview in Window.contentView.superview.subviews) {
             if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")]) {
                 NSView *titlebarView = [subview subviews][0];
@@ -963,6 +972,11 @@ private:
     
     virtual HRESULT SetWindowState (AvnWindowState state) override
     {
+        if(Window == nullptr)
+        {
+            return  S_OK;
+        }
+        
         @autoreleasepool
         {
             if(_actualWindowState == state)
