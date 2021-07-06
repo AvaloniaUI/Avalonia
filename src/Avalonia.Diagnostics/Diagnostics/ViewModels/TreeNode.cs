@@ -4,23 +4,27 @@ using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal abstract class TreeNode : ViewModelBase, IDisposable
     {
-        private IDisposable? _classesSubscription;
+        private readonly IDisposable? _classesSubscription;
         private string _classes;
         private bool _isExpanded;
 
-        public TreeNode(IVisual visual, TreeNode? parent)
+        protected TreeNode(IVisual visual, TreeNode? parent)
         {
             Parent = parent;
             Type = visual.GetType().Name;
             Visual = visual;
             _classes = string.Empty;
+
+            FontWeight = Visual is TopLevel or Popup ? FontWeight.Bold : FontWeight.Normal;
 
             if (visual is IControl control)
             {
@@ -51,6 +55,8 @@ namespace Avalonia.Diagnostics.ViewModels
                     });
             }
         }
+
+        public FontWeight FontWeight { get; }
 
         public abstract TreeNodeCollection Children
         {
@@ -94,21 +100,6 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _classesSubscription?.Dispose();
             Children.Dispose();
-        }
-
-        private static int IndexOf(IReadOnlyList<TreeNode> collection, TreeNode item)
-        {
-            var count = collection.Count;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (collection[i] == item)
-                {
-                    return i;
-                }
-            }
-
-            throw new AvaloniaInternalException("TreeNode was not present in parent Children collection.");
         }
     }
 }
