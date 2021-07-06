@@ -595,6 +595,8 @@ namespace Avalonia.Win32
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
 
+        public bool IsEnabled => IsWindowEnabled(_hwnd);
+
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             _mouseDevice.Capture(null);

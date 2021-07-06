@@ -47,6 +47,8 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
+        public bool IsEnabled => true;
+
         public WindowStub(IWindowImpl parent = null)
         {
             if (parent != null)
