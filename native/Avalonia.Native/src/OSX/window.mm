@@ -585,7 +585,9 @@ private:
     virtual HRESULT Show (bool activate) override
     {
         @autoreleasepool
-        {            
+        {
+            auto r = this->UnknownSelf();
+            
             WindowBaseImpl::Show(activate);
             
             HideOrShowTrafficLights();
@@ -1925,7 +1927,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         if(![self windowShouldClose:self]) return;
     }
-    
+
     [self close];
 }
 
