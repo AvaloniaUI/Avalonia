@@ -24,7 +24,7 @@ namespace Avalonia.Diagnostics.ViewModels
             Visual = visual;
             _classes = string.Empty;
 
-            FontWeight = Visual is TopLevel or Popup ? FontWeight.Bold : FontWeight.Normal;
+            FontWeight = Visual is TopLevel || Visual is Popup ? FontWeight.Bold : FontWeight.Normal;
 
             if (visual is IControl control)
             {
