@@ -30,7 +30,6 @@ namespace Avalonia.X11
         ITopLevelImplWithTextInputMethod
     {
         private readonly AvaloniaX11Platform _platform;
-        private readonly IWindowImpl _popupParent;
         private readonly bool _popup;
         private readonly X11Info _x11;
         private XConfigureEvent? _configure;

@@ -78,6 +78,12 @@ namespace Avalonia.Controls
         public static GridLength Auto => new GridLength(0, GridUnitType.Auto);
 
         /// <summary>
+        /// Gets an instance of <see cref="GridLength"/> that indicates that a row or column should
+        /// fill its content.
+        /// </summary>
+        public static GridLength Star => new GridLength(1, GridUnitType.Star);
+
+        /// <summary>
         /// Gets the unit of the <see cref="GridLength"/>.
         /// </summary>
         public GridUnitType GridUnitType => _type;
