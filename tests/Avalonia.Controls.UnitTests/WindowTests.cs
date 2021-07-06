@@ -388,6 +388,36 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Calling_Show_With_Closed_Parent_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parent = new Window();
+                var target = new Window();
+
+                parent.Close();
+
+                var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
+                Assert.Equal("Cannot Show a Window with a closed parent.", ex.Message);
+            }
+        }
+
+        [Fact]
+        public async Task Calling_ShowDialog_With_Closed_Parent_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parent = new Window();
+                var target = new Window();
+
+                parent.Close();
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog(parent));
+                Assert.Equal("Cannot Show a Window with a closed owner.", ex.Message);
+            }
+        }
+
+        [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
             var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
