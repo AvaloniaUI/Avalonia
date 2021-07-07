@@ -132,8 +132,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
         
         private void ShutdownRequested(object sender, CancelEventArgs e)
         {
+            // When an OS shutdown request is received, try to close all non-owned windows. Windows can cancel
+            // shutdown by setting e.Cancel = true in the Closing event. Owned windows will be shutdown by their
+            // owners.
             foreach (var w in Windows)
-                w.Close();
+                if (w.Owner is null)
+                    w.Close();
             if (Windows.Count > 0)
                 e.Cancel = true;
         }
