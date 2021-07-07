@@ -435,6 +435,7 @@ interface IAvnWindowBase : IUnknown
      HRESULT Close();
      HRESULT Activate();
      HRESULT GetClientSize(AvnSize*ret);
+     HRESULT GetFrameSize(AvnSize*ret);
      HRESULT GetScaling(double*ret);
      HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize);
      HRESULT Resize(double width, double height);
