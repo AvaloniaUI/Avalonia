@@ -202,6 +202,21 @@ public:
         }
     }
     
+    virtual HRESULT GetFrameSize(AvnSize* ret) override
+    {
+        @autoreleasepool
+        {
+            if(ret == nullptr)
+                return E_POINTER;
+            
+            auto frame = [Window frame];
+            ret->Width = frame.size.width;
+            ret->Height = frame.size.height;
+            
+            return S_OK;
+        }
+    }
+    
     virtual HRESULT GetScaling (double* ret) override
     {
         @autoreleasepool
