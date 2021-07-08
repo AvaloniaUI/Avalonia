@@ -13,7 +13,7 @@ namespace Avalonia.Animation
     /// </summary>
     public class BrushTransition : Transition<IBrush?>
     {
-        private static readonly IGradientBrushAnimator s_gradientAnimator = new IGradientBrushAnimator();
+        private static readonly GradientBrushAnimator s_gradientAnimator = new GradientBrushAnimator();
         private static readonly ISolidColorBrushAnimator s_solidColorBrushAnimator = new ISolidColorBrushAnimator();
 
         public override IObservable<IBrush?> DoTransition(IObservable<double> progress, IBrush? oldValue, IBrush? newValue)
@@ -27,18 +27,18 @@ namespace Avalonia.Animation
             {
                 if (newValue is IGradientBrush newGradient)
                 {
-                    return new AnimatorTransitionObservable<IGradientBrush?, IGradientBrushAnimator>(s_gradientAnimator, progress, Easing, oldGradient, newGradient);
+                    return new AnimatorTransitionObservable<IGradientBrush?, GradientBrushAnimator>(s_gradientAnimator, progress, Easing, oldGradient, newGradient);
                 }
                 else if (newValue is ISolidColorBrush newSolidColorBrushToConvert)
                 {
-                    var convertedSolidColorBrush = IGradientBrushAnimator.ConvertSolidColorBrushToGradient(oldGradient, newSolidColorBrushToConvert);
-                    return new AnimatorTransitionObservable<IGradientBrush?, IGradientBrushAnimator>(s_gradientAnimator, progress, Easing, oldGradient, convertedSolidColorBrush);
+                    var convertedSolidColorBrush = GradientBrushAnimator.ConvertSolidColorBrushToGradient(oldGradient, newSolidColorBrushToConvert);
+                    return new AnimatorTransitionObservable<IGradientBrush?, GradientBrushAnimator>(s_gradientAnimator, progress, Easing, oldGradient, convertedSolidColorBrush);
                 }
             }
             else if (newValue is IGradientBrush newGradient && oldValue is ISolidColorBrush oldSolidColorBrushToConvert)
             {
-                var convertedSolidColorBrush = IGradientBrushAnimator.ConvertSolidColorBrushToGradient(newGradient, oldSolidColorBrushToConvert);
-                return new AnimatorTransitionObservable<IGradientBrush?, IGradientBrushAnimator>(s_gradientAnimator, progress, Easing, convertedSolidColorBrush, newGradient);
+                var convertedSolidColorBrush = GradientBrushAnimator.ConvertSolidColorBrushToGradient(newGradient, oldSolidColorBrushToConvert);
+                return new AnimatorTransitionObservable<IGradientBrush?, GradientBrushAnimator>(s_gradientAnimator, progress, Easing, convertedSolidColorBrush, newGradient);
             }
 
             if (oldValue is ISolidColorBrush oldSolidColorBrush && newValue is ISolidColorBrush newSolidColorBrush)

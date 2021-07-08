@@ -78,21 +78,21 @@ namespace Avalonia.Animation.Animators
                 return false;
             }
 
-            var gradientAnimator = new IGradientBrushAnimator();
+            var gradientAnimator = new GradientBrushAnimator();
             gradientAnimator.Property = Property;
 
             foreach (var keyframe in this)
             {
                 if (keyframe.Value is ISolidColorBrush solidColorBrush)
                 {
-                    gradientAnimator.Add(new AnimatorKeyFrame(typeof(IGradientBrushAnimator), keyframe.Cue, keyframe.KeySpline)
+                    gradientAnimator.Add(new AnimatorKeyFrame(typeof(GradientBrushAnimator), keyframe.Cue, keyframe.KeySpline)
                     {
-                        Value = IGradientBrushAnimator.ConvertSolidColorBrushToGradient(firstGradient, solidColorBrush)
+                        Value = GradientBrushAnimator.ConvertSolidColorBrushToGradient(firstGradient, solidColorBrush)
                     });
                 }
                 else if (keyframe.Value is IGradientBrush)
                 {
-                    gradientAnimator.Add(new AnimatorKeyFrame(typeof(IGradientBrushAnimator), keyframe.Cue, keyframe.KeySpline)
+                    gradientAnimator.Add(new AnimatorKeyFrame(typeof(GradientBrushAnimator), keyframe.Cue, keyframe.KeySpline)
                     {
                         Value = keyframe.Value
                     });
