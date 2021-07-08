@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
@@ -12,6 +13,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -52,6 +54,11 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             AvaloniaProperty.Register<ItemsControl, IDataTemplate>(nameof(ItemTemplate));
 
+        public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), true);
+
+        private string _textSearchTerm = string.Empty;
+        private DispatcherTimer _textSearchTimer;
         private IEnumerable _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
@@ -133,6 +140,12 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ItemTemplateProperty); }
             set { SetValue(ItemTemplateProperty, value); }
+        }
+
+        public bool IsTextSearchEnabled
+        {
+            get { return GetValue(IsTextSearchEnabledProperty); }
+            set { SetValue(IsTextSearchEnabledProperty, value); }
         }
 
         /// <summary>
@@ -323,6 +336,36 @@ namespace Avalonia.Controls
             base.OnKeyDown(e);
         }
 
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            if (!e.Handled && this is SelectingItemsControl selectingItemsControl)
+            {
+                if (!IsTextSearchEnabled)
+                    return;
+
+                StopTextSearchTimer();
+
+                _textSearchTerm += e.Text;
+
+                bool match(ItemContainerInfo info) =>
+                    info.ContainerControl is IContentControl control &&
+                    control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+
+                var info = ItemContainerGenerator.Containers.FirstOrDefault(match);
+
+                if (info != null)
+                {
+                    selectingItemsControl.SelectedIndex = info.Index;
+                }
+                
+                StartTextSearchTimer();
+
+                e.Handled = true;
+            }
+
+            base.OnTextInput(e);
+        }
+
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
@@ -454,6 +497,32 @@ namespace Avalonia.Controls
                 _itemContainerGenerator.ItemTemplate = (IDataTemplate)e.NewValue;
                 // TODO: Rebuild the item containers.
             }
+        }
+
+        private void StartTextSearchTimer()
+        {
+            _textSearchTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _textSearchTimer.Tick += TextSearchTimer_Tick;
+            _textSearchTimer.Start();
+        }
+
+        private void StopTextSearchTimer()
+        {
+            if (_textSearchTimer == null)
+            {
+                return;
+            }
+
+            _textSearchTimer.Stop();
+            _textSearchTimer.Tick -= TextSearchTimer_Tick;
+
+            _textSearchTimer = null;
+        }
+
+        private void TextSearchTimer_Tick(object sender, EventArgs e)
+        {
+            _textSearchTerm = string.Empty;
+            StopTextSearchTimer();
         }
 
         private void UpdateItemCount()
