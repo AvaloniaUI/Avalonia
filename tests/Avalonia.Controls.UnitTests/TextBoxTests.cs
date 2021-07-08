@@ -558,8 +558,12 @@ namespace Avalonia.Controls.UnitTests
             }
         }
         
-        [Fact]
-        public void Textbox_doesnt_crash_when_Receives_input_and_hidden()
+        [Theory]
+        [InlineData(Key.Up)]
+        [InlineData(Key.Down)]
+        [InlineData(Key.Home)]
+        [InlineData(Key.End)]
+        public void Textbox_doesnt_crash_when_Receives_input_and_hidden(Key key)
         {
             using (UnitTestApplication.Start(FocusServices))
             {
@@ -577,7 +581,7 @@ namespace Avalonia.Controls.UnitTests
                 target1.Focus();
                 Assert.True(target1.IsFocused);
                 
-                RaiseKeyEvent(target1, Key.Up, KeyModifiers.None);
+                RaiseKeyEvent(target1, key, KeyModifiers.None);
             }
         }
 
