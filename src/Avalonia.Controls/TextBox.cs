@@ -1098,23 +1098,25 @@ namespace Avalonia.Controls
 
         private bool MoveVertical(int count)
         {
-            if (_presenter != null)
+            if (_presenter is null)
             {
-                var formattedText = _presenter.FormattedText;
-                var lines = formattedText.GetLines().ToList();
-                var caretIndex = CaretIndex;
-                var lineIndex = GetLine(caretIndex, lines) + count;
+                return false;
+            }
 
-                if (lineIndex >= 0 && lineIndex < lines.Count)
-                {
-                    var line = lines[lineIndex];
-                    var rect = formattedText.HitTestTextPosition(caretIndex);
-                    var y = count < 0 ? rect.Y : rect.Bottom;
-                    var point = new Point(rect.X, y + (count * (line.Height / 2)));
-                    var hit = formattedText.HitTestPoint(point);
-                    CaretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
-                    return true;
-                }
+            var formattedText = _presenter.FormattedText;
+            var lines = formattedText.GetLines().ToList();
+            var caretIndex = CaretIndex;
+            var lineIndex = GetLine(caretIndex, lines) + count;
+
+            if (lineIndex >= 0 && lineIndex < lines.Count)
+            {
+                var line = lines[lineIndex];
+                var rect = formattedText.HitTestTextPosition(caretIndex);
+                var y = count < 0 ? rect.Y : rect.Bottom;
+                var point = new Point(rect.X, y + (count * (line.Height / 2)));
+                var hit = formattedText.HitTestPoint(point);
+                CaretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
+                return true;
             }
 
             return false;
@@ -1122,7 +1124,7 @@ namespace Avalonia.Controls
 
         private void MoveHome(bool document)
         {
-            if (_presenter == null)
+            if (_presenter is null)
             {
                 return;
             }
@@ -1157,7 +1159,7 @@ namespace Avalonia.Controls
 
         private void MoveEnd(bool document)
         {
-            if (_presenter == null)
+            if (_presenter is null)
             {
                 return;
             }
