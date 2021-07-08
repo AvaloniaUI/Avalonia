@@ -563,7 +563,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(Key.Down)]
         [InlineData(Key.Home)]
         [InlineData(Key.End)]
-        public void Textbox_doesnt_crash_when_Receives_input_and_hidden(Key key)
+        public void Textbox_doesnt_crash_when_Receives_input_and_template_not_applied(Key key)
         {
             using (UnitTestApplication.Start(FocusServices))
             {
@@ -576,8 +576,6 @@ namespace Avalonia.Controls.UnitTests
 
                 var root = new TestRoot { Child = target1 };
 
-                root.Measure(new Size(1000, 1000));
-               
                 target1.Focus();
                 Assert.True(target1.IsFocused);
                 
