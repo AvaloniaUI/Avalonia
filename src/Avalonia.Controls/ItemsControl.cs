@@ -54,6 +54,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             AvaloniaProperty.Register<ItemsControl, IDataTemplate>(nameof(ItemTemplate));
 
+        /// <summary>
+        /// Defines the <see cref="IsTextSearchEnabled"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
             AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), true);
 
@@ -142,6 +145,9 @@ namespace Avalonia.Controls
             set { SetValue(ItemTemplateProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that specifies whether a user can jump to a value by typing.
+        /// </summary>
         public bool IsTextSearchEnabled
         {
             get { return GetValue(IsTextSearchEnabledProperty); }
