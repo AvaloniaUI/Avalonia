@@ -556,6 +556,37 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(true);
             }
         }
+        
+        [Fact]
+        public void Textbox_Cannot_Focus_When_not_Visible()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    IsVisible = true
+                };
+
+                target1.ApplyTemplate();
+                
+                var root = new TestRoot { Child = target1 };
+
+                var gfcount = 0;
+                var lfcount = 0;
+
+                target1.GotFocus += (s, e) => gfcount++;
+               
+                target1.Focus();
+                Assert.True(target1.IsFocused);
+                
+                RaiseKeyEvent(target1, Key.Up, KeyModifiers.None);
+
+                Assert.Equal(1, gfcount);
+                Assert.Equal(1, lfcount);
+            }
+        }
 
         [Fact]
         public void TextBox_GotFocus_And_LostFocus_Work_Properly()
