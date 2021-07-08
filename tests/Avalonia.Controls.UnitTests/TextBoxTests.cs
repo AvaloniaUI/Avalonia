@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -558,7 +559,7 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
-        public void Textbox_Cannot_Focus_When_not_Visible()
+        public void Textbox_doesnt_crash_when_Receives_input_and_hidden()
         {
             using (UnitTestApplication.Start(FocusServices))
             {
@@ -566,25 +567,17 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTemplate(),
                     Text = "1234",
-                    IsVisible = true
+                    IsVisible = false
                 };
 
-                target1.ApplyTemplate();
-                
                 var root = new TestRoot { Child = target1 };
 
-                var gfcount = 0;
-                var lfcount = 0;
-
-                target1.GotFocus += (s, e) => gfcount++;
+                root.Measure(new Size(1000, 1000));
                
                 target1.Focus();
                 Assert.True(target1.IsFocused);
                 
                 RaiseKeyEvent(target1, Key.Up, KeyModifiers.None);
-
-                Assert.Equal(1, gfcount);
-                Assert.Equal(1, lfcount);
             }
         }
 
@@ -794,6 +787,9 @@ namespace Avalonia.Controls.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new MockFontManagerImpl(),
+            textShaperImpl: new MockTextShaperImpl(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
