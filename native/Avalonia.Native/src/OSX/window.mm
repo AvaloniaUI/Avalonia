@@ -592,6 +592,8 @@ private:
     {
         @autoreleasepool
         {
+            auto r = this->UnknownSelf();
+
             _isDialog = isDialog;
             WindowBaseImpl::Show(activate, isDialog);
             
@@ -1931,7 +1933,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         if(![self windowShouldClose:self]) return;
     }
-    
+
     [self close];
 }
 
