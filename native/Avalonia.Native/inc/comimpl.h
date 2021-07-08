@@ -7,6 +7,17 @@
 #define COMIMPL_H_INCLUDED
 
 #include <cstring>
+
+/**
+ START_COM_CALL causes AddRef to be called at the beggining of a function.
+ When a function is exited, it causes ReleaseRef to be called.
+ This ensures that the object cannot be destructed whilst the function is running.
+ For example: Window Show is called, which triggers an event, and user calls Close inside the event
+ causing the refcount to reach 0, and the object to be destroyed. Function then continues and this pointer
+ will now be invalid.
+ 
+ START_COM_CALL protects against this scenario.
+ */
 #define START_COM_CALL auto r = this->UnknownSelf()
 
 __IID_DEF(IUnknown, 0, 0, 0, C0, 00, 00, 00, 00, 00, 00, 46);
