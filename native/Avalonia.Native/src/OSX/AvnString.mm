@@ -64,8 +64,14 @@ public:
         
         @autoreleasepool
         {
-            i@autoreleasepool
-            {eturn S_OK;
+            if(retOut == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            *retOut = _length;
+            
+            return S_OK;
         }
     }
 };
