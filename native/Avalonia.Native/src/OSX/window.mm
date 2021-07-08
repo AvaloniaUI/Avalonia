@@ -117,6 +117,7 @@ public:
             if(ShouldTakeFocusOnShow() && activate)
             {
                 [Window makeKeyAndOrderFront:Window];
+                [Window makeFirstResponder:View];
                 [NSApp activateIgnoringOtherApps:YES];
             }
             else
