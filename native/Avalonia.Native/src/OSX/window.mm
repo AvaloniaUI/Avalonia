@@ -129,6 +129,7 @@ public:
             {
                 [Window orderFront: Window];
                 [Window makeKeyAndOrderFront:Window];
+                [Window makeFirstResponder:View];
                 [NSApp activateIgnoringOtherApps:YES];
             }
             else
