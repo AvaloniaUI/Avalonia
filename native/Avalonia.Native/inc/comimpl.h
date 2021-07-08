@@ -7,6 +7,7 @@
 #define COMIMPL_H_INCLUDED
 
 #include <cstring>
+#define START_COM_CALL auto r = this->UnknownSelf()
 
 __IID_DEF(IUnknown, 0, 0, 0, C0, 00, 00, 00, 00, 00, 00, 46);
 
