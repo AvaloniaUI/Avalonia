@@ -54,6 +54,8 @@ public:
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
     {
+        START_COM_CALL;
+        
         if (ret == nullptr)
         {
             return E_POINTER;
@@ -66,6 +68,8 @@ public:
     
     virtual HRESULT ObtainNSWindowHandleRetained(void** ret) override
     {
+        START_COM_CALL;
+        
         if (ret == nullptr)
         {
             return E_POINTER;
@@ -78,6 +82,8 @@ public:
     
     virtual HRESULT ObtainNSViewHandle(void** ret) override
     {
+        START_COM_CALL;
+        
         if (ret == nullptr)
         {
             return E_POINTER;
@@ -90,6 +96,8 @@ public:
     
     virtual HRESULT ObtainNSViewHandleRetained(void** ret) override
     {
+        START_COM_CALL;
+        
         if (ret == nullptr)
         {
             return E_POINTER;
@@ -107,6 +115,8 @@ public:
     
     virtual HRESULT Show(bool activate, bool isDialog) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             SetPosition(lastPositionSet);
@@ -138,6 +148,8 @@ public:
     
     virtual HRESULT Hide () override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(Window != nullptr)
@@ -152,6 +164,8 @@ public:
     
     virtual HRESULT Activate () override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(Window != nullptr)
@@ -166,6 +180,8 @@ public:
     
     virtual HRESULT SetTopMost (bool value) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             [Window setLevel: value ? NSFloatingWindowLevel : NSNormalWindowLevel];
@@ -176,6 +192,8 @@ public:
     
     virtual HRESULT Close() override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if (Window != nullptr)
@@ -189,6 +207,8 @@ public:
     
     virtual HRESULT GetClientSize(AvnSize* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
@@ -204,6 +224,8 @@ public:
     
     virtual HRESULT GetScaling (double* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
@@ -222,6 +244,8 @@ public:
     
     virtual HRESULT SetMinMaxSize (AvnSize minSize, AvnSize maxSize) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             [Window setMinSize: ToNSSize(minSize)];
@@ -233,6 +257,8 @@ public:
     
     virtual HRESULT Resize(double x, double y) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             auto maxSize = [Window maxSize];
@@ -272,6 +298,8 @@ public:
     
     virtual HRESULT Invalidate (AvnRect rect) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             [View setNeedsDisplayInRect:[View frame]];
@@ -282,6 +310,8 @@ public:
     
     virtual HRESULT SetMainMenu(IAvnMenu* menu) override
     {
+        START_COM_CALL;
+        
         _mainMenu = menu;
         
         auto nativeMenu = dynamic_cast<AvnAppMenu*>(menu);
@@ -300,6 +330,8 @@ public:
     
     virtual HRESULT BeginMoveDrag () override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             auto lastEvent = [View lastMouseDownEvent];
@@ -317,11 +349,15 @@ public:
     
     virtual HRESULT BeginResizeDrag (AvnWindowEdge edge) override
     {
+        START_COM_CALL;
+        
         return S_OK;
     }
     
     virtual HRESULT GetPosition (AvnPoint* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
@@ -342,6 +378,8 @@ public:
     
     virtual HRESULT SetPosition (AvnPoint point) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             lastPositionSet = point;
@@ -353,6 +391,8 @@ public:
     
     virtual HRESULT PointToClient (AvnPoint point, AvnPoint* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
@@ -371,6 +411,8 @@ public:
     
     virtual HRESULT PointToScreen (AvnPoint point, AvnPoint* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
@@ -388,12 +430,16 @@ public:
     
     virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose) override
     {
+        START_COM_CALL;
+        
         [View setSwRenderedFrame: fb dispose: dispose];
         return S_OK;
     }
     
     virtual HRESULT SetCursor(IAvnCursor* cursor) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             Cursor* avnCursor = dynamic_cast<Cursor*>(cursor);
@@ -423,6 +469,8 @@ public:
     
     virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ppv) override
     {
+        START_COM_CALL;
+        
         if(View == NULL)
             return E_FAIL;
         *ppv = [renderTarget createSurfaceRenderTarget];
@@ -431,6 +479,8 @@ public:
     
     virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut) override
     {
+        START_COM_CALL;
+        
         if(View == NULL)
             return E_FAIL;
         *retOut = ::CreateNativeControlHost(View);
@@ -439,6 +489,8 @@ public:
     
     virtual HRESULT SetBlurEnabled (bool enable) override
     {
+        START_COM_CALL;
+        
         [StandardContainer ShowBlur:enable];
         
         return S_OK;
@@ -448,6 +500,8 @@ public:
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb,
                                               void* sourceHandle) override
     {
+        START_COM_CALL;
+        
         auto item = TryGetPasteboardItem(clipboard);
         [item setString:@"" forType:GetAvnCustomDataType()];
         if(item == nil)
@@ -581,6 +635,8 @@ private:
     
     virtual HRESULT Show (bool activate, bool isDialog) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             _isDialog = isDialog;
@@ -594,6 +650,8 @@ private:
     
     virtual HRESULT SetEnabled (bool enable) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             [Window setEnabled:enable];
@@ -603,6 +661,8 @@ private:
     
     virtual HRESULT SetParent (IAvnWindow* parent) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(parent == nullptr)
@@ -714,6 +774,8 @@ private:
     
     virtual HRESULT SetCanResize(bool value) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             _canResize = value;
@@ -724,6 +786,8 @@ private:
     
     virtual HRESULT SetDecorations(SystemDecorations value) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             auto currentWindowState = _lastWindowState;
@@ -789,6 +853,8 @@ private:
     
     virtual HRESULT SetTitle (char* utf8title) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             _lastTitle = [NSString stringWithUTF8String:(const char*)utf8title];
@@ -800,6 +866,8 @@ private:
     
     virtual HRESULT SetTitleBarColor(AvnColor color) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             float a = (float)color.Alpha / 255.0f;
@@ -829,6 +897,8 @@ private:
     
     virtual HRESULT GetWindowState (AvnWindowState*ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
@@ -862,86 +932,111 @@ private:
     
     virtual HRESULT TakeFocusFromChildren () override
     {
-        if(Window == nil)
-            return S_OK;
-        if([Window isKeyWindow])
-            [Window makeFirstResponder: View];
+        START_COM_CALL;
         
-        return S_OK;
+        @autoreleasepool
+        {
+            if(Window == nil)
+                return S_OK;
+            if([Window isKeyWindow])
+                [Window makeFirstResponder: View];
+            
+            return S_OK;
+        }
     }
     
     virtual HRESULT SetExtendClientArea (bool enable) override
     {
-        _isClientAreaExtended = enable;
+        START_COM_CALL;
         
-        if(enable)
+        @autoreleasepool
         {
-            Window.titleVisibility = NSWindowTitleHidden;
+            _isClientAreaExtended = enable;
             
-            [Window setTitlebarAppearsTransparent:true];
-            
-            auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-            
-            if (wantsTitleBar)
+            if(enable)
             {
-                [StandardContainer ShowTitleBar:true];
+                Window.titleVisibility = NSWindowTitleHidden;
+                
+                [Window setTitlebarAppearsTransparent:true];
+                
+                auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+                
+                if (wantsTitleBar)
+                {
+                    [StandardContainer ShowTitleBar:true];
+                }
+                else
+                {
+                    [StandardContainer ShowTitleBar:false];
+                }
+                
+                if(_extendClientHints & AvnOSXThickTitleBar)
+                {
+                    Window.toolbar = [NSToolbar new];
+                    Window.toolbar.showsBaselineSeparator = false;
+                }
+                else
+                {
+                    Window.toolbar = nullptr;
+                }
             }
             else
             {
-                [StandardContainer ShowTitleBar:false];
-            }
-            
-            if(_extendClientHints & AvnOSXThickTitleBar)
-            {
-                Window.toolbar = [NSToolbar new];
-                Window.toolbar.showsBaselineSeparator = false;
-            }
-            else
-            {
+                Window.titleVisibility = NSWindowTitleVisible;
                 Window.toolbar = nullptr;
+                [Window setTitlebarAppearsTransparent:false];
+                View.layer.zPosition = 0;
             }
+            
+            [Window setIsExtended:enable];
+            
+            HideOrShowTrafficLights();
+            
+            UpdateStyle();
+            
+            return S_OK;
         }
-        else
-        {
-            Window.titleVisibility = NSWindowTitleVisible;
-            Window.toolbar = nullptr;
-            [Window setTitlebarAppearsTransparent:false];
-            View.layer.zPosition = 0;
-        }
-        
-        [Window setIsExtended:enable];
-        
-        HideOrShowTrafficLights();
-        
-        UpdateStyle();
-        
-        return S_OK;
     }
     
     virtual HRESULT SetExtendClientAreaHints (AvnExtendClientAreaChromeHints hints) override
     {
-        _extendClientHints = hints;
+        START_COM_CALL;
         
-        SetExtendClientArea(_isClientAreaExtended);
-        return S_OK;
+        @autoreleasepool
+        {
+            _extendClientHints = hints;
+            
+            SetExtendClientArea(_isClientAreaExtended);
+            return S_OK;
+        }
     }
     
     virtual HRESULT GetExtendTitleBarHeight (double*ret) override
     {
-        if(ret == nullptr)
+        START_COM_CALL;
+        
+        @autoreleasepool
         {
-            return E_POINTER;
+            if(ret == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            *ret = [Window getExtendedTitleBarHeight];
+            
+            return S_OK;
         }
-        
-        *ret = [Window getExtendedTitleBarHeight];
-        
-        return S_OK;
     }
     
     virtual HRESULT SetExtendTitleBarHeight (double value) override
     {
-        [StandardContainer SetTitleBarHeightHint:value];
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            [StandardContainer SetTitleBarHeightHint:value];
+            return S_OK;
+        }
     }
     
     void EnterFullScreenMode ()
@@ -970,8 +1065,15 @@ private:
     
     virtual HRESULT SetWindowState (AvnWindowState state) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
+            if(Window == nullptr)
+            {
+                return  S_OK;
+            }
+            
             if(_actualWindowState == state)
             {
                 return S_OK;
