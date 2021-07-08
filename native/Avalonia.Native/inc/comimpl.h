@@ -11,7 +11,7 @@
 /**
  START_COM_CALL causes AddRef to be called at the beggining of a function.
  When a function is exited, it causes ReleaseRef to be called.
- This ensures that the object cannot be destructed whilst the function is running.
+ This ensures that the object cannot be destroyed whilst the function is running.
  For example: Window Show is called, which triggers an event, and user calls Close inside the event
  causing the refcount to reach 0, and the object to be destroyed. Function then continues and this pointer
  will now be invalid.
