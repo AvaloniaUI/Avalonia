@@ -633,7 +633,7 @@ namespace Avalonia.Collections
         /// <inheritdoc/>
         Delegate[] INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
 
-        private void EnsureCapacity(int capacity)
+        public void EnsureCapacity(int capacity)
         {
             // Adapted from List<T> implementation.
             var currentCapacity = _inner.Capacity;
