@@ -1496,6 +1496,52 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
+        [DllImport("Imm32.dll", SetLastError = true)]
+        public static extern IntPtr ImmGetContext(IntPtr hWnd);
+        [DllImport("Imm32.dll")]
+        public static extern bool ImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
+        [DllImport("Imm32.dll")]
+        public static extern bool ImmSetOpenStatus(IntPtr hIMC, bool flag);
+        [DllImport("Imm32.dll")]
+        public static extern bool ImmSetActiveContext(IntPtr hIMC, bool flag);
+        [DllImport("Imm32.dll")]
+        public static extern bool ImmSetStatusWindowPos(IntPtr hIMC, ref POINT lpptPos);
+        [DllImport("Imm32.dll")]
+        public static extern bool ImmIsIME(IntPtr HKL);
+        [DllImport("Imm32.dll")]
+        public static extern bool ImmSetCandidateWindow(IntPtr hIMC, ref CANDIDATEFORM lpCandidate);
+        [DllImport("Imm32.dll")]
+        public static extern bool ImmSetCompositionWindow(IntPtr hIMC, ref COMPOSITIONFORM lpComp);
+        [DllImport("User32.dll")]
+        public static extern bool CreateCaret(IntPtr hwnd, IntPtr hBitmap, int nWidth, int nHeight);
+        [DllImport("User32.dll")]
+        public static extern bool SetCaretPos(int X, int Y);
+        [DllImport("User32.dll")]
+        public static extern bool DestroyCaret();
+
+        public const int CFS_CANDIDATEPOS = 0x0040;
+        public const int CFS_EXCLUDE = 0x0080;
+        public const int CFS_POINT = 0x0002;
+        public const int CFS_RECT = 0x0001;
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CANDIDATEFORM
+        {
+            public int dwIndex;
+            public int dwStyle;
+            public POINT ptCurrentPos;
+            public RECT rcArea;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct COMPOSITIONFORM
+        {
+            public int dwStyle;
+            public POINT ptCurrentPos;
+            public RECT rcArea;
+        }
+
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct WindowCompositionAttributeData
         {

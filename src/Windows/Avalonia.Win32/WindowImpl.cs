@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
@@ -25,7 +26,8 @@ namespace Avalonia.Win32
     /// Window implementation for Win32 platform.
     /// </summary>
     public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithNativeControlHost
+        ITopLevelImplWithNativeControlHost,
+        ITopLevelImplWithTextInputMethod
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -86,6 +88,7 @@ namespace Avalonia.Win32
         private bool _isCloseRequested;
         private bool _shown;
         private bool _hiddenWindowIsParent;
+        private Imm32InputMethod _ime;
 
         public WindowImpl()
         {
@@ -542,6 +545,7 @@ namespace Avalonia.Win32
             }
 
             _framebuffer.Dispose();
+            _ime?.Dispose();
         }
 
         public void Invalidate(Rect rect)
@@ -1325,5 +1329,13 @@ namespace Avalonia.Win32
             public SystemDecorations Decorations;
             public bool IsFullScreen;
         }
+
+        private void _ReleaseIme()
+        {
+            _ime?.Dispose();
+            _ime = null;
+        }
+
+        public ITextInputMethodImpl TextInputMethod => _ime;
     }
 }

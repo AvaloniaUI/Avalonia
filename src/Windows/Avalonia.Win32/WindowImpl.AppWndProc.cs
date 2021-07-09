@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Text;
+
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -452,6 +454,28 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_KILLFOCUS:
                     LostFocus?.Invoke();
+                    break;
+
+                case WindowsMessage.WM_INPUTLANGCHANGE:
+                    {
+                        _ReleaseIme();
+                        if (ImmIsIME(lParam))
+                        {
+                            _ime = new Imm32InputMethod(this, Hwnd);
+                        }
+                        // call DefWindowProc to pass to all children
+                        break;
+                    }
+                case WindowsMessage.WM_IME_CHAR:
+                case WindowsMessage.WM_IME_COMPOSITION:
+                case WindowsMessage.WM_IME_COMPOSITIONFULL:
+                case WindowsMessage.WM_IME_CONTROL:
+                case WindowsMessage.WM_IME_ENDCOMPOSITION:
+                case WindowsMessage.WM_IME_KEYDOWN:
+                case WindowsMessage.WM_IME_KEYUP:
+                case WindowsMessage.WM_IME_NOTIFY:
+                case WindowsMessage.WM_IME_SELECT:
+                case WindowsMessage.WM_IME_STARTCOMPOSITION:
                     break;
             }
 
