@@ -466,6 +466,11 @@ namespace Avalonia.Win32
                         // call DefWindowProc to pass to all children
                         break;
                     }
+                case WindowsMessage.WM_IME_SETCONTEXT:
+                    {
+                        //lParam = new IntPtr((int)(((uint)lParam.ToInt64()) & ~ISC_SHOWUICOMPOSITIONWINDOW));
+                        break;
+                    }
                 case WindowsMessage.WM_IME_CHAR:
                 case WindowsMessage.WM_IME_COMPOSITION:
                 case WindowsMessage.WM_IME_COMPOSITIONFULL:

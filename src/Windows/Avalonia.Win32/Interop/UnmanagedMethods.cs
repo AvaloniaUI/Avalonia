@@ -1523,6 +1523,7 @@ namespace Avalonia.Win32.Interop
         public const int CFS_EXCLUDE = 0x0080;
         public const int CFS_POINT = 0x0002;
         public const int CFS_RECT = 0x0001;
+        public const uint ISC_SHOWUICOMPOSITIONWINDOW = 0x80000000;
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct CANDIDATEFORM

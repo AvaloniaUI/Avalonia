@@ -66,33 +66,37 @@ namespace Avalonia.Win32.Input
                 }
 
                 // see: https://chromium.googlesource.com/experimental/chromium/src/+/bf09a5036ccfb77d2277247c66dc55daf41df3fe/chrome/browser/ime_input.cc
+                // see: https://engine.chinmaygarde.com/window__win32_8cc_source.html
 
                 var p1 = _parent.PointToScreen(rect.TopLeft);
                 var p2 = _parent.PointToScreen(rect.BottomRight);
+                var s = Math.Sqrt(_parent.DesktopScaling);
+                var (x1, y1, x2, y2) = (p1.X / s, p1.Y / s, p2.X / s, p2.Y / s);
+                //var (x1, y1, x2, y2) = (p1.X, p1.Y, p2.X, p2.Y);
 
                 var candidateForm = new CANDIDATEFORM
                 {
                     dwIndex = 0,
                     dwStyle = CFS_CANDIDATEPOS,
-                    ptCurrentPos = new POINT {  X = p1.X, Y = p1.Y }
+                    ptCurrentPos = new POINT { X = (int)x1, Y = (int)y1 }
                 };
                 ImmSetCandidateWindow(himc, ref candidateForm);
 
                 if (_systemCaret)
                 {
-                    SetCaretPos(p1.X, p1.Y);
+                    SetCaretPos((int)x1, (int)y1);
                 }
 
                 var compForm = new COMPOSITIONFORM
                 {
-                    dwStyle = CFS_POINT, 
-                    ptCurrentPos = new POINT { X = p1.X, Y = p1.Y },
-                    rcArea = new RECT { left = p1.X, top = p1.Y, right = p2.X, bottom = p2.Y}
+                    dwStyle = CFS_POINT,
+                    ptCurrentPos = new POINT { X = (int)x1, Y = (int)y1 },
+                    rcArea = new RECT { left = (int)x1, top = (int)y1, right = (int)x2, bottom = (int)y2 }
                 };
                 ImmSetCompositionWindow(himc, ref compForm);
 
-                compForm.dwStyle = CFS_RECT;
-                ImmSetCompositionWindow(himc, ref compForm);
+                //compForm.dwStyle = CFS_RECT;
+                //ImmSetCompositionWindow(himc, ref compForm);
 
                 ImmReleaseContext(_hwnd, himc);
             });
@@ -112,7 +116,7 @@ namespace Avalonia.Win32.Input
                 {
                     _systemCaret = false;
                     DestroyCaret();
-                } 
+                }
             }
         }
 
