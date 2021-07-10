@@ -145,7 +145,7 @@ namespace Avalonia.Controls
                 (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
-        struct UndoRedoState : IEquatable<UndoRedoState>
+        readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
             public int CaretPosition { get; }
