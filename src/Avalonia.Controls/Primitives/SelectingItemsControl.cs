@@ -1024,8 +1024,8 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            _textSearchTimer.Stop();
             _textSearchTimer.Tick -= TextSearchTimer_Tick;
+            _textSearchTimer.Stop();
 
             _textSearchTimer = null;
         }
