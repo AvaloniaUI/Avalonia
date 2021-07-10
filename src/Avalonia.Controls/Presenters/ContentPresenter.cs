@@ -327,7 +327,7 @@ namespace Avalonia.Controls.Presenters
             var oldChild = Child;
             var newChild = content as IControl;
 
-            if (content != null && newChild == null)
+            if (newChild == null)
             {
                 var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? 
                     (
@@ -336,16 +336,19 @@ namespace Avalonia.Controls.Presenters
                             : FuncDataTemplate.Default
                     );
 
-                if (dataTemplate is IRecyclingDataTemplate rdt)
+                if (content != null || dataTemplate != null)
                 {
-                    var toRecycle = rdt == _recyclingDataTemplate ? oldChild : null;
-                    newChild = rdt.Build(content, toRecycle);
-                    _recyclingDataTemplate = rdt;
-                }
-                else
-                {
-                    newChild = dataTemplate.Build(content);
-                    _recyclingDataTemplate = null;
+                    if (dataTemplate is IRecyclingDataTemplate rdt)
+                    {
+                        var toRecycle = rdt == _recyclingDataTemplate ? oldChild : null;
+                        newChild = rdt.Build(content, toRecycle);
+                        _recyclingDataTemplate = rdt;
+                    }
+                    else
+                    {
+                        newChild = dataTemplate.Build(content);
+                        _recyclingDataTemplate = null;
+                    }
                 }
             }
             else
