@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Styling;
@@ -22,7 +24,9 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public static readonly StyledProperty<object?> DefaultContentProperty =
             AvaloniaProperty.Register<TransitioningContentControl, object?>(nameof(DefaultContent));
-        
+
+        private CancellationTokenSource? _lastTransitionCts;
+
         /// <summary>
         /// Gets or sets the animation played when content appears and disappears.
         /// </summary>
@@ -62,11 +66,14 @@ namespace Avalonia.ReactiveUI
         /// <param name="content">New content to set.</param>
         private async void UpdateContentWithTransition(object? content)
         {
+            _lastTransitionCts?.Cancel();
+            _lastTransitionCts = new CancellationTokenSource();
+
             if (PageTransition != null)
-                await PageTransition.Start(this, null, true);
+                await PageTransition.Start(this, null, true, _lastTransitionCts.Token);
             base.Content = content;
             if (PageTransition != null)
-                await PageTransition.Start(null, this, true);
+                await PageTransition.Start(null, this, true, _lastTransitionCts.Token);
         }
     }
 }

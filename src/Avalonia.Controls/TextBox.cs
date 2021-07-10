@@ -1290,7 +1290,7 @@ namespace Avalonia.Controls
 
         private void UpdatePseudoclasses()
         {
-            PseudoClasses.Set(":empty", string.IsNullOrWhiteSpace(Text));
+            PseudoClasses.Set(":empty", string.IsNullOrEmpty(Text));
         }
 
         private bool IsPasswordBox => PasswordChar != default(char);

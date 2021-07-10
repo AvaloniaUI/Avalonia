@@ -43,6 +43,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(ClientSize), o => o.ClientSize);
 
         /// <summary>
+        /// Defines the <see cref="FrameSize"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TopLevel, Size?> FrameSizeProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, Size?>(nameof(FrameSize), o => o.FrameSize);
+
+        /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
         /// </summary>
         public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
@@ -74,6 +80,7 @@ namespace Avalonia.Controls
         private readonly IPlatformRenderInterface _renderInterface;
         private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
+        private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager _layoutManager;
         private Border _transparencyFallbackBorder;
@@ -161,6 +168,7 @@ namespace Avalonia.Controls
             styler?.ApplyStyles(this);
 
             ClientSize = impl.ClientSize;
+            FrameSize = impl.FrameSize;
             
             this.GetObservable(PointerOverElementProperty)
                 .Select(
@@ -195,6 +203,15 @@ namespace Avalonia.Controls
         {
             get { return _clientSize; }
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the total size of the window.
+        /// </summary>
+        public Size? FrameSize
+        {
+            get { return _frameSize; }
+            protected set { SetAndRaise(FrameSizeProperty, ref _frameSize, value); }
         }
 
         /// <summary>
@@ -366,6 +383,7 @@ namespace Avalonia.Controls
         protected virtual void HandleResized(Size clientSize)
         {
             ClientSize = clientSize;
+            FrameSize = PlatformImpl.FrameSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.ExecuteLayoutPass();
