@@ -247,6 +247,8 @@ public:
     
     virtual HRESULT GetPixelSize(AvnPixelSize* ret)  override
     {
+        START_COM_CALL;
+        
         if(!_surface)
             return E_FAIL;
         *ret = _surface->size;
@@ -255,6 +257,8 @@ public:
     
     virtual HRESULT GetScaling(double* ret)  override
     {
+        START_COM_CALL;
+        
         if(!_surface)
             return E_FAIL;
         *ret = _surface->scale;
@@ -281,6 +285,8 @@ public:
     
     virtual HRESULT BeginDrawing(IAvnGlSurfaceRenderingSession** ret)  override
     {
+        START_COM_CALL;
+        
         ComPtr<IUnknown> releaseContext;
         @synchronized (_target->lock) {
             if(_target->surface == nil)
