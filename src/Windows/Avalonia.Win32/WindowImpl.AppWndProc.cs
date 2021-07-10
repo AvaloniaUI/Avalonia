@@ -459,16 +459,15 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_INPUTLANGCHANGE:
                     {
                         _ReleaseIme();
-                        if (ImmIsIME(lParam))
-                        {
-                            _ime = new Imm32InputMethod(this, Hwnd);
-                        }
+                        // note: for non-ime language, also create it so that emoji panel tracks cursor
+                        _ime = new Imm32InputMethod(this, Hwnd);
                         // call DefWindowProc to pass to all children
                         break;
                     }
                 case WindowsMessage.WM_IME_SETCONTEXT:
                     {
-                        //lParam = new IntPtr((int)(((uint)lParam.ToInt64()) & ~ISC_SHOWUICOMPOSITIONWINDOW));
+                        // TODO if we implement preedit, disable the composition window:
+                        // lParam = new IntPtr((int)(((uint)lParam.ToInt64()) & ~ISC_SHOWUICOMPOSITIONWINDOW));
                         break;
                     }
                 case WindowsMessage.WM_IME_CHAR:

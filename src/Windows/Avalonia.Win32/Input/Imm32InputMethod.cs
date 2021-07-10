@@ -19,6 +19,8 @@ namespace Avalonia.Win32.Input
         private WindowImpl _parent;
         private bool _active;
         private bool _systemCaret;
+        private bool _showCompositionWindow;
+        private bool _showCandidateList;
 
         public Imm32InputMethod(WindowImpl parent, IntPtr hwnd)
         {
@@ -26,11 +28,16 @@ namespace Avalonia.Win32.Input
             _hwnd = hwnd;
             _disposedValue = false;
             _active = false;
+            // TODO detect CHS and JP, use system caret
             _systemCaret = true;
+            _showCompositionWindow = true;
+            _showCandidateList = true;
             if (_systemCaret)
             {
                 CreateCaret(_hwnd, IntPtr.Zero, 1, 1);
             }
+            var origin = parent.PointToScreen(new Point());
+            SetCursorRect(new Rect(origin.ToPoint(1.0), origin.ToPoint(1.0)));
         }
 
         public void Reset()
@@ -53,7 +60,7 @@ namespace Avalonia.Win32.Input
 
         public void SetCursorRect(Rect rect)
         {
-            if (!_active)
+            if (!_active /* TODO || !_parent.Focused() */)
             {
                 return;
             }
@@ -68,35 +75,39 @@ namespace Avalonia.Win32.Input
                 // see: https://chromium.googlesource.com/experimental/chromium/src/+/bf09a5036ccfb77d2277247c66dc55daf41df3fe/chrome/browser/ime_input.cc
                 // see: https://engine.chinmaygarde.com/window__win32_8cc_source.html
 
-                var p1 = _parent.PointToScreen(rect.TopLeft);
-                var p2 = _parent.PointToScreen(rect.BottomRight);
-                var s = Math.Sqrt(_parent.DesktopScaling);
-                var (x1, y1, x2, y2) = (p1.X / s, p1.Y / s, p2.X / s, p2.Y / s);
-                //var (x1, y1, x2, y2) = (p1.X, p1.Y, p2.X, p2.Y);
+                var p1 = rect.TopLeft;
+                var p2 = rect.BottomRight;
+                var s = _parent.DesktopScaling;
+                var (x1, y1, x2, y2) = ((int)(p1.X * s), (int)(p1.Y * s), (int)(p2.X * s), (int)(p2.Y * s));
 
-                var candidateForm = new CANDIDATEFORM
+                if (_showCompositionWindow)
                 {
-                    dwIndex = 0,
-                    dwStyle = CFS_CANDIDATEPOS,
-                    ptCurrentPos = new POINT { X = (int)x1, Y = (int)y1 }
-                };
-                ImmSetCandidateWindow(himc, ref candidateForm);
+                    var compForm = new COMPOSITIONFORM
+                    {
+                        dwStyle = CFS_POINT,
+                        ptCurrentPos = new POINT { X = x2, Y = y2 },
+                        rcArea = new RECT { left = x1, top = y1, right = x2, bottom = y2 }
+                    };
+                    ImmSetCompositionWindow(himc, ref compForm);
+                    x2 = 2 * x2 - x1;
+                    y2 = 2 * y2 - y1;
+                }
+
+                if (_showCandidateList)
+                {
+                    var candidateForm = new CANDIDATEFORM
+                    {
+                        dwIndex = 0,
+                        dwStyle = CFS_CANDIDATEPOS,
+                        ptCurrentPos = new POINT { X = x2, Y = y2 }
+                    };
+                    ImmSetCandidateWindow(himc, ref candidateForm);
+                }
 
                 if (_systemCaret)
                 {
-                    SetCaretPos((int)x1, (int)y1);
+                    SetCaretPos(x2, y2);
                 }
-
-                var compForm = new COMPOSITIONFORM
-                {
-                    dwStyle = CFS_POINT,
-                    ptCurrentPos = new POINT { X = (int)x1, Y = (int)y1 },
-                    rcArea = new RECT { left = (int)x1, top = (int)y1, right = (int)x2, bottom = (int)y2 }
-                };
-                ImmSetCompositionWindow(himc, ref compForm);
-
-                //compForm.dwStyle = CFS_RECT;
-                //ImmSetCompositionWindow(himc, ref compForm);
 
                 ImmReleaseContext(_hwnd, himc);
             });
