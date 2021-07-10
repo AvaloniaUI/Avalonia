@@ -284,7 +284,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Should_Create_Child_Even_With_Null_Content_When_DataTemplates_Is_Set()
+        public void Should_Not_Create_Child_Even_With_Null_Content_And_DataTemplates_InsteadOf_ContentTemplate()
         {
             var target = new ContentPresenter
             {
@@ -300,35 +300,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.UpdateChild();
 
-            var textBlock = Assert.IsType<TextBlock>(target.Child);
-            Assert.Equal("Hello World", textBlock.Text);
+            Assert.Null(target.Child);
         }
-
-        [Fact]
-        public void Should_Create_Child_Even_With_Null_Content_When_DataTemplates_Is_Set_On_Parent()
-        {
-            var parent = new Border
-            {
-                DataTemplates =
-                {
-                    new FuncDataTemplate<object>(_ => true, (_, __) => new TextBlock
-                    {
-                        Text = "Hello World"
-                    })
-                }
-            };
-            var target = new ContentPresenter
-            {
-                Content = null
-            };
-            parent.Child = target;
-
-            target.UpdateChild();
-
-            var textBlock = Assert.IsType<TextBlock>(target.Child);
-            Assert.Equal("Hello World", textBlock.Text);
-        }
-
 
         [Fact]
         public void Should_Not_Create_Child_When_Content_And_Template_Are_Null()

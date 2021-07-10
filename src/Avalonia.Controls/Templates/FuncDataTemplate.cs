@@ -71,7 +71,7 @@ namespace Avalonia.Controls.Templates
             Type type,
             Func<object, INameScope, IControl> build,
             bool supportsRecycling = false)
-            : this(o => o is null || IsInstance(o, type), build, supportsRecycling)
+            : this(o => IsInstance(o, type), build, supportsRecycling)
         {
         }
 

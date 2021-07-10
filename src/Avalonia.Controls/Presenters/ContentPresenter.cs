@@ -327,7 +327,11 @@ namespace Avalonia.Controls.Presenters
             var oldChild = Child;
             var newChild = content as IControl;
 
-            if (newChild == null)
+            // We want to allow creating Child from the Template, if Content is null.
+            // But it's important to not inherit data template in this case nor use DataTemplates,
+            // otherwise it will blow up every ContentPresenter without Content set.
+            if (newChild == null
+                && (content != null || ContentTemplate != null))
             {
                 var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? 
                     (
@@ -336,19 +340,16 @@ namespace Avalonia.Controls.Presenters
                             : FuncDataTemplate.Default
                     );
 
-                if (content != null || dataTemplate != null)
+                if (dataTemplate is IRecyclingDataTemplate rdt)
                 {
-                    if (dataTemplate is IRecyclingDataTemplate rdt)
-                    {
-                        var toRecycle = rdt == _recyclingDataTemplate ? oldChild : null;
-                        newChild = rdt.Build(content, toRecycle);
-                        _recyclingDataTemplate = rdt;
-                    }
-                    else
-                    {
-                        newChild = dataTemplate.Build(content);
-                        _recyclingDataTemplate = null;
-                    }
+                    var toRecycle = rdt == _recyclingDataTemplate ? oldChild : null;
+                    newChild = rdt.Build(content, toRecycle);
+                    _recyclingDataTemplate = rdt;
+                }
+                else
+                {
+                    newChild = dataTemplate.Build(content);
+                    _recyclingDataTemplate = null;
                 }
             }
             else

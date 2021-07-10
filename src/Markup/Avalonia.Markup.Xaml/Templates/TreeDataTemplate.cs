@@ -28,7 +28,7 @@ namespace Avalonia.Markup.Xaml.Templates
             }
             else
             {
-                return data is null || DataType.IsInstanceOfType(data);
+                return DataType.IsInstanceOfType(data);
             }
         }
 
