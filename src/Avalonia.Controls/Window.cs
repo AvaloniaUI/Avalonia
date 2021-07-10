@@ -592,6 +592,14 @@ namespace Avalonia.Controls
                     owner.RemoveChild(this);
                 }
 
+                if (_children.Count > 0)
+                {
+                    foreach (var child in _children.ToArray())
+                    {
+                        child.child.Hide();
+                    }
+                }
+
                 Owner = null;
 
                 PlatformImpl?.Hide();
@@ -633,6 +641,22 @@ namespace Avalonia.Controls
             if (PlatformImpl == null)
             {
                 throw new InvalidOperationException("Cannot re-show a closed window.");
+            }
+
+            if (parent != null)
+            {
+                if (parent.PlatformImpl == null)
+                {
+                    throw new InvalidOperationException("Cannot show a window with a closed parent.");
+                }
+                else if (parent == this)
+                {
+                    throw new InvalidOperationException("A Window cannot be its own parent.");
+                }
+                else if (!parent.IsVisible)
+                {
+                    throw new InvalidOperationException("Cannot show window with non-visible parent.");
+                }
             }
 
             if (IsVisible)
@@ -708,10 +732,21 @@ namespace Avalonia.Controls
             {
                 throw new ArgumentNullException(nameof(owner));
             }
-
-            if (IsVisible)
+            else if (owner.PlatformImpl == null)
+            {
+                throw new InvalidOperationException("Cannot show a window with a closed owner.");
+            }
+            else if (owner == this)
+            {
+                throw new InvalidOperationException("A Window cannot be its own owner.");
+            }
+            else if (IsVisible)
             {
                 throw new InvalidOperationException("The window is already being shown.");
+            }
+            else if (!owner.IsVisible)
+            {
+                throw new InvalidOperationException("Cannot show window with non-visible parent.");
             }
 
             RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
