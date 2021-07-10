@@ -460,7 +460,7 @@ namespace Avalonia.Win32
                     {
                         _ReleaseIme();
                         // note: for non-ime language, also create it so that emoji panel tracks cursor
-                        _ime = new Imm32InputMethod(this, Hwnd);
+                        _ime = new Imm32InputMethod(this, Hwnd, lParam);
                         // call DefWindowProc to pass to all children
                         break;
                     }
@@ -474,12 +474,22 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_COMPOSITION:
                 case WindowsMessage.WM_IME_COMPOSITIONFULL:
                 case WindowsMessage.WM_IME_CONTROL:
-                case WindowsMessage.WM_IME_ENDCOMPOSITION:
                 case WindowsMessage.WM_IME_KEYDOWN:
                 case WindowsMessage.WM_IME_KEYUP:
                 case WindowsMessage.WM_IME_NOTIFY:
                 case WindowsMessage.WM_IME_SELECT:
+                    break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
+                    if (_ime != null)
+                    {
+                        _ime.IsComposing = true;
+                    }
+                    break;
+                case WindowsMessage.WM_IME_ENDCOMPOSITION:
+                    if (_ime != null)
+                    {
+                        _ime.IsComposing = false;
+                    }
                     break;
             }
 

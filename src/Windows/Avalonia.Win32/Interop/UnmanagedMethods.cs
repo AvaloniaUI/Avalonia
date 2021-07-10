@@ -1512,18 +1512,49 @@ namespace Avalonia.Win32.Interop
         public static extern bool ImmSetCandidateWindow(IntPtr hIMC, ref CANDIDATEFORM lpCandidate);
         [DllImport("Imm32.dll")]
         public static extern bool ImmSetCompositionWindow(IntPtr hIMC, ref COMPOSITIONFORM lpComp);
+        [DllImport("Imm32.dll")]
+        public static extern bool ImmNotifyIME(IntPtr hIMC, int dwAction, int dwIndex, int dwValue);
         [DllImport("User32.dll")]
         public static extern bool CreateCaret(IntPtr hwnd, IntPtr hBitmap, int nWidth, int nHeight);
         [DllImport("User32.dll")]
         public static extern bool SetCaretPos(int X, int Y);
         [DllImport("User32.dll")]
         public static extern bool DestroyCaret();
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern int LCIDToLocaleName(uint Locale, StringBuilder lpName, int cchName, int dwFlags);
+
+        public static uint MAKELCID(uint lgid, uint srtid)
+        {
+            return (((uint)(ushort)srtid) << 16) |
+                   ((ushort)lgid);
+        }
+
+        public static ushort PRIMARYLANGID(uint lgid)
+        {
+            return (ushort)(lgid & 0x3ff);
+        }
+
+        public static uint LGID(IntPtr HKL)
+        {
+            return (uint)(HKL.ToInt32() & 0xffff);
+        }
+
+        public const int SORT_DEFAULT = 0;
+        public const int LANG_ZH = 0x0004;
+        public const int LANG_JA = 0x0011;
+        public const int LANG_KO = 0x0012;
 
         public const int CFS_CANDIDATEPOS = 0x0040;
         public const int CFS_EXCLUDE = 0x0080;
         public const int CFS_POINT = 0x0002;
         public const int CFS_RECT = 0x0001;
         public const uint ISC_SHOWUICOMPOSITIONWINDOW = 0x80000000;
+
+        public const int NI_COMPOSITIONSTR = 21;
+        public const int CPS_COMPLETE = 1;
+        public const int CPS_CONVERT = 2;
+        public const int CPS_REVERT = 3;
+        public const int CPS_CANCEL = 4;
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct CANDIDATEFORM

@@ -21,28 +21,37 @@ namespace Avalonia.Win32.Input
         private bool _systemCaret;
         private bool _showCompositionWindow;
         private bool _showCandidateList;
+        private ushort _langId;
+        private const int _caretMargin = 1;
 
-        public Imm32InputMethod(WindowImpl parent, IntPtr hwnd)
+        public Imm32InputMethod(WindowImpl parent, IntPtr hwnd, IntPtr HKL)
         {
             _parent = parent;
             _hwnd = hwnd;
             _disposedValue = false;
             _active = false;
-            // TODO detect CHS and JP, use system caret
-            _systemCaret = true;
+            _langId = PRIMARYLANGID(LGID(HKL));
+            _systemCaret = (_langId == LANG_ZH || _langId == LANG_JA);
             _showCompositionWindow = true;
             _showCandidateList = true;
             if (_systemCaret)
             {
                 CreateCaret(_hwnd, IntPtr.Zero, 1, 1);
             }
-            var origin = parent.PointToScreen(new Point());
-            SetCursorRect(new Rect(origin.ToPoint(1.0), origin.ToPoint(1.0)));
+            IsComposing = false;
         }
 
         public void Reset()
         {
-            // ???
+            if (IsComposing)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    IntPtr himc = ImmGetContext(_hwnd);
+                    ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
+                    ImmReleaseContext(_hwnd, himc);
+                });
+            }
         }
 
         public void SetActive(bool active)
@@ -60,7 +69,8 @@ namespace Avalonia.Win32.Input
 
         public void SetCursorRect(Rect rect)
         {
-            if (!_active /* TODO || !_parent.Focused() */)
+            var focused = GetActiveWindow() == _hwnd;
+            if (!_active || !focused)
             {
                 return;
             }
@@ -85,12 +95,9 @@ namespace Avalonia.Win32.Input
                     var compForm = new COMPOSITIONFORM
                     {
                         dwStyle = CFS_POINT,
-                        ptCurrentPos = new POINT { X = x2, Y = y2 },
-                        rcArea = new RECT { left = x1, top = y1, right = x2, bottom = y2 }
+                        ptCurrentPos = new POINT { X = x1, Y = y1 },
                     };
                     ImmSetCompositionWindow(himc, ref compForm);
-                    x2 = 2 * x2 - x1;
-                    y2 = 2 * y2 - y1;
                 }
 
                 if (_showCandidateList)
@@ -102,11 +109,24 @@ namespace Avalonia.Win32.Input
                         ptCurrentPos = new POINT { X = x2, Y = y2 }
                     };
                     ImmSetCandidateWindow(himc, ref candidateForm);
-                }
 
-                if (_systemCaret)
-                {
-                    SetCaretPos(x2, y2);
+                    if (_systemCaret)
+                    {
+                        SetCaretPos(x2, y2);
+                    }
+
+                    if (_langId == LANG_KO)
+                    {
+                        y2 += _caretMargin;
+                    }
+
+                    candidateForm = new CANDIDATEFORM
+                    {
+                        dwIndex = 0,
+                        dwStyle = CFS_EXCLUDE,
+                        ptCurrentPos = new POINT { X = x2, Y = y2 },
+                        rcArea = new RECT { left = x2, top = y2, right = x2, bottom = y2 + _caretMargin}
+                    };
                 }
 
                 ImmReleaseContext(_hwnd, himc);
@@ -130,6 +150,8 @@ namespace Avalonia.Win32.Input
                 }
             }
         }
+
+        public bool IsComposing { get; set; }
 
         ~Imm32InputMethod()
         {
