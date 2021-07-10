@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Text;
 using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
@@ -75,6 +76,46 @@ namespace Avalonia.Media
                 return rv;
             }
         }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            if (IsEmpty)
+            {
+                return "none";
+            }
+
+            if (IsInset)
+            {
+                sb.Append("inset");
+            }
+
+            if (OffsetX != 0.0)
+            {
+                sb.AppendFormat(" {0}", OffsetX.ToString());
+            }
+
+            if (OffsetY != 0.0)
+            {
+                sb.AppendFormat(" {0}", OffsetY.ToString());
+            }
+            
+            if (Blur != 0.0)
+            {
+                sb.AppendFormat(" {0}", Blur.ToString());
+            }
+
+            if (Spread != 0.0)
+            {
+                sb.AppendFormat(" {0}", Spread.ToString());
+            }
+
+            sb.AppendFormat(" {0}", Color.ToString());
+
+            return sb.ToString();
+        }
+
         public static unsafe BoxShadow Parse(string s)
         {
             if(s == null)
