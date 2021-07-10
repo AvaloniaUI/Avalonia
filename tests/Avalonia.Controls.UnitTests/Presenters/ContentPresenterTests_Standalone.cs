@@ -270,7 +270,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var target = new ContentPresenter
             {
-                ContentTemplate = new FuncDataTemplate<object>(_ => true, (_, _) => new TextBlock
+                ContentTemplate = new FuncDataTemplate<object>(_ => true, (_, __) => new TextBlock
                 {
                     Text = "Hello World"
                 }),
@@ -290,7 +290,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 DataTemplates =
                 {
-                    new FuncDataTemplate<object>(_ => true, (_, _) => new TextBlock
+                    new FuncDataTemplate<object>(_ => true, (_, __) => new TextBlock
                     {
                         Text = "Hello World"
                     })
@@ -311,7 +311,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 DataTemplates =
                 {
-                    new FuncDataTemplate<object>(_ => true, (_, _) => new TextBlock
+                    new FuncDataTemplate<object>(_ => true, (_, __) => new TextBlock
                     {
                         Text = "Hello World"
                     })
@@ -349,7 +349,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var target = new ContentPresenter
             {
-                ContentTemplate = new FuncDataTemplate<int>(_ => true, (_, _) => new TextBlock
+                ContentTemplate = new FuncDataTemplate<int>(_ => true, (_, __) => new TextBlock
                 {
                     Text = "Hello World"
                 }),
@@ -366,7 +366,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var target = new ContentPresenter
             {
-                ContentTemplate = new FuncDataTemplate<int?>(_ => true, (_, _) => new TextBlock
+                ContentTemplate = new FuncDataTemplate<int?>(_ => true, (_, __) => new TextBlock
                 {
                     Text = "Hello World"
                 }),
