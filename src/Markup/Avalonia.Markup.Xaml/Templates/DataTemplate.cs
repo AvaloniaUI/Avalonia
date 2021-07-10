@@ -9,7 +9,6 @@ namespace Avalonia.Markup.Xaml.Templates
     {
         public Type DataType { get; set; }
 
-        //we need content to be object otherwise portable.xaml is crashing
         [Content]
         [TemplateContent]
         public object Content { get; set; }
@@ -22,7 +21,7 @@ namespace Avalonia.Markup.Xaml.Templates
             }
             else
             {
-                return DataType.IsInstanceOfType(data);
+                return data is null || DataType.IsInstanceOfType(data);
             }
         }
 

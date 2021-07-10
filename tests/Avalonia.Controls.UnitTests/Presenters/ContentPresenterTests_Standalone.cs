@@ -343,5 +343,39 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.Null(target.Child);
         }
+
+        [Fact]
+        public void Should_Not_Create_When_Child_Content_Is_Null_But_Expected_ValueType_With_FuncDataTemplate()
+        {
+            var target = new ContentPresenter
+            {
+                ContentTemplate = new FuncDataTemplate<int>(_ => true, (_, _) => new TextBlock
+                {
+                    Text = "Hello World"
+                }),
+                Content = null
+            };
+
+            target.UpdateChild();
+
+            Assert.Null(target.Child);
+        }
+
+        [Fact]
+        public void Should_Create_Child_When_Content_Is_Null_And_Expected_NullableValueType_With_FuncDataTemplate()
+        {
+            var target = new ContentPresenter
+            {
+                ContentTemplate = new FuncDataTemplate<int?>(_ => true, (_, _) => new TextBlock
+                {
+                    Text = "Hello World"
+                }),
+                Content = null
+            };
+
+            target.UpdateChild();
+
+            Assert.NotNull(target.Child);
+        }
     }
 }
