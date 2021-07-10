@@ -511,8 +511,8 @@ namespace Avalonia.Controls.Presenters
             else if (scrollable.IsLogicalScrollEnabled)
             {
                 Viewport = scrollable.Viewport;
-                Extent = scrollable.Extent;
                 Offset = scrollable.Offset;
+                Extent = scrollable.Extent;
             }
         }
 
