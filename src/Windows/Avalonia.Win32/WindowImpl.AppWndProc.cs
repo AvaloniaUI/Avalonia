@@ -458,9 +458,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_INPUTLANGCHANGE:
                     {
-                        _ReleaseIme();
-                        // note: for non-ime language, also create it so that emoji panel tracks cursor
-                        _ime = new Imm32InputMethod(this, Hwnd, lParam);
+                        UpdateInputMethod(lParam);
                         // call DefWindowProc to pass to all children
                         break;
                     }
@@ -468,6 +466,7 @@ namespace Avalonia.Win32
                     {
                         // TODO if we implement preedit, disable the composition window:
                         // lParam = new IntPtr((int)(((uint)lParam.ToInt64()) & ~ISC_SHOWUICOMPOSITIONWINDOW));
+                        UpdateInputMethod(GetKeyboardLayout(0));
                         break;
                     }
                 case WindowsMessage.WM_IME_CHAR:
@@ -517,6 +516,19 @@ namespace Avalonia.Win32
             {
                 return DefWindowProc(hWnd, msg, wParam, lParam);
             }
+        }
+
+        private void UpdateInputMethod(IntPtr hkl)
+        {
+            // note: for non-ime language, also create it so that emoji panel tracks cursor
+            var langid = LGID(hkl);
+            if (langid == _langid)
+            {
+                return;
+            } 
+            _langid = langid;
+            _ime?.Dispose();
+            _ime = new Imm32InputMethod(this, Hwnd, hkl);
         }
 
         private static int ToInt32(IntPtr ptr)

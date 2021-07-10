@@ -89,6 +89,7 @@ namespace Avalonia.Win32
         private bool _shown;
         private bool _hiddenWindowIsParent;
         private Imm32InputMethod _ime;
+        private uint _langid;
 
         public WindowImpl()
         {
@@ -1328,12 +1329,6 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
-        }
-
-        private void _ReleaseIme()
-        {
-            _ime?.Dispose();
-            _ime = null;
         }
 
         public ITextInputMethodImpl TextInputMethod => _ime;

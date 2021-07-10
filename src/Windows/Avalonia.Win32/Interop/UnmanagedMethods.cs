@@ -1520,6 +1520,8 @@ namespace Avalonia.Win32.Interop
         public static extern bool SetCaretPos(int X, int Y);
         [DllImport("User32.dll")]
         public static extern bool DestroyCaret();
+        [DllImport("User32.dll")]
+        public static extern IntPtr GetKeyboardLayout(int idThread);
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern int LCIDToLocaleName(uint Locale, StringBuilder lpName, int cchName, int dwFlags);
 
