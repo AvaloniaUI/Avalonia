@@ -12,14 +12,14 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly IVisual _control;
         private Thickness _borderThickness;
         private double _height;
-        private string _heightConstraint;
+        private string? _heightConstraint;
         private HorizontalAlignment _horizontalAlignment;
         private Thickness _marginThickness;
         private Thickness _paddingThickness;
         private bool _updatingFromControl;
         private VerticalAlignment _verticalAlignment;
         private double _width;
-        private string _widthConstraint;
+        private string? _widthConstraint;
 
         public ControlLayoutViewModel(IVisual control)
         {
@@ -80,13 +80,13 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _height, value);
         }
 
-        public string WidthConstraint
+        public string? WidthConstraint
         {
             get => _widthConstraint;
             private set => RaiseAndSetIfChanged(ref _widthConstraint, value);
         }
 
-        public string HeightConstraint
+        public string? HeightConstraint
         {
             get => _heightConstraint;
             private set => RaiseAndSetIfChanged(ref _heightConstraint, value);
@@ -112,7 +112,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (_control is IAvaloniaObject ao)
             {
-                string CreateConstraintInfo(StyledProperty<double> minProperty, StyledProperty<double> maxProperty)
+                string? CreateConstraintInfo(StyledProperty<double> minProperty, StyledProperty<double> maxProperty)
                 {
                     bool hasMin = ao.IsSet(minProperty);
                     bool hasMax = ao.IsSet(maxProperty);
@@ -179,7 +179,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void ControlPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        public void ControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             try
             {

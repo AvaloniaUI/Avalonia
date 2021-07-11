@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Metadata;
 
@@ -35,25 +36,11 @@ namespace Avalonia.Animation
         [Content]
         public List<IPageTransition> PageTransitions { get; set; } = new List<IPageTransition>();
 
-        /// <summary>
-        /// Starts the animation.
-        /// </summary>
-        /// <param name="from">
-        /// The control that is being transitioned away from. May be null.
-        /// </param>
-        /// <param name="to">
-        /// The control that is being transitioned to. May be null.
-        /// </param>
-        /// <param name="forward">
-        /// Defines the direction of the transition.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> that tracks the progress of the animation.
-        /// </returns>
-        public Task Start(Visual from, Visual to, bool forward)
+        /// <inheritdoc />
+        public Task Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken)
         {
             var transitionTasks = PageTransitions
-                .Select(transition => transition.Start(from, to, forward))
+                .Select(transition => transition.Start(from, to, forward, cancellationToken))
                 .ToList();
             return Task.WhenAll(transitionTasks);
         }

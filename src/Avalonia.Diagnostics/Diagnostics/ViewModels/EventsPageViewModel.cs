@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
@@ -23,8 +22,8 @@ namespace Avalonia.Diagnostics.ViewModels
         };
 
         private readonly MainViewModel _mainViewModel;
-        private FiredEvent _selectedEvent;
-        private EventTreeNodeBase _selectedNode;
+        private FiredEvent? _selectedEvent;
+        private EventTreeNodeBase? _selectedNode;
 
         public EventsPageViewModel(MainViewModel mainViewModel)
         {
@@ -48,13 +47,13 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public ObservableCollection<FiredEvent> RecordedEvents { get; } = new ObservableCollection<FiredEvent>();
 
-        public FiredEvent SelectedEvent
+        public FiredEvent? SelectedEvent
         {
             get => _selectedEvent;
             set => RaiseAndSetIfChanged(ref _selectedEvent, value);
         }
 
-        public EventTreeNodeBase SelectedNode
+        public EventTreeNodeBase? SelectedNode
         {
             get => _selectedNode;
             set => RaiseAndSetIfChanged(ref _selectedNode, value);
@@ -99,7 +98,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
 
-            static EventTreeNodeBase FindNode(EventTreeNodeBase node, RoutedEvent eventType)
+            static EventTreeNodeBase? FindNode(EventTreeNodeBase node, RoutedEvent eventType)
             {
                 if (node is EventTreeNode eventNode && eventNode.Event == eventType)
                 {
