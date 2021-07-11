@@ -94,7 +94,7 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
-        /// Returns a value indicating whether null can be casted to the specified type.
+        /// Returns a value indicating whether value can be casted to the specified type.
         /// If value is null, checks if instances of that type can be null.
         /// </summary>
         /// <typeparam name="T">The type to cast to</typeparam>
