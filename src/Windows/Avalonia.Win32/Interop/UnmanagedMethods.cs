@@ -1496,31 +1496,31 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
-        [DllImport("Imm32.dll", SetLastError = true)]
+        [DllImport("imm32.dll", SetLastError = true)]
         public static extern IntPtr ImmGetContext(IntPtr hWnd);
-        [DllImport("Imm32.dll")]
+        [DllImport("imm32.dll")]
         public static extern bool ImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
-        [DllImport("Imm32.dll")]
+        [DllImport("imm32.dll")]
         public static extern bool ImmSetOpenStatus(IntPtr hIMC, bool flag);
-        [DllImport("Imm32.dll")]
+        [DllImport("imm32.dll")]
         public static extern bool ImmSetActiveContext(IntPtr hIMC, bool flag);
-        [DllImport("Imm32.dll")]
+        [DllImport("imm32.dll")]
         public static extern bool ImmSetStatusWindowPos(IntPtr hIMC, ref POINT lpptPos);
-        [DllImport("Imm32.dll")]
+        [DllImport("imm32.dll")]
         public static extern bool ImmIsIME(IntPtr HKL);
-        [DllImport("Imm32.dll")]
+        [DllImport("imm32.dll")]
         public static extern bool ImmSetCandidateWindow(IntPtr hIMC, ref CANDIDATEFORM lpCandidate);
-        [DllImport("Imm32.dll")]
+        [DllImport("imm32.dll")]
         public static extern bool ImmSetCompositionWindow(IntPtr hIMC, ref COMPOSITIONFORM lpComp);
-        [DllImport("Imm32.dll")]
+        [DllImport("imm32.dll")]
         public static extern bool ImmNotifyIME(IntPtr hIMC, int dwAction, int dwIndex, int dwValue);
-        [DllImport("User32.dll")]
+        [DllImport("user32.dll")]
         public static extern bool CreateCaret(IntPtr hwnd, IntPtr hBitmap, int nWidth, int nHeight);
-        [DllImport("User32.dll")]
+        [DllImport("user32.dll")]
         public static extern bool SetCaretPos(int X, int Y);
-        [DllImport("User32.dll")]
+        [DllImport("user32.dll")]
         public static extern bool DestroyCaret();
-        [DllImport("User32.dll")]
+        [DllImport("user32.dll")]
         public static extern IntPtr GetKeyboardLayout(int idThread);
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern int LCIDToLocaleName(uint Locale, StringBuilder lpName, int cchName, int dwFlags);
