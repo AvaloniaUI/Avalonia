@@ -56,6 +56,26 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
+        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            if (_lastPoint.HasValue)
+            {
+                var ev = new VectorEventArgs
+                {
+                    RoutedEvent = DragCompletedEvent,
+                    Vector = _lastPoint.Value,
+                };
+
+                _lastPoint = null;
+
+                RaiseEvent(ev);
+            }
+
+            PseudoClasses.Remove(":pressed");
+
+            base.OnPointerCaptureLost(e);
+        }
+
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             if (_lastPoint.HasValue)
