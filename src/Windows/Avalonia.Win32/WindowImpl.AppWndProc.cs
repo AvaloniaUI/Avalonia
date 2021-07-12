@@ -529,6 +529,10 @@ namespace Avalonia.Win32
             _langid = langid;
             _ime?.Dispose();
             _ime = new Imm32InputMethod(this, Hwnd, hkl);
+            if (InputMethodUpdated != null)
+            {
+                InputMethodUpdated();
+            }
         }
 
         private static int ToInt32(IntPtr ptr)

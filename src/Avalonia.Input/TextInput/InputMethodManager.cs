@@ -75,8 +75,16 @@ namespace Avalonia.Input.TextInput
             if(_focusedElement == element)
                 return;
             _focusedElement = element;
-            
-            var inputMethod = (element?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+
+            var root = element?.VisualRoot as ITextInputMethodRoot;
+
+            NotifyInputMethodUpdated(root);
+        }
+
+        public void NotifyInputMethodUpdated(ITextInputMethodRoot? root)
+        {
+            // TODO how to filter the window with the current focused element?
+            var inputMethod = root?.InputMethod;
             if(_im != inputMethod)
                 _im?.SetActive(false);
 
