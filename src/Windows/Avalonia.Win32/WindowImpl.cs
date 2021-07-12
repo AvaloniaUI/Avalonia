@@ -125,7 +125,7 @@ namespace Avalonia.Win32
 
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
-            
+            UpdateInputMethod(GetKeyboardLayout(0));
             if (glPlatform != null)
             {
                 if (_isUsingComposition)
