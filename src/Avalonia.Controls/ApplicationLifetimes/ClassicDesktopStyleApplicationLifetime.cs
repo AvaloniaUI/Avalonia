@@ -46,6 +46,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeStartupEventArgs> Startup;
+
+        /// <inheritdoc/>
+        public event EventHandler<CancelEventArgs> ShutdownRequested;
+
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeExitEventArgs> Exit;
 
@@ -115,7 +119,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             var lifetimeEvents = AvaloniaLocator.Current.GetService<IPlatformLifetimeEventsImpl>(); 
 
             if (lifetimeEvents != null)
-                lifetimeEvents.ShutdownRequested += ShutdownRequested;
+                lifetimeEvents.ShutdownRequested += OnShutdownRequested;
 
             _cts = new CancellationTokenSource();
             MainWindow?.Show();
@@ -130,8 +134,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 _activeLifetime = null;
         }
         
-        private void ShutdownRequested(object sender, CancelEventArgs e)
+        private void OnShutdownRequested(object sender, CancelEventArgs e)
         {
+            ShutdownRequested?.Invoke(this, e);
+
             if (e.Cancel)
                 return;
 
