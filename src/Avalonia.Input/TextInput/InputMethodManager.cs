@@ -82,20 +82,17 @@ namespace Avalonia.Input.TextInput
 
             _im = inputMethod;
             
-            if (_focusedElement == null || _im == null)
-            {
-                Client = null;
-                _im?.SetActive(false);
-                return;
-            }
-
             var clientQuery = new TextInputMethodClientRequestedEventArgs
             {
                 RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
             };
             
-            _focusedElement.RaiseEvent(clientQuery);
+            _focusedElement?.RaiseEvent(clientQuery);
             Client = clientQuery.Client;
+            if (Client == null)
+            {
+                _im?.SetActive(false);
+            }
         }
     }
 }
