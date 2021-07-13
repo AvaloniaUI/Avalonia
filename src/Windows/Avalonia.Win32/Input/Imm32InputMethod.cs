@@ -61,6 +61,7 @@ namespace Avalonia.Win32.Input
             {
                 IntPtr himc = ImmGetContext(_hwnd);
                 ImmSetActiveContext(himc, active);
+                ImmSetOpenStatus(himc, active);
                 ImmReleaseContext(_hwnd, himc);
             });
         }

@@ -15,6 +15,8 @@ namespace Avalonia.Controls
         public event EventHandler TextViewVisualChanged;
         public bool SupportsPreedit => false;
         public void SetPreeditText(string text) => throw new NotSupportedException();
+        public event EventHandler ActiveStateChanged;
+        public bool ActiveState => true;
 
         public bool SupportsSurroundingText => false;
         public TextInputMethodSurroundingText SurroundingText => throw new NotSupportedException();

@@ -8,6 +8,7 @@ namespace Avalonia.Input.TextInput
         private ITextInputMethodImpl? _im;
         private IInputElement? _focusedElement;
         private ITextInputMethodClient? _client;
+        private bool _clientActive = false;
         private readonly TransformTrackingHelper _transformTracker = new TransformTrackingHelper();
 
         public TextInputMethodManager() => _transformTracker.MatrixChanged += UpdateCursorRect;
@@ -23,6 +24,8 @@ namespace Avalonia.Input.TextInput
                 {
                     _client.CursorRectangleChanged -= OnCursorRectangleChanged;
                     _client.TextViewVisualChanged -= OnTextViewVisualChanged;
+                    _client.ActiveStateChanged -= OnClientActiveStateChanged;
+                    _clientActive = false;
                 }
 
                 _client = value;
@@ -31,6 +34,8 @@ namespace Avalonia.Input.TextInput
                 {
                     _client.CursorRectangleChanged += OnCursorRectangleChanged;
                     _client.TextViewVisualChanged += OnTextViewVisualChanged;
+                    _client.ActiveStateChanged += OnClientActiveStateChanged;
+                    _clientActive = _client.ActiveState;
                     var optionsQuery = new TextInputOptionsQueryEventArgs
                     {
                         RoutedEvent = InputElement.TextInputOptionsQueryEvent
@@ -40,7 +45,7 @@ namespace Avalonia.Input.TextInput
                     _im?.SetOptions(optionsQuery);
                     _transformTracker?.SetVisual(_client?.TextViewVisual);
                     UpdateCursorRect();
-                    _im?.SetActive(true);
+                    _im?.SetActive(_clientActive);
                 }
                 else
                 {
@@ -48,6 +53,15 @@ namespace Avalonia.Input.TextInput
                     _transformTracker.SetVisual(null);
                 }
             }
+        }
+
+        private void OnClientActiveStateChanged(object sender, EventArgs e)
+        {
+            if (_client != null && sender == _client && _client.ActiveState != _clientActive)
+            {
+                _clientActive = _client.ActiveState;
+                _im?.SetActive(_clientActive);
+            } 
         }
 
         private void OnTextViewVisualChanged(object sender, EventArgs e) 

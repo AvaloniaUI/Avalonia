@@ -49,6 +49,14 @@ namespace Avalonia.Input.TextInput
         /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the end of the text entry
         /// </summary>
         string TextAfterCursor { get; }
+        /// <summary>
+        /// Should be fired when the client requests IME active state change.
+        /// </summary>
+        event EventHandler ActiveStateChanged;
+        /// <summary>
+        /// Indicates whether the client requests active IME support.
+        /// </summary>
+        bool ActiveState { get; }
     }
 
     public struct TextInputMethodSurroundingText
