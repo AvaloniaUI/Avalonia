@@ -757,6 +757,7 @@ private:
                 }
                 
                 _lastWindowState = state;
+                _actualWindowState = state;
                 WindowEvents->WindowStateChanged(state);
             }
         }
