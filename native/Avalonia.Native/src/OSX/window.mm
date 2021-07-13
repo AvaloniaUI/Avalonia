@@ -2386,6 +2386,8 @@ protected:
     
     virtual HRESULT Resize(double x, double y) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if (Window != nullptr)
