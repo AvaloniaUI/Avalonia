@@ -1323,6 +1323,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     _settingSize = true;
+    [super setFrameSize:newSize];
     
     auto window = objc_cast<AvnWindow>([self window]);
     
@@ -1339,8 +1340,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_titleBarMaterial setFrame:tbar];
     tbar.size.height = height < 1 ? 0 : 1;
     [_titleBarUnderline setFrame:tbar];
-    
-    [super setFrameSize:newSize];
+
     _settingSize = false;
 }
 
