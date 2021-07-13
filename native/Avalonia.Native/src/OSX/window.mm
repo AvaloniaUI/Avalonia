@@ -319,7 +319,6 @@ public:
                 BaseEvents->Resized(AvnSize{x,y});
             }
             
-            [StandardContainer setFrameSize:NSSize{x,y}];
             [Window setContentSize:NSSize{x, y}];
             
             _inResize = false;
@@ -1289,6 +1288,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_blurBehind setWantsLayer:true];
     _blurBehind.hidden = true;
     
+    [_blurBehind setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    [_content setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    
     [self addSubview:_blurBehind];
     [self addSubview:_content];
     
@@ -1322,10 +1324,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     _settingSize = true;
-    [super setFrameSize:newSize];
-    
-    [_blurBehind setFrameSize:newSize];
-    [_content setFrameSize:newSize];
     
     auto window = objc_cast<AvnWindow>([self window]);
     
@@ -1342,6 +1340,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_titleBarMaterial setFrame:tbar];
     tbar.size.height = height < 1 ? 0 : 1;
     [_titleBarUnderline setFrame:tbar];
+    
+    [super setFrameSize:newSize];
     _settingSize = false;
 }
 
@@ -2391,7 +2391,6 @@ protected:
         {
             if (Window != nullptr)
             {
-                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             
                 [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
