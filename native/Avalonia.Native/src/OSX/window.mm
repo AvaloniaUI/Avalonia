@@ -279,7 +279,6 @@ public:
     
     virtual HRESULT Resize(double x, double y) override
     {
-        
         if(_inResize)
         {
             return S_OK;
