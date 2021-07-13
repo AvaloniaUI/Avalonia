@@ -29,10 +29,12 @@ public:
     IAvnMenu* _mainMenu;
     
     bool _shown;
+    bool _inResize;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
     {
         _shown = false;
+        _inResize = false;
         _mainMenu = nullptr;
         BaseEvents = events;
         _glContext = gl;
@@ -277,6 +279,14 @@ public:
     
     virtual HRESULT Resize(double x, double y) override
     {
+        
+        if(_inResize)
+        {
+            return S_OK;
+        }
+        
+        _inResize = true;
+        
         START_COM_CALL;
         
         @autoreleasepool
@@ -311,6 +321,8 @@ public:
             
             [StandardContainer setFrameSize:NSSize{x,y}];
             [Window setContentSize:NSSize{x, y}];
+            
+            _inResize = false;
             
             return S_OK;
         }
