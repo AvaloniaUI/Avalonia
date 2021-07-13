@@ -142,6 +142,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Called when the input method is changed for the current top level object.
         /// </summary>
-        //Action InputMethodUpdated { get; set; }
+        Action InputMethodUpdated { get; set; }
     }
 }

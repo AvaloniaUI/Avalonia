@@ -65,6 +65,6 @@ namespace Avalonia.Input
             NavigationMethod method,
             KeyModifiers modifiers);
 
-        //void NotifyInputMethodUpdated(TextInput.ITextInputMethodRoot? root);
+        void NotifyInputMethodUpdated(TextInput.ITextInputMethodRoot? root);
     }
 }

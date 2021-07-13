@@ -68,7 +68,7 @@ namespace Avalonia.Win32.Input
         public void SetCursorRect(Rect rect)
         {
             var focused = GetActiveWindow() == _hwnd;
-            if (!_active || !focused)
+            if (!focused)
             {
                 return;
             }
