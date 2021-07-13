@@ -9,7 +9,6 @@ using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
-
 using XamlParseException = XamlX.XamlParseException;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
@@ -21,6 +20,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (node is XamlAstObjectNode binding && binding.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension))
             {
                 var convertedNode = ConvertLongFormPropertiesToBindingExpressionNode(context, binding);
+                var isEmptyExpression = false;
 
                 if (binding.Arguments.Count > 0 && binding.Arguments[0] is XamlAstTextNode bindingPathText)
                 {
@@ -32,9 +32,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         nodes.Insert(nodes.TakeWhile(x => x is BindingExpressionGrammar.ITransformNode).Count(), convertedNode);
                     }
 
-                    binding.Arguments[0] = new ParsedBindingPathNode(bindingPathText, context.GetAvaloniaTypes().CompiledBindingPath, nodes);
+                    if (nodes.Count == 1 && nodes[0] is BindingExpressionGrammar.EmptyExpressionNode)
+                    {
+                        isEmptyExpression = true;
+                        binding.Arguments.Clear();
+                    }
+                    else
+                        binding.Arguments[0] = new ParsedBindingPathNode(bindingPathText, context.GetAvaloniaTypes().CompiledBindingPath, nodes);
                 }
                 else
+                    isEmptyExpression = true;
+                
+                if (isEmptyExpression)
                 {
                     var bindingPathAssignment = binding.Children.OfType<XamlAstXamlPropertyValueNode>()
                         .FirstOrDefault(v => v.Property.GetClrProperty().Name == "Path");
