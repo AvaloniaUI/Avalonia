@@ -582,7 +582,7 @@ namespace Avalonia.Media
                 {
                     var cluster = _glyphClusters[i];
 
-                    var codepointIndex = cluster - _characters.Start;
+                    var codepointIndex = IsLeftToRight ? cluster - _characters.Start : _characters.End - cluster;
 
                     var codepoint = Codepoint.ReadAt(_characters, codepointIndex, out _);
 

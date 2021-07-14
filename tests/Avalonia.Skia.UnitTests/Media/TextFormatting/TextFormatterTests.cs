@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -201,6 +202,40 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 }
 
                 Assert.Equal(expectedNumberOfLines, numberOfLines);
+            }
+        }
+        
+        [Fact]
+        public void Should_Wrap_RightToLeft()
+        {
+            using (Start())
+            {
+                const string text =
+                    "قطاعات الصناعة على الشبكة العالمية انترنيت ويونيكود، حيث ستتم، على الصعيدين الدولي والمحلي على حد سواء";
+                
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var currentTextSourceIndex = 0;
+
+                while (currentTextSourceIndex < text.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, currentTextSourceIndex, 50,
+                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap));
+
+                    var glyphClusters = textLine.TextRuns.Cast<ShapedTextCharacters>()
+                        .SelectMany(x => x.GlyphRun.GlyphClusters).ToArray();
+                
+                    Assert.True(glyphClusters[0] >= glyphClusters[^1]);
+                    
+                    Assert.Equal(currentTextSourceIndex, glyphClusters[^1]);
+
+                    currentTextSourceIndex += textLine.TextRange.Length;
+                }
             }
         }
 
