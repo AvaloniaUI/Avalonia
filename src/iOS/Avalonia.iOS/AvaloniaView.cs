@@ -127,7 +127,7 @@ namespace Avalonia.iOS
 
         public override void LayoutSubviews()
         {
-            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize);
+            _topLevelImpl.Resized?.Invoke(_topLevelImpl.ClientSize, PlatformResizeReason.Layout);
             base.LayoutSubviews();
         }
 
