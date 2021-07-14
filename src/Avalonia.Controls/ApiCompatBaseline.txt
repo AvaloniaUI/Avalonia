@@ -10,4 +10,4 @@ MembersMustExist : Member 'public void Avalonia.Platform.ITopLevelImpl.SetCursor
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean, System.Boolean)' is present in the implementation but not in the contract.
-Total Issues: 16
+Total Issues: 11
