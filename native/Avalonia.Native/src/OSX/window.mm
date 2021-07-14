@@ -29,10 +29,12 @@ public:
     IAvnMenu* _mainMenu;
     
     bool _shown;
+    bool _inResize;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events, IAvnGlContext* gl)
     {
         _shown = false;
+        _inResize = false;
         _mainMenu = nullptr;
         BaseEvents = events;
         _glContext = gl;
@@ -277,6 +279,13 @@ public:
     
     virtual HRESULT Resize(double x, double y) override
     {
+        if(_inResize)
+        {
+            return S_OK;
+        }
+        
+        _inResize = true;
+        
         START_COM_CALL;
         
         @autoreleasepool
@@ -304,13 +313,19 @@ public:
                 y = maxSize.height;
             }
             
-            if(!_shown)
+            @try
             {
-                BaseEvents->Resized(AvnSize{x,y});
+                if(!_shown)
+                {
+                    BaseEvents->Resized(AvnSize{x,y});
+                }
+                
+                [Window setContentSize:NSSize{x, y}];
             }
-            
-            [StandardContainer setFrameSize:NSSize{x,y}];
-            [Window setContentSize:NSSize{x, y}];
+            @finally
+            {
+                _inResize = false;
+            }
             
             return S_OK;
         }
@@ -1277,6 +1292,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_blurBehind setWantsLayer:true];
     _blurBehind.hidden = true;
     
+    [_blurBehind setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    [_content setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    
     [self addSubview:_blurBehind];
     [self addSubview:_content];
     
@@ -1312,9 +1330,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _settingSize = true;
     [super setFrameSize:newSize];
     
-    [_blurBehind setFrameSize:newSize];
-    [_content setFrameSize:newSize];
-    
     auto window = objc_cast<AvnWindow>([self window]);
     
     // TODO get actual titlebar size
@@ -1330,6 +1345,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [_titleBarMaterial setFrame:tbar];
     tbar.size.height = height < 1 ? 0 : 1;
     [_titleBarUnderline setFrame:tbar];
+
     _settingSize = false;
 }
 
@@ -2375,11 +2391,12 @@ protected:
     
     virtual HRESULT Resize(double x, double y) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if (Window != nullptr)
             {
-                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             
                 [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
