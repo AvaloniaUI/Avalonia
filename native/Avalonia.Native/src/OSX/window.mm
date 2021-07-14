@@ -313,14 +313,19 @@ public:
                 y = maxSize.height;
             }
             
-            if(!_shown)
+            @try
             {
-                BaseEvents->Resized(AvnSize{x,y});
+                if(!_shown)
+                {
+                    BaseEvents->Resized(AvnSize{x,y});
+                }
+                
+                [Window setContentSize:NSSize{x, y}];
             }
-            
-            [Window setContentSize:NSSize{x, y}];
-            
-            _inResize = false;
+            @finally
+            {
+                _inResize = false;
+            }
             
             return S_OK;
         }
