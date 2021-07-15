@@ -1,13 +1,11 @@
 ﻿using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
-using Castle.DynamicProxy.Generators;
+
 using Moq;
 using Xunit;
 
@@ -17,6 +15,107 @@ namespace Avalonia.Controls.UnitTests
     {
         private Mock<IPopupImpl> popupImpl;
         private MouseTestHelper _mouse = new MouseTestHelper();
+
+        [Fact]
+        public void ContextRequested_Opens_ContextMenu()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                int openedCount = 0;
+
+                sut.MenuOpened += (sender, args) =>
+                {
+                    openedCount++;
+                };
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(sut.IsOpen);
+                Assert.Equal(1, openedCount);
+            }
+        }
+
+        [Fact]
+        public void ContextMenu_Is_Opened_When_ContextFlyout_Is_Also_Set()
+        {
+            // We have this test for backwards compatability with the code that already sets custom ContextMenu.
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var flyout = new Flyout();
+                var target = new Panel
+                {
+                    ContextMenu = sut,
+                    ContextFlyout = flyout
+                };
+
+                var window = new Window { Content = target };
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(sut.IsOpen);
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void KeyUp_Raised_On_Target_Opens_ContextFlyout()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+                var contextRequestedCount = 0;
+                target.AddHandler(Control.ContextRequestedEvent, (s, a) => contextRequestedCount++, Interactivity.RoutingStrategies.Tunnel);
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Apps, Source = window });
+
+                Assert.True(sut.IsOpen);
+                Assert.Equal(1, contextRequestedCount);
+            }
+        }
+
+        [Fact]
+        public void KeyUp_Raised_On_Flyout_Closes_Opened_ContextMenu()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(sut.IsOpen);
+
+                sut.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Apps, Source = window });
+
+                Assert.False(sut.IsOpen);
+            }
+        }
 
         [Fact]
         public void Opening_Raises_Single_Opened_Event()
@@ -224,15 +323,16 @@ namespace Avalonia.Controls.UnitTests
                     ContextMenu = sut
                 };
 
-                var window = new Window {Content = target};
-                window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                var window = PreparedWindow(target);
+                window.Show();
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
                 _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
 
-                _mouse.Click(target);
+                _mouse.Down(overlay);
+                _mouse.Up(target);
 
                 Assert.False(sut.IsOpen);
                 popupImpl.Verify(x => x.Show(true, false), Times.Once);
@@ -254,15 +354,16 @@ namespace Avalonia.Controls.UnitTests
                     ContextMenu = sut
                 };
 
-                var window = new Window {Content = target};
-                window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                var window = PreparedWindow(target);
+                window.Show();
+
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
                 _mouse.Click(target, MouseButton.Right);
-
                 Assert.True(sut.IsOpen);
 
-                _mouse.Click(target, MouseButton.Right);
+                _mouse.Down(overlay, MouseButton.Right);
+                _mouse.Up(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
                 popupImpl.Verify(x => x.Hide(), Times.Once);
@@ -296,12 +397,10 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(sut.IsOpen);
 
-                _mouse.Click(target2, MouseButton.Left);
-                
-                Assert.False(sut.IsOpen);
-                
                 sp.Children.Remove(target1);
-                
+
+                Assert.False(sut.IsOpen);
+
                 _mouse.Click(target2, MouseButton.Right);
                 
                 Assert.True(sut.IsOpen);
@@ -428,7 +527,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        [Fact(Skip = "The only reason this test was 'passing' before was that the author forgot to call Window.ApplyTemplate()")]
+        [Fact]
         public void Cancelling_Closing_Leaves_ContextMenuOpen()
         {
             using (Application())
@@ -442,17 +541,20 @@ namespace Avalonia.Controls.UnitTests
                 {
                     ContextMenu = sut
                 };
-                
-                var window = new Window {Content = target};
-                window.ApplyTemplate();
+
+                var window = PreparedWindow(target);
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
 
                 sut.ContextMenuClosing += (c, e) => { eventCalled = true; e.Cancel = true; };
+
+                window.Show();
 
                 _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
 
-                _mouse.Click(target, MouseButton.Right);
+                _mouse.Down(overlay, MouseButton.Right);
+                _mouse.Up(target, MouseButton.Right);
 
                 Assert.True(eventCalled);
                 Assert.True(sut.IsOpen);
@@ -462,6 +564,19 @@ namespace Avalonia.Controls.UnitTests
             }
         }
         
+        private Window PreparedWindow(object content = null)
+        {
+            var renderer = new Mock<IRenderer>();
+            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+            var windowImpl = Mock.Get(platform.CreateWindow());
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+
+            var w = new Window(windowImpl.Object) { Content = content };
+            w.ApplyTemplate();
+            w.Presenter.ApplyTemplate();
+            return w;
+        }
+
         private Window PreparedWindow(object content = null)
         {
             var renderer = new Mock<IRenderer>();
