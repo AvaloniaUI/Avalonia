@@ -41,6 +41,6 @@ namespace Avalonia.LinuxFramebuffer
         public PixelSize Size => new PixelSize((int)_varInfo.xres, (int) _varInfo.yres);
         public int RowBytes => (int) _fixedInfo.line_length;
         public Vector Dpi { get; }
-        public PixelFormat Format => _varInfo.blue.offset == 16 ? PixelFormat.Rgba8888 : PixelFormat.Bgra8888;
+        public PixelFormat Format => _varInfo.bits_per_pixel == 16 ? PixelFormat.Rgb565 : _varInfo.blue.offset == 16 ? PixelFormat.Rgba8888 : PixelFormat.Bgra8888;
     }
 }

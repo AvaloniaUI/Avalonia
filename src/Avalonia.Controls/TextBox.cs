@@ -145,7 +145,7 @@ namespace Avalonia.Controls
                 (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
-        struct UndoRedoState : IEquatable<UndoRedoState>
+        readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
             public int CaretPosition { get; }
@@ -1290,7 +1290,7 @@ namespace Avalonia.Controls
 
         private void UpdatePseudoclasses()
         {
-            PseudoClasses.Set(":empty", string.IsNullOrWhiteSpace(Text));
+            PseudoClasses.Set(":empty", string.IsNullOrEmpty(Text));
         }
 
         private bool IsPasswordBox => PasswordChar != default(char);
