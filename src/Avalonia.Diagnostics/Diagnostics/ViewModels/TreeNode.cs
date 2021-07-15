@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Controls;
-using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -18,11 +16,11 @@ namespace Avalonia.Diagnostics.ViewModels
         private string _classes;
         private bool _isExpanded;
 
-        protected TreeNode(IVisual visual, TreeNode? parent)
+        protected TreeNode(IVisual visual, TreeNode? parent, string? customName = null)
         {
             _classes = string.Empty;
             Parent = parent;
-            Type = visual.GetType().Name;
+            Type = customName ?? visual.GetType().Name;
             Visual = visual;
             FontWeight = IsRoot ? FontWeight.Bold : FontWeight.Normal;
 

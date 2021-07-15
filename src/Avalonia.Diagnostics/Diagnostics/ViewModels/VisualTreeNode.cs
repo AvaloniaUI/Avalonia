@@ -1,7 +1,7 @@
 using System;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Security.Cryptography.X509Certificates;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
@@ -13,18 +13,15 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class VisualTreeNode : TreeNode
     {
-        public VisualTreeNode(IVisual visual, TreeNode? parent)
-            : base(visual, parent)
+        public VisualTreeNode(IVisual visual, TreeNode? parent, string? customName = null)
+            : base(visual, parent, customName)
         {
             Children = new VisualTreeNodeCollection(this, visual);
 
-            if (Visual is IStyleable styleable)
-            {
-                IsInTemplate = styleable.TemplatedParent != null;
-            }
+            if (Visual is IStyleable styleable) IsInTemplate = styleable.TemplatedParent != null;
         }
 
-        public bool IsInTemplate { get; private set; }
+        public bool IsInTemplate { get; }
 
         public override TreeNodeCollection Children { get; }
 
@@ -51,20 +48,30 @@ namespace Avalonia.Diagnostics.ViewModels
                 _subscriptions.Dispose();
             }
 
-            private static IObservable<IControl?>? GetHostedPopupRootObservable(IVisual visual)
+            private static IObservable<PopupRoot?>? GetHostedPopupRootObservable(IVisual visual)
             {
-                static IObservable<IControl?> GetPopupHostObservable(IPopupHostProvider popupHostProvider)
+                static IObservable<PopupRoot?> GetPopupHostObservable(
+                    IPopupHostProvider popupHostProvider,
+                    string? providerName = null)
                 {
                     return Observable.FromEvent<IPopupHost?>(
                             x => popupHostProvider.PopupHostChanged += x,
                             x => popupHostProvider.PopupHostChanged -= x)
                         .StartWith(popupHostProvider.PopupHost)
-                        .Select(x => x is IControl c ? c : null);
+                        .Select(popupHost =>
+                        {
+                            if (popupHost is IControl control)
+                                return new PopupRoot(
+                                    control,
+                                    providerName != null ? $"{providerName} ({control.GetType().Name})" : null);
+
+                            return (PopupRoot?)null;
+                        });
                 }
 
                 return visual switch
                 {
-                    Popup p => p.GetObservable(Popup.ChildProperty),
+                    Popup p => GetPopupHostObservable(p),
                     Control c => Observable.CombineLatest(
                             c.GetObservable(Control.ContextFlyoutProperty),
                             c.GetObservable(Control.ContextMenuProperty),
@@ -73,18 +80,20 @@ namespace Avalonia.Diagnostics.ViewModels
                             (ContextFlyout, ContextMenu, AttachedFlyout, ToolTip) =>
                             {
                                 if (ContextMenu != null)
-                                {
                                     //Note: ContextMenus are special since all the items are added as visual children.
                                     //So we don't need to go via Popup
-                                    return Observable.Return<IControl?>(ContextMenu);
-                                }
+                                    return Observable.Return<PopupRoot?>(new PopupRoot(ContextMenu));
 
-                                if ((ContextFlyout ?? (IPopupHostProvider?) AttachedFlyout ?? ToolTip) is { } popupHostProvider)
-                                {
-                                    return GetPopupHostObservable(popupHostProvider);
-                                }
+                                if (ContextFlyout != null)
+                                    return GetPopupHostObservable(ContextFlyout, "ContextFlyout");
 
-                                return Observable.Return<IControl?>(null);
+                                if (AttachedFlyout != null)
+                                    return GetPopupHostObservable(AttachedFlyout, "AttachedFlyout");
+
+                                if (ToolTip != null)
+                                    return GetPopupHostObservable(ToolTip, "ToolTip");
+
+                                return Observable.Return<PopupRoot?>(null);
                             })
                         .Switch(),
                     _ => null
@@ -101,18 +110,21 @@ namespace Avalonia.Diagnostics.ViewModels
 
                     _subscriptions.Add(
                         popupRootObservable
-                            .Subscribe(root =>
+                            .Subscribe(popupRoot =>
                             {
-                                if (root != null)
+                                if (popupRoot != null)
                                 {
-                                    childNode = new VisualTreeNode(root, Owner);
+                                    childNode = new VisualTreeNode(
+                                        popupRoot.Value.Root,
+                                        Owner,
+                                        popupRoot.Value.CustomName);
 
                                     nodes.Add(childNode);
                                 }
                                 else if (childNode != null)
                                 {
                                     nodes.Remove(childNode);
-                                }
+                                }s
                             }));
                 }
 
@@ -121,6 +133,18 @@ namespace Avalonia.Diagnostics.ViewModels
                         (i, item) => nodes.Insert(i, new VisualTreeNode(item, Owner)),
                         (i, item) => nodes.RemoveAt(i),
                         () => nodes.Clear()));
+            }
+
+            private struct PopupRoot
+            {
+                public PopupRoot(IControl root, string? customName = null)
+                {
+                    Root = root;
+                    CustomName = customName;
+                }
+
+                public IControl Root { get; }
+                public string? CustomName { get; }
             }
         }
     }

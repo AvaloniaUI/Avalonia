@@ -1,6 +1,6 @@
 using System;
-using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Displays a popup window.
     /// </summary>
-    public class Popup : Control, IVisualTreeHost
+    public class Popup : Control, IVisualTreeHost, IPopupHostProvider
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), true);
@@ -133,6 +133,7 @@ namespace Avalonia.Controls.Primitives
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
         private IInputElement _overlayInputPassThroughElement;
+        private Action<IPopupHost?>? _popupHostChangedHandler;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -348,6 +349,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IVisual? IVisualTreeHost.Root => _openState?.PopupHost.HostedVisualTreeRoot;
 
+        IPopupHost? IPopupHostProvider.PopupHost => Host;
+
+        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
+        { 
+            add => _popupHostChangedHandler += value; 
+            remove => _popupHostChangedHandler -= value;
+        }
+
         /// <summary>
         /// Opens the popup.
         /// </summary>
@@ -479,6 +488,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             Opened?.Invoke(this, EventArgs.Empty);
+
+            _popupHostChangedHandler?.Invoke(Host);
         }
 
         /// <summary>
@@ -580,6 +591,8 @@ namespace Avalonia.Controls.Primitives
 
             _openState.Dispose();
             _openState = null;
+
+            _popupHostChangedHandler?.Invoke(null);
 
             using (BeginIgnoringIsOpen())
             {
