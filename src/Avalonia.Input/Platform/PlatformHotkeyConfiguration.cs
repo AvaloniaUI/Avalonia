@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Avalonia.Input.Platform
 {
     public class PlatformHotkeyConfiguration
     {
         public PlatformHotkeyConfiguration() : this(KeyModifiers.Control)
         {
-            
+
         }
-        
+
         public PlatformHotkeyConfiguration(KeyModifiers commandModifiers,
             KeyModifiers selectionModifiers = KeyModifiers.Shift,
             KeyModifiers wholeWordTextActionModifiers = KeyModifiers.Control)
@@ -73,8 +75,12 @@ namespace Avalonia.Input.Platform
             {
                 new KeyGesture(Key.End, commandModifiers | selectionModifiers)
             };
+            OpenContextMenu = new List<KeyGesture>
+            {
+                new KeyGesture(Key.Apps)
+            };
         }
-        
+
         public KeyModifiers CommandModifiers { get; set; }
         public KeyModifiers WholeWordTextActionModifiers { get; set; }
         public KeyModifiers SelectionModifiers { get; set; }
@@ -92,7 +98,6 @@ namespace Avalonia.Input.Platform
         public List<KeyGesture> MoveCursorToTheEndOfLineWithSelection { get; set; }
         public List<KeyGesture> MoveCursorToTheStartOfDocumentWithSelection { get; set; }
         public List<KeyGesture> MoveCursorToTheEndOfDocumentWithSelection { get; set; }
-        
-        
+        public List<KeyGesture> OpenContextMenu { get; set; }
     }
 }

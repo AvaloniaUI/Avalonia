@@ -39,7 +39,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                     var border = userControl.FindControl<Border>("border");
 
-                    var brush = (SolidColorBrush)border.Background;
+                    var brush = (ISolidColorBrush)border.Background;
                     Assert.Equal(0xff506070, brush.Color.ToUint32());
                 }
             }
