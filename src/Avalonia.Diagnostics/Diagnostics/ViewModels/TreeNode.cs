@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -19,12 +20,11 @@ namespace Avalonia.Diagnostics.ViewModels
 
         protected TreeNode(IVisual visual, TreeNode? parent)
         {
+            _classes = string.Empty;
             Parent = parent;
             Type = visual.GetType().Name;
             Visual = visual;
-            _classes = string.Empty;
-
-            FontWeight = Visual is TopLevel || Visual is Popup ? FontWeight.Bold : FontWeight.Normal;
+            FontWeight = IsRoot ? FontWeight.Bold : FontWeight.Normal;
 
             if (visual is IControl control)
             {
@@ -55,6 +55,11 @@ namespace Avalonia.Diagnostics.ViewModels
                     });
             }
         }
+
+        private bool IsRoot => Visual is TopLevel || 
+                               Visual is Popup ||
+                               Visual is ContextMenu ||
+                               Visual is IPopupHost;
 
         public FontWeight FontWeight { get; }
 

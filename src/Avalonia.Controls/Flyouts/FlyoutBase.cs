@@ -1,16 +1,16 @@
 ﻿using System;
 using System.ComponentModel;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
-using Avalonia.Rendering;
 
 #nullable enable
 
 namespace Avalonia.Controls.Primitives
 {
-    public abstract class FlyoutBase : AvaloniaObject
+    public abstract class FlyoutBase : AvaloniaObject, IPopupHostProvider
     {
         static FlyoutBase()
         {
@@ -55,6 +55,7 @@ namespace Avalonia.Controls.Primitives
         private Rect? _enlargedPopupRect;
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
+        private Action<IPopupHost?>? _popupHostChangedHandler;
 
         protected Popup? Popup { get; private set; }
 
@@ -92,6 +93,14 @@ namespace Avalonia.Controls.Primitives
         {
             get => _target;
             private set => SetAndRaise(TargetProperty, ref _target, value);
+        }
+
+        IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
+
+        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
+        { 
+            add => _popupHostChangedHandler += value; 
+            remove => _popupHostChangedHandler -= value;
         }
 
         public event EventHandler? Closed;
@@ -322,9 +331,11 @@ namespace Avalonia.Controls.Primitives
 
         private void InitPopup()
         {
-            Popup = new Popup();
-            Popup.WindowManagerAddShadowHint = false;
-            Popup.IsLightDismissEnabled = true;
+            Popup = new Popup
+            {
+                WindowManagerAddShadowHint = false,
+                IsLightDismissEnabled = true
+            };
 
             Popup.Opened += OnPopupOpened;
             Popup.Closed += OnPopupClosed;
@@ -333,11 +344,15 @@ namespace Avalonia.Controls.Primitives
         private void OnPopupOpened(object sender, EventArgs e)
         {
             IsOpen = true;
+
+            _popupHostChangedHandler?.Invoke(Popup!.Host);
         }
 
         private void OnPopupClosed(object sender, EventArgs e)
         {
             HideCore();
+
+            _popupHostChangedHandler?.Invoke(null);
         }
 
         private void PositionPopup(bool showAtPointer)
