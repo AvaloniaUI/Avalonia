@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
@@ -109,6 +111,37 @@ namespace Avalonia.Diagnostics.Views
                 .FirstOrDefault();
         }
 
+        private static IEnumerable<PopupRoot> GetPopupRoots(IVisual root)
+        {
+            foreach (var control in root.GetVisualDescendants().OfType<IControl>())
+            {
+                if (control is Popup { Host: PopupRoot r0 })
+                {
+                    yield return r0;
+                }
+
+                if (control.GetValue(ContextFlyoutProperty) is IPopupHostProvider { PopupHost: PopupRoot r1 })
+                {
+                    yield return r1;
+                }
+
+                if (control.GetValue(FlyoutBase.AttachedFlyoutProperty) is IPopupHostProvider { PopupHost: PopupRoot r2 })
+                {
+                    yield return r2;
+                }
+
+                if (control.GetValue(ToolTipDiagnostics.ToolTipProperty) is IPopupHostProvider { PopupHost: PopupRoot r3 })
+                {
+                    yield return r3;
+                }
+
+                if (control.GetValue(ContextMenuProperty) is IPopupHostProvider { PopupHost: PopupRoot r4 })
+                {
+                    yield return r4;
+                }
+            }
+        }
+
         private void RawKeyDown(RawKeyEventArgs e)
         {
             var vm = (MainViewModel?)DataContext;
@@ -123,16 +156,13 @@ namespace Avalonia.Diagnostics.Views
                 {
                     IControl? control = null;
 
-                    foreach (var popup in Root.GetVisualDescendants().OfType<Popup>())
+                    foreach (var popupRoot in GetPopupRoots(Root))
                     {
-                        if (popup.Host?.HostedVisualTreeRoot is PopupRoot popupRoot)
-                        {
-                            control = GetHoveredControl(popupRoot);
+                        control = GetHoveredControl(popupRoot);
 
-                            if (control != null)
-                            {
-                                break;
-                            }
+                        if (control != null)
+                        {
+                            break;
                         }
                     }
 

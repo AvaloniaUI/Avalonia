@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Collections;
@@ -18,7 +17,8 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             Children = new VisualTreeNodeCollection(this, visual);
 
-            if (Visual is IStyleable styleable) IsInTemplate = styleable.TemplatedParent != null;
+            if (Visual is IStyleable styleable)
+                IsInTemplate = styleable.TemplatedParent != null;
         }
 
         public bool IsInTemplate { get; }
