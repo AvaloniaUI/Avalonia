@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Collections;
+using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -24,8 +25,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public static VisualTreeNode[] Create(object control)
         {
-            var visual = control as IVisual;
-            return visual != null ? new[] { new VisualTreeNode(visual, null) } : Array.Empty<VisualTreeNode>();
+            return control is IVisual visual ? new[] { new VisualTreeNode(visual, null) } : Array.Empty<VisualTreeNode>();
         }
 
         internal class VisualTreeNodeCollection : TreeNodeCollection
@@ -46,10 +46,28 @@ namespace Avalonia.Diagnostics.ViewModels
 
             protected override void Initialize(AvaloniaList<TreeNode> nodes)
             {
-                _subscription = _control.VisualChildren.ForEachItem(
-                    (i, item) => nodes.Insert(i, new VisualTreeNode(item, Owner)),
-                    (i, item) => nodes.RemoveAt(i),
-                    () => nodes.Clear());
+                if (_control is Popup p)
+                {
+                    _subscription = p.GetObservable(Popup.ChildProperty).Subscribe(child =>
+                    {
+                        if (child != null)
+                        {
+                            nodes.Add(new VisualTreeNode(child, Owner));
+                        }
+                        else
+                        {
+                            nodes.Clear();
+                        }
+
+                    });
+                }
+                else
+                {
+                    _subscription = _control.VisualChildren.ForEachItem(
+                        (i, item) => nodes.Insert(i, new VisualTreeNode(item, Owner)),
+                        (i, item) => nodes.RemoveAt(i),
+                        () => nodes.Clear());
+                }
             }
         }
     }
