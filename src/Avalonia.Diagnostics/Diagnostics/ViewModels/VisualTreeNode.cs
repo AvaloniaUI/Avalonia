@@ -124,7 +124,7 @@ namespace Avalonia.Diagnostics.ViewModels
                                 else if (childNode != null)
                                 {
                                     nodes.Remove(childNode);
-                                }s
+                                }
                             }));
                 }
 
