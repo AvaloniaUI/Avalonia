@@ -111,35 +111,33 @@ namespace Avalonia.Diagnostics.Views
                 .FirstOrDefault();
         }
 
-        private static IEnumerable<PopupRoot> GetPopupRoots(IVisual root)
+        private static List<PopupRoot> GetPopupRoots(IVisual root)
         {
-            foreach (var control in root.GetVisualDescendants().OfType<IControl>())
+            var popupRoots = new List<PopupRoot>();
+
+            void ProcessProperty<T>(IControl control, AvaloniaProperty<T> property)
             {
-                if (control is Popup { Host: PopupRoot r0 })
+                if (control.GetValue(property) is IPopupHostProvider popupProvider
+                    && popupProvider.PopupHost is PopupRoot popupRoot)
                 {
-                    yield return r0;
-                }
-
-                if (control.GetValue(ContextFlyoutProperty) is IPopupHostProvider { PopupHost: PopupRoot r1 })
-                {
-                    yield return r1;
-                }
-
-                if (control.GetValue(FlyoutBase.AttachedFlyoutProperty) is IPopupHostProvider { PopupHost: PopupRoot r2 })
-                {
-                    yield return r2;
-                }
-
-                if (control.GetValue(ToolTipDiagnostics.ToolTipProperty) is IPopupHostProvider { PopupHost: PopupRoot r3 })
-                {
-                    yield return r3;
-                }
-
-                if (control.GetValue(ContextMenuProperty) is IPopupHostProvider { PopupHost: PopupRoot r4 })
-                {
-                    yield return r4;
+                    popupRoots.Add(popupRoot);
                 }
             }
+
+            foreach (var control in root.GetVisualDescendants().OfType<IControl>())
+            {
+                if (control is Popup p && p.Host is PopupRoot popupRoot)
+                {
+                    popupRoots.Add(popupRoot);
+                }
+
+                ProcessProperty(control, ContextFlyoutProperty);
+                ProcessProperty(control, ContextMenuProperty);
+                ProcessProperty(control, FlyoutBase.AttachedFlyoutProperty);
+                ProcessProperty(control, ToolTipDiagnostics.ToolTipProperty);
+            }
+
+            return popupRoots;
         }
 
         private void RawKeyDown(RawKeyEventArgs e)
