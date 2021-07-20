@@ -33,7 +33,7 @@
         <DataGrid.Columns>
           <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
-          <DataGridTextColumn Header="Type" Binding="{Binding Type}" />
+          <DataGridTextColumn Header="Assinged Type" Binding="{Binding AssignedType}" IsReadOnly="True"/>
           <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" />
         </DataGrid.Columns>
 

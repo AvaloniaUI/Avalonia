@@ -5,7 +5,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class ClrPropertyViewModel : PropertyViewModel
     {
         private readonly object _target;
-        private string _type;
+        private string _assignedType;
         private object? _value;
 
 #nullable disable
@@ -33,7 +33,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Name { get; }
         public override string Group => "CLR Properties";
 
-        public override string Type => _type;
+        public override string AssignedType => _assignedType;
 
         public override string Value 
         {
@@ -60,7 +60,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             var val = Property.GetValue(_target);
             RaiseAndSetIfChanged(ref _value, val, nameof(Value));
-            RaiseAndSetIfChanged(ref _type, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(Type));
+            RaiseAndSetIfChanged(ref _assignedType, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(AssignedType));
         }
     }
 }
