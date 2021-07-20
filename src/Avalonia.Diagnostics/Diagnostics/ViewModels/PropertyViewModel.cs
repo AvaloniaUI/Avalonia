@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
+using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -17,8 +18,27 @@ namespace Avalonia.Diagnostics.ViewModels
         public abstract string AssignedType { get; }
         public abstract string Value { get; set; }
         public abstract string Priority { get; }
-        public abstract bool? IsAttached { get;  }
-        public abstract void Update();        
+        public abstract bool? IsAttached { get; }
+        public abstract void Update();
+        public abstract string PropertyType { get; }
+
+
+        protected static string GetTypeName(Type type)
+        {
+            var name = type.Name;
+            if (Nullable.GetUnderlyingType(type) is Type nullable)
+            {
+                name = nullable.Name + "?";
+            }
+            else if (type.IsGenericType)
+            {
+                var definition = type.GetGenericTypeDefinition();
+                var arguments = type.GetGenericArguments();
+                name = definition.Name.Substring(0, definition.Name.IndexOf('`'));
+                name = $"{name}<{string.Join(",", arguments.Select(GetTypeName))}>";
+            }
+            return name;
+        }
 
         protected static string ConvertToString(object? value)
         {
@@ -30,7 +50,7 @@ namespace Avalonia.Diagnostics.ViewModels
             var converter = TypeDescriptor.GetConverter(value);
 
             //CollectionConverter does not deliver any important information. It just displays "(Collection)".
-            if (!converter.CanConvertTo(typeof(string)) || 
+            if (!converter.CanConvertTo(typeof(string)) ||
                 converter.GetType() == typeof(CollectionConverter))
             {
                 return value.ToString() ?? "(null)";

@@ -7,6 +7,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly object _target;
         private string _assignedType;
         private object? _value;
+        private readonly string _propertyType;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -25,6 +26,8 @@ namespace Avalonia.Diagnostics.ViewModels
                 Name = property.DeclaringType.Name + '.' + property.Name;
             }
 
+            _propertyType = GetTypeName(property.PropertyType);
+
             Update();
         }
 
@@ -34,6 +37,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public override string Group => "CLR Properties";
 
         public override string AssignedType => _assignedType;
+        public override string PropertyType => _propertyType;
 
         public override string Value 
         {

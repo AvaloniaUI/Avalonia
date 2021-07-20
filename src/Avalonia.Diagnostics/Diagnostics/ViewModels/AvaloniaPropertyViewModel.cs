@@ -7,6 +7,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private object? _value;
         private string _priority;
         private string _group;
+        private readonly string _propertyType;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -20,6 +21,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 $"[{property.OwnerType.Name}.{property.Name}]" :
                 property.Name;
 
+            _propertyType = GetTypeName(property.PropertyType);
             Update();
         }
 
@@ -49,6 +51,8 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public override string Group => _group;
+
+        public override string PropertyType => _propertyType;
 
         // [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
         public override void Update()
