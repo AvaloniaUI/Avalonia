@@ -12,7 +12,7 @@ namespace Avalonia.NameGenerator.Generator
             if (attachDevTools)
             {
                 this.AttachDevTools();
-            }          
+            }
 #endif
 ";
         private const string AttachDevToolsParameterDocumentation

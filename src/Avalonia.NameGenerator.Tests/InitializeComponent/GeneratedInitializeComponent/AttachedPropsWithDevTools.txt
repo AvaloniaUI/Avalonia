@@ -27,7 +27,7 @@ namespace Sample.App
             if (attachDevTools)
             {
                 this.AttachDevTools();
-            }          
+            }
 #endif
 
             UserNameTextBox = this.FindControl<global::Avalonia.Controls.TextBox>("UserNameTextBox");
