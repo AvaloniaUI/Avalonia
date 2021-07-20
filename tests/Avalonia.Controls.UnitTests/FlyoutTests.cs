@@ -1,10 +1,18 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
+
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+
+using Moq;
+
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -28,6 +36,7 @@ namespace Avalonia.Controls.UnitTests
                 f.ShowAt(window);
 
                 Assert.Equal(1, tracker);
+                Assert.True(f.IsOpen);
             }
         }
 
@@ -48,6 +57,31 @@ namespace Avalonia.Controls.UnitTests
                 f.ShowAt(window);
 
                 Assert.Equal(1, tracker);
+            }
+        }
+
+        [Fact]
+        public void Opening_Is_Cancellable()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Show();
+
+                int tracker = 0;
+                Flyout f = new Flyout();
+                f.Opening += (s, e) =>
+                {
+                    tracker++;
+                    if (e is CancelEventArgs cancelEventArgs)
+                    {
+                        cancelEventArgs.Cancel = true;
+                    }
+                };
+                f.ShowAt(window);
+
+                Assert.Equal(1, tracker);
+                Assert.False(f.IsOpen);
             }
         }
 
@@ -101,16 +135,89 @@ namespace Avalonia.Controls.UnitTests
                 var window = PreparedWindow();
                 window.Show();
 
-                int tracker = 0;
-                Flyout f = new Flyout();
+                var tracker = 0;
+                var f = new Flyout();
                 f.Closing += (s, e) =>
                 {
+                    tracker++;
                     e.Cancel = true;
                 };
                 f.ShowAt(window);
                 f.Hide();
 
                 Assert.True(f.IsOpen);
+                Assert.Equal(1, tracker);
+            }
+        }
+
+        [Fact]
+        public void Cancel_Light_Dismiss_Closing_Keeps_Flyout_Open()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Width = 100;
+                window.Height = 100;
+
+                var button = new Button
+                {
+                    Height = 10,
+                    Width = 10,
+                    HorizontalAlignment = Layout.HorizontalAlignment.Left,
+                    VerticalAlignment = Layout.VerticalAlignment.Top
+                };
+                window.Content = button;
+
+                window.Show();
+
+                var tracker = 0;
+                var f = new Flyout();
+                f.Content = new Border { Width = 10, Height = 10 };
+                f.Closing += (s, e) =>
+                {
+                    tracker++;
+                    e.Cancel = true;
+                };
+                f.ShowAt(window);
+
+                var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                overlay.RaiseEvent(e);
+
+                Assert.Equal(1, tracker);
+                Assert.True(f.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void Light_Dismiss_Closes_Flyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+                window.Width = 100;
+                window.Height = 100;
+
+                var button = new Button
+                {
+                    Height = 10,
+                    Width = 10,
+                    HorizontalAlignment = Layout.HorizontalAlignment.Left,
+                    VerticalAlignment = Layout.VerticalAlignment.Top
+                };
+                window.Content = button;
+
+                window.Show();
+
+                var f = new Flyout();
+                f.Content = new Border { Width = 10, Height = 10 };
+                f.ShowAt(window);
+
+                var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                overlay.RaiseEvent(e);
+
+                Assert.False(f.IsOpen);
             }
         }
 
@@ -223,6 +330,109 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ContextRequested_Opens_ContextFlyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyout = new Flyout();
+                var target = new Panel
+                {
+                    ContextFlyout = flyout
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                int openedCount = 0;
+
+                flyout.Opened += (sender, args) =>
+                {
+                    openedCount++;
+                };
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(flyout.IsOpen);
+                Assert.Equal(1, openedCount);
+            }
+        }
+
+        [Fact]
+        public void KeyUp_Raised_On_Target_Opens_ContextFlyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyout = new Flyout();
+                var target = new Panel
+                {
+                    ContextFlyout = flyout
+                };
+                var contextRequestedCount = 0;
+                target.AddHandler(Control.ContextRequestedEvent, (s, a) => contextRequestedCount++, Interactivity.RoutingStrategies.Tunnel);
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Apps, Source = window });
+
+                Assert.True(flyout.IsOpen);
+                Assert.Equal(1, contextRequestedCount);
+            }
+        }
+
+        [Fact]
+        public void KeyUp_Raised_On_Target_Closes_Opened_ContextFlyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyout = new Flyout();
+                var target = new Panel
+                {
+                    ContextFlyout = flyout
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(flyout.IsOpen);
+
+                target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Apps, Source = window });
+
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
+        [Fact]
+        public void KeyUp_Raised_On_Flyout_Closes_Opened_ContextFlyout()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var flyoutContent = new Button();
+                var flyout = new Flyout()
+                {
+                    Content = flyoutContent
+                };
+                var target = new Panel
+                {
+                    ContextFlyout = flyout
+                };
+
+                var window = PreparedWindow(target);
+                window.Show();
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+
+                Assert.True(flyout.IsOpen);
+
+                flyoutContent.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyUpEvent, Key = Key.Apps, Source = window });
+
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
+        [Fact]
         public void ContextFlyout_Can_Be_Set_In_Styles()
         {
             using (CreateServicesWithFocus())
@@ -317,9 +527,27 @@ namespace Avalonia.Controls.UnitTests
 
         private Window PreparedWindow(object content = null)
         {
-            var w = new Window { Content = content };
+            var renderer = new Mock<IRenderer>();
+            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+            var windowImpl = Mock.Get(platform.CreateWindow());
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+
+            var w = new Window(windowImpl.Object) { Content = content };
             w.ApplyTemplate();
             return w;
+        }
+
+        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            return new PointerPressedEventArgs(
+                source,
+                pointer,
+                source,
+                p,
+                0,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None);
         }
     }
 }

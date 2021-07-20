@@ -246,6 +246,34 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Should_Respect_Uniform_ZIndex()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Panel panel;
+
+                var tree = new TestRoot
+                {
+                    Child = panel = new Panel()
+                };
+
+                for (var i = 0; i < 128; i++)
+                {
+                    panel.Children.Add(new Border());
+                }
+
+                var result = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(result);
+
+                var panelNode = result.FindNode(tree.Child);
+                var expected = panel.Children.ToArray();
+                var actual = panelNode.Children.OfType<IVisualNode>().Select(x => x.Visual).ToArray();
+                Assert.Equal(expected, actual);
+            }
+        }
+
+        [Fact]
         public void ClipBounds_Should_Be_In_Global_Coordinates()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

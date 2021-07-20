@@ -114,7 +114,7 @@ namespace Avalonia.Native
                 {
                     var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
                             {
-                                if (x is IInputElement ie && !ie.IsHitTestVisible)
+                                if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsVisible))
                                 {
                                     return false;
                                 }

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Presenters;
@@ -153,6 +154,8 @@ namespace Avalonia.Controls.Primitives
         /// Raised when the popup opens.
         /// </summary>
         public event EventHandler? Opened;
+
+        internal event EventHandler<CancelEventArgs>? Closing;
 
         public IPopupHost? Host => _openState?.PopupHost;
 
@@ -567,6 +570,13 @@ namespace Avalonia.Controls.Primitives
 
         private void CloseCore()
         {
+            var closingArgs = new CancelEventArgs();
+            Closing?.Invoke(this, closingArgs);
+            if (closingArgs.Cancel)
+            {
+                return;
+            }
+
             _isOpenRequested = false;
             if (_openState is null)
             {
