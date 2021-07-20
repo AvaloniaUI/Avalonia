@@ -60,7 +60,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (Property.IsDirect)
             {
                 RaiseAndSetIfChanged(ref _value, _target.GetValue(Property), nameof(Value));
-                RaiseAndSetIfChanged(ref _assignedType, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(AssignedType));
+                RaiseAndSetIfChanged(ref _assignedType, GetTypeName(_value?.GetType() ?? Property.PropertyType), nameof(AssignedType));
                 RaiseAndSetIfChanged(ref _priority, "Direct", nameof(Priority));
 
                 _group = "Properties";
@@ -70,7 +70,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 var val = _target.GetDiagnostic(Property);
 
                 RaiseAndSetIfChanged(ref _value, val?.Value, nameof(Value));
-                RaiseAndSetIfChanged(ref _assignedType, _value?.GetType().Name ?? Property.PropertyType.Name, nameof(AssignedType));
+                RaiseAndSetIfChanged(ref _assignedType, GetTypeName(_value?.GetType() ?? Property.PropertyType), nameof(AssignedType));
 
                 if (val != null)
                 {
