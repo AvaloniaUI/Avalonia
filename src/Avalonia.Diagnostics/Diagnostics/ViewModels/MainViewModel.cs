@@ -22,6 +22,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
+        private bool _showPropertyType;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -46,7 +47,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeMarginPadding;
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
         }
-        
+
         public bool ShouldVisualizeDirtyRects
         {
             get => _shouldVisualizeDirtyRects;
@@ -151,7 +152,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get { return _pointerOverElement; }
             private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
         }
-        
+
         private void UpdateConsoleContext(ConsoleContext context)
         {
             context.root = _root;
@@ -219,6 +220,17 @@ namespace Avalonia.Diagnostics.ViewModels
         public void SetOptions(DevToolsOptions options)
         {
             StartupScreenIndex = options.StartupScreenIndex;
+        }
+
+        public bool ShowDettailsPropertyType 
+        { 
+            get => _showPropertyType; 
+            private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
+        }
+
+        public void ToggleShowDettailsPropertyType(object paramter)
+        {
+            ShowDettailsPropertyType = !ShowDettailsPropertyType;
         }
     }
 }

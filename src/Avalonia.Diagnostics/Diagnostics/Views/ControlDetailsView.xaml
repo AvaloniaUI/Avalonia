@@ -34,7 +34,10 @@
           <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
           <DataGridTextColumn Header="Assinged Type" Binding="{Binding AssignedType}" IsReadOnly="True"/>
-          <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType}" IsReadOnly="True"/>
+          <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType}" 
+                              IsReadOnly="True"
+                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              />
           <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" />
         </DataGrid.Columns>
 
