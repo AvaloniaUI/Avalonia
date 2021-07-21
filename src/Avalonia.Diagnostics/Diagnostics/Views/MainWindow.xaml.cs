@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
@@ -173,6 +174,22 @@ namespace Avalonia.Diagnostics.Views
 
                     break;
                 }
+
+                case RawInputModifiers.Control | RawInputModifiers.Alt when e.Key == Key.F:
+                {
+                    vm.FreezePopups = !vm.FreezePopups;
+
+                    foreach (var popupRoot in GetPopupRoots(Root))
+                    {
+                        if (popupRoot.Parent is Popup popup)
+                        {
+                            popup.IsLightDismissEnabled = !vm.FreezePopups;
+                        }
+                    }
+
+                    break;
+                }
+
                 case RawInputModifiers.Alt when e.Key == Key.S || e.Key == Key.D:
                 {
                     vm.EnableSnapshotStyles(e.Key == Key.S);
