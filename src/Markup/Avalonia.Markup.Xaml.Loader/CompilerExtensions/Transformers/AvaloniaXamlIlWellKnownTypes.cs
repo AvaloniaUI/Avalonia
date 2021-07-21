@@ -80,7 +80,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ColumnDefinitions { get; }
         public IXamlType Classes { get; }
         public IXamlMethod ClassesBindMethod { get; }
-        public IXamlProperty StyledElementClassesProperty { get; set; }
+        public IXamlProperty StyledElementClassesProperty { get; }
+        public IXamlType IBrush { get; }
+        public IXamlType ImmutableSolidColorBrush { get; }
+        public IXamlConstructor ImmutableSolidColorBrushConstructorColor { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -178,6 +181,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 .FindMethod( "BindClass", IDisposable, false, IStyledElement,
                 cfg.WellKnownTypes.String,
                 IBinding, cfg.WellKnownTypes.Object);
+
+            IBrush = cfg.TypeSystem.GetType("Avalonia.Media.IBrush");
+            ImmutableSolidColorBrush = cfg.TypeSystem.GetType("Avalonia.Media.Immutable.ImmutableSolidColorBrush");
+            ImmutableSolidColorBrushConstructorColor = ImmutableSolidColorBrush.GetConstructor(new List<IXamlType> { UInt });
         }
     }
 

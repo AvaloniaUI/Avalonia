@@ -19,7 +19,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BitmapBlendNode"/> class that represents an
+        /// Initializes a new instance of the <see cref="BitmapBlendModeNode"/> class that represents an
         /// <see cref="BitmapBlendingMode"/> pop.
         /// </summary>
         public BitmapBlendModeNode()
@@ -40,7 +40,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Determines if this draw operation equals another.
         /// </summary>
-        /// <param name="opacity">The opacity of the other draw operation.</param>
+        /// <param name="blendingMode">the <see cref="BitmapBlendModeNode"/> how to compare</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent

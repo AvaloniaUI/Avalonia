@@ -15,7 +15,6 @@ namespace Avalonia.LinuxFramebuffer
         private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
 
-        private bool _renderQueued;
         public IInputRoot InputRoot { get; private set; }
 
         public FramebufferToplevelImpl(IOutputBackend outputBackend, IInputBackend inputBackend)
@@ -62,6 +61,7 @@ namespace Avalonia.LinuxFramebuffer
         }
 
         public Size ClientSize => ScaledSize;
+        public Size? FrameSize => null;
         public IMouseDevice MouseDevice => new MouseDevice();
         public IPopupImpl CreatePopup() => null;
 

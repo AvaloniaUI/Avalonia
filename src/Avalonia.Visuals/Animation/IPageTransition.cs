@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avalonia.Animation
@@ -19,9 +20,12 @@ namespace Avalonia.Animation
         /// <param name="forward">
         /// If the animation is bidirectional, controls the direction of the animation.
         /// </param>
+        /// <param name="cancellationToken">
+        /// Animation cancellation.
+        /// </param>
         /// <returns>
         /// A <see cref="Task"/> that tracks the progress of the animation.
         /// </returns>
-        Task Start(Visual from, Visual to, bool forward);
+        Task Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken);
     }
 }

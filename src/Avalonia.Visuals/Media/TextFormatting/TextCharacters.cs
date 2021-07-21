@@ -134,7 +134,7 @@ namespace Avalonia.Media.TextFormatting
             var isFallback = typeface != defaultTypeface;
 
             count = 0;
-            var script = Script.Common;
+            var script = Script.Unknown;
             var direction = BiDiClass.LeftToRight;
 
             var font = typeface.GlyphTypeface;
@@ -161,7 +161,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentScript != script)
                 {
-                    if (script == Script.Inherited || script == Script.Common)
+                    if (script is Script.Unknown)
                     {
                         script = currentScript;
                     }
@@ -174,13 +174,16 @@ namespace Avalonia.Media.TextFormatting
                     }
                 }
 
-                if (currentScript != Script.Common && currentScript != Script.Inherited)
+                //Only handle non whitespace here
+                if (!currentGrapheme.FirstCodepoint.IsWhiteSpace)
                 {
+                    //Stop at the first glyph that is present in the default typeface.
                     if (isFallback && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
                     {
                         break;
                     }
 
+                    //Stop at the first missing glyph
                     if (!font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
                     {
                         break;

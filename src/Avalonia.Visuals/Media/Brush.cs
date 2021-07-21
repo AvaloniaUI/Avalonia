@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
@@ -47,7 +48,7 @@ namespace Avalonia.Media
 
             if (s[0] == '#')
             {
-                return new SolidColorBrush(Color.Parse(s));
+                return new ImmutableSolidColorBrush(Color.Parse(s));
             }
 
             var brush = KnownColors.GetKnownBrush(s);

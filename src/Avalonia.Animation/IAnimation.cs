@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avalonia.Animation
@@ -16,6 +17,6 @@ namespace Avalonia.Animation
         /// <summary>
         /// Run the animation on the specified control.
         /// </summary>
-        Task RunAsync(Animatable control, IClock clock);
+        Task RunAsync(Animatable control, IClock clock, CancellationToken cancellationToken = default);
     }
 }
