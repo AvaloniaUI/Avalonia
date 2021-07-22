@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -18,6 +21,7 @@ namespace Avalonia.Diagnostics.Views
     internal class MainWindow : Window, IStyleHost
     {
         private readonly IDisposable _keySubscription;
+        private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
         private TopLevel? _root;
 
         public MainWindow()
@@ -27,6 +31,8 @@ namespace Avalonia.Diagnostics.Views
             _keySubscription = InputManager.Instance.Process
                 .OfType<RawKeyEventArgs>()
                 .Subscribe(RawKeyDown);
+
+            _frozenPopupStates = new Dictionary<Popup, IDisposable>();
 
             EventHandler? lh = default;
             lh = (s, e) =>
@@ -183,7 +189,25 @@ namespace Avalonia.Diagnostics.Views
                     {
                         if (popupRoot.Parent is Popup popup)
                         {
-                            popup.IsLightDismissEnabled = !vm.FreezePopups;
+                            if (vm.FreezePopups)
+                            {
+                                var lightDismissEnabledState = popup.SetValue(
+                                    Popup.IsLightDismissEnabledProperty,
+                                    !vm.FreezePopups,
+                                    BindingPriority.Animation);
+
+                                if (lightDismissEnabledState != null)
+                                {
+                                    _frozenPopupStates[popup] = lightDismissEnabledState;
+                                }
+                            }
+                            else
+                            {
+                                if (_frozenPopupStates.TryGetValue(popup, out var state))
+                                {
+                                    state.Dispose();
+                                }
+                            }
                         }
                     }
 
