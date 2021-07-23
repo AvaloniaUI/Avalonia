@@ -86,6 +86,13 @@ namespace Avalonia.Diagnostics.Views
             base.OnClosed(e);
             _keySubscription.Dispose();
 
+            foreach (var state in _frozenPopupStates)
+            {
+                state.Value.Dispose();
+            }
+
+            _frozenPopupStates.Clear();
+
             if (_root != null)
             {
                 _root.Closed -= RootClosed;
@@ -203,9 +210,11 @@ namespace Avalonia.Diagnostics.Views
                             }
                             else
                             {
-                                if (_frozenPopupStates.TryGetValue(popup, out var state))
+                                //TODO Use Dictionary.Remove(Key, out Value) in netstandard 2.1
+                                if (_frozenPopupStates.ContainsKey(popup))
                                 {
-                                    state.Dispose();
+                                    _frozenPopupStates[popup].Dispose();
+                                    _frozenPopupStates.Remove(popup);
                                 }
                             }
                         }
