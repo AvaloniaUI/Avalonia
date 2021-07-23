@@ -60,6 +60,16 @@ namespace Avalonia.Native
             }
         }
 
+        public void DisableCloseButton()
+        {
+            base.DisableCloseButton();
+        }
+
+        public void EnableCloseButton()
+        {
+            base.EnableCloseButton();
+        }
+
         public override void Show(bool activate)
         {
             var parent = _parent;

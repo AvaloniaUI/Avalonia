@@ -24,6 +24,14 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void DisableCloseButton()
+        {
+        }
+
+        public void EnableCloseButton()
+        {
+        }
+
         public void Hide()
         {
         }

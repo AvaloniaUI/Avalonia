@@ -126,6 +126,16 @@ namespace Avalonia.Controls
             PlatformImpl?.Activate();
         }
 
+        public void EnableCloseButton()
+        {
+            PlatformImpl?.EnableCloseButton();
+        }
+
+        public void DisableCloseButton()
+        {
+            PlatformImpl?.DisableCloseButton();
+        }
+
         /// <summary>
         /// Hides the popup.
         /// </summary>

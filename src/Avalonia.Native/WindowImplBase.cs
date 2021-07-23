@@ -419,6 +419,15 @@ namespace Avalonia.Native
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         public IScreenImpl Screen { get; private set; }
+        public virtual void DisableCloseButton()
+        {
+            _native.DisableCloseButton();
+        }
+
+        public virtual void EnableCloseButton()
+        {
+            _native.EnableCloseButton();
+        }
 
         // TODO
 

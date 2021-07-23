@@ -214,6 +214,15 @@ namespace Avalonia.Win32
         }
 
         public IScreenImpl Screen { get; }
+        public void DisableCloseButton()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void EnableCloseButton()
+        {
+            throw new NotImplementedException();
+        }
 
         public IPlatformHandle Handle { get; private set; }
 
@@ -570,6 +579,14 @@ namespace Avalonia.Win32
             _shown = false;
         }
 
+        public virtual void EnableShowButton()
+        {
+        }
+        
+        public virtual void DisableShowButton()
+        {
+        }
+        
         public virtual void Show(bool activate)
         {
             SetParent(_parent);

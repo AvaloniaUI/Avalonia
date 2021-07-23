@@ -1,7 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Win32.WinRT.Composition;
+using Avalonia.Native;
 
 namespace Sandbox
 {
@@ -16,6 +17,15 @@ namespace Sandbox
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+        private void DisableCloseButton_OnClick(object? sender, RoutedEventArgs e)
+        {
+            DisableCloseButton();
+        }
+
+        private void EnableCloseButton_OnClick(object? sender, RoutedEventArgs e)
+        {
+            EnableCloseButton();
         }
     }
 }

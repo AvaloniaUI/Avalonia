@@ -176,6 +176,16 @@ namespace Avalonia.Native
             _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
         }
 
+        // public void EnableCloseButton()
+        // {
+        //     _native.EnableCloseButton();
+        // }
+        //
+        // public void DisableCloseButton()
+        // {
+        //     _native.DisableCloseButton();
+        // }
+
         /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {

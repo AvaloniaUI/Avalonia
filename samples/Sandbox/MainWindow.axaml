@@ -1,4 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        Height="200"
+        Width="200"
         x:Class="Sandbox.MainWindow">
+    <Grid>
+        <StackPanel Orientation="Horizontal">
+        <Button Content="Disable Close" x:Name="DisableCloseButton" Width="80" Height="30" Margin="20" Click="DisableCloseButton_OnClick"/>
+        <Button Content="Enable Close" x:Name="EnableCloseButton" Width="80" Height="30" Margin="20" Click="EnableCloseButton_OnClick"/>
+        </StackPanel>
+    </Grid>
 </Window>

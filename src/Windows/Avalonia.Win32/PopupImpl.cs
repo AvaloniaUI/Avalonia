@@ -17,6 +17,14 @@ namespace Avalonia.Win32
         [ThreadStatic]
         private static IntPtr s_parentHandle;
 
+        public void DisableCloseButton()
+        {
+        }
+
+        public void EnableCloseButton()
+        {
+        }
+
         public override void Show(bool activate)
         {
             // Popups are always shown non-activated.

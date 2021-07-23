@@ -96,6 +96,9 @@ namespace Avalonia.Headless
 
         }
 
+        public void DisableCloseButton() { }
+        public void EnableCloseButton() { }
+
         public PixelPoint Position { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
         public void Activate()

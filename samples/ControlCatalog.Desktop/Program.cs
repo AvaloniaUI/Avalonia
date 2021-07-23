@@ -18,6 +18,10 @@ namespace ControlCatalog
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .LogToTrace()
+                .With(new AvaloniaNativePlatformOptions
+                { 
+                    AvaloniaNativeLibraryPath = "/Users/trd/github/Avalonia/Build/Products/Release/libAvalonia.Native.OSX.dylib", 
+                })
                 .UsePlatformDetect();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)

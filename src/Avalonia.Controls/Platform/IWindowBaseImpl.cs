@@ -63,5 +63,8 @@ namespace Avalonia.Platform
         /// Gets platform specific display information
         /// </summary>
         IScreenImpl Screen { get; }
+
+        void DisableCloseButton();
+        void EnableCloseButton();
     }
 }

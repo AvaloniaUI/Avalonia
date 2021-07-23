@@ -863,6 +863,20 @@ private:
         return S_OK;
     }
     
+    virtual HRESULT EnableCloseButton () override
+    {
+        NSButton *closeButton = [Window standardWindowButton:(NSWindowCloseButton)];
+        closeButton.enabled = true;
+        return S_OK;
+    }
+
+    virtual HRESULT DisableCloseButton () override
+    {
+        NSButton *closeButton = [Window standardWindowButton:(NSWindowCloseButton)];
+        closeButton.enabled = false;
+        return S_OK;
+    }
+    
     virtual HRESULT SetExtendClientArea (bool enable) override
     {
         _isClientAreaExtended = enable;
@@ -2264,6 +2278,16 @@ public:
     virtual bool ShouldTakeFocusOnShow() override
     {
         return false;
+    }
+    
+    virtual HRESULT EnableCloseButton() override
+    {
+        return S_OK;
+    }
+    
+    virtual HRESULT DisableCloseButton() override
+    {
+        return S_OK;
     }
 };
 
