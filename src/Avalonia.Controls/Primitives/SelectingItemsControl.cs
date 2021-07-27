@@ -99,6 +99,22 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), false);
 
         /// <summary>
+        /// Defines the <see cref="WrapSelection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WrapSelectionProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
+
+        /// <summary>
+        /// Gets or sets a value which indicates whether to wrap around when the first
+        /// or last item is reached.
+        /// </summary>
+        public bool WrapSelection
+        {
+            get { return GetValue(WrapSelectionProperty); }
+            set { SetValue(WrapSelectionProperty, value); }
+        }
+
+        /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
         /// notify the parent <see cref="SelectingItemsControl"/> that their selection state
         /// has changed.
