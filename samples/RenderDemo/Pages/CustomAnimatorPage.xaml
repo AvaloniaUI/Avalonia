@@ -1,0 +1,25 @@
+<UserControl 
+  xmlns="https://github.com/avaloniaui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+  xmlns:pages="clr-namespace:RenderDemo.Pages"
+  x:Class="RenderDemo.Pages.CustomAnimatorPage"
+  MaxWidth="600">
+  <Grid>
+    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
+      <TextBlock.Styles>
+        <Style Selector="TextBlock">
+          <Style.Animations>
+            <Animation Duration="0:0:1" IterationCount="Infinite">
+              <KeyFrame Cue="0%">
+                <Setter Property="Text" Value="" Animation.Animator="{x:Type pages:CustomStringAnimator}"/>
+              </KeyFrame>
+              <KeyFrame Cue="100%">
+                <Setter Property="Text" Value="0123456789" Animation.Animator="{x:Type pages:CustomStringAnimator}"/>
+              </KeyFrame>
+            </Animation>
+          </Style.Animations>
+        </Style>
+      </TextBlock.Styles>
+    </TextBlock>
+  </Grid>
+</UserControl>

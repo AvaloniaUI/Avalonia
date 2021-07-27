@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -19,6 +20,7 @@ namespace Avalonia.Controls
     /// The control class extends <see cref="InputElement"/> and adds the following features:
     ///
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
+    /// - <see cref="ContextRequestedEvent"/> and other context menu related members.
     /// </remarks>
     public class Control : InputElement, IControl, INamed, IVisualBrushInitialize, ISetterValue
     {
@@ -51,6 +53,13 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Provides event data for the <see cref="ContextRequested"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<ContextRequestedEventArgs> ContextRequestedEvent =
+            RoutedEvent.Register<Control, ContextRequestedEventArgs>(nameof(ContextRequested),
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
@@ -98,6 +107,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
+        }
+
+        /// <summary>
+        /// Occurs when the user has completed a context input gesture, such as a right-click.
+        /// </summary>
+        public event EventHandler<ContextRequestedEventArgs> ContextRequested
+        {
+            add => AddHandler(ContextRequestedEvent, value);
+            remove => RemoveHandler(ContextRequestedEvent, value);
         }
 
         public new IControl? Parent => (IControl?)base.Parent;
@@ -201,11 +219,55 @@ namespace Avalonia.Controls
         {
             base.OnLostFocus(e);
 
-            if (_focusAdorner != null)
+            if (_focusAdorner?.Parent != null)
             {
                 var adornerLayer = (IPanel)_focusAdorner.Parent;
                 adornerLayer.Children.Remove(_focusAdorner);
                 _focusAdorner = null;
+            }
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            if (e.Source == this
+                && !e.Handled
+                && e.InitialPressMouseButton == MouseButton.Right)
+            {
+                var args = new ContextRequestedEventArgs(e);
+                RaiseEvent(args);
+                e.Handled = args.Handled;
+            }
+        }
+
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+
+            if (e.Source == this
+                && !e.Handled)
+            {
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>().OpenContextMenu;
+                var matches = false;
+
+                for (var index = 0; index < keymap.Count; index++)
+                {
+                    var key = keymap[index];
+                    matches |= key.Matches(e);
+
+                    if (matches)
+                    {
+                        break;
+                    }
+                }
+
+                if (matches)
+                {
+                    var args = new ContextRequestedEventArgs();
+                    RaiseEvent(args);
+                    e.Handled = args.Handled;
+                }
             }
         }
     }

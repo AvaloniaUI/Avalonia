@@ -592,6 +592,14 @@ namespace Avalonia.Controls
                     owner.RemoveChild(this);
                 }
 
+                if (_children.Count > 0)
+                {
+                    foreach (var child in _children.ToArray())
+                    {
+                        child.child.Hide();
+                    }
+                }
+
                 Owner = null;
 
                 PlatformImpl?.Hide();
@@ -635,6 +643,22 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("Cannot re-show a closed window.");
             }
 
+            if (parent != null)
+            {
+                if (parent.PlatformImpl == null)
+                {
+                    throw new InvalidOperationException("Cannot show a window with a closed parent.");
+                }
+                else if (parent == this)
+                {
+                    throw new InvalidOperationException("A Window cannot be its own parent.");
+                }
+                else if (!parent.IsVisible)
+                {
+                    throw new InvalidOperationException("Cannot show window with non-visible parent.");
+                }
+            }
+
             if (IsVisible)
             {
                 return;
@@ -668,10 +692,11 @@ namespace Avalonia.Controls
                 
                 Owner = parent;
                 parent?.AddChild(this, false);
-
-                PlatformImpl?.Show(ShowActivated);
-                Renderer?.Start();
+                
                 SetWindowStartupLocation(Owner?.PlatformImpl);
+                
+                PlatformImpl?.Show(ShowActivated);
+                Renderer?.Start();                
             }
             OnOpened(EventArgs.Empty);
         }
@@ -707,10 +732,21 @@ namespace Avalonia.Controls
             {
                 throw new ArgumentNullException(nameof(owner));
             }
-
-            if (IsVisible)
+            else if (owner.PlatformImpl == null)
+            {
+                throw new InvalidOperationException("Cannot show a window with a closed owner.");
+            }
+            else if (owner == this)
+            {
+                throw new InvalidOperationException("A Window cannot be its own owner.");
+            }
+            else if (IsVisible)
             {
                 throw new InvalidOperationException("The window is already being shown.");
+            }
+            else if (!owner.IsVisible)
+            {
+                throw new InvalidOperationException("Cannot show window with non-visible parent.");
             }
 
             RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
@@ -739,6 +775,9 @@ namespace Avalonia.Controls
                 PlatformImpl?.SetParent(owner.PlatformImpl);
                 Owner = owner;
                 owner.AddChild(this, true);
+                
+                SetWindowStartupLocation(owner.PlatformImpl);
+                
                 PlatformImpl?.Show(ShowActivated);
 
                 Renderer?.Start();
@@ -755,8 +794,6 @@ namespace Avalonia.Controls
 
                 OnOpened(EventArgs.Empty);
             }
-
-            SetWindowStartupLocation(owner.PlatformImpl);
 
             return result.Task;
         }
