@@ -12,6 +12,12 @@ namespace Avalonia.Media
         public static readonly StyledProperty<Transform> TransformProperty =
             AvaloniaProperty.Register<DrawingGroup, Transform>(nameof(Transform));
 
+        public static readonly StyledProperty<Geometry> ClipGeometryProperty =
+            AvaloniaProperty.Register<DrawingGroup, Geometry>(nameof(ClipGeometry));
+
+        public static readonly StyledProperty<IBrush> OpacityMaskProperty =
+            AvaloniaProperty.Register<DrawingGroup, IBrush>(nameof(OpacityMask));
+
         public double Opacity
         {
             get => GetValue(OpacityProperty);
@@ -24,6 +30,18 @@ namespace Avalonia.Media
             set => SetValue(TransformProperty, value);
         }
 
+        public Geometry ClipGeometry
+        {
+            get => GetValue(ClipGeometryProperty);
+            set => SetValue(ClipGeometryProperty, value);
+        }
+
+        public IBrush OpacityMask
+        {
+            get => GetValue(OpacityMaskProperty);
+            set => SetValue(OpacityMaskProperty, value);
+        }
+
         [Content]
         public AvaloniaList<Drawing> Children { get; } = new AvaloniaList<Drawing>();
 
@@ -31,6 +49,8 @@ namespace Avalonia.Media
         {
             using (context.PushPreTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity))
+            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default(DrawingContext.PushedState))
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default(DrawingContext.PushedState))
             {
                 foreach (var drawing in Children)
                 {
