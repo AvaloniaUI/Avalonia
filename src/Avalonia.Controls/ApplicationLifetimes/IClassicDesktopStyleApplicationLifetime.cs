@@ -37,13 +37,20 @@ namespace Avalonia.Controls.ApplicationLifetimes
         IReadOnlyList<Window> Windows { get; }
 
         /// <summary>
-        /// Raised by the platform when a shutdown is requested.
+        /// Raised by the platform when an application shutdown is requested.
         /// </summary>
         /// <remarks>
-        /// Raised on on OSX via the Quit menu or right-clicking on the application icon and selecting Quit. This event
-        /// provides a first-chance to cancel application shutdown; if shutdown is not canceled at this point the application
+        /// Application Shutdown can be requested for various reasons like OS shutdown.
+        /// 
+        /// On Windows this will be called when an OS Session (logout or shutdown) terminates. Cancelling the eventargs will 
+        /// block OS shutdown.
+        /// 
+        /// On OSX this has the same behavior as on Windows and in addition:
+        /// This event is raised via the Quit menu or right-clicking on the application icon and selecting Quit. 
+        /// 
+        /// This event provides a first-chance to cancel application shutdown; if shutdown is not canceled at this point the application
         /// will try to close each non-owned open window, invoking the <see cref="Window.Closing"/> event on each and allowing
-        /// each window to cancel the shutdown.
+        /// each window to cancel the shutdown of the application. Windows cannot however prevent OS shutdown.
         /// </remarks>
         event EventHandler<CancelEventArgs> ShutdownRequested;
     }
