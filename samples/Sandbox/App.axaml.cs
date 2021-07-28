@@ -16,7 +16,14 @@ namespace Sandbox
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
                 desktopLifetime.MainWindow = new MainWindow();
+
+                desktopLifetime.ShutdownRequested += DesktopLifetime_ShutdownRequested;
             }
+        }
+
+        private void DesktopLifetime_ShutdownRequested(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
         }
     }
 }
