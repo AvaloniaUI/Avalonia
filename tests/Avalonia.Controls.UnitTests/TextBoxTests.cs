@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -556,6 +557,31 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(true);
             }
         }
+        
+        [Theory]
+        [InlineData(Key.Up)]
+        [InlineData(Key.Down)]
+        [InlineData(Key.Home)]
+        [InlineData(Key.End)]
+        public void Textbox_doesnt_crash_when_Receives_input_and_template_not_applied(Key key)
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    IsVisible = false
+                };
+
+                var root = new TestRoot { Child = target1 };
+
+                target1.Focus();
+                Assert.True(target1.IsFocused);
+                
+                RaiseKeyEvent(target1, key, KeyModifiers.None);
+            }
+        }
 
         [Fact]
         public void TextBox_GotFocus_And_LostFocus_Work_Properly()
@@ -763,6 +789,9 @@ namespace Avalonia.Controls.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new MockFontManagerImpl(),
+            textShaperImpl: new MockTextShaperImpl(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(

@@ -101,7 +101,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </UserControl.Styles>
 </UserControl>";
                 var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var brush = (SolidColorBrush)((Style)userControl.Styles[0]).Resources["brush"];
+                var brush = (ISolidColorBrush)((Style)userControl.Styles[0]).Resources["brush"];
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
