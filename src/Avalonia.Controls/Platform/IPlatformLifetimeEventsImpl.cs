@@ -12,6 +12,6 @@ namespace Avalonia.Platform
         /// <remarks>
         /// Raised on on OSX via the Quit menu or right-clicking on the application icon and selecting Quit.
         /// </remarks>
-        event EventHandler<ShutdownRequestedCancelEventArgs> ShutdownRequested;
+        event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
     }
 }

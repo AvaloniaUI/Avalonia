@@ -2,7 +2,7 @@
 
 namespace Avalonia.Controls.ApplicationLifetimes
 {
-    public class ShutdownRequestedCancelEventArgs : CancelEventArgs
+    public class ShutdownRequestedEventArgs : CancelEventArgs
     {
 
     }

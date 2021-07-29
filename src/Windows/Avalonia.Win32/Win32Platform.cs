@@ -206,7 +206,7 @@ namespace Avalonia.Win32
 
         public event Action<DispatcherPriority?> Signaled;
 
-        public event EventHandler<ShutdownRequestedCancelEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -220,7 +220,7 @@ namespace Avalonia.Win32
             {
                 if (ShutdownRequested != null)
                 {
-                    var e = new ShutdownRequestedCancelEventArgs();
+                    var e = new ShutdownRequestedEventArgs();
 
                     ShutdownRequested(this, e);
 

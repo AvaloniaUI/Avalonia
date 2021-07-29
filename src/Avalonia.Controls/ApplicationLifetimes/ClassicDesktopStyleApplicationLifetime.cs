@@ -48,7 +48,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         public event EventHandler<ControlledApplicationLifetimeStartupEventArgs> Startup;
 
         /// <inheritdoc/>
-        public event EventHandler<ShutdownRequestedCancelEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
 
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeExitEventArgs> Exit;
@@ -134,7 +134,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 _activeLifetime = null;
         }
         
-        private void OnShutdownRequested(object sender, ShutdownRequestedCancelEventArgs e)
+        private void OnShutdownRequested(object sender, ShutdownRequestedEventArgs e)
         {
             ShutdownRequested?.Invoke(this, e);
 
