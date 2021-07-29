@@ -6,18 +6,16 @@ using System.IO;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
-using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.Win32;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -208,7 +206,7 @@ namespace Avalonia.Win32
 
         public event Action<DispatcherPriority?> Signaled;
 
-        public event EventHandler<CancelEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedCancelEventArgs> ShutdownRequested;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -222,7 +220,7 @@ namespace Avalonia.Win32
             {
                 if (ShutdownRequested != null)
                 {
-                    var e = new CancelEventArgs();
+                    var e = new ShutdownRequestedCancelEventArgs();
 
                     ShutdownRequested(this, e);
 

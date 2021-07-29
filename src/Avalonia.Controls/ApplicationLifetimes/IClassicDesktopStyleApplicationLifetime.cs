@@ -52,6 +52,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// will try to close each non-owned open window, invoking the <see cref="Window.Closing"/> event on each and allowing
         /// each window to cancel the shutdown of the application. Windows cannot however prevent OS shutdown.
         /// </remarks>
-        event EventHandler<CancelEventArgs> ShutdownRequested;
+        event EventHandler<ShutdownRequestedCancelEventArgs> ShutdownRequested;
     }
 }

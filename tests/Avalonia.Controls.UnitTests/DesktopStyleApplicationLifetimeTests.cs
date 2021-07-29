@@ -232,7 +232,7 @@ namespace Avalonia.Controls.UnitTests
                     ++raised;
                 };
 
-                lifetimeEvents.Raise(x => x.ShutdownRequested += null, new CancelEventArgs());
+                lifetimeEvents.Raise(x => x.ShutdownRequested += null, new ShutdownRequestedCancelEventArgs());
 
                 Assert.Equal(1, raised);
                 Assert.Equal(new[] { window }, lifetime.Windows);
