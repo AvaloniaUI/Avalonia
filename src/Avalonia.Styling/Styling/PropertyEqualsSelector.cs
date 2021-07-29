@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Text;
 using Avalonia.Styling.Activators;
 
@@ -75,11 +77,37 @@ namespace Avalonia.Styling
             }
             else
             {
-                var result = (control.GetValue(_property) ?? string.Empty).Equals(_value);
-                return result ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+                return Compare(_property.PropertyType, control.GetValue(_property), _value)
+                    ? SelectorMatch.AlwaysThisInstance
+                    : SelectorMatch.NeverThisInstance;
             }
+            
         }
 
         protected override Selector? MovePrevious() => _previous;
+
+        internal static bool Compare(Type propertyType, object propertyValue, object? value)
+        {
+            if (propertyType == typeof(object) &&
+                propertyValue?.GetType() is Type inferredType)
+            {
+                propertyType = inferredType;
+            }
+
+            var valueType = value?.GetType();
+
+            if (valueType is null || propertyType.IsAssignableFrom(valueType))
+            {
+                return Equals(propertyValue, value);
+            }
+
+            var converter = TypeDescriptor.GetConverter(propertyType);
+            if (converter?.CanConvertFrom(valueType) == true)
+            {
+                return Equals(propertyValue, converter.ConvertFrom(null, CultureInfo.InvariantCulture, value));
+            }
+
+            return false;
+        }
     }
 }
