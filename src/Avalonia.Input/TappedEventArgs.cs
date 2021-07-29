@@ -6,7 +6,7 @@ namespace Avalonia.Input
     public class TappedEventArgs : RoutedEventArgs
     {
         private readonly PointerEventArgs lastPointerEventArgs;
-        
+
         public TappedEventArgs(RoutedEvent routedEvent, PointerEventArgs lastPointerEventArgs)
             : base(routedEvent)
         {
