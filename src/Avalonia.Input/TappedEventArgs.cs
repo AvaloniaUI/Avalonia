@@ -7,11 +7,9 @@ namespace Avalonia.Input
     {
         private readonly PointerEventArgs lastPointerEventArgs;
         public IPointer Pointer => lastPointerEventArgs.Pointer;
-        public InputModifiers InputModifiers => lastPointerEventArgs.InputModifiers;
         public KeyModifiers KeyModifiers => lastPointerEventArgs.KeyModifiers;
         public ulong Timestamp => lastPointerEventArgs.Timestamp;
-        public IPointerDevice Device => lastPointerEventArgs.Device;
-        
+
         public TappedEventArgs(RoutedEvent routedEvent, PointerEventArgs lastPointerEventArgs)
             : base(routedEvent)
         {
