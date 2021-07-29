@@ -124,11 +124,96 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Cancel_Light_Dismiss_Closing_Keeps_Flyout_Open()
+        {
+            using (Application())
+            {
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
+                popupImpl.Setup(x => x.Hide()).Verifiable();
+
+                var window = PreparedWindow();
+                window.Width = 100;
+                window.Height = 100;
+
+                var button = new Button
+                {
+                    Height = 10,
+                    Width = 10,
+                    HorizontalAlignment = Layout.HorizontalAlignment.Left,
+                    VerticalAlignment = Layout.VerticalAlignment.Top
+                };
+                window.Content = button;
+
+                window.ApplyTemplate();
+                window.Show();
+
+                var tracker = 0;
+
+                var c = new ContextMenu();
+                c.ContextMenuClosing += (s, e) =>
+                {
+                    tracker++;
+                    e.Cancel = true;
+                };
+                button.ContextMenu = c;
+                c.Open(button);
+
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                _mouse.Down(overlay, MouseButton.Left, new Point(90, 90));
+                _mouse.Up(button, MouseButton.Left, new Point(90, 90));
+
+                Assert.Equal(1, tracker);
+                Assert.True(c.IsOpen);
+
+                popupImpl.Verify(x => x.Hide(), Times.Never);
+                popupImpl.Verify(x => x.Show(true, false), Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void Light_Dismiss_Closes_Flyout()
+        {
+            using (Application())
+            {
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
+                popupImpl.Setup(x => x.Hide()).Verifiable();
+
+                var window = PreparedWindow();
+                window.Width = 100;
+                window.Height = 100;
+
+                var button = new Button
+                {
+                    Height = 10,
+                    Width = 10,
+                    HorizontalAlignment = Layout.HorizontalAlignment.Left,
+                    VerticalAlignment = Layout.VerticalAlignment.Top
+                };
+                window.Content = button;
+
+                window.ApplyTemplate();
+                window.Show();
+
+                var c = new ContextMenu();
+                c.PlacementMode = PlacementMode.Bottom;
+                c.Open(button);
+
+                var overlay = LightDismissOverlayLayer.GetLightDismissOverlayLayer(window);
+                _mouse.Down(overlay, MouseButton.Left, new Point(90, 90));
+                _mouse.Up(button, MouseButton.Left, new Point(90, 90));
+
+                Assert.False(c.IsOpen);
+                popupImpl.Verify(x => x.Hide(), Times.Exactly(1));
+                popupImpl.Verify(x => x.Show(true, false), Times.Exactly(1));
+            }
+        }
+
+        [Fact]
         public void Clicking_On_Control_Toggles_ContextMenu()
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show(true)).Verifiable();
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
                 popupImpl.Setup(x => x.Hide()).Verifiable();
 
                 var sut = new ContextMenu();
@@ -148,7 +233,7 @@ namespace Avalonia.Controls.UnitTests
                 _mouse.Click(target);
 
                 Assert.False(sut.IsOpen);
-                popupImpl.Verify(x => x.Show(true), Times.Once);
+                popupImpl.Verify(x => x.Show(true, false), Times.Once);
                 popupImpl.Verify(x => x.Hide(), Times.Once);
             }
         }
@@ -158,7 +243,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show(true)).Verifiable();
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
                 popupImpl.Setup(x => x.Hide()).Verifiable();
 
                 var sut = new ContextMenu();
@@ -179,7 +264,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(sut.IsOpen);
                 popupImpl.Verify(x => x.Hide(), Times.Once);
-                popupImpl.Verify(x => x.Show(true), Times.Exactly(2));
+                popupImpl.Verify(x => x.Show(true, false), Times.Exactly(2));
             }
         }
         
@@ -226,7 +311,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show(true)).Verifiable();
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
 
                 bool eventCalled = false;
                 var sut = new ContextMenu();
@@ -242,7 +327,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(eventCalled);
                 Assert.False(sut.IsOpen);
-                popupImpl.Verify(x => x.Show(true), Times.Never);
+                popupImpl.Verify(x => x.Show(true, false), Times.Never);
             }
         }
 
@@ -346,7 +431,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show(true)).Verifiable();
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
                 popupImpl.Setup(x => x.Hide()).Verifiable();
 
                 bool eventCalled = false;
@@ -370,7 +455,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(eventCalled);
                 Assert.True(sut.IsOpen);
 
-                popupImpl.Verify(x => x.Show(true), Times.Once());
+                popupImpl.Verify(x => x.Show(true, false), Times.Once());
                 popupImpl.Verify(x => x.Hide(), Times.Never);
             }
         }
