@@ -6,18 +6,16 @@ using System.IO;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
-using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.Win32;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -65,7 +63,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -122,7 +120,8 @@ namespace Avalonia.Win32
                 })
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
-                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
+                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
 
             Win32GlManager.Initialize();
 
@@ -207,6 +206,8 @@ namespace Avalonia.Win32
 
         public event Action<DispatcherPriority?> Signaled;
 
+        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -214,6 +215,22 @@ namespace Avalonia.Win32
             {
                 Signaled?.Invoke(null);
             }
+
+            if(msg == (uint)WindowsMessage.WM_QUERYENDSESSION)
+            {
+                if (ShutdownRequested != null)
+                {
+                    var e = new ShutdownRequestedEventArgs();
+
+                    ShutdownRequested(this, e);
+
+                    if(e.Cancel)
+                    {
+                        return IntPtr.Zero;
+                    }
+                }
+            }
+
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
