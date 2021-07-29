@@ -230,7 +230,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show(true)).Verifiable();
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
                 popupImpl.Setup(x => x.Hide()).Verifiable();
 
                 var window = PreparedWindow();
@@ -268,7 +268,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(c.IsOpen);
 
                 popupImpl.Verify(x => x.Hide(), Times.Never);
-                popupImpl.Verify(x => x.Show(true), Times.Exactly(1));
+                popupImpl.Verify(x => x.Show(true, false), Times.Exactly(1));
             }
         }
 
@@ -277,7 +277,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (Application())
             {
-                popupImpl.Setup(x => x.Show(true)).Verifiable();
+                popupImpl.Setup(x => x.Show(true, false)).Verifiable();
                 popupImpl.Setup(x => x.Hide()).Verifiable();
 
                 var window = PreparedWindow();
@@ -306,7 +306,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.False(c.IsOpen);
                 popupImpl.Verify(x => x.Hide(), Times.Exactly(1));
-                popupImpl.Verify(x => x.Show(true), Times.Exactly(1));
+                popupImpl.Verify(x => x.Show(true, false), Times.Exactly(1));
             }
         }
 
