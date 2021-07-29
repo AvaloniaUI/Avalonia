@@ -695,7 +695,7 @@ namespace Avalonia.Controls
                 
                 SetWindowStartupLocation(Owner?.PlatformImpl);
                 
-                PlatformImpl?.Show(ShowActivated);
+                PlatformImpl?.Show(ShowActivated, false);
                 Renderer?.Start();                
             }
             OnOpened(EventArgs.Empty);
@@ -778,7 +778,7 @@ namespace Avalonia.Controls
                 
                 SetWindowStartupLocation(owner.PlatformImpl);
                 
-                PlatformImpl?.Show(ShowActivated);
+                PlatformImpl?.Show(ShowActivated, true);
 
                 Renderer?.Start();
 
