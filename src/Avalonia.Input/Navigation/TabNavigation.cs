@@ -152,6 +152,9 @@ namespace Avalonia.Input.Navigation
             // Look for element with the same TabIndex before the current element
             while ((nextTabElement = GetPrevTabInGroup(nextTabElement, container, tabbingType)) != null)
             {
+                if (nextTabElement == container && tabbingType == KeyboardNavigationMode.Local)
+                    break;
+
                 // At this point nextTabElement is TabStop or TabGroup
                 // In case it is a TabStop only return the element
                 if (IsTabStop(nextTabElement) && !IsGroup(nextTabElement))
