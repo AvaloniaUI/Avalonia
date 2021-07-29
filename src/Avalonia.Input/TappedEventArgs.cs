@@ -6,16 +6,17 @@ namespace Avalonia.Input
     public class TappedEventArgs : RoutedEventArgs
     {
         private readonly PointerEventArgs lastPointerEventArgs;
-        public IPointer Pointer => lastPointerEventArgs.Pointer;
-        public KeyModifiers KeyModifiers => lastPointerEventArgs.KeyModifiers;
-        public ulong Timestamp => lastPointerEventArgs.Timestamp;
-
+        
         public TappedEventArgs(RoutedEvent routedEvent, PointerEventArgs lastPointerEventArgs)
             : base(routedEvent)
         {
             this.lastPointerEventArgs = lastPointerEventArgs;
         }
 
+        public IPointer Pointer => lastPointerEventArgs.Pointer;
+        public KeyModifiers KeyModifiers => lastPointerEventArgs.KeyModifiers;
+        public ulong Timestamp => lastPointerEventArgs.Timestamp;
+        
         public Point GetPosition(IVisual? relativeTo) => lastPointerEventArgs.GetPosition(relativeTo);
     }
 }
