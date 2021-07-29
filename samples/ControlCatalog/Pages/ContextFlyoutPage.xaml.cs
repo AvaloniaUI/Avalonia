@@ -1,26 +1,43 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using ControlCatalog.ViewModels;
+using Avalonia.Interactivity;
 using System;
 using System.ComponentModel;
 
-using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using ControlCatalog.ViewModels;
-
 namespace ControlCatalog.Pages
 {
-    public class ContextMenuPage : UserControl
+    public class ContextFlyoutPage : UserControl
     {
-        public ContextMenuPage()
+        private TextBox _textBox;
+
+        public ContextFlyoutPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+
             DataContext = new ContextPageViewModel();
+
+            _textBox = this.FindControl<TextBox>("TextBox");
+
+            var cutButton = this.FindControl<Button>("CutButton");
+            cutButton.Click += CloseFlyout;
+
+            var copyButton = this.FindControl<Button>("CopyButton");
+            copyButton.Click += CloseFlyout;
+
+            var pasteButton = this.FindControl<Button>("PasteButton");
+            pasteButton.Click += CloseFlyout;
+
+            var clearButton = this.FindControl<Button>("ClearButton");
+            clearButton.Click += CloseFlyout;
 
             var customContextRequestedBorder = this.FindControl<Border>("CustomContextRequestedBorder");
             customContextRequestedBorder.AddHandler(ContextRequestedEvent, CustomContextRequested, RoutingStrategies.Tunnel);
 
             var cancellableContextBorder = this.FindControl<Border>("CancellableContextBorder");
-            cancellableContextBorder.ContextMenu!.ContextMenuClosing += ContextFlyoutPage_Closing;
-            cancellableContextBorder.ContextMenu!.ContextMenuOpening += ContextFlyoutPage_Opening;
+            cancellableContextBorder.ContextFlyout!.Closing += ContextFlyoutPage_Closing;
+            cancellableContextBorder.ContextFlyout!.Opening += ContextFlyoutPage_Opening;
         }
 
         private ContextPageViewModel _model;
@@ -28,7 +45,7 @@ namespace ControlCatalog.Pages
         {
             if (_model != null)
                 _model.View = null;
-            _model  = DataContext as ContextPageViewModel;
+            _model = DataContext as ContextPageViewModel;
             if (_model != null)
                 _model.View = this;
 
@@ -48,6 +65,11 @@ namespace ControlCatalog.Pages
                 var cancelCloseCheckBox = this.FindControl<CheckBox>("CancelOpenCheckBox");
                 cancelArgs.Cancel = cancelCloseCheckBox.IsChecked ?? false;
             }
+        }
+
+        private void CloseFlyout(object sender, RoutedEventArgs e)
+        {
+            _textBox.ContextFlyout.Hide();
         }
 
         public void CustomContextRequested(object sender, ContextRequestedEventArgs e)
