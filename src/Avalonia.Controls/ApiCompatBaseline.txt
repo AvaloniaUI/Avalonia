@@ -33,6 +33,9 @@ MembersMustExist : Member 'protected void Avalonia.Controls.TopLevel.HandleResiz
 MembersMustExist : Member 'public Avalonia.AvaloniaProperty<Avalonia.Media.Stretch> Avalonia.AvaloniaProperty<Avalonia.Media.Stretch> Avalonia.Controls.Viewbox.StretchProperty' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'protected void Avalonia.Controls.Window.HandleResized(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'protected void Avalonia.Controls.WindowBase.HandleResized(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.EventHandler<System.ComponentModel.CancelEventArgs> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.ShutdownRequested' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.add_ShutdownRequested(System.EventHandler<System.ComponentModel.CancelEventArgs>)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.remove_ShutdownRequested(System.EventHandler<System.ComponentModel.CancelEventArgs>)' is present in the implementation but not in the contract.
 MembersMustExist : Member 'public System.Action<Avalonia.Size> Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.Resized.get()' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.Resized.set(System.Action<Avalonia.Size>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.SetCursor(Avalonia.Platform.IPlatformHandle)' does not exist in the implementation but it does exist in the contract.
@@ -52,4 +55,4 @@ MembersMustExist : Member 'public void Avalonia.Platform.ITopLevelImpl.SetCursor
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
-Total Issues: 53
+Total Issues: 56

@@ -742,4 +742,5 @@ interface IAvnNativeControlHostTopLevelAttachment : IUnknown
 interface IAvnApplicationEvents : IUnknown
 {
      void FilesOpened (IAvnStringArray* urls);
+     bool TryShutdown();
 }

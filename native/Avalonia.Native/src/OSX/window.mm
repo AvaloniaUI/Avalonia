@@ -52,6 +52,7 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
+        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -124,7 +125,6 @@ public:
             SetPosition(lastPositionSet);
             UpdateStyle();
             
-            [Window setContentView: StandardContainer];
             [Window setTitle:_lastTitle];
             
             if(ShouldTakeFocusOnShow() && activate)
@@ -2044,18 +2044,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 +(void)closeAll
 {
-    NSArray<NSWindow*>* windows = [NSArray arrayWithArray:[NSApp windows]];
-    auto numWindows = [windows count];
-    
-    for(int i = 0; i < numWindows; i++)
-    {
-        auto window = (AvnWindow*)[windows objectAtIndex:i];
-        
-        if([window parentWindow] == nullptr) // Avalonia will handle the child windows.
-        {
-            [window performClose:nil];
-        }
-    }
+    [[NSApplication sharedApplication] terminate:self];
 }
 
 - (void)performClose:(id)sender
