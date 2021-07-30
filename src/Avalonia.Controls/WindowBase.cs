@@ -159,7 +159,7 @@ namespace Avalonia.Controls
                     LayoutManager.ExecuteInitialLayoutPass();
                     _hasExecutedInitialLayoutPass = true;
                 }
-                PlatformImpl?.Show(true);
+                PlatformImpl?.Show(true, false);
                 Renderer?.Start();
                 OnOpened(EventArgs.Empty);
             }

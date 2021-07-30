@@ -587,7 +587,7 @@ namespace Avalonia.Win32
             _shown = false;
         }
 
-        public virtual void Show(bool activate)
+        public virtual void Show(bool activate, bool isDialog)
         {
             SetParent(_parent);
             ShowWindow(_showWindowState, activate);
@@ -1137,7 +1137,7 @@ namespace Avalonia.Win32
                         SetParent(null);
 
                         if (shown)
-                            Show(activated);
+                            Show(activated, false);
                     }
                 }
                 else

@@ -78,7 +78,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void Show(bool activate)
+        public void Show(bool activate, bool isDialog)
         {
         }
 

@@ -76,7 +76,7 @@ namespace Avalonia.Headless
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; }
 
-        public void Show(bool activate)
+        public void Show(bool activate, bool isDialog)
         {
             if (activate)
                 Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
@@ -146,11 +146,6 @@ namespace Avalonia.Headless
         public void SetTitle(string title)
         {
 
-        }
-
-        public void ShowDialog(IWindowImpl parent)
-        {
-            Show(true);
         }
 
         public void SetSystemDecorations(bool enabled)
