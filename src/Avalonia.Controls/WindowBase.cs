@@ -201,6 +201,9 @@ namespace Avalonia.Controls
             }
         }
 
+        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
+        protected override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
+
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>

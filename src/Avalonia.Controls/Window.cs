@@ -950,7 +950,7 @@ namespace Avalonia.Controls
         }
 
         [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
-        protected void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
+        protected sealed override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
 
         /// <inheritdoc/>
         protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
