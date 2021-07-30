@@ -949,6 +949,9 @@ namespace Avalonia.Controls
             Owner = null;
         }
 
+        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
+        protected void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
+
         /// <inheritdoc/>
         protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
