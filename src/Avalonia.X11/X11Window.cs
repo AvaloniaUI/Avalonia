@@ -312,7 +312,7 @@ namespace Avalonia.X11
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         //TODO
         public Action<double> ScalingChanged { get; set; }
         public Action Deactivated { get; set; }
@@ -486,7 +486,7 @@ namespace Avalonia.X11
                         UpdateImePosition();
 
                         if (changedSize && !updatedSizeViaScaling && !_popup)
-                            Resized?.Invoke(ClientSize);
+                            Resized?.Invoke(ClientSize, PlatformResizeReason.Unspecified);
 
                         Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
                     }, DispatcherPriority.Layout);
@@ -541,7 +541,7 @@ namespace Avalonia.X11
                     UpdateImePosition();
                     SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
                     if(!skipResize)
-                        Resize(oldScaledSize, true);
+                        Resize(oldScaledSize, true, PlatformResizeReason.DpiChange);
                     return true;
                 }
 
@@ -588,6 +588,13 @@ namespace Avalonia.X11
 
         private void OnPropertyChange(IntPtr atom, bool hasValue)
         {
+            if (atom == _x11.Atoms._NET_FRAME_EXTENTS)
+            {
+                // Occurs once the window has been mapped, which is the earliest the extents
+                // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
+                Resized.Invoke(ClientSize, PlatformResizeReason.Unspecified);
+            }
+
             if (atom == _x11.Atoms._NET_WM_STATE)
             {
                 WindowState state = WindowState.Normal;
@@ -831,19 +838,19 @@ namespace Avalonia.X11
         }
 
 
-        public void Resize(Size clientSize) => Resize(clientSize, false);
+        public void Resize(Size clientSize, PlatformResizeReason reason) => Resize(clientSize, false, reason);
         public void Move(PixelPoint point) => Position = point;
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
             _scalingOverride = scaling;
             UpdateScaling(true);
-            Resize(size, true);
+            Resize(size, true, PlatformResizeReason.Layout);
         }
 
         PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
         
-        void Resize(Size clientSize, bool force)
+        void Resize(Size clientSize, bool force, PlatformResizeReason reason)
         {
             if (!force && clientSize == ClientSize)
                 return;
@@ -860,7 +867,7 @@ namespace Avalonia.X11
             if (force || !_wasMappedAtLeastOnce || (_popup && needImmediatePopupResize))
             {
                 _realSize = pixelSize;
-                Resized?.Invoke(ClientSize);
+                Resized?.Invoke(ClientSize, reason);
             }
         }
         

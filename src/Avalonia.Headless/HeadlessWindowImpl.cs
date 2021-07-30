@@ -46,7 +46,7 @@ namespace Avalonia.Headless
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root)
@@ -107,7 +107,7 @@ namespace Avalonia.Headless
         public Action Activated { get; set; }
         public IPlatformHandle Handle { get; } = new PlatformHandle(IntPtr.Zero, "STUB");
         public Size MaxClientSize { get; } = new Size(1920, 1280);
-        public void Resize(Size clientSize)
+        public void Resize(Size clientSize, PlatformResizeReason reason)
         {
             // Emulate X11 behavior here
             if (IsPopup)
@@ -125,7 +125,7 @@ namespace Avalonia.Headless
             if (ClientSize != clientSize)
             {
                 ClientSize = clientSize;
-                Resized?.Invoke(clientSize);
+                Resized?.Invoke(clientSize, PlatformResizeReason.Unspecified);
             }
         }
 
