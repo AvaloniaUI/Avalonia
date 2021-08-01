@@ -780,15 +780,15 @@ namespace Avalonia.Skia
 
             var paintTransform = default(SKMatrix);
 
-            if (tileBrush.Transform is not null)
-            {
-                paintTransform = paintTransform.PreConcat(tileBrush.Transform.Value.ToSKMatrix());
-            }
-
             SKMatrix.Concat(
                 ref paintTransform,
                 tileTransform,
                 SKMatrix.CreateScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
+
+            if (tileBrush.Transform is not null)
+            {
+                paintTransform = paintTransform.PreConcat(tileBrush.Transform.Value.ToSKMatrix());
+            }
 
             using (var shader = image.ToShader(tileX, tileY, paintTransform))
             {
