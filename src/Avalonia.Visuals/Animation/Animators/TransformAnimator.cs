@@ -12,7 +12,7 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class TransformAnimator : Animator<double>
     {
-        DoubleAnimator _doubleAnimator;
+        private DoubleAnimator _doubleAnimator;
 
         /// <inheritdoc/>
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> obsMatch, Action onComplete)
