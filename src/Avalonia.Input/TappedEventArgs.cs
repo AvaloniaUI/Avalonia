@@ -13,6 +13,10 @@ namespace Avalonia.Input
             this.lastPointerEventArgs = lastPointerEventArgs;
         }
 
+        public IPointer Pointer => lastPointerEventArgs.Pointer;
+        public KeyModifiers KeyModifiers => lastPointerEventArgs.KeyModifiers;
+        public ulong Timestamp => lastPointerEventArgs.Timestamp;
+        
         public Point GetPosition(IVisual? relativeTo) => lastPointerEventArgs.GetPosition(relativeTo);
     }
 }
