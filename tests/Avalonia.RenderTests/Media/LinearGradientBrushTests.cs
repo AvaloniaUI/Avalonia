@@ -72,5 +72,41 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public async Task LinearGradientBrush_DrawingContext()
+        {
+            var brush = new LinearGradientBrush
+            {
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
+                GradientStops =
+                        {
+                            new GradientStop { Color = Colors.Red, Offset = 0 },
+                            new GradientStop { Color = Colors.Blue, Offset = 1 }
+                        }
+            };
+
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new DrawnControl(c =>
+                {
+                    c.DrawRectangle(brush, null, new Rect(0, 0, 100, 100));
+                    c.DrawRectangle(brush, null, new Rect(100, 100, 100, 100));
+                }),
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        private class DrawnControl : Control
+        {
+            private readonly Action<DrawingContext> _render;
+            public DrawnControl(Action<DrawingContext> render) => _render = render;
+            public override void Render(DrawingContext context) => _render(context);
+        }
     }
 }

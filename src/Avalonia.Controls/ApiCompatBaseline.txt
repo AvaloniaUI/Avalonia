@@ -4,10 +4,55 @@ InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalon
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.IMenuItem.StaysOpenOnClick.set(System.Boolean)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.INativeMenuExporterEventsImplBridge.RaiseClosed()' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.INativeMenuExporterEventsImplBridge.RaiseOpening()' is present in the implementation but not in the contract.
+MembersMustExist : Member 'public Avalonia.DirectProperty<Avalonia.Controls.NumericUpDown, System.Double> Avalonia.DirectProperty<Avalonia.Controls.NumericUpDown, System.Double> Avalonia.Controls.NumericUpDown.ValueProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<System.Double> Avalonia.StyledProperty<System.Double> Avalonia.Controls.NumericUpDown.IncrementProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<System.Double> Avalonia.StyledProperty<System.Double> Avalonia.Controls.NumericUpDown.MaximumProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<System.Double> Avalonia.StyledProperty<System.Double> Avalonia.Controls.NumericUpDown.MinimumProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDown.Increment.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.NumericUpDown.Increment.set(System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDown.Maximum.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.NumericUpDown.Maximum.set(System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDown.Minimum.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.NumericUpDown.Minimum.set(System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected System.Double Avalonia.Controls.NumericUpDown.OnCoerceIncrement(System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected System.Double Avalonia.Controls.NumericUpDown.OnCoerceMaximum(System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected System.Double Avalonia.Controls.NumericUpDown.OnCoerceMinimum(System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected System.Double Avalonia.Controls.NumericUpDown.OnCoerceValue(System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Controls.NumericUpDown.OnIncrementChanged(System.Double, System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Controls.NumericUpDown.OnMaximumChanged(System.Double, System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Controls.NumericUpDown.OnMinimumChanged(System.Double, System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Controls.NumericUpDown.OnValueChanged(System.Double, System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Controls.NumericUpDown.RaiseValueChangedEvent(System.Double, System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDown.Value.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.NumericUpDown.Value.set(System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.NumericUpDownValueChangedEventArgs..ctor(Avalonia.Interactivity.RoutedEvent, System.Double, System.Double)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDownValueChangedEventArgs.NewValue.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Double Avalonia.Controls.NumericUpDownValueChangedEventArgs.OldValue.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.StyledProperty<System.Boolean> Avalonia.StyledProperty<System.Boolean> Avalonia.Controls.ScrollViewer.AllowAutoHideProperty' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public Avalonia.AvaloniaProperty<Avalonia.Media.Stretch> Avalonia.AvaloniaProperty<Avalonia.Media.Stretch> Avalonia.Controls.Viewbox.StretchProperty' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.EventHandler<Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs> Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.ShutdownRequested' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.add_ShutdownRequested(System.EventHandler<Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs>)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime.remove_ShutdownRequested(System.EventHandler<Avalonia.Controls.ApplicationLifetimes.ShutdownRequestedEventArgs>)' is present in the implementation but not in the contract.
+MembersMustExist : Member 'public System.Action<Avalonia.Size> Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.Resized.get()' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.Resized.set(System.Action<Avalonia.Size>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.SetCursor(Avalonia.Platform.IPlatformHandle)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.AvaloniaProperty Avalonia.AvaloniaProperty Avalonia.Controls.Notifications.NotificationCard.CloseOnClickProperty' does not exist in the implementation but it does exist in the contract.
 EnumValuesMustMatch : Enum value 'Avalonia.Platform.ExtendClientAreaChromeHints Avalonia.Platform.ExtendClientAreaChromeHints.Default' is (System.Int32)2 in the implementation but (System.Int32)1 in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Nullable<Avalonia.Size> Avalonia.Platform.ITopLevelImpl.FrameSize' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Nullable<Avalonia.Size> Avalonia.Platform.ITopLevelImpl.FrameSize.get()' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Action<Avalonia.Size, Avalonia.Platform.PlatformResizeReason> Avalonia.Platform.ITopLevelImpl.Resized.get()' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Action<Avalonia.Size> Avalonia.Platform.ITopLevelImpl.Resized.get()' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public System.Action<Avalonia.Size> Avalonia.Platform.ITopLevelImpl.Resized.get()' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.ITopLevelImpl.Resized.set(System.Action<Avalonia.Size, Avalonia.Platform.PlatformResizeReason>)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.ITopLevelImpl.Resized.set(System.Action<Avalonia.Size>)' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public void Avalonia.Platform.ITopLevelImpl.Resized.set(System.Action<Avalonia.Size>)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.ITopLevelImpl.SetCursor(Avalonia.Platform.ICursorImpl)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.ITopLevelImpl.SetCursor(Avalonia.Platform.IPlatformHandle)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public void Avalonia.Platform.ITopLevelImpl.SetCursor(Avalonia.Platform.IPlatformHandle)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 11
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean)' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean, System.Boolean)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
+Total Issues: 56

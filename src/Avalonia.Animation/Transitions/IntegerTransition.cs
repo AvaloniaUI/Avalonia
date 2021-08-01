@@ -1,19 +1,11 @@
-using System;
-using System.Reactive.Linq;
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="int"/> types.
     /// </summary>  
-    public class IntegerTransition : Transition<int>
+    public class IntegerTransition : AnimatorDrivenTransition<int, Int32Animator>
     {
-        /// <inheritdocs/>
-        public override IObservable<int> DoTransition(IObservable<double> progress, int oldValue, int newValue)
-        {
-            var delta = newValue - oldValue;
-            return progress
-                .Select(p => (int)(Easing.Ease(p) * delta + oldValue));
-        }
     }
 }
