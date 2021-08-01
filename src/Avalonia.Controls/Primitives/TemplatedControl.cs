@@ -354,11 +354,14 @@ namespace Avalonia.Controls.Primitives
         {
             control.SetValue(TemplatedParentProperty, this);
 
-            foreach (var child in control.LogicalChildren)
+            var children = control.LogicalChildren;
+            var count = children.Count;
+
+            for (var i = 0; i < count; i++)
             {
-                if (child is IControl c)
+                if (children[i] is IControl child)
                 {
-                    ApplyTemplatedParent(c);
+                    ApplyTemplatedParent(child);
                 }
             }
         }

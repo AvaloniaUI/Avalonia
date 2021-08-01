@@ -5,9 +5,11 @@ namespace Avalonia.Platform
     public interface IWindowBaseImpl : ITopLevelImpl
     {
         /// <summary>
-        /// Shows the top level.
+        /// Shows the window.
         /// </summary>
-        void Show();
+        /// <param name="activate">Whether to activate the shown window.</param>
+        /// <param name="isDialog">Whether the window is being shown as a dialog.</param>
+        void Show(bool activate, bool isDialog);
 
         /// <summary>
         /// Hides the window.

@@ -32,12 +32,12 @@
                  ClipToBounds="True"
                  HorizontalAlignment="Left"
                  ZIndex="100">
-            <Border Child="{TemplateBinding Pane}"/>
+            <ContentPresenter x:Name="PART_PanePresenter" Content="{TemplateBinding Pane}" ContentTemplate="{TemplateBinding PaneTemplate}" />
             <Rectangle Name="HCPaneBorder" Fill="{DynamicResource SystemControlForegroundTransparentBrush}" Width="1" HorizontalAlignment="Right"  />
           </Panel>
 
           <Panel Name="ContentRoot">
-            <Border Child="{TemplateBinding Content}" />
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
             <Rectangle Name="LightDismissLayer"/>
           </Panel>
 
@@ -106,14 +106,14 @@
                  ClipToBounds="True"
                  HorizontalAlignment="Right"
                  ZIndex="100">
-            <Border Child="{TemplateBinding Pane}"/>
+            <ContentPresenter x:Name="PART_PanePresenter" Content="{TemplateBinding Pane}" ContentTemplate="{TemplateBinding PaneTemplate}"/>
             <Rectangle Name="HCPaneBorder"
                        Fill="{DynamicResource SystemControlForegroundTransparentBrush}"
                        Width="1" HorizontalAlignment="Left"  />
           </Panel>
 
           <Panel Name="ContentRoot">
-            <Border Child="{TemplateBinding Content}" />
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
             <Rectangle Name="LightDismissLayer"/>
           </Panel>
 

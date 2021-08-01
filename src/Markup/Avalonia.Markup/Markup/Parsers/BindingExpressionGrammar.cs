@@ -6,6 +6,8 @@ using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Avalonia.Markup.Parsers
 {
     internal enum SourceMode
@@ -16,7 +18,7 @@ namespace Avalonia.Markup.Parsers
 
     internal static class BindingExpressionGrammar
     {
-        public static (IList<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
+        public static (List<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
         {
             var nodes = new List<INode>();
             var state = State.Start;
@@ -44,6 +46,10 @@ namespace Avalonia.Markup.Parsers
 
                     case State.Indexer:
                         state = ParseIndexer(ref r, nodes);
+                        break;
+
+                    case State.TypeCast:
+                        state = ParseTypeCast(ref r, nodes);
                         break;
 
                     case State.ElementName:
@@ -84,6 +90,11 @@ namespace Avalonia.Markup.Parsers
             }
             else if (ParseOpenBrace(ref r))
             {
+                if (PeekOpenBrace(ref r))
+                {
+                    return State.TypeCast;
+                }
+
                 return State.AttachedProperty;
             }
             else if (PeekOpenBracket(ref r))
@@ -124,6 +135,10 @@ namespace Avalonia.Markup.Parsers
             {
                 return State.Indexer;
             }
+            else if (ParseOpenBrace(ref r))
+            {
+                return State.TypeCast;
+            }
 
             return State.End;
         }
@@ -132,6 +147,11 @@ namespace Avalonia.Markup.Parsers
         {
             if (ParseOpenBrace(ref r))
             {
+                if (PeekOpenBrace(ref r))
+                {
+                    return State.TypeCast;
+                }
+
                 return State.AttachedProperty;
             }
             else
@@ -152,12 +172,23 @@ namespace Avalonia.Markup.Parsers
         {
             var (ns, owner) = ParseTypeName(ref r);
 
+            if(!r.End && r.TakeIf(')'))
+            {
+                nodes.Add(new TypeCastNode() { Namespace = ns, TypeName = owner });
+                return State.AfterMember;
+            }
+
             if (r.End || !r.TakeIf('.'))
             {
                 throw new ExpressionParseException(r.Position, "Invalid attached property name.");
             }
 
             var name = r.ParseIdentifier();
+
+            if (name.Length == 0)
+            {
+                throw new ExpressionParseException(r.Position, "Attached Property name expected after '.'.");
+            }
 
             if (r.End || !r.TakeIf(')'))
             {
@@ -186,6 +217,39 @@ namespace Avalonia.Markup.Parsers
             return State.AfterMember;
         }
 
+        private static State ParseTypeCast(ref CharacterReader r, List<INode> nodes)
+        {
+            bool parseMemberBeforeAddCast = ParseOpenBrace(ref r);
+
+            var (ns, typeName) = ParseTypeName(ref r);
+
+            var result = State.AfterMember;
+
+            if (parseMemberBeforeAddCast)
+            {
+                if (!ParseCloseBrace(ref r))
+                {
+                    throw new ExpressionParseException(r.Position, "Expected ')'.");
+                }
+
+                result = ParseBeforeMember(ref r, nodes);
+
+                if(r.Peek == '[')
+                {
+                    result = ParseIndexer(ref r, nodes);
+                }
+            }
+
+            nodes.Add(new TypeCastNode { Namespace = ns, TypeName = typeName });
+
+            if (r.End || !r.TakeIf(')'))
+            {
+                throw new ExpressionParseException(r.Position, "Expected ')'.");
+            }
+
+            return result;
+        }
+
         private static State ParseElementName(ref CharacterReader r, List<INode> nodes)
         {
             var name = r.ParseIdentifier();
@@ -209,8 +273,8 @@ namespace Avalonia.Markup.Parsers
             }
             else if (mode.SequenceEqual("parent".AsSpan()))
             {
-                string ancestorNamespace = null;
-                string ancestorType = null;
+                string? ancestorNamespace = null;
+                string? ancestorType = null;
                 var ancestorLevel = 0;
                 if (PeekOpenBracket(ref r))
                 {
@@ -288,9 +352,19 @@ namespace Avalonia.Markup.Parsers
             return !r.End && r.TakeIf('(');
         }
 
+        private static bool ParseCloseBrace(ref CharacterReader r)
+        {
+            return !r.End && r.TakeIf(')');
+        }
+
         private static bool PeekOpenBracket(ref CharacterReader r)
         {
             return !r.End && r.Peek == '[';
+        }
+
+        private static bool PeekOpenBrace(ref CharacterReader r)
+        {
+            return !r.End && r.Peek == '(';
         }
 
         private static bool ParseStreamOperator(ref CharacterReader r)
@@ -322,6 +396,7 @@ namespace Avalonia.Markup.Parsers
             BeforeMember,
             AttachedProperty,
             Indexer,
+            TypeCast,
             End,
         }
 
@@ -343,45 +418,51 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        public interface INode {}
+        public interface INode { }
 
-        public interface ITransformNode {}
+        public interface ITransformNode { }
 
         public class EmptyExpressionNode : INode { }
 
         public class PropertyNameNode : INode
         {
-            public string PropertyName { get; set; }
+            public string PropertyName { get; set; } = string.Empty;
         }
 
         public class AttachedPropertyNameNode : INode
         {
-            public string Namespace { get; set; }
-            public string TypeName { get; set; }
-            public string PropertyName { get; set; }
+            public string Namespace { get; set; } = string.Empty;
+            public string TypeName { get; set; } = string.Empty;
+            public string PropertyName { get; set; } = string.Empty;
         }
 
         public class IndexerNode : INode
         {
-            public IList<string> Arguments { get; set; }
+            public IList<string> Arguments { get; set; } = Array.Empty<string>();
         }
 
-        public class NotNode : INode, ITransformNode {}
+        public class NotNode : INode, ITransformNode { }
 
-        public class StreamNode : INode {}
+        public class StreamNode : INode { }
 
-        public class SelfNode : INode {}
+        public class SelfNode : INode { }
 
         public class NameNode : INode
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
         }
 
         public class AncestorNode : INode
         {
-            public string Namespace { get; set; }
-            public string TypeName { get; set; }
+            public string? Namespace { get; set; }
+            public string? TypeName { get; set; }
             public int Level { get; set; }
+        }
+
+        public class TypeCastNode : INode
+        {
+            public string Namespace { get; set; } = string.Empty;
+            public string TypeName { get; set; } = string.Empty;
         }
     }
 }

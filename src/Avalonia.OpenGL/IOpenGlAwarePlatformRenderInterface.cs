@@ -4,6 +4,6 @@ namespace Avalonia.OpenGL
 {
     public interface IOpenGlAwarePlatformRenderInterface
     {
-        IOpenGlTextureBitmapImpl CreateOpenGlTextureBitmap();
+        IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi);
     }
 }

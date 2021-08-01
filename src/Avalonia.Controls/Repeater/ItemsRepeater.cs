@@ -267,6 +267,11 @@ namespace Avalonia.Controls
             return result;
         }
 
+        private protected override void InvalidateMeasureOnChildrenChanged()
+        {
+            // Don't invalidate measure when children change.
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_isLayoutInProgress)
@@ -364,6 +369,12 @@ namespace Avalonia.Controls
                     {
                         var newBounds = element.Bounds;
                         virtInfo.ArrangeBounds = newBounds;
+
+                        if (!virtInfo.IsRegisteredAsAnchorCandidate)
+                        {
+                            _viewportManager.RegisterScrollAnchorCandidate(element);
+                            virtInfo.IsRegisteredAsAnchorCandidate = true;
+                        }
                     }
                 }
 
@@ -515,11 +526,14 @@ namespace Avalonia.Controls
             return element;
         }
 
-        internal void OnElementPrepared(IControl element, int index)
+        internal void OnElementPrepared(IControl element, VirtualizationInfo virtInfo)
         {
-            _viewportManager.OnElementPrepared(element);
+            _viewportManager.OnElementPrepared(element, virtInfo);
+
             if (ElementPrepared != null)
             {
+                var index = virtInfo.Index;
+
                 if (_elementPreparedArgs == null)
                 {
                     _elementPreparedArgs = new ItemsRepeaterElementPreparedEventArgs(element, index);

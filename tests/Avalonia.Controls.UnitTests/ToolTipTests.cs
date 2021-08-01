@@ -270,6 +270,34 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Empty(toolTip.Classes);
             }
         }
+
+        [Fact]
+        public void Should_Close_On_Null_Tip()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                var target = new Decorator()
+                {
+                    [ToolTip.TipProperty] = "Tip",
+                    [ToolTip.ShowDelayProperty] = 0
+                };
+
+                window.Content = target;
+
+                window.ApplyTemplate();
+                window.Presenter.ApplyTemplate();
+
+                _mouseHelper.Enter(target);
+
+                Assert.True(ToolTip.GetIsOpen(target));
+
+                target[ToolTip.TipProperty] = null;
+
+                Assert.False(ToolTip.GetIsOpen(target));
+            }
+        }
     }
 
     internal class ToolTipViewModel

@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -8,11 +10,16 @@ namespace Avalonia
     /// <summary>
     /// Describes the thickness of a frame around a rectangle.
     /// </summary>
-    public readonly struct Thickness : IEquatable<Thickness>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Thickness : IEquatable<Thickness>
     {
         static Thickness()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<ThicknessAnimator>(prop => typeof(Thickness).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>
@@ -271,6 +278,29 @@ namespace Avalonia
         public override string ToString()
         {
             return $"{_left},{_top},{_right},{_bottom}";
+        }
+
+        /// <summary>
+        /// Deconstructor the thickness into its left, top, right and bottom thickness values.
+        /// </summary>
+        /// <param name="left">The thickness on the left.</param>
+        /// <param name="top">The thickness on the top.</param>
+        /// <param name="right">The thickness on the right.</param>
+        /// <param name="bottom">The thickness on the bottom.</param>
+        public void Deconstruct(out double left, out double top, out double right, out double bottom)
+        {
+            left = this._left;
+            top = this._top;
+            right = this._right;
+            bottom = this._bottom;        
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the left, top, right and bottom thickness values are zero.
+        /// </summary>
+        public bool IsDefault
+        {
+            get { return (_left == 0) && (_top == 0) && (_right == 0) && (_bottom == 0); }
         }
     }
 }

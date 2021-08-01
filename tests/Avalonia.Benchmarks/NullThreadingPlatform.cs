@@ -23,6 +23,9 @@ namespace Avalonia.Benchmarks
 
         public bool CurrentThreadIsLoopThread => true;
 
+#pragma warning disable CS0067
         public event Action<DispatcherPriority?> Signaled;
+#pragma warning restore CS0067
+
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Controls
+﻿#nullable enable
+
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Specifies a contract for a scrolling control that supports scroll anchoring.
@@ -8,7 +10,7 @@
         /// <summary>
         /// The currently chosen anchor element to use for scroll anchoring.
         /// </summary>
-        IControl CurrentAnchor { get; }
+        IControl? CurrentAnchor { get; }
 
         /// <summary>
         /// Registers a control as a potential scroll anchor candidate.

@@ -93,6 +93,8 @@
                    Watermark="{TemplateBinding Watermark}"
                    UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                    Grid.Column="0"/>
 
           <Button Name="PART_Button"

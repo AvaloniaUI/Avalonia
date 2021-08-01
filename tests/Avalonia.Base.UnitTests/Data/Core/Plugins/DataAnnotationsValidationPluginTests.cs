@@ -59,12 +59,12 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             {
                 new BindingNotification(5),
                 new BindingNotification(
-                    new ValidationException(errmsg),
+                    new DataValidationException(errmsg),
                     BindingErrorType.DataValidationError,
                     3),
                 new BindingNotification(7),
                 new BindingNotification(
-                    new ValidationException(errmsg),
+                    new DataValidationException(errmsg),
                     BindingErrorType.DataValidationError,
                     11),
             }, result);

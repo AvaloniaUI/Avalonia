@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -13,6 +16,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using JetBrains.Annotations;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -455,6 +459,45 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Bound_SelectedItem_Should_Not_Be_Cleared_when_Changing_Selection()
+        {
+            using (Application())
+            {
+                var dataContext = new TestDataContext();
+
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    DataContext = dataContext
+                };
+
+                target.Bind(TreeView.ItemsProperty, new Binding("Items"));
+                target.Bind(TreeView.SelectedItemProperty, new Binding("SelectedItem"));
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                var selectedValues = new List<object>();
+
+                dataContext.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName == nameof(TestDataContext.SelectedItem))
+                        selectedValues.Add(dataContext.SelectedItem);
+                };
+                selectedValues.Add(dataContext.SelectedItem);
+
+                _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Left);
+                _mouse.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Left);
+
+                Assert.Equal(3, selectedValues.Count);
+                Assert.Equal(new[] { null, "Item 0", "Item 2" }, selectedValues.ToArray());
+            }
+        }
+
+        [Fact]
         public void LogicalChildren_Should_Be_Set()
         {
             var target = new TreeView
@@ -630,6 +673,50 @@ namespace Avalonia.Controls.UnitTests
 
                 navigation.Move(focus.Current, NavigationDirection.Next);
                 Assert.Same(node, focus.Current);
+            }
+        }
+        
+        [Fact]
+        public void Keyboard_Navigation_Should_Not_Crash_If_Selected_Item_Is_not_In_Tree()
+        {
+            using (Application())
+            {
+                var focus = FocusManager.Instance;
+                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+                var data = CreateTestTreeData();
+
+                var selectedNode = new Node { Value = "Out of Tree Selected Item" };
+
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = data,
+                    SelectedItem = selectedNode
+                };
+
+                var button = new Button();
+
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { target, button },
+                    }
+                };
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
+
+                var item = data[0].Children[0];
+                var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                Assert.NotNull(node);
+
+                target.SelectedItem = selectedNode;
+                node.Focus();
+                Assert.Same(node, focus.Current);
+
+                var next = KeyboardNavigationHandler.GetNext(node, NavigationDirection.Previous);
             }
         }
 
@@ -979,7 +1066,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Auto_Expanding_In_Style_Should_Not_Break_Range_Selection()
         {
-            /// Issue #2980.
+            // Issue #2980.
             using (Application())
             {
                 var target = new DerivedTreeView
@@ -1287,6 +1374,31 @@ namespace Avalonia.Controls.UnitTests
 
         private class DerivedTreeView : TreeView
         {
+        }
+
+        private class TestDataContext : INotifyPropertyChanged
+        {
+            private string _selectedItem;
+
+            public TestDataContext()
+            {
+                Items = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => $"Item {i}"));
+            }
+
+            public ObservableCollection<string> Items { get; }
+
+            public string SelectedItem
+            {
+                get { return _selectedItem; }
+                set
+                {
+                    _selectedItem = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItem)));
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+            
         }
     }
 }

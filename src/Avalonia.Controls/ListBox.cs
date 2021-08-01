@@ -135,8 +135,8 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.KeyModifiers & KeyModifiers.Shift) != 0,
-                    (e.KeyModifiers & KeyModifiers.Control) != 0);
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Control));
             }
         }
 
@@ -154,8 +154,8 @@ namespace Avalonia.Controls
                     e.Handled = UpdateSelectionFromEventSource(
                         e.Source,
                         true,
-                        (e.KeyModifiers & KeyModifiers.Shift) != 0,
-                        (e.KeyModifiers & KeyModifiers.Control) != 0,
+                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+                        e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
                         point.Properties.IsRightButtonPressed);
                 }
             }

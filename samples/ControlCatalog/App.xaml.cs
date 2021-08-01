@@ -23,7 +23,7 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentDark.xaml")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/FluentDark.xaml")
             },
             DataGridFluent
         };
@@ -32,13 +32,17 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
             {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/FluentLight.xaml")
+                Source = new Uri("avares://Avalonia.Themes.Fluent/FluentLight.xaml")
             },
             DataGridFluent
         };
 
         public static Styles DefaultLight = new Styles
         {
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
+            },
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
@@ -62,6 +66,10 @@ namespace ControlCatalog
         {
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
             {
+                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
+            },
+            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
+            {
                 Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
             },
             new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
@@ -81,7 +89,7 @@ namespace ControlCatalog
 
         public override void Initialize()
         {
-            Styles.Insert(0, FluentDark);
+            Styles.Insert(0, FluentLight);
 
             AvaloniaXamlLoader.Load(this);
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -7,12 +8,18 @@ namespace Avalonia.Dialogs
 {
     public class AboutAvaloniaDialog : Window
     {
+        private static readonly Version s_version = typeof(AboutAvaloniaDialog).Assembly.GetName().Version;
+
+        public static string Version { get; } = s_version.ToString(2);
+
+        public static bool IsDevelopmentBuild { get; } = s_version.Revision == 999;
+
         public AboutAvaloniaDialog()
         {
             AvaloniaXamlLoader.Load(this);
             DataContext = this;
         }
- 
+
         public static void OpenBrowser(string url)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -81,7 +82,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     new ValueSpan<TextRunProperties>(9, 1, defaultProperties)
                 };
 
-                var textSource = new FormattableTextSource(text, defaultProperties, GenericTextRunPropertiesRuns);
+                var textSource = new FormattedTextSource(text.AsMemory(), defaultProperties, GenericTextRunPropertiesRuns);
 
                 var formatter = new TextFormatterImpl();
 
@@ -126,6 +127,27 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Produce_A_Single_Fallback_Run()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                const string text = "👍 👍 👍 👍";
+                
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.Equal(1, textLine.TextRuns.Count);
+            } 
+        }
+
+        [Fact]
         public void Should_Split_Run_On_Script()
         {
             using (Start())
@@ -167,7 +189,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var textLine =
                         formatter.FormatLine(textSource, currentPosition, 1,
-                            new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.WrapWithOverflow));
+                            new GenericTextParagraphProperties(defaultProperties, textWrap : TextWrapping.WrapWithOverflow));
 
                     if (text.Length - currentPosition > expectedCharactersPerLine)
                     {
@@ -180,6 +202,40 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 }
 
                 Assert.Equal(expectedNumberOfLines, numberOfLines);
+            }
+        }
+        
+        [Fact]
+        public void Should_Wrap_RightToLeft()
+        {
+            using (Start())
+            {
+                const string text =
+                    "قطاعات الصناعة على الشبكة العالمية انترنيت ويونيكود، حيث ستتم، على الصعيدين الدولي والمحلي على حد سواء";
+                
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var currentTextSourceIndex = 0;
+
+                while (currentTextSourceIndex < text.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, currentTextSourceIndex, 50,
+                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap));
+
+                    var glyphClusters = textLine.TextRuns.Cast<ShapedTextCharacters>()
+                        .SelectMany(x => x.GlyphRun.GlyphClusters).ToArray();
+                
+                    Assert.True(glyphClusters[0] >= glyphClusters[^1]);
+                    
+                    Assert.Equal(currentTextSourceIndex, glyphClusters[^1]);
+
+                    currentTextSourceIndex += textLine.TextRange.Length;
+                }
             }
         }
 
@@ -223,7 +279,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var textLine =
                         formatter.FormatLine(textSource, currentPosition, paragraphWidth,
-                            new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap));
+                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap));
 
                     Assert.True(expected.Contains(textLine.TextRange.End));
 
@@ -256,7 +312,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties, lineHeight: 50));
 
-                Assert.Equal(50, textLine.LineMetrics.Size.Height);
+                Assert.Equal(50, textLine.Height);
             }
         }
 
@@ -273,7 +329,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrapping: TextWrapping.Wrap);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
 
                 var textSource = new SingleBufferTextSource(text, defaultProperties);
 
@@ -286,13 +342,140 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     var textLine =
                         formatter.FormatLine(textSource, textSourceIndex, 200, paragraphProperties);
 
-                    Assert.True(textLine.LineMetrics.Size.Width <= 200);
+                    Assert.True(textLine.Width <= 200);
 
                     textSourceIndex += textLine.TextRange.Length;
                 }
             }
         }
 
+        [Fact]
+        public void Wrap_Should_Not_Produce_Empty_Lines()
+        {
+            using (Start())
+            {
+                const string text = "012345";
+
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                var textSourceIndex = 0;
+
+                while (textSourceIndex < text.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, textSourceIndex, 3, paragraphProperties);
+
+                    Assert.NotEqual(0, textLine.TextRange.Length);
+
+                    textSourceIndex += textLine.TextRange.Length;
+                }
+
+                Assert.Equal(text.Length, textSourceIndex);
+            }
+        }
+
+        [InlineData("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor",  
+            new []{ "Lorem ipsum ", "dolor sit amet, ", "consectetur ", "adipisicing elit, ", "sed do eiusmod "})]
+
+        [Theory]
+        public void Should_Produce_Wrapped_And_Trimmed_Lines(string text, string[] expectedLines)
+        {
+            using (Start())
+            {
+                var typeface = new Typeface("Verdana");
+
+                var defaultProperties = new GenericTextRunProperties(typeface, 32, foregroundBrush: Brushes.Black);
+
+                var styleSpans = new[]
+                {
+                    new ValueSpan<TextRunProperties>(0, 5,
+                        new GenericTextRunProperties(typeface, 48)),
+                    new ValueSpan<TextRunProperties>(6, 11,
+                        new GenericTextRunProperties(new Typeface("Verdana", weight: FontWeight.Bold), 32)),
+                    new ValueSpan<TextRunProperties>(28, 28,
+                        new GenericTextRunProperties(new Typeface("Verdana", FontStyle.Italic),32))
+                };
+                
+                var textSource = new FormattedTextSource(text.AsMemory(), defaultProperties, styleSpans);
+
+                var formatter = new TextFormatterImpl();
+
+                var currentPosition = 0;
+
+                var currentHeight = 0d;
+
+                var currentLineIndex = 0;
+
+                while (currentPosition < text.Length && currentLineIndex < expectedLines.Length)
+                {
+                    var textLine =
+                        formatter.FormatLine(textSource, currentPosition, 300,
+                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow));
+
+                    currentPosition += textLine.TextRange.Length;
+
+                    if (textLine.Width > 300 || currentHeight + textLine.Height > 240)
+                    {
+                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(300, defaultProperties));
+                    }
+                    
+                    currentHeight += textLine.Height;
+
+                    var currentText = text.Substring(textLine.TextRange.Start, textLine.TextRange.Length);
+                    
+                    Assert.Equal(expectedLines[currentLineIndex], currentText);
+
+                    currentLineIndex++;
+                }
+                
+                Assert.Equal(expectedLines.Length,currentLineIndex);
+            }
+        }
+
+        [InlineData(TextAlignment.Left)]
+        [InlineData(TextAlignment.Center)]
+        [InlineData(TextAlignment.Right)]
+        [Theory]
+        public void Should_Align_TextLine(TextAlignment textAlignment)
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textAlignment);
+                
+                var textSource = new SingleBufferTextSource("0123456789", defaultProperties);
+                var formatter = new TextFormatterImpl();
+                
+                var textLine =
+                    formatter.FormatLine(textSource, 0, 100, paragraphProperties);
+
+                var expectedOffset = TextLine.GetParagraphOffsetX(textLine.Width, 100, textAlignment);
+                
+                Assert.Equal(expectedOffset, textLine.Start);
+            }
+        }
+
+        [Fact]
+        public void Should_FormatLine_With_Emergency_Breaks()
+        {
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.Wrap);
+                
+                var textSource = new SingleBufferTextSource("0123456789_0123456789_0123456789_0123456789", defaultProperties);
+                var formatter = new TextFormatterImpl();
+                
+                var textLine =
+                    formatter.FormatLine(textSource, 0, 33, paragraphProperties);
+                
+                Assert.NotNull(textLine.TextLineBreak?.RemainingCharacters);
+            }
+        }
+        
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

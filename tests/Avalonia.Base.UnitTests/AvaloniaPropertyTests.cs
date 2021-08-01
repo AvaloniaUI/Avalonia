@@ -27,7 +27,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void GetMetadata_Returns_Supplied_Value()
         {
-            var metadata = new PropertyMetadata();
+            var metadata = new AvaloniaPropertyMetadata();
             var target = new TestProperty<string>("test", typeof(Class1), metadata);
 
             Assert.Same(metadata, target.GetMetadata<Class1>());
@@ -36,7 +36,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void GetMetadata_Returns_Supplied_Value_For_Derived_Class()
         {
-            var metadata = new PropertyMetadata();
+            var metadata = new AvaloniaPropertyMetadata();
             var target = new TestProperty<string>("test", typeof(Class1), metadata);
 
             Assert.Same(metadata, target.GetMetadata<Class2>());
@@ -45,7 +45,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void GetMetadata_Returns_Supplied_Value_For_Unrelated_Class()
         {
-            var metadata = new PropertyMetadata();
+            var metadata = new AvaloniaPropertyMetadata();
             var target = new TestProperty<string>("test", typeof(Class3), metadata);
 
             Assert.Same(metadata, target.GetMetadata<Class2>());
@@ -54,8 +54,8 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void GetMetadata_Returns_Overridden_Value()
         {
-            var metadata = new PropertyMetadata();
-            var overridden = new PropertyMetadata();
+            var metadata = new AvaloniaPropertyMetadata();
+            var overridden = new AvaloniaPropertyMetadata();
             var target = new TestProperty<string>("test", typeof(Class1), metadata);
 
             target.OverrideMetadata<Class2>(overridden);
@@ -66,9 +66,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void OverrideMetadata_Should_Merge_Values()
         {
-            var metadata = new PropertyMetadata(BindingMode.TwoWay);
+            var metadata = new AvaloniaPropertyMetadata(BindingMode.TwoWay);
             var notify = (Action<IAvaloniaObject, bool>)((a, b) => { });
-            var overridden = new PropertyMetadata();
+            var overridden = new AvaloniaPropertyMetadata();
             var target = new TestProperty<string>("test", typeof(Class1), metadata);
 
             target.OverrideMetadata<Class2>(overridden);
@@ -83,7 +83,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             string value = null;
 
-            Class1.FooProperty.Changed.Subscribe(x => value = (string)x.NewValue);
+            Class1.FooProperty.Changed.Subscribe(x => value = x.NewValue.GetValueOrDefault());
             target.SetValue(Class1.FooProperty, "newvalue");
 
             Assert.Equal("newvalue", value);
@@ -95,7 +95,7 @@ namespace Avalonia.Base.UnitTests
             var target = new Class1();
             var result = new List<string>();
 
-            Class1.FooProperty.Changed.Subscribe(x => result.Add((string)x.NewValue));
+            Class1.FooProperty.Changed.Subscribe(x => result.Add(x.NewValue.GetValueOrDefault()));
             target.SetValue(Class1.FooProperty, "animated", BindingPriority.Animation);
             target.SetValue(Class1.FooProperty, "local");
 
@@ -129,19 +129,19 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void PropertyMetadata_BindingMode_Default_Returns_OneWay()
         {
-            var data = new PropertyMetadata(defaultBindingMode: BindingMode.Default);
+            var data = new AvaloniaPropertyMetadata(defaultBindingMode: BindingMode.Default);
 
             Assert.Equal(BindingMode.OneWay, data.DefaultBindingMode);
         }
 
         private class TestProperty<TValue> : AvaloniaProperty<TValue>
         {
-            public TestProperty(string name, Type ownerType, PropertyMetadata metadata = null)
-                : base(name, ownerType, metadata ?? new PropertyMetadata())
+            public TestProperty(string name, Type ownerType, AvaloniaPropertyMetadata metadata = null)
+                : base(name, ownerType, metadata ?? new AvaloniaPropertyMetadata())
             {
             }
 
-            public void OverrideMetadata<T>(PropertyMetadata metadata)
+            public void OverrideMetadata<T>(AvaloniaPropertyMetadata metadata)
             {
                 OverrideMetadata(typeof(T), metadata);
             }

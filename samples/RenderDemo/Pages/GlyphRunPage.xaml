@@ -6,9 +6,9 @@
              x:Class="RenderDemo.Pages.GlyphRunPage">
   <Border
     Background="White">
-    <DrawingPresenter
-      x:Name="drawingPresenter"
+    <Image
+      x:Name="imageControl"
       Stretch="None">
-    </DrawingPresenter>
+    </Image>
   </Border>
 </UserControl>

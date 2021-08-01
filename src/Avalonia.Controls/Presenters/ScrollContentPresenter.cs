@@ -7,6 +7,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
@@ -14,6 +16,8 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable, IScrollAnchorProvider
     {
+        private const double EdgeDetectionTolerance = 0.1;
+
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
         /// </summary>
@@ -64,11 +68,13 @@ namespace Avalonia.Controls.Presenters
         private bool _arranging;
         private Size _extent;
         private Vector _offset;
-        private IDisposable _logicalScrollSubscription;
+        private IDisposable? _logicalScrollSubscription;
         private Size _viewport;
-        private Dictionary<int, Vector> _activeLogicalGestureScrolls;
-        private List<IControl> _anchorCandidates;
-        private (IControl control, Rect bounds) _anchor;
+        private Dictionary<int, Vector>? _activeLogicalGestureScrolls;
+        private List<IControl>? _anchorCandidates;
+        private IControl? _anchorElement;
+        private Rect _anchorElementBounds;
+        private bool _isAnchorElementDirty;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -89,8 +95,6 @@ namespace Avalonia.Controls.Presenters
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
-
-        internal event EventHandler<VectorEventArgs> PreArrange;
 
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
@@ -138,7 +142,14 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        IControl IScrollAnchorProvider.CurrentAnchor => _anchor.control;
+        IControl? IScrollAnchorProvider.CurrentAnchor
+        {
+            get
+            {
+                EnsureAnchorElementSelection();
+                return _anchorElement;
+            }
+        }
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
@@ -215,16 +226,18 @@ namespace Avalonia.Controls.Presenters
 
             _anchorCandidates ??= new List<IControl>();
             _anchorCandidates.Add(element);
+            _isAnchorElementDirty = true;
         }
 
         /// <inheritdoc/>
         void IScrollAnchorProvider.UnregisterAnchorCandidate(IControl element)
         {
             _anchorCandidates?.Remove(element);
+            _isAnchorElementDirty = true;
 
-            if (_anchor.control == element)
+            if (_anchorElement == element)
             {
-                _anchor = default;
+                _anchorElement = null;
             }
         }
 
@@ -247,11 +260,6 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            PreArrange?.Invoke(this, new VectorEventArgs
-            {
-                Vector = new Vector(finalSize.Width, finalSize.Height),
-            });
-
             if (_logicalScrollSubscription != null || Child == null)
             {
                 return base.ArrangeOverride(finalSize);
@@ -271,59 +279,69 @@ namespace Avalonia.Controls.Presenters
                 // If we have an anchor and its position relative to Child has changed during the
                 // arrange then that change wasn't just due to scrolling (as scrolling doesn't adjust
                 // relative positions within Child).
-                if (_anchor.control != null &&
-                    TranslateBounds(_anchor.control, Child, out var updatedBounds) &&
-                    updatedBounds.Position != _anchor.bounds.Position)
+                if (_anchorElement != null &&
+                    TranslateBounds(_anchorElement, Child, out var updatedBounds) &&
+                    updatedBounds.Position != _anchorElementBounds.Position)
                 {
-                    var offset = updatedBounds.Position - _anchor.bounds.Position;
+                    var offset = updatedBounds.Position - _anchorElementBounds.Position;
                     return offset;
                 }
 
                 return default;
             }
 
-            // Calculate the new anchor element.
-            _anchor = CalculateCurrentAnchor();
+            var isAnchoring = Offset.X >= EdgeDetectionTolerance || Offset.Y >= EdgeDetectionTolerance;
 
-            // Do the arrange.
-            ArrangeOverrideImpl(size, -Offset);
-
-            // If the anchor moved during the arrange, we need to adjust the offset and do another arrange.
-            var anchorShift = TrackAnchor();
-
-            if (anchorShift != default)
+            if (isAnchoring)
             {
-                var newOffset = Offset + anchorShift;
-                var newExtent = Extent;
-                var maxOffset = new Vector(Extent.Width - Viewport.Width, Extent.Height - Viewport.Height);
+                // Calculate the new anchor element if necessary.
+                EnsureAnchorElementSelection();
 
-                if (newOffset.X > maxOffset.X)
-                {
-                    newExtent = newExtent.WithWidth(newOffset.X + Viewport.Width);
-                }
+                // Do the arrange.
+                ArrangeOverrideImpl(size, -Offset);
 
-                if (newOffset.Y > maxOffset.Y)
-                {
-                    newExtent = newExtent.WithHeight(newOffset.Y + Viewport.Height);
-                }
+                // If the anchor moved during the arrange, we need to adjust the offset and do another arrange.
+                var anchorShift = TrackAnchor();
 
-                Extent = newExtent;
+                if (anchorShift != default)
+                {
+                    var newOffset = Offset + anchorShift;
+                    var newExtent = Extent;
+                    var maxOffset = new Vector(Extent.Width - Viewport.Width, Extent.Height - Viewport.Height);
 
-                try
-                {
-                    _arranging = true;
-                    Offset = newOffset;
+                    if (newOffset.X > maxOffset.X)
+                    {
+                        newExtent = newExtent.WithWidth(newOffset.X + Viewport.Width);
+                    }
+
+                    if (newOffset.Y > maxOffset.Y)
+                    {
+                        newExtent = newExtent.WithHeight(newOffset.Y + Viewport.Height);
+                    }
+
+                    Extent = newExtent;
+
+                    try
+                    {
+                        _arranging = true;
+                        Offset = newOffset;
+                    }
+                    finally
+                    {
+                        _arranging = false;
+                    }
+
+                    ArrangeOverrideImpl(size, -Offset);
                 }
-                finally
-                {
-                    _arranging = false;    
-                }
-                
+            }
+            else
+            {
                 ArrangeOverrideImpl(size, -Offset);
             }
 
             Viewport = finalSize;
             Extent = Child.Bounds.Size.Inflate(Child.Margin);
+            _isAnchorElementDirty = true;
 
             return finalSize;
         }
@@ -350,7 +368,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         var logicalUnits = delta.Y / LogicalScrollItemSize;
                         delta = delta.WithY(delta.Y - logicalUnits * LogicalScrollItemSize);
-                        dy = logicalUnits * scrollable.ScrollSize.Height;
+                        dy = logicalUnits * scrollable!.ScrollSize.Height;
                     }
                     else
                         dy = delta.Y;
@@ -368,7 +386,7 @@ namespace Avalonia.Controls.Presenters
                     {
                         var logicalUnits = delta.X / LogicalScrollItemSize;
                         delta = delta.WithX(delta.X - logicalUnits * LogicalScrollItemSize);
-                        dx = logicalUnits * scrollable.ScrollSize.Width;
+                        dx = logicalUnits * scrollable!.ScrollSize.Width;
                     }
                     else
                         dx = delta.X;
@@ -405,7 +423,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (Extent.Height > Viewport.Height)
                 {
-                    double height = isLogical ? scrollable.ScrollSize.Height : 50;
+                    double height = isLogical ? scrollable!.ScrollSize.Height : 50;
                     y += -e.Delta.Y * height;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
@@ -413,7 +431,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (Extent.Width > Viewport.Width)
                 {
-                    double width = isLogical ? scrollable.ScrollSize.Width : 50;
+                    double width = isLogical ? scrollable!.ScrollSize.Width : 50;
                     x += -e.Delta.X * width;
                     x = Math.Max(x, 0);
                     x = Math.Min(x, Extent.Width - Viewport.Width);
@@ -441,7 +459,7 @@ namespace Avalonia.Controls.Presenters
 
         private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateScrollableSubscription((IControl)e.NewValue);
+            UpdateScrollableSubscription((IControl?)e.NewValue);
 
             if (e.OldValue != null)
             {
@@ -449,7 +467,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void UpdateScrollableSubscription(IControl child)
+        private void UpdateScrollableSubscription(IControl? child)
         {
             var scrollable = child as ILogicalScrollable;
 
@@ -493,17 +511,21 @@ namespace Avalonia.Controls.Presenters
             else if (scrollable.IsLogicalScrollEnabled)
             {
                 Viewport = scrollable.Viewport;
-                Extent = scrollable.Extent;
                 Offset = scrollable.Offset;
+                Extent = scrollable.Extent;
             }
         }
 
-        private (IControl, Rect) CalculateCurrentAnchor()
+        private void EnsureAnchorElementSelection()
         {
-            if (_anchorCandidates == null)
+            if (!_isAnchorElementDirty || _anchorCandidates is null)
             {
-                return default;
+                return;
             }
+
+            _anchorElement = null;
+            _anchorElementBounds = default;
+            _isAnchorElementDirty = false;
 
             var bestCandidate = default(IControl);
             var bestCandidateDistance = double.MaxValue;
@@ -531,10 +553,9 @@ namespace Avalonia.Controls.Presenters
                 // bounds aren't relative to the ScrollContentPresenter itself, if they change
                 // then we know it wasn't just due to scrolling.
                 var unscrolledBounds = TranslateBounds(bestCandidate, Child);
-                return (bestCandidate, unscrolledBounds);
+                _anchorElement = bestCandidate;
+                _anchorElementBounds = unscrolledBounds;
             }
-
-            return default;
         }
 
         private bool GetViewportBounds(IControl element, out Rect bounds)

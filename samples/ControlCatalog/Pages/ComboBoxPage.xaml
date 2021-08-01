@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ComboBoxPage">
+             x:Class="ControlCatalog.Pages.ComboBoxPage"
+             xmlns:sys="clr-namespace:System;assembly=netstandard">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">ComboBox</TextBlock>
     <TextBlock Classes="h2">A drop-down list.</TextBlock>
@@ -35,6 +36,16 @@
            </DataTemplate>
          </ComboBox.ItemTemplate>
        </ComboBox>
+      
+      <ComboBox PlaceholderText="Pick an Item">
+        <ComboBoxItem>Inline Items</ComboBoxItem>
+        <ComboBoxItem>Inline Item 2</ComboBoxItem>
+        <ComboBoxItem>Inline Item 3</ComboBoxItem>
+        <ComboBoxItem>Inline Item 4</ComboBoxItem>
+        <DataValidationErrors.Error>
+          <sys:Exception /> 
+        </DataValidationErrors.Error>
+      </ComboBox>
     </StackPanel>
 
   </StackPanel>

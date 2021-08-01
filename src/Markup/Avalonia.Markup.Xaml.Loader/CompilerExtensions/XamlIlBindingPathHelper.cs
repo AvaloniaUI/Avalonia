@@ -203,6 +203,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                                 .ParentNodes()
                                 .OfType<XamlAstConstructableObjectNode>()
                                 .Where(x => styledElementType.IsAssignableFrom(x.Type.GetClrType()))
+                                .Skip(1)
                                 .ElementAtOrDefault(ancestor.Level)
                                 ?.Type.GetClrType();
 
@@ -241,6 +242,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         break;
                     case RawSourceBindingExpressionNode rawSource:
                         nodes.Add(new RawSourcePathElementNode(rawSource.RawSource));
+                        break;
+                    case BindingExpressionGrammar.TypeCastNode typeCastNode:
+                        var castType = GetType(typeCastNode.Namespace, typeCastNode.TypeName);
+
+                        if (castType is null)
+                        {
+                            throw new XamlX.XamlParseException($"Unable to resolve cast to type {typeCastNode.Namespace}:{typeCastNode.TypeName} based on XAML tree.", lineInfo);
+                        }
+
+                        nodes.Add(new TypeCastPathElementNode(castType));
                         break;
                 }
             }
@@ -422,7 +433,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 codeGen.Ldtype(Type)
                     .Ldc_I4(_level)
-                    .EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.FindMethod(m => m.Name == "FindAncestor"));
+                    .EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.FindMethod(m => m.Name == "Ancestor"));
             }
         }
 
@@ -608,10 +619,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             private readonly IXamlAstValueNode _rawSource;
 
             public RawSourcePathElementNode(IXamlAstValueNode rawSource)
-                :base(rawSource)
+                : base(rawSource)
             {
                 _rawSource = rawSource;
-                
+
             }
 
             public IXamlType Type => _rawSource.Type.GetClrType();
@@ -622,6 +633,21 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 codeGen
                     .EmitCall(context.GetAvaloniaTypes()
                     .CompiledBindingPathBuilder.FindMethod(m => m.Name == "SetRawSource"));
+            }
+        }
+
+        class TypeCastPathElementNode : IXamlIlBindingPathElementNode
+        {
+            public TypeCastPathElementNode(IXamlType ancestorType)
+            {
+                Type = ancestorType;
+            }
+
+            public IXamlType Type { get; }
+
+            public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
+            {
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.FindMethod(m => m.Name == "TypeCast").MakeGenericMethod(new[] { Type }));
             }
         }
 

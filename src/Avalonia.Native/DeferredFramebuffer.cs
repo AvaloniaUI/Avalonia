@@ -2,11 +2,10 @@
 using System.Runtime.InteropServices;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
-using SharpGen.Runtime;
 
 namespace Avalonia.Native
 {
-    public class DeferredFramebuffer : ILockedFramebuffer
+    internal unsafe class DeferredFramebuffer : ILockedFramebuffer
     {
         private readonly Func<Action<IAvnWindowBase>, bool> _lockWindow;
 
@@ -56,7 +55,7 @@ namespace Avalonia.Native
             {
                 var fb = new AvnFramebuffer
                 {
-                    Data = Address,
+                    Data = Address.ToPointer(),
                     Dpi = new AvnVector
                     {
                         X = Dpi.X,
@@ -70,7 +69,7 @@ namespace Avalonia.Native
 
                 using (var d = new Disposer(Address))
                 {
-                    win.ThreadSafeSetSwRenderedFrame(ref fb, d);
+                    win.ThreadSafeSetSwRenderedFrame(&fb, d);
                 }
             }))
             {

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Avalonia.Dialogs
 {
-    internal class FileSizeStringConverter : IValueConverter
+    public class FileSizeStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

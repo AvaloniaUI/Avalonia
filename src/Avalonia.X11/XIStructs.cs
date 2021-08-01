@@ -236,6 +236,34 @@ namespace Avalonia.X11
         public XIModifierState mods;
         public XIModifierState group;
     }
+    
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct XIEnterLeaveEvent
+    {
+        public XEventName type; /* GenericEvent */
+        public UIntPtr serial; /* # of last request processed by server */
+        public Bool send_event; /* true if this came from a SendEvent request */
+        public IntPtr display; /* Display the event was read from */
+        public int extension; /* XI extension offset */
+        public XiEventType evtype;
+        public IntPtr time;
+        public int deviceid;
+        public int sourceid;
+        public XiEnterLeaveDetail detail;
+        public IntPtr RootWindow;
+        public IntPtr EventWindow;
+        public IntPtr ChildWindow;
+        public double root_x;
+        public double root_y;
+        public double event_x;
+        public double event_y;
+        public int mode;
+        public int focus;
+        public int same_screen;
+        public XIButtonState buttons;
+        public XIModifierState mods;
+        public XIModifierState group;
+    }
 
     [Flags]
     public enum XiDeviceEventFlags : int
@@ -286,5 +314,18 @@ namespace Avalonia.X11
         XI_BarrierLeave = 26,
         XI_LASTEVENT = XI_BarrierLeave,
     }
-    
+
+    enum XiEnterLeaveDetail
+    {
+        XINotifyAncestor = 0,
+        XINotifyVirtual = 1,
+        XINotifyInferior = 2,
+        XINotifyNonlinear = 3,
+        XINotifyNonlinearVirtual = 4,
+        XINotifyPointer = 5,
+        XINotifyPointerRoot = 6,
+        XINotifyDetailNone = 7
+
+    }
+
 }

@@ -137,12 +137,37 @@
   </Style>
 
   <Style Selector="DataGridRowHeader">
+    <Setter Property="Focusable" Value="False" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid x:Name="PART_Root"
-        RowDefinitions="*,*,Auto"
-        ColumnDefinitions="Auto,*">
+              RowDefinitions="*,*,Auto"
+              ColumnDefinitions="Auto,*">
+          <Border Grid.RowSpan="3"
+                  Grid.ColumnSpan="2"
+                  BorderBrush="{TemplateBinding SeparatorBrush}"
+                  BorderThickness="0,0,1,0">
+            <Grid Background="{TemplateBinding Background}">
+              <Rectangle x:Name="RowInvalidVisualElement"
+                         Stretch="Fill" />
+              <Rectangle x:Name="BackgroundRectangle"
+                         Stretch="Fill" />
+            </Grid>
+          </Border>
+          <Rectangle x:Name="HorizontalSeparator"
+                     Grid.Row="2"
+                     Grid.ColumnSpan="2"
+                     Height="1"
+                     Margin="1,0,1,0"
+                     HorizontalAlignment="Stretch"
+                     Fill="{TemplateBinding SeparatorBrush}"
+                     IsVisible="{TemplateBinding AreSeparatorsVisible}" />
 
+          <ContentPresenter Grid.RowSpan="2"
+                            Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}" />
         </Grid>
       </ControlTemplate>
     </Setter>

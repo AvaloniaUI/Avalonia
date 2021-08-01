@@ -6,25 +6,21 @@
         <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="Decorated">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Header="Open"/>
-            <NativeMenuItem Header="Recent">
-              <NativeMenuItem.Menu>
-                <NativeMenu/>
-              </NativeMenuItem.Menu>
-            </NativeMenuItem>
-            <NativeMenuItem Header="Quit Avalonia" Gesture="CMD+Q"/>
-          </NativeMenu>
-        </NativeMenuItem.Menu>
+        <NativeMenu>
+          <NativeMenuItem Header="Open"/>
+          <NativeMenuItem Header="Recent">
+            <NativeMenuItem.Menu>
+              <NativeMenu/>
+            </NativeMenuItem.Menu>
+          </NativeMenuItem>
+          <NativeMenuItem Header="Quit Avalonia" Gesture="CMD+Q"/>
+        </NativeMenu>
       </NativeMenuItem>
       <NativeMenuItem Header="Edit">
-        <NativeMenuItem.Menu>
-          <NativeMenu>
-            <NativeMenuItem Header="Copy"/>
-            <NativeMenuItem Header="Paste"/>
-          </NativeMenu>
-        </NativeMenuItem.Menu>
+        <NativeMenu>
+          <NativeMenuItem Header="Copy"/>
+          <NativeMenuItem Header="Paste"/>
+        </NativeMenu>
       </NativeMenuItem>
     </NativeMenu>
   </NativeMenu.Menu>

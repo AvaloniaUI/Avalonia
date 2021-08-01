@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Surfaces;
 using CoreAnimation;
 using OpenTK.Graphics.ES30;
 

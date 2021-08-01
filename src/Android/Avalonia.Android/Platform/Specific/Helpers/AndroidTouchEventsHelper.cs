@@ -11,7 +11,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
         private TView _view;
         public bool HandleEvents { get; set; }
 
-        public AndroidTouchEventsHelper(TView view, Func<IInputRoot> getInputRoot, Func<MotionEvent, Point> getPointfunc)
+        public AndroidTouchEventsHelper(TView view, Func<IInputRoot> getInputRoot, Func<MotionEvent, int, Point> getPointfunc)
         {
             this._view = view;
             HandleEvents = true;
@@ -19,11 +19,9 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             _getInputRoot = getInputRoot;
         }
 
-        private DateTime _lastTouchMoveEventTime = DateTime.Now;
-        private Point? _lastTouchMovePoint;
-        private Func<MotionEvent, Point> _getPointFunc;
+        private TouchDevice _touchDevice = new TouchDevice();
+        private Func<MotionEvent, int, Point> _getPointFunc;
         private Func<IInputRoot> _getInputRoot;
-        private Point _point;
 
         public bool? DispatchTouchEvent(MotionEvent e, out bool callBase)
         {
@@ -33,89 +31,44 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 return null;
             }
 
-            RawPointerEventType? mouseEventType = null;
             var eventTime = DateTime.Now;
+
             //Basic touch support
-            switch (e.Action)
+            var pointerEventType = e.Action switch
             {
-                case MotionEventActions.Move:
-                    //may be bot flood the evnt system with too many event especially on not so powerfull mobile devices
-                    if ((eventTime - _lastTouchMoveEventTime).TotalMilliseconds > 10)
-                    {
-                        mouseEventType = RawPointerEventType.Move;
-                    }
-                    break;
+                MotionEventActions.Down => RawPointerEventType.TouchBegin,
+                MotionEventActions.Up => RawPointerEventType.TouchEnd,
+                MotionEventActions.Cancel => RawPointerEventType.TouchCancel,
+                _ => RawPointerEventType.TouchUpdate
+            };
 
-                case MotionEventActions.Down:
-                    mouseEventType = RawPointerEventType.LeftButtonDown;
-
-                    break;
-
-                case MotionEventActions.Up:
-                    mouseEventType = RawPointerEventType.LeftButtonUp;
-                    break;
+            if (e.Action.HasFlag(MotionEventActions.PointerDown))
+            {
+                pointerEventType = RawPointerEventType.TouchBegin;
             }
 
-            if (mouseEventType != null)
+            if (e.Action.HasFlag(MotionEventActions.PointerUp))
+            {
+                pointerEventType = RawPointerEventType.TouchEnd;
+            }
+
+            for (int i = 0; i < e.PointerCount; i++)
             {
                 //if point is in view otherwise it's possible avalonia not to find the proper window to dispatch the event
-                _point = _getPointFunc(e);
+                var point = _getPointFunc(e, i);
 
                 double x = _view.View.GetX();
                 double y = _view.View.GetY();
                 double r = x + _view.View.Width;
                 double b = y + _view.View.Height;
 
-                if (x <= _point.X && r >= _point.X && y <= _point.Y && b >= _point.Y)
+                if (x <= point.X && r >= point.X && y <= point.Y && b >= point.Y)
                 {
                     var inputRoot = _getInputRoot();
-                    var mouseDevice = Avalonia.Android.Platform.Input.AndroidMouseDevice.Instance;
 
-                    //in order the controls to work in a predictable way
-                    //we need to generate mouse move before first mouse down event
-                    //as this is the way buttons are working every time
-                    //otherwise there is a problem sometimes
-                    if (mouseEventType == RawPointerEventType.LeftButtonDown)
-                    {
-                        var me = new RawPointerEventArgs(mouseDevice, (uint)eventTime.Ticks, inputRoot,
-                                    RawPointerEventType.Move, _point, RawInputModifiers.None);
-                        _view.Input(me);
-                    }
-
-                    var mouseEvent = new RawPointerEventArgs(mouseDevice, (uint)eventTime.Ticks, inputRoot,
-                        mouseEventType.Value, _point, RawInputModifiers.LeftMouseButton);
+                    var mouseEvent = new RawTouchEventArgs(_touchDevice, (uint)eventTime.Ticks, inputRoot,
+                        i == e.ActionIndex ? pointerEventType : RawPointerEventType.TouchUpdate, point, RawInputModifiers.None, e.GetPointerId(i));
                     _view.Input(mouseEvent);
-
-                    if (e.Action == MotionEventActions.Move && mouseDevice.Captured == null)
-                    {
-                        if (_lastTouchMovePoint != null)
-                        {
-                            //raise mouse scroll event so the scrollers
-                            //are moving with the cursor
-                            double vectorX = _point.X - _lastTouchMovePoint.Value.X;
-                            double vectorY = _point.Y - _lastTouchMovePoint.Value.Y;
-                            //based on test correction of 0.02 is working perfect
-                            double correction = 0.02;
-                            var ps = AndroidPlatform.Instance.LayoutScalingFactor;
-                            var mouseWheelEvent = new RawMouseWheelEventArgs(
-                                        mouseDevice,
-                                        (uint)eventTime.Ticks,
-                                        inputRoot,
-                                        _point,
-                                        new Vector(vectorX * correction / ps, vectorY * correction / ps), RawInputModifiers.LeftMouseButton);
-                            _view.Input(mouseWheelEvent);
-                        }
-                        _lastTouchMovePoint = _point;
-                        _lastTouchMoveEventTime = eventTime;
-                    }
-                    else if (e.Action == MotionEventActions.Down)
-                    {
-                        _lastTouchMovePoint = _point;
-                    }
-                    else
-                    {
-                        _lastTouchMovePoint = null;
-                    }
                 }
             }
 

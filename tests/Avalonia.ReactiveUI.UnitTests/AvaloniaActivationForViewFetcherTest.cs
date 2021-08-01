@@ -74,17 +74,8 @@ namespace Avalonia.ReactiveUI.UnitTests
         {
             public ActivatableWindow()
             {
-                InitializeComponent();
-                Assert.IsType<Border>(Content);
+                Content = new Border();
                 this.WhenActivated(disposables => { });
-            }
-
-            private void InitializeComponent()
-            {
-                AvaloniaRuntimeXamlLoader.Load(@"
-<Window xmlns='https://github.com/avaloniaui'>
-    <Border/>
-</Window>", null, this);
             }
         }
 
@@ -92,26 +83,17 @@ namespace Avalonia.ReactiveUI.UnitTests
         {
             public ActivatableUserControl()
             {
-                InitializeComponent();
-                Assert.IsType<Border>(Content);
+                Content = new Border();
                 this.WhenActivated(disposables => { });
             }
-
-            private void InitializeComponent()
-            {
-                AvaloniaRuntimeXamlLoader.Load(@"
-<UserControl xmlns='https://github.com/avaloniaui'>
-    <Border/>
-</UserControl>", null, this);
-            }
         }
 
-        public AvaloniaActivationForViewFetcherTest()
-        {
-            Locator.CurrentMutable.RegisterConstant(
-                new AvaloniaActivationForViewFetcher(), 
-                typeof(IActivationForViewFetcher));
-        }
+        public AvaloniaActivationForViewFetcherTest() =>
+            Locator
+                .CurrentMutable
+                .RegisterConstant(
+                    new AvaloniaActivationForViewFetcher(),
+                    typeof(IActivationForViewFetcher));
 
         [Fact]
         public void Visual_Element_Is_Activated_And_Deactivated()

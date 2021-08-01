@@ -1,0 +1,17 @@
+<Style xmlns="https://github.com/avaloniaui" Selector="Label">
+  <Setter Property="Padding" Value="3"/>
+  <Setter Property="Template">
+    <ControlTemplate>
+      <ContentPresenter Name="PART_ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        Content="{TemplateBinding Content}"
+                        Padding="{TemplateBinding Padding}"
+                        RecognizesAccessKey="True"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+    </ControlTemplate>
+  </Setter>
+</Style>

@@ -113,22 +113,22 @@ namespace Avalonia.LinuxFramebuffer.Output
         [StructLayout(LayoutKind.Sequential)]
         public struct drmModeConnector {
             public uint connector_id;
-            public uint encoder_id; /**< Encoder currently connected to */
+            public uint encoder_id; // Encoder currently connected to 
             public uint connector_type;
             public uint connector_type_id;
             public DrmModeConnection connection;
-            public uint mmWidth, mmHeight; /**< HxW in millimeters */
+            public uint mmWidth, mmHeight; //  HxW in millimeters 
             public DrmModeSubPixel subpixel;
 
             public int count_modes;
             public drmModeModeInfo* modes;
 
             public int count_props;
-            public uint *props; /**< List of property ids */
-            public ulong *prop_values; /**< List of property values */
+            public uint *props; // List of property ids 
+            public ulong *prop_values; // List of property values 
 
             public int count_encoders;
-            public uint *encoders; /**< List of encoder ids */
+            public uint *encoders; //List of encoder ids
         }
         
         [StructLayout(LayoutKind.Sequential)]
@@ -143,14 +143,14 @@ namespace Avalonia.LinuxFramebuffer.Output
         [StructLayout(LayoutKind.Sequential)]
         public struct drmModeCrtc {
             public uint crtc_id;
-            public uint buffer_id; /**< FB id to connect to 0 = disconnect */
+            public uint buffer_id; // FB id to connect to 0 = disconnect 
 
-            public uint x, y; /**< Position on the framebuffer */
+            public uint x, y; // Position on the framebuffer 
             public uint width, height;
             public int mode_valid;
             public drmModeModeInfo mode;
 
-            public int gamma_size; /**< Number of gamma stops */
+            public int gamma_size; // Number of gamma stops 
 
         }
         

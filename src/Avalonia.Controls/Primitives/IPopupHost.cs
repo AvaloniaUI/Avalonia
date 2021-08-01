@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// (<see cref="PopupRoot"/>) or an <see cref="OverlayPopupHost"/> which is created
     /// on an <see cref="OverlayLayer"/>.
     /// </remarks>
-    public interface IPopupHost : IDisposable
+    public interface IPopupHost : IDisposable, IFocusScope
     {
         /// <summary>
         /// Sets the control to display in the popup.
@@ -46,6 +47,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="offset">The offset, in device-independent pixels.</param>
         /// <param name="anchor">The anchor point.</param>
         /// <param name="gravity">The popup gravity.</param>
+        /// <param name="constraintAdjustment">Defines how a popup position will be adjusted if the unadjusted position would result in the popup being partly constrained.</param>
         /// <param name="rect">
         /// The anchor rect. If null, the bounds of <paramref name="target"/> will be used.
         /// </param>

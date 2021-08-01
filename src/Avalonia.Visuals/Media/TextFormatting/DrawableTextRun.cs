@@ -6,9 +6,9 @@
     public abstract class DrawableTextRun : TextRun
     {
         /// <summary>
-        /// Gets the bounds.
+        /// Gets the size.
         /// </summary>
-        public abstract Rect Bounds { get; }
+        public abstract Size Size { get; }
 
         /// <summary>
         /// Draws the <see cref="DrawableTextRun"/> at the given origin.

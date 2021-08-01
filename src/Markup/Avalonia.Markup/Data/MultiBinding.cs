@@ -22,12 +22,12 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the <see cref="IMultiValueConverter"/> to use.
         /// </summary>
-        public IMultiValueConverter Converter { get; set; }
+        public IMultiValueConverter? Converter { get; set; }
 
         /// <summary>
         /// Gets or sets a parameter to pass to <see cref="Converter"/>.
         /// </summary>
-        public object ConverterParameter { get; set; }
+        public object? ConverterParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the value to use when the binding is unable to produce a value.
@@ -48,16 +48,16 @@ namespace Avalonia.Data
         /// Gets or sets the binding priority.
         /// </summary>
         public BindingPriority Priority { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the relative source for the binding.
         /// </summary>
-        public RelativeSource RelativeSource { get; set; }
+        public RelativeSource? RelativeSource { get; set; }
 
         /// <summary>
         /// Gets or sets the string format.
         /// </summary>
-        public string StringFormat { get; set; }
+        public string? StringFormat { get; set; }
 
         public MultiBinding()
         {
@@ -69,7 +69,7 @@ namespace Avalonia.Data
         public InstancedBinding Initiate(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
-            object anchor = null,
+            object? anchor = null,
             bool enableDataValidation = false)
         {
             var targetType = targetProperty?.PropertyType ?? typeof(object);
@@ -77,12 +77,12 @@ namespace Avalonia.Data
             // We only respect `StringFormat` if the type of the property we're assigning to will
             // accept a string. Note that this is slightly different to WPF in that WPF only applies
             // `StringFormat` for target type `string` (not `object`).
-            if (!string.IsNullOrWhiteSpace(StringFormat) && 
+            if (!string.IsNullOrWhiteSpace(StringFormat) &&
                 (targetType == typeof(string) || targetType == typeof(object)))
             {
                 converter = new StringFormatMultiValueConverter(StringFormat, converter);
             }
-            
+
             var children = Bindings.Select(x => x.Initiate(target, null));
 
             var input = children.Select(x => x.Observable)
@@ -105,7 +105,7 @@ namespace Avalonia.Data
             }
         }
 
-        private object ConvertValue(IList<object> values, Type targetType, IMultiValueConverter converter)
+        private object ConvertValue(IList<object?> values, Type targetType, IMultiValueConverter? converter)
         {
             for (var i = 0; i < values.Count; ++i)
             {
@@ -116,7 +116,16 @@ namespace Avalonia.Data
             }
 
             var culture = CultureInfo.CurrentCulture;
-            var converted = converter.Convert(values, targetType, ConverterParameter, culture);
+            values = new System.Collections.ObjectModel.ReadOnlyCollection<object?>(values);
+            object converted;
+            if (converter != null)
+            {
+                converted = converter.Convert(values, targetType, ConverterParameter, culture);
+            }
+            else
+            {
+                converted = values;
+            }
 
             if (converted == null)
             {

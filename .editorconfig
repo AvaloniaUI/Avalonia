@@ -156,6 +156,9 @@ indent_size = 2
 [*.{props,targets,config,nuspec}]
 indent_size = 2
 
+[*.json]
+indent_size = 2
+
 # Shell scripts
 [*.sh]
 end_of_line = lf

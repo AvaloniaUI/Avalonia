@@ -63,12 +63,12 @@ namespace Avalonia.Data.Core.Plugins
             {
                 if (errors.Count == 1)
                 {
-                    return new ValidationException(errors[0].ErrorMessage);
+                    return new DataValidationException(errors[0].ErrorMessage);
                 }
                 else
                 {
                     return new AggregateException(
-                        errors.Select(x => new ValidationException(x.ErrorMessage)));
+                        errors.Select(x => new DataValidationException(x.ErrorMessage)));
                 }
             }
         }

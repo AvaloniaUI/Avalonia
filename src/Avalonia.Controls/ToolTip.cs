@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Metadata;
@@ -21,8 +22,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the ToolTip.Tip attached property.
         /// </summary>
-        public static readonly AttachedProperty<object> TipProperty =
-            AvaloniaProperty.RegisterAttached<ToolTip, Control, object>("Tip");
+        public static readonly AttachedProperty<object?> TipProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, object?>("Tip");
 
         /// <summary>
         /// Defines the ToolTip.IsOpen attached property.
@@ -57,10 +58,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
-        internal static readonly AttachedProperty<ToolTip> ToolTipProperty =
-            AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip>("ToolTip");
+        internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip?>("ToolTip");
 
-        private IPopupHost _popup;
+        private IPopupHost? _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.
@@ -70,6 +71,10 @@ namespace Avalonia.Controls
             TipProperty.Changed.Subscribe(ToolTipService.Instance.TipChanged);
             IsOpenProperty.Changed.Subscribe(ToolTipService.Instance.TipOpenChanged);
             IsOpenProperty.Changed.Subscribe(IsOpenChanged);
+
+            HorizontalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
+            VerticalOffsetProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
+            PlacementProperty.Changed.Subscribe(RecalculatePositionOnPropertyChanged);
         }
 
         /// <summary>
@@ -79,7 +84,7 @@ namespace Avalonia.Controls
         /// <returns>
         /// The content to be displayed in the control's tooltip.
         /// </returns>
-        public static object GetTip(Control element)
+        public static object? GetTip(Control element)
         {
             return element.GetValue(TipProperty);
         }
@@ -89,7 +94,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="element">The control to get the property from.</param>
         /// <param name="value">The content to be displayed in the control's tooltip.</param>
-        public static void SetTip(Control element, object value)
+        public static void SetTip(Control element, object? value)
         {
             element.SetValue(TipProperty, value);
         }
@@ -207,8 +212,8 @@ namespace Avalonia.Controls
         private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var control = (Control)e.Sender;
-            var newValue = (bool)e.NewValue;
-            ToolTip toolTip;
+            var newValue = (bool)e.NewValue!;
+            ToolTip? toolTip;
 
             if (newValue)
             {
@@ -233,6 +238,23 @@ namespace Avalonia.Controls
             }
 
             toolTip?.UpdatePseudoClasses(newValue);
+        }
+
+        private static void RecalculatePositionOnPropertyChanged(AvaloniaPropertyChangedEventArgs args)
+        {
+            var control = (Control)args.Sender;
+            var tooltip = control.GetValue(ToolTipProperty);
+            if (tooltip == null)
+            {
+                return;
+            }
+
+            tooltip.RecalculatePosition(control);
+        }
+
+        internal void RecalculatePosition(Control control)
+        {
+            _popup?.ConfigurePosition(control, GetPlacement(control), new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
         }
 
         private void Open(Control control)

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Presenters;
@@ -128,6 +129,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
+        private bool _isOpenRequested = false;
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
@@ -152,6 +154,8 @@ namespace Avalonia.Controls.Primitives
         /// Raised when the popup opens.
         /// </summary>
         public event EventHandler? Opened;
+
+        internal event EventHandler<CancelEventArgs>? Closing;
 
         public IPopupHost? Host => _openState?.PopupHost;
 
@@ -264,6 +268,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the control that is used to determine the popup's position.
         /// </summary>
+        [ResolveByName]
         public Control? PlacementTarget
         {
             get { return GetValue(PlacementTargetProperty); }
@@ -357,21 +362,23 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            var placementTarget = PlacementTarget ?? this.GetLogicalAncestors().OfType<IVisual>().FirstOrDefault();
+            var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
 
             if (placementTarget == null)
             {
-                throw new InvalidOperationException("Popup has no logical parent and PlacementTarget is null");
+                _isOpenRequested = true;
+                return;
             }
             
             var topLevel = placementTarget.VisualRoot as TopLevel;
 
             if (topLevel == null)
             {
-                throw new InvalidOperationException(
-                    "Attempted to open a popup not attached to a TopLevel");
+                _isOpenRequested = true;
+                return;
             }
 
+            _isOpenRequested = false;
             var popupHost = OverlayPopupHost.CreatePopupHost(placementTarget, DependencyResolver);
 
             var handlerCleanup = new CompositeDisposable(5);
@@ -492,6 +499,17 @@ namespace Avalonia.Controls.Primitives
             return new Size();
         }
 
+
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_isOpenRequested)
+            {
+                Open();
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
@@ -552,6 +570,14 @@ namespace Avalonia.Controls.Primitives
 
         private void CloseCore()
         {
+            var closingArgs = new CancelEventArgs();
+            Closing?.Invoke(this, closingArgs);
+            if (closingArgs.Cancel)
+            {
+                return;
+            }
+
+            _isOpenRequested = false;
             if (_openState is null)
             {
                 using (BeginIgnoringIsOpen())
@@ -571,6 +597,26 @@ namespace Avalonia.Controls.Primitives
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
+
+            var focusCheck = FocusManager.Instance?.Current;
+
+            // Focus is set to null as part of popup closing, so we only want to
+            // set focus to PlacementTarget if this is the case
+            if (focusCheck == null)
+            {
+                if (PlacementTarget != null)
+                {
+                    FocusManager.Instance?.Focus(PlacementTarget);
+                }
+                else
+                {
+                    var anc = this.FindLogicalAncestorOfType<IControl>();
+                    if (anc != null)
+                    {
+                        FocusManager.Instance?.Focus(anc);
+                    }
+                }
+            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)

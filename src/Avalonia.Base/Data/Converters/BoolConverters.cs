@@ -12,5 +12,11 @@ namespace Avalonia.Data.Converters
         /// </summary>
         public static readonly IMultiValueConverter And =
             new FuncMultiValueConverter<bool, bool>(x => x.All(y => y));
+
+        /// <summary>
+        /// A multi-value converter that returns true if any of the inputs is true.
+        /// </summary>
+        public static readonly IMultiValueConverter Or =
+            new FuncMultiValueConverter<bool, bool>(x => x.Any(y => y));
     }
 }

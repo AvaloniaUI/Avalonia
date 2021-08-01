@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Avalonia.Logging;
 using Avalonia.Threading;
 using Tmds.DBus;
 
@@ -43,13 +44,15 @@ namespace Avalonia.FreeDesktop
             public void Initialized()
             {
                 lock (_lock)
-                    _ctx = new AvaloniaSynchronizationContext(null);
+                    _ctx = new AvaloniaSynchronizationContext();
             }
         }
         public static Connection Connection { get; private set; }
 
-        public static Exception TryInitialize(string dbusAddress = null)
+        public static Connection TryInitialize(string dbusAddress = null)
         {
+            if (Connection != null)
+                return Connection;
             var oldContext = SynchronizationContext.Current;
             try
             {
@@ -70,13 +73,15 @@ namespace Avalonia.FreeDesktop
             }
             catch (Exception e)
             {
-                return e;
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
+                    ?.Log(null, "Unable to connect to DBus: " + e);
             }
             finally
             {
                 SynchronizationContext.SetSynchronizationContext(oldContext);
             }
-            return null;
+
+            return Connection;
         }
     }
 }

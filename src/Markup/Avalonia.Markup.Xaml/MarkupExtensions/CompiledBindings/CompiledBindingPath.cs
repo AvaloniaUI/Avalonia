@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
@@ -53,6 +54,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                     case IStronglyTypedStreamElement stream:
                         node = new StreamNode(stream.CreatePlugin());
                         break;
+                    case ITypeCastElement typeCast:
+                        node = new StrongTypeCastNode(typeCast.Type, typeCast.Cast);
+                        break;
                     default:
                         throw new InvalidOperationException($"Unknown binding path element type {element.GetType().FullName}");
                 }
@@ -66,6 +70,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         internal SourceMode SourceMode => _elements.Count > 0 && _elements[0] is IControlSourceBindingPathElement ? SourceMode.Control : SourceMode.Data;
 
         internal object RawSource { get; }
+
+        public override string ToString()
+            => string.Concat(_elements);
     }
 
     public class CompiledBindingPathBuilder
@@ -81,7 +88,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
-            _elements.Add(new PropertyElement(info, accessorFactory));
+            _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0));
             return this;
         }
 
@@ -126,6 +133,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
+        public CompiledBindingPathBuilder TypeCast<T>()
+        {
+            _elements.Add(new TypeCastPathElement<T>());
+            return this;
+        }
+
         public CompiledBindingPathBuilder SetRawSource(object rawSource)
         {
             _rawSource = rawSource;
@@ -148,20 +161,33 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class PropertyElement : ICompiledBindingPathElement
     {
-        public PropertyElement(IPropertyInfo property, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
+        private readonly bool _isFirstElement;
+
+        public PropertyElement(IPropertyInfo property, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory, bool isFirstElement)
         {
             Property = property;
             AccessorFactory = accessorFactory;
+            _isFirstElement = isFirstElement;
         }
 
         public IPropertyInfo Property { get; }
 
         public Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> AccessorFactory { get; }
+
+        public override string ToString()
+            => _isFirstElement ? Property.Name : $".{Property.Name}";
     }
 
     internal interface IStronglyTypedStreamElement : ICompiledBindingPathElement
     {
         IStreamPlugin CreatePlugin();
+    }
+
+    internal interface ITypeCastElement : ICompiledBindingPathElement
+    {
+        Type Type { get; }
+
+        Func<object, object> Cast { get; }
     }
 
     internal class TaskStreamPathElement<T> : IStronglyTypedStreamElement
@@ -181,6 +207,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
     internal class SelfPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
     {
         public static readonly SelfPathElement Instance = new SelfPathElement();
+
+        public override string ToString()
+            => "$self";
     }
 
     internal class AncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
@@ -193,6 +222,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public Type AncestorType { get; }
         public int Level { get; }
+
+        public override string ToString()
+           => $"$parent[{AncestorType?.Name},{Level}]";
     }
 
     internal class VisualAncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
@@ -217,6 +249,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public INameScope NameScope { get; }
         public string Name { get; }
+
+        public override string ToString()
+            => $"#{Name}";
     }
 
     internal class ArrayElementPathElement : ICompiledBindingPathElement
@@ -229,5 +264,24 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public int[] Indices { get; }
         public Type ElementType { get; }
+        public override string ToString()
+            => $"[{string.Join(",", Indices)}]";
+    }
+
+    internal class TypeCastPathElement<T> : ITypeCastElement
+    {
+        private static object TryCast(object obj)
+        {
+            if (obj is T result)
+                return result;
+            return null;
+        }
+
+        public Type Type => typeof(T);
+
+        public Func<object, object> Cast => TryCast;
+
+        public override string ToString()
+            => $"({Type.FullName})";
     }
 }

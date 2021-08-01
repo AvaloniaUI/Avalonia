@@ -32,8 +32,10 @@ namespace Avalonia.X11
 
         public IntPtr LastActivityTimestamp { get; set; }
         public XVisualInfo? TransparentVisualInfo { get; set; }
+        public bool HasXim { get; set; }
+        public IntPtr DefaultFontSet { get; set; }
         
-        public unsafe X11Info(IntPtr display, IntPtr deferredDisplay)
+        public unsafe X11Info(IntPtr display, IntPtr deferredDisplay, bool useXim)
         {
             Display = display;
             DeferredDisplay = deferredDisplay;
@@ -43,9 +45,24 @@ namespace Avalonia.X11
             DefaultCursor = XCreateFontCursor(display, CursorFontShape.XC_top_left_arrow);
             DefaultRootWindow = XDefaultRootWindow(display);
             Atoms = new X11Atoms(display);
-            //TODO: Open an actual XIM once we get support for preedit in our textbox
-            XSetLocaleModifiers("@im=none");
-            Xim = XOpenIM(display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+
+            DefaultFontSet = XCreateFontSet(Display, "-*-*-*-*-*-*-*-*-*-*-*-*-*-*",
+                out var _, out var _, IntPtr.Zero);
+            
+            if (useXim)
+            {
+                XSetLocaleModifiers("");
+                Xim = XOpenIM(display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+                if (Xim != IntPtr.Zero)
+                    HasXim = true;
+            }
+
+            if (Xim == IntPtr.Zero)
+            {
+                XSetLocaleModifiers("@im=none");
+                Xim = XOpenIM(display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            }
+
             XMatchVisualInfo(Display, DefaultScreen, 32, 4, out var visual);
             if (visual.depth == 32)
                 TransparentVisualInfo = visual;

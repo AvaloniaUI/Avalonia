@@ -1,10 +1,10 @@
 ﻿using System;
-using ReactiveUI;
+using MiniMvvm;
 using Avalonia.Animation;
 
 namespace RenderDemo.ViewModels
 {
-    public class AnimationsPageViewModel : ReactiveObject
+    public class AnimationsPageViewModel : ViewModelBase
     {
         private bool _isPlaying = true;
 

@@ -19,7 +19,7 @@ namespace Avalonia.Animation
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            return KeySpline.Parse((string)value, culture);
+            return KeySpline.Parse((string)value, CultureInfo.InvariantCulture);
         }
     }
 }

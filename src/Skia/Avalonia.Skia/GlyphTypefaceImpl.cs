@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Avalonia.Media;
 using Avalonia.Platform;
 using HarfBuzzSharp;
 using SkiaSharp;
@@ -24,40 +23,33 @@ namespace Avalonia.Skia
 
             Font.SetFunctionsOpenType();
 
-            Font.GetScale(out var xScale, out _);
+            DesignEmHeight = (short)Typeface.UnitsPerEm;
 
-            DesignEmHeight = (short)xScale;
+            var metrics = Typeface.ToFont().Metrics;
 
-            if (!Font.TryGetHorizontalFontExtents(out var fontExtents))
-            {
-                Font.TryGetVerticalFontExtents(out fontExtents);
-            }
+            const double defaultFontRenderingEmSize = 12.0;
 
-            Ascent = -fontExtents.Ascender;
+            Ascent = (int)(metrics.Ascent / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
 
-            Descent = -fontExtents.Descender;
+            Descent = (int)(metrics.Descent / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
 
-            LineGap = fontExtents.LineGap;
+            LineGap = (int)(metrics.Leading / defaultFontRenderingEmSize * Typeface.UnitsPerEm);
 
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineOffset, out var underlinePosition))
-            {
-                UnderlinePosition = underlinePosition;
-            }
+            UnderlinePosition = metrics.UnderlinePosition != null ?
+                (int)(metrics.UnderlinePosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
+                0;
 
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineSize, out var underlineThickness))
-            {
-                UnderlineThickness = underlineThickness;
-            }
+            UnderlineThickness = metrics.UnderlineThickness != null ?
+                (int)(metrics.UnderlineThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
+                0;
 
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutOffset, out var strikethroughPosition))
-            {
-                StrikethroughPosition = strikethroughPosition;
-            }
+            StrikethroughPosition = metrics.StrikeoutPosition != null ?
+                (int)(metrics.StrikeoutPosition / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
+                0;
 
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutSize, out var strikethroughThickness))
-            {
-                StrikethroughThickness = strikethroughThickness;
-            }
+            StrikethroughThickness = metrics.StrikeoutThickness != null ?
+                (int)(metrics.StrikeoutThickness / defaultFontRenderingEmSize * Typeface.UnitsPerEm) :
+                0;
 
             IsFixedPitch = Typeface.IsFixedPitch;
         }

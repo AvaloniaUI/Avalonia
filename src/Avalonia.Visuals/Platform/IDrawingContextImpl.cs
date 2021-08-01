@@ -69,7 +69,7 @@ namespace Avalonia.Platform
         /// If the pen is null, then no stoke is performed. If both the pen and the brush are null, then the drawing is not visible.
         /// </remarks>
         void DrawRectangle(IBrush brush, IPen pen, RoundedRect rect,
-            BoxShadows boxShadow = default);
+            BoxShadows boxShadows = default);
 
         /// <summary>
         /// Draws text.
@@ -84,8 +84,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="baselineOrigin">The baseline origin of the glyph run.</param>
-        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun, Point baselineOrigin);
+        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
@@ -99,7 +98,7 @@ namespace Avalonia.Platform
         /// has to do a format conversion each time a standard render target bitmap is rendered,
         /// but a layer created via this method has no such overhead.
         /// </remarks>
-        IRenderTargetBitmapImpl CreateLayer(Size size);
+        IDrawingContextLayerImpl CreateLayer(Size size);
 
         /// <summary>
         /// Pushes a clip rectangle.
@@ -149,11 +148,36 @@ namespace Avalonia.Platform
         /// Pops the latest pushed geometry clip.
         /// </summary>
         void PopGeometryClip();
+        
+        /// <summary>
+        /// Pushes a bitmap blending value.
+        /// </summary>
+        /// <param name="blendingMode">The bitmap blending mode.</param>
+        void PushBitmapBlendMode(BitmapBlendingMode blendingMode);
+
+        /// <summary>
+        /// Pops the latest pushed bitmap blending value.
+        /// </summary>
+        void PopBitmapBlendMode();
 
         /// <summary>
         /// Adds a custom draw operation
         /// </summary>
         /// <param name="custom">Custom draw operation</param>
         void Custom(ICustomDrawOperation custom);
+    }
+
+    public interface IDrawingContextLayerImpl : IRenderTargetBitmapImpl
+    {
+        /// <summary>
+        /// Does optimized blit with Src blend mode
+        /// </summary>
+        /// <param name="context"></param>
+        void Blit(IDrawingContextImpl context);
+        
+        /// <summary>
+        /// Returns true if layer supports optimized blit
+        /// </summary>
+        bool CanBlit { get; }
     }
 }

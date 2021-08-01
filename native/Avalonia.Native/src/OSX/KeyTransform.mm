@@ -120,6 +120,138 @@ const int kVK_UpArrow = 0x7E;
 //const int kVK_JIS_Eisu = 0x66;
 const int kVK_JIS_Kana = 0x68;
 
+// converts from AvaloniaKeys to UnicodeSpecial keys.
+std::map<AvnKey, int> s_UnicodeKeyMap =
+{
+    { Up, NSUpArrowFunctionKey },
+    { Down, NSDownArrowFunctionKey },
+    { Left, NSLeftArrowFunctionKey },
+    { Right, NSRightArrowFunctionKey },
+    { F1, NSF1FunctionKey },
+    { F2, NSF2FunctionKey },
+    { F3, NSF3FunctionKey },
+    { F4, NSF4FunctionKey },
+    { F5, NSF5FunctionKey },
+    { F6, NSF6FunctionKey },
+    { F7, NSF7FunctionKey },
+    { F8, NSF8FunctionKey },
+    { F9, NSF9FunctionKey },
+    { F10, NSF10FunctionKey },
+    { F11, NSF11FunctionKey },
+    { F12, NSF12FunctionKey },
+    { F13, NSF13FunctionKey },
+    { F14, NSF14FunctionKey },
+    { F15, NSF15FunctionKey },
+    { F16, NSF16FunctionKey },
+    { F17, NSF17FunctionKey },
+    { F18, NSF18FunctionKey },
+    { F19, NSF19FunctionKey },
+    { F20, NSF20FunctionKey },
+    { F21, NSF21FunctionKey },
+    { F22, NSF22FunctionKey },
+    { F23, NSF23FunctionKey },
+    { F24, NSF24FunctionKey },
+    { Insert, NSInsertFunctionKey },
+    { Delete, NSDeleteFunctionKey },
+    { Home, NSHomeFunctionKey },
+    //{ Begin, NSBeginFunctionKey },
+    { End, NSEndFunctionKey },
+    { PageUp, NSPageUpFunctionKey },
+    { PageDown, NSPageDownFunctionKey },
+    { PrintScreen, NSPrintScreenFunctionKey },
+    { Scroll, NSScrollLockFunctionKey },
+    //{ SysReq, NSSysReqFunctionKey },
+    //{ Break, NSBreakFunctionKey },
+    //{ Reset, NSResetFunctionKey },
+    //{ Stop, NSStopFunctionKey },
+    //{ Menu, NSMenuFunctionKey },
+    //{ UserFunction, NSUserFunctionKey },
+    //{ SystemFunction, NSSystemFunctionKey },
+    { Print, NSPrintFunctionKey },
+    //{ ClearLine, NSClearLineFunctionKey },
+    //{ ClearDisplay, NSClearDisplayFunctionKey },
+};
+
+// Converts from Ansi virtual keys to Qwerty Keyboard map.
+std::map<int, const char*> s_QwertyKeyMap =
+{
+    { 0, "a" },
+    { 1, "s" },
+    { 2, "d" },
+    { 3, "f" },
+    { 4, "h" },
+    { 5, "g" },
+    { 6, "z" },
+    { 7, "x" },
+    { 8, "c" },
+    { 9, "v" },
+    { 10, "§" },
+    { 11, "b" },
+    { 12, "q" },
+    { 13, "w" },
+    { 14, "e" },
+    { 15, "r" },
+    { 16, "y" },
+    { 17, "t" },
+    { 18, "1" },
+    { 19, "2" },
+    { 20, "3" },
+    { 21, "4" },
+    { 22, "6" },
+    { 23, "5" },
+    { 24, "=" },
+    { 25, "9" },
+    { 26, "7" },
+    { 27, "-" },
+    { 28, "8" },
+    { 29, "0" },
+    { 30, "]" },
+    { 31, "o" },
+    { 32, "u" },
+    { 33, "[" },
+    { 34, "i" },
+    { 35, "p" },
+    { 37, "l" },
+    { 38, "j" },
+    { 39, "'" },
+    { 40, "k" },
+    { 41, ";" },
+    { 42, "\\" },
+    { 43, "," },
+    { 44, "/" },
+    { 45, "n" },
+    { 46, "m" },
+    { 47, "." },
+    { 49, " " },
+    { 50, "`" },
+    { 51, "" },
+    { 52, "" },
+    { 53, "" },
+    { 65, "." },
+    { 66, "" },
+    { 67, "*" },
+    { 69, "+" },
+    { 70, "" },
+    { 71, "" },
+    { 72, "" },
+    { 75, "/" },
+    { 76, "" },
+    { 77, "" },
+    { 78, "-" },
+    { 81, "=" },
+    { 82, "0" },
+    { 83, "1" },
+    { 84, "2" },
+    { 85, "3" },
+    { 86, "4" },
+    { 87, "5" },
+    { 88, "6" },
+    { 89, "7" },
+    { 91, "8" },
+    { 92, "9" }
+};
+
+// converts from ansi virtualkeys to AvnKeys.
  std::map<int, AvnKey> s_KeyMap =
  {
     {kVK_ANSI_A, A},
@@ -237,3 +369,22 @@ const int kVK_JIS_Kana = 0x68;
     {kVK_UpArrow, Up},
     {kVK_JIS_Kana, AvnKeyKanaMode},
 };
+
+static std::map<AvnKey, int> BuildAvnKeyMap ()
+{
+    std::map<AvnKey, int> result;
+    
+    for( auto it = s_KeyMap.begin(); it != s_KeyMap.end(); ++it )
+    {
+        int key = it->first;
+        AvnKey value = it->second;
+        
+        result[value] = key;
+    }
+    
+    return result;
+}
+
+// Converts AvnKeys to Ansi VirtualKeys
+std::map<AvnKey, int> s_AvnKeyMap = BuildAvnKeyMap();
+

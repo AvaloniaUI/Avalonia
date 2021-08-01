@@ -756,7 +756,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         private void IgnoreFirstFrame(IRenderLoopTask task, Mock<ISceneBuilder> sceneBuilder)
         {
             RunFrame(task);
-            sceneBuilder.ResetCalls();
+            sceneBuilder.Invocations.Clear();
         }
 
         private void RunFrame(IRenderLoopTask task)

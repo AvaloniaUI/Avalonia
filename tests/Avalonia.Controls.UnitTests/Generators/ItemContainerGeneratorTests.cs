@@ -144,6 +144,16 @@ namespace Avalonia.Controls.UnitTests.Generators
             Assert.Equal("bar", container.Content);
         }
 
+        [Fact]
+        public void Materialize_Should_Create_Containers_When_Item_Is_Null()
+        {
+            var owner = new Decorator();
+            var target = new ItemContainerGenerator<ListBoxItem>(owner, ListBoxItem.ContentProperty, null);
+            var container = (ListBoxItem)target.Materialize(0, null).ContainerControl;
+
+            Assert.True(container != null, "The containers is not materialized.");
+        }
+
         private IList<ItemContainerInfo> Materialize(
             IItemContainerGenerator generator,
             int index,

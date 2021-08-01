@@ -1,15 +1,18 @@
 using System;
+using System.Reactive.Disposables;
 using Avalonia.OpenGL;
 using OpenGLES;
 using OpenTK.Graphics.ES30;
 
 namespace Avalonia.iOS
 {
-    class EaglFeature : IWindowingPlatformGlFeature
+    class EaglFeature : IPlatformOpenGlInterface
     {
+        public IGlContext PrimaryContext => Context;
+        public IGlContext CreateSharedContext() => throw new NotSupportedException();
+        public bool CanShareContexts => false;
+        public bool CanCreateContexts => false;
         public IGlContext CreateContext() => throw new System.NotSupportedException();
-
-        public IGlContext MainContext => Context;
         public GlContext Context { get; } = new GlContext();
     }
 
@@ -60,6 +63,15 @@ namespace Avalonia.iOS
                 throw new OpenGlException("Unable to make context current");
             return new ResetContext(old);
         }
+
+        public IDisposable EnsureCurrent()
+        {
+            if(EAGLContext.CurrentContext == Context)
+                return Disposable.Empty;
+            return MakeCurrent();
+        }
+
+        public bool IsSharedWith(IGlContext context) => false;
 
         public GlVersion Version { get; } = new GlVersion(GlProfileType.OpenGLES, 3, 0);
         public GlInterface GlInterface { get; }

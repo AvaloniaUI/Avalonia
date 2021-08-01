@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
@@ -16,18 +17,21 @@ namespace Avalonia.Diagnostics.ViewModels
         private readonly IDisposable _pointerOverSubscription;
         private ViewModelBase _content;
         private int _selectedTab;
-        private string _focusedControl;
-        private string _pointerOverElement;
+        private string? _focusedControl;
+        private string? _pointerOverElement;
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
 
+#nullable disable
+        // Remove "nullable disable" after MemberNotNull will work on our CI.
         public MainViewModel(TopLevel root)
+#nullable restore
         {
             _root = root;
             _logicalTree = new TreePageViewModel(this, LogicalTreeNode.Create(root));
             _visualTree = new TreePageViewModel(this, VisualTreeNode.Create(root));
-            _events = new EventsPageViewModel(root);
+            _events = new EventsPageViewModel(this);
 
             UpdateFocusedControl();
             KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
@@ -83,6 +87,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public ViewModelBase Content
         {
             get { return _content; }
+            // [MemberNotNull(nameof(_content))]
             private set
             {
                 if (_content is TreePageViewModel oldTree &&
@@ -113,20 +118,21 @@ namespace Avalonia.Diagnostics.ViewModels
         public int SelectedTab
         {
             get { return _selectedTab; }
+            // [MemberNotNull(nameof(_content))]
             set
             {
                 _selectedTab = value;
 
                 switch (value)
                 {
-                    case 0:
-                        Content = _logicalTree;
-                        break;
                     case 1:
                         Content = _visualTree;
                         break;
                     case 2:
                         Content = _events;
+                        break;
+                    default:
+                        Content = _logicalTree;
                         break;
                 }
 
@@ -134,18 +140,18 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public string FocusedControl
+        public string? FocusedControl
         {
             get { return _focusedControl; }
             private set { RaiseAndSetIfChanged(ref _focusedControl, value); }
         }
 
-        public string PointerOverElement
+        public string? PointerOverElement
         {
             get { return _pointerOverElement; }
             private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
         }
-
+        
         private void UpdateConsoleContext(ConsoleContext context)
         {
             context.root = _root;
@@ -163,6 +169,14 @@ namespace Avalonia.Diagnostics.ViewModels
             tree?.SelectControl(control);
         }
 
+        public void EnableSnapshotStyles(bool enable)
+        {
+            if (Content is TreePageViewModel treeVm && treeVm.Details != null)
+            {
+                treeVm.Details.SnapshotStyles = enable;
+            }
+        }
+
         public void Dispose()
         {
             KeyboardDevice.Instance.PropertyChanged -= KeyboardPropertyChanged;
@@ -178,12 +192,33 @@ namespace Avalonia.Diagnostics.ViewModels
             FocusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
         }
 
-        private void KeyboardPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void KeyboardPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(KeyboardDevice.Instance.FocusedElement))
             {
                 UpdateFocusedControl();
             }
+        }
+
+        public void RequestTreeNavigateTo(IControl control, bool isVisualTree)
+        {
+            var tree = isVisualTree ? _visualTree : _logicalTree;
+
+            var node = tree.FindNode(control);
+
+            if (node != null)
+            {
+                SelectedTab = isVisualTree ? 1 : 0;
+
+                tree.SelectControl(control);
+            }
+        }
+
+        public int? StartupScreenIndex { get; private set; } = default;
+
+        public void SetOptions(DevToolsOptions options)
+        {
+            StartupScreenIndex = options.StartupScreenIndex;
         }
     }
 }

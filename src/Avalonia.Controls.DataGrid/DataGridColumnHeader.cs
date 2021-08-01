@@ -274,6 +274,12 @@ namespace Avalonia.Controls
                                     owningGrid.DataConnection.SortDescriptions.Add(newSort);
                                 }
                             }
+                            else if (OwningColumn.CustomSortComparer != null)
+                            {
+                                newSort = DataGridSortDescription.FromComparer(OwningColumn.CustomSortComparer);
+
+                                owningGrid.DataConnection.SortDescriptions.Add(newSort);
+                            }
                             else
                             {
                                 string propertyName = OwningColumn.GetSortPropertyName();
@@ -340,8 +346,6 @@ namespace Avalonia.Controls
 
             if (OwningGrid != null && OwningGrid.ColumnHeaders != null)
             {
-                args.Pointer.Capture(this);
-
                 _dragMode = DragMode.MouseDown;
                 _frozenColumnsWidth = OwningGrid.ColumnsInternal.GetVisibleFrozenEdgedColumnsWidth();
                 _lastMousePositionHeaders = this.Translate(OwningGrid.ColumnHeaders, mousePosition);
@@ -413,8 +417,9 @@ namespace Avalonia.Controls
         }
 
         //TODO DragEvents
-        internal void OnMouseMove(ref bool handled, Point mousePosition, Point mousePositionHeaders)
+        internal void OnMouseMove(PointerEventArgs args, Point mousePosition, Point mousePositionHeaders)
         {
+            var handled = args.Handled;
             if (handled || OwningGrid == null || OwningGrid.ColumnHeaders == null)
             {
                 return;
@@ -438,7 +443,10 @@ namespace Avalonia.Controls
             }
 
             _lastMousePositionHeaders = mousePositionHeaders;
-
+            
+            if (args.Pointer.Captured != this && _dragMode == DragMode.Drag)
+                args.Pointer.Capture(this);
+            
             SetDragCursor(mousePosition);
         }
 
@@ -506,8 +514,7 @@ namespace Avalonia.Controls
             Point mousePosition = e.GetPosition(this);
             Point mousePositionHeaders = e.GetPosition(OwningGrid.ColumnHeaders);
 
-            bool handled = false;
-            OnMouseMove(ref handled, mousePosition, mousePositionHeaders);
+            OnMouseMove(e, mousePosition, mousePositionHeaders);
         }
 
         /// <summary>

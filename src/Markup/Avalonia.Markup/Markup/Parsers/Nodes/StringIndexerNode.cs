@@ -29,15 +29,15 @@ namespace Avalonia.Markup.Parsers.Nodes
             var list = target as IList;
             var dictionary = target as IDictionary;
             var indexerProperty = GetIndexer(typeInfo);
-            var indexerParameters = indexerProperty?.GetIndexParameters();
+            ParameterInfo[] indexerParameters;
 
-            if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
+            if (indexerProperty != null && (indexerParameters = indexerProperty.GetIndexParameters()).Length == Arguments.Count)
             {
                 var convertedObjectArray = new object[indexerParameters.Length];
 
                 for (int i = 0; i < Arguments.Count; i++)
                 {
-                    object temp = null;
+                    object? temp = null;
 
                     if (!TypeUtilities.TryConvert(indexerParameters[i].ParameterType, Arguments[i], CultureInfo.InvariantCulture, out temp))
                     {
@@ -125,11 +125,14 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         public IList<string> Arguments { get; }
 
-        public override Type PropertyType
+        public override Type? PropertyType
         {
             get
             {
-                Target.TryGetTarget(out object target);
+                if (!Target.TryGetTarget(out object target))
+                {
+                    return null;
+                }
 
                 return GetIndexer(target.GetType().GetTypeInfo())?.PropertyType;
             }
@@ -141,15 +144,15 @@ namespace Avalonia.Markup.Parsers.Nodes
             var list = target as IList;
             var dictionary = target as IDictionary;
             var indexerProperty = GetIndexer(typeInfo);
-            var indexerParameters = indexerProperty?.GetIndexParameters();
+            ParameterInfo[] indexerParameters;
 
-            if (indexerProperty != null && indexerParameters.Length == Arguments.Count)
+            if (indexerProperty != null && (indexerParameters = indexerProperty.GetIndexParameters()).Length == Arguments.Count)
             {
                 var convertedObjectArray = new object[indexerParameters.Length];
 
                 for (int i = 0; i < Arguments.Count; i++)
                 {
-                    object temp = null;
+                    object? temp = null;
 
                     if (!TypeUtilities.TryConvert(indexerParameters[i].ParameterType, Arguments[i], CultureInfo.InvariantCulture, out temp))
                     {
@@ -243,7 +246,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return true;
         }
 
-        private static PropertyInfo GetIndexer(TypeInfo typeInfo)
+        private static PropertyInfo? GetIndexer(TypeInfo? typeInfo)
         {
             PropertyInfo indexer;
 

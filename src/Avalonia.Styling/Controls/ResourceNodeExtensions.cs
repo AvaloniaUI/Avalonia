@@ -60,7 +60,7 @@ namespace Avalonia.Controls
         }
 
         public static IObservable<object?> GetResourceObservable(
-            this IStyledElement control,
+            this IResourceHost control,
             object key,
             Func<object?, object?>? converter = null)
         {
@@ -83,11 +83,11 @@ namespace Avalonia.Controls
 
         private class ResourceObservable : LightweightObservableBase<object?>
         {
-            private readonly IStyledElement _target;
+            private readonly IResourceHost _target;
             private readonly object _key;
             private readonly Func<object?, object?>? _converter;
 
-            public ResourceObservable(IStyledElement target, object key, Func<object?, object?>? converter)
+            public ResourceObservable(IResourceHost target, object key, Func<object?, object?>? converter)
             {
                 _target = target;
                 _key = key;
@@ -147,13 +147,16 @@ namespace Avalonia.Controls
             {
                 if (_target.Owner is object)
                 {
-                    observer.OnNext(Convert(_target.Owner?.FindResource(_key)));
+                    observer.OnNext(Convert(_target.Owner.FindResource(_key)));
                 }
             }
 
             private void PublishNext()
             {
-                PublishNext(Convert(_target.Owner?.FindResource(_key)));
+                if (_target.Owner is object)
+                {
+                    PublishNext(Convert(_target.Owner.FindResource(_key)));
+                }
             }
 
             private void OwnerChanged(object sender, EventArgs e)

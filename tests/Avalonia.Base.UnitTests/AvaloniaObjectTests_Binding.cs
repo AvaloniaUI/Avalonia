@@ -4,6 +4,8 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Platform;
@@ -795,6 +797,24 @@ namespace Avalonia.Base.UnitTests
             target.Bind(Class1.DoubleValueProperty, new Binding("[0]", BindingMode.TwoWay) { Source = source });
 
             Assert.False(source.SetterCalled);
+        }
+
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Fail_With_Null_DataContext()
+        {
+            var target = new TextBlock();
+            target.DataContext = null;
+
+            target.Bind(TextBlock.TextProperty, new Binding("Missing", BindingMode.TwoWay));
+        }
+
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Fail_With_Null_DataContext_Indexer()
+        {
+            var target = new TextBlock();
+            target.DataContext = null;
+
+            target.Bind(TextBlock.TextProperty, new Binding("[0]", BindingMode.TwoWay));
         }
 
         [Fact]

@@ -123,7 +123,7 @@ namespace Avalonia.X11
             }
         }
 
-        private void HandleCompositionAtomOwnerEvents(XEvent ev)
+        private void HandleCompositionAtomOwnerEvents(ref XEvent ev)
         {
             if(ev.type == XEventName.DestroyNotify)
                 UpdateCompositingAtomOwner();
@@ -154,7 +154,7 @@ namespace Avalonia.X11
             }
         }
         
-        private void OnRootWindowEvent(XEvent ev)
+        private void OnRootWindowEvent(ref XEvent ev)
         {
             if (ev.type == XEventName.PropertyNotify)
             {

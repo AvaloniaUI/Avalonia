@@ -17,8 +17,9 @@ namespace Avalonia.Win32
         [ThreadStatic]
         private static IntPtr s_parentHandle;
 
-        public override void Show()
+        public override void Show(bool activate, bool isDialog)
         {
+            // Popups are always shown non-activated.
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
 
             // We need to steal focus if it's held by a child window of our toplevel window
@@ -69,7 +70,8 @@ namespace Avalonia.Win32
         {
             UnmanagedMethods.WindowStyles style =
                 UnmanagedMethods.WindowStyles.WS_POPUP |
-                UnmanagedMethods.WindowStyles.WS_CLIPSIBLINGS;
+                UnmanagedMethods.WindowStyles.WS_CLIPSIBLINGS |
+                UnmanagedMethods.WindowStyles.WS_CLIPCHILDREN;
 
             UnmanagedMethods.WindowStyles exStyle =
                 UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW |
@@ -133,7 +135,7 @@ namespace Avalonia.Win32
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
-            Resize(size);
+            Resize(size, PlatformResizeReason.Layout);
             //TODO: We ignore the scaling override for now
         }
 

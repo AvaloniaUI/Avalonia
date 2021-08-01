@@ -64,7 +64,8 @@ namespace Avalonia.Skia
                     new ReadOnlySlice<double>(glyphAdvances),
                     new ReadOnlySlice<Vector>(glyphOffsets),
                     text,
-                    new ReadOnlySlice<ushort>(clusters));
+                    new ReadOnlySlice<ushort>(clusters),
+                    buffer.Direction == Direction.LeftToRight ? 0 : 1);
             }
         }
 
@@ -86,7 +87,7 @@ namespace Avalonia.Skia
                     {
                         var nextCodepoint = Codepoint.ReadAt(text, i + 1, out _);
 
-                        if (nextCodepoint == '\r' && codepoint == '\n' || nextCodepoint == '\n' && codepoint == '\r')
+                        if (nextCodepoint == '\n' && codepoint == '\r')
                         {
                             count++;
 

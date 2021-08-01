@@ -1,4 +1,5 @@
 using System;
+using Avalonia.OpenGL.Egl;
 
 namespace Avalonia.OpenGL
 {

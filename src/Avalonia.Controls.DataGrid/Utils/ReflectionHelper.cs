@@ -340,10 +340,30 @@ namespace Avalonia.Controls.Utils
         internal static PropertyInfo GetPropertyOrIndexer(this Type type, string propertyPath, out object[] index)
         {
             index = null;
+            // Return the default value of GetProperty if the first character is not an indexer token.
             if (string.IsNullOrEmpty(propertyPath) || propertyPath[0] != LeftIndexerToken)
             {
-                // Return the default value of GetProperty if the first character is not an indexer token.
-                return type.GetProperty(propertyPath);
+                var property = type.GetProperty(propertyPath);
+                if (property != null)
+                {
+                    return property;
+                }
+
+                // GetProperty does not return inherited interface properties,
+                // so we need to enumerate them manually.
+                if (type.IsInterface)
+                {
+                    foreach (var typeInterface in type.GetInterfaces())
+                    {
+                        property = type.GetProperty(propertyPath);
+                        if (property != null)
+                        {
+                            return property;
+                        }
+                    }
+                }
+
+                return null;
             }
 
             if (propertyPath.Length < 2 || propertyPath[propertyPath.Length - 1] != RightIndexerToken)
@@ -352,19 +372,37 @@ namespace Avalonia.Controls.Utils
                 return null;
             }
 
-            PropertyInfo indexer = null;
             string stringIndex = propertyPath.Substring(1, propertyPath.Length - 2);
-            indexer = FindIndexerInMembers(type.GetDefaultMembers(), stringIndex, out index);
+            var indexer = FindIndexerInMembers(type.GetDefaultMembers(), stringIndex, out index);
             if (indexer != null)
             {
                 // We found the indexer, so return it.
                 return indexer;
             }
 
-            if (typeof(IList).IsAssignableFrom(type))
+            var elementType = type.GetElementType();
+            if (elementType == null)
+            {
+                var genericArguments = type.GetGenericArguments();
+                if (genericArguments.Length == 1)
+                {
+                    elementType = genericArguments[0];
+                }
+            }
+
+            if (elementType != null)
             {
                 // If the object is of type IList, try to use its default indexer.
-                indexer = FindIndexerInMembers(typeof(IList).GetDefaultMembers(), stringIndex, out index);
+                if (typeof(IList<>).MakeGenericType(elementType) is Type genericList
+                    && genericList.IsAssignableFrom(type))
+                {
+                    indexer = FindIndexerInMembers(genericList.GetDefaultMembers(), stringIndex, out index);
+                }
+                if (typeof(IReadOnlyList<>).MakeGenericType(elementType) is Type genericReadOnlyList
+                   && genericReadOnlyList.IsAssignableFrom(type))
+                {
+                    indexer = FindIndexerInMembers(genericReadOnlyList.GetDefaultMembers(), stringIndex, out index);
+                }
             }
 
             return indexer;

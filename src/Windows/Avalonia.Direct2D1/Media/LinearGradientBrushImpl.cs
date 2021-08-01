@@ -8,7 +8,7 @@ namespace Avalonia.Direct2D1.Media
         public LinearGradientBrushImpl(
             ILinearGradientBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
-            Size destinationSize)
+            Rect destinationRect)
         {
             if (brush.GradientStops.Count == 0)
             {
@@ -21,8 +21,9 @@ namespace Avalonia.Direct2D1.Media
                 Position = (float)s.Offset
             }).ToArray();
 
-            var startPoint = brush.StartPoint.ToPixels(destinationSize);
-            var endPoint = brush.EndPoint.ToPixels(destinationSize);
+            var position = destinationRect.Position;
+            var startPoint = position + brush.StartPoint.ToPixels(destinationRect.Size);
+            var endPoint = position + brush.EndPoint.ToPixels(destinationRect.Size);
 
             using (var stops = new SharpDX.Direct2D1.GradientStopCollection(
                 target,

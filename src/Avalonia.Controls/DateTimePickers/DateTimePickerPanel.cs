@@ -486,9 +486,9 @@ namespace Avalonia.Controls.Primitives
             switch (panelType)
             {
                 case DateTimePickerPanelType.Year:
-                    return new DateTime(value, FormatDate.Month, FormatDate.Day).ToString(ItemFormat);
+                    return new DateTime(value, 1, 1).ToString(ItemFormat);
                 case DateTimePickerPanelType.Month:
-                    return new DateTime(FormatDate.Year, value, FormatDate.Day).ToString(ItemFormat);
+                    return new DateTime(FormatDate.Year, value, 1).ToString(ItemFormat);
                 case DateTimePickerPanelType.Day:
                     return new DateTime(FormatDate.Year, FormatDate.Month, value).ToString(ItemFormat);
                 case DateTimePickerPanelType.Hour:

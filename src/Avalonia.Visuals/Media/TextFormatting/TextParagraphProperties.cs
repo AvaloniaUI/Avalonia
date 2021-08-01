@@ -6,9 +6,34 @@
     public abstract class TextParagraphProperties
     {
         /// <summary>
+        /// This property specifies whether the primary text advance 
+        /// direction shall be left-to-right, right-to-left, or top-to-bottom.
+        /// </summary>
+        public abstract FlowDirection FlowDirection { get; }
+
+        /// <summary>
         /// Gets the text alignment.
         /// </summary>
         public abstract TextAlignment TextAlignment { get; }
+
+        /// <summary>
+        /// Paragraph's line height
+        /// </summary>
+        public abstract double LineHeight { get; }
+
+        /// <summary>
+        /// Indicates the first line of the paragraph.
+        /// </summary>
+        public abstract bool FirstLineInParagraph { get; }
+
+        /// <summary>
+        /// If true, the formatted line may always be collapsed. If false (the default),
+        /// only lines that overflow the paragraph width are collapsed.
+        /// </summary>
+        public virtual bool AlwaysCollapsible
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// Gets the default text style.
@@ -27,8 +52,16 @@
         public abstract TextWrapping TextWrapping { get; }
 
         /// <summary>
-        /// Paragraph's line height
+        /// Line indentation
         /// </summary>
-        public abstract double LineHeight { get; }
+        public abstract double Indent { get; }
+
+        /// <summary>
+        /// Paragraph indentation
+        /// </summary>
+        public virtual double ParagraphIndent
+        {
+            get { return 0; }
+        }
     }
 }

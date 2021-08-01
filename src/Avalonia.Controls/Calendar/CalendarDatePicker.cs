@@ -11,6 +11,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -210,6 +211,18 @@ namespace Avalonia.Controls
 
 
         /// <summary>
+        /// Defines the <see cref="HorizontalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
         /// Gets or sets the date to display.
         /// </summary>
         /// <value>
@@ -364,6 +377,25 @@ namespace Avalonia.Controls
             set { SetValue(UseFloatingWatermarkProperty, value); }
         }
 
+
+        /// <summary>
+        /// Gets or sets the horizontal alignment of the content within the control.
+        /// </summary>
+        public HorizontalAlignment HorizontalContentAlignment
+        {
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the vertical alignment of the content within the control.
+        /// </summary>
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+
         /// <summary>
         /// Occurs when the drop-down
         /// <see cref="T:Avalonia.Controls.Calendar" /> is closed.
@@ -420,7 +452,7 @@ namespace Avalonia.Controls
                 _calendar.DayButtonMouseUp -= Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged -= Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged -= Calendar_SelectedDatesChanged;
-                _calendar.PointerPressed -= Calendar_PointerPressed;
+                _calendar.PointerReleased -= Calendar_PointerReleased;
                 _calendar.KeyDown -= Calendar_KeyDown;
             }
             _calendar = e.NameScope.Find<Calendar>(ElementCalendar);
@@ -435,7 +467,7 @@ namespace Avalonia.Controls
                 _calendar.DayButtonMouseUp += Calendar_DayButtonMouseUp;
                 _calendar.DisplayDateChanged += Calendar_DisplayDateChanged;
                 _calendar.SelectedDatesChanged += Calendar_SelectedDatesChanged;
-                _calendar.PointerPressed += Calendar_PointerPressed;
+                _calendar.PointerReleased += Calendar_PointerReleased;
                 _calendar.KeyDown += Calendar_KeyDown;
                 //_calendar.SizeChanged += new SizeChangedEventHandler(Calendar_SizeChanged);
                 //_calendar.IsTabStop = true;
@@ -831,9 +863,10 @@ namespace Avalonia.Controls
                 }
             }
         }
-        private void Calendar_PointerPressed(object sender, PointerPressedEventArgs e)
+        private void Calendar_PointerReleased(object sender, PointerReleasedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+             
+            if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 e.Handled = true;
             }

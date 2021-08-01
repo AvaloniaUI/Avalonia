@@ -2,6 +2,7 @@ using System;
 using System.Windows.Input;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -23,7 +24,7 @@ namespace Avalonia.Controls
             MenuProperty.Changed.Subscribe(args =>
             {
                 var item = (NativeMenuItem)args.Sender;
-                var value = (NativeMenu)args.NewValue;
+                var value = args.NewValue.GetValueOrDefault();
                 if (value.Parent != null && value.Parent != item)
                     throw new InvalidOperationException("NativeMenu already has a parent");
                 value.Parent = item;
@@ -62,6 +63,7 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<NativeMenuItem, NativeMenu> MenuProperty =
             AvaloniaProperty.RegisterDirect<NativeMenuItem, NativeMenu>(nameof(Menu), o => o.Menu, (o, v) => o.Menu = v);
 
+        [Content]
         public NativeMenu Menu
         {
             get => _menu;
@@ -148,10 +150,10 @@ namespace Avalonia.Controls
 
         void CanExecuteChanged()
         {
-            IsEnabled = _command?.CanExecute(null) ?? true;
+            IsEnabled = _command?.CanExecute(CommandParameter) ?? true;
         }
 
-        public bool HasClickHandlers => Clicked != null;
+        public bool HasClickHandlers => Click != null;
 
         public ICommand Command
         {
@@ -182,11 +184,21 @@ namespace Avalonia.Controls
             set { SetValue(CommandParameterProperty, value); }
         }
 
-        public event EventHandler Clicked;
+        /// <summary>
+        /// Occurs when a <see cref="NativeMenuItem"/> is clicked.
+        /// </summary>
+        public event EventHandler Click;
+
+        [Obsolete("Use Click event.")]
+        public event EventHandler Clicked
+        {
+            add => Click += value;
+            remove => Click -= value;
+        }
 
         void INativeMenuItemExporterEventsImplBridge.RaiseClicked()
         {
-            Clicked?.Invoke(this, new EventArgs());
+            Click?.Invoke(this, new EventArgs());
 
             if (Command?.CanExecute(CommandParameter) == true)
             {

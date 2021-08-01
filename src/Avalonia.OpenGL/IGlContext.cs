@@ -9,5 +9,7 @@ namespace Avalonia.OpenGL
         int SampleCount { get; }
         int StencilSize { get; }
         IDisposable MakeCurrent();
+        IDisposable EnsureCurrent();
+        bool IsSharedWith(IGlContext context);
     }
 }

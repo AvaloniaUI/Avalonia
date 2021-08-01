@@ -1,160 +1,460 @@
-﻿// RichTextKit
-// Copyright © 2019 Topten Software. All Rights Reserved.
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may 
-// not use this product except in compliance with the License. You may obtain 
-// a copy of the License at
-// 
-// http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
-// License for the specific language governing permissions and limitations 
-// under the License.
-//
-// Ported from: https://github.com/foliojs/linebreak
-// Copied from: https://github.com/toptensoftware/RichTextKit
+// Copyright (c) Six Labors.
+// Licensed under the Apache License, Version 2.0.
+// Ported from: https://github.com/SixLabors/Fonts/
 
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
     /// <summary>
-    /// Implementation of the Unicode Line Break Algorithm
+    /// Implementation of the Unicode Line Break Algorithm. UAX:14
+    /// <see href="https://www.unicode.org/reports/tr14/tr14-37.html"/>
     /// </summary>
     public ref struct LineBreakEnumerator
     {
-        // State
         private readonly ReadOnlySlice<char> _text;
-        private int _pos;
-        private int _lastPos;
-        private LineBreakClass? _curClass;
-        private LineBreakClass? _nextClass;
+        private int _position;
+        private int _lastPosition;
+        private LineBreakClass _currentClass;
+        private LineBreakClass _nextClass;
+        private bool _first;
+        private int _alphaNumericCount;
+        private bool _lb8a;
+        private bool _lb21a;
+        private bool _lb22ex;
+        private bool _lb24ex;
+        private bool _lb25ex;
+        private bool _lb30;
+        private int _lb30a;
+        private bool _lb31;
 
         public LineBreakEnumerator(ReadOnlySlice<char> text)
+            : this()
         {
             _text = text;
-            _pos = 0;
-            _lastPos = 0;
-            _curClass = null;
-            _nextClass = null;
-            Current = default;
+            _position = 0;
+            _currentClass = LineBreakClass.Unknown;
+            _nextClass = LineBreakClass.Unknown;
+            _first = true;
+            _lb8a = false;
+            _lb21a = false;
+            _lb22ex = false;
+            _lb24ex = false;
+            _lb25ex = false;
+            _alphaNumericCount = 0;
+            _lb31 = false;
+            _lb30 = false;
+            _lb30a = 0;
         }
-
+        
         public LineBreak Current { get; private set; }
-
+        
         public bool MoveNext()
         {
-            // get the first char if we're at the beginning of the string
-            if (!_curClass.HasValue)
+            // Get the first char if we're at the beginning of the string.
+            if (_first)
             {
-                _curClass = PeekCharClass() == LineBreakClass.Space ? LineBreakClass.WordJoiner : MapFirst(ReadCharClass());
+                var firstClass = NextCharClass();
+                _first = false;
+                _currentClass = MapFirst(firstClass);
+                _nextClass = firstClass;
+                _lb8a = firstClass == LineBreakClass.ZWJ;
+                _lb30a = 0;
             }
 
-            while (_pos < _text.Length)
+            while (_position < _text.Length)
             {
-                _lastPos = _pos;
+                _lastPosition = _position;
                 var lastClass = _nextClass;
-                _nextClass = ReadCharClass();
+                _nextClass = NextCharClass();
 
-                // explicit newline
-                if (_curClass.HasValue && (_curClass == LineBreakClass.MandatoryBreak || _curClass == LineBreakClass.CarriageReturn && _nextClass != LineBreakClass.LineFeed))
+                // Explicit newline
+                switch (_currentClass)
                 {
-                    _curClass = MapFirst(MapClass(_nextClass.Value));
-                    Current = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos, true);
-                    return true;
-                }
-
-                // handle classes not handled by the pair table
-                LineBreakClass? cur = null;
-                switch (_nextClass.Value)
-                {
-                    case LineBreakClass.Space:
-                        cur = _curClass;
-                        break;
-
                     case LineBreakClass.MandatoryBreak:
-                    case LineBreakClass.LineFeed:
-                    case LineBreakClass.NextLine:
-                        cur = LineBreakClass.MandatoryBreak;
-                        break;
-
-                    case LineBreakClass.CarriageReturn:
-                        cur = LineBreakClass.CarriageReturn;
-                        break;
-
-                    case LineBreakClass.ContingentBreak:
-                        cur = LineBreakClass.BreakAfter;
-                        break;
-                }
-
-                if (cur != null)
-                {
-                    _curClass = cur;
-
-                    if (_nextClass.Value == LineBreakClass.MandatoryBreak)
+                    case LineBreakClass.CarriageReturn when _nextClass != LineBreakClass.LineFeed:
                     {
-                        _lastPos = _pos;
-                        Current = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos, true);
+                        _currentClass = MapFirst(_nextClass);
+                        Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, true);
                         return true;
                     }
-
-                    continue;
                 }
 
-                // if not handled already, use the pair table
-                var shouldBreak = false;
-                switch (BreakPairTable.Map(_curClass.Value,_nextClass.Value))
+                var shouldBreak = GetSimpleBreak() ?? (bool?)GetPairTableBreak(lastClass);
+
+                // Rule LB8a
+                _lb8a = _nextClass == LineBreakClass.ZWJ;
+
+                if (shouldBreak.Value)
                 {
-                    case PairBreakType.DI: // Direct break
-                        shouldBreak = true;
-                        break;
-
-                    case PairBreakType.IN: // possible indirect break
-                        shouldBreak = lastClass.HasValue && lastClass.Value == LineBreakClass.Space;
-                        break;
-
-                    case PairBreakType.CI:
-                        shouldBreak = lastClass.HasValue && lastClass.Value == LineBreakClass.Space;
-                        if (!shouldBreak)
-                        {
-                            continue;
-                        }
-                        break;
-
-                    case PairBreakType.CP: // prohibited for combining marks
-                        if (!lastClass.HasValue || lastClass.Value != LineBreakClass.Space)
-                        {
-                            continue;
-                        }
-                        break;
-                }
-
-                _curClass = _nextClass;
-
-                if (shouldBreak)
-                {
-                    Current = new LineBreak(FindPriorNonWhitespace(_lastPos), _lastPos);
+                    Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition);
                     return true;
                 }
             }
 
-            if (_pos >= _text.Length)
+            if (_position >= _text.Length)
             {
-                if (_lastPos < _text.Length)
+                if (_lastPosition < _text.Length)
                 {
-                    _lastPos = _text.Length;
-                    var cls = Codepoint.ReadAt(_text, _text.Length - 1, out _).LineBreakClass;
-                    bool required = cls == LineBreakClass.MandatoryBreak || cls == LineBreakClass.LineFeed || cls == LineBreakClass.CarriageReturn;
-                    Current = new LineBreak(FindPriorNonWhitespace(_text.Length), _text.Length, required);
+                    _lastPosition = _text.Length;
+
+                    var required = false;
+
+                    switch (_currentClass)
+                    {
+                        case LineBreakClass.MandatoryBreak:
+                        case LineBreakClass.CarriageReturn when _nextClass != LineBreakClass.LineFeed:
+                            required = true;
+                            break;
+                    }
+
+                    Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, required);
                     return true;
                 }
             }
 
+            Current = default;
+            
             return false;
         }
 
+        private static LineBreakClass MapClass(Codepoint cp)
+        {
+            if (cp.Value == 327685)
+            {
+                return LineBreakClass.Alphabetic;
+            }
+            
+            // LB 1
+            // ==========================================
+            // Resolved Original    General_Category
+            // ==========================================
+            // AL       AI, SG, XX  Any
+            // CM       SA          Only Mn or Mc
+            // AL       SA          Any except Mn and Mc
+            // NS       CJ          Any
+            switch (cp.LineBreakClass)
+            {
+                case LineBreakClass.Ambiguous:
+                case LineBreakClass.Surrogate:
+                case LineBreakClass.Unknown:
+                    return LineBreakClass.Alphabetic;
+
+                case LineBreakClass.ComplexContext:
+                    return cp.GeneralCategory == GeneralCategory.NonspacingMark || cp.GeneralCategory == GeneralCategory.SpacingMark
+                        ? LineBreakClass.CombiningMark
+                        : LineBreakClass.Alphabetic;
+
+                case LineBreakClass.ConditionalJapaneseStarter:
+                    return LineBreakClass.Nonstarter;
+
+                default:
+                    return cp.LineBreakClass;
+            }
+        }
+
+        private static LineBreakClass MapFirst(LineBreakClass c)
+        {
+            switch (c)
+            {
+                case LineBreakClass.LineFeed:
+                case LineBreakClass.NextLine:
+                    return LineBreakClass.MandatoryBreak;
+
+                case LineBreakClass.Space:
+                    return LineBreakClass.WordJoiner;
+
+                default:
+                    return c;
+            }
+        }
+
+        private static bool IsAlphaNumeric(LineBreakClass cls)
+            => cls == LineBreakClass.Alphabetic
+            || cls == LineBreakClass.HebrewLetter
+            || cls == LineBreakClass.Numeric;
+
+        private LineBreakClass PeekNextCharClass()
+        {
+            var cp = Codepoint.ReadAt(_text, _position, out _);
+            
+            return MapClass(cp);
+        }
+
+        // Get the next character class
+        private LineBreakClass NextCharClass()
+        {
+            var cp = Codepoint.ReadAt(_text, _position, out var count);
+            var cls = MapClass(cp);
+            _position += count;
+
+            // Keep track of alphanumeric + any combining marks.
+            // This is used for LB22 and LB30.
+            if (IsAlphaNumeric(_currentClass) || _alphaNumericCount > 0 && cls == LineBreakClass.CombiningMark)
+            {
+                _alphaNumericCount++;
+            }
+
+            // Track combining mark exceptions. LB22
+            if (cls == LineBreakClass.CombiningMark)
+            {
+                switch (_currentClass)
+                {
+                    case LineBreakClass.MandatoryBreak:
+                    case LineBreakClass.ContingentBreak:
+                    case LineBreakClass.Exclamation:
+                    case LineBreakClass.LineFeed:
+                    case LineBreakClass.NextLine:
+                    case LineBreakClass.Space:
+                    case LineBreakClass.ZWSpace:
+                    case LineBreakClass.CarriageReturn:
+                        _lb22ex = true;
+                        break;
+                }
+            }
+
+            // Track combining mark exceptions. LB31
+            if (_first && cls == LineBreakClass.CombiningMark)
+            {
+                _lb31 = true;
+            }
+
+            if (cls == LineBreakClass.CombiningMark)
+            {
+                switch (_currentClass)
+                {
+                    case LineBreakClass.MandatoryBreak:
+                    case LineBreakClass.ContingentBreak:
+                    case LineBreakClass.Exclamation:
+                    case LineBreakClass.LineFeed:
+                    case LineBreakClass.NextLine:
+                    case LineBreakClass.Space:
+                    case LineBreakClass.ZWSpace:
+                    case LineBreakClass.CarriageReturn:
+                    case LineBreakClass.ZWJ:
+                        _lb31 = true;
+                        break;
+                }
+            }
+
+            if (_first
+                && (cls == LineBreakClass.PostfixNumeric || cls == LineBreakClass.PrefixNumeric || cls == LineBreakClass.Space))
+            {
+                _lb31 = true;
+            }
+
+            if (_currentClass == LineBreakClass.Alphabetic && 
+                (cls == LineBreakClass.PostfixNumeric || cls == LineBreakClass.PrefixNumeric || cls == LineBreakClass.Space))
+            {
+                _lb31 = true;
+            }
+
+            // Reset LB31 if next is U+0028 (Left Opening Parenthesis)
+            if (_lb31
+                && _currentClass != LineBreakClass.PostfixNumeric
+                && _currentClass != LineBreakClass.PrefixNumeric
+                && cls == LineBreakClass.OpenPunctuation && cp.Value == 0x0028)
+            {
+                _lb31 = false;
+            }
+
+            // Rule LB24
+            if (_first && (cls == LineBreakClass.ClosePunctuation || cls == LineBreakClass.CloseParenthesis))
+            {
+                _lb24ex = true;
+            }
+
+            // Rule LB25
+            if (_first
+                && (cls == LineBreakClass.ClosePunctuation || cls == LineBreakClass.InfixNumeric || cls == LineBreakClass.BreakSymbols))
+            {
+                _lb25ex = true;
+            }
+
+            if (cls == LineBreakClass.Space || cls == LineBreakClass.WordJoiner || cls == LineBreakClass.Alphabetic)
+            {
+                var next = PeekNextCharClass();
+                if (next == LineBreakClass.ClosePunctuation || next == LineBreakClass.InfixNumeric || next == LineBreakClass.BreakSymbols)
+                {
+                    _lb25ex = true;
+                }
+            }
+
+            // AlphaNumeric + and combining marks can break for OP except.
+            // - U+0028 (Left Opening Parenthesis)
+            // - U+005B (Opening Square Bracket)
+            // - U+007B (Left Curly Bracket)
+            // See custom colums|rules in the text pair table.
+            // https://www.unicode.org/Public/13.0.0/ucd/auxiliary/LineBreakTest.html
+            _lb30 = _alphaNumericCount > 0
+                && cls == LineBreakClass.OpenPunctuation
+                && cp.Value != 0x0028
+                && cp.Value != 0x005B
+                && cp.Value != 0x007B;
+
+            return cls;
+        }
+
+        private bool? GetSimpleBreak()
+        {
+            // handle classes not handled by the pair table
+            switch (_nextClass)
+            {
+                case LineBreakClass.Space:
+                    return false;
+
+                case LineBreakClass.MandatoryBreak:
+                case LineBreakClass.LineFeed:
+                case LineBreakClass.NextLine:
+                    _currentClass = LineBreakClass.MandatoryBreak;
+                    return false;
+
+                case LineBreakClass.CarriageReturn:
+                    _currentClass = LineBreakClass.CarriageReturn;
+                    return false;
+            }
+
+            return null;
+        }
+
+        private bool GetPairTableBreak(LineBreakClass lastClass)
+        {
+            // If not handled already, use the pair table
+            bool shouldBreak = false;
+            switch (LineBreakPairTable.Table[(int)_currentClass][(int)_nextClass])
+            {
+                case LineBreakPairTable.DIBRK: // Direct break
+                    shouldBreak = true;
+                    break;
+
+                // TODO: Rewrite this so that it defaults to true and rules are set as exceptions.
+                case LineBreakPairTable.INBRK: // Possible indirect break
+
+                    // LB31
+                    if (_lb31 && _nextClass == LineBreakClass.OpenPunctuation)
+                    {
+                        shouldBreak = true;
+                        _lb31 = false;
+                        break;
+                    }
+
+                    // LB30
+                    if (_lb30)
+                    {
+                        shouldBreak = true;
+                        _lb30 = false;
+                        _alphaNumericCount = 0;
+                        break;
+                    }
+
+                    // LB25
+                    if (_lb25ex && (_nextClass == LineBreakClass.PrefixNumeric || _nextClass == LineBreakClass.Numeric))
+                    {
+                        shouldBreak = true;
+                        _lb25ex = false;
+                        break;
+                    }
+
+                    // LB24
+                    if (_lb24ex && (_nextClass == LineBreakClass.PostfixNumeric || _nextClass == LineBreakClass.PrefixNumeric))
+                    {
+                        shouldBreak = true;
+                        _lb24ex = false;
+                        break;
+                    }
+
+                    // LB18
+                    shouldBreak = lastClass == LineBreakClass.Space;
+                    break;
+
+                case LineBreakPairTable.CIBRK:
+                    shouldBreak = lastClass == LineBreakClass.Space;
+                    if (!shouldBreak)
+                    {
+                        return false;
+                    }
+
+                    break;
+
+                case LineBreakPairTable.CPBRK: // prohibited for combining marks
+                    if (lastClass != LineBreakClass.Space)
+                    {
+                        return false;
+                    }
+
+                    break;
+
+                case LineBreakPairTable.PRBRK:
+                    break;
+            }
+
+            // Rule LB22
+            if (_nextClass == LineBreakClass.Inseparable)
+            {
+                switch (lastClass)
+                {
+                    case LineBreakClass.MandatoryBreak:
+                    case LineBreakClass.ContingentBreak:
+                    case LineBreakClass.Exclamation:
+                    case LineBreakClass.LineFeed:
+                    case LineBreakClass.NextLine:
+                    case LineBreakClass.Space:
+                    case LineBreakClass.ZWSpace:
+
+                        // Allow break
+                        break;
+                    case LineBreakClass.CombiningMark:
+                        if (_lb22ex)
+                        {
+                            // Allow break
+                            _lb22ex = false;
+                            break;
+                        }
+
+                        shouldBreak = false;
+                        break;
+                    default:
+                        shouldBreak = false;
+                        break;
+                }
+            }
+
+            if (_lb8a)
+            {
+                shouldBreak = false;
+            }
+
+            // Rule LB21a
+            if (_lb21a && (_currentClass == LineBreakClass.Hyphen || _currentClass == LineBreakClass.BreakAfter))
+            {
+                shouldBreak = false;
+                _lb21a = false;
+            }
+            else
+            {
+                _lb21a = _currentClass == LineBreakClass.HebrewLetter;
+            }
+
+            // Rule LB30a
+            if (_currentClass == LineBreakClass.RegionalIndicator)
+            {
+                _lb30a++;
+                if (_lb30a == 2 && _nextClass == LineBreakClass.RegionalIndicator)
+                {
+                    shouldBreak = true;
+                    _lb30a = 0;
+                }
+            }
+            else
+            {
+                _lb30a = 0;
+            }
+
+            _currentClass = _nextClass;
+
+            return shouldBreak;
+        }
+        
         private int FindPriorNonWhitespace(int from)
         {
             if (from > 0)
@@ -163,7 +463,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 var cls = cp.LineBreakClass;
 
-                if (cls == LineBreakClass.MandatoryBreak || cls == LineBreakClass.LineFeed || cls == LineBreakClass.CarriageReturn)
+                if (cls == LineBreakClass.MandatoryBreak || cls == LineBreakClass.LineFeed ||
+                    cls == LineBreakClass.CarriageReturn)
                 {
                     from -= count;
                 }
@@ -184,61 +485,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     break;
                 }
             }
+
             return from;
-        }
-
-        // Get the next character class
-        private LineBreakClass ReadCharClass()
-        {
-            var cp = Codepoint.ReadAt(_text, _pos, out var count);
-
-            _pos += count;
-
-            return MapClass(cp.LineBreakClass);
-        }
-
-        private LineBreakClass PeekCharClass()
-        {
-            return MapClass(Codepoint.ReadAt(_text, _pos, out _).LineBreakClass);
-        }
-
-        private static LineBreakClass MapClass(LineBreakClass c)
-        {
-            switch (c)
-            {
-                case LineBreakClass.Ambiguous:
-                    return LineBreakClass.Alphabetic;
-
-                case LineBreakClass.ComplexContext:
-                case LineBreakClass.Surrogate:
-                case LineBreakClass.Unknown:
-                    return LineBreakClass.Alphabetic;
-
-                case LineBreakClass.ConditionalJapaneseStarter:
-                    return LineBreakClass.Nonstarter;
-
-                default:
-                    return c;
-            }
-        }
-
-        private static LineBreakClass MapFirst(LineBreakClass c)
-        {
-            switch (c)
-            {
-                case LineBreakClass.LineFeed:
-                case LineBreakClass.NextLine:
-                    return LineBreakClass.MandatoryBreak;
-
-                case LineBreakClass.ContingentBreak:
-                    return LineBreakClass.BreakAfter;
-
-                case LineBreakClass.Space:
-                    return LineBreakClass.WordJoiner;
-
-                default:
-                    return c;
-            }
         }
     }
 }

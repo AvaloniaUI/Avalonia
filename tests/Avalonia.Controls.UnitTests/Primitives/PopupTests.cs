@@ -21,7 +21,50 @@ namespace Avalonia.Controls.UnitTests.Primitives
     public class PopupTests
     {
         protected bool UsePopupHost;
-        
+
+        [Fact]
+        public void Popup_Open_Without_Target_Should_Attach_Itself_Later()
+        {
+            using (CreateServices())
+            {
+                int openedEvent = 0;
+                var target = new Popup();
+                target.Opened += (s, a) => openedEvent++;
+                target.IsOpen = true;
+
+                var window = PreparedWindow(target);
+                window.Show();
+                Assert.Equal(1, openedEvent);
+            }
+        }
+
+        [Fact]
+        public void Popup_Without_TopLevel_Shouldnt_Call_Open()
+        {
+            int openedEvent = 0;
+            var target = new Popup();
+            target.Opened += (s, a) => openedEvent++;
+            target.IsOpen = true;
+
+            Assert.Equal(0, openedEvent);
+        }
+
+        [Fact]
+        public void Opening_Popup_Shouldnt_Throw_When_Not_In_Visual_Tree()
+        {
+            var target = new Popup();
+            target.IsOpen = true;
+        }
+
+        [Fact]
+        public void Opening_Popup_Shouldnt_Throw_When_In_Tree_Without_TopLevel()
+        {
+            Control c = new Control();
+            var target = new Popup();
+            ((ISetLogicalParent)target).SetParent(c);
+            target.IsOpen = true;
+        }
+
         [Fact]
         public void Setting_Child_Should_Set_Child_Controls_LogicalParent()
         {
@@ -395,6 +438,132 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Focusable_Controls_In_Popup_Should_Get_Focus()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+
+                var tb = new TextBox();
+                var b = new Button();
+                var p = new Popup
+                {
+                    PlacementTarget = window,
+                    Child = new StackPanel
+                    {
+                        Children =
+                        {
+                            tb,
+                            b
+                        }
+                    }
+                };
+                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+                window.Show();
+
+                p.Open();
+
+                if(p.Host is OverlayPopupHost host)
+                {
+                    //Need to measure/arrange for visual children to show up
+                    //in OverlayPopupHost
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                tb.Focus();
+
+                Assert.True(FocusManager.Instance?.Current == tb);
+
+                //Ensure focus remains in the popup
+                var nextFocus = KeyboardNavigationHandler.GetNext(FocusManager.Instance.Current, NavigationDirection.Next);
+
+                Assert.True(nextFocus == b);
+
+                p.Close();
+            }
+        }
+
+        [Fact]
+        public void Closing_Popup_Sets_Focus_On_PlacementTarget()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+
+                var tb = new TextBox();
+                var p = new Popup
+                {
+                    PlacementTarget = window,
+                    Child = tb
+                };
+                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+                window.Show();
+
+                p.Open();
+
+                if (p.Host is OverlayPopupHost host)
+                {
+                    //Need to measure/arrange for visual children to show up
+                    //in OverlayPopupHost
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                tb.Focus();
+
+                p.Close();
+
+                var focus = FocusManager.Instance?.Current;
+                Assert.True(focus == window);
+            }
+        }
+
+        [Fact]
+        public void Prog_Close_Popup_NoLightDismiss_Doesnt_Move_Focus_To_PlacementTarget()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+
+                var windowTB = new TextBox();
+                window.Content = windowTB;
+
+                var popupTB = new TextBox();
+                var p = new Popup
+                {
+                    PlacementTarget = window,
+                    IsLightDismissEnabled = false,
+                    Child = popupTB
+                };
+                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+                window.Show();
+
+                p.Open();
+
+                if (p.Host is OverlayPopupHost host)
+                {
+                    //Need to measure/arrange for visual children to show up
+                    //in OverlayPopupHost
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                popupTB.Focus();
+
+                windowTB.Focus();
+
+                var focus = FocusManager.Instance?.Current;
+
+                Assert.True(focus == windowTB);
+
+                p.Close();
+
+                Assert.True(focus == windowTB);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
@@ -407,6 +576,21 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     })));
         }
 
+        private IDisposable CreateServicesWithFocus()
+        {
+            return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
+                new MockWindowingPlatform(null,
+                    x =>
+                    {
+                        if (UsePopupHost)
+                            return null;
+                        return MockWindowingPlatform.CreatePopupMock(x).Object;
+                    }), 
+                    focusManager: new FocusManager(),
+                    keyboardDevice: () => new KeyboardDevice()));
+        }
+
+       
         private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);

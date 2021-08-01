@@ -1,10 +1,14 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -77,9 +81,9 @@ namespace Avalonia.Controls.UnitTests
         {
             var items = new ObservableCollection<string>
             {
-               "Foo",
-               "Bar",
-               "FooBar"
+                "Foo",
+                "Bar",
+                "FooBar"
             };
 
             var target = new Carousel
@@ -113,9 +117,9 @@ namespace Avalonia.Controls.UnitTests
         {
             var items = new ObservableCollection<string>
             {
-               "Foo",
-               "Bar",
-               "FooBar"
+                "Foo",
+                "Bar",
+                "FooBar"
             };
 
             var target = new Carousel
@@ -172,9 +176,9 @@ namespace Avalonia.Controls.UnitTests
         {
             var items = new ObservableCollection<string>
             {
-               "Foo",
-               "Bar",
-               "FooBar"
+                "Foo",
+                "Bar",
+                "FooBar"
             };
 
             var target = new Carousel
@@ -206,9 +210,9 @@ namespace Avalonia.Controls.UnitTests
         {
             var items = new ObservableCollection<string>
             {
-               "Foo",
-               "Bar",
-               "FooBar"
+                "Foo",
+                "Bar",
+                "FooBar"
             };
 
             var target = new Carousel
@@ -235,9 +239,9 @@ namespace Avalonia.Controls.UnitTests
         {
             var items = new ObservableCollection<string>
             {
-               "Foo",
-               "Bar",
-               "FooBar"
+                "Foo",
+                "Bar",
+                "FooBar"
             };
 
             var target = new Carousel
@@ -269,9 +273,9 @@ namespace Avalonia.Controls.UnitTests
         {
             var items = new ObservableCollection<string>
             {
-               "Foo",
-               "Bar",
-               "FooBar"
+                "Foo",
+                "Bar",
+                "FooBar"
             };
 
             var target = new Carousel
@@ -310,6 +314,30 @@ namespace Avalonia.Controls.UnitTests
             var contentPresenter = Assert.IsType<ContentPresenter>(control);
             contentPresenter.UpdateChild();
             return Assert.IsType<TextBlock>(contentPresenter.Child);
+        }
+
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new Carousel
+                {
+                    Template = new FuncControlTemplate<Carousel>(CreateTemplate), IsVirtualized = false
+                };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable =
+                    new BehaviorSubject<BindingNotification>(new BindingNotification(exception,
+                        BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.SelectedItemProperty, textObservable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+            }
         }
     }
 }

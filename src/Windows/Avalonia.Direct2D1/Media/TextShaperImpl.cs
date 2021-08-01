@@ -1,6 +1,6 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using Avalonia.Media;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -15,51 +15,9 @@ namespace Avalonia.Direct2D1.Media
         {
             using (var buffer = new Buffer())
             {
-                buffer.ContentType = ContentType.Unicode;
+                FillBuffer(buffer, text);
 
-                var breakCharPosition = text.Length - 1;
-
-                var codepoint = Codepoint.ReadAt(text, breakCharPosition, out var count);
-
-                if (codepoint.IsBreakChar)
-                {
-                    var breakCharCount = 1;
-
-                    if (text.Length > 1)
-                    {
-                        var previousCodepoint = Codepoint.ReadAt(text, breakCharPosition - count, out _);
-
-                        if (codepoint == '\r' && previousCodepoint == '\n'
-                            || codepoint == '\n' && previousCodepoint == '\r')
-                        {
-                            breakCharCount = 2;
-                        }
-                    }
-
-                    if (breakCharPosition != text.Start)
-                    {
-                        buffer.AddUtf16(text.Buffer.Span.Slice(0, text.Length - breakCharCount));
-                    }
-
-                    var cluster = buffer.GlyphInfos.Length > 0 ?
-                        buffer.GlyphInfos[buffer.Length - 1].Cluster + 1 :
-                        (uint)text.Start;
-
-                    switch (breakCharCount)
-                    {
-                        case 1:
-                            buffer.Add('\u200C', cluster);
-                            break;
-                        case 2:
-                            buffer.Add('\u200C', cluster);
-                            buffer.Add('\u200D', cluster);
-                            break;
-                    }
-                }
-                else
-                {
-                    buffer.AddUtf16(text.Buffer.Span);
-                }
+                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
                 buffer.GuessSegmentProperties();
 
@@ -67,44 +25,38 @@ namespace Avalonia.Direct2D1.Media
 
                 var font = ((GlyphTypefaceImpl)glyphTypeface.PlatformImpl).Font;
 
-                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
-
                 font.Shape(buffer);
 
                 font.GetScale(out var scaleX, out _);
 
                 var textScale = fontRenderingEmSize / scaleX;
 
-                var len = buffer.Length;
+                var bufferLength = buffer.Length;
 
-                var info = buffer.GetGlyphInfoSpan();
+                var glyphInfos = buffer.GetGlyphInfoSpan();
 
-                var pos = buffer.GetGlyphPositionSpan();
+                var glyphPositions = buffer.GetGlyphPositionSpan();
 
-                var glyphIndices = new ushort[len];
+                var glyphIndices = new ushort[bufferLength];
 
-                var clusters = new ushort[len];
+                var clusters = new ushort[bufferLength];
 
-                var glyphAdvances = new double[len];
+                double[] glyphAdvances = null;
 
-                var glyphOffsets = new Vector[len];
+                Vector[] glyphOffsets = null;
 
-                for (var i = 0; i < len; i++)
+                for (var i = 0; i < bufferLength; i++)
                 {
-                    glyphIndices[i] = (ushort)info[i].Codepoint;
+                    glyphIndices[i] = (ushort)glyphInfos[i].Codepoint;
 
-                    clusters[i] = (ushort)(text.Start + info[i].Cluster);
+                    clusters[i] = (ushort)glyphInfos[i].Cluster;
 
-                    var advanceX = pos[i].XAdvance * textScale;
-                    // Depends on direction of layout
-                    //var advanceY = pos[i].YAdvance * textScale;
+                    if (!glyphTypeface.IsFixedPitch)
+                    {
+                        SetAdvance(glyphPositions, i, textScale, ref glyphAdvances);
+                    }
 
-                    glyphAdvances[i] = advanceX;
-
-                    var offsetX = pos[i].XOffset * textScale;
-                    var offsetY = pos[i].YOffset * textScale;
-
-                    glyphOffsets[i] = new Vector(offsetX, offsetY);
+                    SetOffset(glyphPositions, i, textScale, ref glyphOffsets);
                 }
 
                 return new GlyphRun(glyphTypeface, fontRenderingEmSize,
@@ -114,6 +66,80 @@ namespace Avalonia.Direct2D1.Media
                     text,
                     new ReadOnlySlice<ushort>(clusters));
             }
+        }
+
+        private static void FillBuffer(Buffer buffer, ReadOnlySlice<char> text)
+        {
+            buffer.ContentType = ContentType.Unicode;
+
+            var i = 0;
+
+            while (i < text.Length)
+            {
+                var codepoint = Codepoint.ReadAt(text, i, out var count);
+
+                var cluster = (uint)(text.Start + i);
+
+                if (codepoint.IsBreakChar)
+                {
+                    if (i + 1 < text.Length)
+                    {
+                        var nextCodepoint = Codepoint.ReadAt(text, i + 1, out _);
+
+                        if (nextCodepoint == '\r' && codepoint == '\n' || nextCodepoint == '\n' && codepoint == '\r')
+                        {
+                            count++;
+
+                            buffer.Add('\u200C', cluster);
+
+                            buffer.Add('\u200D', cluster);
+                        }
+                        else
+                        {
+                            buffer.Add('\u200C', cluster);
+                        }
+                    }
+                    else
+                    {
+                        buffer.Add('\u200C', cluster);
+                    }
+                }
+                else
+                {
+                    buffer.Add(codepoint, cluster);
+                }
+
+                i += count;
+            }
+        }
+
+        private static void SetOffset(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale,
+            ref Vector[] offsetBuffer)
+        {
+            var position = glyphPositions[index];
+
+            if (position.XOffset == 0 && position.YOffset == 0)
+            {
+                return;
+            }
+
+            offsetBuffer ??= new Vector[glyphPositions.Length];
+
+            var offsetX = position.XOffset * textScale;
+
+            var offsetY = position.YOffset * textScale;
+
+            offsetBuffer[index] = new Vector(offsetX, offsetY);
+        }
+
+        private static void SetAdvance(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale,
+            ref double[] advanceBuffer)
+        {
+            advanceBuffer ??= new double[glyphPositions.Length];
+
+            // Depends on direction of layout
+            // advanceBuffer[index] = buffer.GlyphPositions[index].YAdvance * textScale;
+            advanceBuffer[index] = glyphPositions[index].XAdvance * textScale;
         }
     }
 }

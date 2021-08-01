@@ -47,7 +47,7 @@ if [ -f "$DOTNET_GLOBAL_FILE" ]; then
 fi
 
 # If dotnet is installed locally, and expected version is not set or installation matches the expected version
-if [[ -x "$(command -v dotnet)" && (-z ${DOTNET_VERSION+x} || $(dotnet --version) == "$DOTNET_VERSION") ]]; then
+if [[ -x "$(command -v dotnet)" && (-z ${DOTNET_VERSION+x} || $(dotnet --version) == "$DOTNET_VERSION") || "$SKIP_DOTNET_DOWNLOAD" == "1" ]]; then
     export DOTNET_EXE="$(command -v dotnet)"
 else
     DOTNET_DIRECTORY="$TEMP_DIRECTORY/dotnet-unix"

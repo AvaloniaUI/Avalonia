@@ -1,10 +1,10 @@
 ﻿using System;
 using Avalonia.Controls;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    public class SplitViewPageViewModel : ReactiveObject
+    public class SplitViewPageViewModel : ViewModelBase
     {
         private bool _isLeft = true;
         private int _displayMode = 3; //CompactOverlay

@@ -38,10 +38,10 @@ namespace ControlCatalog
                 switch (themes.SelectedIndex)
                 {
                     case 0:
-                        Application.Current.Styles[0] = App.FluentDark;
+                        Application.Current.Styles[0] = App.FluentLight;
                         break;
                     case 1:
-                        Application.Current.Styles[0] = App.FluentLight;
+                        Application.Current.Styles[0] = App.FluentDark;
                         break;
                     case 2:
                         Application.Current.Styles[0] = App.DefaultLight;

@@ -15,6 +15,13 @@
         <Slider Name="hprogress" Maximum="100" Value="40" />
         <Slider Name="vprogress" Maximum="100" Value="60" />
       </StackPanel>
+
+      <StackPanel Spacing="10">
+        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" />
+        <ProgressBar VerticalAlignment="Center" Value="5" Maximum="10" />
+        <ProgressBar VerticalAlignment="Center" Value="50" />
+        <ProgressBar VerticalAlignment="Center" Value="50" Minimum="25" Maximum="75" />
+      </StackPanel>
     </StackPanel>
   </StackPanel>
 </UserControl>

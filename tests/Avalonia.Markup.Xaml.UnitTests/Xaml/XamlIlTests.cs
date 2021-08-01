@@ -295,8 +295,27 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.Equal("Test", templated.Text);
             }
         }
+
+        [Fact]
+        public void Should_Work_With_Base_Property()
+        {
+            var parsed = (ListBox)AvaloniaRuntimeXamlLoader.Load(@"
+<ListBox
+  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+  xmlns='https://github.com/avaloniaui'
+  xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+>
+    <ItemsControl.ItemTemplate>
+      <DataTemplate>
+        <ContentControl Content='{Binding}' />
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+</ListBox>");
+
+            Assert.NotNull(parsed.ItemTemplate);
+        }
     }
-    
+
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
     {
         public object SavedContext;

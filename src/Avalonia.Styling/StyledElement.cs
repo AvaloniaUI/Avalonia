@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -300,7 +300,7 @@ namespace Avalonia
         bool IStyleHost.IsStylesInitialized => _styles != null;
 
         /// <inheritdoc/>
-        IStyleHost? IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
+        IStyleHost? IStyleHost.StylingParent => (IStyleHost?)InheritanceParent;
 
         /// <inheritdoc/>
         public virtual void BeginInit()
@@ -334,7 +334,16 @@ namespace Avalonia
         {
             if (_initCount == 0 && !_styled)
             {
-                AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+                try
+                {
+                    BeginBatchUpdate();
+                    AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+                }
+                finally
+                {
+                    EndBatchUpdate();
+                }
+
                 _styled = true;
             }
 
@@ -354,6 +363,18 @@ namespace Avalonia
                 OnInitialized();
                 Initialized?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        internal StyleDiagnostics GetStyleDiagnosticsInternal()
+        {
+            IReadOnlyList<IStyleInstance>? appliedStyles = _appliedStyles;
+
+            if (appliedStyles is null)
+            {
+                appliedStyles = Array.Empty<IStyleInstance>();
+            }
+
+            return new StyleDiagnostics(appliedStyles);
         }
 
         /// <inheritdoc/>
@@ -444,7 +465,7 @@ namespace Avalonia
         /// Sets the styled element's inheritance parent.
         /// </summary>
         /// <param name="parent">The parent.</param>
-        void ISetInheritanceParent.SetParent(IAvaloniaObject parent)
+        void ISetInheritanceParent.SetParent(IAvaloniaObject? parent)
         {
             InheritanceParent = parent;
         }
@@ -479,16 +500,16 @@ namespace Avalonia
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    SetLogicalParent(e.NewItems.Cast<ILogical>());
+                    SetLogicalParent(e.NewItems);
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
+                    ClearLogicalParent(e.OldItems);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
-                    SetLogicalParent(e.NewItems.Cast<ILogical>());
+                    ClearLogicalParent(e.OldItems);
+                    SetLogicalParent(e.NewItems);
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
@@ -702,13 +723,32 @@ namespace Avalonia
             OnDataContextChanged(EventArgs.Empty);
         }
 
-        private void SetLogicalParent(IEnumerable<ILogical> children)
+        private void SetLogicalParent(IList children)
         {
-            foreach (var i in children)
+            var count = children.Count;
+
+            for (var i = 0; i < count; i++)
             {
-                if (i.LogicalParent == null)
+                var logical = (ILogical) children[i];
+                
+                if (logical.LogicalParent is null)
                 {
-                    ((ISetLogicalParent)i).SetParent(this);
+                    ((ISetLogicalParent)logical).SetParent(this);
+                }
+            }
+        }
+
+        private void ClearLogicalParent(IList children)
+        {
+            var count = children.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                var logical = (ILogical) children[i];
+                
+                if (logical.LogicalParent == this)
+                {
+                    ((ISetLogicalParent)logical).SetParent(null);
                 }
             }
         }
@@ -717,12 +757,21 @@ namespace Avalonia
         {
             if (_appliedStyles is object)
             {
-                foreach (var i in _appliedStyles)
-                {
-                    i.Dispose();
-                }
+                BeginBatchUpdate();
 
-                _appliedStyles.Clear();
+                try
+                {
+                    foreach (var i in _appliedStyles)
+                    {
+                        i.Dispose();
+                    }
+
+                    _appliedStyles.Clear();
+                }
+                finally
+                {
+                    EndBatchUpdate();
+                }
             }
 
             _styled = false;
@@ -780,17 +829,6 @@ namespace Avalonia
                 for (var i = 0; i < childCount; ++i)
                 {
                     (_logicalChildren[i] as StyledElement)?.DetachStylesFromThisAndDescendents(styles);
-                }
-            }
-        }
-
-        private void ClearLogicalParent(IEnumerable<ILogical> children)
-        {
-            foreach (var i in children)
-            {
-                if (i.LogicalParent == this)
-                {
-                    ((ISetLogicalParent)i).SetParent(null);
                 }
             }
         }

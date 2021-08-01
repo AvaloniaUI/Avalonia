@@ -14,10 +14,6 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 {
     public class VisualBrushTests : TestBase
     {
-        //Whitespaces are used here to be able to compare rendering results in a platform independent way.
-        //Otherwise tests will fail because of slightly different glyph rendering.
-        private static readonly string s_visualBrushText = "           ";
-
         public VisualBrushTests()
             : base(@"Media\VisualBrush")
         {
@@ -46,13 +42,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             BorderThickness = new Thickness(2),
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
-                            Child = new TextBlock
+                            Child = new Panel
                             {
-                                FontSize = 24,
-                                FontFamily = TestFontFamily,
-                                Background = Brushes.Green,
-                                Foreground = Brushes.Yellow,
-                                Text = s_visualBrushText
+                                Height = 26,
+                                Width = 150,
+                                Background = Brushes.Green
                             }
                         }
                     }
@@ -392,10 +386,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                         {
                             Background = Brushes.Yellow,
                             HorizontalAlignment = HorizontalAlignment.Left,
-                            Child = new TextBlock
+                            Child = new Panel
                             {
-                                FontFamily = TestFontFamily,
-                                Text = s_visualBrushText
+                                Height = 10,
+                                Width = 50
                             }
                         }),
                         new Border

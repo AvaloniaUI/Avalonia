@@ -1,9 +1,9 @@
 ﻿using System;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace VirtualizationDemo.ViewModels
 {
-    internal class ItemViewModel : ReactiveObject
+    internal class ItemViewModel : ViewModelBase
     {
         private string _prefix;
         private int _index;

@@ -6,17 +6,17 @@ namespace Avalonia.Input
 {
     public static class Gestures
     {
-        public static readonly RoutedEvent<RoutedEventArgs> TappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        public static readonly RoutedEvent<RoutedEventArgs> DoubleTappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "DoubleTapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
-        public static readonly RoutedEvent<RoutedEventArgs> RightTappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+        public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "RightTapped",
             RoutingStrategies.Bubble,
             typeof(Gestures));
@@ -24,7 +24,7 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGesture", RoutingStrategies.Bubble, typeof(Gestures));
- 
+
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEndedEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
@@ -89,7 +89,7 @@ namespace Avalonia.Input
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
-                        e.Source.RaiseEvent(new RoutedEventArgs(DoubleTappedEvent));
+                        e.Source.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
                     }
                 }
             }
@@ -105,8 +105,14 @@ namespace Avalonia.Input
                 {
                     if (e.InitialPressMouseButton == MouseButton.Left || e.InitialPressMouseButton == MouseButton.Right)
                     {
-                        var et = e.InitialPressMouseButton != MouseButton.Right ? TappedEvent : RightTappedEvent;
-                        e.Source.RaiseEvent(new RoutedEventArgs(et));
+                        if (e.InitialPressMouseButton == MouseButton.Right)
+                        {
+                            e.Source.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
+                        }
+                        else
+                        {
+                            e.Source.RaiseEvent(new TappedEventArgs(TappedEvent, e));
+                        }
                     }
                 }
             }

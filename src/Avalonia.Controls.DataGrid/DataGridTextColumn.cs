@@ -20,11 +20,6 @@ namespace Avalonia.Controls
     {
         private const string DATAGRID_TextColumnCellTextBlockMarginKey = "DataGridTextColumnCellTextBlockMargin";
 
-        private double? _fontSize;
-        private FontStyle? _fontStyle;
-        private FontWeight? _fontWeight;
-        private IBrush _foreground;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridTextColumn" /> class.
         /// </summary>
@@ -36,17 +31,23 @@ namespace Avalonia.Controls
         /// <summary>
         /// Identifies the FontFamily dependency property.
         /// </summary>
-        public static readonly StyledProperty<string> FontFamilyProperty =
-            AvaloniaProperty.Register<DataGridTextColumn, string>(nameof(FontFamily));
+        public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
+            TextBlock.FontFamilyProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font name.
         /// </summary>
-        public string FontFamily
+        public FontFamily FontFamily
         {
-            get { return GetValue(FontFamilyProperty); }
-            set { SetValue(FontFamilyProperty, value); }
+            get => GetValue(FontFamilyProperty);
+            set => SetValue(FontFamilyProperty, value);
         }
+
+        /// <summary>
+        /// Identifies the FontSize dependency property.
+        /// </summary>
+        public static readonly AttachedProperty<double> FontSizeProperty =
+            TextBlock.FontSizeProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font size.
@@ -55,74 +56,66 @@ namespace Avalonia.Controls
         [DefaultValue(double.NaN)]
         public double FontSize
         {
-            get
-            {
-                return _fontSize ?? Double.NaN;
-            }
-            set
-            {
-                if (_fontSize != value)
-                {
-                    _fontSize = value;
-                    NotifyPropertyChanged(nameof(FontSize));
-                }
-            }
+            get => GetValue(FontSizeProperty);
+            set => SetValue(FontSizeProperty, value);
         }
+
+        /// <summary>
+        /// Identifies the FontStyle dependency property.
+        /// </summary>
+        public static readonly AttachedProperty<FontStyle> FontStyleProperty =
+            TextBlock.FontStyleProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font style.
         /// </summary>
         public FontStyle FontStyle
         {
-            get
-            {
-                return _fontStyle ?? FontStyle.Normal;
-            }
-            set
-            {
-                if (_fontStyle != value)
-                {
-                    _fontStyle = value;
-                    NotifyPropertyChanged(nameof(FontStyle));
-                }
-            }
+            get => GetValue(FontStyleProperty);
+            set => SetValue(FontStyleProperty, value);
         }
+
+        /// <summary>
+        /// Identifies the FontWeight dependency property.
+        /// </summary>
+        public static readonly AttachedProperty<FontWeight> FontWeightProperty =
+            TextBlock.FontWeightProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font weight or thickness.
         /// </summary>
         public FontWeight FontWeight
         {
-            get
-            {
-                return _fontWeight ?? FontWeight.Normal;
-            }
-            set
-            {
-                if (_fontWeight != value)
-                {
-                    _fontWeight = value;
-                    NotifyPropertyChanged(nameof(FontWeight));
-                }
-            }
+            get => GetValue(FontWeightProperty);
+            set => SetValue(FontWeightProperty, value);
         }
+
+        /// <summary>
+        /// Identifies the Foreground dependency property.
+        /// </summary>
+        public static readonly AttachedProperty<IBrush> ForegroundProperty =
+            TextBlock.ForegroundProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets a brush that describes the foreground of the column cells.
         /// </summary>
         public IBrush Foreground
         {
-            get
+            get => GetValue(ForegroundProperty);
+            set => SetValue(ForegroundProperty, value);
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == FontFamilyProperty
+                || change.Property == FontSizeProperty
+                || change.Property == FontStyleProperty
+                || change.Property == FontWeightProperty
+                || change.Property == ForegroundProperty)
             {
-                return _foreground;
-            }
-            set
-            {
-                if (_foreground != value)
-                {
-                    _foreground = value;
-                    NotifyPropertyChanged(nameof(Foreground));
-                }
+                NotifyPropertyChanged(change.Property.Name);
             }
         }
 
@@ -154,26 +147,7 @@ namespace Avalonia.Controls
                 Background = new SolidColorBrush(Colors.Transparent)
             };
 
-            if (IsSet(FontFamilyProperty))
-            {
-                textBox.FontFamily = FontFamily;
-            }
-            if (_fontSize.HasValue)
-            {
-                textBox.FontSize = _fontSize.Value;
-            }
-            if (_fontStyle.HasValue)
-            {
-                textBox.FontStyle = _fontStyle.Value;
-            }
-            if (_fontWeight.HasValue)
-            {
-                textBox.FontWeight = _fontWeight.Value;
-            }
-            if (_foreground != null)
-            {
-                textBox.Foreground = _foreground;
-            }
+            SyncProperties(textBox);
 
             return textBox;
         }
@@ -192,26 +166,8 @@ namespace Avalonia.Controls
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            if (IsSet(FontFamilyProperty))
-            {
-                textBlockElement.FontFamily = FontFamily;
-            }
-            if (_fontSize.HasValue)
-            {
-                textBlockElement.FontSize = _fontSize.Value;
-            }
-            if (_fontStyle.HasValue)
-            {
-                textBlockElement.FontStyle = _fontStyle.Value;
-            }
-            if (_fontWeight.HasValue)
-            {
-                textBlockElement.FontWeight = _fontWeight.Value;
-            }
-            if (_foreground != null)
-            {
-                textBlockElement.Foreground = _foreground;
-            }
+            SyncProperties(textBlockElement);
+
             if (Binding != null)
             {
                 textBlockElement.Bind(TextBlock.TextProperty, Binding);
@@ -261,99 +217,42 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException("element");
             }
 
-            if(element is TextBox textBox)
+            if (element is AvaloniaObject content)
             {
                 if (propertyName == nameof(FontFamily))
                 {
-                    textBox.FontFamily = FontFamily;
+                    DataGridHelper.SyncColumnProperty(this, content, FontFamilyProperty);
                 }
                 else if (propertyName == nameof(FontSize))
                 {
-                    SetTextFontSize(textBox, TextBox.FontSizeProperty);
+                    DataGridHelper.SyncColumnProperty(this, content, FontSizeProperty);
                 }
                 else if (propertyName == nameof(FontStyle))
                 {
-                    textBox.FontStyle = FontStyle;
+                    DataGridHelper.SyncColumnProperty(this, content, FontStyleProperty);
                 }
                 else if (propertyName == nameof(FontWeight))
                 {
-                    textBox.FontWeight = FontWeight;
+                    DataGridHelper.SyncColumnProperty(this, content, FontWeightProperty);
                 }
                 else if (propertyName == nameof(Foreground))
                 {
-                    textBox.Foreground = Foreground;
-                }
-                else
-                {
-                    if (FontFamily != null)
-                    {
-                        textBox.FontFamily = FontFamily;
-                    }
-                    SetTextFontSize(textBox, TextBox.FontSizeProperty);
-                    textBox.FontStyle = FontStyle;
-                    textBox.FontWeight = FontWeight;
-                    if (Foreground != null)
-                    {
-                        textBox.Foreground = Foreground;
-                    }
-                }
-
-            }
-            else if (element is TextBlock textBlock)
-            {
-                if (propertyName == nameof(FontFamily))
-                {
-                    textBlock.FontFamily = FontFamily;
-                }
-                else if (propertyName == nameof(FontSize))
-                {
-                    SetTextFontSize(textBlock, TextBlock.FontSizeProperty);
-                }
-                else if (propertyName == nameof(FontStyle))
-                {
-                    textBlock.FontStyle = FontStyle;
-                }
-                else if (propertyName == nameof(FontWeight))
-                {
-                    textBlock.FontWeight = FontWeight;
-                }
-                else if (propertyName == nameof(Foreground))
-                {
-                    textBlock.Foreground = Foreground;
-                }
-                else
-                {
-                    if (FontFamily != null)
-                    {
-                        textBlock.FontFamily = FontFamily;
-                    }
-                    SetTextFontSize(textBlock, TextBlock.FontSizeProperty);
-                    textBlock.FontStyle = FontStyle;
-                    textBlock.FontWeight = FontWeight;
-                    if (Foreground != null)
-                    {
-                        textBlock.Foreground = Foreground;
-                    }
+                    DataGridHelper.SyncColumnProperty(this, content, ForegroundProperty);
                 }
             }
             else
             {
-                throw DataGridError.DataGrid.ValueIsNotAnInstanceOfEitherOr("element", typeof(TextBox), typeof(TextBlock));
+                throw DataGridError.DataGrid.ValueIsNotAnInstanceOf("element", typeof(AvaloniaObject));
             }
         }
 
-        private void SetTextFontSize(AvaloniaObject textElement, AvaloniaProperty fontSizeProperty)
+        private void SyncProperties(AvaloniaObject content)
         {
-            double newFontSize = FontSize;
-            if (double.IsNaN(newFontSize))
-            {
-                textElement.ClearValue(fontSizeProperty);
-            }
-            else
-            {
-                textElement.SetValue(fontSizeProperty, newFontSize);
-            }
+            DataGridHelper.SyncColumnProperty(this, content, FontFamilyProperty);
+            DataGridHelper.SyncColumnProperty(this, content, FontSizeProperty);
+            DataGridHelper.SyncColumnProperty(this, content, FontStyleProperty);
+            DataGridHelper.SyncColumnProperty(this, content, FontWeightProperty);
+            DataGridHelper.SyncColumnProperty(this, content, ForegroundProperty);
         }
-
     }
 }

@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Mixins
 
                 if (sender != null)
                 {
-                    ((IPseudoClasses)sender.Classes).Set(":selected", (bool)x.NewValue);
+                    ((IPseudoClasses)sender.Classes).Set(":selected", x.NewValue.GetValueOrDefault());
 
                     sender.RaiseEvent(new RoutedEventArgs
                     {

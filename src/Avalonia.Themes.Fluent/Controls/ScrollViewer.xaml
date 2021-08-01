@@ -1,0 +1,159 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls">
+
+  <Design.PreviewWith>
+    <Grid ColumnDefinitions="*,20,*"
+          Height="300"
+          Width="200"
+          Margin="20">
+      <ScrollViewer>
+        <Border Height="1000" Background="#ccc"/>
+      </ScrollViewer>
+      <ScrollViewer Grid.Column="2" Classes="menuscroller">
+        <Border Height="1000" Background="#ccc"/>
+      </ScrollViewer>
+    </Grid>
+  </Design.PreviewWith>
+  
+  <Style Selector="ScrollViewer">
+    <Setter Property="Background"
+            Value="Transparent" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+          <ScrollContentPresenter Name="PART_ContentPresenter"
+                                  Grid.Row="0"
+                                  Grid.Column="0"
+                                  Grid.RowSpan="2"
+                                  Grid.ColumnSpan="2"
+                                  Background="{TemplateBinding Background}"
+                                  CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
+                                  CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
+                                  Content="{TemplateBinding Content}"
+                                  Extent="{TemplateBinding Extent, Mode=TwoWay}"
+                                  Margin="{TemplateBinding Padding}"
+                                  Offset="{TemplateBinding Offset, Mode=TwoWay}"
+                                  Viewport="{TemplateBinding Viewport, Mode=TwoWay}">
+            <ScrollContentPresenter.GestureRecognizers>
+              <ScrollGestureRecognizer
+                CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
+                CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}" />
+            </ScrollContentPresenter.GestureRecognizers>
+          </ScrollContentPresenter>
+          <ScrollBar Name="PART_HorizontalScrollBar"
+                     AllowAutoHide="{TemplateBinding AllowAutoHide}"
+                     Orientation="Horizontal"
+                     LargeChange="{Binding LargeChange.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                     SmallChange="{Binding SmallChange.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                     Maximum="{TemplateBinding HorizontalScrollBarMaximum}"
+                     Value="{TemplateBinding HorizontalScrollBarValue, Mode=TwoWay}"
+                     ViewportSize="{TemplateBinding HorizontalScrollBarViewportSize}"
+                     Visibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                     Grid.Row="1"
+                     Focusable="False" />
+          <ScrollBar Name="PART_VerticalScrollBar"
+                     AllowAutoHide="{TemplateBinding AllowAutoHide}"
+                     Orientation="Vertical"
+                     LargeChange="{Binding LargeChange.Height, RelativeSource={RelativeSource TemplatedParent}}"
+                     SmallChange="{Binding SmallChange.Height, RelativeSource={RelativeSource TemplatedParent}}"
+                     Maximum="{TemplateBinding VerticalScrollBarMaximum}"
+                     Value="{TemplateBinding VerticalScrollBarValue, Mode=TwoWay}"
+                     ViewportSize="{TemplateBinding VerticalScrollBarViewportSize}"
+                     Visibility="{TemplateBinding VerticalScrollBarVisibility}"
+                     Grid.Column="1"
+                     Focusable="False" />
+          <Panel x:Name="PART_ScrollBarsSeparator" Grid.Row="1" Grid.Column="1" Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="ScrollViewer /template/ Panel#PART_ScrollBarsSeparator">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="ScrollViewer[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+
+  <Style Selector="ScrollViewer.menuscroller">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DockPanel>
+          <RepeatButton DockPanel.Dock="Top"
+                        BorderThickness="0"
+                        Background="Transparent"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        RenderTransform="{x:Null}"
+                        Command="{Binding LineUp, RelativeSource={RelativeSource TemplatedParent}}">
+            <RepeatButton.IsVisible>
+              <MultiBinding Converter="{x:Static converters:MenuScrollingVisibilityConverter.Instance}"
+                            ConverterParameter="0">
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="VerticalScrollBarVisibility"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Offset.Y"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Extent.Height"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Viewport.Height"/>
+              </MultiBinding>
+            </RepeatButton.IsVisible>
+            <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
+                     Height="{DynamicResource ScrollBarButtonArrowIconFontSize}">
+              <Path VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Data="M 19.091797 14.970703 L 10 5.888672 L 0.908203 14.970703 L 0.029297 14.091797 L 10 4.111328 L 19.970703 14.091797 Z"
+                    Width="20"
+                    Height="20" />
+            </Viewbox>
+          </RepeatButton>
+          <RepeatButton DockPanel.Dock="Bottom"
+                        BorderThickness="0"
+                        Background="Transparent"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        RenderTransform="{x:Null}"
+                        Command="{Binding LineDown, RelativeSource={RelativeSource TemplatedParent}}">
+            <RepeatButton.IsVisible>
+              <MultiBinding Converter="{x:Static converters:MenuScrollingVisibilityConverter.Instance}"
+                            ConverterParameter="100">
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="VerticalScrollBarVisibility"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Offset.Y"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Extent.Height"/>
+                <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Viewport.Height"/>
+              </MultiBinding>
+            </RepeatButton.IsVisible>
+            <Viewbox Width="{DynamicResource ScrollBarButtonArrowIconFontSize}"
+                     Height="{DynamicResource ScrollBarButtonArrowIconFontSize}">
+              <Path VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Data="M 18.935547 4.560547 L 19.814453 5.439453 L 10 15.253906 L 0.185547 5.439453 L 1.064453 4.560547 L 10 13.496094 Z"
+                    Width="20"
+                    Height="20" />
+            </Viewbox>
+          </RepeatButton>
+          <ScrollContentPresenter Name="PART_ContentPresenter"
+                                  CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
+                                  CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
+                                  Content="{TemplateBinding Content}"
+                                  Extent="{TemplateBinding Extent, Mode=TwoWay}"
+                                  Margin="{TemplateBinding Padding}"
+                                  Offset="{TemplateBinding Offset, Mode=TwoWay}"
+                                  Viewport="{TemplateBinding Viewport, Mode=TwoWay}"/>
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="ScrollViewer.menuscroller /template/ RepeatButton > Viewbox > Path">
+    <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForeground}" />
+  </Style>
+
+  <Style Selector="ScrollViewer.menuscroller /template/ RepeatButton:pointerover > Viewbox > Path">
+    <Setter Property="Fill" Value="{DynamicResource ScrollBarButtonArrowForegroundPointerOver}" />
+  </Style>
+
+</Styles>
