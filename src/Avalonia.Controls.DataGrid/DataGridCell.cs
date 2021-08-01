@@ -173,7 +173,7 @@ namespace Avalonia.Controls
                     }
                     if (OwningRow != null)
                     {
-                        e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+                        OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
                         OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
                     }
                 }
