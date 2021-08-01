@@ -21,8 +21,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
         /// </summary>
-        public static readonly StyledProperty<Transform> TransformProperty =
-            AvaloniaProperty.Register<Brush, Transform>(nameof(Transform));
+        public static readonly StyledProperty<ITransform> TransformProperty =
+            AvaloniaProperty.Register<Brush, ITransform>(nameof(Transform));
 
         /// <inheritdoc/>
         public event EventHandler Invalidated;
@@ -45,7 +45,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the transform of the brush.
         /// </summary>
-        public Transform Transform
+        public ITransform Transform
         {
             get { return GetValue(TransformProperty); }
             set { SetValue(TransformProperty, value); }

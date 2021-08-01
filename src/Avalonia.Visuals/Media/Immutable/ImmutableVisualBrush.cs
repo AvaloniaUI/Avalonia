@@ -16,6 +16,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="alignmentY">The vertical alignment of a tile in the destination.</param>
         /// <param name="destinationRect">The rectangle on the destination in which to paint a tile.</param>
         /// <param name="opacity">The opacity of the brush.</param>
+        /// <param name="transform">The transform of the brush.</param>
         /// <param name="sourceRect">The rectangle of the source image that will be displayed.</param>
         /// <param name="stretch">
         /// How the source rectangle will be stretched to fill the destination rect.
@@ -28,6 +29,7 @@ namespace Avalonia.Media.Immutable
             AlignmentY alignmentY = AlignmentY.Center,
             RelativeRect? destinationRect = null,
             double opacity = 1,
+            Transform transform = null,
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
             TileMode tileMode = TileMode.None,
@@ -37,6 +39,7 @@ namespace Avalonia.Media.Immutable
                   alignmentY,
                   destinationRect ?? RelativeRect.Fill,
                   opacity,
+                  transform,
                   sourceRect ?? RelativeRect.Fill,
                   stretch,
                   tileMode,

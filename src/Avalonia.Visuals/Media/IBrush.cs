@@ -16,6 +16,6 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the transform of the brush.
         /// </summary>
-        Transform Transform { get; }
+        ITransform Transform { get; }
     }
 }

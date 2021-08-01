@@ -49,7 +49,7 @@ namespace Avalonia.Media.Immutable
         /// <summary>
         /// Gets the transform of the brush.
         /// </summary>
-        public Transform Transform { get; }
+        public ITransform Transform { get; }
 
         public bool Equals(ImmutableSolidColorBrush other)
         {

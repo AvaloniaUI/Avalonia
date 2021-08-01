@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
+using Avalonia.Media.Immutable;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media
@@ -42,6 +43,12 @@ namespace Avalonia.Media
         protected void RaiseChanged()
         {
             Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <inheritdoc/>
+        public ITransform ToImmutable()
+        {
+            return new ImmutableTransform(this.Value);
         }
 
         /// <summary>
