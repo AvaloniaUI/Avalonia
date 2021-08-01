@@ -26,7 +26,7 @@ namespace Avalonia.Media.Immutable
             AlignmentY alignmentY,
             RelativeRect destinationRect,
             double opacity,
-            ITransform transform,
+            ImmutableTransform transform,
             RelativeRect sourceRect,
             Stretch stretch,
             TileMode tileMode,
