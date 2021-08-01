@@ -708,7 +708,7 @@ namespace Avalonia.Skia
                     var angle = (float)(conicGradient.Angle - 90);
                     var rotation = SKMatrix.CreateRotationDegrees(angle, center.X, center.Y);
 
-                    if (conicGradient.Transform is not null)
+                    if (conicGradient.Transform is { })
                     {
                         rotation = rotation.PreConcat(conicGradient.Transform.Value.ToSKMatrix());
                     }
@@ -785,7 +785,7 @@ namespace Avalonia.Skia
                 tileTransform,
                 SKMatrix.CreateScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
 
-            if (tileBrush.Transform is not null)
+            if (tileBrush.Transform is { })
             {
                 paintTransform = paintTransform.PreConcat(tileBrush.Transform.Value.ToSKMatrix());
             }
