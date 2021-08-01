@@ -53,6 +53,7 @@ namespace Avalonia.Win32
         private double _extendTitleBarHint = -1;
         private bool _isUsingComposition;
         private IBlurHost _blurHost;
+        private PlatformResizeReason _resizeReason;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -85,6 +86,7 @@ namespace Avalonia.Win32
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
         private bool _shown;
+        private bool _hiddenWindowIsParent;
 
         public WindowImpl()
         {
@@ -159,7 +161,7 @@ namespace Avalonia.Win32
 
         public Action<Rect> Paint { get; set; }
 
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
 
@@ -209,6 +211,21 @@ namespace Avalonia.Win32
                 GetClientRect(_hwnd, out var rect);
 
                 return new Size(rect.right, rect.bottom) / RenderScaling;
+            }
+        }
+
+        public Size? FrameSize
+        {
+            get
+            {
+                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+                {
+                    GetWindowRect(_hwnd, out var rcWindow);
+                    return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
+                }
+
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf(typeof(RECT)));
+                return new Size(rect.Width, rect.Height) / RenderScaling;
             }
         }
 
@@ -466,7 +483,7 @@ namespace Avalonia.Win32
                 : new ImmediateRenderer(root);
         }
 
-        public void Resize(Size value)
+        public void Resize(Size value, PlatformResizeReason reason)
         {
             int requestedClientWidth = (int)(value.Width * RenderScaling);
             int requestedClientHeight = (int)(value.Height * RenderScaling);
@@ -478,13 +495,14 @@ namespace Avalonia.Win32
             {
                 GetWindowRect(_hwnd, out var windowRect);
 
+                using var scope = SetResizeReason(reason);
                 SetWindowPos(
                     _hwnd,
                     IntPtr.Zero,
                     0,
                     0,
-                    requestedClientWidth + (windowRect.Width - clientRect.Width),
-                    requestedClientHeight + (windowRect.Height - clientRect.Height),
+                    requestedClientWidth + (_isClientAreaExtended ? 0 : windowRect.Width - clientRect.Width),
+                    requestedClientHeight + (_isClientAreaExtended ? 0 : windowRect.Height - clientRect.Height),
                     SetWindowPosFlags.SWP_RESIZE);
             }
         }
@@ -569,10 +587,9 @@ namespace Avalonia.Win32
             _shown = false;
         }
 
-        public virtual void Show(bool activate)
+        public virtual void Show(bool activate, bool isDialog)
         {
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent != null ? _parent._hwnd : IntPtr.Zero);
-
+            SetParent(_parent);
             ShowWindow(_showWindowState, activate);
         }
 
@@ -581,7 +598,16 @@ namespace Avalonia.Win32
         public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
-            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, _parent._hwnd);
+            
+            var parentHwnd = _parent?._hwnd ?? IntPtr.Zero;
+
+            if (parentHwnd == IntPtr.Zero && !_windowProperties.ShowInTaskbar)
+            {
+                parentHwnd = OffscreenParentWindow.Handle;
+                _hiddenWindowIsParent = true;
+            }
+
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
         }
 
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
@@ -838,7 +864,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            bool wantsTitleBar = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
+            bool wantsTitleBar = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) || _extendTitleBarHint == -1;
 
             if (!wantsTitleBar)
             {
@@ -855,7 +881,7 @@ namespace Avalonia.Win32
                 borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);                
             }
 
-            margins.cyTopHeight = _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
+            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : 1;
 
             if (WindowState == WindowState.Maximized)
             {
@@ -883,20 +909,19 @@ namespace Avalonia.Win32
                 _isClientAreaExtended = false;
                 return;
             }
-
-            GetWindowRect(_hwnd, out var rcClient);
+            GetClientRect(_hwnd, out var rcClient);
+            GetWindowRect(_hwnd, out var rcWindow);
 
             // Inform the application of the frame change.
             SetWindowPos(_hwnd,
-                         IntPtr.Zero,
-                         rcClient.left, rcClient.top,
-                         rcClient.Width, rcClient.Height,
-                         SetWindowPosFlags.SWP_FRAMECHANGED);
+                IntPtr.Zero,
+                rcWindow.left, rcWindow.top,
+                rcClient.Width, rcClient.Height,
+                SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOACTIVATE);
 
             if (_isClientAreaExtended && WindowState != WindowState.FullScreen)
             {
                 var margins = UpdateExtendMargins();
-
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
             }
             else
@@ -906,10 +931,12 @@ namespace Avalonia.Win32
 
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
+                
+                Resize(new Size(rcWindow.Width/ RenderScaling, rcWindow.Height / RenderScaling), PlatformResizeReason.Layout);
             }
 
-            if(!_isClientAreaExtended || (_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.SystemChrome) &&
-                !_extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome)))
+            if(!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
+                !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome)))
             {
                 EnableCloseButton(_hwnd);
             }
@@ -1094,16 +1121,38 @@ namespace Avalonia.Win32
                 if (newProperties.ShowInTaskbar)
                 {
                     exStyle |= WindowStyles.WS_EX_APPWINDOW;
+
+                    if (_hiddenWindowIsParent)
+                    {
+                        // Can't enable the taskbar icon by clearing the parent window unless the window
+                        // is hidden. Hide the window and show it again with the same activation state
+                        // when we've finished. Interestingly it seems to work fine the other way.
+                        var shown = IsWindowVisible(_hwnd);
+                        var activated = GetActiveWindow() == _hwnd;
+
+                        if (shown)
+                            Hide();
+
+                        _hiddenWindowIsParent = false;
+                        SetParent(null);
+
+                        if (shown)
+                            Show(activated, false);
+                    }
                 }
                 else
                 {
+                    // To hide a non-owned window's taskbar icon we need to parent it to a hidden window.
+                    if (_parent is null)
+                    {
+                        SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, OffscreenParentWindow.Handle);
+                        _hiddenWindowIsParent = true;
+                    }
+
                     exStyle &= ~WindowStyles.WS_EX_APPWINDOW;
                 }
 
                 SetExtendedStyle(exStyle);
-
-                // TODO: To hide non-owned window from taskbar we need to parent it to a hidden window.
-                // Otherwise it will still show in the taskbar.
             }
 
             WindowStyles style;
@@ -1253,7 +1302,7 @@ namespace Avalonia.Win32
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
         
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasFlagCustom(ExtendClientAreaChromeHints.PreferSystemChrome);
+        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);
 
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;
@@ -1263,6 +1312,13 @@ namespace Avalonia.Win32
 
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
+
+        private ResizeReasonScope SetResizeReason(PlatformResizeReason reason)
+        {
+            var old = _resizeReason;
+            _resizeReason = reason;
+            return new ResizeReasonScope(this, old);
+        }
 
         private struct SavedWindowInfo
         {
@@ -1277,6 +1333,20 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
+        }
+
+        private struct ResizeReasonScope : IDisposable
+        {
+            private readonly WindowImpl _owner;
+            private readonly PlatformResizeReason _restore;
+            
+            public ResizeReasonScope(WindowImpl owner, PlatformResizeReason restore)
+            {
+                _owner = owner;
+                _restore = restore;
+            }
+
+            public void Dispose() => _owner._resizeReason = _restore;
         }
     }
 }

@@ -73,20 +73,20 @@ namespace Avalonia.Platform
         {
             if (effect == DragDropEffects.Copy || effect == DragDropEffects.Move || effect == DragDropEffects.Link || effect == DragDropEffects.None)
                 return effect; // No need to check for the modifiers.
-            if (effect.HasFlagCustom(DragDropEffects.Link) && modifiers.HasFlagCustom(RawInputModifiers.Alt))
+            if (effect.HasAllFlags(DragDropEffects.Link) && modifiers.HasAllFlags(RawInputModifiers.Alt))
                 return DragDropEffects.Link;
-            if (effect.HasFlagCustom(DragDropEffects.Copy) && modifiers.HasFlagCustom(RawInputModifiers.Control))
+            if (effect.HasAllFlags(DragDropEffects.Copy) && modifiers.HasAllFlags(RawInputModifiers.Control))
                 return DragDropEffects.Copy;
             return DragDropEffects.Move;
         }
 
         private StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
         {
-            if (effects.HasFlagCustom(DragDropEffects.Copy))
+            if (effects.HasAllFlags(DragDropEffects.Copy))
                 return StandardCursorType.DragCopy;
-            if (effects.HasFlagCustom(DragDropEffects.Move))
+            if (effects.HasAllFlags(DragDropEffects.Move))
                 return StandardCursorType.DragMove;
-            if (effects.HasFlagCustom(DragDropEffects.Link))
+            if (effects.HasAllFlags(DragDropEffects.Link))
                 return StandardCursorType.DragLink;
             return StandardCursorType.No;
         }
@@ -161,7 +161,7 @@ namespace Avalonia.Platform
             
             void CheckDraggingAccepted(RawInputModifiers changedMouseButton)
             {
-                if (_initialInputModifiers.Value.HasFlagCustom(changedMouseButton))
+                if (_initialInputModifiers.Value.HasAllFlags(changedMouseButton))
                 {
                     var result = RaiseEventAndUpdateCursor(RawDragEventType.Drop, e.Root, e.Position, e.InputModifiers);
                     UpdateCursor(null, DragDropEffects.None);

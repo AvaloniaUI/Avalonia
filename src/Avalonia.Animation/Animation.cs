@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+
 using Avalonia.Animation.Animators;
 using Avalonia.Animation.Easings;
-using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Metadata;
 
@@ -194,6 +195,33 @@ namespace Avalonia.Animation
         [Content]
         public KeyFrames Children { get; } = new KeyFrames();
 
+        // Store values for the Animator attached properties for IAnimationSetter objects.
+        private static readonly Dictionary<IAnimationSetter, Type> s_animators = new Dictionary<IAnimationSetter, Type>();
+
+        /// <summary>
+        /// Gets the value of the Animator attached property for a setter.
+        /// </summary>
+        /// <param name="setter">The animation setter.</param>
+        /// <returns>The property animator type.</returns>
+        public static Type GetAnimator(IAnimationSetter setter)
+        {
+            if (s_animators.TryGetValue(setter, out var type))
+            {
+                return type;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value of the Animator attached property for a setter.
+        /// </summary>
+        /// <param name="setter">The animation setter.</param>
+        /// <param name="value">The property animator value.</param>
+        public static void SetAnimator(IAnimationSetter setter, Type value)
+        {
+            s_animators[setter] = value;
+        }
+
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {
             ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator) ),
@@ -209,6 +237,17 @@ namespace Avalonia.Animation
             ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator) ),
         };
 
+        /// <summary>
+        /// Registers a <see cref="Animator{T}"/> that can handle
+        /// a value type that matches the specified condition.
+        /// </summary>
+        /// <param name="condition">
+        /// The condition to which the <see cref="Animator{T}"/>
+        /// is to be activated and used.
+        /// </param>
+        /// <typeparam name="TAnimator">
+        /// The type of the animator to instantiate.
+        /// </typeparam>
         public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
             where TAnimator : IAnimator
         {
@@ -237,7 +276,7 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    var handler = GetAnimatorType(setter.Property);
+                    var handler = Animation.GetAnimator(setter) ?? GetAnimatorType(setter.Property);
 
                     if (handler == null)
                     {
@@ -281,7 +320,7 @@ namespace Avalonia.Animation
             return (newAnimatorInstances, subscriptions);
         }
 
-        /// <inheritdocs/>
+        /// <inheritdoc/>
         public IDisposable Apply(Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
@@ -306,25 +345,40 @@ namespace Avalonia.Animation
 
                 if (onComplete != null)
                 {
-                    Task.WhenAll(completionTasks).ContinueWith(_ => onComplete());
+                    Task.WhenAll(completionTasks).ContinueWith(
+                        (_, state) => ((Action)state).Invoke(),
+                        onComplete);
                 }
             }
             return new CompositeDisposable(subscriptions);
         }
 
-        /// <inheritdocs/>
-        public Task RunAsync(Animatable control, IClock clock = null)
+        /// <inheritdoc/>
+        public Task RunAsync(Animatable control, IClock clock = null, CancellationToken cancellationToken = default)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
             var run = new TaskCompletionSource<object>();
 
             if (this.IterationCount == IterationCount.Infinite)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
-            IDisposable subscriptions = null;
+            IDisposable subscriptions = null, cancellation = null;
             subscriptions = this.Apply(control, clock, Observable.Return(true), () =>
             {
-                run.SetResult(null);
+                run.TrySetResult(null);
                 subscriptions?.Dispose();
+                cancellation?.Dispose();
+            });
+
+            cancellation = cancellationToken.Register(() =>
+            {
+                run.TrySetResult(null);
+                subscriptions?.Dispose();
+                cancellation?.Dispose();
             });
 
             return run.Task;

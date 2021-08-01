@@ -36,8 +36,8 @@ namespace Avalonia.PropertyStore
             sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
                 (AvaloniaProperty<T>)property,
-                oldValue.GetValueOrDefault<T>(),
-                newValue.GetValueOrDefault<T>(),
+                oldValue.Cast<T>(),
+                newValue.Cast<T>(),
                 BindingPriority.LocalValue));
         }
     }

@@ -372,8 +372,8 @@ namespace Avalonia.Utilities
             const string implicitName = "op_Implicit";
             const string explicitName = "op_Explicit";
 
-            bool allowImplicit = operatorType.HasFlagCustom(OperatorType.Implicit);
-            bool allowExplicit = operatorType.HasFlagCustom(OperatorType.Explicit);
+            bool allowImplicit = operatorType.HasAllFlags(OperatorType.Implicit);
+            bool allowExplicit = operatorType.HasAllFlags(OperatorType.Explicit);
 
             foreach (MethodInfo method in fromType.GetMethods())
             {

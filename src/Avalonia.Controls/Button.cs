@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -78,6 +79,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
 
+        /// <summary>
+        /// Defines the <see cref="Flyout"/> property
+        /// </summary>
+        public static readonly StyledProperty<FlyoutBase> FlyoutProperty =
+            AvaloniaProperty.Register<Button, FlyoutBase>(nameof(Flyout));
+
         private ICommand _command;
         private bool _commandCanExecute = true;
         private KeyGesture _hotkey;
@@ -89,6 +96,7 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
             CommandProperty.Changed.Subscribe(CommandChanged);
+            CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
             IsCancelProperty.Changed.Subscribe(IsCancelChanged);
         }
@@ -169,6 +177,15 @@ namespace Avalonia.Controls
             private set { SetValue(IsPressedProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the Flyout that should be shown with this button
+        /// </summary>
+        public FlyoutBase Flyout
+        {
+            get => GetValue(FlyoutProperty);
+            set => SetValue(FlyoutProperty, value);
+        }
+
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
 
         /// <inheritdoc/>
@@ -218,6 +235,7 @@ namespace Avalonia.Controls
             if (Command != null)
             {
                 Command.CanExecuteChanged += CanExecuteChanged;
+                CanExecuteChanged(this, EventArgs.Empty);
             }
         }
 
@@ -255,6 +273,11 @@ namespace Avalonia.Controls
                 IsPressed = true;
                 e.Handled = true;
             }
+            else if (e.Key == Key.Escape && Flyout != null)
+            {
+                // If Flyout doesn't have focusable content, close the flyout here
+                Flyout.Hide();
+            }
 
             base.OnKeyDown(e);
         }
@@ -278,6 +301,8 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual void OnClick()
         {
+            OpenFlyout();
+
             var e = new RoutedEventArgs(ClickEvent);
             RaiseEvent(e);
 
@@ -286,6 +311,11 @@ namespace Avalonia.Controls
                 Command.Execute(CommandParameter);
                 e.Handled = true;
             }
+        }
+
+        protected virtual void OpenFlyout()
+        {
+            Flyout?.ShowAt(this);
         }
 
         /// <inheritdoc/>
@@ -336,6 +366,16 @@ namespace Avalonia.Controls
             {
                 UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>());
             }
+            else if (change.Property == FlyoutProperty)
+            {
+                // If flyout is changed while one is already open, make sure we 
+                // close the old one first
+                if (change.OldValue.GetValueOrDefault() is FlyoutBase oldFlyout &&
+                    oldFlyout.IsOpen)
+                {
+                    oldFlyout.Hide();
+                }
+            }
         }
 
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
@@ -375,6 +415,18 @@ namespace Avalonia.Controls
                     }
                 }
 
+                button.CanExecuteChanged(button, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="CommandParameter"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandParameterChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is Button button)
+            {
                 button.CanExecuteChanged(button, EventArgs.Empty);
             }
         }

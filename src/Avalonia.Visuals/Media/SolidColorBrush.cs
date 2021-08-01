@@ -1,4 +1,3 @@
-using Avalonia.Animation;
 using Avalonia.Animation.Animators;
 using Avalonia.Media.Immutable;
 
@@ -17,7 +16,6 @@ namespace Avalonia.Media
 
         static SolidColorBrush()
         {
-            Animation.Animation.RegisterAnimator<SolidColorBrushAnimator>(prop => typeof(IBrush).IsAssignableFrom(prop.PropertyType));
             AffectsRender<SolidColorBrush>(ColorProperty);
         }
 

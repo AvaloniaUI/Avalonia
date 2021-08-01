@@ -101,6 +101,38 @@ namespace Avalonia.Platform
         IBitmapImpl LoadBitmap(Stream stream);
 
         /// <summary>
+        /// Loads a WriteableBitmap implementation from a stream to a specified width maintaining aspect ratio.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param> 
+        /// <param name="width">The desired width of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should resizing be required.</param>
+        /// <returns>An <see cref="IWriteableBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a stream to a specified height maintaining aspect ratio.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param> 
+        /// <param name="height">The desired height of the resulting bitmap.</param>
+        /// <param name="interpolationMode">The <see cref="BitmapInterpolationMode"/> to use should resizing be required.</param>
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality);
+        
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a file.
+        /// </summary>
+        /// <param name="fileName">The filename of the bitmap.</param>        
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmap(string fileName);
+
+        /// <summary>
+        /// Loads a WriteableBitmap implementation from a file.
+        /// </summary>
+        /// <param name="stream">The stream to read the bitmap from.</param>        
+        /// <returns>An <see cref="IBitmapImpl"/>.</returns>
+        IWriteableBitmapImpl LoadWriteableBitmap(Stream stream);
+
+        /// <summary>
         /// Loads a bitmap implementation from a stream to a specified width maintaining aspect ratio.
         /// </summary>
         /// <param name="stream">The stream to read the bitmap from.</param> 
@@ -136,9 +168,8 @@ namespace Avalonia.Platform
         /// Creates a platform implementation of a glyph run.
         /// </summary>
         /// <param name="glyphRun">The glyph run.</param>
-        /// <param name="width">The glyph run's width.</param>
         /// <returns></returns>
-        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width);
+        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun);
 
         bool SupportsIndividualRoundRects { get; }
 

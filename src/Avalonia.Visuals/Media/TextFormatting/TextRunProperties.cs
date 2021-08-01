@@ -42,6 +42,11 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         public abstract CultureInfo CultureInfo { get; }
 
+        /// <summary>
+        /// Run vertical box alignment
+        /// </summary>
+        public abstract BaselineAlignment BaselineAlignment { get; }
+
         public bool Equals(TextRunProperties other)
         {
             if (ReferenceEquals(null, other))
@@ -66,7 +71,7 @@ namespace Avalonia.Media.TextFormatting
         {
             unchecked
             {
-                var hashCode = (Typeface != null ? Typeface.GetHashCode() : 0);
+                var hashCode = Typeface.GetHashCode();
                 hashCode = (hashCode * 397) ^ FontRenderingEmSize.GetHashCode();
                 hashCode = (hashCode * 397) ^ (TextDecorations != null ? TextDecorations.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (ForegroundBrush != null ? ForegroundBrush.GetHashCode() : 0);

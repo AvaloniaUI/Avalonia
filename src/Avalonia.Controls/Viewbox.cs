@@ -1,40 +1,48 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Viewbox is used to scale single child.
+    /// Viewbox is used to scale single child to fit in the available space.
     /// </summary>
     /// <seealso cref="Avalonia.Controls.Decorator" />
     public class Viewbox : Decorator
     {
         /// <summary>
-        /// The stretch property
+        /// Defines the <see cref="Stretch"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<Stretch> StretchProperty =
-                AvaloniaProperty.RegisterDirect<Viewbox, Stretch>(nameof(Stretch),
-                    v => v.Stretch, (c, v) => c.Stretch = v, Stretch.Uniform);
+        public static readonly StyledProperty<Stretch> StretchProperty =
+            AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
 
-        private Stretch _stretch = Stretch.Uniform;
+        /// <summary>
+        /// Defines the <see cref="StretchDirection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<StretchDirection> StretchDirectionProperty =
+            AvaloniaProperty.Register<Viewbox, StretchDirection>(nameof(StretchDirection), StretchDirection.Both);
+
+        static Viewbox()
+        {
+            ClipToBoundsProperty.OverrideDefaultValue<Viewbox>(true);
+            AffectsMeasure<Viewbox>(StretchProperty, StretchDirectionProperty);
+        }
 
         /// <summary>
         /// Gets or sets the stretch mode, 
         /// which determines how child fits into the available space.
         /// </summary>
-        /// <value>
-        /// The stretch.
-        /// </value>
         public Stretch Stretch
         {
-            get => _stretch;
-            set => SetAndRaise(StretchProperty, ref _stretch, value);
+            get => GetValue(StretchProperty);
+            set => SetValue(StretchProperty, value);
         }
 
-        static Viewbox()
+        /// <summary>
+        /// Gets or sets a value controlling in what direction contents will be stretched.
+        /// </summary>
+        public StretchDirection StretchDirection
         {
-            ClipToBoundsProperty.OverrideDefaultValue<Viewbox>(true);
-            AffectsMeasure<Viewbox>(StretchProperty);
+            get => GetValue(StretchDirectionProperty);
+            set => SetValue(StretchDirectionProperty, value);
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -47,9 +55,9 @@ namespace Avalonia.Controls
 
                 var childSize = child.DesiredSize;
 
-                var scale = GetScale(availableSize, childSize, Stretch);
+                var size = Stretch.CalculateSize(availableSize, childSize, StretchDirection);
 
-                return (childSize * scale).Constrain(availableSize);
+                return size.Constrain(availableSize);
             }
 
             return new Size();
@@ -62,7 +70,9 @@ namespace Avalonia.Controls
             if (child != null)
             {
                 var childSize = child.DesiredSize;
-                var scale = GetScale(finalSize, childSize, Stretch);
+                var scale = Stretch.CalculateScaling(finalSize, childSize, StretchDirection);
+
+                // TODO: Viewbox should have another decorator as a child so we won't affect other render transforms.
                 var scaleTransform = child.RenderTransform as ScaleTransform;
 
                 if (scaleTransform == null)
@@ -80,45 +90,6 @@ namespace Avalonia.Controls
             }
 
             return new Size();
-        }
-
-        private static Vector GetScale(Size availableSize, Size childSize, Stretch stretch)
-        {
-            double scaleX = 1.0;
-            double scaleY = 1.0;
-
-            bool validWidth = !double.IsPositiveInfinity(availableSize.Width);
-            bool validHeight = !double.IsPositiveInfinity(availableSize.Height);
-
-            if (stretch != Stretch.None && (validWidth || validHeight))
-            {
-                scaleX = childSize.Width <= 0.0 ? 0.0 : availableSize.Width / childSize.Width;
-                scaleY = childSize.Height <= 0.0 ? 0.0 : availableSize.Height / childSize.Height;
-
-                if (!validWidth)
-                {
-                    scaleX = scaleY;
-                }
-                else if (!validHeight)
-                {
-                    scaleY = scaleX;
-                }
-                else
-                {
-                    switch (stretch)
-                    {
-                        case Stretch.Uniform:
-                            scaleX = scaleY = Math.Min(scaleX, scaleY);
-                            break;
-
-                        case Stretch.UniformToFill:
-                            scaleX = scaleY = Math.Max(scaleX, scaleY);
-                            break;
-                    }
-                }
-            }
-
-            return new Vector(scaleX, scaleY);
         }
     }
 }

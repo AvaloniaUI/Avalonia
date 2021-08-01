@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=netstandard"
              x:Class="ControlCatalog.Pages.NumericUpDownPage">
-  <StackPanel Orientation="Vertical" Spacing="4">
+  <StackPanel Orientation="Vertical" Spacing="4"
+              MaxWidth="800">
     <TextBlock Margin="2" Classes="h1">Numeric up-down control</TextBlock>
     <TextBlock Margin="2" Classes="h2" TextWrapping="Wrap">Numeric up-down control provides a TextBox with button spinners that allow incrementing and decrementing numeric values by using the spinner buttons, keyboard up/down arrows, or mouse wheel.</TextBlock>
 
@@ -68,24 +69,36 @@
         <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding #upDown.Value}" VerticalAlignment="Center"
                        Margin="2" HorizontalAlignment="Center"/>
 
+
       </Grid>
     </Grid>
 
-    <StackPanel Margin="2,10,2,2" Orientation="Horizontal" Spacing="10">
-      <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of NumericUpDown:</TextBlock>
-      <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
-                     CultureInfo="en-US" VerticalAlignment="Center"
-                     Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+    <WrapPanel Margin="2,10,2,2">
+      <StackPanel Orientation="Vertical" Margin="10">
+        <Label Target="upDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of decimal NumericUpDown:</Label>
+        <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
+                       CultureInfo="en-US" VerticalAlignment="Center" Value="{Binding DecimalValue}"
+                       Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Margin="10">
+        <Label Target="DoubleUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of double NumericUpDown:</Label>
+        <NumericUpDown Name="DoubleUpDown" Minimum="0" Maximum="10" Increment="0.5"
+                       CultureInfo="en-US" VerticalAlignment="Center" Value="{Binding DoubleValue}"
+                       Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
+      </StackPanel>
       
-      <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown with Validation Errors:</TextBlock>
-      <NumericUpDown Minimum="0" Maximum="10" Increment="0.5"
-                     CultureInfo="en-US" VerticalAlignment="Center"
-                     Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}">
-        <DataValidationErrors.Error>
-          <sys:Exception /> 
-        </DataValidationErrors.Error>
-      </NumericUpDown>
-    </StackPanel>
+      <StackPanel Orientation="Vertical" Margin="10">
+        <Label Target="ValidationUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown with Validation Errors:</Label>
+        <NumericUpDown x:Name="ValidationUpDown" Minimum="0" Maximum="10" Increment="0.5"
+                       CultureInfo="en-US" VerticalAlignment="Center"
+                       Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}">
+          <DataValidationErrors.Error>
+            <sys:Exception /> 
+          </DataValidationErrors.Error>
+        </NumericUpDown>
+      </StackPanel>
+    </WrapPanel>
 
   </StackPanel>
 </UserControl>

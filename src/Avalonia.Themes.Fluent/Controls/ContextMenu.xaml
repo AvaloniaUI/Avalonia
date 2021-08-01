@@ -1,4 +1,5 @@
 <Style xmlns="https://github.com/avaloniaui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
        Selector="ContextMenu">
   <Design.PreviewWith>
     <Border Background="{DynamicResource SystemAccentColor}"
@@ -30,6 +31,11 @@
     </Border>
   </Design.PreviewWith>
 
+  <Style.Resources>
+    <!-- Added missing resource -->
+    <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
+  </Style.Resources>
+
   <Setter Property="Background" Value="{DynamicResource MenuFlyoutPresenterBackground}" />
   <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderBrush}" />
   <Setter Property="BorderThickness" Value="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}" />
@@ -37,7 +43,7 @@
   <Setter Property="MinHeight" Value="{DynamicResource MenuFlyoutThemeMinHeight}" />
   <Setter Property="Padding" Value="{DynamicResource MenuFlyoutPresenterThemePadding}" />
   <Setter Property="HorizontalAlignment" Value="Stretch" />
-  <Setter Property="TextBlock.FontSize" Value="{DynamicResource ContentControlFontSize}" />
+  <Setter Property="TextBlock.FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
   <Setter Property="TextBlock.FontWeight" Value="Normal" />
   <Setter Property="WindowManagerAddShadowHint" Value="False" />
   <Setter Property="Template">

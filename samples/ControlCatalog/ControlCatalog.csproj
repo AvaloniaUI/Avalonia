@@ -27,6 +27,6 @@
     <ProjectReference Include="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
   </ItemGroup>
-  
+
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

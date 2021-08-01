@@ -609,10 +609,20 @@ namespace Avalonia.Controls
         private void MoveSplitter(double horizontalChange, double verticalChange)
         {
             Debug.Assert(_resizeData != null, "_resizeData should not be null when calling MoveSplitter");
-
-            // Calculate the offset to adjust the splitter.
-            var delta = _resizeData.ResizeDirection == GridResizeDirection.Columns ? horizontalChange : verticalChange;
-
+            
+            // Calculate the offset to adjust the splitter.  If layout rounding is enabled, we
+            // need to round to an integer physical pixel value to avoid round-ups of children that
+            // expand the bounds of the Grid.  In practice this only happens in high dpi because
+            // horizontal/vertical offsets here are never fractional (they correspond to mouse movement
+            // across logical pixels).  Rounding error only creeps in when converting to a physical
+            // display with something other than the logical 96 dpi.
+            double delta = _resizeData.ResizeDirection == GridResizeDirection.Columns ? horizontalChange : verticalChange;
+            
+            if (UseLayoutRounding)
+            {
+                delta = LayoutHelper.RoundLayoutValue(delta, LayoutHelper.GetLayoutScale(this));
+            }
+            
             DefinitionBase definition1 = _resizeData.Definition1;
             DefinitionBase definition2 = _resizeData.Definition2;
 
@@ -622,11 +632,11 @@ namespace Avalonia.Controls
                 double actualLength2 = GetActualLength(definition2);
 
                 // When splitting, Check to see if the total pixels spanned by the definitions 
-                // is the same asbefore starting resize. If not cancel the drag
+                // is the same as before starting resize. If not cancel the drag.
                 if (_resizeData.SplitBehavior == SplitBehavior.Split &&
                     !MathUtilities.AreClose(
                         actualLength1 + actualLength2,
-                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength))
+                        _resizeData.OriginalDefinition1ActualLength + _resizeData.OriginalDefinition2ActualLength, LayoutHelper.LayoutEpsilon))
                 {
                     CancelResize();
 

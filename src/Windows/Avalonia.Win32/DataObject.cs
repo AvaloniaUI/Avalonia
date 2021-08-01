@@ -181,7 +181,7 @@ namespace Avalonia.Win32
                 ole.GetData(ref format, out medium);
                 return;
             }
-            if(!format.tymed.HasFlagCustom(TYMED.TYMED_HGLOBAL))
+            if(!format.tymed.HasAllFlags(TYMED.TYMED_HGLOBAL))
                 Marshal.ThrowExceptionForHR(DV_E_TYMED);
 
             if (format.dwAspect != DVASPECT.DVASPECT_CONTENT)
@@ -205,7 +205,7 @@ namespace Avalonia.Win32
                 return;
             }
 
-            if (medium.tymed != TYMED.TYMED_HGLOBAL || !format.tymed.HasFlagCustom(TYMED.TYMED_HGLOBAL))
+            if (medium.tymed != TYMED.TYMED_HGLOBAL || !format.tymed.HasAllFlags(TYMED.TYMED_HGLOBAL))
                 Marshal.ThrowExceptionForHR(DV_E_TYMED);
 
             if (format.dwAspect != DVASPECT.DVASPECT_CONTENT)
@@ -228,7 +228,7 @@ namespace Avalonia.Win32
                 return ole.QueryGetData(ref format);
             if (format.dwAspect != DVASPECT.DVASPECT_CONTENT)
                 return DV_E_DVASPECT;
-            if (!format.tymed.HasFlagCustom(TYMED.TYMED_HGLOBAL))
+            if (!format.tymed.HasAllFlags(TYMED.TYMED_HGLOBAL))
                 return DV_E_TYMED;
 
             string dataFormat = ClipboardFormats.GetFormat(format.cfFormat);

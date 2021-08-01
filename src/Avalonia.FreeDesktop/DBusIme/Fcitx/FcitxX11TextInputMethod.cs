@@ -76,13 +76,13 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
         protected override async Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode)
         {
             FcitxKeyState state = default;
-            if (args.Modifiers.HasFlagCustom(RawInputModifiers.Control))
+            if (args.Modifiers.HasAllFlags(RawInputModifiers.Control))
                 state |= FcitxKeyState.FcitxKeyState_Ctrl;
-            if (args.Modifiers.HasFlagCustom(RawInputModifiers.Alt))
+            if (args.Modifiers.HasAllFlags(RawInputModifiers.Alt))
                 state |= FcitxKeyState.FcitxKeyState_Alt;
-            if (args.Modifiers.HasFlagCustom(RawInputModifiers.Shift))
+            if (args.Modifiers.HasAllFlags(RawInputModifiers.Shift))
                 state |= FcitxKeyState.FcitxKeyState_Shift;
-            if (args.Modifiers.HasFlagCustom(RawInputModifiers.Meta))
+            if (args.Modifiers.HasAllFlags(RawInputModifiers.Meta))
                 state |= FcitxKeyState.FcitxKeyState_Super;
 
             var type = args.Type == RawKeyEventType.KeyDown ?
@@ -126,13 +126,13 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
         {
             var state = (FcitxKeyState)ev.state;
             KeyModifiers mods = default;
-            if (state.HasFlagCustom(FcitxKeyState.FcitxKeyState_Ctrl))
+            if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Ctrl))
                 mods |= KeyModifiers.Control;
-            if (state.HasFlagCustom(FcitxKeyState.FcitxKeyState_Alt))
+            if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Alt))
                 mods |= KeyModifiers.Alt;
-            if (state.HasFlagCustom(FcitxKeyState.FcitxKeyState_Shift))
+            if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Shift))
                 mods |= KeyModifiers.Shift;
-            if (state.HasFlagCustom(FcitxKeyState.FcitxKeyState_Super))
+            if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Super))
                 mods |= KeyModifiers.Meta;
             FireForward(new X11InputMethodForwardedKey
             {

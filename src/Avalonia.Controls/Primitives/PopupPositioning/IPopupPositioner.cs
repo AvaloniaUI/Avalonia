@@ -253,8 +253,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     {
         public static void ValidateEdge(this PopupAnchor edge)
         {
-            if (edge.HasFlagCustom(PopupAnchor.Left) && edge.HasFlagCustom(PopupAnchor.Right) ||
-                edge.HasFlagCustom(PopupAnchor.Top) && edge.HasFlagCustom(PopupAnchor.Bottom))
+            if (edge.HasAllFlags(PopupAnchor.Left | PopupAnchor.Right) ||
+                edge.HasAllFlags(PopupAnchor.Top | PopupAnchor.Bottom))
                 throw new ArgumentException("Opposite edges specified");
         }
 
@@ -265,10 +265,10 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
         public static PopupAnchor Flip(this PopupAnchor edge)
         {
-            if (edge.HasFlagCustom(PopupAnchor.HorizontalMask))
+            if (edge.HasAnyFlag(PopupAnchor.HorizontalMask))
                 edge ^= PopupAnchor.HorizontalMask;
 
-            if (edge.HasFlagCustom(PopupAnchor.VerticalMask))
+            if (edge.HasAnyFlag(PopupAnchor.VerticalMask))
                 edge ^= PopupAnchor.VerticalMask;
 
             return edge;
@@ -276,14 +276,14 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
         public static PopupAnchor FlipX(this PopupAnchor edge)
         {
-            if (edge.HasFlagCustom(PopupAnchor.HorizontalMask))
+            if (edge.HasAnyFlag(PopupAnchor.HorizontalMask))
                 edge ^= PopupAnchor.HorizontalMask;
             return edge;
         }
         
         public static PopupAnchor FlipY(this PopupAnchor edge)
         {
-            if (edge.HasFlagCustom(PopupAnchor.VerticalMask))
+            if (edge.HasAnyFlag(PopupAnchor.VerticalMask))
                 edge ^= PopupAnchor.VerticalMask;
             return edge;
         }

@@ -27,7 +27,6 @@ namespace Avalonia.Controls
         private IScrollAnchorProvider _scroller;
         private IControl _makeAnchorElement;
         private bool _isAnchorOutsideRealizedRange;
-        private Task _cacheBuildAction;
         private Rect _visibleWindow;
         private Rect _layoutExtent;
         // This is the expected shift by the layout.

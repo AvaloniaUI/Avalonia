@@ -18,12 +18,12 @@ namespace Avalonia.Benchmarks
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
-            throw new NotImplementedException();
+            return new MockStreamGeometryImpl();
         }
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
         {
-            throw new NotImplementedException();
+            return new MockStreamGeometryImpl();
         }
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
@@ -61,6 +61,28 @@ namespace Avalonia.Benchmarks
             throw new NotImplementedException();
         }
 
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
+        {
+            throw new NotImplementedException();
+        }
+
         public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             throw new NotImplementedException();
@@ -86,10 +108,8 @@ namespace Avalonia.Benchmarks
             return new MockFontManagerImpl();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
-            width = default;
-
             return new NullGlyphRun();
         }
 

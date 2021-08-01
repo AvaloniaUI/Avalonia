@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-using Avalonia.OpenGL.Egl;
+﻿using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 
 namespace Avalonia.Android.OpenGL
@@ -17,7 +15,7 @@ namespace Avalonia.Android.OpenGL
         }
 
         public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() =>
-            new GlRenderTarget(_egl, _info, _egl.CreateWindowSurface(_info.Handle));
+            new GlRenderTarget(_egl, _info, _egl.CreateWindowSurface(_info.Handle), _info.Handle);
 
         public static GlPlatformSurface TryCreate(IEglWindowGlPlatformSurfaceInfo info)
         {

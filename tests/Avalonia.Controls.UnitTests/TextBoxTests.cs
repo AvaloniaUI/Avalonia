@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
@@ -7,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -56,7 +58,44 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("123", target1.SelectedText);
             }
         }
-        
+
+        [Fact]
+        public void Opening_Context_Flyout_Does_not_Lose_Selection()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    ContextFlyout = new MenuFlyout
+                    {
+                        Items = new List<MenuItem>
+                        {
+                            new MenuItem { Header = "Item 1" },
+                            new MenuItem {Header = "Item 2" },
+                            new MenuItem {Header = "Item 3" }
+                        }
+                    }
+                };
+                              
+
+                target1.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target1 };
+
+                target1.SelectionStart = 0;
+                target1.SelectionEnd = 3;
+
+                target1.Focus();
+                Assert.True(target1.IsFocused);
+
+                target1.ContextFlyout.ShowAt(target1);
+
+                Assert.Equal("123", target1.SelectedText);
+            }
+        }
+
         [Fact]
         public void DefaultBindingMode_Should_Be_TwoWay()
         {
@@ -340,7 +379,7 @@ namespace Avalonia.Controls.UnitTests
 
         [Theory]
         [InlineData(new object[] { false, TextWrapping.NoWrap, ScrollBarVisibility.Hidden })]
-        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Hidden })]
+        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
         [InlineData(new object[] { true, TextWrapping.NoWrap, ScrollBarVisibility.Auto })]
         [InlineData(new object[] { true, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
         public void Has_Correct_Horizontal_ScrollBar_Visibility(
@@ -516,6 +555,31 @@ namespace Avalonia.Controls.UnitTests
                 target.CaretIndex = 11;
 
                 Assert.True(true);
+            }
+        }
+        
+        [Theory]
+        [InlineData(Key.Up)]
+        [InlineData(Key.Down)]
+        [InlineData(Key.Home)]
+        [InlineData(Key.End)]
+        public void Textbox_doesnt_crash_when_Receives_input_and_template_not_applied(Key key)
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234",
+                    IsVisible = false
+                };
+
+                var root = new TestRoot { Child = target1 };
+
+                target1.Focus();
+                Assert.True(target1.IsFocused);
+                
+                RaiseKeyEvent(target1, key, KeyModifiers.None);
             }
         }
 
@@ -725,6 +789,9 @@ namespace Avalonia.Controls.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new MockFontManagerImpl(),
+            textShaperImpl: new MockTextShaperImpl(),
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(

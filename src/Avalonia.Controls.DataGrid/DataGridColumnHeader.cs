@@ -274,6 +274,12 @@ namespace Avalonia.Controls
                                     owningGrid.DataConnection.SortDescriptions.Add(newSort);
                                 }
                             }
+                            else if (OwningColumn.CustomSortComparer != null)
+                            {
+                                newSort = DataGridSortDescription.FromComparer(OwningColumn.CustomSortComparer);
+
+                                owningGrid.DataConnection.SortDescriptions.Add(newSort);
+                            }
                             else
                             {
                                 string propertyName = OwningColumn.GetSortPropertyName();

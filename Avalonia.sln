@@ -222,8 +222,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Headless.Vnc", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Markup.Xaml.Loader", "src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj", "{909A8CBD-7D0E-42FD-B841-022AD8925820}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.ReactiveUI.Events", "src\Avalonia.ReactiveUI.Events\Avalonia.ReactiveUI.Events.csproj", "{28F18757-C3E6-4BBE-A37D-11BA2AB9177C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "samples\Sandbox\Sandbox.csproj", "{11BE52AF-E2DD-4CF0-B19A-05285ACAF571}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroComGenerator", "src\tools\MicroComGenerator\MicroComGenerator.csproj", "{AEC9031E-06EA-4A9E-9E7F-7D7C719404DD}"

@@ -54,7 +54,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
 
         public PixelSize Resolution => new PixelSize(Mode.hdisplay, Mode.vdisplay);
-        public bool IsPreferred => Mode.type.HasFlagCustom(DrmModeType.DRM_MODE_TYPE_PREFERRED);
+        public bool IsPreferred => Mode.type.HasAllFlags(DrmModeType.DRM_MODE_TYPE_PREFERRED);
 
         public string Name { get; }
     }

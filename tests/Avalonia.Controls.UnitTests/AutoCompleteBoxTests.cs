@@ -14,6 +14,8 @@ using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 using System.Collections.ObjectModel;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -394,6 +396,36 @@ namespace Avalonia.Controls.UnitTests
                 control.Text = input;
                 control.SelectedItem = selectedItem;
                 Assert.Equal(control.Text, control.ItemSelector(input, selectedItem));
+            });
+        }
+        
+        [Fact]
+        public void Text_Validation()
+        {
+            RunTest((control, textbox) =>
+            {
+                var exception = new InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                control.Bind(AutoCompleteBox.TextProperty, textObservable);
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
+                Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
+            });
+        }
+        
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+            RunTest((control, textbox) =>
+            {
+                var exception = new InvalidCastException("failed validation");
+                var itemObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                control.Bind(AutoCompleteBox.SelectedItemProperty, itemObservable);
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(DataValidationErrors.GetHasErrors(control), true);
+                Assert.Equal(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }), true);
             });
         }
 

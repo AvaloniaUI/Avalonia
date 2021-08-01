@@ -86,6 +86,15 @@ namespace Avalonia
         /// Scales a vector.
         /// </summary>
         /// <param name="vector">The vector.</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector operator *(double scale, Vector vector)
+            => Multiply(vector, scale);
+
+        /// <summary>
+        /// Scales a vector.
+        /// </summary>
+        /// <param name="vector">The vector.</param>
         /// <param name="scale">The divisor.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector operator /(Vector vector, double scale)

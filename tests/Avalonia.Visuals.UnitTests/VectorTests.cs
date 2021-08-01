@@ -105,5 +105,15 @@ namespace Avalonia.Visuals.UnitTests
 
             Assert.Equal(expected, Vector.Multiply(vector, 2));
         }
+
+        [Fact]
+        public void Scale_Vector_Should_Be_Commutative()
+        {
+            var vector = new Vector(10, 2);
+
+            var expected = vector * 2;
+
+            Assert.Equal(expected, 2 * vector);
+        }
     }
 }

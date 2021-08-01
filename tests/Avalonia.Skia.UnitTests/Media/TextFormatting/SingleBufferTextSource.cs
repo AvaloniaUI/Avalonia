@@ -17,8 +17,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         public TextRun GetTextRun(int textSourceIndex)
         {
+            if (textSourceIndex > _text.Length)
+            {
+                return null;
+            }
+            
             var runText = _text.Skip(textSourceIndex);
-
+            
             if (runText.IsEmpty)
             {
                 return new TextEndOfParagraph();

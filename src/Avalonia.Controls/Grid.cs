@@ -17,7 +17,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Grid
+    /// Defines a flexible grid area that consists of columns and rows.
     /// </summary>
     public class Grid : Panel
     {
@@ -978,6 +978,7 @@ namespace Avalonia.Controls
         /// width is not registered in columns.</param>
         /// <param name="forceInfinityV">Passed through to MeasureCell.
         /// When "true" cells' desired height is not registered in rows.</param>
+        /// <param name="hasDesiredSizeUChanged">return true when desired size has changed</param>
         private void MeasureCellsGroup(
             int cellsHead,
             Size referenceSize,
@@ -2355,7 +2356,7 @@ namespace Avalonia.Controls
         /// </summary>
         private bool CheckFlags(Flags flags)
         {
-            return _flags.HasFlagCustom(flags);
+            return _flags.HasAllFlags(flags);
         }
 
         private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
@@ -2790,10 +2791,10 @@ namespace Avalonia.Controls
             internal LayoutTimeSizeType SizeTypeU;
             internal LayoutTimeSizeType SizeTypeV;
             internal int Next;
-            internal bool IsStarU => SizeTypeU.HasFlagCustom(LayoutTimeSizeType.Star);
-            internal bool IsAutoU => SizeTypeU.HasFlagCustom(LayoutTimeSizeType.Auto);
-            internal bool IsStarV => SizeTypeV.HasFlagCustom(LayoutTimeSizeType.Star);
-            internal bool IsAutoV => SizeTypeV.HasFlagCustom(LayoutTimeSizeType.Auto);
+            internal bool IsStarU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoU => SizeTypeU.HasAllFlags(LayoutTimeSizeType.Auto);
+            internal bool IsStarV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Star);
+            internal bool IsAutoV => SizeTypeV.HasAllFlags(LayoutTimeSizeType.Auto);
         }
 
         /// <summary>

@@ -1,11 +1,14 @@
 using System.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -171,6 +174,91 @@ namespace Avalonia.Controls.UnitTests
                 target.RaiseEvent(args);
 
                 Assert.Equal(expectedSelectedIndex, target.SelectedIndex);
+            }
+        }
+        
+        [Fact]
+        public void SelectedItem_Validation()
+        {
+
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),
+                    VirtualizationMode =  ItemVirtualizationMode.None
+                };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.SelectedItemProperty, textObservable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+                
+            }
+            
+        }
+
+        [Fact]
+        public void Close_Window_On_Alt_F4_When_ComboBox_Is_Focus()
+        {
+            var inputManagerMock = new Moq.Mock<IInputManager>();
+            var services = TestServices.StyledWindow.With(inputManager: inputManagerMock.Object);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                window.KeyDown += (s, e) =>
+                 {
+                     if (e.Handled == false 
+                     && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == true 
+                     && e.Key == Key.F4 )
+                     {
+                         e.Handled = true;
+                         window.Close();
+                     }
+                 };
+
+                var count = 0;
+
+                var target = new ComboBox
+                {
+                    Items = new[] { new Canvas() },
+                    SelectedIndex = 0,
+                    Template = GetTemplate(),
+                };
+
+                window.Content = target;
+
+
+                window.Closing +=
+                    (sender, e) =>
+                    {
+                        count++;
+                    };
+
+                window.Show();
+
+                target.Focus();
+
+                _helper.Down(target);
+                _helper.Up(target);
+                Assert.True(target.IsDropDownOpen);
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    KeyModifiers = KeyModifiers.Alt,
+                    Key = Key.F4
+                });
+
+
+                Assert.Equal(1, count);
             }
         }
     }

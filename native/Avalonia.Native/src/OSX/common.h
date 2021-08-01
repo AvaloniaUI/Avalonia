@@ -23,7 +23,7 @@ extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlDisplay* GetGlDisplay();
 extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);
 extern IAvnMenuItem* CreateAppMenuItem();
-extern IAvnMenuItem* CreateAppMenuItemSeperator();
+extern IAvnMenuItem* CreateAppMenuItemSeparator();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
 extern void SetAppMenu (NSString* appName, IAvnMenu* appMenu);
 extern IAvnMenu* GetAppMenu ();

@@ -87,7 +87,7 @@ namespace Avalonia.Native
             var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
 
-            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d));
+            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), PlatformResizeReason.Layout);
         }
 
         public Size ClientSize 
@@ -97,6 +97,20 @@ namespace Avalonia.Native
                 if (_native != null)
                 {
                     var s = _native.ClientSize;
+                    return new Size(s.Width, s.Height);
+                }
+
+                return default;
+            }
+        }
+
+        public Size? FrameSize
+        {
+            get
+            {
+                if (_native != null)
+                {
+                    var s = _native.FrameSize;
                     return new Size(s.Width, s.Height);
                 }
 
@@ -132,7 +146,7 @@ namespace Avalonia.Native
         public Action LostFocus { get; set; }
         
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
@@ -172,13 +186,13 @@ namespace Avalonia.Native
                 _parent.Paint?.Invoke(new Rect(0, 0, s.Width, s.Height));
             }
 
-            void IAvnWindowBaseEvents.Resized(AvnSize* size)
+            void IAvnWindowBaseEvents.Resized(AvnSize* size, AvnPlatformResizeReason reason)
             {
                 if (_parent?._native != null)
                 {
                     var s = new Size(size->Width, size->Height);
                     _parent._savedLogicalSize = s;
-                    _parent.Resized?.Invoke(s);
+                    _parent.Resized?.Invoke(s, (PlatformResizeReason)reason);
                 }
             }
 
@@ -306,9 +320,9 @@ namespace Avalonia.Native
             }
         }
 
-        public void Resize(Size clientSize)
+        public void Resize(Size clientSize, PlatformResizeReason reason)
         {
-            _native.Resize(clientSize.Width, clientSize.Height);
+            _native.Resize(clientSize.Width, clientSize.Height, (AvnPlatformResizeReason)reason);
         }
 
         public IRenderer CreateRenderer(IRenderRoot root)
@@ -351,9 +365,9 @@ namespace Avalonia.Native
         }
 
 
-        public virtual void Show(bool activate)
+        public virtual void Show(bool activate, bool isDialog)
         {
-            _native.Show(activate.AsComBool());
+            _native.Show(activate.AsComBool(), isDialog.AsComBool());
         }
 
 
@@ -414,9 +428,7 @@ namespace Avalonia.Native
 
         public Action<RawInputEventArgs> Input { get; set; }
 
-        Action<double> ScalingChanged { get; set; }
-
-        Action<double> ITopLevelImpl.ScalingChanged { get; set; }
+        public Action<double> ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
