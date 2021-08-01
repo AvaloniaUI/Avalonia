@@ -12,5 +12,10 @@ namespace Avalonia.Media
         /// Gets the opacity of the brush.
         /// </summary>
         double Opacity { get; }
+
+        /// <summary>
+        /// Gets the transform of the brush.
+        /// </summary>
+        Transform Transform { get; }
     }
 }

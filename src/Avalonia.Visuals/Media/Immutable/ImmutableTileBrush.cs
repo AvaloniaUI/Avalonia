@@ -69,6 +69,11 @@ namespace Avalonia.Media.Immutable
         /// <inheritdoc/>
         public double Opacity { get; }
 
+        /// <summary>
+        /// Gets the transform of the brush.
+        /// </summary>
+        public Transform Transform { get; }
+
         /// <inheritdoc/>
         public RelativeRect SourceRect { get; }
 

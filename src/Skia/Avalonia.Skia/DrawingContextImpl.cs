@@ -608,10 +608,21 @@ namespace Avalonia.Skia
                     var end = position + linearGradient.EndPoint.ToPixels(targetRect.Size).ToSKPoint();
 
                     // would be nice to cache these shaders possibly?
-                    using (var shader =
-                        SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
+                    if (linearGradient.Transform is null)
                     {
-                        paintWrapper.Paint.Shader = shader;
+                        using (var shader =
+                            SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
+                    }
+                    else
+                    {
+                        using (var shader =
+                            SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode, linearGradient.Transform.Value.ToSKMatrix()))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }   
                     }
 
                     break;
@@ -626,10 +637,21 @@ namespace Avalonia.Skia
                     if (origin.Equals(center))
                     {
                         // when the origin is the same as the center the Skia RadialGradient acts the same as D2D
-                        using (var shader =
-                            SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                        if (radialGradient.Transform is null)
                         {
-                            paintWrapper.Paint.Shader = shader;
+                            using (var shader =
+                                SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                            {
+                                paintWrapper.Paint.Shader = shader;
+                            }
+                        }
+                        else
+                        {
+                            using (var shader =
+                                SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode, radialGradient.Transform.Value.ToSKMatrix()))
+                            {
+                                paintWrapper.Paint.Shader = shader;
+                            }
                         }
                     }
                     else
@@ -653,12 +675,25 @@ namespace Avalonia.Skia
                         }
                             
                         // compose with a background colour of the final stop to match D2D's behaviour of filling with the final color
-                        using (var shader = SKShader.CreateCompose(
-                            SKShader.CreateColor(reversedColors[0]),
-                            SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode)
-                        ))
+                        if (radialGradient.Transform is null)
                         {
-                            paintWrapper.Paint.Shader = shader;
+                            using (var shader = SKShader.CreateCompose(
+                                SKShader.CreateColor(reversedColors[0]),
+                                SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode)
+                            ))
+                            {
+                                paintWrapper.Paint.Shader = shader;
+                            }
+                        }
+                        else
+                        {
+                            using (var shader = SKShader.CreateCompose(
+                                SKShader.CreateColor(reversedColors[0]),
+                                SKShader.CreateTwoPointConicalGradient(center, radius, origin, 0, reversedColors, reversedStops, tileMode, radialGradient.Transform.Value.ToSKMatrix())
+                            ))
+                            {
+                                paintWrapper.Paint.Shader = shader;
+                            } 
                         }
                     }
 
@@ -672,6 +707,11 @@ namespace Avalonia.Skia
                     // but we are matching CSS where the vertical point above the center is 0.
                     var angle = (float)(conicGradient.Angle - 90);
                     var rotation = SKMatrix.CreateRotationDegrees(angle, center.X, center.Y);
+
+                    if (conicGradient.Transform is not null)
+                    {
+                        rotation = rotation.PreConcat(conicGradient.Transform.Value.ToSKMatrix());
+                    }
 
                     using (var shader = 
                         SKShader.CreateSweepGradient(center, stopColors, stopOffsets, rotation))
@@ -739,6 +779,11 @@ namespace Avalonia.Skia
             paintWrapper.AddDisposable(image);
 
             var paintTransform = default(SKMatrix);
+
+            if (tileBrush.Transform is not null)
+            {
+                paintTransform = paintTransform.PreConcat(tileBrush.Transform.Value.ToSKMatrix());
+            }
 
             SKMatrix.Concat(
                 ref paintTransform,

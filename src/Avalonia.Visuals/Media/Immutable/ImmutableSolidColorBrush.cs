@@ -46,11 +46,16 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         public double Opacity { get; }
 
+        /// <summary>
+        /// Gets the transform of the brush.
+        /// </summary>
+        public Transform Transform { get; }
+
         public bool Equals(ImmutableSolidColorBrush other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity);
+            return Color.Equals(other.Color) && Opacity.Equals(other.Opacity) && (Transform == null && other.Transform == null ? true : Transform.Equals(other.Transform));
         }
 
         public override bool Equals(object obj)
@@ -62,7 +67,7 @@ namespace Avalonia.Media.Immutable
         {
             unchecked
             {
-                return (Color.GetHashCode() * 397) ^ Opacity.GetHashCode();
+                return (Color.GetHashCode() * 397) ^ Opacity.GetHashCode() ^ (Transform is null ? 0 : Transform.GetHashCode());
             }
         }
 

@@ -5,6 +5,8 @@ InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Task
 MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean, System.Threading.CancellationToken)' is present in the implementation but not in the contract.
 MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.PageSlide.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Media.Transform Avalonia.Media.IBrush.Transform' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Media.Transform Avalonia.Media.IBrush.Transform.get()' is present in the implementation but not in the contract.
 TypeCannotChangeClassification : Type 'Avalonia.Media.Immutable.ImmutableSolidColorBrush' is a 'class' in the implementation but is a 'struct' in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.DrawableTextRun.Draw(Avalonia.Media.DrawingContext)' does not exist in the implementation but it does exist in the contract.
 CannotAddAbstractMembers : Member 'public void Avalonia.Media.TextFormatting.DrawableTextRun.Draw(Avalonia.Media.DrawingContext, Avalonia.Point)' is abstract in the implementation but is missing in the contract.
@@ -74,4 +76,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWr
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmap(System.String)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToHeight(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToWidth(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
-Total Issues: 75
+Total Issues: 77
