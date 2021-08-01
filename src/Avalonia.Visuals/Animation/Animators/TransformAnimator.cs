@@ -87,10 +87,19 @@ namespace Avalonia.Animation.Animators
             return null;
         }
 
-        internal ImmutableTransform InterpolateTransform(double progress, ITransform oldValue, ITransform newValue)
-        {
-            // TODO:
-            return new ImmutableTransform(newValue.Value);
+        internal ImmutableTransform InterpolateMatrix(double progress, ITransform oldValue, ITransform newValue)
+        {    
+            var from = oldValue.Value;
+            var to = newValue.Value;
+            var matrix = new Matrix(
+                ((to.M11 - from.M11) * progress) + from.M11,
+                ((to.M12 - from.M12) * progress) + from.M12,
+                ((to.M21 - from.M21) * progress) + from.M21,
+                ((to.M22 - from.M22) * progress) + from.M22,
+                ((to.M31 - from.M31) * progress) + from.M31,
+                ((to.M32 - from.M32) * progress) + from.M32);
+
+            return new ImmutableTransform(matrix);
         }
 
         /// <inheritdocs/> 

@@ -31,7 +31,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableRadialGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform is { } && newValue.Transform is { } ? s_transformAnimator.InterpolateTransform(progress, oldValue.Transform, newValue.Transform) : null,
+                        oldValue.Transform is { } && newValue.Transform is { } ? s_transformAnimator.InterpolateMatrix(progress, oldValue.Transform, newValue.Transform) : null,
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldRadial.Center, newRadial.Center),
                         s_relativePointAnimator.Interpolate(progress, oldRadial.GradientOrigin, newRadial.GradientOrigin),
@@ -41,7 +41,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableConicGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform is { } && newValue.Transform is { } ? s_transformAnimator.InterpolateTransform(progress, oldValue.Transform, newValue.Transform) : null,
+                        oldValue.Transform is { } && newValue.Transform is { } ? s_transformAnimator.InterpolateMatrix(progress, oldValue.Transform, newValue.Transform) : null,
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldConic.Center, newConic.Center),
                         s_doubleAnimator.Interpolate(progress, oldConic.Angle, newConic.Angle));
@@ -50,7 +50,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableLinearGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform is { } && newValue.Transform is { } ? s_transformAnimator.InterpolateTransform(progress, oldValue.Transform, newValue.Transform) : null,
+                        oldValue.Transform is { } && newValue.Transform is { } ? s_transformAnimator.InterpolateMatrix(progress, oldValue.Transform, newValue.Transform) : null,
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldLinear.StartPoint, newLinear.StartPoint),
                         s_relativePointAnimator.Interpolate(progress, oldLinear.EndPoint, newLinear.EndPoint));
