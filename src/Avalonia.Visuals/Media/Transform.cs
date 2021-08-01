@@ -45,8 +45,11 @@ namespace Avalonia.Media
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <inheritdoc/>
-        public ITransform ToImmutable()
+        /// <summary>
+        /// Converts a transform to an immutable transform.
+        /// </summary>
+        /// <returns>The immutable transform</returns>
+        public ImmutableTransform ToImmutable()
         {
             return new ImmutableTransform(this.Value);
         }

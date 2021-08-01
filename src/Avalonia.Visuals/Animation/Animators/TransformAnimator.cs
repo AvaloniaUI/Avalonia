@@ -2,6 +2,7 @@
 using System.Reactive.Disposables;
 using Avalonia.Logging;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Media.Transformation;
 
 namespace Avalonia.Animation.Animators
@@ -84,6 +85,12 @@ namespace Avalonia.Animation.Animators
                     $"Cannot apply animation: Target property owner {Property.OwnerType} is not a Transform object.");
             }
             return null;
+        }
+
+        internal ImmutableTransform InterpolateTransform(double progress, ITransform oldValue, ITransform newValue)
+        {
+            // TODO:
+            return new ImmutableTransform(newValue.Value);
         }
 
         /// <inheritdocs/> 

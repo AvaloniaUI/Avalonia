@@ -17,7 +17,7 @@ namespace Avalonia.Media.Immutable
         protected ImmutableGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity,
-            ITransform transform,
+            ImmutableTransform transform,
             GradientSpreadMethod spreadMethod)
         {
             GradientStops = gradientStops;

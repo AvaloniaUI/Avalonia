@@ -19,7 +19,7 @@ namespace Avalonia.Media.Immutable
         public ImmutableConicGradientBrush(
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity = 1,
-            ITransform transform = null,
+            ImmutableTransform transform = null,
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? center = null,
             double angle = 0)

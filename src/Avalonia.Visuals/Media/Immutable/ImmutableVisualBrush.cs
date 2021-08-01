@@ -29,7 +29,7 @@ namespace Avalonia.Media.Immutable
             AlignmentY alignmentY = AlignmentY.Center,
             RelativeRect? destinationRect = null,
             double opacity = 1,
-            Transform transform = null,
+            ImmutableTransform transform = null,
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
             TileMode tileMode = TileMode.None,

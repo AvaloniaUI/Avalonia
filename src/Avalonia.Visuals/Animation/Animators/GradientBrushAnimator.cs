@@ -16,6 +16,7 @@ namespace Avalonia.Animation.Animators
     {
         private static readonly RelativePointAnimator s_relativePointAnimator = new RelativePointAnimator();
         private static readonly DoubleAnimator s_doubleAnimator = new DoubleAnimator();
+        private static readonly TransformAnimator s_transformAnimator = new TransformAnimator();
 
         public override IGradientBrush? Interpolate(double progress, IGradientBrush? oldValue, IGradientBrush? newValue)
         {
@@ -30,7 +31,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableRadialGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform,
+                        s_transformAnimator.InterpolateTransform(progress, oldValue.Transform, newValue.Transform),
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldRadial.Center, newRadial.Center),
                         s_relativePointAnimator.Interpolate(progress, oldRadial.GradientOrigin, newRadial.GradientOrigin),
@@ -40,7 +41,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableConicGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform,
+                        s_transformAnimator.InterpolateTransform(progress, oldValue.Transform, newValue.Transform),
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldConic.Center, newConic.Center),
                         s_doubleAnimator.Interpolate(progress, oldConic.Angle, newConic.Angle));
@@ -49,7 +50,7 @@ namespace Avalonia.Animation.Animators
                     return new ImmutableLinearGradientBrush(
                         InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
-                        oldValue.Transform,
+                        s_transformAnimator.InterpolateTransform(progress, oldValue.Transform, newValue.Transform),
                         oldValue.SpreadMethod,
                         s_relativePointAnimator.Interpolate(progress, oldLinear.StartPoint, newLinear.StartPoint),
                         s_relativePointAnimator.Interpolate(progress, oldLinear.EndPoint, newLinear.EndPoint));
@@ -96,19 +97,19 @@ namespace Avalonia.Animation.Animators
                 case IRadialGradientBrush oldRadial:
                     return new ImmutableRadialGradientBrush(
                         CreateStopsFromSolidColorBrush(solidColorBrush, oldRadial.GradientStops), solidColorBrush.Opacity,
-                        oldRadial.Transform,
+                        new ImmutableTransform(oldRadial.Transform.Value),
                         oldRadial.SpreadMethod, oldRadial.Center, oldRadial.GradientOrigin, oldRadial.Radius);
 
                 case IConicGradientBrush oldConic:
                     return new ImmutableConicGradientBrush(
                         CreateStopsFromSolidColorBrush(solidColorBrush, oldConic.GradientStops), solidColorBrush.Opacity,
-                        oldConic.Transform,
+                        new ImmutableTransform(oldConic.Transform.Value),
                         oldConic.SpreadMethod, oldConic.Center, oldConic.Angle);
 
                 case ILinearGradientBrush oldLinear:
                     return new ImmutableLinearGradientBrush(
                         CreateStopsFromSolidColorBrush(solidColorBrush, oldLinear.GradientStops), solidColorBrush.Opacity,
-                        oldLinear.Transform,
+                        new ImmutableTransform(oldLinear.Transform.Value),
                         oldLinear.SpreadMethod, oldLinear.StartPoint, oldLinear.EndPoint);
 
                 default:
