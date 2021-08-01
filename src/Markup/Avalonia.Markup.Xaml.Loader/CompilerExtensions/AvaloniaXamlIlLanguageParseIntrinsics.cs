@@ -207,6 +207,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return true;
             }
 
+            if (types.IBrush.IsAssignableFrom(type))
+            {
+                if (Color.TryParse(text, out Color color))
+                {
+                    var brushTypeRef = new XamlAstClrTypeReference(node, types.ImmutableSolidColorBrush, false);
+
+                    result = new XamlAstNewClrObjectNode(node, brushTypeRef,
+                        types.ImmutableSolidColorBrushConstructorColor,
+                        new List<IXamlAstValueNode> { new XamlConstantNode(node, types.UInt, color.ToUint32()) });
+
+                    return true;
+                }
+            }
+
             result = null;
             return false;
         }

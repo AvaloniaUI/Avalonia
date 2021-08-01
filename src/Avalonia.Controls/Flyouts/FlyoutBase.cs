@@ -1,6 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
+
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
@@ -49,6 +52,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
             AvaloniaProperty.RegisterAttached<FlyoutBase, Control, FlyoutBase?>("AttachedFlyout", null);
 
+        private readonly Lazy<Popup> _popupLazy;
         private bool _isOpen;
         private Control? _target;
         private FlyoutShowMode _showMode = FlyoutShowMode.Standard;
@@ -56,7 +60,12 @@ namespace Avalonia.Controls.Primitives
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
 
-        protected Popup? Popup { get; private set; }
+        public FlyoutBase()
+        {
+            _popupLazy = new Lazy<Popup>(() => CreatePopup());
+        }
+
+        protected Popup Popup => _popupLazy.Value;
 
         /// <summary>
         /// Gets whether this Flyout is currently Open
@@ -142,22 +151,19 @@ namespace Avalonia.Controls.Primitives
             HideCore();
         }
 
-        protected virtual void HideCore(bool canCancel = true)
+        /// <returns>True, if action was handled</returns>
+        protected virtual bool HideCore(bool canCancel = true)
         {
             if (!IsOpen)
             {
-                return;
+                return false;
             }
 
             if (canCancel)
             {
-                bool cancel = false;
-
-                var closing = new CancelEventArgs();
-                Closing?.Invoke(this, closing);
-                if (cancel || closing.Cancel)
+                if (CancelClosing())
                 {
-                    return;
+                    return false;
                 }
             }
 
@@ -170,29 +176,40 @@ namespace Avalonia.Controls.Primitives
             _enlargedPopupRect = null;
             _enlargePopupRectScreenPixelRect = null;
 
+            if (Target != null)
+            {
+                Target.DetachedFromVisualTree -= PlacementTarget_DetachedFromVisualTree;
+                Target.KeyUp -= OnPlacementTargetOrPopupKeyUp;
+            }
+
             OnClosed();
+
+            return true;
         }
 
-        protected virtual void ShowAtCore(Control placementTarget, bool showAtPointer = false)
+        /// <returns>True, if action was handled</returns>
+        protected virtual bool ShowAtCore(Control placementTarget, bool showAtPointer = false)
         {
             if (placementTarget == null)
-                throw new ArgumentNullException("placementTarget cannot be null");
-
-            if (Popup == null)
             {
-                InitPopup();
+                throw new ArgumentNullException(nameof(placementTarget));
             }
 
             if (IsOpen)
             {
                 if (placementTarget == Target)
                 {
-                    return;
+                    return false;
                 }
                 else // Close before opening a new one
                 {
-                    HideCore(false);
+                    _ = HideCore(false);
                 }
+            }
+
+            if (CancelOpening())
+            {
+                return false;
             }
 
             if (Popup.Parent != null && Popup.Parent != placementTarget)
@@ -211,11 +228,13 @@ namespace Avalonia.Controls.Primitives
                 Popup.Child = CreatePresenter();
             }
 
-            OnOpening();
             PositionPopup(showAtPointer);
-            IsOpen = Popup.IsOpen = true;            
+            IsOpen = Popup.IsOpen = true;
             OnOpened();
-                        
+
+            placementTarget.DetachedFromVisualTree += PlacementTarget_DetachedFromVisualTree;
+            placementTarget.KeyUp += OnPlacementTargetOrPopupKeyUp;
+
             if (ShowMode == FlyoutShowMode.Standard)
             {
                 // Try and focus content inside Flyout
@@ -236,6 +255,13 @@ namespace Avalonia.Controls.Primitives
             {
                 _transientDisposable = InputManager.Instance?.Process.Subscribe(HandleTransientDismiss);
             }
+
+            return true;
+        }
+
+        private void PlacementTarget_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            _ = HideCore(false);
         }
 
         private void HandleTransientDismiss(RawInputEventArgs args)
@@ -254,7 +280,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     // Only do this once when the Flyout opens & cache the result
                     if (Popup?.Host is PopupRoot root)
-                    { 
+                    {
                         // Get the popup root bounds and convert to screen coordinates
                         
                         var tmp = root.Bounds.Inflate(100);
@@ -294,9 +320,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected virtual void OnOpening()
+        protected virtual void OnOpening(CancelEventArgs args)
         {
-            Opening?.Invoke(this, null);
+            Opening?.Invoke(this, args);
         }
 
         protected virtual void OnOpened()
@@ -320,14 +346,18 @@ namespace Avalonia.Controls.Primitives
         /// <returns></returns>
         protected abstract Control CreatePresenter();
 
-        private void InitPopup()
+        private Popup CreatePopup()
         {
-            Popup = new Popup();
-            Popup.WindowManagerAddShadowHint = false;
-            Popup.IsLightDismissEnabled = true;
+            var popup = new Popup();
+            popup.WindowManagerAddShadowHint = false;
+            popup.IsLightDismissEnabled = true;
+            popup.OverlayDismissEventPassThrough = true;
 
-            Popup.Opened += OnPopupOpened;
-            Popup.Closed += OnPopupClosed;
+            popup.Opened += OnPopupOpened;
+            popup.Closed += OnPopupClosed;
+            popup.Closing += OnPopupClosing;
+            popup.KeyUp += OnPlacementTargetOrPopupKeyUp;
+            return popup;
         }
 
         private void OnPopupOpened(object sender, EventArgs e)
@@ -335,15 +365,40 @@ namespace Avalonia.Controls.Primitives
             IsOpen = true;
         }
 
+        private void OnPopupClosing(object sender, CancelEventArgs e)
+        {
+            if (IsOpen)
+            {
+                e.Cancel = CancelClosing();
+            }
+        }
+
         private void OnPopupClosed(object sender, EventArgs e)
         {
-            HideCore();
+            HideCore(false);
+        }
+
+        // This method is handling both popup logical tree and target logical tree.
+        private void OnPlacementTargetOrPopupKeyUp(object sender, KeyEventArgs e)
+        {
+            if (!e.Handled
+                && IsOpen
+                && Target?.ContextFlyout == this)
+            {
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+
+                if (keymap.OpenContextMenu.Any(k => k.Matches(e)))
+                {
+                    e.Handled = HideCore();
+                }
+            }
         }
 
         private void PositionPopup(bool showAtPointer)
         {
             Size sz;
-            if(Popup.Child.DesiredSize == Size.Empty)
+            // Popup.Child can't be null here, it was set in ShowAtCore.
+            if (Popup.Child!.DesiredSize == Size.Empty)
             {
                 // Popup may not have been shown yet. Measure content
                 sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
@@ -370,19 +425,19 @@ namespace Avalonia.Controls.Primitives
             switch (Placement)
             {
                 case FlyoutPlacementMode.Top: //Above & centered
-                    Popup.PlacementRect = new Rect(0, 0, trgtBnds.Width-1, 1);
+                    Popup.PlacementRect = new Rect(0, 0, trgtBnds.Width - 1, 1);
                     Popup.PlacementGravity = PopupPositioning.PopupGravity.Top;
                     Popup.PlacementAnchor = PopupPositioning.PopupAnchor.Top;
                     break;
 
                 case FlyoutPlacementMode.TopEdgeAlignedLeft:
                     Popup.PlacementRect = new Rect(0, 0, 0, 0);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopRight;                    
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopRight;
                     break;
 
                 case FlyoutPlacementMode.TopEdgeAlignedRight:
                     Popup.PlacementRect = new Rect(trgtBnds.Width - 1, 0, 10, 1);
-                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopLeft;                    
+                    Popup.PlacementGravity = PopupPositioning.PopupGravity.TopLeft;
                     break;
 
                 case FlyoutPlacementMode.RightEdgeAlignedTop:
@@ -454,33 +509,45 @@ namespace Avalonia.Controls.Primitives
             {
                 if (args.OldValue is FlyoutBase)
                 {
-                    c.PointerReleased -= OnControlWithContextFlyoutPointerReleased;
+                    c.ContextRequested -= OnControlContextRequested;
                 }
                 if (args.NewValue is FlyoutBase)
                 {
-                    c.PointerReleased += OnControlWithContextFlyoutPointerReleased;
+                    c.ContextRequested += OnControlContextRequested;
                 }
             }
         }
 
-        private static void OnControlWithContextFlyoutPointerReleased(object sender, PointerReleasedEventArgs e)
+        private static void OnControlContextRequested(object sender, ContextRequestedEventArgs e)
         {
-            if (sender is Control c)
+            var control = (Control)sender;
+            if (!e.Handled
+                && control.ContextFlyout is FlyoutBase flyout)
             {
-                if (e.InitialPressMouseButton == MouseButton.Right &&
-                e.GetCurrentPoint(c).Properties.PointerUpdateKind == PointerUpdateKind.RightButtonReleased)
+                if (control.ContextMenu != null)
                 {
-                    if (c.ContextFlyout != null)
-                    {
-                        if (c.ContextMenu != null)
-                        {
-                            Logger.TryGet(LogEventLevel.Verbose, "FlyoutBase")?.Log(c, "ContextMenu and ContextFlyout are both set, defaulting to ContextMenu");
-                            return;
-                        }
-                        c.ContextFlyout.ShowAt(c, true);
-                    }
+                    Logger.TryGet(LogEventLevel.Verbose, "FlyoutBase")?.Log(control, "ContextMenu and ContextFlyout are both set, defaulting to ContextMenu");
+                    return;
                 }
-            }            
+
+                // We do not support absolute popup positioning yet, so we ignore "point" at this moment.
+                var triggeredByPointerInput = e.TryGetPosition(null, out _);
+                e.Handled = flyout.ShowAtCore(control, triggeredByPointerInput);
+            }
+        }
+
+        private bool CancelClosing()
+        {
+            var eventArgs = new CancelEventArgs();
+            OnClosing(eventArgs);
+            return eventArgs.Cancel;
+        }
+
+        private bool CancelOpening()
+        {
+            var eventArgs = new CancelEventArgs();
+            OnOpening(eventArgs);
+            return eventArgs.Cancel;
         }
 
         internal static void SetPresenterClasses(IControl presenter, Classes classes)
