@@ -31,7 +31,7 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="source">The brush from which this brush's properties should be copied.</param>
         protected ImmutableGradientBrush(GradientBrush source)
-            : this(source.GradientStops.ToImmutable(), source.Opacity, source.Transform.ToImmutable(), source.SpreadMethod)
+            : this(source.GradientStops.ToImmutable(), source.Opacity, source.Transform?.ToImmutable(), source.SpreadMethod)
         {
 
         }
