@@ -400,6 +400,15 @@ enum AvnExtendClientAreaChromeHints
     AvnDefaultChrome = AvnPreferSystemChrome,
 }
 
+enum AvnPlatformResizeReason
+{
+    ResizeUnspecified,
+    ResizeUser,
+    ResizeApplication,
+    ResizeLayout,
+    ResizeDpiChange,
+}
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
@@ -430,14 +439,15 @@ interface IAvnString : IUnknown
 [uuid(e5aca675-02b7-4129-aa79-d6e417210bda)]
 interface IAvnWindowBase : IUnknown
 {
-     HRESULT Show(bool activate);
+     HRESULT Show(bool activate, bool isDialog);
      HRESULT Hide();
      HRESULT Close();
      HRESULT Activate();
      HRESULT GetClientSize(AvnSize*ret);
+     HRESULT GetFrameSize(AvnSize*ret);
      HRESULT GetScaling(double*ret);
      HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize);
-     HRESULT Resize(double width, double height);
+     HRESULT Resize(double width, double height, AvnPlatformResizeReason reason);
      HRESULT Invalidate(AvnRect rect);
      HRESULT BeginMoveDrag();
      HRESULT BeginResizeDrag(AvnWindowEdge edge);
@@ -491,7 +501,7 @@ interface IAvnWindowBaseEvents : IUnknown
      void Closed();
      void Activated();
      void Deactivated();
-     void Resized([const] AvnSize& size);
+     void Resized([const] AvnSize& size, AvnPlatformResizeReason reason);
      void PositionChanged(AvnPoint position);
      void RawMouseEvent(AvnRawMouseEventType type,
                                 uint timeStamp,
@@ -732,4 +742,5 @@ interface IAvnNativeControlHostTopLevelAttachment : IUnknown
 interface IAvnApplicationEvents : IUnknown
 {
      void FilesOpened (IAvnStringArray* urls);
+     bool TryShutdown();
 }

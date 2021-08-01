@@ -21,7 +21,7 @@ namespace Avalonia.LinuxFramebuffer
         /// </summary>
         /// <param name="fileName">The frame buffer device name.
         /// Defaults to the value in environment variable FRAMEBUFFER or /dev/fb0 when FRAMEBUFFER is not set</param>
-        public FbdevOutput(string fileName = null) : this(null, null)
+        public FbdevOutput(string fileName = null) : this(fileName, null)
         {
         }
 
