@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         private const double DATAGRID_minimumColumnHeaderHeight = 4;
         internal const double DATAGRID_maximumStarColumnWidth = 10000;
         internal const double DATAGRID_minimumStarColumnWidth = 0.001;
-        private const double DATAGRID_mouseWheelDelta = 72.0;
+        private const double DATAGRID_mouseWheelDelta = 50.0;
         private const double DATAGRID_maxHeadersThickness = 32768;
 
         private const double DATAGRID_defaultRowHeight = 22;
@@ -2217,20 +2217,23 @@ namespace Avalonia.Controls
             if (IsEnabled && !e.Handled && DisplayData.NumDisplayedScrollingElements > 0)
             {
                 double scrollHeight = 0;
-                if (e.Delta.Y > 0)
+                var delta = DATAGRID_mouseWheelDelta * e.Delta.Y;
+                var deltaAbs = Math.Abs(delta);
+
+                if (delta > 0)
                 {
-                    scrollHeight = Math.Max(-_verticalOffset, -DATAGRID_mouseWheelDelta);
+                    scrollHeight = Math.Max(-_verticalOffset, -deltaAbs);
                 }
-                else if (e.Delta.Y < 0)
+                else if (delta < 0)
                 {
                     if (_vScrollBar != null && VerticalScrollBarVisibility == ScrollBarVisibility.Visible)
                     {
-                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), DATAGRID_mouseWheelDelta);
+                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), deltaAbs);
                     }
                     else
                     {
                         double maximum = EdgedRowsHeightCalculated - CellsHeight;
-                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), DATAGRID_mouseWheelDelta);
+                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), deltaAbs);
                     }
                 }
                 if (scrollHeight != 0)
