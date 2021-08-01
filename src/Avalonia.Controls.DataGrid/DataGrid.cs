@@ -5771,7 +5771,7 @@ namespace Avalonia.Controls
                 {
                     if (SelectionMode == DataGridSelectionMode.Single || !ctrl)
                     {
-                        // Unselect the currectly selected rows except the new selected row
+                        // Unselect the currently selected rows except the new selected row
                         action = DataGridSelectionAction.SelectCurrent;
                     }
                     else
