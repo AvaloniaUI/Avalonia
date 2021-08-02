@@ -53,7 +53,7 @@ namespace Avalonia.Media.Immutable
                   source.AlignmentY,
                   source.DestinationRect,
                   source.Opacity,
-                  source.Transform.ToImmutable(),
+                  source.Transform?.ToImmutable(),
                   source.SourceRect,
                   source.Stretch,
                   source.TileMode,
