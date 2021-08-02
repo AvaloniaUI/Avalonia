@@ -6,6 +6,7 @@
       <ControlTemplate>
         <Border BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
                 Background="{TemplateBinding Background}"/>
       </ControlTemplate>
     </Setter>
