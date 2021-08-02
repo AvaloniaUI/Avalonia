@@ -76,9 +76,7 @@
                                 IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        <!-- TODO eliminate this margin... text layout issue? -->
                         <TextPresenter Name="PART_TextPresenter"
-                                      Margin="0 1 0 0"
                                       Text="{TemplateBinding Text, Mode=TwoWay}"
                                       CaretIndex="{TemplateBinding CaretIndex}"
                                       SelectionStart="{TemplateBinding SelectionStart}"
