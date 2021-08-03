@@ -7,14 +7,14 @@
     <TextBlock Classes="h2">A drop-down list.</TextBlock>
 
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="8">
-      <ComboBox PlaceholderText="Pick an Item">
+      <ComboBox PlaceholderText="Pick an Item" WrapSelection="{Binding WrapSelection}">
         <ComboBoxItem>Inline Items</ComboBoxItem>
         <ComboBoxItem>Inline Item 2</ComboBoxItem>
         <ComboBoxItem>Inline Item 3</ComboBoxItem>
         <ComboBoxItem>Inline Item 4</ComboBoxItem>
       </ComboBox>
 
-      <ComboBox SelectedIndex="0">
+      <ComboBox SelectedIndex="0" WrapSelection="{Binding WrapSelection}">
         <ComboBoxItem>
           <Panel>
             <Rectangle Fill="{DynamicResource SystemAccentColor}"/>
@@ -29,15 +29,15 @@
         </ComboBoxItem>
       </ComboBox>
 
-       <ComboBox x:Name="fontComboBox"  SelectedIndex="0">
-         <ComboBox.ItemTemplate>
-           <DataTemplate>
-             <TextBlock Text="{Binding Name}" FontFamily="{Binding}" />
-           </DataTemplate>
-         </ComboBox.ItemTemplate>
-       </ComboBox>
-      
-      <ComboBox PlaceholderText="Pick an Item">
+      <ComboBox x:Name="fontComboBox"  SelectedIndex="0" WrapSelection="{Binding WrapSelection}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Name}" FontFamily="{Binding}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+
+      <ComboBox PlaceholderText="Pick an Item" WrapSelection="{Binding WrapSelection}">
         <ComboBoxItem>Inline Items</ComboBoxItem>
         <ComboBoxItem>Inline Item 2</ComboBoxItem>
         <ComboBoxItem>Inline Item 3</ComboBoxItem>
@@ -48,5 +48,7 @@
       </ComboBox>
     </StackPanel>
 
+    <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
+    
   </StackPanel>
 </UserControl>
