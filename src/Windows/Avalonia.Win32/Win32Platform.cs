@@ -40,8 +40,8 @@ namespace Avalonia
         public bool UseDeferredRendering { get; set; } = true;
         
         public bool? AllowEglInitialization { get; set; }
-        
-        public bool? EnableMultitouch { get; set; }
+
+        public bool? EnableMultitouch { get; set; } = true;
         public bool OverlayPopups { get; set; }
         public bool UseWgl { get; set; }
         public IList<GlVersion> WglProfiles { get; set; } = new List<GlVersion>
