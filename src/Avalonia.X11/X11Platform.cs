@@ -190,7 +190,7 @@ namespace Avalonia
             "llvmpipe"
         };
         public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
-        public bool? EnableMultiTouch { get; set; }
+        public bool? EnableMultiTouch { get; set; } = true;
     }
     public static class AvaloniaX11PlatformExtensions
     {
