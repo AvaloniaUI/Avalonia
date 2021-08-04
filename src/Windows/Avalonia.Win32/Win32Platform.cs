@@ -6,18 +6,16 @@ using System.IO;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
-using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using Avalonia.Win32;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -37,15 +35,46 @@ namespace Avalonia
         }
     }
 
+    /// <summary>
+    /// Platform-specific options which apply to Windows.
+    /// </summary>
     public class Win32PlatformOptions
     {
+        /// <summary>
+        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
+        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
+        /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
-        
+
+        /// <summary>
+        /// Enables ANGLE for Windows. For every Windows version that is above Windows 7, the default is true otherwise it's false.
+        /// </summary>
+        /// <remarks>
+        /// GPU rendering will not be enabled if this is set to false.
+        /// </remarks>
         public bool? AllowEglInitialization { get; set; }
-        
-        public bool? EnableMultitouch { get; set; }
+
+        /// <summary>
+        /// Enables multitouch support. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
+        /// </remarks>
+        public bool? EnableMultitouch { get; set; } = true;
+
+        /// <summary>
+        /// Embeds popups to the window when set to true. The default value is false.
+        /// </summary>
         public bool OverlayPopups { get; set; }
+
+        /// <summary>
+        /// Avalonia would try to use native Widows OpenGL when set to true. The default value is false.
+        /// </summary>
         public bool UseWgl { get; set; }
+
         public IList<GlVersion> WglProfiles { get; set; } = new List<GlVersion>
         {
             new GlVersion(GlProfileType.OpenGL, 4, 0),
@@ -65,7 +94,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -122,7 +151,8 @@ namespace Avalonia.Win32
                 })
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
-                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider());
+                .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
+                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
 
             Win32GlManager.Initialize();
 
@@ -207,6 +237,8 @@ namespace Avalonia.Win32
 
         public event Action<DispatcherPriority?> Signaled;
 
+        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -214,6 +246,22 @@ namespace Avalonia.Win32
             {
                 Signaled?.Invoke(null);
             }
+
+            if(msg == (uint)WindowsMessage.WM_QUERYENDSESSION)
+            {
+                if (ShutdownRequested != null)
+                {
+                    var e = new ShutdownRequestedEventArgs();
+
+                    ShutdownRequested(this, e);
+
+                    if(e.Cancel)
+                    {
+                        return IntPtr.Zero;
+                    }
+                }
+            }
+
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
@@ -253,7 +301,7 @@ namespace Avalonia.Win32
         public IWindowImpl CreateEmbeddableWindow()
         {
             var embedded = new EmbeddedWindowImpl();
-            embedded.Show(true);
+            embedded.Show(true, false);
             return embedded;
         }
 
