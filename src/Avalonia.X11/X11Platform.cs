@@ -183,7 +183,8 @@ namespace Avalonia
         public bool OverlayPopups { get; set; }
 
         /// <summary>
-        /// Enables global KDE menu. The default value is false.
+        /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
+        /// The default value is false.
         /// </summary>
         public bool UseDBusMenu { get; set; }
 
