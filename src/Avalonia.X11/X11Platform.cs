@@ -231,7 +231,7 @@ namespace Avalonia
         /// <remarks>
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
-        public bool? EnableMultiTouch { get; set; }
+        public bool? EnableMultiTouch { get; set; } = true;
     }
     public static class AvaloniaX11PlatformExtensions
     {
