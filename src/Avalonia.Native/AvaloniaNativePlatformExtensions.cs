@@ -32,10 +32,10 @@ namespace Avalonia
     public class AvaloniaNativePlatformOptions
     {
         /// <summary>
-        /// Deferred renderer would be used on Windows when set to true. Immediate renderer would be used when set to false. The default value is true.
+        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
         /// </summary>
         /// <remarks>
-        /// Avalonia has two different renderers - Immediate and Deferred.
+        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;

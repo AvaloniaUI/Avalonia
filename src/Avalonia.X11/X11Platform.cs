@@ -188,17 +188,17 @@ namespace Avalonia
         public bool UseDBusMenu { get; set; }
 
         /// <summary>
-        /// Deferred renderer would be used on Windows when set to true. Immediate renderer would be used when set to false. The default value is true.
+        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
         /// </summary>
         /// <remarks>
-        /// Avalonia has two different renderers - Immediate and Deferred.
+        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use IME.
-        /// IME would be enabled by default if user input languages contain one of the following languages: Mandarin Chinese, Japanese, Vietnamese, Korean.
+        /// IME would be enabled by default if the current user input language is one of the following: Mandarin, Japanese, Vietnamese or Korean.
         /// </summary>
         /// <remarks>
         /// Input method editor is a component that enables users to generate characters not natively available 

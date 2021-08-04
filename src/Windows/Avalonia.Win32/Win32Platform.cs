@@ -41,19 +41,19 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         /// <summary>
-        /// Deferred renderer would be used on Windows when set to true. Immediate renderer would be used when set to false. The default value is true.
+        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
         /// </summary>
         /// <remarks>
-        /// Avalonia has two different renderers - Immediate and Deferred.
+        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
 
         /// <summary>
-        /// Enables ANGLE for Windows. For every Windows which is above Win 7, the default is true,otherwise-false.
+        /// Enables ANGLE for Windows. For every Windows version that is above Windows 7, the default is true otherwise it's false.
         /// </summary>
         /// <remarks>
-        /// GPU would not be used for rendering if you would set that to false.
+        /// GPU rendering will not be enabled if this is set to false.
         /// </remarks>
         public bool? AllowEglInitialization { get; set; }
 
