@@ -58,7 +58,7 @@ namespace Avalonia
         public bool? AllowEglInitialization { get; set; }
 
         /// <summary>
-        /// Enables multitouch support. The default value is false.
+        /// Enables multitouch support. The default value is true.
         /// </summary>
         /// <remarks>
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
