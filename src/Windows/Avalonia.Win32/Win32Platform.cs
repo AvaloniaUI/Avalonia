@@ -35,15 +35,46 @@ namespace Avalonia
         }
     }
 
+    /// <summary>
+    /// Platform-specific options which apply to Windows.
+    /// </summary>
     public class Win32PlatformOptions
     {
+        /// <summary>
+        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
+        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
+        /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
-        
+
+        /// <summary>
+        /// Enables ANGLE for Windows. For every Windows version that is above Windows 7, the default is true otherwise it's false.
+        /// </summary>
+        /// <remarks>
+        /// GPU rendering will not be enabled if this is set to false.
+        /// </remarks>
         public bool? AllowEglInitialization { get; set; }
 
+        /// <summary>
+        /// Enables multitouch support. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
+        /// </remarks>
         public bool? EnableMultitouch { get; set; } = true;
+
+        /// <summary>
+        /// Embeds popups to the window when set to true. The default value is false.
+        /// </summary>
         public bool OverlayPopups { get; set; }
+
+        /// <summary>
+        /// Avalonia would try to use native Widows OpenGL when set to true. The default value is false.
+        /// </summary>
         public bool UseWgl { get; set; }
+
         public IList<GlVersion> WglProfiles { get; set; } = new List<GlVersion>
         {
             new GlVersion(GlProfileType.OpenGL, 4, 0),
