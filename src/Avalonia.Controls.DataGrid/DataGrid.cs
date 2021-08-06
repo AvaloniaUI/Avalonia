@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         private const double DATAGRID_minimumColumnHeaderHeight = 4;
         internal const double DATAGRID_maximumStarColumnWidth = 10000;
         internal const double DATAGRID_minimumStarColumnWidth = 0.001;
-        private const double DATAGRID_mouseWheelDelta = 72.0;
+        private const double DATAGRID_mouseWheelDelta = 50.0;
         private const double DATAGRID_maxHeadersThickness = 32768;
 
         private const double DATAGRID_defaultRowHeight = 22;
@@ -75,7 +75,6 @@ namespace Avalonia.Controls
         private const double DATAGRID_defaultMinColumnWidth = 20;
         private const double DATAGRID_defaultMaxColumnWidth = double.PositiveInfinity;
 
-        private List<Exception> _validationErrors;
         private List<Exception> _bindingValidationErrors;
         private IDisposable _validationSubscription;
 
@@ -102,7 +101,6 @@ namespace Avalonia.Controls
         private bool _areHandlersSuspended;
         private bool _autoSizingColumns;
         private IndexToValueTable<bool> _collapsedSlotsTable;
-        private DataGridCellCoordinates _currentCellCoordinates;
         private Control _clickedElement;
 
         // used to store the current column during a Reset
@@ -141,7 +139,6 @@ namespace Avalonia.Controls
         private DataGridSelectedItemsCollection _selectedItems;
         private bool _temporarilyResetCurrentCell;
         private object _uneditedValue; // Represents the original current cell value at the time it enters editing mode.
-        private ICellEditBinding _currentCellEditBinding;
 
         // An approximation of the sum of the heights in pixels of the scrolling rows preceding
         // the first displayed scrolling row.  Since the scrolled off rows are discarded, the grid
@@ -2220,20 +2217,23 @@ namespace Avalonia.Controls
             if (IsEnabled && !e.Handled && DisplayData.NumDisplayedScrollingElements > 0)
             {
                 double scrollHeight = 0;
-                if (e.Delta.Y > 0)
+                var delta = DATAGRID_mouseWheelDelta * e.Delta.Y;
+                var deltaAbs = Math.Abs(delta);
+
+                if (delta > 0)
                 {
-                    scrollHeight = Math.Max(-_verticalOffset, -DATAGRID_mouseWheelDelta);
+                    scrollHeight = Math.Max(-_verticalOffset, -deltaAbs);
                 }
-                else if (e.Delta.Y < 0)
+                else if (delta < 0)
                 {
                     if (_vScrollBar != null && VerticalScrollBarVisibility == ScrollBarVisibility.Visible)
                     {
-                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), DATAGRID_mouseWheelDelta);
+                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), deltaAbs);
                     }
                     else
                     {
                         double maximum = EdgedRowsHeightCalculated - CellsHeight;
-                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), DATAGRID_mouseWheelDelta);
+                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), deltaAbs);
                     }
                 }
                 if (scrollHeight != 0)
@@ -5734,7 +5734,7 @@ namespace Avalonia.Controls
                 {
                     if (SelectionMode == DataGridSelectionMode.Single || !ctrl)
                     {
-                        // Unselect the currectly selected rows except the new selected row
+                        // Unselect the currently selected rows except the new selected row
                         action = DataGridSelectionAction.SelectCurrent;
                     }
                     else

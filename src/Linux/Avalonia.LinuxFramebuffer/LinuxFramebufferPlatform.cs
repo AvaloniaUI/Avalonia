@@ -132,7 +132,10 @@ public static class LinuxFramebufferPlatformExtensions
 {
     public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev = null, double scaling = 1)
         where T : AppBuilderBase<T>, new() =>
-        StartLinuxDirect(builder, args, new FbdevOutput(fbdev) {Scaling = scaling});
+        StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: null) { Scaling = scaling });
+    public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev, PixelFormat? format, double scaling)
+        where T : AppBuilderBase<T>, new() =>
+        StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: format) { Scaling = scaling });
 
     public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, double scaling = 1)
         where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card) {Scaling = scaling});

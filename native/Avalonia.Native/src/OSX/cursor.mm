@@ -53,36 +53,46 @@ public:
     
     virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut) override
     {
-        *retOut = s_cursorMap[cursorType];
+        START_COM_CALL;
         
-        if(*retOut != nullptr)
+        @autoreleasepool
         {
-            (*retOut)->AddRef();
-        }
+            *retOut = s_cursorMap[cursorType];
             
-        return S_OK;
+            if(*retOut != nullptr)
+            {
+                (*retOut)->AddRef();
+            }
+                
+            return S_OK;
+        }
     }
     
     virtual HRESULT CreateCustomCursor (void* bitmapData, size_t length, AvnPixelSize hotPixel, IAvnCursor** retOut) override
     {
-        if(bitmapData == nullptr || retOut == nullptr)
+        START_COM_CALL;
+        
+        @autoreleasepool
         {
-            return E_POINTER;
+            if(bitmapData == nullptr || retOut == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            NSData *imageData = [NSData dataWithBytes:bitmapData length:length];
+            NSImage *image = [[NSImage alloc] initWithData:imageData];
+            
+            
+            NSPoint hotSpot;
+            hotSpot.x = hotPixel.Width;
+            hotSpot.y = hotPixel.Height;
+            
+            *retOut = new Cursor([[NSCursor new] initWithImage: image hotSpot: hotSpot]);
+            
+            (*retOut)->AddRef();
+            
+            return S_OK;
         }
-        
-        NSData *imageData = [NSData dataWithBytes:bitmapData length:length];
-        NSImage *image = [[NSImage alloc] initWithData:imageData];
-        
-        
-        NSPoint hotSpot;
-        hotSpot.x = hotPixel.Width;
-        hotSpot.y = hotPixel.Height;
-        
-        *retOut = new Cursor([[NSCursor new] initWithImage: image hotSpot: hotSpot]);
-        
-        (*retOut)->AddRef();
-        
-        return S_OK;
     }
 };
 

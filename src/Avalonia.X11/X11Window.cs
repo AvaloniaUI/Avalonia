@@ -30,7 +30,6 @@ namespace Avalonia.X11
         ITopLevelImplWithTextInputMethod
     {
         private readonly AvaloniaX11Platform _platform;
-        private readonly IWindowImpl _popupParent;
         private readonly bool _popup;
         private readonly X11Info _x11;
         private XConfigureEvent? _configure;
@@ -297,6 +296,30 @@ namespace Avalonia.X11
 
         public Size ClientSize => new Size(_realSize.Width / RenderScaling, _realSize.Height / RenderScaling);
 
+        public Size? FrameSize
+        {
+            get
+            {
+                XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_FRAME_EXTENTS, IntPtr.Zero,
+                    new IntPtr(4), false, (IntPtr)Atom.AnyPropertyType, out var _,
+                    out var _, out var nitems, out var _, out var prop);
+
+                if (nitems.ToInt64() != 4)
+                {
+                    // Window hasn't been mapped by the WM yet, so can't get the extents.
+                    return null;
+                }
+
+                var data = (IntPtr*)prop.ToPointer();
+                var extents = new Thickness(data[0].ToInt32(), data[2].ToInt32(), data[1].ToInt32(), data[3].ToInt32());
+                XFree(prop);
+                
+                return new Size(
+                    (_realSize.Width + extents.Left + extents.Right) / RenderScaling,
+                    (_realSize.Height + extents.Top + extents.Bottom) / RenderScaling);
+            }
+        }
+
         public double RenderScaling
         {
             get
@@ -313,7 +336,7 @@ namespace Avalonia.X11
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         //TODO
         public Action<double> ScalingChanged { get; set; }
         public Action Deactivated { get; set; }
@@ -487,7 +510,7 @@ namespace Avalonia.X11
                         UpdateImePosition();
 
                         if (changedSize && !updatedSizeViaScaling && !_popup)
-                            Resized?.Invoke(ClientSize);
+                            Resized?.Invoke(ClientSize, PlatformResizeReason.Unspecified);
 
                         Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
                     }, DispatcherPriority.Layout);
@@ -542,7 +565,7 @@ namespace Avalonia.X11
                     UpdateImePosition();
                     SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
                     if(!skipResize)
-                        Resize(oldScaledSize, true);
+                        Resize(oldScaledSize, true, PlatformResizeReason.DpiChange);
                     return true;
                 }
 
@@ -589,6 +612,13 @@ namespace Avalonia.X11
 
         private void OnPropertyChange(IntPtr atom, bool hasValue)
         {
+            if (atom == _x11.Atoms._NET_FRAME_EXTENTS)
+            {
+                // Occurs once the window has been mapped, which is the earliest the extents
+                // can be retrieved, so invoke event to force update of TopLevel.FrameSize.
+                Resized.Invoke(ClientSize, PlatformResizeReason.Unspecified);
+            }
+
             if (atom == _x11.Atoms._NET_WM_STATE)
             {
                 WindowState state = WindowState.Normal;
@@ -809,7 +839,7 @@ namespace Avalonia.X11
                 XSetTransientForHint(_x11.Display, _handle, parent.Handle.Handle);
         }
 
-        public void Show(bool activate)
+        public void Show(bool activate, bool isDialog)
         {
             _wasMappedAtLeastOnce = true;
             XMapWindow(_x11.Display, _handle);
@@ -832,19 +862,19 @@ namespace Avalonia.X11
         }
 
 
-        public void Resize(Size clientSize) => Resize(clientSize, false);
+        public void Resize(Size clientSize, PlatformResizeReason reason) => Resize(clientSize, false, reason);
         public void Move(PixelPoint point) => Position = point;
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             Move(position);
             _scalingOverride = scaling;
             UpdateScaling(true);
-            Resize(size, true);
+            Resize(size, true, PlatformResizeReason.Layout);
         }
 
         PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
         
-        void Resize(Size clientSize, bool force)
+        void Resize(Size clientSize, bool force, PlatformResizeReason reason)
         {
             if (!force && clientSize == ClientSize)
                 return;
@@ -861,7 +891,7 @@ namespace Avalonia.X11
             if (force || !_wasMappedAtLeastOnce || (_popup && needImmediatePopupResize))
             {
                 _realSize = pixelSize;
-                Resized?.Invoke(ClientSize);
+                Resized?.Invoke(ClientSize, reason);
             }
         }
         
@@ -994,15 +1024,22 @@ namespace Avalonia.X11
                 side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
             BeginMoveResize(side, e);
         }
-        
+
         public void SetTitle(string title)
         {
-            var data = Encoding.UTF8.GetBytes(title);
-            fixed (void* pdata = data)
+            if (string.IsNullOrEmpty(title))
             {
-                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME, _x11.Atoms.UTF8_STRING, 8,
-                    PropertyMode.Replace, pdata, data.Length);
-                XStoreName(_x11.Display, _handle, title);
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME);
+            }
+            else
+            {
+                var data = Encoding.UTF8.GetBytes(title);
+                fixed (void* pdata = data)
+                {
+                    XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME, _x11.Atoms.UTF8_STRING, 8,
+                        PropertyMode.Replace, pdata, data.Length);
+                    XStoreName(_x11.Display, _handle, title);
+                }
             }
         }
 

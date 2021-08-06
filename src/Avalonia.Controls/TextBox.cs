@@ -145,7 +145,7 @@ namespace Avalonia.Controls
                 (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
-        struct UndoRedoState : IEquatable<UndoRedoState>
+        readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
             public int CaretPosition { get; }
@@ -1113,6 +1113,11 @@ namespace Avalonia.Controls
 
         private bool MoveVertical(int count)
         {
+            if (_presenter is null)
+            {
+                return false;
+            }
+
             var formattedText = _presenter.FormattedText;
             var lines = formattedText.GetLines().ToList();
             var caretIndex = CaretIndex;
@@ -1128,14 +1133,17 @@ namespace Avalonia.Controls
                 CaretIndex = hit.TextPosition + (hit.IsTrailing ? 1 : 0);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         private void MoveHome(bool document)
         {
+            if (_presenter is null)
+            {
+                return;
+            }
+            
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
@@ -1166,6 +1174,11 @@ namespace Avalonia.Controls
 
         private void MoveEnd(bool document)
         {
+            if (_presenter is null)
+            {
+                return;
+            }
+            
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
@@ -1305,7 +1318,7 @@ namespace Avalonia.Controls
 
         private void UpdatePseudoclasses()
         {
-            PseudoClasses.Set(":empty", string.IsNullOrWhiteSpace(Text));
+            PseudoClasses.Set(":empty", string.IsNullOrEmpty(Text));
         }
 
         private bool IsPasswordBox => PasswordChar != default(char);
