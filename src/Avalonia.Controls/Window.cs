@@ -856,10 +856,9 @@ namespace Avalonia.Controls
         {
             var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
 
-            // TODO: We really need non-client size here.
             var rect = new PixelRect(
                 PixelPoint.Origin,
-                PixelSize.FromSize(ClientSize, scaling));
+                PixelSize.FromSize(FrameSize ?? ClientSize, scaling));
             var screen = Screens.ScreenFromPoint(owner?.Position ?? Position);
             var margin = Margin * scaling;
 
@@ -874,10 +873,9 @@ namespace Avalonia.Controls
                 case WindowStartupLocation.CenterOwner:
                     if (owner != null)
                     {
-                        // TODO: We really need non-client size here.
                         var ownerRect = new PixelRect(
                             owner.Position,
-                            PixelSize.FromSize(owner.ClientSize, scaling));
+                            PixelSize.FromSize(owner.FrameSize ?? owner.ClientSize, scaling));
                         Position = ownerRect.CenterRect(rect).Position;
                     }
                     break;
