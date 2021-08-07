@@ -1,7 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Styles.Resources>
     <Thickness x:Key="FlyoutBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
   </Styles.Resources>
   
   <Style Selector="FlyoutPresenter">

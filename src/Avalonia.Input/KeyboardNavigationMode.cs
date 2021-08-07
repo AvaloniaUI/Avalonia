@@ -36,5 +36,10 @@ namespace Avalonia.Input
         /// The container's children will not be focused when using the tab key.
         /// </summary>
         None,
+
+        /// <summary>
+        /// TabIndexes are considered on local subtree only inside this container
+        /// </summary>
+        Local,
     }
 }

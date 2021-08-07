@@ -1,4 +1,11 @@
 Compat issues with assembly Avalonia.Visuals:
+MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.CompositePageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.CrossFade.Start(Avalonia.Visual, Avalonia.Visual)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' is present in the contract but not in the implementation.
+MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public System.Threading.Tasks.Task Avalonia.Animation.IPageTransition.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean, System.Threading.CancellationToken)' is present in the implementation but not in the contract.
+MembersMustExist : Member 'public System.Threading.Tasks.Task Avalonia.Animation.PageSlide.Start(Avalonia.Visual, Avalonia.Visual, System.Boolean)' does not exist in the implementation but it does exist in the contract.
+TypeCannotChangeClassification : Type 'Avalonia.Media.Immutable.ImmutableSolidColorBrush' is a 'class' in the implementation but is a 'struct' in the contract.
 MembersMustExist : Member 'public void Avalonia.Media.TextFormatting.DrawableTextRun.Draw(Avalonia.Media.DrawingContext)' does not exist in the implementation but it does exist in the contract.
 CannotAddAbstractMembers : Member 'public void Avalonia.Media.TextFormatting.DrawableTextRun.Draw(Avalonia.Media.DrawingContext, Avalonia.Point)' is abstract in the implementation but is missing in the contract.
 CannotSealType : Type 'Avalonia.Media.TextFormatting.GenericTextParagraphProperties' is actually (has the sealed modifier) sealed in the implementation but not sealed in the contract.
@@ -63,4 +70,8 @@ InterfacesShouldHaveSameMembers : Interface member 'public System.Boolean Avalon
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun, System.Double)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public Avalonia.Platform.IGlyphRunImpl Avalonia.Platform.IPlatformRenderInterface.CreateGlyphRun(Avalonia.Media.GlyphRun, System.Double)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 64
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmap(System.IO.Stream)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmap(System.String)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToHeight(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToWidth(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
+Total Issues: 75

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -10,17 +11,14 @@ using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Dialogs
 {
-    internal class ManagedFileChooser : UserControl
+    public class ManagedFileChooser : TemplatedControl
     {
         private Control _quickLinksRoot;
         private ListBox _filesView;
 
         public ManagedFileChooser()
         {
-            AvaloniaXamlLoader.Load(this);
             AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
-            _quickLinksRoot = this.FindControl<Control>("QuickLinks");
-            _filesView = this.FindControl<ListBox>("Files");
         }
 
         ManagedFileChooserViewModel Model => DataContext as ManagedFileChooserViewModel;
@@ -34,19 +32,22 @@ namespace Avalonia.Dialogs
                 return;
             }
 
-            var isQuickLink = _quickLinksRoot.IsLogicalAncestorOf(e.Source as Control);
-            if (e.ClickCount == 2 || isQuickLink)
+            if (_quickLinksRoot != null)
             {
-                if (model.ItemType == ManagedFileChooserItemType.File)
+                var isQuickLink = _quickLinksRoot.IsLogicalAncestorOf(e.Source as Control);
+                if (e.ClickCount == 2 || isQuickLink)
                 {
-                    Model?.SelectSingleFile(model);
-                }
-                else
-                {
-                    Model?.Navigate(model.Path);
-                }
+                    if (model.ItemType == ManagedFileChooserItemType.File)
+                    {
+                        Model?.SelectSingleFile(model);
+                    }
+                    else
+                    {
+                        Model?.Navigate(model.Path);
+                    }
 
-                e.Handled = true;
+                    e.Handled = true;
+                }
             }
         }
 
@@ -79,10 +80,16 @@ namespace Avalonia.Dialogs
             // Workaround for ListBox bug, scroll to the previous file
             var indexOfPreselected = model.Items.IndexOf(preselected);
 
-            if (indexOfPreselected > 1)
+            if ((_filesView != null) && (indexOfPreselected > 1))
             {
                 _filesView.ScrollIntoView(indexOfPreselected - 1);
             }
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            _quickLinksRoot = e.NameScope.Get<Control>("QuickLinks");
+            _filesView = e.NameScope.Get<ListBox>("Files");
         }
     }
 }

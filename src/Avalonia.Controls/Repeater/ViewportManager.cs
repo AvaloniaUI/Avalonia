@@ -27,7 +27,6 @@ namespace Avalonia.Controls
         private IScrollAnchorProvider _scroller;
         private IControl _makeAnchorElement;
         private bool _isAnchorOutsideRealizedRange;
-        private Task _cacheBuildAction;
         private Rect _visibleWindow;
         private Rect _layoutExtent;
         // This is the expected shift by the layout.
@@ -187,7 +186,7 @@ namespace Avalonia.Controls
                 _expectedViewportShift.X + _layoutExtent.X - extent.X,
                 _expectedViewportShift.Y + _layoutExtent.Y - extent.Y);
 
-            // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
+            // We tolerate viewport imprecisions up to 1 pixel to avoid invalidating layout too much.
             if (Math.Abs(_expectedViewportShift.X) > 1 || Math.Abs(_expectedViewportShift.Y) > 1)
             {
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Expecting viewport shift of ({Shift})",

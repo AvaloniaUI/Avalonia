@@ -36,7 +36,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
         /// </summary>
-        public static readonly StyledProperty<KeyGesture> HotKeyProperty =
+        public static readonly StyledProperty<KeyGesture?> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<MenuItem>();
 
         /// <summary>
@@ -68,6 +68,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
             AvaloniaProperty.Register<MenuItem, bool>(nameof(IsSubMenuOpen));
+
+        /// <summary>
+        /// Defines the <see cref="StaysOpenOnClick"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> StaysOpenOnClickProperty =
+            AvaloniaProperty.Register<MenuItem, bool>(nameof(StaysOpenOnClick));
 
         /// <summary>
         /// Defines the <see cref="Click"/> event.
@@ -102,7 +108,7 @@ namespace Avalonia.Controls
         private ICommand? _command;
         private bool _commandCanExecute = true;
         private Popup? _popup;
-        private KeyGesture _hotkey;
+        private KeyGesture? _hotkey;
         private bool _isEmbeddedInMenu;
 
         /// <summary>
@@ -208,7 +214,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets an <see cref="KeyGesture"/> associated with this control
         /// </summary>
-        public KeyGesture HotKey
+        public KeyGesture? HotKey
         {
             get { return GetValue(HotKeyProperty); }
             set { SetValue(HotKeyProperty, value); }
@@ -263,6 +269,16 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IsSubMenuOpenProperty); }
             set { SetValue(IsSubMenuOpenProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates the submenu that this <see cref="MenuItem"/> is
+        /// within should not close when this item is clicked.
+        /// </summary>
+        public bool StaysOpenOnClick
+        {
+            get { return GetValue(StaysOpenOnClickProperty); }
+            set { SetValue(StaysOpenOnClickProperty, value); }
         }
 
         /// <summary>

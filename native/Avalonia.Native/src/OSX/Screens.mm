@@ -8,6 +8,8 @@ class Screens : public ComSingleObject<IAvnScreens, &IID_IAvnScreens>
 public:
     virtual HRESULT GetScreenCount (int* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             *ret = (int)[NSScreen screens].count;
@@ -18,6 +20,8 @@ public:
     
     virtual HRESULT GetScreen (int index, AvnScreen* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(index < 0 || index >= [NSScreen screens].count)

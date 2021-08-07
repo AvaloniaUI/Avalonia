@@ -2,16 +2,6 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
        xmlns:sys="clr-namespace:System;assembly=netstandard">
   <Style.Resources>
-    <!-- Accent Colours -->
-    <!-- TODO pull accents from system... algorithm to generate shades -->
-    <Color x:Key="SystemAccentColor">#FF0078D7</Color>
-    <Color x:Key="SystemAccentColorDark1">#FF005A9E</Color>
-    <Color x:Key="SystemAccentColorDark2">#FF004275</Color>
-    <Color x:Key="SystemAccentColorDark3">#FF002642</Color>
-    <Color x:Key="SystemAccentColorLight1">#FF429CE3</Color>
-    <Color x:Key="SystemAccentColorLight2">#FF76B9ED</Color>
-    <Color x:Key="SystemAccentColorLight3">#FFA6D8FF</Color>
-
     <!-- System Control Colors -->
     <Color x:Key="SystemAltHighColor">#FF000000</Color>
     <Color x:Key="SystemAltLowColor">#33000000</Color>
@@ -39,6 +29,9 @@
     <Color x:Key="SystemListLowColor">#19FFFFFF</Color>
     <Color x:Key="SystemListMediumColor">#33FFFFFF</Color>
     <Color x:Key="SystemErrorTextColor">#FFF000</Color>
+
+    <Color x:Key="SystemRevealListLowColor">#18FFFFFF</Color>
+    <Color x:Key="SystemRevealListMediumColor">#30FFFFFF</Color>
 
     <SolidColorBrush x:Key="SystemControlBackgroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
     <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="{StaticResource SystemAltHighColor}" />
@@ -135,7 +128,6 @@
     <SolidColorBrush x:Key="SystemControlPageTextBaseHighBrush" Color="{StaticResource SystemBaseHighColor}" />
     <SolidColorBrush x:Key="SystemControlPageTextBaseMediumBrush" Color="{StaticResource SystemBaseMediumColor}" />
     <SolidColorBrush x:Key="SystemControlPageTextChromeBlackMediumLowBrush" Color="{StaticResource SystemChromeBlackMediumLowColor}" />
-    <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
     <SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="{StaticResource SystemErrorTextColor}" />
     <SolidColorBrush x:Key="SystemControlTransientBorderBrush" Color="#000000" Opacity="0.36" />
     <SolidColorBrush x:Key="SystemControlHighlightListLowRevealBackgroundBrush" Color="{StaticResource SystemListMediumColor}" />
@@ -150,197 +142,39 @@
     <!--<AcrylicBrush x:Key="SystemControlTransientBackgroundBrush" BackgroundSource="HostBackdrop" TintColor="{StaticResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{StaticResource SystemChromeMediumLowColor}" />-->
     <SolidColorBrush x:Key="SystemControlTransientBackgroundBrush" Color="{StaticResource SystemChromeMediumLowColor}" />
     <StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
-    <x:Boolean x:Key="IsApplicationFocusVisualKindReveal">False</x:Boolean>
+    
+    <!--<AcrylicBrush x:Key="SystemControlAcrylicWindowBrush" BackgroundSource="HostBackdrop" TintColor="{ThemeResource SystemChromeAltHighColor}" TintOpacity="0.8" FallbackColor="{ThemeResource SystemChromeMediumColor}" />-->
+    <!--<RevealBackgroundBrush x:Key="SystemControlTransparentRevealBackgroundBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBackgroundBrush" Color="Transparent" />
+    <!--<RevealBorderBrush x:Key="SystemControlTransparentRevealBorderBrush" TargetTheme="Dark" Color="Transparent" FallbackColor="Transparent" />-->
+    <SolidColorBrush x:Key="SystemControlTransparentRevealBorderBrush" Color="Transparent" />
 
+    <Color x:Key="RegionColor">#FF000000</Color>
+    <SolidColorBrush x:Key="RegionBrush" Color="{StaticResource RegionColor}" />
 
-    <!-- Default Control Settings -->
-    <FontFamily x:Key="ContentControlThemeFontFamily">XamlAutoFontFamily</FontFamily>
-    <FontFamily x:Key="MTCMediaFontFamily">XamlAutoFontFamily</FontFamily>
-    <FontFamily x:Key="PhoneFontFamilyNormal">Segoe WP</FontFamily>
-    <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe WP SemiLight</FontFamily>
-    <FontFamily x:Key="SettingsFlyoutHeaderThemeFontFamily">XamlAutoFontFamily</FontFamily>
-    <FontFamily x:Key="SymbolThemeFontFamily">Segoe MDL2 Assets</FontFamily>
-    <FontFamily x:Key="KeyTipFontFamily">XamlAutoFontFamily</FontFamily>
-    <x:Double x:Key="AppBarExpandButtonThemeHeight">24</x:Double>
-    <x:Double x:Key="AppBarExpandButtonThemeWidth">48</x:Double>
-    <x:Double x:Key="AppBarThemeMinHeight">56</x:Double>
-    <x:Double x:Key="AppBarThemeMinimalHeight">24</x:Double>
-    <x:Double x:Key="AppBarThemeCompactHeight">40</x:Double>
-    <x:Double x:Key="AppBarExpandButtonCircleDiameter">3</x:Double>
     <x:Double x:Key="AutoCompleteListMaxHeight">374</x:Double>
-    <x:Double x:Key="AutoCompleteListBorderOpacity">0</x:Double>
-    <Thickness x:Key="CheckBoxBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="CheckBoxCheckedStrokeThickness">0</Thickness>
-    <x:Double x:Key="ComboBoxArrowThemeFontSize">21</x:Double>
-    <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
-    <x:Double x:Key="ComboBoxPopupThemeMinWidth">80</x:Double>
-    <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
-    <x:Double x:Key="ControlContentThemeFontSize">14</x:Double>
-    <x:Double x:Key="ContentControlFontSize">14</x:Double>
-    <x:Double x:Key="ContentDialogMinWidth">320</x:Double>
-    <x:Double x:Key="ContentDialogMaxWidth">548</x:Double>
-    <x:Double x:Key="ContentDialogMinHeight">184</x:Double>
-    <x:Double x:Key="ContentDialogMaxHeight">756</x:Double>
-    <x:Double x:Key="ContentDialogButtonMinWidth">130</x:Double>
-    <x:Double x:Key="ContentDialogButtonMaxWidth">202</x:Double>
-    <x:Double x:Key="ContentDialogButtonMinHeight">32</x:Double>
-    <x:Double x:Key="ContentDialogButtonHeight">32</x:Double>
-    <x:Double x:Key="ContentDialogTitleMaxHeight">56</x:Double>
-    <x:Double x:Key="DatePickerSelectorThemeMinWidth">80</x:Double>
-    <x:Double x:Key="DatePickerSpacingThemeWidth">20</x:Double>
-    <x:Double x:Key="DatePickerSpacingThemeHeight">20</x:Double>
-    <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
-    <x:Double x:Key="FlyoutThemeMaxWidth">456</x:Double>
-    <x:Double x:Key="FlyoutThemeMinHeight">40</x:Double>
-    <x:Double x:Key="FlyoutThemeMinWidth">96</x:Double>
-    <x:Double x:Key="FlyoutThemeTouchMinWidth">240</x:Double>
-    <x:Double x:Key="GridViewItemSelectedBorderThemeThickness">4</x:Double>
-    <x:Double x:Key="HubHeaderThemeFontSize">34</x:Double>
-    <x:Double x:Key="HubSectionHeaderThemeFontSize">20</x:Double>
-    <x:Double x:Key="HubSectionHeaderSeeMoreThemeFontSize">14</x:Double>
-    <x:Double x:Key="ListPickerFlyoutFooterThemeHeight">80</x:Double>
-    <x:Double x:Key="GridViewItemReorderHintThemeOffset">16.0</x:Double>
-    <x:Double x:Key="MTCControlPanelHeight">42</x:Double>
-    <x:Double x:Key="MTCHorizontalVolumeSliderWidth">180</x:Double>
-    <x:Double x:Key="MTCMediaFontSize">12</x:Double>
-    <x:Double x:Key="MTCMediaButtonHeight">48</x:Double>
-    <x:Double x:Key="MTCMediaButtonWidth">48</x:Double>
-    <x:Double x:Key="MTCPositionSliderMinimumWidth">96</x:Double>
-    <x:Double x:Key="MTCSideMargins">16</x:Double>
-    <x:Double x:Key="MTCTimeButtonHeight">21</x:Double>
-    <x:Double x:Key="MTCTimeButtonWidth">62</x:Double>
-    <x:Double x:Key="MTCVerticalVolumeHostVerticalOffset">-112</x:Double>
-    <x:Double x:Key="MTCVerticalVolumeHostWidth">42</x:Double>
-    <x:Double x:Key="MTCVerticalVolumeSliderMaxHeight">289</x:Double>
-    <x:Double x:Key="MTCVerticalVolumeSliderMinHeight">96</x:Double>
-    <x:Double x:Key="MTCVerticalVolumeSliderTopGap">8</x:Double>
-    <x:Double x:Key="MTCVerticalVolumeSliderTopPadding">16</x:Double>
-    <x:Double x:Key="ProgressBarIndicatorPauseOpacity">0.6</x:Double>
-    <x:Double x:Key="ProgressBarThemeMinHeight">4</x:Double>
-    <x:Double x:Key="RadioButtonBorderThemeThickness">2</x:Double>
-    <x:Double x:Key="ScrollBarTrackBorderThemeThickness">0</x:Double>
-    <x:Double x:Key="SearchBoxContentThemeFontSize">14</x:Double>
-    <x:Double x:Key="SearchBoxResultSuggestionImageThemeWidth">32</x:Double>
-    <x:Double x:Key="SearchBoxResultSuggestionImageThemeHeight">32</x:Double>
-    <x:Double x:Key="SearchBoxSuggestionPopupThemeMinWidth">270</x:Double>
-    <x:Double x:Key="SearchBoxSuggestionPopupThemeMaxHeight">300</x:Double>
-    <x:Double x:Key="SearchBoxTextBoxThemeMinHeight">28</x:Double>
-    <x:Double x:Key="SemanticZoomButtonFontSize">4</x:Double>
-    <x:Double x:Key="SettingsFlyoutHeaderThemeFontSize">26.667</x:Double>
-
-    <x:Double x:Key="SliderOutsideTickBarThemeHeight">4</x:Double>
-    <x:Double x:Key="SliderTrackThemeHeight">2</x:Double>
-    <x:Double x:Key="SplitViewOpenPaneThemeLength">320</x:Double>
-    <x:Double x:Key="SplitViewCompactPaneThemeLength">48</x:Double>
-    <x:Double x:Key="TextControlBackgroundThemeOpacity">0.8</x:Double>
-    <x:Double x:Key="TextControlBorderThemeOpacity">0.8</x:Double>
-    <x:Double x:Key="TextControlBorderThemeBrushOpacity">1</x:Double>
-    <x:Double x:Key="TextControlPointerOverBackgroundThemeOpacity">0.87</x:Double>
-    <x:Double x:Key="TextControlPointerOverBorderThemeOpacity">0.87</x:Double>
-    <x:Double x:Key="TextControlPointerOverBorderThemeBrushOpacity">1</x:Double>
-    <x:Double x:Key="TextControlBackgroundRestOpacity">0.4</x:Double>
-    <x:Double x:Key="TextControlBackgroundHoverOpacity">0.6</x:Double>
-    <x:Double x:Key="TextControlBackgroundFocusedOpacity">1</x:Double>
+    <Thickness x:Key="AutoCompleteListMargin">0,2,0,2</Thickness>
+    <Thickness x:Key="AutoCompleteListBorderThemeThickness">1</Thickness>
+    <Thickness x:Key="AutoCompleteListPadding">-1,0,-1,0</Thickness>
     <x:Double x:Key="TextControlThemeMinHeight">32</x:Double>
     <x:Double x:Key="TextControlThemeMinWidth">64</x:Double>
-    <x:Double x:Key="TextStyleLargeFontSize">18.14</x:Double>
-    <x:Double x:Key="TextStyleExtraLargeFontSize">25.5</x:Double>
-
-    <x:Double x:Key="TimePickerSelectorThemeMinWidth">80</x:Double>
-    <x:Double x:Key="ToolTipContentThemeFontSize">12</x:Double>
-    <x:Double x:Key="ListViewHeaderItemMinHeight">44</x:Double>
-    <x:Double x:Key="GridViewHeaderItemMinHeight">44</x:Double>
-    <x:Double x:Key="ListViewHeaderItemThemeFontSize">20</x:Double>
-    <x:Double x:Key="GridViewHeaderItemThemeFontSize">20</x:Double>
-
-    <x:Double x:Key="ToggleSwitchOnStrokeThickness">0</x:Double>
-    <x:Double x:Key="GridViewItemMinWidth">44</x:Double>
-    <x:Double x:Key="GridViewItemMinHeight">44</x:Double>
-    <x:Double x:Key="KeyTipContentThemeFontSize">12</x:Double>
-    <Thickness x:Key="AppBarBottomBorderThemeThickness">0,0,0,0</Thickness>
-    <Thickness x:Key="AppBarBottomThemePadding">0,0,0,0</Thickness>
-    <Thickness x:Key="AppBarTopBorderThemeThickness">0,0,0,0</Thickness>
-    <Thickness x:Key="AppBarTopThemePadding">0,0,0,0</Thickness>
-    <Thickness x:Key="AppBarExpandButtonCircleInnerPadding">3,0,3,0</Thickness>
-    <Thickness x:Key="AutoCompleteListBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="AutoCompleteListMargin">0,2,0,2</Thickness>
-    <Thickness x:Key="AutoCompleteListPadding">-1,0,-1,0</Thickness>
-    <Thickness x:Key="AutoCompleteListViewItemMargin">12,11,0,13</Thickness>
-    <Thickness x:Key="ButtonBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
-    <Thickness x:Key="ComboBoxDropdownBorderPadding">0</Thickness>
-    <Thickness x:Key="ComboBoxDropdownContentMargin">0,4,0,4</Thickness>
-    <Thickness x:Key="ComboBoxHeaderThemeMargin">0,0,0,4</Thickness>
-    <Thickness x:Key="ComboBoxPopupBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
-    <Thickness x:Key="ComboBoxItemThemeTouchPadding">11,11,11,13</Thickness>
-    <Thickness x:Key="ComboBoxItemThemeGameControllerPadding">11,11,11,13</Thickness>
-    <Thickness x:Key="ContentDialogBorderWidth">1</Thickness>
-    <Thickness x:Key="ContentDialogButton1HostMargin">0,0,4,0</Thickness>
-    <Thickness x:Key="ContentDialogButton2HostMargin">0,0,0,0</Thickness>
-    <Thickness x:Key="ContentDialogContentMargin">0,0,0,0</Thickness>
-    <Thickness x:Key="ContentDialogContentScrollViewerMargin">0,0,0,0</Thickness>
-    <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,0,0</Thickness>
-    <Thickness x:Key="ContentDialogTitleMargin">0,0,0,12</Thickness>
-    <Thickness x:Key="ContentDialogPadding">24,18,24,24</Thickness>
-    <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
+    <x:Double x:Key="FlyoutThemeMaxWidth">456</x:Double>
+    <Thickness x:Key="DateTimeFlyoutButtonBorderThickness">0</Thickness>
     <Thickness x:Key="DateTimeFlyoutBorderThickness">1</Thickness>
     <Thickness x:Key="DateTimeFlyoutBorderPadding">0</Thickness>
-    <Thickness x:Key="DateTimeFlyoutButtonBorderThickness">0</Thickness>
-    <Thickness x:Key="DateTimeFlyoutContentPanelPortraitThemeMargin">0,37,0,0</Thickness>
-    <Thickness x:Key="DateTimeFlyoutContentPanelLandscapeThemeMargin">0,19,0,0</Thickness>
-    <Thickness x:Key="DateTimeFlyoutTitleThemeMargin">19,0,19,17.5</Thickness>
-    <Thickness x:Key="FlipViewButtonBorderThemeThickness">0</Thickness>
-    <Thickness x:Key="FlyoutContentThemeMargin">0,0,0,0</Thickness>
+
     <Thickness x:Key="FlyoutContentThemePadding">12,11,12,12</Thickness>
-    <Thickness x:Key="GridViewItemCompactSelectedBorderThemeThickness">4</Thickness>
-    <Thickness x:Key="GridViewItemMultiselectBorderThickness">2.5</Thickness>
-    <Thickness x:Key="HandwritingViewExpandedButtonMargin">5,6,5,6</Thickness>
-    <Thickness x:Key="HubSectionHeaderThemeMargin">0,0,0,9</Thickness>
-    <Thickness x:Key="HubSectionHeaderSeeMoreThemeMargin">24,0,0,11</Thickness>
-    <Thickness x:Key="HyperlinkButtonBorderThemeThickness">0</Thickness>
-    <Thickness x:Key="ListPickerFlyoutPresenterMultiselectCheckBoxMargin">0,9.5,0,0</Thickness>
-    <Thickness x:Key="ListPickerFlyoutPresenterItemMargin">0,0,0,19</Thickness>
-    <Thickness x:Key="PickerFlyoutContentPanelLandscapeThemeMargin">19,19,19,0</Thickness>
-    <Thickness x:Key="PickerFlyoutContentPanelPortraitThemeMargin">19,37,19,0</Thickness>
-    <Thickness x:Key="PickerFlyoutTitleThemeMargin">0,0,0,32.5</Thickness>
-    <Thickness x:Key="ProgressBarBorderThemeThickness">0</Thickness>
-    <Thickness x:Key="RepeatButtonBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="ScrollBarPanningBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="SearchBoxQuerySuggestionThemeMargin">12,11,8,13</Thickness>
-    <Thickness x:Key="SearchBoxResultSuggestionThemeMargin">12,11,8,13</Thickness>
-    <Thickness x:Key="SearchBoxSeparatorSuggestionThemeMargin">12,11,8,13</Thickness>
-    <Thickness x:Key="SearchBoxSuggestionSubcomponentThemeMargin">0,0,12,0</Thickness>
-    <Thickness x:Key="SearchBoxThemePadding">12,4,8,4</Thickness>
-    <Thickness x:Key="SearchBoxIMECandidateListSeparatorThemeThickness">0,2,0,0</Thickness>
-    <Thickness x:Key="SearchBoxBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="SliderBorderThemeThickness">0</Thickness>
-    <Thickness x:Key="SliderHeaderThemeMargin">0,0,0,4</Thickness>
-    <Thickness x:Key="SplitViewLeftBorderThemeThickness">0,0,1,0</Thickness>
-    <Thickness x:Key="SplitViewRightBorderThemeThickness">1,0,0,0</Thickness>
-    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="TextControlMarginThemeThickness">0,9.5,0,9.5</Thickness>
-    <Thickness x:Key="TextControlThemePadding">10,3,6,6</Thickness>
-    <Thickness x:Key="HelperButtonThemePadding">0,0,-2,0</Thickness>
-    <Thickness x:Key="TextControlPlaceholderThemePadding">12,5,10,5</Thickness>
-    <Thickness x:Key="TimePickerHeaderThemeMargin">0,0,0,4</Thickness>
-    <Thickness x:Key="TimePickerFirstHostThemeMargin">0,0,20,0</Thickness>
-    <Thickness x:Key="TimePickerThirdHostThemeMargin">20,0,0,0</Thickness>
-    <Thickness x:Key="ToggleButtonBorderThemeThickness">2</Thickness>
-    <Thickness x:Key="KeyTipBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="KeyTipThemePadding">4</Thickness>
-    <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>
-    <FontWeight x:Key="ComboBoxPlaceholderTextThemeFontWeight">SemiLight</FontWeight>
-    <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
-    <FontWeight x:Key="SearchBoxButtonThemeFontWeight">Normal</FontWeight>
-    <FontWeight x:Key="SearchBoxContentThemeFontWeight">Normal</FontWeight>
-    <FontWeight x:Key="TimePickerHeaderThemeFontWeight">Normal</FontWeight>
-    <FontWeight x:Key="SliderHeaderThemeFontWeight">Normal</FontWeight>
-    <FontWeight x:Key="HubHeaderThemeFontWeight">Light</FontWeight>
-    <FontWeight x:Key="HubSectionHeaderThemeFontWeight">Normal</FontWeight>
-    <GridLength x:Key="AppBarExpandButtonThemeWidthGridLength">48</GridLength>
-    <Thickness x:Key="MediaTransportControlsTitleSafeBounds">48,0,48,27</Thickness>
+    <x:Double x:Key="FlyoutThemeMinWidth">96</x:Double>
+    <x:Double x:Key="FlyoutThemeMinHeight">40</x:Double>
+    <x:Double x:Key="FlyoutThemeMaxHeight">758</x:Double>
+    
+    <!-- Moved from FlyoutPresenter.xaml -->
+    <Thickness x:Key="FlyoutBorderThemePadding">0</Thickness>
+
+    <!-- Moved from MenuItem.xaml -->
+    <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
+
+    <!-- Moved from Menu.xaml -->
+    <Thickness x:Key="MenuBarItemPadding">12,0,12,0</Thickness> 
   </Style.Resources>
 </Style>

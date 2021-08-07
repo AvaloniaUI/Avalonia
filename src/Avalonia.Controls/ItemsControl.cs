@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
@@ -70,7 +71,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsControl()
         {
-            PseudoClasses.Add(":empty");
+            UpdatePseudoClasses(0);
             SubscribeToItems(_items);
         }
 
@@ -323,6 +324,16 @@ namespace Avalonia.Controls
             base.OnKeyDown(e);
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ItemCountProperty)
+            {
+                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<int>());
+            }
+        }
+
         /// <summary>
         /// Called when the <see cref="Items"/> property changes.
         /// </summary>
@@ -371,10 +382,6 @@ namespace Avalonia.Controls
             }
 
             Presenter?.ItemsChanged(e);
-
-            var collection = sender as ICollection;
-            PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
-            PseudoClasses.Set(":singleitem", collection != null && collection.Count == 1);
         }
 
         /// <summary>
@@ -431,9 +438,6 @@ namespace Avalonia.Controls
         /// <param name="items">The items collection.</param>
         private void SubscribeToItems(IEnumerable items)
         {
-            PseudoClasses.Set(":empty", items == null || items.Count() == 0);
-            PseudoClasses.Set(":singleitem", items != null && items.Count() == 1);
-
             if (items is INotifyCollectionChanged incc)
             {
                 CollectionChangedEventManager.Instance.AddListener(incc, this);
@@ -467,6 +471,12 @@ namespace Avalonia.Controls
             {
                 ItemCount = Items.Count();
             }
+        }
+
+        private void UpdatePseudoClasses(int itemCount)
+        {
+            PseudoClasses.Set(":empty", itemCount == 0);
+            PseudoClasses.Set(":singleitem", itemCount == 1);
         }
 
         protected static IInputElement GetNextControl(

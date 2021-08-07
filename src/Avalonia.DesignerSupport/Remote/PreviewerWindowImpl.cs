@@ -20,7 +20,7 @@ namespace Avalonia.DesignerSupport.Remote
             ClientSize = new Size(1, 1);
         }
 
-        public void Show(bool activate)
+        public void Show(bool activate, bool isDialog)
         {
         }
 
@@ -58,7 +58,7 @@ namespace Avalonia.DesignerSupport.Remote
             base.OnMessage(transport, obj);
         }
         
-        public void Resize(Size clientSize)
+        public void Resize(Size clientSize, PlatformResizeReason reason)
         {
             _transport.Send(new RequestViewportResizeMessage
             {
@@ -96,10 +96,6 @@ namespace Avalonia.DesignerSupport.Remote
         }
         
         public void SetTitle(string title)
-        {
-        }
-
-        public void ShowDialog(IWindowImpl parent)
         {
         }
 

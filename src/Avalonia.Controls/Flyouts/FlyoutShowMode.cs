@@ -12,7 +12,7 @@
         Standard,
 
         /// <summary>
-        /// Behavior is typical of a flyout shown proactively. The open flyout does not take focus. For a CommandBarFlyout, it opens in it's collapsed state.
+        /// Behavior is typical of a flyout shown proactively. The open flyout does not take focus.
         /// </summary>
         Transient,
 
