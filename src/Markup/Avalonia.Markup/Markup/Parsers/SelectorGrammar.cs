@@ -160,11 +160,13 @@ namespace Avalonia.Markup.Parsers
 
             if (identifier.IsEmpty)
             {
-                throw new ExpressionParseException(r.Position, "Expected class name or is selector after ':'.");
+                throw new ExpressionParseException(r.Position, "Expected class name, is, nth-child or nth-last-child selector after ':'.");
             }
 
             const string IsKeyword = "is";
             const string NotKeyword = "not";
+            const string NthChildKeyword = "nth-child";
+            const string NthLastChildKeyword = "nth-last-child";
 
             if (identifier.SequenceEqual(IsKeyword.AsSpan()) && r.TakeIf('('))
             {
@@ -181,6 +183,20 @@ namespace Avalonia.Markup.Parsers
                 var syntax = new NotSyntax { Argument = argument };
                 return (State.Middle, syntax);
             }
+            if (identifier.SequenceEqual(NthChildKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var (step, offset) = ParseNthChildArguments(ref r);
+
+                var syntax = new NthChildSyntax { Step = step, Offset = offset };
+                return (State.Middle, syntax);
+            }
+            if (identifier.SequenceEqual(NthLastChildKeyword.AsSpan()) && r.TakeIf('('))
+            {
+                var (step, offset) = ParseNthChildArguments(ref r);
+
+                var syntax = new NthLastChildSyntax { Step = step, Offset = offset };
+                return (State.Middle, syntax);
+            }
             else
             {
                 return (
@@ -191,7 +207,6 @@ namespace Avalonia.Markup.Parsers
                     });
             }
         }
-
         private static (State, ISyntax?) ParseTraversal(ref CharacterReader r)
         {
             r.SkipWhitespace();
@@ -300,6 +315,70 @@ namespace Avalonia.Markup.Parsers
             syntax.Xmlns = ns.ToString();
             syntax.TypeName = type.ToString();
             return syntax;
+        }
+
+        private static (int step, int offset) ParseNthChildArguments(ref CharacterReader r)
+        {
+            int step = 0;
+            int offset = 0;
+
+            if (r.Peek == 'o')
+            {
+                var constArg = r.TakeUntil(')').ToString().Trim();
+                if (constArg.Equals("odd", StringComparison.Ordinal))
+                {
+                    step = 2;
+                    offset = 1;
+                }
+                else
+                {
+                    throw new ExpressionParseException(r.Position, $"Expected nth-child(odd). Actual '{constArg}'.");
+                }
+            }
+            else if (r.Peek == 'e')
+            {
+                var constArg = r.TakeUntil(')').ToString().Trim();
+                if (constArg.Equals("even", StringComparison.Ordinal))
+                {
+                    step = 2;
+                    offset = 0;
+                }
+                else
+                {
+                    throw new ExpressionParseException(r.Position, $"Expected nth-child(even). Actual '{constArg}'.");
+                }
+            }
+            else
+            {
+                var stepOrOffsetSpan = r.TakeWhile(c => c != ')' && c != 'n');
+                if (!int.TryParse(stepOrOffsetSpan.ToString().Trim(), out var stepOrOffset))
+                {
+                    throw new ExpressionParseException(r.Position, "Couldn't parse nth-child step or offset value. Integer was expected.");
+                }
+
+                if (r.Peek == ')')
+                {
+                    step = 0;
+                    offset = stepOrOffset;
+                }
+                else
+                {
+                    step = stepOrOffset;
+
+                    r.Skip(1); // skip 'n'
+                    var offsetSpan = r.TakeUntil(')').TrimStart();
+
+                    if (offsetSpan.Length != 0
+                        && !int.TryParse(offsetSpan.ToString().Trim(), out offset))
+                    {
+                        throw new ExpressionParseException(r.Position, "Couldn't parse nth-child offset value. Integer was expected.");
+                    }
+                }
+            }
+
+            Expect(ref r, ')');
+
+            return (step, offset);
         }
 
         private static void Expect(ref CharacterReader r, char c)
@@ -416,6 +495,28 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object? obj)
             {
                 return (obj is NotSyntax not) && Argument.SequenceEqual(not.Argument);
+            }
+        }
+
+        public class NthChildSyntax : ISyntax
+        {
+            public int Offset { get; set; }
+            public int Step { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                return (obj is NthChildSyntax nth) && nth.Offset == Offset && nth.Step == Step;
+            }
+        }
+
+        public class NthLastChildSyntax : ISyntax
+        {
+            public int Offset { get; set; }
+            public int Step { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                return (obj is NthLastChildSyntax nth) && nth.Offset == Offset && nth.Step == Step;
             }
         }
 

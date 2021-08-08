@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+
+using Avalonia.Controls.Presenters;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -14,7 +18,7 @@ namespace Avalonia.Controls
     /// Controls can be added to a <see cref="Panel"/> by adding them to its <see cref="Children"/>
     /// collection. All children are layed out to fill the panel.
     /// </remarks>
-    public class Panel : Control, IPanel
+    public class Panel : Control, IPanel, IChildIndexProvider
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -159,6 +163,17 @@ namespace Avalonia.Controls
             var control = e.Sender as IControl;
             var panel = control?.VisualParent as TPanel;
             panel?.InvalidateMeasure();
+        }
+
+        (int Index, int? TotalCount) IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            if (child is IControl control)
+            {
+                var index = Children.IndexOf(control);
+                return (index, Children.Count);
+            }
+
+            return (-1, Children.Count);
         }
     }
 }

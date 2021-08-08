@@ -123,6 +123,16 @@ namespace Avalonia.Styling
             return new NotSelector(previous, argument);
         }
 
+        public static Selector NthChild(this Selector previous, int step, int offset)
+        {
+            return new NthChildSelector(previous, step, offset);
+        }
+
+        public static Selector NthLastChild(this Selector previous, int step, int offset)
+        {
+            return new NthLastChildSelector(previous, step, offset);
+        }
+
         /// <summary>
         /// Returns a selector which matches a type.
         /// </summary>
