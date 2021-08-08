@@ -268,6 +268,65 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Style_Can_Use_NthChild_Selector()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Border.foo:nth-child(2n+1)'>
+            <Setter Property='Background' Value='Red'/>
+        </Style>
+    </Window.Styles>
+    <StackPanel>
+        <Border x:Name='b1' Classes='foo'/>
+        <Border x:Name='b2' />
+    </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var b1 = window.FindControl<Border>("b1");
+                var b2 = window.FindControl<Border>("b2");
+
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)b1.Background).Color);
+                Assert.Null(b2.Background);
+            }
+        }
+
+        [Fact]
+        public void Style_Can_Use_NthChild_Selector_After_Reoder()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Border:nth-child(2n+1)'>
+            <Setter Property='Background' Value='Red'/>
+        </Style>
+    </Window.Styles>
+    <StackPanel x:Name='parent'>
+        <Border x:Name='b1' />
+        <Border x:Name='b2' />
+    </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+                var parent = window.FindControl<StackPanel>("parent");
+                var b1 = window.FindControl<Border>("b1");
+                var b2 = window.FindControl<Border>("b2");
+
+                parent.Children.Remove(b1);
+                parent.Children.Add(b1);
+
+                Assert.Null(b1.Background);
+                Assert.Equal(Colors.Red, ((ISolidColorBrush)b2.Background).Color);
+            }
+        }
+
+        [Fact]
         public void Style_Can_Use_Or_Selector_1()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

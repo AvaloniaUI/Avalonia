@@ -13,6 +13,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -21,7 +22,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener
+    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener, IChildIndexProvider
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -505,6 +506,22 @@ namespace Avalonia.Controls
             } while (c != null && c != from);
 
             return null;
+        }
+
+        (int Index, int? TotalCount) IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            if (Presenter is IChildIndexProvider innerProvider)
+            {
+                return innerProvider.GetChildIndex(child);
+            }
+
+            if (child is IControl control)
+            {
+                var index = ItemContainerGenerator.IndexFromContainer(control);
+                return (index, ItemCount);
+            }
+
+            return (-1, ItemCount);
         }
     }
 }

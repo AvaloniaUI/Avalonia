@@ -5,6 +5,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
@@ -12,7 +13,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Base class for controls that present items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public abstract class ItemsPresenterBase : Control, IItemsPresenter, ITemplatedControl
+    public abstract class ItemsPresenterBase : Control, IItemsPresenter, ITemplatedControl, IChildIndexProvider
     {
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -247,6 +248,28 @@ namespace Avalonia.Controls.Presenters
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)
         {
             (e.NewValue as IItemsPresenterHost)?.RegisterItemsPresenter(this);
+        }
+
+        (int Index, int? TotalCount) IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            int? totalCount = null;
+            if (Items.TryGetCountFast(out var count))
+            {
+                totalCount = count;
+            }
+
+            if (child is IControl control)
+            {
+
+                if (ItemContainerGenerator is { } generator)
+                {
+                    var index = ItemContainerGenerator.IndexFromContainer(control);
+                    
+                    return (index, totalCount);
+                }
+            }
+
+            return (-1, totalCount);
         }
     }
 }

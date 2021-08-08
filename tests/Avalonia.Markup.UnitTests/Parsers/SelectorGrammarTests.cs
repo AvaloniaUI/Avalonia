@@ -237,6 +237,96 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void OfType_NthChild()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-child(2n+1)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 1
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthChild_Without_Offset()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-child(2147483647n)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = int.MaxValue,
+                        Offset = 0
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthLastChild()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-last-child(2n+1)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthLastChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 1
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthChild_Odd()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-child(odd)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 1
+                    }
+                },
+                result);
+        }
+
+        [Fact]
+        public void OfType_NthChild_Even()
+        {
+            var result = SelectorGrammar.Parse("Button:nth-child(even)");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "Button" },
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = 2,
+                        Offset = 0
+                    }
+                },
+                result);
+        }
+
+        [Fact]
         public void Is_Descendent_Not_OfType_Class()
         {
             var result = SelectorGrammar.Parse(":is(Control) :not(Button.foo)");

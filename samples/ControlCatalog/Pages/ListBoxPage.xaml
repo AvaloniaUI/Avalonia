@@ -2,9 +2,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ListBoxPage">
   <DockPanel>
+    <DockPanel.Styles>
+      <Style Selector="ListBox ListBoxItem:nth-child(2n)">
+        <Setter Property="Foreground" Value="Blue" />
+      </Style>
+    </DockPanel.Styles>
     <StackPanel DockPanel.Dock="Top" Margin="4">
       <TextBlock Classes="h1">ListBox</TextBlock>
       <TextBlock Classes="h2">Hosts a collection of ListBoxItem.</TextBlock>
+      <TextBlock Classes="h2">Each 2nd item is highlighted</TextBlock>
     </StackPanel>
     <StackPanel DockPanel.Dock="Right" Margin="4">
       <CheckBox IsChecked="{Binding Multiple}">Multiple</CheckBox>
