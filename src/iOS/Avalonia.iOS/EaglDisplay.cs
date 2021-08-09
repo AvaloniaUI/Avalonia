@@ -1,5 +1,6 @@
 using System;
 using System.Reactive.Disposables;
+using System.Collections.Generic;
 using Avalonia.OpenGL;
 using OpenGLES;
 using OpenTK.Graphics.ES30;
@@ -13,6 +14,12 @@ namespace Avalonia.iOS
         public bool CanShareContexts => false;
         public bool CanCreateContexts => false;
         public IGlContext CreateContext() => throw new System.NotSupportedException();
+        public IGlContext CreateContext(IGlContext shareWith, IList<GlVersion> probeVersions) 
+            => throw new PlatformNotSupportedException();
+
+        public IGlContextWithOSTextureSharing CreateOSTextureSharingCompatibleContext(IGlContext shareWith,
+            IList<GlVersion> probeVersions) 
+            => throw new PlatformNotSupportedException();
         public GlContext Context { get; } = new GlContext();
     }
 
