@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Logging;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
@@ -41,6 +42,18 @@ namespace Avalonia.OpenGL.Egl
         }
 
         public IGlContext CreateContext() => Display.CreateContext(null);
+        
+        public IGlContext CreateContext(IGlContext shareWith, IList<GlVersion> probeVersions) 
+            => Display.CreateContext(shareWith, probeVersions);
+
+        public virtual IGlContextWithOSTextureSharing CreateOSTextureSharingCompatibleContext(IGlContext shareWith,
+            IList<GlVersion> probeVersions)
+        {
+            if (Display is IEglDisplayWithOSTextureSharing sharing)
+                return sharing.CreateOSTextureSharingCompatibleContext(PrimaryEglContext, shareWith, probeVersions);
+            throw new PlatformNotSupportedException();
+        }
+
         public IGlContext CreateSharedContext() => Display.CreateContext(PrimaryEglContext);
         
 

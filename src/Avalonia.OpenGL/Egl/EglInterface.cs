@@ -161,6 +161,10 @@ namespace Avalonia.OpenGL.Egl
         [GlEntryPoint("eglQueryDeviceAttribEXT"), GlOptionalEntryPoint]
         public EglQueryDisplayAttribEXT QueryDeviceAttribExt { get; }
 
+        public delegate bool EglBindTexImage(IntPtr display, IntPtr surface, int buffer);
+        [GlEntryPoint("eglBindTexImage")]
+        public EglBindTexImage BindTexImage { get; }
+        
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }
 }

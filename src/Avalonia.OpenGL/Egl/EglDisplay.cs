@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
@@ -50,7 +52,16 @@ namespace Avalonia.OpenGL.Egl
 
         }
 
-        public EglDisplay(EglInterface egl, bool supportsSharing, IntPtr display)
+        public EglDisplay(EglInterface egl, bool supportsSharing, IntPtr display) : this(egl, supportsSharing, display,
+            // ReSharper disable once IntroduceOptionalParameters.Global
+            // This constructor is here for binary compatibility
+            // TODO: RemoveBeforeNextRelease
+            null)
+        {
+            
+        }
+        
+        public EglDisplay(EglInterface egl, bool supportsSharing, IntPtr display, [CanBeNull] IList<GlVersion> probeVersions)
         {
             _egl = egl;
             SupportsSharing = supportsSharing;
@@ -62,7 +73,8 @@ namespace Avalonia.OpenGL.Egl
             if (!_egl.Initialize(_display, out var major, out var minor))
                 throw OpenGlException.GetFormattedException("eglInitialize", _egl);
 
-            var glProfiles = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
+            // TODO: Move that to AngleWin32EglDisplay
+            var glProfiles = probeVersions
                                     ?? new[]
                                     {
                                         new GlVersion(GlProfileType.OpenGLES, 3, 0),
@@ -147,7 +159,8 @@ namespace Avalonia.OpenGL.Egl
         }
         
         public EglInterface EglInterface => _egl;
-        public EglContext CreateContext(IGlContext share)
+        public EglContext CreateContext(IGlContext share) => CreateContext(share, null);
+        public EglContext CreateContext(IGlContext share, [CanBeNull] IList<GlVersion> probeVersions)
         {
             if (share != null && !SupportsSharing)
                 throw new NotSupportedException("Context sharing is not supported by this display");

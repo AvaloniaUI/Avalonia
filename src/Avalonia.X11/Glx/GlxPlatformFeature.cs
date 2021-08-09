@@ -11,6 +11,13 @@ namespace Avalonia.X11.Glx
         public bool CanCreateContexts => true;
         public bool CanShareContexts => true;
         public IGlContext CreateContext() => Display.CreateContext();
+        public IGlContext CreateContext(IGlContext shareWith, IList<GlVersion> probeVersions)
+            => Display.CreateContext(shareWith, probeVersions);
+
+        public IGlContextWithOSTextureSharing CreateOSTextureSharingCompatibleContext(IGlContext shareWith,
+            IList<GlVersion> probeVersions) 
+            => throw new PlatformNotSupportedException();
+
         public IGlContext CreateSharedContext() => Display.CreateContext(PrimaryContext);
         public GlxContext DeferredContext { get; private set; }
         public IGlContext PrimaryContext => DeferredContext;

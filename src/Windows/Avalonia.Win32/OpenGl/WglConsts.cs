@@ -57,6 +57,10 @@ namespace Avalonia.Win32.OpenGl
         public const int WGL_SWAP_UNDEFINED_ARB = 0x202A;
         public const int WGL_TYPE_RGBA_ARB = 0x202B;
         public const int WGL_TYPE_COLORINDEX_ARB = 0x202C;
-
+        
+        //WGL_NV_DX_interop
+        public const int WGL_ACCESS_READ_ONLY_NV = 0x0000;
+        public const int WGL_ACCESS_READ_WRITE_NV = 0x0001;
+        public const int WGL_ACCESS_WRITE_DISCARD_NV = 0x0002;
     }
 }

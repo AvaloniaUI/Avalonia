@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
@@ -11,9 +12,16 @@ namespace Avalonia.Win32.OpenGl
         IGlContext IPlatformOpenGlInterface.PrimaryContext => PrimaryContext;
         public IGlContext CreateSharedContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, PrimaryContext);
 
-        public bool CanShareContexts => true;
+        public bool CanShareContexts => false;
         public bool CanCreateContexts => true;
         public IGlContext CreateContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, null);
+
+        public IGlContext CreateContext(IGlContext shareWith, IList<GlVersion> probeVersions) =>
+            WglDisplay.CreateContext(probeVersions.ToArray(), shareWith);
+
+        public IGlContextWithOSTextureSharing CreateOSTextureSharingCompatibleContext(IGlContext shareWith,
+            IList<GlVersion> probeVersions) 
+            => WglDisplay.CreateContext(probeVersions.ToArray(), null);
 
         private  WglPlatformOpenGlInterface(WglContext primary)
         {

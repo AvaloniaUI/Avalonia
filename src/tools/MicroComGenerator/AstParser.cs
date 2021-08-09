@@ -87,7 +87,15 @@ namespace MicroComGenerator
                     // Has value
                     else if (parser.TryConsume('('))
                     {
-                        var value = parser.ReadTo(')');
+                        string value;
+                        // Value is quoted
+                        if (parser.TryConsume('"'))
+                        {
+                            value = parser.ReadTo('"');
+                            parser.Consume('"');
+                        }
+                        else
+                            value = parser.ReadTo(')');
                         parser.Consume(')');
                         rv.Add(new AstAttributeNode(ident, value));
                     }
@@ -143,6 +151,9 @@ namespace MicroComGenerator
 
         static AstTypeNode ParseType(ref TokenParser parser)
         {
+            // We are skipping `const` keyword
+            parser.TryParseKeyword("const");
+            
             var ident = parser.ParseIdentifier();
             var t = new AstTypeNode { Name = ident };
             while (parser.TryConsume('*'))

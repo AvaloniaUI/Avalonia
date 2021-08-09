@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="OpenTK.Graphics" Version="4.6.4" />
+      <ProjectReference Include="..\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
+    </ItemGroup>
+
+</Project>

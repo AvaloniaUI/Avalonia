@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL.Egl;
+using Avalonia.Platform;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Angle
@@ -52,7 +53,8 @@ namespace Avalonia.OpenGL.Angle
             }
         }
 
-        private AngleWin32EglDisplay(EglInterface egl, AngleInfo info) : base(egl, false, info.Display)
+        private AngleWin32EglDisplay(EglInterface egl, AngleInfo info) : base(egl, false, info.Display,
+            AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles)
         {
             PlatformApi = info.PlatformApi;
         }

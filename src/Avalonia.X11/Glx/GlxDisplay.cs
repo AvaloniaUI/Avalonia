@@ -13,7 +13,6 @@ namespace Avalonia.X11.Glx
         private readonly IntPtr _fbconfig;
         private readonly XVisualInfo* _visual;
         private string[] _displayExtensions;
-        private GlVersion? _version;
         
         public XVisualInfo* VisualInfo => _visual;
         public GlxContext DeferredContext { get; }
@@ -84,7 +83,7 @@ namespace Avalonia.X11.Glx
             XLib.XFlush(_x11.Display);
 
             DeferredContext = CreateContext(CreatePBuffer(), null,
-                sampleCount, stencilSize, true);
+                sampleCount, stencilSize, true, null);
             using (DeferredContext.MakeCurrent())
             {
                 var glInterface = DeferredContext.GlInterface;
@@ -114,12 +113,13 @@ namespace Avalonia.X11.Glx
 
 
         public GlxContext CreateContext() => CreateContext();
-        
-        public GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share,
-            share.SampleCount, share.StencilSize, true);
+
+        public GlxContext CreateContext(IGlContext share, IList<GlVersion> probeVersions = null)
+            => CreateContext(CreatePBuffer(), share, share.SampleCount, share.StencilSize, true,
+                probeVersions);
         
         GlxContext CreateContext(IntPtr defaultXid, IGlContext share,
-            int sampleCount, int stencilSize, bool ownsPBuffer)
+            int sampleCount, int stencilSize, bool ownsPBuffer, IList<GlVersion> versions)
         {
             var sharelist = ((GlxContext)share)?.Handle ?? IntPtr.Zero;
             IntPtr handle = default;
@@ -129,6 +129,13 @@ namespace Avalonia.X11.Glx
                 var profileMask = GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
                 if (profile.Type == GlProfileType.OpenGLES) 
                     profileMask = GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
+                else
+                {
+                    if (profile.Major < 3)
+                        profileMask = 0;
+                    if (profile.IsCompatibilityProfile)
+                        profileMask = GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+                }
 
                 var attrs = new int[]
                 {
@@ -143,10 +150,8 @@ namespace Avalonia.X11.Glx
                     handle = Glx.CreateContextAttribsARB(_x11.Display, _fbconfig, sharelist, true, attrs);
                     if (handle != IntPtr.Zero)
                     {
-                        _version = profile;
                         return new GlxContext(new GlxInterface(), handle, this, (GlxContext)share, profile,
                             sampleCount, stencilSize, _x11, defaultXid, ownsPBuffer);
-                        
                     }
                 }
                 catch
@@ -158,12 +163,8 @@ namespace Avalonia.X11.Glx
             }
 
             GlxContext rv = null;
-            if (_version.HasValue)
-            {
-                rv = Create(_version.Value);
-            }
             
-            foreach (var v in _probeProfiles)
+            foreach (var v in versions ?? _probeProfiles)
             {
                 if (v.Type == GlProfileType.OpenGLES
                     && !_displayExtensions.Contains("GLX_EXT_create_context_es2_profile"))
@@ -171,7 +172,6 @@ namespace Avalonia.X11.Glx
                 rv = Create(v);
                 if (rv != null)
                 {
-                    _version = v;
                     break;
                 }
             }

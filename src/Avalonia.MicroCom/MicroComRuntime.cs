@@ -108,6 +108,9 @@ namespace Avalonia.MicroCom
             var proxy = (MicroComProxyBase)unknown;
             return proxy.QueryInterface<T>();
         }
+        
+        public static T QueryInterfaceOrNull<T>(this IUnknown unknown) where T : IUnknown 
+            => ((MicroComProxyBase)unknown).QueryInterfaceOrNull<T>();
 
         public static void UnsafeAddRef(this IUnknown unknown)
         {

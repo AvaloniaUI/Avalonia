@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <UseAppHost>true</UseAppHost>
+    </PropertyGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" />
+      <ProjectReference Include="..\..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
+      <ProjectReference Include="..\..\..\src\Avalonia.OpenTK\Avalonia.OpenTK.csproj" />
+    </ItemGroup>
+  <Import Project="..\..\..\build\BuildTargets.targets" />
+</Project>

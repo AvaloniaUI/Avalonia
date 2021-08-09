@@ -6,12 +6,12 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.OpenGl.WglConsts;
 namespace Avalonia.Win32.OpenGl
 {
-    internal class WglDisplay
+    public class WglDisplay
     {
         private static bool? _initialized;
         private static ushort _windowClass;
         private static readonly WndProc _wndProcDelegate = WndProc;
-        private static readonly DebugCallbackDelegate _debugCallback = DebugCallback;
+        private static readonly WglInterface.DebugCallbackDelegate _debugCallback = DebugCallback;
 
         private static IntPtr _bootstrapContext;
         private static IntPtr _bootstrapWindow;
@@ -19,22 +19,6 @@ namespace Avalonia.Win32.OpenGl
         private static PixelFormatDescriptor _defaultPfd;
         private static int _defaultPixelFormat;
         public static IntPtr OpenGl32Handle = LoadLibrary("opengl32");
-
-        private delegate bool WglChoosePixelFormatARBDelegate(IntPtr hdc, int[] piAttribIList, float[] pfAttribFList,
-            int nMaxFormats, int[] piFormats, out int nNumFormats);
-
-        private static WglChoosePixelFormatARBDelegate WglChoosePixelFormatArb;
-
-        private delegate IntPtr WglCreateContextAttribsARBDelegate(IntPtr hDC, IntPtr hShareContext, int[] attribList);
-
-        private static WglCreateContextAttribsARBDelegate WglCreateContextAttribsArb;
-        
-        private delegate void GlDebugMessageCallbackDelegate(IntPtr callback, IntPtr userParam);
-
-        private static GlDebugMessageCallbackDelegate GlDebugMessageCallback;
-
-        private delegate void DebugCallbackDelegate(int source, int type, int id, int severity, int len, IntPtr message,
-            IntPtr userParam);
         
         static bool Initialize()
         {
@@ -74,20 +58,11 @@ namespace Avalonia.Win32.OpenGl
                 return false;
 
             wglMakeCurrent(_bootstrapDc, _bootstrapContext);
-            WglCreateContextAttribsArb = Marshal.GetDelegateForFunctionPointer<WglCreateContextAttribsARBDelegate>(
-                wglGetProcAddress("wglCreateContextAttribsARB"));
-
-            WglChoosePixelFormatArb =
-                Marshal.GetDelegateForFunctionPointer<WglChoosePixelFormatARBDelegate>(
-                    wglGetProcAddress("wglChoosePixelFormatARB"));
-
-            GlDebugMessageCallback =
-                Marshal.GetDelegateForFunctionPointer<GlDebugMessageCallbackDelegate>(
-                    wglGetProcAddress("glDebugMessageCallback"));
+            var wgl = new WglInterface(wglGetProcAddress);
             
 
             var formats = new int[1];
-            WglChoosePixelFormatArb(_bootstrapDc, new int[]
+            wgl.ChoosePixelFormatARB(_bootstrapDc, new int[]
             {
                 WGL_DRAW_TO_WINDOW_ARB, 1,
                 WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
@@ -131,13 +106,14 @@ namespace Avalonia.Win32.OpenGl
             using (new WglRestoreContext(_bootstrapDc, _bootstrapContext, null))
             {
                 var window = CreateOffscreenWindow();
+                var wgl = new WglInterface(wglGetProcAddress);
                 var dc = GetDC(window);
                 SetPixelFormat(dc, _defaultPixelFormat, ref _defaultPfd);
                 foreach (var version in versions)
                 {
                     if(version.Type != GlProfileType.OpenGL)
                         continue;
-                    var context = WglCreateContextAttribsArb(dc, shareContext?.Handle ?? IntPtr.Zero,
+                    var context =  wgl.CreateContextAttribsArb(dc, shareContext?.Handle ?? IntPtr.Zero,
                         new[]
                         {
                             // major
@@ -152,10 +128,10 @@ namespace Avalonia.Win32.OpenGl
                             0, 0
                         });
                     using(new WglRestoreContext(dc, context, null))
-                        GlDebugMessageCallback(Marshal.GetFunctionPointerForDelegate(_debugCallback), IntPtr.Zero);
+                        wgl.DebugMessageCallback(Marshal.GetFunctionPointerForDelegate(_debugCallback), IntPtr.Zero);
                     if (context != IntPtr.Zero)
                         return new WglContext(shareContext, version, context, window, dc,
-                            _defaultPixelFormat, _defaultPfd);
+                            _defaultPixelFormat, _defaultPfd, wgl);
                 }
 
                 ReleaseDC(window, dc);

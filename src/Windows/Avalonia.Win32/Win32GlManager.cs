@@ -24,7 +24,7 @@ namespace Avalonia.Win32
 
                 if (opts?.AllowEglInitialization ?? Win32Platform.WindowsVersion > Windows7)
                 {
-                    var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
+                    var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplayWithTextureSharing());
 
                     if (egl != null &&
                         opts?.UseWindowsUIComposition == true)

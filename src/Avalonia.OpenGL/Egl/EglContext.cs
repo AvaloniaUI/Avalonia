@@ -5,7 +5,7 @@ using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
 {
-    public class EglContext : IGlContext
+    public class EglContext : IGlContextWithOSTextureSharing
     {
         private readonly EglDisplay _disp;
         private readonly EglInterface _egl;
@@ -103,11 +103,11 @@ namespace Avalonia.OpenGL.Egl
 
         public bool IsSharedWith(IGlContext context)
         {
-            var c = (EglContext)context;
-            return c == this
-                   || c._sharedWith == this
-                   || _sharedWith == context
-                   || _sharedWith != null && _sharedWith == c._sharedWith;
+            return context is EglContext c
+                   && (c == this
+                       || c._sharedWith == this
+                       || _sharedWith == context
+                       || _sharedWith != null && _sharedWith == c._sharedWith);
         }
 
         public bool IsCurrent => _egl.GetCurrentDisplay() == _disp.Handle && _egl.GetCurrentContext() == Context;
@@ -116,6 +116,34 @@ namespace Avalonia.OpenGL.Egl
         {
             _egl.DestroyContext(_disp.Handle, Context);
             OffscreenSurface?.Dispose();
+        }
+
+        public IGlOSSharedTexture CreateOSSharedTexture(string type, int width, int height)
+        {
+            if (_disp is IEglDisplayWithOSTextureSharing sharing)
+                return sharing.CreateOSSharedTexture(this, type, width, height);
+            throw new NotSupportedException();
+        }
+
+        public bool SupportsOSSharedTextureType(string type) 
+            => _disp is IEglDisplayWithOSTextureSharing sharing && sharing.SupportsOSSharedTextureType(this, type);
+
+        public IGlOSSharedTexture ImportOSSharedTexture(IGlOSSharedTexture osSharedTexture)
+        {
+            if (_disp is IEglDisplayWithOSTextureSharing sharing)
+                return sharing.ImportOSSharedTexture(this, osSharedTexture);
+            throw new NotSupportedException();
+        }
+
+        public bool AreOSTextureSharingCompatible(IGlContext compatibleWith) 
+            => _disp is IEglDisplayWithOSTextureSharing sharing 
+               && sharing.AreOSTextureSharingCompatible(this, compatibleWith);
+
+        public IGlOSSharedTexture CreateOSSharedTexture(IGlContext compatibleWith, int width, int height)
+        {
+            if (_disp is IEglDisplayWithOSTextureSharing sharing)
+                return sharing.CreateOSSharedTexture(this, compatibleWith, width, height);
+            throw new NotSupportedException();
         }
     }
 }

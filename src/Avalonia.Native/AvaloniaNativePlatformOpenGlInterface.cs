@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.OpenGL;
 using Avalonia.Native.Interop;
 using System.Drawing;
@@ -48,6 +49,13 @@ namespace Avalonia.Native
 
         public IGlContext CreateContext() => new GlContext(GlDisplay,
             null, _display.CreateContext(null), _version);
+        
+        public IGlContext CreateContext(IGlContext shareWith, IList<GlVersion> probeVersions) 
+            => throw new PlatformNotSupportedException();
+
+        public IGlContextWithOSTextureSharing CreateOSTextureSharingCompatibleContext(IGlContext shareWith,
+            IList<GlVersion> probeVersions) 
+            => throw new PlatformNotSupportedException();
     }
 
     class GlDisplay

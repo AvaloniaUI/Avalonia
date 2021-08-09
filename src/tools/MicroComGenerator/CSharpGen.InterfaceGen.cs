@@ -192,13 +192,19 @@ namespace MicroComGenerator
         }
 
 
-        void GenerateInterfaceMember(AstInterfaceMemberNode member, ref InterfaceDeclarationSyntax iface,
+        void GenerateInterfaceMember(AstInterfaceMemberNode member, bool proxyOnly,
+            ref InterfaceDeclarationSyntax iface,
             ref ClassDeclarationSyntax proxy, ref ClassDeclarationSyntax vtbl,
             List<StatementSyntax> vtblCtor, int num)
         {
-            // Prepare method information
-            if (member.Name == "GetRenderingDevice")
-                Console.WriteLine();
+            if (member.Attributes.HasAttribute("skip"))
+            {
+                if (!proxyOnly)
+                    throw new Exception($"{member.Name} is marked to be skipped, but interface is not proxy-only");
+                return;
+            }
+            
+            // Prepare method information            
             var args = member.Select(ConvertArg).ToList();
             var returnArg = ConvertArg("__result", member.ReturnType);
             bool isHresult = member.ReturnType.Name == "HRESULT";
@@ -422,6 +428,8 @@ namespace MicroComGenerator
         void GenerateInterface(ref NamespaceDeclarationSyntax ns, ref NamespaceDeclarationSyntax implNs,
             AstInterfaceNode iface)
         {
+            var proxyOnly = iface.HasAttribute("proxy-only");
+            
             var guidString = iface.GetAttribute("uuid");
             var inheritsUnknown = iface.Inherits == null || iface.Inherits == "IUnknown";
 
@@ -448,7 +456,7 @@ namespace MicroComGenerator
             
             var vtblCtor = new List<StatementSyntax>();
             for (var idx = 0; idx < iface.Count; idx++)
-                GenerateInterfaceMember(iface[idx], ref ifaceDec, ref proxy, ref vtbl, vtblCtor, idx);
+                GenerateInterfaceMember(iface[idx], proxyOnly, ref ifaceDec, ref proxy, ref vtbl, vtblCtor, idx);
 
             vtbl = vtbl.AddMembers(
                     ConstructorDeclaration(vtbl.Identifier.Text)
@@ -478,7 +486,9 @@ namespace MicroComGenerator
                                                    iface.Count + ";"));
             
             ns = ns.AddMembers(RewriteMethodsToProperties(ifaceDec));
-            implNs = implNs.AddMembers(RewriteMethodsToProperties(proxy), RewriteMethodsToProperties(vtbl));
+            implNs = implNs.AddMembers(RewriteMethodsToProperties(proxy));
+            if(!proxyOnly)
+                implNs = implNs.AddMembers(RewriteMethodsToProperties(vtbl));
         }
     }
 }

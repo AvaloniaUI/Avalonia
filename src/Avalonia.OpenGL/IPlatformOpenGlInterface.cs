@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Avalonia.OpenGL
 {
     public interface IPlatformOpenGlInterface
@@ -7,7 +9,7 @@ namespace Avalonia.OpenGL
         bool CanShareContexts { get; }
         bool CanCreateContexts { get; }
         IGlContext CreateContext();
-        /*IGlContext TryCreateContext(GlVersion version);
-        */
+        IGlContext CreateContext(IGlContext shareWith, IList<GlVersion> probeVersions);
+        IGlContextWithOSTextureSharing CreateOSTextureSharingCompatibleContext(IGlContext shareWith, IList<GlVersion> probeVersions);
     }
 }
