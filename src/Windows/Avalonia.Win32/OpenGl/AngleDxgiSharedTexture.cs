@@ -33,13 +33,18 @@ namespace Avalonia.Win32.OpenGl
             var egl = _angle.EglInterface;
 
             var success = false;
-            try
+            using (context.EnsureCurrent())
             {
-                _device = MicroComRuntime.CreateProxyFor<ID3D11Device>(_angle.GetDirect3DDevice(), false);
-                _texture2d = _device.OpenSharedResource<ID3D11Texture2D>(handle);
-                _mutex = _texture2d.QueryInterfaceOrNull<IDXGIKeyedMutex>();
-                using (context.EnsureCurrent())
+                // Save old bindings
+                gl.GetIntegerv(GL_TEXTURE_BINDING_2D, out var oldTexture);
+                gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var oldFbo);
+
+                try
                 {
+                    _device = MicroComRuntime.CreateProxyFor<ID3D11Device>(_angle.GetDirect3DDevice(), false);
+                    _texture2d = _device.OpenSharedResource<ID3D11Texture2D>(handle);
+                    _mutex = _texture2d.QueryInterfaceOrNull<IDXGIKeyedMutex>();
+
                     _surface = egl.CreatePbufferFromClientBuffer(_angle.Handle, EGL_D3D_TEXTURE_ANGLE,
                         _texture2d.GetNativeIntPtr(), _angle.Config,
                         new[]
@@ -64,14 +69,18 @@ namespace Avalonia.Win32.OpenGl
                     gl.BindFramebuffer(GL_FRAMEBUFFER, Fbo);
                     gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, TextureId, 0);
                     if (gl.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-                        throw new OpenGlException("Unable to configure a FBO with DXGI shared-handle imported texture");
+                        throw new OpenGlException(
+                            "Unable to configure a FBO with DXGI shared-handle imported texture");
                     success = true;
                 }
-            }
-            finally
-            {
-                if (!success)
-                    Dispose();
+
+                finally
+                {
+                    if (!success)
+                        Dispose();
+                    gl.BindTexture(GL_TEXTURE_2D, oldTexture);
+                    gl.BindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+                }
             }
         }
 
