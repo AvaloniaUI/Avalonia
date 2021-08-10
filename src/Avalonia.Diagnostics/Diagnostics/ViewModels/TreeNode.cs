@@ -54,8 +54,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private bool IsRoot => Visual is TopLevel || 
-                               Visual is Popup ||
+        private bool IsRoot => Visual is TopLevel ||
                                Visual is ContextMenu ||
                                Visual is IPopupHost;
 
