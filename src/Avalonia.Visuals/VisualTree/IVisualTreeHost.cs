@@ -1,8 +1,11 @@
+using System;
+
 namespace Avalonia.VisualTree
 {
     /// <summary>
     /// Interface for controls that host their own separate visual tree, such as popups.
     /// </summary>
+    [Obsolete]
     public interface IVisualTreeHost
     {
         /// <summary>
