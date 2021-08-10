@@ -161,21 +161,34 @@ namespace Avalonia.Controls
         private void DataGridCell_PointerPressed(PointerPressedEventArgs e)
         {
             // OwningGrid is null for TopLeftHeaderCell and TopRightHeaderCell because they have no OwningRow
-            if (OwningGrid != null)
+            if (OwningGrid == null)
             {
-                OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
-                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+                return;
+            }
+            OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            {
+                if (!e.Handled)
+                //if (!e.Handled && OwningGrid.IsTabStop)
                 {
-                    if (!e.Handled)
-                    //if (!e.Handled && OwningGrid.IsTabStop)
-                    {
-                        OwningGrid.Focus();
-                    }
-                    if (OwningRow != null)
-                    {
-                        e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
-                        OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
-                    }
+                    OwningGrid.Focus();
+                }
+                if (OwningRow != null)
+                {
+                    e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
+                }
+            }
+            else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                if (!e.Handled)
+                //if (!e.Handled && OwningGrid.IsTabStop)
+                {
+                    OwningGrid.Focus();
+                }
+                if (OwningRow != null)
+                {
+                    e.Handled = OwningGrid.UpdateStateOnMouseRightButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
                 }
             }
         }
