@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 
@@ -7,7 +8,7 @@ namespace Avalonia.Native
 {
     internal class AvaloniaNativeApplicationPlatform : CallbackBase, IAvnApplicationEvents, IPlatformLifetimeEventsImpl
     {
-        public event EventHandler<CancelEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
         
         void IAvnApplicationEvents.FilesOpened(IAvnStringArray urls)
         {
@@ -17,7 +18,7 @@ namespace Avalonia.Native
         public int TryShutdown()
         {
             if (ShutdownRequested is null) return 1;
-            var e = new CancelEventArgs();
+            var e = new ShutdownRequestedEventArgs();
             ShutdownRequested(this, e);
             return (!e.Cancel).AsComBool();
         }
