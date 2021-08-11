@@ -82,7 +82,7 @@ namespace Avalonia.Controls
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
-        private readonly CompositeDisposable _subscriptionsOnOpen = new();
+        private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
 
         /// <summary>
         /// Initializes static members of the <see cref="ComboBox"/> class.
