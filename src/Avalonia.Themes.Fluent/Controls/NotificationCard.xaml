@@ -12,7 +12,8 @@
     <Setter Property="Foreground" Value="White"/>
     <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
     <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Background" Value="{DynamicResource NotificationCardBackgroundBrush}" />    
+    <Setter Property="Background" Value="{DynamicResource NotificationCardBackgroundBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
@@ -20,7 +21,8 @@
             <Border Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{DynamicResource ControlCornerRadius}" ClipToBounds="True">
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    ClipToBounds="True">
               <DockPanel>
                 <Panel x:Name="PART_HeaderBar" Height="4" DockPanel.Dock="Top" />
                 <ContentControl Name="PART_Content" Content="{TemplateBinding Content}" />
