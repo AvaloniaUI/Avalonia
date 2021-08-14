@@ -2,7 +2,7 @@
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="10">
-        <RadioButton Content="Option 1" />
+        <RadioButton Content="Option 1" Background="Green" />
         <RadioButton Content="Option 2" />
         <RadioButton IsEnabled="False" Content="Option 3" />
         <RadioButton Content="Option 2" />
@@ -13,6 +13,7 @@
     <Setter Property="Background" Value="{DynamicResource RadioButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Padding" Value="8,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
@@ -24,7 +25,8 @@
         <Border Name="RootBorder"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Grid ColumnDefinitions="20,*">
             <Grid VerticalAlignment="Top"
               Height="32">
@@ -75,11 +77,6 @@
     <Setter Property="Stroke" Value="{DynamicResource RadioButtonCheckGlyphStroke}" />
     <Setter Property="Fill" Value="{DynamicResource RadioButtonCheckGlyphFill}" />
   </Style>
-  
-  <Style Selector="RadioButton /template/ Border#RootBorder">
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-  </Style>
-
 
   <!-- PointerOver State -->
   <Style Selector="RadioButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
