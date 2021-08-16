@@ -137,7 +137,6 @@ public:
             {
                 [Window orderFront: Window];
             }
-            [Window setTitle:_lastTitle];
             
             _shown = true;
             
