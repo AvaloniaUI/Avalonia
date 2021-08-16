@@ -12,6 +12,7 @@
                     <Border Background="{TemplateBinding Background}" 
                             BorderBrush="{TemplateBinding BorderBrush}" 
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
                             Margin="8,8,0,0">
                         <ContentControl Name="PART_Content" Content="{TemplateBinding Content}" />
                     </Border>
