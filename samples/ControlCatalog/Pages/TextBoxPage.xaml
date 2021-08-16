@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:Avalonia.Controls.MaskedTextBox"
              x:Class="ControlCatalog.Pages.TextBoxPage"
+             
              xmlns:sys="clr-namespace:System;assembly=netstandard">
   <StackPanel Orientation="Vertical" Spacing="4">
     <Label Classes="h1">TextBox</Label>
@@ -18,6 +20,7 @@
                  Watermark="Floating Watermark"
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+        <c:MaskedTextBox Width="200" Height="50" Mask="(000) 000-0000"></c:MaskedTextBox>
         
         <TextBox Width="200" Text="Validation Error">
           <DataValidationErrors.Error>
