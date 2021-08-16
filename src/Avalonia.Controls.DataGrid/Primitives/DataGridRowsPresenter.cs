@@ -5,6 +5,9 @@
 
 using System;
 using System.Diagnostics;
+
+using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -16,6 +19,11 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public sealed class DataGridRowsPresenter : Panel
     {
+        public DataGridRowsPresenter()
+        {
+            AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
+        }
+
         internal DataGrid OwningGrid
         {
             get;
@@ -174,6 +182,11 @@ namespace Avalonia.Controls.Primitives
             totalHeight = Math.Max(0, totalHeight);
 
             return new Size(totalCellsWidth + headerWidth, totalHeight);
+        }
+
+        private void OnScrollGesture(object sender, ScrollGestureEventArgs e)
+        {
+            e.Handled = e.Handled || OwningGrid.UpdateScroll(-e.Delta);
         }
 
 #if DEBUG

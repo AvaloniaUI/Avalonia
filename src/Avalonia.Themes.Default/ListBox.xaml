@@ -9,7 +9,8 @@
   <Setter Property="Template">
     <ControlTemplate>
       <Border Name="border" BorderBrush="{TemplateBinding BorderBrush}"
-              BorderThickness="{TemplateBinding BorderThickness}">
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}">
         <ScrollViewer Name="PART_ScrollViewer"
                       Background="{TemplateBinding Background}"
                       HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
