@@ -28,7 +28,7 @@
                     DockPanel.Dock="Top"/>
           <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" />
+              <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" MinWidth="400"  />
               <!-- CompiledBinding example of usage. -->
               <DataGridTextColumn Header="Region" Binding="{CompiledBinding Region}" Width="4*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />

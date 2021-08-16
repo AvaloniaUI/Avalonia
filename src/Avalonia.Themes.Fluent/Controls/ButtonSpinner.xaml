@@ -58,6 +58,7 @@
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
@@ -69,7 +70,7 @@
           <Border Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  CornerRadius="{DynamicResource ControlCornerRadius}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
                   MinHeight="{TemplateBinding MinHeight}">
             <Grid ColumnDefinitions="Auto,*,Auto">
               <ContentPresenter Name="PART_ContentPresenter"

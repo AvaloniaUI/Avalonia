@@ -173,7 +173,15 @@ namespace Avalonia.Controls
                     }
                     if (OwningRow != null)
                     {
-                        e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+                        var handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+
+                        // Do not handle PointerPressed with touch,
+                        // so we can start scroll gesture on the same event.
+                        if (e.Pointer.Type != PointerType.Touch)
+                        {
+                            e.Handled = handled;
+                        }
+
                         OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
                     }
                 }

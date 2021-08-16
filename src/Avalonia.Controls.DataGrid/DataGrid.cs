@@ -25,6 +25,7 @@ using System.ComponentModel.DataAnnotations;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
+using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Controls
 {
@@ -2214,35 +2215,71 @@ namespace Avalonia.Controls
         /// <param name="e">PointerWheelEventArgs</param>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            if (IsEnabled && !e.Handled && DisplayData.NumDisplayedScrollingElements > 0)
-            {
-                double scrollHeight = 0;
-                var delta = DATAGRID_mouseWheelDelta * e.Delta.Y;
-                var deltaAbs = Math.Abs(delta);
+            e.Handled = e.Handled || UpdateScroll(e.Delta * DATAGRID_mouseWheelDelta);
+        }
 
-                if (delta > 0)
+        internal bool UpdateScroll(Vector delta)
+        {
+            if (IsEnabled && DisplayData.NumDisplayedScrollingElements > 0)
+            {
+                var handled = false;
+                var scrollHeight = 0d;
+
+                // Vertical scroll handling
+                if (delta.Y > 0)
                 {
-                    scrollHeight = Math.Max(-_verticalOffset, -deltaAbs);
+                    scrollHeight = Math.Max(-_verticalOffset, -delta.Y);
                 }
-                else if (delta < 0)
+                else if (delta.Y < 0)
                 {
                     if (_vScrollBar != null && VerticalScrollBarVisibility == ScrollBarVisibility.Visible)
                     {
-                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), deltaAbs);
+                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), -delta.Y);
                     }
                     else
                     {
                         double maximum = EdgedRowsHeightCalculated - CellsHeight;
-                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), deltaAbs);
+                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), -delta.Y);
                     }
                 }
+
                 if (scrollHeight != 0)
                 {
                     DisplayData.PendingVerticalScrollHeight = scrollHeight;
+                    handled = true;
+                }
+
+                // Horizontal scroll handling
+                if (delta.X != 0)
+                {
+                    var originalHorizontalOffset = HorizontalOffset;
+                    var horizontalOffset = originalHorizontalOffset - delta.X;
+                    var widthNotVisible = Math.Max(0, ColumnsInternal.VisibleEdgedColumnsWidth - CellsWidth);
+
+                    if (horizontalOffset < 0)
+                    {
+                        horizontalOffset = 0;
+                    }
+                    if (horizontalOffset > widthNotVisible)
+                    {
+                        horizontalOffset = widthNotVisible;
+                    }
+
+                    if (horizontalOffset != originalHorizontalOffset)
+                    {
+                        HorizontalOffset = horizontalOffset;
+                        handled = true;
+                    }
+                }
+
+                if (handled)
+                {
                     InvalidateRowsMeasure(invalidateIndividualElements: false);
-                    e.Handled = true;
+                    return true;
                 }
             }
+
+            return false;
         }
 
         /// <summary>
