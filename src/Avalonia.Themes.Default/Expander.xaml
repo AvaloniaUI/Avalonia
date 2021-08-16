@@ -10,7 +10,10 @@
   <Style Selector="Expander[ExpandDirection=Down]">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}">
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Grid RowDefinitions="Auto,*">
             <ToggleButton Name="PART_toggle" Grid.Row="0"  Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
             <ContentPresenter Name="PART_ContentPresenter"

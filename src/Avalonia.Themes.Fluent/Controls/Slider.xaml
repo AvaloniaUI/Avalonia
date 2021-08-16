@@ -43,7 +43,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{DynamicResource ControlCornerRadius}">
+          <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
               <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}"
               Margin="{DynamicResource SliderTopHeaderMargin}" />
@@ -105,7 +105,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{DynamicResource ControlCornerRadius}">
+          <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="grid" Margin="{TemplateBinding Padding}" RowDefinitions="Auto, *">
               <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" TextBlock.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}" TextBlock.Foreground="{DynamicResource SliderHeaderForeground}"
               Margin="{DynamicResource SliderTopHeaderMargin}" />
