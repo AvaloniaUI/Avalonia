@@ -577,19 +577,6 @@ namespace Avalonia.Controls.UnitTests
             return w;
         }
 
-        private Window PreparedWindow(object content = null)
-        {
-            var renderer = new Mock<IRenderer>();
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-            var windowImpl = Mock.Get(platform.CreateWindow());
-            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
-
-            var w = new Window(windowImpl.Object) { Content = content };
-            w.ApplyTemplate();
-            w.Presenter.ApplyTemplate();
-            return w;
-        }
-
         private IDisposable Application()
         {
             var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));
