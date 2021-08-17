@@ -1,29 +1,20 @@
 ﻿using System;
 using System.ComponentModel;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.MaskedTextBox
 {
     public class MaskedTextBox : TextBox, IStyleable
     {
-        Type IStyleable.StyleKey => typeof(TextBox);
         private MaskedTextProvider _maskedTextProvider;
+
         #region Properties
         /// <summary>
-        /// Gets the MaskTextProvider for the specified Mask
+        /// Dependency property to store the mask to apply to the TextBox
         /// </summary>
-        public MaskedTextProvider MaskProvider => _maskedTextProvider ??= new MaskedTextProvider(Mask) { PromptChar = PromptChar };
-
-        /// <summary>
-        /// Gets or sets the prompt char to apply to the TextBox mask
-        /// </summary>
-        public char PromptChar
-        {
-            get => GetValue(PromptCharProperty);
-            set => SetValue(PromptCharProperty, value);
-        }
+        public static readonly StyledProperty<string> MaskProperty =
+            AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask));
 
         /// <summary>
         /// Dependency property to store the prompt char to apply to the TextBox mask
@@ -40,12 +31,21 @@ namespace Avalonia.Controls.MaskedTextBox
             set => SetValue(MaskProperty, value);
         }
 
-        /// <summary>
-        /// Dependency property to store the mask to apply to the TextBox
-        /// </summary>
-        public static readonly StyledProperty<string> MaskProperty =
-            AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask));
+        Type IStyleable.StyleKey => typeof(TextBox);
 
+        /// <summary>
+        /// Gets the MaskTextProvider for the specified Mask
+        /// </summary>
+        public MaskedTextProvider MaskProvider => _maskedTextProvider ??= new MaskedTextProvider(Mask) { PromptChar = PromptChar };
+
+        /// <summary>
+        /// Gets or sets the prompt char to apply to the TextBox mask
+        /// </summary>
+        public char PromptChar
+        {
+            get => GetValue(PromptCharProperty);
+            set => SetValue(PromptCharProperty, value);
+        }
         #endregion
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
@@ -57,44 +57,6 @@ namespace Avalonia.Controls.MaskedTextBox
             base.OnPropertyChanged(change);
         }
         #region Overrides
-
-        /// <summary>
-        /// override this method to replace the characters entered with the mask
-        /// </summary>
-        /// <param name="e">Arguments for event</param>
-        protected override void OnTextInput(TextInputEventArgs e)
-        {
-            //if the text is readonly do not add the text
-            if (IsReadOnly)
-            {
-                e.Handled = true;
-                return;
-            }
-
-            var position = CaretIndex;
-            var provider = MaskProvider;
-            var ifIsPositionInMiddle = position < Text.Length;
-            if (provider is not null)
-            {
-                if (ifIsPositionInMiddle)
-                {
-                    position = GetNextCharacterPosition(position);
-
-                    if (provider.InsertAt(e.Text, position))
-                    {
-                        position++;
-                    }
-
-                    position = GetNextCharacterPosition(position);
-                }
-
-                RefreshText(provider, position);
-            }
-
-            e.Handled = true;
-
-            base.OnTextInput(e);
-        }
 
         /// <summary>
         /// override the key down to handle delete of a character
@@ -145,19 +107,46 @@ namespace Avalonia.Controls.MaskedTextBox
             }
         }
 
+        /// <summary>
+        /// override this method to replace the characters entered with the mask
+        /// </summary>
+        /// <param name="e">Arguments for event</param>
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            //if the text is readonly do not add the text
+            if (IsReadOnly)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            var position = CaretIndex;
+            var provider = MaskProvider;
+            var ifIsPositionInMiddle = position < Text.Length;
+            if (provider is not null)
+            {
+                if (ifIsPositionInMiddle)
+                {
+                    position = GetNextCharacterPosition(position);
+
+                    if (provider.InsertAt(e.Text, position))
+                    {
+                        position++;
+                    }
+
+                    position = GetNextCharacterPosition(position);
+                }
+
+                RefreshText(provider, position);
+            }
+
+            e.Handled = true;
+
+            base.OnTextInput(e);
+        }
         #endregion
 
         #region Helper Methods
-
-        //refreshes the text of the TextBox
-        private void RefreshText(MaskedTextProvider provider, int position)
-        {
-            if (provider is not null)
-            {
-                Text = provider.ToDisplayString();
-                CaretIndex = position;
-            }
-        }
 
         //gets the next position in the TextBox to move
         private int GetNextCharacterPosition(int startPosition)
@@ -173,6 +162,15 @@ namespace Avalonia.Controls.MaskedTextBox
             return startPosition;
         }
 
+        //refreshes the text of the TextBox
+        private void RefreshText(MaskedTextProvider provider, int position)
+        {
+            if (provider is not null)
+            {
+                Text = provider.ToDisplayString();
+                CaretIndex = position;
+            }
+        }
         #endregion
     }
 }
