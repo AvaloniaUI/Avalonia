@@ -48,32 +48,11 @@ namespace Avalonia.Controls.MaskedTextBox
 
         #endregion
 
-        //force the text of the control to use the mask
-        private object ForceText(object value)
-        {
-
-            if (!string.IsNullOrEmpty(Mask))
-            {
-                var provider = MaskProvider;
-                if (provider is not null)
-                {
-                    provider.Set($@"{value}");
-                    return provider.ToDisplayString();
-                }
-            }
-
-            return value;
-        }
-
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             if (change.Property == MaskProperty)
             {
                 RefreshText(MaskProvider, 0);
-            }
-            if (change.Property == TextProperty)
-            {
-                ForceText(change.NewValue.Value);
             }
             base.OnPropertyChanged(change);
         }
@@ -95,36 +74,23 @@ namespace Avalonia.Controls.MaskedTextBox
             var position = CaretIndex;
             var provider = MaskProvider;
             var ifIsPositionInMiddle = position < Text.Length;
-            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
             if (provider is not null)
             {
                 if (ifIsPositionInMiddle)
                 {
                     position = GetNextCharacterPosition(position);
 
-                    //if (keymap.SelectionModifiers.IsKeyToggled(Key.Insert))
-                    //{
-                    //    if (provider.Replace(e.Text, position))
-                    //    {
-                    //        position++;
-                    //    }
-                    //}
-                    //else
-                    //{
                     if (provider.InsertAt(e.Text, position))
                     {
                         position++;
                     }
-                    //}
 
                     position = GetNextCharacterPosition(position);
                 }
 
                 RefreshText(provider, position);
-                e.Handled = true;
             }
 
-           // var textToText = ifIsPositionInMiddle ? Text.Insert(position, e.Text) : $@"{Text}{e.Text}";
             e.Handled = true;
 
             base.OnTextInput(e);
