@@ -26,26 +26,6 @@ namespace Avalonia.Controls.MaskedTextBox
             }
         }
 
-        ///// <summary>
-        ///// Check, is configuration of MaskProvider changed
-        ///// </summary>
-        ///// <returns><c>true</c>, if it was changed and <c>false</c>, if it wasn't.</returns>
-        //private bool IsMaskProviderUpdated()
-        //{
-        //    var result = false;
-        //    if (MaskProviderCachedMask != Mask)
-        //    {
-        //        MaskProviderCachedMask = Mask;
-        //        result = true;
-        //    }
-        //    if (PromptCharCached != PromptChar)
-        //    {
-        //        PromptCharCached = PromptChar;
-        //        result = true;
-        //    }
-        //    return result;
-        //}
-
         /// <summary>
         /// Gets or sets the prompt char to apply to the TextBox mask
         /// </summary>
@@ -76,12 +56,6 @@ namespace Avalonia.Controls.MaskedTextBox
         public static readonly StyledProperty<string> MaskProperty =
             AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask));
 
-        //callback for when the Mask property is changed
-        private void MaskChanged()
-        {
-            RefreshText(MaskProvider, 0);
-        }
-
         /// <summary>
         /// Gets the RegExFilter for the validation Mask.
         /// </summary>
@@ -92,7 +66,7 @@ namespace Avalonia.Controls.MaskedTextBox
         /// </summary>
         public FilterType Filter
         {
-            get => (FilterType)GetValue(FilterProperty);
+            get => GetValue(FilterProperty);
             set => SetValue(FilterProperty, value);
         }
 
@@ -104,17 +78,10 @@ namespace Avalonia.Controls.MaskedTextBox
 
         #endregion
 
-        /// <summary>
-        /// Static Constructor
-        /// </summary>
-        static MaskedTextBox()
-        {
-        }
-
-
         //force the text of the control to use the mask
         private object ForceText(object value)
         {
+
             if (!string.IsNullOrEmpty(Mask))
             {
                 var provider = MaskProvider;
@@ -132,7 +99,7 @@ namespace Avalonia.Controls.MaskedTextBox
         {
             if (change.Property == FilterProperty || change.Property == MaskProperty)
             {
-                MaskChanged();
+                RefreshText(MaskProvider, 0);
             }
             if (change.Property == TextProperty)
             {
@@ -155,7 +122,7 @@ namespace Avalonia.Controls.MaskedTextBox
                 return;
             }
 
-            var position = SelectionStart;
+            var position = CaretIndex;
             var provider = MaskProvider;
             var ifIsPositionInMiddle = position < Text.Length;
             var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
@@ -208,7 +175,7 @@ namespace Avalonia.Controls.MaskedTextBox
                 return;
             }
 
-            var position = SelectionStart;
+            var position = CaretIndex;
             switch (e.Key)
             {
                 case Key.Delete:
@@ -254,7 +221,7 @@ namespace Avalonia.Controls.MaskedTextBox
             if (provider is not null)
             {
                 Text = provider.ToDisplayString();
-                SelectionStart = position;
+                CaretIndex = position;
             }
         }
 
