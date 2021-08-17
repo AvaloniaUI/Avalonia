@@ -1,7 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using Avalonia.Controls.MaskedTextBox.Enums;
-using Avalonia.Controls.MaskedTextBox.Filters;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Styling;
@@ -16,14 +14,7 @@ namespace Avalonia.Controls.MaskedTextBox
         /// <summary>
         /// Gets the MaskTextProvider for the specified Mask
         /// </summary>
-        public MaskedTextProvider MaskProvider
-        {
-            get
-            {
-                _maskedTextProvider ??= new MaskedTextProvider(Mask) { PromptChar = PromptChar };
-                return _maskedTextProvider;
-            }
-        }
+        public MaskedTextProvider MaskProvider => _maskedTextProvider ??= new MaskedTextProvider(Mask) { PromptChar = PromptChar };
 
         /// <summary>
         /// Gets or sets the prompt char to apply to the TextBox mask
@@ -55,26 +46,6 @@ namespace Avalonia.Controls.MaskedTextBox
         public static readonly StyledProperty<string> MaskProperty =
             AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask));
 
-        /// <summary>
-        /// Gets the RegExFilter for the validation Mask.
-        /// </summary>
-        private DefaultFilter FilterValidator => FilterProvider.Instance.FilterForMaskedType(Filter);
-
-        /// <summary>
-        /// Gets a predefined filter for the specified RegExp
-        /// </summary>
-        public FilterType Filter
-        {
-            get => GetValue(FilterProperty);
-            set => SetValue(FilterProperty, value);
-        }
-
-        /// <summary>
-        /// Dependency property to store the filter to apply to the TextBox
-        /// </summary>
-        public static readonly StyledProperty<FilterType> FilterProperty =
-             AvaloniaProperty.Register<MaskedTextBox, FilterType>(nameof(Filter), FilterType.Any);
-
         #endregion
 
         //force the text of the control to use the mask
@@ -96,7 +67,7 @@ namespace Avalonia.Controls.MaskedTextBox
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (change.Property == FilterProperty || change.Property == MaskProperty)
+            if (change.Property == MaskProperty)
             {
                 RefreshText(MaskProvider, 0);
             }
@@ -153,11 +124,9 @@ namespace Avalonia.Controls.MaskedTextBox
                 e.Handled = true;
             }
 
-            var textToText = ifIsPositionInMiddle ? Text.Insert(position, e.Text) : $@"{Text}{e.Text}";
-            if (!FilterValidator.IsTextValid(textToText))
-            {
-                e.Handled = true;
-            }
+           // var textToText = ifIsPositionInMiddle ? Text.Insert(position, e.Text) : $@"{Text}{e.Text}";
+            e.Handled = true;
+
             base.OnTextInput(e);
         }
 
@@ -198,7 +167,7 @@ namespace Avalonia.Controls.MaskedTextBox
                     break;
                 case Key.Back:
                     if (position > 0)
-                    { 
+                    {
                         if (provider.RemoveAt(position))
                         {
                             RefreshText(provider, position);
