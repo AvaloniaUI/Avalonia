@@ -69,8 +69,6 @@ public:
     
     virtual HRESULT LegacyMakeCurrent() override
     {
-        START_COM_CALL;
-        
         if(CGLSetCurrentContext(Context) != 0)
             return E_FAIL;
         return S_OK;
@@ -78,8 +76,6 @@ public:
     
     virtual HRESULT MakeCurrent(IUnknown** ppv) override
     {
-        START_COM_CALL;
-        
         CGLContextObj saved = CGLGetCurrentContext();
         CGLLockContext(Context);
         if(CGLSetCurrentContext(Context) != 0)
@@ -132,8 +128,6 @@ public:
     
     virtual HRESULT CreateContext(IAvnGlContext* share, IAvnGlContext**ppv) override
     {
-        START_COM_CALL;
-        
         CGLContextObj shareContext = nil;
         if(share != nil)
         {
@@ -150,8 +144,6 @@ public:
     
     virtual HRESULT WrapContext(void* native, IAvnGlContext**ppv) override
     {
-        START_COM_CALL;
-        
         if(native == nil)
             return E_INVALIDARG;
         *ppv = new AvnGlContext((CGLContextObj) native);

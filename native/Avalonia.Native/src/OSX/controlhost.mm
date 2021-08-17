@@ -16,16 +16,11 @@ public:
     
     virtual HRESULT CreateDefaultChild(void* parent, void** retOut) override
     {
-        START_COM_CALL;
+        NSView* view = [NSView new];
+        [view setWantsLayer: true];
         
-        @autoreleasepool
-        {
-            NSView* view = [NSView new];
-            [view setWantsLayer: true];
-            
-            *retOut = (__bridge_retained void*)view;
-            return S_OK;
-        }
+        *retOut = (__bridge_retained void*)view;
+        return S_OK;
     };
     
     virtual IAvnNativeControlHostTopLevelAttachment* CreateAttachment() override
@@ -74,42 +69,32 @@ public:
     
     virtual HRESULT InitializeWithChildHandle(void* child) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            if(_child != nil)
-                return E_FAIL;
-            _child = (__bridge NSView*)child;
-            if(_child == nil)
-                return E_FAIL;
-            [_holder addSubview:_child];
-            [_child setHidden: false];
-            return S_OK;
-        }
+        if(_child != nil)
+            return E_FAIL;
+        _child = (__bridge NSView*)child;
+        if(_child == nil)
+            return E_FAIL;
+        [_holder addSubview:_child];
+        [_child setHidden: false];
+        return S_OK;
     };
     
     virtual HRESULT AttachTo(IAvnNativeControlHost* host) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
+        if(host == nil)
         {
-            if(host == nil)
-            {
-                [_holder removeFromSuperview];
-                [_holder setHidden: true];
-            }
-            else
-            {
-                AvnNativeControlHost* chost = dynamic_cast<AvnNativeControlHost*>(host);
-                if(chost == nil || chost->View == nil)
-                    return E_FAIL;
-                [_holder setHidden:true];
-                [chost->View addSubview:_holder];
-            }
-            return S_OK;
+            [_holder removeFromSuperview];
+            [_holder setHidden: true];
         }
+        else
+        {
+            AvnNativeControlHost* chost = dynamic_cast<AvnNativeControlHost*>(host);
+            if(chost == nil || chost->View == nil)
+                return E_FAIL;
+            [_holder setHidden:true];
+            [chost->View addSubview:_holder];
+        }
+        return S_OK;
     };
     
     virtual void ShowInBounds(float x, float y, float width, float height) override

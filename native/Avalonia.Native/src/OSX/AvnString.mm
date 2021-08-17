@@ -43,8 +43,6 @@ public:
     
     virtual HRESULT Pointer(void**retOut) override
     {
-        START_COM_CALL;
-        
         @autoreleasepool
         {
             if(retOut == nullptr)
@@ -60,19 +58,14 @@ public:
     
     virtual HRESULT Length(int*retOut) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
+        if(retOut == nullptr)
         {
-            if(retOut == nullptr)
-            {
-                return E_POINTER;
-            }
-            
-            *retOut = _length;
-            
-            return S_OK;
+            return E_POINTER;
         }
+        
+        *retOut = _length;
+        
+        return S_OK;
     }
 };
 
@@ -116,15 +109,10 @@ public:
     
     virtual HRESULT Get(unsigned int index, IAvnString**ppv) override
     {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            if(_list.size() <= index)
-                return E_INVALIDARG;
-            *ppv = _list[index].getRetainedReference();
-            return S_OK;
-        }
+        if(_list.size() <= index)
+            return E_INVALIDARG;
+        *ppv = _list[index].getRetainedReference();
+        return S_OK;
     }
 };
 
