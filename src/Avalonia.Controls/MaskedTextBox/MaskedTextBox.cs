@@ -21,7 +21,6 @@ namespace Avalonia.Controls.MaskedTextBox
             get
             {
                 _maskedTextProvider ??= new MaskedTextProvider(Mask) { PromptChar = PromptChar };
-                //_maskedTextProvider.Set(Text);
                 return _maskedTextProvider;
             }
         }
@@ -199,12 +198,12 @@ namespace Avalonia.Controls.MaskedTextBox
                     break;
                 case Key.Back:
                     if (position > 0)
-                    {
-                        position--;
+                    { 
                         if (provider.RemoveAt(position))
                         {
                             RefreshText(provider, position);
                         }
+                        position--;
                     }
                     e.Handled = true;
                     break;
