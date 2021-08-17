@@ -1,9 +1,11 @@
 ﻿using System;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Castle.DynamicProxy.Generators;
 using Moq;
@@ -458,6 +460,19 @@ namespace Avalonia.Controls.UnitTests
                 popupImpl.Verify(x => x.Show(true, false), Times.Once());
                 popupImpl.Verify(x => x.Hide(), Times.Never);
             }
+        }
+        
+        private Window PreparedWindow(object content = null)
+        {
+            var renderer = new Mock<IRenderer>();
+            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+            var windowImpl = Mock.Get(platform.CreateWindow());
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
+
+            var w = new Window(windowImpl.Object) { Content = content };
+            w.ApplyTemplate();
+            w.Presenter.ApplyTemplate();
+            return w;
         }
 
         private IDisposable Application()
