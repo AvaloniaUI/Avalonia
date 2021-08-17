@@ -264,7 +264,6 @@ public:
     
     virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override
     {
-        START_COM_CALL;
         if(_inResize)
         {
             return S_OK;
@@ -1746,7 +1745,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isMouseOver = false;
     [self mouseEvent:event withType:LeaveWindow];
     [super mouseExited:event];
-} 
+}
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
