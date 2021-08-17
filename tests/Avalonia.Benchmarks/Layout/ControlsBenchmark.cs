@@ -17,7 +17,8 @@ namespace Avalonia.Benchmarks.Layout
             _app = UnitTestApplication.Start(
                 TestServices.StyledWindow.With(
                     renderInterface: new NullRenderingPlatform(),
-                    threadingInterface: new NullThreadingPlatform()));
+                    threadingInterface: new NullThreadingPlatform(),
+                    standardCursorFactory: new NullCursorFactory()));
 
             _root = new TestRoot(true, null)
             {

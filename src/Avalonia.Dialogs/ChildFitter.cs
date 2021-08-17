@@ -4,7 +4,7 @@ using Avalonia.Layout;
 
 namespace Avalonia.Dialogs
 {
-    internal class ChildFitter : Decorator
+    public class ChildFitter : Decorator
     {
         protected override Size MeasureOverride(Size availableSize)
         {

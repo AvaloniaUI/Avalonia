@@ -3,11 +3,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using Avalonia.Controls;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    public class TreeViewPageViewModel : ReactiveObject
+    public class TreeViewPageViewModel : ViewModelBase
     {
         private readonly Node _root;
         private SelectionMode _selectionMode;
@@ -19,16 +19,16 @@ namespace ControlCatalog.ViewModels
             Items = _root.Children;
             SelectedItems = new ObservableCollection<Node>();
 
-            AddItemCommand = ReactiveCommand.Create(AddItem);
-            RemoveItemCommand = ReactiveCommand.Create(RemoveItem);
-            SelectRandomItemCommand = ReactiveCommand.Create(SelectRandomItem);
+            AddItemCommand = MiniCommand.Create(AddItem);
+            RemoveItemCommand = MiniCommand.Create(RemoveItem);
+            SelectRandomItemCommand = MiniCommand.Create(SelectRandomItem);
         }
 
         public ObservableCollection<Node> Items { get; }
         public ObservableCollection<Node> SelectedItems { get; }
-        public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
-        public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
-        public ReactiveCommand<Unit, Unit> SelectRandomItemCommand { get; }
+        public MiniCommand AddItemCommand { get; }
+        public MiniCommand RemoveItemCommand { get; }
+        public MiniCommand SelectRandomItemCommand { get; }
 
         public SelectionMode SelectionMode
         {

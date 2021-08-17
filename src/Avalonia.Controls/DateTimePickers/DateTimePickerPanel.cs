@@ -220,15 +220,15 @@ namespace Avalonia.Controls.Primitives
 
                 if (dy > 0) // Scroll Down
                 {
-                    int numContsToMove = 0;
+                    int numCountsToMove = 0;
                     for (int i = 0; i < children.Count; i++)
                     {
                         if (children[i].Bounds.Bottom - dy < 0)
-                            numContsToMove++;
+                            numCountsToMove++;
                         else
                             break;
                     }
-                    children.MoveRange(0, numContsToMove, children.Count);
+                    children.MoveRange(0, numCountsToMove, children.Count);
 
                     var scrollHeight = _extent.Height - Viewport.Height;
                     if (ShouldLoop && value.Y >= scrollHeight - _extentOne)
@@ -236,15 +236,15 @@ namespace Avalonia.Controls.Primitives
                 }
                 else if (dy < 0) // Scroll Up
                 {
-                    int numContsToMove = 0;
+                    int numCountsToMove = 0;
                     for (int i = children.Count - 1; i >= 0; i--)
                     {
                         if (children[i].Bounds.Top - dy > Bounds.Height)
-                            numContsToMove++;
+                            numCountsToMove++;
                         else
                             break;
                     }
-                    children.MoveRange(children.Count - numContsToMove, numContsToMove, 0);
+                    children.MoveRange(children.Count - numCountsToMove, numCountsToMove, 0);
                     if (ShouldLoop && value.Y < _extentOne)
                         _offset = new Vector(0, value.Y + (_extentOne * 50));
                 }
@@ -486,9 +486,9 @@ namespace Avalonia.Controls.Primitives
             switch (panelType)
             {
                 case DateTimePickerPanelType.Year:
-                    return new DateTime(value, FormatDate.Month, FormatDate.Day).ToString(ItemFormat);
+                    return new DateTime(value, 1, 1).ToString(ItemFormat);
                 case DateTimePickerPanelType.Month:
-                    return new DateTime(FormatDate.Year, value, FormatDate.Day).ToString(ItemFormat);
+                    return new DateTime(FormatDate.Year, value, 1).ToString(ItemFormat);
                 case DateTimePickerPanelType.Day:
                     return new DateTime(FormatDate.Year, FormatDate.Month, value).ToString(ItemFormat);
                 case DateTimePickerPanelType.Hour:

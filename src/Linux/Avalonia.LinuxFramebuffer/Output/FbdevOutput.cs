@@ -16,16 +16,33 @@ namespace Avalonia.LinuxFramebuffer
         private IntPtr _mappedAddress;
         public double Scaling { get; set; }
 
-        public FbdevOutput(string fileName = null)
+        /// <summary>
+        /// Create a Linux frame buffer device output
+        /// </summary>
+        /// <param name="fileName">The frame buffer device name.
+        /// Defaults to the value in environment variable FRAMEBUFFER or /dev/fb0 when FRAMEBUFFER is not set</param>
+        public FbdevOutput(string fileName = null) : this(fileName, null)
         {
-            fileName = fileName ?? Environment.GetEnvironmentVariable("FRAMEBUFFER") ?? "/dev/fb0";
+        }
+
+        /// <summary>
+        /// Create a Linux frame buffer device output
+        /// </summary>
+        /// <param name="fileName">The frame buffer device name.
+        /// Defaults to the value in environment variable FRAMEBUFFER or /dev/fb0 when FRAMEBUFFER is not set</param>
+        /// <param name="format">The required pixel format for the frame buffer.
+        /// A null value will leave the frame buffer in the current pixel format.
+        /// Otherwise sets the frame buffer to the required format</param>
+        public FbdevOutput(string fileName, PixelFormat? format)
+        {
+            fileName ??= Environment.GetEnvironmentVariable("FRAMEBUFFER") ?? "/dev/fb0";
             _fd = NativeUnsafeMethods.open(fileName, 2, 0);
             if (_fd <= 0)
                 throw new Exception("Error: " + Marshal.GetLastWin32Error());
 
             try
             {
-                Init();
+                Init(format);
             }
             catch
             {
@@ -34,25 +51,28 @@ namespace Avalonia.LinuxFramebuffer
             }
         }
 
-        void Init()
+        void Init(PixelFormat? format)
         {
             fixed (void* pnfo = &_varInfo)
             {
                 if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOGET_VSCREENINFO, pnfo))
                     throw new Exception("FBIOGET_VSCREENINFO error: " + Marshal.GetLastWin32Error());
 
-                SetBpp();
+                if (format.HasValue)
+                {
+                    SetBpp(format.Value);
 
-                if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOPUT_VSCREENINFO, pnfo))
-                    _varInfo.transp = new fb_bitfield();
+                    if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOPUT_VSCREENINFO, pnfo))
+                        _varInfo.transp = new fb_bitfield();
 
-                NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOPUT_VSCREENINFO, pnfo);
+                    NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOPUT_VSCREENINFO, pnfo);
 
-                if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOGET_VSCREENINFO, pnfo))
-                    throw new Exception("FBIOGET_VSCREENINFO error: " + Marshal.GetLastWin32Error());
+                    if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOGET_VSCREENINFO, pnfo))
+                        throw new Exception("FBIOGET_VSCREENINFO error: " + Marshal.GetLastWin32Error());
 
-                if (_varInfo.bits_per_pixel != 32)
-                    throw new Exception("Unable to set 32-bit display mode");
+                    if (_varInfo.bits_per_pixel != 32)
+                        throw new Exception("Unable to set 32-bit display mode");
+                }
             }
             fixed(void*pnfo = &_fixedInfo)
                 if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOGET_FSCREENINFO, pnfo))
@@ -70,17 +90,43 @@ namespace Avalonia.LinuxFramebuffer
             }
         }
 
-        void SetBpp()
+        void SetBpp(PixelFormat format)
         {
-            _varInfo.bits_per_pixel = 32;
-            _varInfo.grayscale = 0;
-            _varInfo.red = _varInfo.blue = _varInfo.green = _varInfo.transp = new fb_bitfield
+            switch (format)
             {
-                length = 8
-            };
-            _varInfo.green.offset = 8;
-            _varInfo.blue.offset = 16;
-            _varInfo.transp.offset = 24;
+            case PixelFormat.Rgba8888:
+                _varInfo.bits_per_pixel = 32;
+                _varInfo.grayscale = 0;
+                _varInfo.red = _varInfo.blue = _varInfo.green = _varInfo.transp = new fb_bitfield
+                {
+                    length = 8
+                };
+                _varInfo.green.offset = 8;
+                _varInfo.blue.offset = 16;
+                _varInfo.transp.offset = 24;
+                 break;
+            case PixelFormat.Bgra8888:
+                _varInfo.bits_per_pixel = 32;
+                _varInfo.grayscale = 0;
+                _varInfo.red = _varInfo.blue = _varInfo.green = _varInfo.transp = new fb_bitfield
+                {
+                    length = 8
+                };
+                _varInfo.green.offset = 8;
+                _varInfo.red.offset = 16;
+                _varInfo.transp.offset = 24;
+                 break;
+            case PixelFormat.Rgb565:
+                _varInfo.bits_per_pixel = 16;
+                _varInfo.grayscale = 0;
+                _varInfo.red = _varInfo.blue = _varInfo.green = _varInfo.transp = new fb_bitfield();
+                _varInfo.red.length = 5;
+                _varInfo.green.offset = 5;
+                _varInfo.green.length = 6;
+                _varInfo.blue.offset = 11;
+                _varInfo.blue.length = 5;
+                 break;
+            }
         }
 
         public string Id { get; private set; }

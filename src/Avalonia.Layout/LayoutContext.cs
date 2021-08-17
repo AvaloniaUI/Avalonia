@@ -14,7 +14,11 @@ namespace Avalonia.Layout
         /// <summary>
         /// Gets or sets an object that represents the state of a layout.
         /// </summary>
-        public object LayoutState { get; set; }
+        public object LayoutState 
+        {
+            get => LayoutStateCore;
+            set => LayoutStateCore = value;
+        }
 
         /// <summary>
         /// Implements the behavior of <see cref="LayoutState"/> in a derived or custom LayoutContext.

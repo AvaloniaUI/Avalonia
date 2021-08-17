@@ -10,8 +10,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     public class DynamicResourceExtension : IBinding
     {
-        private IStyledElement? _anchor;
-        private IResourceProvider? _resourceProvider;
+        private object? _anchor;
 
         public DynamicResourceExtension()
         {
@@ -30,12 +29,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             if (!(provideTarget.TargetObject is IStyledElement))
             {
-                _anchor = serviceProvider.GetFirstParent<IStyledElement>();
-
-                if (_anchor is null)
-                {
-                    _resourceProvider = serviceProvider.GetFirstParent<IResourceProvider>();
-                }
+                _anchor = serviceProvider.GetFirstParent<IStyledElement>() ??
+                    serviceProvider.GetFirstParent<IResourceProvider>() ??
+                    (object?)serviceProvider.GetFirstParent<IResourceHost>();
             }
 
             return this;
@@ -52,16 +48,16 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 return null;
             }
 
-            var control = target as IStyledElement ?? _anchor as IStyledElement;
+            var control = target as IResourceHost ?? _anchor as IResourceHost;
 
             if (control != null)
             {
                 var source = control.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
                 return InstancedBinding.OneWay(source);
             }
-            else if (_resourceProvider is object)
+            else if (_anchor is IResourceProvider resourceProvider)
             {
-                var source = _resourceProvider.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
+                var source = resourceProvider.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
                 return InstancedBinding.OneWay(source);
             }
 

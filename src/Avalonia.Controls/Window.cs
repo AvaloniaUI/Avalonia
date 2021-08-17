@@ -4,10 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -130,6 +127,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
 
         /// <summary>
+        /// Defines the <see cref="ShowActivated"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowActivatedProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(ShowActivated), true);
+
+        /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
         public static readonly StyledProperty<bool> ShowInTaskbarProperty =
@@ -241,7 +244,7 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;            
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x));
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, PlatformResizeReason.Application));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
         }
@@ -255,6 +258,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a value indicating how the window will size itself to fit its content.
         /// </summary>
+        /// <remarks>
+        /// If <see cref="SizeToContent"/> has a value other than <see cref="SizeToContent.Manual"/>,
+        /// <see cref="SizeToContent"/> is automatically set to <see cref="SizeToContent.Manual"/>
+        /// if a user resizes the window by using the resize grip or dragging the border.
+        /// 
+        /// NOTE: Because of a limitation of X11, <see cref="SizeToContent"/> will be reset on X11 to
+        /// <see cref="SizeToContent.Manual"/> on any resize - including the resize that happens when
+        /// the window is first shown. This is because X11 resize notifications are asynchronous and
+        /// there is no way to know whether a resize came from the user or the layout system. To avoid
+        /// this, consider setting <see cref="CanResize"/> to false, which will disable user resizing
+        /// of the window.
+        /// </remarks>
         public SizeToContent SizeToContent
         {
             get { return GetValue(SizeToContentProperty); }
@@ -352,11 +367,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Sets the system decorations (title bar, border, etc)
         /// </summary>
-        /// 
         public SystemDecorations SystemDecorations
         {
             get { return GetValue(SystemDecorationsProperty); }
             set { SetValue(SystemDecorationsProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether a window is activated when first shown. 
+        /// </summary>
+        public bool ShowActivated
+        {
+            get { return GetValue(ShowActivatedProperty); }
+            set { SetValue(ShowActivatedProperty, value); }
         }
 
         /// <summary>
@@ -451,7 +474,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="dialogResult">The dialog result.</param>
         /// <remarks>
-        /// When the window is shown with the <see cref="ShowDialog{TResult}(IWindowImpl)"/>
+        /// When the window is shown with the <see cref="ShowDialog{TResult}(Window)"/>
         /// or <see cref="ShowDialog{TResult}(Window)"/> method, the
         /// resulting task will produce the <see cref="_dialogResult"/> value when the window
         /// is closed.
@@ -468,10 +491,9 @@ namespace Avalonia.Controls
 
             try
             {
-                if (!ignoreCancel && HandleClosing())
+                if (!ignoreCancel && ShouldCancelClose())
                 {
                     close = false;
-                    return;
                 }
             }
             finally
@@ -483,11 +505,25 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
+        /// <returns>true if closing is cancelled. Otherwise false.</returns>
+        /// </summary>
+        protected virtual bool HandleClosing()
+        {
+            if (!ShouldCancelClose())
+            {
+                CloseInternal();
+                return false;
+            }
+            
+            return true;
+        }
+
         private void CloseInternal()
         {
             foreach (var (child, _) in _children.ToList())
             {
-                // if we HandleClosing() before then there will be no children.
                 child.CloseInternal();
             }
 
@@ -501,20 +537,18 @@ namespace Avalonia.Controls
             PlatformImpl?.Dispose();
         }
 
-        /// <summary>
-        /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
-        /// </summary>
-        protected virtual bool HandleClosing()
+        private bool ShouldCancelClose(CancelEventArgs args = null)
         {
+            if (args is null)
+            {
+                args = new CancelEventArgs();
+            }
+            
             bool canClose = true;
 
             foreach (var (child, _) in _children.ToList())
             {
-                if (!child.HandleClosing())
-                {
-                    child.CloseInternal();
-                }
-                else
+                if (child.ShouldCancelClose(args))
                 {
                     canClose = false;
                 }
@@ -522,15 +556,12 @@ namespace Avalonia.Controls
 
             if (canClose)
             {
-                var args = new CancelEventArgs();
                 OnClosing(args);
 
                 return args.Cancel;
             }
-            else
-            {
-                return !canClose;
-            }
+
+            return true;
         }
 
         protected virtual void HandleWindowStateChanged(WindowState state)
@@ -564,20 +595,23 @@ namespace Avalonia.Controls
                 return;
             }
 
-            using (BeginAutoSizing())
+            Renderer?.Stop();
+
+            if (Owner is Window owner)
             {
-                Renderer?.Stop();
-
-                if (Owner is Window owner)
-                {
-                    owner.RemoveChild(this);
-                }
-
-                Owner = null;
-
-                PlatformImpl?.Hide();
+                owner.RemoveChild(this);
             }
 
+            if (_children.Count > 0)
+            {
+                foreach (var child in _children.ToArray())
+                {
+                    child.child.Hide();
+                }
+            }
+
+            Owner = null;
+            PlatformImpl?.Hide();
             IsVisible = false;
         }
 
@@ -616,6 +650,22 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("Cannot re-show a closed window.");
             }
 
+            if (parent != null)
+            {
+                if (parent.PlatformImpl == null)
+                {
+                    throw new InvalidOperationException("Cannot show a window with a closed parent.");
+                }
+                else if (parent == this)
+                {
+                    throw new InvalidOperationException("A Window cannot be its own parent.");
+                }
+                else if (!parent.IsVisible)
+                {
+                    throw new InvalidOperationException("Cannot show window with non-visible parent.");
+                }
+            }
+
             if (IsVisible)
             {
                 return;
@@ -632,28 +682,23 @@ namespace Avalonia.Controls
 
             if (initialSize != ClientSize)
             {
-                using (BeginAutoSizing())
-                {
-                    PlatformImpl?.Resize(initialSize);
-                }
+                PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
             }
 
             LayoutManager.ExecuteInitialLayoutPass();
 
-            using (BeginAutoSizing())
+            if (parent != null)
             {
-                if (parent != null)
-                {
-                    PlatformImpl?.SetParent(parent.PlatformImpl);
-                }
-                
-                Owner = parent;
-                parent?.AddChild(this, false);
-
-                PlatformImpl?.Show();
-                Renderer?.Start();
-                SetWindowStartupLocation(Owner?.PlatformImpl);
+                PlatformImpl?.SetParent(parent.PlatformImpl);
             }
+
+            Owner = parent;
+            parent?.AddChild(this, false);
+
+            SetWindowStartupLocation(Owner?.PlatformImpl);
+
+            PlatformImpl?.Show(ShowActivated, false);
+            Renderer?.Start();
             OnOpened(EventArgs.Empty);
         }
 
@@ -688,10 +733,21 @@ namespace Avalonia.Controls
             {
                 throw new ArgumentNullException(nameof(owner));
             }
-
-            if (IsVisible)
+            else if (owner.PlatformImpl == null)
+            {
+                throw new InvalidOperationException("Cannot show a window with a closed owner.");
+            }
+            else if (owner == this)
+            {
+                throw new InvalidOperationException("A Window cannot be its own owner.");
+            }
+            else if (IsVisible)
             {
                 throw new InvalidOperationException("The window is already being shown.");
+            }
+            else if (!owner.IsVisible)
+            {
+                throw new InvalidOperationException("Cannot show window with non-visible parent.");
             }
 
             RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
@@ -705,40 +761,34 @@ namespace Avalonia.Controls
 
             if (initialSize != ClientSize)
             {
-                using (BeginAutoSizing())
-                {
-                    PlatformImpl?.Resize(initialSize);
-                }
+                PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
             }
 
             LayoutManager.ExecuteInitialLayoutPass();
 
             var result = new TaskCompletionSource<TResult>();
 
-            using (BeginAutoSizing())
-            {
-                PlatformImpl?.SetParent(owner.PlatformImpl);
-                Owner = owner;
-                owner.AddChild(this, true);
-                PlatformImpl?.Show();
-
-                Renderer?.Start();
-
-                Observable.FromEventPattern<EventHandler, EventArgs>(
-                        x => Closed += x,
-                        x => Closed -= x)
-                    .Take(1)
-                    .Subscribe(_ =>
-                    {
-                        owner.Activate();
-                        result.SetResult((TResult)(_dialogResult ?? default(TResult)));
-                    });
-
-                OnOpened(EventArgs.Empty);
-            }
+            PlatformImpl?.SetParent(owner.PlatformImpl);
+            Owner = owner;
+            owner.AddChild(this, true);
 
             SetWindowStartupLocation(owner.PlatformImpl);
 
+            PlatformImpl?.Show(ShowActivated, true);
+
+            Renderer?.Start();
+
+            Observable.FromEventPattern<EventHandler, EventArgs>(
+                    x => Closed += x,
+                    x => Closed -= x)
+                .Take(1)
+                .Subscribe(_ =>
+                {
+                    owner.Activate();
+                    result.SetResult((TResult)(_dialogResult ?? default(TResult)));
+                });
+
+            OnOpened(EventArgs.Empty);
             return result.Task;
         }
 
@@ -840,19 +890,19 @@ namespace Avalonia.Controls
             var constraint = clientSize;
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
 
-            if (sizeToContent.HasFlagCustom(SizeToContent.Width))
+            if (sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 constraint = constraint.WithWidth(maxAutoSize.Width);
             }
 
-            if (sizeToContent.HasFlagCustom(SizeToContent.Height))
+            if (sizeToContent.HasAllFlags(SizeToContent.Height))
             {
                 constraint = constraint.WithHeight(maxAutoSize.Height);
             }
 
             var result = base.MeasureOverride(constraint);
 
-            if (!sizeToContent.HasFlagCustom(SizeToContent.Width))
+            if (!sizeToContent.HasAllFlags(SizeToContent.Width))
             {
                 if (!double.IsInfinity(availableSize.Width))
                 {
@@ -864,7 +914,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (!sizeToContent.HasFlagCustom(SizeToContent.Height))
+            if (!sizeToContent.HasAllFlags(SizeToContent.Height))
             {
                 if (!double.IsInfinity(availableSize.Height))
                 {
@@ -881,11 +931,8 @@ namespace Avalonia.Controls
 
         protected sealed override Size ArrangeSetBounds(Size size)
         {
-            using (BeginAutoSizing())
-            {
-                PlatformImpl?.Resize(size);
-                return ClientSize;
-            }
+            PlatformImpl?.Resize(size, PlatformResizeReason.Layout);
+            return ClientSize;
         }
 
         protected sealed override void HandleClosed()
@@ -902,18 +949,36 @@ namespace Avalonia.Controls
             Owner = null;
         }
 
+        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
+        protected sealed override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
+
         /// <inheritdoc/>
-        protected sealed override void HandleResized(Size clientSize)
+        protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
-            if (!AutoSizing)
+            if (ClientSize == clientSize)
+                return;
+
+            var sizeToContent = SizeToContent;
+
+            // If auto-sizing is enabled, and the resize came from a user resize (or the reason was
+            // unspecified) then turn off auto-resizing for any window dimension that is not equal
+            // to the requested size.
+            if (sizeToContent != SizeToContent.Manual &&
+                CanResize &&
+                reason == PlatformResizeReason.Unspecified ||  
+                reason == PlatformResizeReason.User)
             {
-                SizeToContent = SizeToContent.Manual;
+                if (clientSize.Width != ClientSize.Width)
+                    sizeToContent &= ~SizeToContent.Width;
+                if (clientSize.Height != ClientSize.Height)
+                    sizeToContent &= ~SizeToContent.Height;
+                SizeToContent = sizeToContent;
             }
 
             Width = clientSize.Width;
             Height = clientSize.Height;
 
-            base.HandleResized(clientSize);
+            base.HandleResized(clientSize, reason);
         }
 
         /// <summary>

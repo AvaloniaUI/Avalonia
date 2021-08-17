@@ -1,5 +1,0 @@
-Compat issues with assembly Avalonia.Controls.DataGrid:
-MembersMustExist : Member 'public Avalonia.StyledProperty<System.String> Avalonia.StyledProperty<System.String> Avalonia.Controls.DataGridTextColumn.FontFamilyProperty' does not exist in the implementation but it does exist in the contract.
-MembersMustExist : Member 'public System.String Avalonia.Controls.DataGridTextColumn.FontFamily.get()' does not exist in the implementation but it does exist in the contract.
-MembersMustExist : Member 'public void Avalonia.Controls.DataGridTextColumn.FontFamily.set(System.String)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 3

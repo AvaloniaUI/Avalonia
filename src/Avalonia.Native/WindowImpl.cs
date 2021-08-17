@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -10,13 +11,15 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
-    public class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
+    internal class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
     {
         private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
+        private DoubleClickHelper _doubleClickHelper;
+        
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativePlatformOpenGlInterface glFeature) : base(opts, glFeature)
@@ -24,6 +27,8 @@ namespace Avalonia.Native
             _factory = factory;
             _opts = opts;
             _glFeature = glFeature;
+            _doubleClickHelper = new DoubleClickHelper();
+            
             using (var e = new WindowEvents(this))
             {
                 var context = _opts.UseGpu ? glFeature?.MainContext : null;
@@ -42,14 +47,14 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
-            bool IAvnWindowEvents.Closing()
+            int IAvnWindowEvents.Closing()
             {
                 if (_parent.Closing != null)
                 {
-                    return _parent.Closing();
+                    return _parent.Closing().AsComBool();
                 }
 
-                return true;
+                return true.AsComBool();
             }
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
@@ -69,12 +74,12 @@ namespace Avalonia.Native
 
         public void CanResize(bool value)
         {
-            _native.CanResize = value;
+            _native.SetCanResize(value.AsComBool());
         }
 
         public void SetSystemDecorations(Controls.SystemDecorations enabled)
         {
-            _native.Decorations = (Interop.SystemDecorations)enabled;
+            _native.SetDecorations((Interop.SystemDecorations)enabled);
         }
 
         public void SetTitleBarColor(Avalonia.Media.Color color)
@@ -82,24 +87,12 @@ namespace Avalonia.Native
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
 
-        public void SetTitle(string title)
-        {
-            using (var buffer = new Utf8Buffer(title))
-            {
-                _native.SetTitle(buffer.DangerousGetHandle());
-            }
-        }
+        public void SetTitle(string title) => _native.SetTitle(title);
 
         public WindowState WindowState
         {
-            get
-            {
-                return (WindowState)_native.GetWindowState();
-            }
-            set
-            {
-                _native.SetWindowState((AvnWindowState)value);
-            }
+            get => (WindowState)_native.WindowState;
+            set => _native.SetWindowState((AvnWindowState)value);
         }
 
         public Action<WindowState> WindowStateChanged { get; set; }        
@@ -121,7 +114,7 @@ namespace Avalonia.Native
                 {
                     var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
                             {
-                                if (x is IInputElement ie && !ie.IsHitTestVisible)
+                                if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsVisible))
                                 {
                                     return false;
                                 }
@@ -130,7 +123,22 @@ namespace Avalonia.Native
 
                     if(visual == null)
                     {
-                        _native.BeginMoveDrag();
+                        if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
+                        {
+                            // TOGGLE WINDOW STATE.
+                            if (WindowState == WindowState.Maximized || WindowState == WindowState.FullScreen)
+                            {
+                                WindowState = WindowState.Normal;
+                            }
+                            else
+                            {
+                                WindowState = WindowState.Maximized;
+                            }
+                        }
+                        else
+                        {
+                            _native.BeginMoveDrag();   
+                        }
                     }
                 }
             }
@@ -146,7 +154,7 @@ namespace Avalonia.Native
             }
             else
             {
-                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : _extendTitleBarHeight, 0, 0) : new Thickness();
+                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.ExtendTitleBarHeight : _extendTitleBarHeight, 0, 0) : new Thickness();
             }
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
@@ -157,7 +165,7 @@ namespace Avalonia.Native
         {
             _isExtended = extendIntoClientAreaHint;
 
-            _native.SetExtendClientArea(extendIntoClientAreaHint);
+            _native.SetExtendClientArea(extendIntoClientAreaHint.AsComBool());
 
             InvalidateExtendedMargins();
         }
@@ -174,7 +182,7 @@ namespace Avalonia.Native
             _extendTitleBarHeight = titleBarHeight;
             _native.SetExtendTitleBarHeight(titleBarHeight);
 
-            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.GetExtendTitleBarHeight() : titleBarHeight, 0, 0) : new Thickness();
+            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.ExtendTitleBarHeight : titleBarHeight, 0, 0) : new Thickness();
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
         }
@@ -210,7 +218,7 @@ namespace Avalonia.Native
 
         public void SetEnabled(bool enable)
         {
-            _native.SetEnabled(enable);
+            _native.SetEnabled(enable.AsComBool());
         }
     }
 }

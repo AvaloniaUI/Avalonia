@@ -10,6 +10,12 @@ namespace Avalonia.Layout
     public static class LayoutHelper
     {
         /// <summary>
+        /// Epsilon value used for certain layout calculations.
+        /// Based on the value in WPF LayoutDoubleUtil.
+        /// </summary>
+        public static double LayoutEpsilon { get; } = 0.00000153;
+
+        /// <summary>
         /// Calculates a control's size based on its <see cref="ILayoutable.Width"/>,
         /// <see cref="ILayoutable.Height"/>, <see cref="ILayoutable.MinWidth"/>,
         /// <see cref="ILayoutable.MaxWidth"/>, <see cref="ILayoutable.MinHeight"/> and
@@ -80,6 +86,25 @@ namespace Avalonia.Layout
             }
 
             InnerInvalidateMeasure(control);
+        }
+
+        /// <summary>
+        /// Obtains layout scale of the given control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <exception cref="Exception">Thrown when control has no root or returned layout scaling is invalid.</exception>
+        public static double GetLayoutScale(ILayoutable control)
+        {
+            var visualRoot = control.VisualRoot;
+            
+            var result = (visualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
+
+            if (result == 0 || double.IsNaN(result) || double.IsInfinity(result))
+            {
+                throw new Exception($"Invalid LayoutScaling returned from {visualRoot.GetType()}");
+            }
+
+            return result;
         }
 
         /// <summary>

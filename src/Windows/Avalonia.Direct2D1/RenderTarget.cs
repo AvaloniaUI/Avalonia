@@ -30,7 +30,7 @@ namespace Avalonia.Direct2D1
             return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget);
         }
 
-        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             return D2DRenderTargetBitmapImpl.CreateCompatible(_renderTarget, size);
         }

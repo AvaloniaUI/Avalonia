@@ -1,5 +1,9 @@
-import {PreviewerFrame, PreviewerServerConnection} from "src/PreviewerServerConnection";
 import * as React from "react";
+import {PreviewerFrame, PreviewerServerConnection} from "src/PreviewerServerConnection";
+import {PointerPressedEventMessage} from "src/Models/Input/PointerPressedEventMessage";
+import {PointerReleasedEventMessage} from "src/Models/Input/PointerReleasedEventMessage";
+import {PointerMovedEventMessage} from "src/Models/Input/PointerMovedEventMessage";
+import {ScrollEventMessage} from "src/Models/Input/ScrollEventMessage";
 
 interface PreviewerPresenterProps {
     conn: PreviewerServerConnection;
@@ -15,6 +19,11 @@ export class PreviewerPresenter extends React.Component<PreviewerPresenterProps>
         this.componentDidUpdate({
             conn: null!
         }, this.state);
+
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
+        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleWheel = this.handleWheel.bind(this);
     }
 
     componentDidMount(): void {
@@ -51,7 +60,35 @@ export class PreviewerPresenter extends React.Component<PreviewerPresenterProps>
         }
     }
 
+    handleMouseDown(e: React.MouseEvent) {
+        e.preventDefault();
+        const pointerPressedEventMessage = new PointerPressedEventMessage(e);
+        this.props.conn.sendMouseEvent(pointerPressedEventMessage);
+    }
+
+    handleMouseUp(e: React.MouseEvent) {
+        e.preventDefault();
+        const pointerReleasedEventMessage = new PointerReleasedEventMessage(e);
+        this.props.conn.sendMouseEvent(pointerReleasedEventMessage);
+    }
+
+    handleMouseMove(e: React.MouseEvent) {
+        e.preventDefault();
+        const pointerMovedEventMessage = new PointerMovedEventMessage(e);
+        this.props.conn.sendMouseEvent(pointerMovedEventMessage);
+    }
+
+    handleWheel(e: React.WheelEvent) {
+        e.preventDefault();
+        const scrollEventMessage = new ScrollEventMessage(e);
+        this.props.conn.sendMouseEvent(scrollEventMessage);
+    }
+
     render() {
-        return <canvas ref={this.canvasRef}/>
+        return <canvas ref={this.canvasRef}
+                       onMouseDown={this.handleMouseDown}
+                       onMouseUp={this.handleMouseUp}
+                       onMouseMove={this.handleMouseMove}
+                       onWheel={this.handleWheel} />
     }
 }

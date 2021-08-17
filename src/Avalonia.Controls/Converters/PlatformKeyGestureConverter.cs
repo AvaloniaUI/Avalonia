@@ -72,24 +72,24 @@ namespace Avalonia.Controls.Converters
                 }
             }
 
-            if (gesture.KeyModifiers.HasFlagCustom(KeyModifiers.Control))
+            if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Control))
             {
                 s.Append("Ctrl");
             }
 
-            if (gesture.KeyModifiers.HasFlagCustom(KeyModifiers.Shift))
+            if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Shift))
             {
                 Plus(s);
                 s.Append("Shift");
             }
 
-            if (gesture.KeyModifiers.HasFlagCustom(KeyModifiers.Alt))
+            if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Alt))
             {
                 Plus(s);
                 s.Append("Alt");
             }
 
-            if (gesture.KeyModifiers.HasFlagCustom(KeyModifiers.Meta))
+            if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Meta))
             {
                 Plus(s);
                 s.Append(meta);
@@ -105,22 +105,22 @@ namespace Avalonia.Controls.Converters
         {
             var s = new StringBuilder();
 
-            if (gesture.KeyModifiers.HasFlagCustom(KeyModifiers.Control))
+            if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Control))
             {
                 s.Append('⌃');
             }
 
-            if (gesture.KeyModifiers.HasFlagCustom(KeyModifiers.Alt))
+            if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Alt))
             {
                 s.Append('⌥');
             }
 
-            if (gesture.KeyModifiers.HasFlagCustom(KeyModifiers.Shift))
+            if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Shift))
             {
                 s.Append('⇧');
             }
 
-            if (gesture.KeyModifiers.HasFlagCustom(KeyModifiers.Meta))
+            if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Meta))
             {
                 s.Append('⌘');
             }

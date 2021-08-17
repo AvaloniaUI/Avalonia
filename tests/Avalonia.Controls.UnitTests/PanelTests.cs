@@ -127,7 +127,7 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot(target);
             var renderer = Mock.Get(root.Renderer);
-            renderer.ResetCalls();
+            renderer.Invocations.Clear();
 
             ((SolidColorBrush)target.Background).Color = Colors.Green;
 

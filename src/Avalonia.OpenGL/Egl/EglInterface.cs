@@ -30,8 +30,10 @@ namespace Avalonia.OpenGL.Egl
         static Func<string, IntPtr> Load()
         {
             var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
-            if(os == OperatingSystemType.Linux || os == OperatingSystemType.Android)
+            if(os == OperatingSystemType.Linux)
                 return Load("libEGL.so.1");
+            if (os == OperatingSystemType.Android)
+                return Load("libEGL.so");
 
             throw new PlatformNotSupportedException();
         }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
@@ -21,7 +23,8 @@ namespace Avalonia.X11
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, Action<XEvent>> Windows = new Dictionary<IntPtr, Action<XEvent>>();
+        public Dictionary<IntPtr, X11PlatformThreading.EventHandler> Windows =
+            new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
@@ -29,9 +32,24 @@ namespace Avalonia.X11
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
+        [DllImport("libc")]
+        static extern void setlocale(int type, string s);
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
+            
+            bool useXim = false;
+            if (EnableIme(options))
+            {
+                // Attempt to configure DBus-based input method and check if we can fall back to XIM
+                if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
+                    useXim = true;
+            }
+
+            // XIM doesn't work at all otherwise
+            if (useXim)
+                setlocale(0, "");
+
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
             DeferredDisplay = XOpenDisplay(IntPtr.Zero);
@@ -40,7 +58,8 @@ namespace Avalonia.X11
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
             XError.Init();
-            Info = new X11Info(Display, DeferredDisplay);
+            
+            Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
             //TODO: log
             if (options.UseDBusMenu)
@@ -52,7 +71,7 @@ namespace Avalonia.X11
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
-                .Bind<IStandardCursorFactory>().ToConstant(new X11CursorFactory(Display))
+                .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
@@ -90,19 +109,103 @@ namespace Avalonia.X11
         {
             throw new NotSupportedException();
         }
+
+        bool EnableIme(X11PlatformOptions options)
+        {
+            // Disable if explicitly asked by user
+            var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
+            if (avaloniaImModule == "none")
+                return false;
+            
+            // Use value from options when specified
+            if (options.EnableIme.HasValue)
+                return options.EnableIme.Value;
+            
+            // Automatically enable for CJK locales
+            var lang = Environment.GetEnvironmentVariable("LANG");
+            var isCjkLocale = lang != null &&
+                              (lang.Contains("zh")
+                               || lang.Contains("ja")
+                               || lang.Contains("vi")
+                               || lang.Contains("ko"));
+
+            return isCjkLocale;
+        }
+        
+        bool ShouldUseXim()
+        {
+            // Check if we are forbidden from using IME
+            if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
+                || Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "none"
+                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "none")
+                return true;
+            
+            // Check if XIM is configured
+            var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
+            if (modifiers == null)
+                return false;
+            if (modifiers.Contains("@im=none") || modifiers.Contains("@im=null"))
+                return false;
+            if (!modifiers.Contains("@im="))
+                return false;
+            
+            // Check if we are configured to use it
+            if (Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "xim"
+                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "xim"
+                || Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "xim")
+                return true;
+            
+            return false;
+        }
     }
 }
 
 namespace Avalonia
 {
-
+    /// <summary>
+    /// Platform-specific options which apply to Linux.
+    /// </summary>
     public class X11PlatformOptions
     {
+        /// <summary>
+        /// Enables native Linux EGL when set to true. The default value is false.
+        /// </summary>
         public bool UseEGL { get; set; }
+
+        /// <summary>
+        /// Determines whether to use GPU for rendering in your project. The default value is true.
+        /// </summary>
         public bool UseGpu { get; set; } = true;
+
+        /// <summary>
+        /// Embeds popups to the window when set to true. The default value is false.
+        /// </summary>
         public bool OverlayPopups { get; set; }
+
+        /// <summary>
+        /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
+        /// The default value is false.
+        /// </summary>
         public bool UseDBusMenu { get; set; }
+
+        /// <summary>
+        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
+        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
+        /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
+
+        /// <summary>
+        /// Determines whether to use IME.
+        /// IME would be enabled by default if the current user input language is one of the following: Mandarin, Japanese, Vietnamese or Korean.
+        /// </summary>
+        /// <remarks>
+        /// Input method editor is a component that enables users to generate characters not natively available 
+        /// on their input devices by using sequences of characters or mouse operations that are natively available on their input devices.
+        /// </remarks>
+        public bool? EnableIme { get; set; }
 
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
         {
@@ -122,7 +225,14 @@ namespace Avalonia
             "llvmpipe"
         };
         public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
-        public bool? EnableMultiTouch { get; set; }
+
+        /// <summary>
+        /// Enables multitouch support. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
+        /// </remarks>
+        public bool? EnableMultiTouch { get; set; } = true;
     }
     public static class AvaloniaX11PlatformExtensions
     {

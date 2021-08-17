@@ -1,9 +1,9 @@
-﻿using ReactiveUI;
+﻿using MiniMvvm;
 using System;
 
 namespace BindingDemo.ViewModels
 {
-    public class ExceptionErrorViewModel : ReactiveObject
+    public class ExceptionErrorViewModel : ViewModelBase
     {
         private int _lessThan10;
 

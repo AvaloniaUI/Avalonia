@@ -50,7 +50,13 @@ namespace Avalonia
             {
                 var thisOffset = GetOffsetFrom(common, from);
                 var thatOffset = GetOffsetFrom(common, to);
-                return -thatOffset * thisOffset;
+
+                if (!thatOffset.TryInvert(out var thatOffsetInverted))
+                {
+                    return null;
+                }
+
+                return thatOffsetInverted * thisOffset;
             }
 
             return null;

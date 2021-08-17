@@ -12,10 +12,17 @@ namespace Avalonia.Win32
 {
     internal class ClipboardImpl : IClipboard
     {
+        private const int OleRetryCount = 10;
+        private const int OleRetryDelay = 100;
+
         private async Task<IDisposable> OpenClipboard()
         {
+            var i = OleRetryCount;
+
             while (!UnmanagedMethods.OpenClipboard(IntPtr.Zero))
             {
+                if (--i == 0)
+                    throw new TimeoutException("Timeout opening clipboard.");
                 await Task.Delay(100);
             }
 
@@ -72,20 +79,32 @@ namespace Avalonia.Win32
         {
             Dispatcher.UIThread.VerifyAccess();
             var wrapper = new DataObject(data);
+            var i = OleRetryCount;
+
             while (true)
             {
-                if (UnmanagedMethods.OleSetClipboard(wrapper) == 0)
+                var hr = UnmanagedMethods.OleSetClipboard(wrapper);
+
+                if (hr == 0)
                     break;
-                await Task.Delay(100);
+
+                if (--i == 0)
+                    Marshal.ThrowExceptionForHR(hr);
+                
+                await Task.Delay(OleRetryDelay);
             }
         }
 
         public async Task<string[]> GetFormatsAsync()
         {
             Dispatcher.UIThread.VerifyAccess();
+            var i = OleRetryCount;
+
             while (true)
             {
-                if (UnmanagedMethods.OleGetClipboard(out var dataObject) == 0)
+                var hr = UnmanagedMethods.OleGetClipboard(out var dataObject);
+
+                if (hr == 0)
                 {
                     var wrapper = new OleDataObject(dataObject);
                     var formats = wrapper.GetDataFormats().ToArray();
@@ -93,16 +112,23 @@ namespace Avalonia.Win32
                     return formats;
                 }
 
-                await Task.Delay(100);
+                if (--i == 0)
+                    Marshal.ThrowExceptionForHR(hr);
+
+                await Task.Delay(OleRetryDelay);
             }
         }
 
         public async Task<object> GetDataAsync(string format)
         {
             Dispatcher.UIThread.VerifyAccess();
+            var i = OleRetryCount;
+
             while (true)
             {
-                if (UnmanagedMethods.OleGetClipboard(out var dataObject) == 0)
+                var hr = UnmanagedMethods.OleGetClipboard(out var dataObject);
+
+                if (hr == 0)
                 {
                     var wrapper = new OleDataObject(dataObject);
                     var rv = wrapper.Get(format);
@@ -110,7 +136,10 @@ namespace Avalonia.Win32
                     return rv;
                 }
 
-                await Task.Delay(100);
+                if (--i == 0)
+                    Marshal.ThrowExceptionForHR(hr);
+
+                await Task.Delay(OleRetryDelay);
             }
         }
     }

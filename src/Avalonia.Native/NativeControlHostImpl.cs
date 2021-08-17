@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls.Platform;
+using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
@@ -28,8 +29,7 @@ namespace Avalonia.Native
 
             public DestroyableNSView(IAvnNativeControlHost impl)
             {
-                _impl = new IAvnNativeControlHost(impl.NativePointer);
-                _impl.AddRef();
+                _impl = MicroComRuntime.CloneReference(impl);
                 _nsView = _impl.CreateDefaultChild(IntPtr.Zero);
             }
 

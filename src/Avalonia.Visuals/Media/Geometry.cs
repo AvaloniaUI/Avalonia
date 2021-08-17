@@ -84,7 +84,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="pen">The stroke thickness.</param>
         /// <returns>The bounding rectangle.</returns>
-        public Rect GetRenderBounds(Pen pen) => PlatformImpl?.GetRenderBounds(pen) ?? Rect.Empty;
+        public Rect GetRenderBounds(IPen pen) => PlatformImpl?.GetRenderBounds(pen) ?? Rect.Empty;
 
         /// <summary>
         /// Indicates whether the geometry's fill contains the specified point.
@@ -102,7 +102,7 @@ namespace Avalonia.Media
         /// <param name="pen">The pen to use.</param>
         /// <param name="point">The point.</param>
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
-        public bool StrokeContains(Pen pen, Point point)
+        public bool StrokeContains(IPen pen, Point point)
         {
             return PlatformImpl?.StrokeContains(pen, point) == true;
         }

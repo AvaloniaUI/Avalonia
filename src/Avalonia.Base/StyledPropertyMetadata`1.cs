@@ -6,7 +6,7 @@ namespace Avalonia
     /// <summary>
     /// Metadata for styled avalonia properties.
     /// </summary>
-    public class StyledPropertyMetadata<TValue> : PropertyMetadata, IStyledPropertyMetadata
+    public class StyledPropertyMetadata<TValue> : AvaloniaPropertyMetadata, IStyledPropertyMetadata
     {
         private Optional<TValue> _defaultValue;
 
@@ -39,7 +39,7 @@ namespace Avalonia
         object IStyledPropertyMetadata.DefaultValue => DefaultValue;
 
         /// <inheritdoc/>
-        public override void Merge(PropertyMetadata baseMetadata, AvaloniaProperty property)
+        public override void Merge(AvaloniaPropertyMetadata baseMetadata, AvaloniaProperty property)
         {
             base.Merge(baseMetadata, property);
 

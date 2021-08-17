@@ -1,8 +1,22 @@
+using System;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.Native.Interop
 {
-    unsafe partial class IAvnString
+    partial interface IAvnString
+    {
+        public string String { get; }
+        public byte[] Bytes { get; }
+    }
+
+    partial interface IAvnStringArray
+    {
+        string[] ToStringArray();
+    }
+}
+namespace Avalonia.Native.Interop.Impl
+{
+    unsafe partial class __MicroComIAvnStringProxy
     {
         private string _managed;
         private byte[] _bytes;
@@ -16,7 +30,7 @@ namespace Avalonia.Native.Interop
                     var ptr = Pointer();
                     if (ptr == null)
                         return null;
-                    _managed = System.Text.Encoding.UTF8.GetString((byte*)ptr.ToPointer(), Length());
+                    _managed = System.Text.Encoding.UTF8.GetString((byte*)ptr, Length());
                 }
 
                 return _managed;
@@ -30,7 +44,7 @@ namespace Avalonia.Native.Interop
                 if (_bytes == null)
                 {
                     _bytes = new byte[Length()];
-                    Marshal.Copy(Pointer(), _bytes, 0, _bytes.Length);
+                    Marshal.Copy(new IntPtr(Pointer()), _bytes, 0, _bytes.Length);
                 }
 
                 return _bytes;
@@ -40,7 +54,7 @@ namespace Avalonia.Native.Interop
         public override string ToString() => String;
     }
     
-    partial class IAvnStringArray
+    partial class __MicroComIAvnStringArrayProxy
     {
         public string[] ToStringArray()
         {

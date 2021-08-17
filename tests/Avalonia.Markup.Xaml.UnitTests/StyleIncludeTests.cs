@@ -12,7 +12,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             var styleXaml = @"
 <Style xmlns='https://github.com/avaloniaui'
-                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Style.Resources>
         <StaticResource x:Key='brush' ResourceKey='missing' />
     </Style.Resources>

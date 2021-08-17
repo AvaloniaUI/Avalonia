@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+#if !BUILDTASK
 using Avalonia.Animation.Animators;
+#endif
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -8,11 +10,16 @@ namespace Avalonia
     /// <summary>
     /// Defines a point.
     /// </summary>
-    public readonly struct Point : IEquatable<Point>
+#if !BUILDTASK
+    public
+#endif
+    readonly struct Point : IEquatable<Point>
     {
         static Point()
         {
+#if !BUILDTASK
             Animation.Animation.RegisterAnimator<PointAnimator>(prop => typeof(Point).IsAssignableFrom(prop.PropertyType));
+#endif
         }
 
         /// <summary>

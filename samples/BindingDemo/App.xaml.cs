@@ -1,8 +1,6 @@
-using System;
 using Avalonia;
-using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
 
 namespace BindingDemo
 {
@@ -13,13 +11,19 @@ namespace BindingDemo
             AvaloniaXamlLoader.Load(this);
         }
 
-        private static void Main()
+        public override void OnFrameworkInitializationCompleted()
         {
-            AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .UseReactiveUI()
-                .LogToDebug()
-                .Start<MainWindow>();
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.MainWindow = new MainWindow();
+            base.OnFrameworkInitializationCompleted();
         }
+
+        public static int Main(string[] args)
+            => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+
+        public static AppBuilder BuildAvaloniaApp()
+          => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .LogToTrace();
     }
 }

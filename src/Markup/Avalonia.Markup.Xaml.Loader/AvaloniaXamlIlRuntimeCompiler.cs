@@ -26,6 +26,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
     {
 #if !RUNTIME_XAML_CECIL
         private static SreTypeSystem _sreTypeSystem;
+        private static Type _ignoresAccessChecksFromAttribute;
         private static ModuleBuilder _sreBuilder;
         private static IXamlType _sreContextType; 
         private static XamlLanguageTypeMappings _sreMappings;
@@ -94,8 +95,60 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     _sreTypeSystem.CreateTypeBuilder(
                         _sreBuilder.DefineType("XamlIlContext")), _sreTypeSystem, _sreMappings,
                         _sreEmitMappings);
+            if (_ignoresAccessChecksFromAttribute == null)
+                _ignoresAccessChecksFromAttribute = EmitIgnoresAccessCheckAttributeDefinition(_sreBuilder);
         }
 
+        static Type EmitIgnoresAccessCheckAttributeDefinition(ModuleBuilder builder)
+        {
+            var tb = builder.DefineType("System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute",
+                TypeAttributes.Class | TypeAttributes.Public, typeof(Attribute));
+            var field = tb.DefineField("_name", typeof(string), FieldAttributes.Private);
+            var propGet = tb.DefineMethod("get_AssemblyName", MethodAttributes.Public, typeof(string),
+                Array.Empty<Type>());
+            var propGetIl = propGet.GetILGenerator();
+            propGetIl.Emit(OpCodes.Ldarg_0);
+            propGetIl.Emit(OpCodes.Ldfld, field);
+            propGetIl.Emit(OpCodes.Ret);
+            var prop = tb.DefineProperty("AssemblyName", PropertyAttributes.None, typeof(string), Array.Empty<Type>());
+            prop.SetGetMethod(propGet);
+
+            
+            var ctor = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard,
+                new[] { typeof(string) });
+            var ctorIl = ctor.GetILGenerator();
+            ctorIl.Emit(OpCodes.Ldarg_0);
+            ctorIl.Emit(OpCodes.Ldarg_1);
+            ctorIl.Emit(OpCodes.Stfld, field);
+            ctorIl.Emit(OpCodes.Ldarg_0);
+            ctorIl.Emit(OpCodes.Call, typeof(Attribute)
+                .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .First(x => x.GetParameters().Length == 0));
+
+            ctorIl.Emit(OpCodes.Ret);
+
+            tb.SetCustomAttribute(new CustomAttributeBuilder(
+                typeof(AttributeUsageAttribute).GetConstructor(new[] { typeof(AttributeTargets) }),
+                new object[] { AttributeTargets.Assembly },
+                new[] { typeof(AttributeUsageAttribute).GetProperty("AllowMultiple") },
+                new object[] { true }));
+            
+            return tb.CreateTypeInfo();
+        }
+
+        static void EmitIgnoresAccessCheckToAttribute(AssemblyName assemblyName)
+        {
+            var name = assemblyName.Name;
+            if(string.IsNullOrWhiteSpace(name))
+                return;
+            var key = assemblyName.GetPublicKey();
+            if (key != null && key.Length != 0)
+                name += ", PublicKey=" + BitConverter.ToString(key).Replace("-", "").ToUpperInvariant();
+            _sreAsm.SetCustomAttribute(new CustomAttributeBuilder(
+                _ignoresAccessChecksFromAttribute.GetConstructors()[0],
+                new object[] { name }));
+        }
+        
 
         static object LoadSre(string xaml, Assembly localAssembly, object rootInstance, Uri uri, bool isDesignMode)
         {
@@ -118,6 +171,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
         {
 
             InitializeSre();
+            if (localAssembly?.GetName() != null)
+                EmitIgnoresAccessCheckToAttribute(localAssembly.GetName());
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
             var clrPropertyBuilder = tb.DefineNestedType("ClrProperties_" + Guid.NewGuid().ToString("N"));

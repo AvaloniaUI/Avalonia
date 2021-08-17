@@ -5,8 +5,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Input
 {
@@ -43,6 +46,14 @@ namespace Avalonia.Input
             AvaloniaProperty.Register<InputElement, Cursor?>(nameof(Cursor), null, true);
 
         /// <summary>
+        /// Defines the <see cref="IsKeyboardFocusWithin"/> property.
+        /// </summary>
+        public static readonly DirectProperty<InputElement, bool> IsKeyboardFocusWithinProperty =
+            AvaloniaProperty.RegisterDirect<InputElement, bool>(
+                nameof(IsKeyboardFocusWithin),
+                o => o.IsKeyboardFocusWithin);
+        
+        /// <summary>
         /// Defines the <see cref="IsFocused"/> property.
         /// </summary>
         public static readonly DirectProperty<InputElement, bool> IsFocusedProperty =
@@ -59,6 +70,12 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly DirectProperty<InputElement, bool> IsPointerOverProperty =
             AvaloniaProperty.RegisterDirect<InputElement, bool>(nameof(IsPointerOver), o => o.IsPointerOver);
+
+        /// <summary>
+        /// Defines the <see cref="IsTabStop"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsTabStopProperty =
+            KeyboardNavigation.IsTabStopProperty.AddOwner<InputElement>();
 
         /// <summary>
         /// Defines the <see cref="GotFocus"/> event.
@@ -89,11 +106,33 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="TabIndex"/> property.
+        /// </summary>
+        public static readonly StyledProperty<int> TabIndexProperty =
+            KeyboardNavigation.TabIndexProperty.AddOwner<InputElement>();
+
+        /// <summary>
         /// Defines the <see cref="TextInput"/> event.
         /// </summary>
         public static readonly RoutedEvent<TextInputEventArgs> TextInputEvent =
             RoutedEvent.Register<InputElement, TextInputEventArgs>(
                 "TextInput",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="TextInputMethodClientRequested"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputMethodClientRequestedEventArgs> TextInputMethodClientRequestedEvent =
+            RoutedEvent.Register<InputElement, TextInputMethodClientRequestedEventArgs>(
+                "TextInputMethodClientRequested",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="TextInputOptionsQuery"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextInputOptionsQueryEventArgs> TextInputOptionsQueryEvent =
+            RoutedEvent.Register<InputElement, TextInputOptionsQueryEventArgs>(
+                "TextInputOptionsQuery",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -151,15 +190,16 @@ namespace Avalonia.Input
         /// <summary>
         /// Defines the <see cref="Tapped"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> TappedEvent = Gestures.TappedEvent;
+        public static readonly RoutedEvent<TappedEventArgs> TappedEvent = Gestures.TappedEvent;
 
         /// <summary>
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
+        public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
+        private bool _isKeyboardFocusWithin;
         private bool _isFocusVisible;
         private bool _isPointerOver;
         private GestureRecognizerCollection? _gestureRecognizers;
@@ -234,6 +274,24 @@ namespace Avalonia.Input
             add { AddHandler(TextInputEvent, value); }
             remove { RemoveHandler(TextInputEvent, value); }
         }
+        
+        /// <summary>
+        /// Occurs when an input element gains input focus and input method is looking for the corresponding client
+        /// </summary>
+        public event EventHandler<TextInputMethodClientRequestedEventArgs> TextInputMethodClientRequested
+        {
+            add { AddHandler(TextInputMethodClientRequestedEvent, value); }
+            remove { RemoveHandler(TextInputMethodClientRequestedEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when an input element gains input focus and input method is asking for required content options
+        /// </summary>
+        public event EventHandler<TextInputOptionsQueryEventArgs> TextInputOptionsQuery
+        {
+            add { AddHandler(TextInputOptionsQueryEvent, value); }
+            remove { RemoveHandler(TextInputOptionsQueryEvent, value); }
+        }
 
         /// <summary>
         /// Occurs when the pointer enters the control.
@@ -302,7 +360,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a tap gesture occurs on the control.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Tapped
+        public event EventHandler<TappedEventArgs> Tapped
         {
             add { AddHandler(TappedEvent, value); }
             remove { RemoveHandler(TappedEvent, value); }
@@ -311,7 +369,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when a double-tap gesture occurs on the control.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> DoubleTapped
+        public event EventHandler<TappedEventArgs> DoubleTapped
         {
             add { AddHandler(DoubleTappedEvent, value); }
             remove { RemoveHandler(DoubleTappedEvent, value); }
@@ -343,6 +401,15 @@ namespace Avalonia.Input
             get { return GetValue(CursorProperty); }
             set { SetValue(CursorProperty, value); }
         }
+        
+        /// <summary>
+        /// Gets a value indicating whether keyboard focus is anywhere within the element or its visual tree child elements.
+        /// </summary>
+        public bool IsKeyboardFocusWithin
+        {
+            get => _isKeyboardFocusWithin;
+            internal set => SetAndRaise(IsKeyboardFocusWithinProperty, ref _isKeyboardFocusWithin, value); 
+        }
 
         /// <summary>
         /// Gets a value indicating whether the control is focused.
@@ -371,6 +438,15 @@ namespace Avalonia.Input
             internal set { SetAndRaise(IsPointerOverProperty, ref _isPointerOver, value); }
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates whether the control is included in tab navigation.
+        /// </summary>
+        public bool IsTabStop
+        {
+            get => GetValue(IsTabStopProperty);
+            set => SetValue(IsTabStopProperty, value);
+        }
+
         /// <inheritdoc/>
         public bool IsEffectivelyEnabled
         {
@@ -380,6 +456,16 @@ namespace Avalonia.Input
                 SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
                 PseudoClasses.Set(":disabled", !value);
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines the order in which elements receive focus when the
+        /// user navigates through controls by pressing the Tab key.
+        /// </summary>
+        public int TabIndex
+        {
+            get => GetValue(TabIndexProperty);
+            set => SetValue(TabIndexProperty, value);
         }
 
         public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
@@ -543,6 +629,10 @@ namespace Avalonia.Input
             else if (change.Property == IsPointerOverProperty)
             {
                 UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
+            }
+            else if (change.Property == IsKeyboardFocusWithinProperty)
+            {
+                PseudoClasses.Set(":focus-within", _isKeyboardFocusWithin);
             }
         }
 

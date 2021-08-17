@@ -150,12 +150,12 @@ namespace Avalonia.Native
         {
             get
             {
-                var s = _session.GetPixelSize();
+                var s = _session.PixelSize;
                 return new PixelSize(s.Width, s.Height);
             }
         }
 
-        public double Scaling => _session.GetScaling();
+        public double Scaling => _session.Scaling;
 
 
         public bool IsYFlipped => true;

@@ -22,5 +22,7 @@ namespace Avalonia.Skia
         /// Scaling factor.
         /// </summary>
         double ScaleFactor { get; }
+        
+        GRSurfaceOrigin SurfaceOrigin { get; }
     }
 }

@@ -1,6 +1,8 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
@@ -17,7 +19,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Displays a popup window.
     /// </summary>
-    public class Popup : Control, IVisualTreeHost
+    public class Popup : Control, IVisualTreeHost, IPopupHostProvider
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), true);
@@ -133,6 +135,7 @@ namespace Avalonia.Controls.Primitives
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
         private IInputElement _overlayInputPassThroughElement;
+        private Action<IPopupHost?>? _popupHostChangedHandler;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -153,6 +156,8 @@ namespace Avalonia.Controls.Primitives
         /// Raised when the popup opens.
         /// </summary>
         public event EventHandler? Opened;
+
+        internal event EventHandler<CancelEventArgs>? Closing;
 
         public IPopupHost? Host => _openState?.PopupHost;
 
@@ -265,6 +270,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the control that is used to determine the popup's position.
         /// </summary>
+        [ResolveByName]
         public Control? PlacementTarget
         {
             get { return GetValue(PlacementTargetProperty); }
@@ -347,6 +353,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IVisual? IVisualTreeHost.Root => _openState?.PopupHost.HostedVisualTreeRoot;
 
+        IPopupHost? IPopupHostProvider.PopupHost => Host;
+
+        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
+        { 
+            add => _popupHostChangedHandler += value; 
+            remove => _popupHostChangedHandler -= value;
+        }
+
         /// <summary>
         /// Opens the popup.
         /// </summary>
@@ -358,7 +372,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            var placementTarget = PlacementTarget ?? this.GetLogicalAncestors().OfType<IVisual>().FirstOrDefault();
+            var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
 
             if (placementTarget == null)
             {
@@ -478,6 +492,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             Opened?.Invoke(this, EventArgs.Empty);
+
+            _popupHostChangedHandler?.Invoke(Host);
         }
 
         /// <summary>
@@ -566,6 +582,13 @@ namespace Avalonia.Controls.Primitives
 
         private void CloseCore()
         {
+            var closingArgs = new CancelEventArgs();
+            Closing?.Invoke(this, closingArgs);
+            if (closingArgs.Cancel)
+            {
+                return;
+            }
+
             _isOpenRequested = false;
             if (_openState is null)
             {
@@ -580,12 +603,34 @@ namespace Avalonia.Controls.Primitives
             _openState.Dispose();
             _openState = null;
 
+            _popupHostChangedHandler?.Invoke(null);
+
             using (BeginIgnoringIsOpen())
             {
                 IsOpen = false;
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
+
+            var focusCheck = FocusManager.Instance?.Current;
+
+            // Focus is set to null as part of popup closing, so we only want to
+            // set focus to PlacementTarget if this is the case
+            if (focusCheck == null)
+            {
+                if (PlacementTarget != null)
+                {
+                    FocusManager.Instance?.Focus(PlacementTarget);
+                }
+                else
+                {
+                    var anc = this.FindLogicalAncestorOfType<IControl>();
+                    if (anc != null)
+                    {
+                        FocusManager.Instance?.Focus(anc);
+                    }
+                }
+            }
         }
 
         private void ListenForNonClientClick(RawInputEventArgs e)

@@ -485,6 +485,85 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void Closing_Popup_Sets_Focus_On_PlacementTarget()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+
+                var tb = new TextBox();
+                var p = new Popup
+                {
+                    PlacementTarget = window,
+                    Child = tb
+                };
+                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+                window.Show();
+
+                p.Open();
+
+                if (p.Host is OverlayPopupHost host)
+                {
+                    //Need to measure/arrange for visual children to show up
+                    //in OverlayPopupHost
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                tb.Focus();
+
+                p.Close();
+
+                var focus = FocusManager.Instance?.Current;
+                Assert.True(focus == window);
+            }
+        }
+
+        [Fact]
+        public void Prog_Close_Popup_NoLightDismiss_Doesnt_Move_Focus_To_PlacementTarget()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var window = PreparedWindow();
+
+                var windowTB = new TextBox();
+                window.Content = windowTB;
+
+                var popupTB = new TextBox();
+                var p = new Popup
+                {
+                    PlacementTarget = window,
+                    IsLightDismissEnabled = false,
+                    Child = popupTB
+                };
+                ((ISetLogicalParent)p).SetParent(p.PlacementTarget);
+                window.Show();
+
+                p.Open();
+
+                if (p.Host is OverlayPopupHost host)
+                {
+                    //Need to measure/arrange for visual children to show up
+                    //in OverlayPopupHost
+                    host.Measure(Size.Infinity);
+                    host.Arrange(new Rect(host.DesiredSize));
+                }
+
+                popupTB.Focus();
+
+                windowTB.Focus();
+
+                var focus = FocusManager.Instance?.Current;
+
+                Assert.True(focus == windowTB);
+
+                p.Close();
+
+                Assert.True(focus == windowTB);
+            }
+        }
+
         private IDisposable CreateServices()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:

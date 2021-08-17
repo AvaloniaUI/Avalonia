@@ -1,7 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.AstNodes;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using Avalonia.Media;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
@@ -166,28 +170,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public static bool CustomValueConverter(AstTransformationContext context,
             IXamlAstValueNode node, IXamlType type, out IXamlAstValueNode result)
         {
-            if (type.FullName == "System.TimeSpan" 
-                && node is XamlAstTextNode tn
-                && !tn.Text.Contains(":"))
+            if (!(node is XamlAstTextNode textNode))
             {
-                var seconds = double.Parse(tn.Text, CultureInfo.InvariantCulture);
-                result = new XamlStaticOrTargetedReturnMethodCallNode(tn,
-                    type.FindMethod("FromSeconds", type, false, context.Configuration.WellKnownTypes.Double),
-                    new[]
-                    {
-                        new XamlConstantNode(tn, context.Configuration.WellKnownTypes.Double, seconds)
-                    });
-                return true;
+                result = null;
+                return false;
             }
 
+            var text = textNode.Text;
+            var types = context.GetAvaloniaTypes();
+
+            if (AvaloniaXamlIlLanguageParseIntrinsics.TryConvert(context, node, text, type, types, out result))
+            {
+                return true;
+            }
+            
             if (type.FullName == "Avalonia.AvaloniaProperty")
             {
                 var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
                 if (scope == null)
                     throw new XamlX.XamlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
-                if (!(node is XamlAstTextNode text))
-                    throw new XamlX.XamlLoadException("Property should be a text node", node);
-                result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text.Text, scope.TargetType, text);
+
+                result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text, scope.TargetType, node );
                 return true;
             }
 

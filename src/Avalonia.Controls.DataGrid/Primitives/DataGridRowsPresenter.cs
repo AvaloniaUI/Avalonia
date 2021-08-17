@@ -3,18 +3,27 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using Avalonia.Media;
 using System;
 using System.Diagnostics;
+
+using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
+using Avalonia.Layout;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Used within the template of a <see cref="T:Avalonia.Controls.DataGrid" /> to specify the 
+    /// Used within the template of a <see cref="T:Avalonia.Controls.DataGrid" /> to specify the
     /// location in the control's visual tree where the rows are to be added.
     /// </summary>
     public sealed class DataGridRowsPresenter : Panel
     {
+        public DataGridRowsPresenter()
+        {
+            AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
+        }
+
         internal DataGrid OwningGrid
         {
             get;
@@ -22,9 +31,10 @@ namespace Avalonia.Controls.Primitives
         }
 
         private double _measureHeightOffset = 0;
+
         private double CalculateEstimatedAvailableHeight(Size availableSize)
         {
-            if(!Double.IsPositiveInfinity(availableSize.Height))
+            if (!Double.IsPositiveInfinity(availableSize.Height))
             {
                 return availableSize.Height + _measureHeightOffset;
             }
@@ -50,10 +60,10 @@ namespace Avalonia.Controls.Primitives
                 return base.ArrangeOverride(finalSize);
             }
 
-            if(OwningGrid.RowsPresenterAvailableSize.HasValue)
+            if (OwningGrid.RowsPresenterAvailableSize.HasValue)
             {
                 var availableHeight = OwningGrid.RowsPresenterAvailableSize.Value.Height;
-                if(!Double.IsPositiveInfinity(availableHeight))
+                if (!Double.IsPositiveInfinity(availableHeight))
                 {
                     _measureHeightOffset = finalSize.Height - availableHeight;
                     OwningGrid.RowsPresenterEstimatedAvailableHeight = finalSize.Height;
@@ -108,6 +118,18 @@ namespace Avalonia.Controls.Primitives
         /// </returns>
         protected override Size MeasureOverride(Size availableSize)
         {
+            if (double.IsInfinity(availableSize.Height))
+            {
+                if (VisualRoot is TopLevel topLevel)
+                {
+                    double maxHeight = topLevel.IsArrangeValid ?
+                                        topLevel.Bounds.Height :
+                                        LayoutHelper.ApplyLayoutConstraints(topLevel, availableSize).Height;
+
+                    availableSize = availableSize.WithHeight(maxHeight);
+                }
+            }
+
             if (availableSize.Height == 0 || OwningGrid == null)
             {
                 return base.MeasureOverride(availableSize);
@@ -160,6 +182,11 @@ namespace Avalonia.Controls.Primitives
             totalHeight = Math.Max(0, totalHeight);
 
             return new Size(totalCellsWidth + headerWidth, totalHeight);
+        }
+
+        private void OnScrollGesture(object sender, ScrollGestureEventArgs e)
+        {
+            e.Handled = e.Handled || OwningGrid.UpdateScroll(-e.Delta);
         }
 
 #if DEBUG

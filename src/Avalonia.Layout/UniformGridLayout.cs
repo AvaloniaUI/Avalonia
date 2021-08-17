@@ -447,7 +447,7 @@ namespace Avalonia.Layout
             // and only use the layout when to clear it when it's done.
             gridState.EnsureFirstElementOwnership(context);
 
-            return new Size(desiredSize.Width, desiredSize.Height);
+            return desiredSize;
         }
 
         protected internal override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)

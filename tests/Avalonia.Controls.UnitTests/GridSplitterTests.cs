@@ -11,8 +11,8 @@ namespace Avalonia.Controls.UnitTests
     {
         public GridSplitterTests()
         {
-            var cursorFactoryImpl = new Mock<IStandardCursorFactory>();
-            AvaloniaLocator.CurrentMutable.Bind<IStandardCursorFactory>().ToConstant(cursorFactoryImpl.Object);
+            var cursorFactoryImpl = new Mock<ICursorFactory>();
+            AvaloniaLocator.CurrentMutable.Bind<ICursorFactory>().ToConstant(cursorFactoryImpl.Object);
         }
 
         [Fact]

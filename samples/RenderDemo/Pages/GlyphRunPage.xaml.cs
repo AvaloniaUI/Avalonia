@@ -9,7 +9,7 @@ namespace RenderDemo.Pages
 {
     public class GlyphRunPage : UserControl
     {
-        private DrawingPresenter _drawingPresenter;
+        private Image _imageControl;
         private GlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
         private readonly Random _rand = new Random();
         private ushort[] _glyphIndices = new ushort[1];
@@ -25,7 +25,8 @@ namespace RenderDemo.Pages
         {
             AvaloniaXamlLoader.Load(this);
 
-            _drawingPresenter = this.FindControl<DrawingPresenter>("drawingPresenter");
+            _imageControl = this.FindControl<Image>("imageControl");
+            _imageControl.Source = new DrawingImage();
 
             DispatcherTimer.Run(() =>
             {
@@ -73,7 +74,7 @@ namespace RenderDemo.Pages
 
             drawingGroup.Children.Add(geometryDrawing);
 
-            _drawingPresenter.Drawing = drawingGroup;
+            (_imageControl.Source as DrawingImage).Drawing = drawingGroup;
         }
     }
 }

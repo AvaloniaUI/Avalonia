@@ -1,8 +1,10 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -31,6 +33,7 @@ namespace Avalonia.Controls
         ICloseable,
         IStyleHost,
         ILogicalRoot,
+        ITextInputMethodRoot,
         IWeakSubscriber<ResourcesChangedEventArgs>
     {
         /// <summary>
@@ -38,6 +41,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<TopLevel, Size> ClientSizeProperty =
             AvaloniaProperty.RegisterDirect<TopLevel, Size>(nameof(ClientSize), o => o.ClientSize);
+
+        /// <summary>
+        /// Defines the <see cref="FrameSize"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TopLevel, Size?> FrameSizeProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, Size?>(nameof(FrameSize), o => o.FrameSize);
 
         /// <summary>
         /// Defines the <see cref="IInputRoot.PointerOverElement"/> property.
@@ -71,6 +80,7 @@ namespace Avalonia.Controls
         private readonly IPlatformRenderInterface _renderInterface;
         private readonly IGlobalStyles _globalStyles;
         private Size _clientSize;
+        private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager _layoutManager;
         private Border _transparencyFallbackBorder;
@@ -80,6 +90,7 @@ namespace Avalonia.Controls
         /// </summary>
         static TopLevel()
         {
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
             TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
@@ -158,11 +169,12 @@ namespace Avalonia.Controls
             styler?.ApplyStyles(this);
 
             ClientSize = impl.ClientSize;
+            FrameSize = impl.FrameSize;
             
             this.GetObservable(PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
-                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformCursor));
+                .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformImpl));
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
@@ -195,6 +207,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the total size of the window.
+        /// </summary>
+        public Size? FrameSize
+        {
+            get { return _frameSize; }
+            protected set { SetAndRaise(FrameSizeProperty, ref _frameSize, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="WindowTransparencyLevel"/> that the TopLevel should use when possible.
         /// </summary>
         public WindowTransparencyLevel TransparencyLevelHint
@@ -204,7 +225,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the acheived <see cref="WindowTransparencyLevel"/> that the platform was able to provide.
+        /// Gets the achieved <see cref="WindowTransparencyLevel"/> that the platform was able to provide.
         /// </summary>
         public WindowTransparencyLevel ActualTransparencyLevel
         {
@@ -356,13 +377,18 @@ namespace Avalonia.Controls
             LayoutManager?.Dispose();
         }
 
+        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
+        protected virtual void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
+
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
-        protected virtual void HandleResized(Size clientSize)
+        /// <param name="reason">The reason for the resize.</param>
+        protected virtual void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
             ClientSize = clientSize;
+            FrameSize = PlatformImpl.FrameSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.ExecuteLayoutPass();
@@ -489,5 +515,8 @@ namespace Avalonia.Controls
             if (focused == this)
                 KeyboardDevice.Instance.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
         }
+
+        ITextInputMethodImpl ITextInputMethodRoot.InputMethod =>
+            (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
     }
 }

@@ -26,10 +26,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 Path = Path,
                 Converter = Converter,
+                ConverterParameter = ConverterParameter,
+                TargetNullValue = TargetNullValue,
                 FallbackValue = FallbackValue,
                 Mode = Mode,
                 Priority = Priority,
                 StringFormat = StringFormat,
+                Source = Source,
                 DefaultAnchor = new WeakReference(GetDefaultAnchor(provider))
             };
         }
@@ -50,6 +53,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
         {
+            if (Source != null)
+            {
+                return CreateSourceObserver(
+                    Source,
+                    Path.BuildExpression(enableDataValidation));
+            }
+
             if (Path.RawSource != null)
             {
                 return CreateSourceObserver(
@@ -75,5 +85,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         [ConstructorArgument("path")]
         public CompiledBindingPath Path { get; set; }
+
+        public object Source { get; set; }
     }
 }

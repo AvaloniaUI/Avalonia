@@ -88,11 +88,14 @@
           <TextBox Name="PART_TextBox"
                    Background="{TemplateBinding Background}" 
                    BorderBrush="{TemplateBinding BorderBrush}" 
-                   BorderThickness="{TemplateBinding BorderThickness}" 
+                   BorderThickness="{TemplateBinding BorderThickness}"
+                   CornerRadius="{TemplateBinding CornerRadius}"
                    Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
                    UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                    Grid.Column="0"/>
 
           <Button Name="PART_Button"

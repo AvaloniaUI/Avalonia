@@ -73,20 +73,20 @@ namespace Avalonia.Platform
         {
             if (effect == DragDropEffects.Copy || effect == DragDropEffects.Move || effect == DragDropEffects.Link || effect == DragDropEffects.None)
                 return effect; // No need to check for the modifiers.
-            if (effect.HasFlag(DragDropEffects.Link) && modifiers.HasFlag(RawInputModifiers.Alt))
+            if (effect.HasAllFlags(DragDropEffects.Link) && modifiers.HasAllFlags(RawInputModifiers.Alt))
                 return DragDropEffects.Link;
-            if (effect.HasFlag(DragDropEffects.Copy) && modifiers.HasFlag(RawInputModifiers.Control))
+            if (effect.HasAllFlags(DragDropEffects.Copy) && modifiers.HasAllFlags(RawInputModifiers.Control))
                 return DragDropEffects.Copy;
             return DragDropEffects.Move;
         }
 
         private StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
         {
-            if (effects.HasFlag(DragDropEffects.Copy))
+            if (effects.HasAllFlags(DragDropEffects.Copy))
                 return StandardCursorType.DragCopy;
-            if (effects.HasFlag(DragDropEffects.Move))
+            if (effects.HasAllFlags(DragDropEffects.Move))
                 return StandardCursorType.DragMove;
-            if (effects.HasFlag(DragDropEffects.Link))
+            if (effects.HasAllFlags(DragDropEffects.Link))
                 return StandardCursorType.DragLink;
             return StandardCursorType.No;
         }
@@ -161,7 +161,7 @@ namespace Avalonia.Platform
             
             void CheckDraggingAccepted(RawInputModifiers changedMouseButton)
             {
-                if (_initialInputModifiers.Value.HasFlag(changedMouseButton))
+                if (_initialInputModifiers.Value.HasAllFlags(changedMouseButton))
                 {
                     var result = RaiseEventAndUpdateCursor(RawDragEventType.Drop, e.Root, e.Position, e.InputModifiers);
                     UpdateCursor(null, DragDropEffects.None);

@@ -4,11 +4,10 @@ using System.Threading;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using SharpGen.Runtime;
 
 namespace Avalonia.Native
 {
-    public class PlatformThreadingInterface : IPlatformThreadingInterface
+    internal class PlatformThreadingInterface : IPlatformThreadingInterface
     {
         class TimerCallback : CallbackBase, IAvnActionCallback
         {
@@ -34,9 +33,9 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
-            public void Signaled(int priority, bool priorityContainsMeaningfulValue)
+            public void Signaled(int priority, int priorityContainsMeaningfulValue)
             {
-                _parent.Signaled?.Invoke(priorityContainsMeaningfulValue ? (DispatcherPriority?)priority : null);
+                _parent.Signaled?.Invoke(priorityContainsMeaningfulValue.FromComBool() ? (DispatcherPriority?)priority : null);
             }
         }
 
@@ -48,10 +47,10 @@ namespace Avalonia.Native
         {
             _native = native;
             using (var cb = new SignaledCallback(this))
-                _native.SignaledCallback = cb;
+                _native.SetSignaledCallback(cb);
         }
 
-        public bool CurrentThreadIsLoopThread => _native.CurrentThreadIsLoopThread;
+        public bool CurrentThreadIsLoopThread => _native.CurrentThreadIsLoopThread.FromComBool();
 
         public event Action<DispatcherPriority?> Signaled;
 

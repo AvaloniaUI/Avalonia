@@ -1,5 +1,8 @@
 ﻿<ProjectConfiguration>
   <Settings>
+    <AdditionalFilesToIncludeForProject>
+      <Value>..\..\tools\MicroComGenerator\bin\Debug\netcoreapp3.1\**.*</Value>
+    </AdditionalFilesToIncludeForProject>
     <HiddenComponentWarnings>
       <Value>MissingOrIgnoredProjectReference</Value>
     </HiddenComponentWarnings>

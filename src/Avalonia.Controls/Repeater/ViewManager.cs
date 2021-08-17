@@ -174,7 +174,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                // We could not find a candiate.
+                // We could not find a candidate.
                 _lastFocusedElement = null;
             }
         }
@@ -661,7 +661,7 @@ namespace Avalonia.Controls
                 children.Add(element);
             }
 
-            repeater.OnElementPrepared(element, index);
+            repeater.OnElementPrepared(element, virtInfo);
 
             // Update realized indices
             _firstRealizedElementIndexHeldByLayout = Math.Min(_firstRealizedElementIndexHeldByLayout, index);

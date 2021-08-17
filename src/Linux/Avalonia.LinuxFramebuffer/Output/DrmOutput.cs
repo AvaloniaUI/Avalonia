@@ -16,7 +16,6 @@ namespace Avalonia.LinuxFramebuffer.Output
     public unsafe class DrmOutput : IGlOutputBackend, IGlPlatformSurface
     {
         private DrmCard _card;
-        private readonly EglGlPlatformSurface _eglPlatformSurface;
         public PixelSize PixelSize => _mode.Resolution;
         public double Scaling { get; set; }
         public IGlContext PrimaryContext => _deferredContext;
@@ -141,17 +140,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             _platformGl = new EglPlatformOpenGlInterface(_eglDisplay);
             _eglSurface =  _platformGl.CreateWindowSurface(_gbmTargetSurface);
 
-
-            EglContext CreateContext(EglContext share)
-            {
-                var offSurf = gbm_surface_create(device, 1, 1, GbmColorFormats.GBM_FORMAT_XRGB8888,
-                    GbmBoFlags.GBM_BO_USE_RENDERING);
-                if (offSurf == null)
-                    throw new InvalidOperationException("Unable to create 1x1 sized GBM surface");
-                return _eglDisplay.CreateContext(share, _platformGl.CreateWindowSurface(offSurf));
-            }
-            
-            _deferredContext = CreateContext(null);
+            _deferredContext = _platformGl.PrimaryEglContext;
 
             using (_deferredContext.MakeCurrent(_eglSurface))
             {

@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Dialogs;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
-using Avalonia.Skia;
-using Avalonia.ReactiveUI;
 using Avalonia.Threading;
-using Avalonia.Dialogs;
 
 namespace ControlCatalog.NetCore
 {
@@ -111,17 +109,16 @@ namespace ControlCatalog.NetCore
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    UseDBusMenu = true
+                    UseDBusMenu = true,
+                    EnableIme = true,
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true,
-                    AllowEglInitialization = true
+                    EnableMultitouch = true
                 })
                 .UseSkia()
-                .UseReactiveUI()
                 .UseManagedSystemDialogs()
-                .LogToDebug();
+                .LogToTrace();
 
         static void SilenceConsole()
         {

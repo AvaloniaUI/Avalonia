@@ -40,7 +40,7 @@ namespace Avalonia.Layout
             {
                 if (IsVirtualizingContext)
                 {
-                    // We proactively clear elements laid out outside of the realizaton
+                    // We proactively clear elements laid out outside of the realization
                     // rect so that they are available for reuse during the current
                     // measure pass.
                     // This is useful during fast panning scenarios in which the realization
@@ -129,7 +129,7 @@ namespace Avalonia.Layout
         {
             for (int i = 0; i < count; i++)
             {
-                // Clear from the edges so that ItemsRepeater can optimize on maintaining 
+                // Clear from the edges so that ItemsRepeater can optimize on maintaining
                 // realized indices without walking through all the children every time.
                 int index = realizedIndex == 0 ? realizedIndex + i : (realizedIndex + count - 1) - i;
                 var elementRef = _realizedElements[index];
@@ -207,12 +207,12 @@ namespace Avalonia.Layout
             }
         }
 
-        public bool IsIndexValidInData(int currentIndex) => currentIndex >= 0 && currentIndex < _context.ItemCount;
+        public bool IsIndexValidInData(int currentIndex) => (uint)currentIndex < _context.ItemCount;
 
         public ILayoutable GetRealizedElement(int dataIndex)
         {
             return IsVirtualizingContext ?
-                GetAt(GetRealizedRangeIndexFromDataIndex(dataIndex)) : 
+                GetAt(GetRealizedRangeIndexFromDataIndex(dataIndex)) :
                 _context.GetOrCreateElementAt(
                     dataIndex,
                     ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
@@ -252,7 +252,6 @@ namespace Avalonia.Layout
                     (orientation == ScrollOrientation.Vertical ? ScrollOrientation.Horizontal : ScrollOrientation.Vertical) :
                     orientation;
 
-
                 var windowStart = effectiveOrientation == ScrollOrientation.Vertical ? window.Y : window.X;
                 var windowEnd = effectiveOrientation == ScrollOrientation.Vertical ? window.Y + window.Height : window.X + window.Width;
                 var firstElementStart = effectiveOrientation == ScrollOrientation.Vertical ? firstElementBounds.Y : firstElementBounds.X;
@@ -273,60 +272,63 @@ namespace Avalonia.Layout
                 switch (args.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                    {
-                        OnItemsAdded(args.NewStartingIndex, args.NewItems.Count);
-                    }
-                    break;
+                        {
+                            OnItemsAdded(args.NewStartingIndex, args.NewItems.Count);
+                        }
+                        break;
 
                     case NotifyCollectionChangedAction.Replace:
-                    {
-                        int oldSize = args.OldItems.Count;
-                        int newSize = args.NewItems.Count;
-                        int oldStartIndex = args.OldStartingIndex;
-                        int newStartIndex = args.NewStartingIndex;
-
-                        if (oldSize == newSize &&
-                            oldStartIndex == newStartIndex &&
-                            IsDataIndexRealized(oldStartIndex) &&
-                            IsDataIndexRealized(oldStartIndex + oldSize -1))
                         {
-                            // Straight up replace of n items within the realization window.
-                            // Removing and adding might causes us to lose the anchor causing us
-                            // to throw away all containers and start from scratch.
-                            // Instead, we can just clear those items and set the element to
-                            // null (sentinel) and let the next measure get new containers for them.
-                            var startRealizedIndex = GetRealizedRangeIndexFromDataIndex(oldStartIndex);
-                            for (int realizedIndex = startRealizedIndex; realizedIndex < startRealizedIndex + oldSize; realizedIndex++)
-                            {
-                                var elementRef = _realizedElements[realizedIndex];
+                            int oldSize = args.OldItems.Count;
+                            int newSize = args.NewItems.Count;
+                            int oldStartIndex = args.OldStartingIndex;
+                            int newStartIndex = args.NewStartingIndex;
 
-                                if (elementRef != null)
+                            if (oldSize == newSize &&
+                                oldStartIndex == newStartIndex &&
+                                IsDataIndexRealized(oldStartIndex) &&
+                                IsDataIndexRealized(oldStartIndex + oldSize - 1))
+                            {
+                                // Straight up replace of n items within the realization window.
+                                // Removing and adding might causes us to lose the anchor causing us
+                                // to throw away all containers and start from scratch.
+                                // Instead, we can just clear those items and set the element to
+                                // null (sentinel) and let the next measure get new containers for them.
+                                var startRealizedIndex = GetRealizedRangeIndexFromDataIndex(oldStartIndex);
+                                for (int realizedIndex = startRealizedIndex; realizedIndex < startRealizedIndex + oldSize; realizedIndex++)
                                 {
-                                    _context.RecycleElement(elementRef);
-                                    _realizedElements[realizedIndex] = null;
+                                    var elementRef = _realizedElements[realizedIndex];
+
+                                    if (elementRef != null)
+                                    {
+                                        _context.RecycleElement(elementRef);
+                                        _realizedElements[realizedIndex] = null;
+                                    }
                                 }
                             }
+                            else
+                            {
+                                OnItemsRemoved(oldStartIndex, oldSize);
+                                OnItemsAdded(newStartIndex, newSize);
+                            }
                         }
-                        else
-                        {
-                            OnItemsRemoved(oldStartIndex, oldSize);
-                            OnItemsAdded(newStartIndex, newSize);
-                        }
-                    }
-                    break;
+                        break;
 
                     case NotifyCollectionChangedAction.Remove:
-                    {
-                        OnItemsRemoved(args.OldStartingIndex, args.OldItems.Count);
-                    }
-                    break;
+                        {
+                            OnItemsRemoved(args.OldStartingIndex, args.OldItems.Count);
+                        }
+                        break;
 
                     case NotifyCollectionChangedAction.Reset:
                         ClearRealizedRange();
                         break;
 
                     case NotifyCollectionChangedAction.Move:
-                        throw new NotImplementedException();
+                        int size = args.OldItems != null ? args.OldItems.Count : 1;
+                        OnItemsRemoved(args.OldStartingIndex, size);
+                        OnItemsAdded(args.NewStartingIndex, size);
+                        break;
                 }
             }
         }
@@ -376,7 +378,7 @@ namespace Avalonia.Layout
             int backCutoffIndex = realizedRangeSize;
 
             for (int i = 0;
-                i<realizedRangeSize &&
+                i < realizedRangeSize &&
                 !Intersects(window, _realizedElementLayoutBounds[i], orientation);
                 ++i)
             {
@@ -391,7 +393,7 @@ namespace Avalonia.Layout
                 --backCutoffIndex;
             }
 
-            if (backCutoffIndex<realizedRangeSize - 1)
+            if (backCutoffIndex < realizedRangeSize - 1)
             {
                 ClearRealizedRange(backCutoffIndex + 1, realizedRangeSize - backCutoffIndex - 1);
             }
@@ -419,14 +421,14 @@ namespace Avalonia.Layout
             // to insert items.
             int lastRealizedDataIndex = _firstRealizedDataIndex + GetRealizedElementCount() - 1;
             int newStartingIndex = index;
-            if (newStartingIndex > _firstRealizedDataIndex &&
+            if (newStartingIndex >= _firstRealizedDataIndex &&
                 newStartingIndex <= lastRealizedDataIndex)
             {
                 // Inserted within the realized range
                 int insertRangeStartIndex = newStartingIndex - _firstRealizedDataIndex;
                 for (int i = 0; i < count; i++)
                 {
-                    // Insert null (sentinel) here instead of an element, that way we dont 
+                    // Insert null (sentinel) here instead of an element, that way we dont
                     // end up creating a lot of elements only to be thrown out in the next layout.
                     int insertRangeIndex = insertRangeStartIndex + i;
                     int dataIndex = newStartingIndex + i;

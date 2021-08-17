@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.OpenGL.Imaging;
 using SkiaSharp;
@@ -15,6 +16,20 @@ namespace Avalonia.Skia
         /// <param name="surfaces">Surfaces.</param>
         /// <returns>Created render target or <see langword="null"/> if it fails.</returns>
         ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces);
+
+        /// <summary>
+        /// Creates an offscreen render target surface
+        /// </summary>
+        /// <param name="size">size in pixels</param>
+        /// <param name="session">current Skia render session</param>
+        ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session);
+    }
+    
+    public interface ISkiaSurface : IDisposable
+    {
+        SKSurface Surface { get; }
+        bool CanBlit { get; }
+        void Blit(SKCanvas canvas);
     }
 
     public interface IOpenGlAwareSkiaGpu : ISkiaGpu

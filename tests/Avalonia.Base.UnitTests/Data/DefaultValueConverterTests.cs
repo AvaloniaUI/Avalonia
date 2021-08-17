@@ -1,12 +1,11 @@
-using System.Globalization;
-using Avalonia.Controls;
-using Avalonia.Data;
-using Xunit;
-using System.Windows.Input;
 using System;
+using System.ComponentModel;
+using System.Globalization;
+using System.Windows.Input;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Layout;
-using System.ComponentModel;
+using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Converters
 {
@@ -250,6 +249,11 @@ namespace Avalonia.Base.UnitTests.Data.Converters
             public override bool Equals(object obj)
             {
                 return obj is CustomType other && this.Value == other.Value;
+            }
+
+            public override int GetHashCode()
+            {
+                return 8399587^Value.GetHashCode();
             }
         }
 

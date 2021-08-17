@@ -2,9 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform;
+using Avalonia.Controls.Remote;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Platform;
 using Avalonia.Win32.Input;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -18,7 +19,6 @@ namespace Avalonia.Win32
         {
             const double wheelDelta = 120.0;
             uint timestamp = unchecked((uint)GetMessageTime());
-
             RawInputEventArgs e = null;
             var shouldTakeFocus = false;
 
@@ -65,6 +65,11 @@ namespace Avalonia.Win32
                             return IntPtr.Zero;
                         }
 
+                        BeforeCloseCleanup(false);
+
+                        // Used to distinguish between programmatic and regular close requests.
+                        _isCloseRequested = true;
+
                         break;
                     }
 
@@ -89,14 +94,19 @@ namespace Avalonia.Win32
                         var newDisplayRect = Marshal.PtrToStructure<RECT>(lParam);
                         _scaling = dpi / 96.0;
                         ScalingChanged?.Invoke(_scaling);
-                        SetWindowPos(hWnd,
-                            IntPtr.Zero,
-                            newDisplayRect.left,
-                            newDisplayRect.top,
-                            newDisplayRect.right - newDisplayRect.left,
-                            newDisplayRect.bottom - newDisplayRect.top,
-                            SetWindowPosFlags.SWP_NOZORDER |
-                            SetWindowPosFlags.SWP_NOACTIVATE);
+                        
+                        using (SetResizeReason(PlatformResizeReason.DpiChange))
+                        { 
+                            SetWindowPos(hWnd,
+                                IntPtr.Zero,
+                                newDisplayRect.left,
+                                newDisplayRect.top,
+                                newDisplayRect.right - newDisplayRect.left,
+                                newDisplayRect.bottom - newDisplayRect.top,
+                                SetWindowPosFlags.SWP_NOZORDER |
+                                SetWindowPosFlags.SWP_NOACTIVATE);
+                        }
+
                         return IntPtr.Zero;
                     }
 
@@ -305,9 +315,9 @@ namespace Avalonia.Win32
                             {
                                 Input?.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                     _owner,
-                                    touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_UP) ?
+                                    touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_UP) ?
                                         RawPointerEventType.TouchEnd :
-                                        touchInput.Flags.HasFlagCustom(TouchInputFlags.TOUCHEVENTF_DOWN) ?
+                                        touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                             RawPointerEventType.TouchBegin :
                                             RawPointerEventType.TouchUpdate,
                                     PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
@@ -342,24 +352,31 @@ namespace Avalonia.Win32
                     }
 
                 case WindowsMessage.WM_PAINT:
+                {
+                    using(NonPumpingSyncContext.Use())
+                    using (_rendererLock.Lock())
                     {
-                        using (_rendererLock.Lock())
+                        if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
                         {
-                            if (BeginPaint(_hwnd, out PAINTSTRUCT ps) != IntPtr.Zero)
-                            {
-                                var f = RenderScaling;
-                                var r = ps.rcPaint;
-                                Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
-                                    (r.bottom - r.top) / f));
-                                EndPaint(_hwnd, ref ps);
-                            }
+                            var f = RenderScaling;
+                            var r = ps.rcPaint;
+                            Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
+                                (r.bottom - r.top) / f));
+                            EndPaint(_hwnd, ref ps);
                         }
-
-                        return IntPtr.Zero;
                     }
+
+                    return IntPtr.Zero;
+                }
+
+
+                case WindowsMessage.WM_ENTERSIZEMOVE:
+                    _resizeReason = PlatformResizeReason.User;
+                    break;
 
                 case WindowsMessage.WM_SIZE:
                     {
+                        using(NonPumpingSyncContext.Use())
                         using (_rendererLock.Lock())
                         {
                             // Do nothing here, just block until the pending frame render is completed on the render thread
@@ -372,7 +389,7 @@ namespace Avalonia.Win32
                              size == SizeCommand.Maximized))
                         {
                             var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
-                            Resized(clientSize / RenderScaling);
+                            Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
                         var windowState = size == SizeCommand.Maximized ?
@@ -395,6 +412,10 @@ namespace Avalonia.Win32
 
                         return IntPtr.Zero;
                     }
+
+                case WindowsMessage.WM_EXITSIZEMOVE:
+                    _resizeReason = PlatformResizeReason.Unspecified;
+                    break;
 
                 case WindowsMessage.WM_MOVE:
                     {
@@ -514,27 +535,27 @@ namespace Avalonia.Win32
             var keys = (ModifierKeys)ToInt32(wParam);
             var modifiers = WindowsKeyboardDevice.Instance.Modifiers;
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_LBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_LBUTTON))
             {
                 modifiers |= RawInputModifiers.LeftMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_RBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_RBUTTON))
             {
                 modifiers |= RawInputModifiers.RightMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_MBUTTON))
+            if (keys.HasAllFlags(ModifierKeys.MK_MBUTTON))
             {
                 modifiers |= RawInputModifiers.MiddleMouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_XBUTTON1))
+            if (keys.HasAllFlags(ModifierKeys.MK_XBUTTON1))
             {
                 modifiers |= RawInputModifiers.XButton1MouseButton;
             }
 
-            if (keys.HasFlagCustom(ModifierKeys.MK_XBUTTON2))
+            if (keys.HasAllFlags(ModifierKeys.MK_XBUTTON2))
             {
                 modifiers |= RawInputModifiers.XButton2MouseButton;
             }

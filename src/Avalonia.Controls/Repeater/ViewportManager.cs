@@ -27,7 +27,6 @@ namespace Avalonia.Controls
         private IScrollAnchorProvider _scroller;
         private IControl _makeAnchorElement;
         private bool _isAnchorOutsideRealizedRange;
-        private Task _cacheBuildAction;
         private Rect _visibleWindow;
         private Rect _layoutExtent;
         // This is the expected shift by the layout.
@@ -187,7 +186,7 @@ namespace Avalonia.Controls
                 _expectedViewportShift.X + _layoutExtent.X - extent.X,
                 _expectedViewportShift.Y + _layoutExtent.Y - extent.Y);
 
-            // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
+            // We tolerate viewport imprecisions up to 1 pixel to avoid invalidating layout too much.
             if (Math.Abs(_expectedViewportShift.X) > 1 || Math.Abs(_expectedViewportShift.Y) > 1)
             {
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Expecting viewport shift of ({Shift})",
@@ -240,9 +239,14 @@ namespace Avalonia.Controls
             }
         }
 
-        public void OnElementPrepared(IControl element)
+        public void OnElementPrepared(IControl element, VirtualizationInfo virtInfo)
         {
-            _scroller?.RegisterAnchorCandidate(element);
+            // WinUI registers the element as an anchor candidate here, but I feel that's in error:
+            // at this point the element has not yet been positioned by the arrange pass so it will
+            // have its previous position, meaning that when the arrange pass moves it into its new
+            // position, an incorrect scroll anchoring will occur. Instead signal that it's not yet
+            // registered as a scroll anchor candidate.
+            virtInfo.IsRegisteredAsAnchorCandidate = false;
         }
 
         public void OnElementCleared(IControl element)
@@ -371,6 +375,11 @@ namespace Avalonia.Controls
                     Dispatcher.UIThread.Post(OnCompositionTargetRendering, DispatcherPriority.Loaded);
                 }
             }
+        }
+
+        public void RegisterScrollAnchorCandidate(IControl element)
+        {
+            _scroller?.RegisterAnchorCandidate(element);
         }
 
         private IControl GetImmediateChildOfRepeater(IControl descendant)

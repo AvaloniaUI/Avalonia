@@ -38,9 +38,16 @@ namespace Avalonia.Controls
 
             if (ToolTip.GetIsOpen(control) && e.NewValue != e.OldValue && !(e.NewValue is ToolTip))
             {
-                var tip = control.GetValue(ToolTip.ToolTipProperty);
+                if (e.NewValue is null)
+                {
+                    Close(control);
+                }
+                else
+                {
+                    var tip = control.GetValue(ToolTip.ToolTipProperty);
 
-                tip.Content = e.NewValue;
+                    tip.Content = e.NewValue;
+                }
             }
         }
 
@@ -51,10 +58,12 @@ namespace Avalonia.Controls
             if (e.OldValue is false && e.NewValue is true)
             {
                 control.DetachedFromVisualTree += ControlDetaching;
+                control.EffectiveViewportChanged += ControlEffectiveViewportChanged;
             }
             else if(e.OldValue is true && e.NewValue is false)
             {
                 control.DetachedFromVisualTree -= ControlDetaching;
+                control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
             }
         }
         
@@ -62,6 +71,7 @@ namespace Avalonia.Controls
         {
             var control = (Control)sender;
             control.DetachedFromVisualTree -= ControlDetaching;
+            control.EffectiveViewportChanged -= ControlEffectiveViewportChanged;
             Close(control);
         }
 
@@ -95,6 +105,13 @@ namespace Avalonia.Controls
         {
             var control = (Control)sender;
             Close(control);
+        }
+
+        private void ControlEffectiveViewportChanged(object sender, Layout.EffectiveViewportChangedEventArgs e)
+        {
+            var control = (Control)sender;
+            var toolTip = control.GetValue(ToolTip.ToolTipProperty);
+            toolTip?.RecalculatePosition(control);
         }
 
         private void StartShowTimer(int showDelay, Control control)

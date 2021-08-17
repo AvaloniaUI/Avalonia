@@ -1,7 +1,8 @@
-using System;
+using System.Collections;
 using System.Collections.Specialized;
-using System.Linq;
 using Avalonia.Collections;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
@@ -14,44 +15,65 @@ namespace Avalonia.Controls
         }
 
         internal bool IsDirty = true;
-        private Grid _parent;
+        private Grid? _parent;
 
-        internal Grid Parent
+        internal Grid? Parent
         {
             get => _parent;
             set => SetParent(value);
         }
 
-        private void SetParent(Grid value)
+        private void SetParent(Grid? value)
         {
             _parent = value;
 
-            foreach (var pair in this.Select((definitions, index) => (definitions, index)))
+            var idx = 0;
+
+            foreach (T definition in this)
             {
-                pair.definitions.Parent = value;
-                pair.definitions.Index = pair.index;
+                definition.Parent = value;
+                definition.Index = idx++;
             }
         }
 
         internal void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            foreach (var nI in this.Select((d, i) => (d, i)))
-                nI.d._parentIndex = nI.i;
+            var idx = 0;
 
-            foreach (var nD in e.NewItems?.Cast<DefinitionBase>()
-                            ?? Enumerable.Empty<DefinitionBase>())
+            foreach (T definition in this)
             {
-                nD.Parent = this.Parent;
-                nD.OnEnterParentTree();
+                definition.Index = idx++;
             }
-
-            foreach (var oD in e.OldItems?.Cast<DefinitionBase>()
-                            ?? Enumerable.Empty<DefinitionBase>())
-            {
-                oD.OnExitParentTree();
-            }
-
+            
+            UpdateDefinitionParent(e.NewItems, false);
+            UpdateDefinitionParent(e.OldItems, true);
+            
             IsDirty = true;
+        }
+
+        private void UpdateDefinitionParent(IList? items, bool wasRemoved)
+        {
+            if (items is null)
+            {
+                return;
+            }
+            
+            var count = items.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                var definition = (DefinitionBase) items[i];
+
+                if (wasRemoved)
+                {
+                    definition.OnExitParentTree();
+                }
+                else
+                {
+                    definition.Parent = Parent;
+                    definition.OnEnterParentTree();                    
+                }
+            }
         }
     }
 }

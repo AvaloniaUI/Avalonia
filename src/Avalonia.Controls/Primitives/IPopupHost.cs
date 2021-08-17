@@ -47,6 +47,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="offset">The offset, in device-independent pixels.</param>
         /// <param name="anchor">The anchor point.</param>
         /// <param name="gravity">The popup gravity.</param>
+        /// <param name="constraintAdjustment">Defines how a popup position will be adjusted if the unadjusted position would result in the popup being partly constrained.</param>
         /// <param name="rect">
         /// The anchor rect. If null, the bounds of <paramref name="target"/> will be used.
         /// </param>

@@ -10,7 +10,8 @@ using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using Avalonia.Reactive;
 using System.Diagnostics;
-using Avalonia.Controls.Utils; 
+using Avalonia.Controls.Utils;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Controls
 {
@@ -47,14 +48,15 @@ namespace Avalonia.Controls
 
                     if (_binding != null)
                     {
-                        if(_binding is Avalonia.Data.Binding binding)
+                        if(_binding is BindingBase binding)
                         {
                             if (binding.Mode == BindingMode.OneWayToSource)
                             {
                                 throw new InvalidOperationException("DataGridColumn doesn't support BindingMode.OneWayToSource. Use BindingMode.TwoWay instead.");
                             }
 
-                            if (!String.IsNullOrEmpty(binding.Path) && binding.Mode == BindingMode.Default)
+                            var path = (binding as Binding)?.Path ?? (binding as CompiledBindingExtension)?.Path.ToString();
+                            if (!string.IsNullOrEmpty(path) && binding.Mode == BindingMode.Default)
                             {
                                 binding.Mode = BindingMode.TwoWay;
                             } 
@@ -136,13 +138,16 @@ namespace Avalonia.Controls
         internal void SetHeaderFromBinding()
         {
             if (OwningGrid != null && OwningGrid.DataConnection.DataType != null
-                && Header == null && Binding != null && Binding is Binding binding
-                && !String.IsNullOrWhiteSpace(binding.Path))
+                && Header == null && Binding != null && Binding is BindingBase binding)
             {
-                string header = OwningGrid.DataConnection.DataType.GetDisplayName(binding.Path);
-                if (header != null)
+                var path = (binding as Binding)?.Path ?? (binding as CompiledBindingExtension)?.Path.ToString();
+                if (!string.IsNullOrWhiteSpace(path))
                 {
-                    Header = header;
+                    var header = OwningGrid.DataConnection.DataType.GetDisplayName(path);
+                    if (header != null)
+                    {
+                        Header = header;
+                    }
                 }
             }
         }

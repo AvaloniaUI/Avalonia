@@ -9,7 +9,6 @@ using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
-
 using XamlParseException = XamlX.XamlParseException;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
@@ -21,6 +20,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (node is XamlAstObjectNode binding && binding.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension))
             {
                 var convertedNode = ConvertLongFormPropertiesToBindingExpressionNode(context, binding);
+                var foundPath = false;
 
                 if (binding.Arguments.Count > 0 && binding.Arguments[0] is XamlAstTextNode bindingPathText)
                 {
@@ -32,9 +32,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         nodes.Insert(nodes.TakeWhile(x => x is BindingExpressionGrammar.ITransformNode).Count(), convertedNode);
                     }
 
-                    binding.Arguments[0] = new ParsedBindingPathNode(bindingPathText, context.GetAvaloniaTypes().CompiledBindingPath, nodes);
+                    if (nodes.Count == 1 && nodes[0] is BindingExpressionGrammar.EmptyExpressionNode)
+                    {
+                        binding.Arguments.RemoveAt(0);
+                    }
+                    else
+                    {
+                        binding.Arguments[0] = new ParsedBindingPathNode(bindingPathText, context.GetAvaloniaTypes().CompiledBindingPath, nodes);
+                        foundPath = true;
+                    }
                 }
-                else
+                
+                if (!foundPath)
                 {
                     var bindingPathAssignment = binding.Children.OfType<XamlAstXamlPropertyValueNode>()
                         .FirstOrDefault(v => v.Property.GetClrProperty().Name == "Path");
@@ -44,12 +53,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         var reader = new CharacterReader(pathValue.Text.AsSpan());
                         var (nodes, _) = BindingExpressionGrammar.Parse(ref reader);
 
-                        if (convertedNode != null)
+                        if (nodes.Count == 1 && nodes[0] is BindingExpressionGrammar.EmptyExpressionNode)
                         {
-                            nodes.Insert(nodes.TakeWhile(x => x is BindingExpressionGrammar.ITransformNode).Count(), convertedNode);
+                            bindingPathAssignment.Values.RemoveAt(0);
                         }
+                        else
+                        {
+                            if (convertedNode != null)
+                            {
+                                nodes.Insert(nodes.TakeWhile(x => x is BindingExpressionGrammar.ITransformNode).Count(), convertedNode);
+                            }
 
-                        bindingPathAssignment.Values[0] = new ParsedBindingPathNode(pathValue, context.GetAvaloniaTypes().CompiledBindingPath, nodes);
+                            bindingPathAssignment.Values[0] = new ParsedBindingPathNode(pathValue, context.GetAvaloniaTypes().CompiledBindingPath, nodes);
+                        }
                     }
                 }
             }
@@ -72,15 +88,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     v.Property is AvaloniaSyntheticCompiledBindingProperty prop
                     && prop.Name == SyntheticCompiledBindingPropertyName.ElementName);
 
-            var sourceProperty = syntheticCompiledBindingProperties
-                .FirstOrDefault(v =>
-                    v.Property is AvaloniaSyntheticCompiledBindingProperty prop
-                    && prop.Name == SyntheticCompiledBindingPropertyName.Source);
-
             var relativeSourceProperty = syntheticCompiledBindingProperties
                 .FirstOrDefault(v =>
                     v.Property is AvaloniaSyntheticCompiledBindingProperty prop
                     && prop.Name == SyntheticCompiledBindingPropertyName.RelativeSource);
+
+            var sourceProperty = binding.Children.OfType<XamlAstXamlPropertyValueNode>()
+                .FirstOrDefault(v =>
+                    v.Property is XamlAstClrProperty prop
+                    && prop.Name == "Source");
 
             if (elementNameProperty?.Values[0] is XamlAstTextNode elementName)
             {
@@ -91,14 +107,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlParseException($"Invalid ElementName '{elementNameProperty.Values[0]}'.", elementNameProperty.Values[0]);
             }
 
-            if (sourceProperty?.Values[0] != null)
+            if (sourceProperty != null && convertedNode != null)
             {
-                if (convertedNode != null)
-                {
-                    throw new XamlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
-                }
-
-                convertedNode = new RawSourceBindingExpressionNode(sourceProperty?.Values[0]);
+                throw new XamlParseException("Only one of ElementName, Source, or RelativeSource specified as a binding source. Only one property is allowed.", binding);
             }
 
             if (GetRelativeSourceObjectFromAssignment(
@@ -222,10 +233,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (elementNameProperty != null)
             {
                 binding.Children.Remove(elementNameProperty);
-            }
-            if (sourceProperty != null)
-            {
-                binding.Children.Remove(sourceProperty);
             }
             if (relativeSourceProperty != null)
             {

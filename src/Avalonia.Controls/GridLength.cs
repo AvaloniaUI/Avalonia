@@ -8,7 +8,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// Defines the valid units for a <see cref="GridLength"/>.
     /// </summary>
-    public enum GridUnitType
+#if !BUILDTASK
+    public
+#endif
+    enum GridUnitType
     {
         /// <summary>
         /// The row or column is auto-sized to fit its content.
@@ -29,7 +32,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// Holds the width or height of a <see cref="Grid"/>'s column and row definitions.
     /// </summary>
-    public struct GridLength : IEquatable<GridLength>
+#if !BUILDTASK
+    public
+#endif
+    struct GridLength : IEquatable<GridLength>
     {
         private readonly GridUnitType _type;
 
@@ -70,6 +76,12 @@ namespace Avalonia.Controls
         /// auto-size to fit its content.
         /// </summary>
         public static GridLength Auto => new GridLength(0, GridUnitType.Auto);
+
+        /// <summary>
+        /// Gets an instance of <see cref="GridLength"/> that indicates that a row or column should
+        /// fill its content.
+        /// </summary>
+        public static GridLength Star => new GridLength(1, GridUnitType.Star);
 
         /// <summary>
         /// Gets the unit of the <see cref="GridLength"/>.

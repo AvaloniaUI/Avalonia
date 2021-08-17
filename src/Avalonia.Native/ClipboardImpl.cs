@@ -35,17 +35,12 @@ namespace Avalonia.Native
                 return Task.FromResult(text.String);
         }
 
-        public Task SetTextAsync(string text)
+        public unsafe Task SetTextAsync(string text)
         {
             _native.Clear();
 
-            if (text != null)
-            {
-                using (var buffer = new Utf8Buffer(text))
-                {
-                    _native.SetText(NSPasteboardTypeString, buffer.DangerousGetHandle());
-                }
-            }
+            if (text != null) 
+                _native.SetText(NSPasteboardTypeString, text);
 
             return Task.CompletedTask;
         }
@@ -90,11 +85,10 @@ namespace Avalonia.Native
             {
                 var o = data.Get(fmt);
                 if(o is string s)
-                    using (var b = new Utf8Buffer(s))
-                        _native.SetText(fmt, b.DangerousGetHandle());
+                    _native.SetText(fmt, s);
                 else if(o is byte[] bytes)
                     fixed (byte* pbytes = bytes)
-                        _native.SetBytes(fmt, new IntPtr(pbytes), bytes.Length);
+                        _native.SetBytes(fmt, pbytes, bytes.Length);
             }
             return Task.CompletedTask;
         }

@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Primitives
             set 
             { 
                 SetAndRaise(IsCheckedProperty, ref _isChecked, value);
-                UpdatePseudoClasses(value);
+                UpdatePseudoClasses(IsChecked);
             }
         }
 

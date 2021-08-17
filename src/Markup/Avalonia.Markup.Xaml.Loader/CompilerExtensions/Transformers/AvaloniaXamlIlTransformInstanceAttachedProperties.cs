@@ -22,7 +22,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var avaloniaObject = context.Configuration.TypeSystem.FindType("Avalonia.AvaloniaObject");
                 if (avaloniaObject.IsAssignableFrom(targetRef.Type)
                     && avaloniaObject.IsAssignableFrom(declaringRef.Type)
-                    && !targetRef.Type.IsAssignableFrom(declaringRef.Type))
+                    && !declaringRef.Type.IsAssignableFrom(targetRef.Type))
                 {
                     // Instance property
                     var clrProp = declaringRef.Type.GetAllProperties().FirstOrDefault(p => p.Name == prop.Name);

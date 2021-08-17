@@ -64,6 +64,15 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AvaloniaList{T}"/>.
+        /// </summary>
+        /// <param name="capacity">Initial list capacity.</param>
+        public AvaloniaList(int capacity)
+        {
+            _inner = new List<T>(capacity);
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaList{T}"/> class.
         /// </summary>
         /// <param name="items">The initial items for the collection.</param>
@@ -173,6 +182,15 @@ namespace Avalonia.Collections
         {
             get { return this[index]; }
             set { this[index] = (T)value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the total number of elements the internal data structure can hold without resizing.
+        /// </summary>
+        public int Capacity
+        {
+            get => _inner.Capacity;
+            set => _inner.Capacity = value;
         }
 
         /// <summary>
@@ -437,6 +455,28 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
+        /// Ensures that the capacity of the list is at least <see cref="capacity"/>.
+        /// </summary>
+        /// <param name="capacity">The capacity.</param>
+        public void EnsureCapacity(int capacity)
+        {
+            // Adapted from List<T> implementation.
+            var currentCapacity = _inner.Capacity;
+
+            if (currentCapacity < capacity)
+            {
+                var newCapacity = currentCapacity == 0 ? 4 : currentCapacity * 2;
+
+                if (newCapacity < capacity)
+                {
+                    newCapacity = capacity;
+                }
+
+                _inner.Capacity = newCapacity;
+            }
+        }
+
+        /// <summary>
         /// Removes an item from the collection.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -614,24 +654,6 @@ namespace Avalonia.Collections
 
         /// <inheritdoc/>
         Delegate[] INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
-
-        private void EnsureCapacity(int capacity)
-        {
-            // Adapted from List<T> implementation.
-            var currentCapacity = _inner.Capacity;
-
-            if (currentCapacity < capacity)
-            {
-                var newCapacity = currentCapacity == 0 ? 4 : currentCapacity * 2;
-
-                if (newCapacity < capacity)
-                {
-                    newCapacity = capacity;
-                }
-
-                _inner.Capacity = newCapacity;
-            }
-        }
 
         /// <summary>
         /// Raises the <see cref="CollectionChanged"/> event with an add action.

@@ -31,11 +31,11 @@ namespace Avalonia.Input
         {
             PointerUpdateKind = kind;
 
-            IsLeftButtonPressed = modifiers.HasFlagCustom(RawInputModifiers.LeftMouseButton);
-            IsMiddleButtonPressed = modifiers.HasFlagCustom(RawInputModifiers.MiddleMouseButton);
-            IsRightButtonPressed = modifiers.HasFlagCustom(RawInputModifiers.RightMouseButton);
-            IsXButton1Pressed = modifiers.HasFlagCustom(RawInputModifiers.XButton1MouseButton);
-            IsXButton2Pressed = modifiers.HasFlagCustom(RawInputModifiers.XButton2MouseButton);
+            IsLeftButtonPressed = modifiers.HasAllFlags(RawInputModifiers.LeftMouseButton);
+            IsMiddleButtonPressed = modifiers.HasAllFlags(RawInputModifiers.MiddleMouseButton);
+            IsRightButtonPressed = modifiers.HasAllFlags(RawInputModifiers.RightMouseButton);
+            IsXButton1Pressed = modifiers.HasAllFlags(RawInputModifiers.XButton1MouseButton);
+            IsXButton2Pressed = modifiers.HasAllFlags(RawInputModifiers.XButton2MouseButton);
 
             // The underlying input source might be reporting the previous state,
             // so make sure that we reflect the current state
@@ -90,6 +90,10 @@ namespace Avalonia.Input
                 return MouseButton.Middle;
             if (kind == PointerUpdateKind.RightButtonPressed || kind == PointerUpdateKind.RightButtonReleased)
                 return MouseButton.Right;
+            if (kind == PointerUpdateKind.XButton1Pressed || kind == PointerUpdateKind.XButton1Released)
+                return MouseButton.XButton1;
+            if (kind == PointerUpdateKind.XButton2Pressed || kind == PointerUpdateKind.XButton2Released)
+                return MouseButton.XButton2;
             return MouseButton.None;
         }
     }

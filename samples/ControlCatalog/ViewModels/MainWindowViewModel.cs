@@ -5,11 +5,11 @@ using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
 using System;
-using ReactiveUI;
+using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    class MainWindowViewModel : ReactiveObject
+    class MainWindowViewModel : ViewModelBase
     {
         private IManagedNotificationManager _notificationManager;
 
@@ -27,22 +27,22 @@ namespace ControlCatalog.ViewModels
         {
             _notificationManager = notificationManager;
 
-            ShowCustomManagedNotificationCommand = ReactiveCommand.Create(() =>
+            ShowCustomManagedNotificationCommand = MiniCommand.Create(() =>
             {
                 NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });
             });
 
-            ShowManagedNotificationCommand = ReactiveCommand.Create(() =>
+            ShowManagedNotificationCommand = MiniCommand.Create(() =>
             {
                 NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
             });
 
-            ShowNativeNotificationCommand = ReactiveCommand.Create(() =>
+            ShowNativeNotificationCommand = MiniCommand.Create(() =>
             {
                 NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
             });
 
-            AboutCommand = ReactiveCommand.CreateFromTask(async () =>
+            AboutCommand = MiniCommand.CreateFromTask(async () =>
             {
                 var dialog = new AboutAvaloniaDialog();
 
@@ -51,12 +51,12 @@ namespace ControlCatalog.ViewModels
                 await dialog.ShowDialog(mainWindow);
             });
 
-            ExitCommand = ReactiveCommand.Create(() =>
+            ExitCommand = MiniCommand.Create(() =>
             {
                 (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
             });
 
-            ToggleMenuItemCheckedCommand = ReactiveCommand.Create(() =>
+            ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
             {
                 IsMenuItemChecked = !IsMenuItemChecked;
             });
@@ -153,16 +153,16 @@ namespace ControlCatalog.ViewModels
             set { this.RaiseAndSetIfChanged(ref _isMenuItemChecked, value); }
         }
 
-        public ReactiveCommand<Unit, Unit> ShowCustomManagedNotificationCommand { get; }
+        public MiniCommand ShowCustomManagedNotificationCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> ShowManagedNotificationCommand { get; }
+        public MiniCommand ShowManagedNotificationCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> ShowNativeNotificationCommand { get; }
+        public MiniCommand ShowNativeNotificationCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> AboutCommand { get; }
+        public MiniCommand AboutCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> ExitCommand { get; }
+        public MiniCommand ExitCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> ToggleMenuItemCheckedCommand { get; }
+        public MiniCommand ToggleMenuItemCheckedCommand { get; }
     }
 }

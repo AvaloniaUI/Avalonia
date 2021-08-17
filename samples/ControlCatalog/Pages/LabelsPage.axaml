@@ -1,0 +1,42 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
+             x:Class="ControlCatalog.Pages.LabelsPage"
+             x:Name="_labelsPage">
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="6,3,0,3"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,3,6,3"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,3,6,3"/>
+        </Style>
+        <Style Selector="Button[IsDefault=true]">
+            <Setter Property="Background" Value="{DynamicResource HighlightBrush}"/>
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                  HorizontalScrollBarVisibility="Hidden">
+        <Grid HorizontalAlignment="Left" VerticalAlignment="Top" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnDefinitions="Auto,6,*" Width="246">
+            <Label Target="firstNameEdit" Grid.Row="0" Grid.Column="0">_First name</Label>
+            <TextBox Name="firstNameEdit" Grid.Column="2" Grid.Row="0" Text="{Binding FirstName}"></TextBox>
+            <Label Target="lastNameEdit" Grid.Row="1" Grid.Column="0">_Last name</Label>
+            <TextBox Name="lastNameEdit" Grid.Column="2" Grid.Row="1" Text="{Binding LastName}"></TextBox>
+            <Label Target="bannedCheck" Grid.Row="2" Grid.Column="0">_Banned</Label>
+            <CheckBox Name="bannedCheck" Grid.Column="2" Grid.Row="2" IsChecked="{Binding IsBanned}"></CheckBox>
+            <GridSplitter Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.RowSpan="3" >
+            </GridSplitter>
+            <StackPanel Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button IsCancel="True" Command="{Binding #_labelsPage.DoCancel}">Cancel</Button>
+                <Button IsDefault="True" Command="{Binding #_labelsPage.DoSave}">Save</Button>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

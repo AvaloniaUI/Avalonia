@@ -1,5 +1,6 @@
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -171,6 +172,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Generate_RotateTransform_90_degrees()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
                                         100,
                                         25,
@@ -193,6 +196,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Generate_RotateTransform_minus_90_degrees()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
                                         100,
                                         25,
@@ -215,6 +220,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Generate_ScaleTransform_x2()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
                                         100,
                                         50,
@@ -236,6 +243,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Generate_SkewTransform_45_degrees()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
                                         100,
                                         100,
@@ -258,6 +267,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Generate_SkewTransform_minus_45_degrees()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
                                         100,
                                         100,
@@ -279,6 +290,8 @@ namespace Avalonia.Controls.UnitTests
 
         private static void TransformMeasureSizeTest(Size size, Transform transform, Size expectedSize)
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(
                 size.Width,
                 size.Height,
@@ -292,6 +305,8 @@ namespace Avalonia.Controls.UnitTests
 
         private static void TransformRootBoundsTest(Size size, Transform transform, Rect expectedBounds)
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             LayoutTransformControl lt = CreateWithChildAndMeasureAndTransform(size.Width, size.Height, transform);
 
             Rect outBounds = lt.TransformRoot.Bounds;

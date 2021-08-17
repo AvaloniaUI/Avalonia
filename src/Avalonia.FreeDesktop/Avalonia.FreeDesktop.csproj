@@ -6,9 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <PackageReference Include="Tmds.DBus" Version="0.9.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Tmds.DBus" Version="0.7.0" />
-  </ItemGroup>  
 </Project>

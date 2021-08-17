@@ -101,7 +101,7 @@ public:
     
     virtual bool GetCurrentThreadIsLoopThread() override
     {
-        return [[NSThread currentThread] isMainThread];
+        return [NSThread isMainThread];
     }
     virtual void SetSignaledCallback(IAvnSignaledCallback* cb) override
     {
@@ -114,6 +114,8 @@ public:
     
     virtual HRESULT RunLoop(IAvnLoopCancellation* cancel) override
     {
+        START_COM_CALL;
+        
         auto can = dynamic_cast<LoopCancellation*>(cancel);
         if(can->Cancelled)
             return S_OK;

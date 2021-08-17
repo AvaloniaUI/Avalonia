@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Shapes;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -8,6 +9,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Lays_Out_1_Child_Next_the_other()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
             var rect1 = new Rectangle { Height = 20, Width = 20 };
             var rect2 = new Rectangle { Height = 20, Width = 20 };
 
@@ -34,6 +36,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Lays_Out_1_Child_Below_the_other()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
             var rect1 = new Rectangle { Height = 20, Width = 20 };
             var rect2 = new Rectangle { Height = 20, Width = 20 };
 
@@ -60,6 +63,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void RelativePanel_Can_Center()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
             var rect1 = new Rectangle { Height = 20, Width = 20 };
             var rect2 = new Rectangle { Height = 20, Width = 20 };
 
@@ -86,6 +90,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void LeftOf_Measures_Correctly()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
             var rect1 = new Rectangle { Height = 20, Width = 20 };
             var rect2 = new Rectangle { Height = 20, Width = 20 };
 
@@ -111,6 +116,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Above_Measures_Correctly()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
             var rect1 = new Rectangle { Height = 20, Width = 20 };
             var rect2 = new Rectangle { Height = 20, Width = 20 };
 

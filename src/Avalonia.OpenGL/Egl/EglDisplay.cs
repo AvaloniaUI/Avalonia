@@ -158,15 +158,21 @@ namespace Avalonia.OpenGL.Egl
             var ctx = _egl.CreateContext(_display, _config, shareCtx?.Context ?? IntPtr.Zero, _contextAttributes);
             if (ctx == IntPtr.Zero)
                 throw OpenGlException.GetFormattedException("eglCreateContext", _egl);
-            var surf = _egl.CreatePBufferSurface(_display, _config, new[]
+            
+            var extensions = _egl.QueryString(Handle, EGL_EXTENSIONS);
+            
+            IntPtr surf = IntPtr.Zero;
+            if (extensions?.Contains("EGL_KHR_surfaceless_context") != true)
             {
-                EGL_WIDTH, 1,
-                EGL_HEIGHT, 1,
-                EGL_NONE
-            });
-            if (surf == IntPtr.Zero)
-                throw OpenGlException.GetFormattedException("eglCreatePBufferSurface", _egl);
-            var rv = new EglContext(this, _egl, shareCtx, ctx, context => new EglSurface(this, context, surf),
+                surf = _egl.CreatePBufferSurface(_display, _config,
+                    new[] { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE });
+                if (surf == IntPtr.Zero)
+                    throw OpenGlException.GetFormattedException("eglCreatePBufferSurface", _egl);
+            }
+
+            var rv = new EglContext(this, _egl, shareCtx, ctx,
+                context =>
+                    surf == IntPtr.Zero ? null : new EglSurface(this, context, surf),
                 _version, _sampleCount, _stencilSize);
             return rv;
         }

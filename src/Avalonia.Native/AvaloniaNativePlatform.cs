@@ -1,14 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.MicroCom;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
@@ -29,7 +28,7 @@ namespace Avalonia.Native
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            var result =  new AvaloniaNativePlatform(new IAvaloniaNativeFactory(factory));
+            var result =  new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
             result.DoInitialize(options);
 
             return result;
@@ -65,10 +64,7 @@ namespace Avalonia.Native
         {
             if(!string.IsNullOrWhiteSpace(Application.Current.Name))
             {
-                using (var buffer = new Utf8Buffer(Application.Current.Name))
-                {
-                    _factory.MacOptions.SetApplicationTitle(buffer.DangerousGetHandle());
-                }
+                _factory.MacOptions.SetApplicationTitle(Application.Current.Name);
             }
         }
 
@@ -88,18 +84,23 @@ namespace Avalonia.Native
         void DoInitialize(AvaloniaNativePlatformOptions options)
         {
             _options = options;
-            _factory.Initialize(new GCHandleDeallocator());
+            
+            var applicationPlatform = new AvaloniaNativeApplicationPlatform();
+            
+            _factory.Initialize(new GCHandleDeallocator(), applicationPlatform);
             if (_factory.MacOptions != null)
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
-                _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
+                _factory.MacOptions.SetShowInDock(macOpts?.ShowInDock != false ? 1 : 0);
+                _factory.MacOptions.SetDisableDefaultApplicationMenuItems(
+                    macOpts?.DisableDefaultApplicationMenuItems == true ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
-                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
+                .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
@@ -108,10 +109,17 @@ namespace Avalonia.Native
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
-                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta))
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
-                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory));
+                .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
+                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform);
 
+            var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
+            hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+            hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
+            hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+            
             if (_options.UseGpu)
             {
                 try
@@ -153,7 +161,7 @@ namespace Avalonia.Native
             set
             {
                 _showInDock = value;
-                _opts.ShowInDock = value ? 1 : 0;
+                _opts.SetShowInDock(value ? 1 : 0);
             }
         }
     }

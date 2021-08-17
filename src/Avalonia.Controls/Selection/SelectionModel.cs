@@ -345,7 +345,7 @@ namespace Avalonia.Controls.Selection
         private protected override void OnSelectionChanged(IReadOnlyList<T> deselectedItems)
         {
             // Note: We're *not* putting this in a using scope. A collection update is still in progress
-            // so the operation won't get commited by normal means: we have to commit it manually.
+            // so the operation won't get committed by normal means: we have to commit it manually.
             var update = BatchUpdate();
 
             update.Operation.DeselectedItems = deselectedItems;
@@ -442,7 +442,9 @@ namespace Avalonia.Controls.Selection
                 RaisePropertyChanged(nameof(SelectedIndex));
             }
 
-            if (e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex)
+            if ((e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex) ||
+                (e.Action == NotifyCollectionChangedAction.Replace && e.OldStartingIndex == oldSelectedIndex) ||
+                e.Action == NotifyCollectionChangedAction.Reset)
             {
                 RaisePropertyChanged(nameof(SelectedItem));
             }

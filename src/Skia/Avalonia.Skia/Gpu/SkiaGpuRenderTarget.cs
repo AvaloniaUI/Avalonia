@@ -8,10 +8,12 @@ namespace Avalonia.Skia
     /// </summary>
     internal class SkiaGpuRenderTarget : IRenderTargetWithCorruptionInfo
     {
+        private readonly ISkiaGpu _skiaGpu;
         private readonly ISkiaGpuRenderTarget _renderTarget;
 
-        public SkiaGpuRenderTarget(ISkiaGpuRenderTarget renderTarget)
+        public SkiaGpuRenderTarget(ISkiaGpu skiaGpu, ISkiaGpuRenderTarget renderTarget)
         {
+            _skiaGpu = skiaGpu;
             _renderTarget = renderTarget;
         }
 
@@ -30,7 +32,9 @@ namespace Avalonia.Skia
                 Surface = session.SkSurface,
                 Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
                 VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = true
+                DisableTextLcdRendering = true,
+                Gpu = _skiaGpu,
+                CurrentSession =  session
             };
 
             return new DrawingContextImpl(nfo, session);

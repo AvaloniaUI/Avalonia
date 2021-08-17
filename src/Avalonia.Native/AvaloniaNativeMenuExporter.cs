@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Dialogs;
 using Avalonia.Native.Interop;
+using Avalonia.Native.Interop.Impl;
 using Avalonia.Threading;
 
 namespace Avalonia.Native
@@ -15,7 +16,7 @@ namespace Avalonia.Native
         private bool _exported = false;
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
-        private IAvnMenu _nativeMenu;
+        private __MicroComIAvnMenuProxy _nativeMenu;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -59,7 +60,7 @@ namespace Avalonia.Native
                 Header = "About Avalonia",
             };
 
-            aboutItem.Clicked += async (sender, e) =>
+            aboutItem.Click += async (sender, e) =>
             {
                 var dialog = new AboutAvaloniaDialog();
 
@@ -135,9 +136,9 @@ namespace Avalonia.Native
 
             if (_nativeMenu is null)
             {
-                _nativeMenu = IAvnMenu.Create(_factory);
+                _nativeMenu = (__MicroComIAvnMenuProxy)__MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialise(this, appMenuHolder, "");
+                _nativeMenu.Initialize(this, appMenuHolder, "");
 
                 setMenu = true;
             }
@@ -156,9 +157,9 @@ namespace Avalonia.Native
 
             if (_nativeMenu is null)
             {
-                _nativeMenu = IAvnMenu.Create(_factory);
+                _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialise(this, menu, "");     
+                _nativeMenu.Initialize(this, menu, "");     
 
                 setMenu = true;           
             }

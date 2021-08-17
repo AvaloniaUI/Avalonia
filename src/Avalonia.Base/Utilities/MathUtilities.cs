@@ -5,7 +5,10 @@ namespace Avalonia.Utilities
     /// <summary>
     /// Provides math utilities not provided in System.Math.
     /// </summary>
-    public static class MathUtilities
+#if !BUILDTASK
+    public
+#endif
+    static class MathUtilities
     {
         // smallest such that 1.0+DoubleEpsilon != 1.0
         internal static readonly double DoubleEpsilon = 2.2204460492503131e-016;
@@ -23,6 +26,21 @@ namespace Avalonia.Utilities
             //in case they are Infinities (then epsilon check does not work)
             if (value1 == value2) return true;
             double eps = (Math.Abs(value1) + Math.Abs(value2) + 10.0) * DoubleEpsilon;
+            double delta = value1 - value2;
+            return (-eps < delta) && (eps > delta);
+        }
+
+        /// <summary>
+        /// AreClose - Returns whether or not two doubles are "close".  That is, whether or
+        /// not they are within epsilon of each other.
+        /// </summary>
+        /// <param name="value1"> The first double to compare. </param>
+        /// <param name="value2"> The second double to compare. </param>
+        /// <param name="eps"> The fixed epsilon value used to compare.</param>
+        public static bool AreClose(double value1, double value2, double eps)
+        {
+            //in case they are Infinities (then epsilon check does not work)
+            if (value1 == value2) return true;
             double delta = value1 - value2;
             return (-eps < delta) && (eps > delta);
         }
@@ -213,6 +231,34 @@ namespace Avalonia.Utilities
         /// <param name="min">The minimum value.</param>
         /// <param name="max">The maximum value.</param>
         /// <returns>The clamped value.</returns>
+        public static decimal Clamp(decimal val, decimal min, decimal max)
+        {
+            if (min > max)
+            {
+                ThrowCannotBeGreaterThanException(min, max);
+            }
+
+            if (val < min)
+            {
+                return min;
+            }
+            else if (val > max)
+            {
+                return max;
+            }
+            else
+            {
+                return val;
+            }
+        }
+
+        /// <summary>
+        /// Clamps a value between a minimum and maximum value.
+        /// </summary>
+        /// <param name="val">The value.</param>
+        /// <param name="min">The minimum value.</param>
+        /// <param name="max">The maximum value.</param>
+        /// <returns>The clamped value.</returns>
         public static int Clamp(int val, int min, int max)
         {
             if (min > max)
@@ -263,8 +309,8 @@ namespace Avalonia.Utilities
         {
             return angle * 2 * Math.PI;
         }
-        
-        private static void ThrowCannotBeGreaterThanException(double min, double max)
+
+        private static void ThrowCannotBeGreaterThanException<T>(T min, T max)
         {
             throw new ArgumentException($"{min} cannot be greater than {max}.");
         }

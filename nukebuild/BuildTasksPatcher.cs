@@ -29,7 +29,11 @@ public class BuildTasksPatcher
                             InputAssemblies = new[]
                             {
                                 temp, typeof(Mono.Cecil.AssemblyDefinition).Assembly.GetModules()[0]
-                                    .FullyQualifiedName
+                                    .FullyQualifiedName,
+                                typeof(Mono.Cecil.Rocks.MethodBodyRocks).Assembly.GetModules()[0].FullyQualifiedName,
+                                typeof(Mono.Cecil.Pdb.PdbReaderProvider).Assembly.GetModules()[0].FullyQualifiedName,
+                                typeof(Mono.Cecil.Mdb.MdbReaderProvider).Assembly.GetModules()[0].FullyQualifiedName
+                                
                             },
                             SearchDirectories = new string[0],
                             OutputFile = output

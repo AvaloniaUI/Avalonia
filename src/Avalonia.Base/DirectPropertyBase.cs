@@ -13,7 +13,7 @@ namespace Avalonia
     /// <typeparam name="TValue">The type of the property's value.</typeparam>
     /// <remarks>
     /// Whereas <see cref="DirectProperty{TOwner, TValue}"/> is typed on the owner type, this base
-    /// class provides a non-owner-typed interface to a direct poperty.
+    /// class provides a non-owner-typed interface to a direct property.
     /// </remarks>
     public abstract class DirectPropertyBase<TValue> : AvaloniaProperty<TValue>
     {
@@ -26,7 +26,7 @@ namespace Avalonia
         protected DirectPropertyBase(
             string name,
             Type ownerType,
-            PropertyMetadata metadata)
+            AvaloniaPropertyMetadata metadata)
             : base(name, ownerType, metadata)
         {
         }
@@ -41,7 +41,7 @@ namespace Avalonia
         protected DirectPropertyBase(
             AvaloniaProperty source,
             Type ownerType,
-            PropertyMetadata metadata)
+            AvaloniaPropertyMetadata metadata)
             : this(source as DirectPropertyBase<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
         {
         }
@@ -55,7 +55,7 @@ namespace Avalonia
         protected DirectPropertyBase(
             DirectPropertyBase<TValue> source,
             Type ownerType,
-            PropertyMetadata metadata)
+            AvaloniaPropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
         }
@@ -123,9 +123,9 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
+        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> visitor, ref TData data)
         {
-            vistor.Visit(this, ref data);
+            visitor.Visit(this, ref data);
         }
 
         /// <inheritdoc/>

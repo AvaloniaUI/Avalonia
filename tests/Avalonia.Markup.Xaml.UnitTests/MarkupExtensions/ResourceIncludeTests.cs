@@ -5,7 +5,7 @@ using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
 
-namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
+namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
     public class ResourceIncludeTests : XamlTestBase
     {
@@ -39,7 +39,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MakrupExtensions
                     var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                     var border = userControl.FindControl<Border>("border");
 
-                    var brush = (SolidColorBrush)border.Background;
+                    var brush = (ISolidColorBrush)border.Background;
                     Assert.Equal(0xff506070, brush.Color.ToUint32());
                 }
             }

@@ -24,8 +24,10 @@ namespace ControlCatalog.Pages
             dg1.LoadingRow += Dg1_LoadingRow;
             dg1.Sorting += (s, a) =>
             {
-                var property = ((a.Column as DataGridBoundColumn)?.Binding as Binding).Path;
-                if (property == dataGridSortDescription.PropertyPath
+                var binding = (a.Column as DataGridBoundColumn)?.Binding as Binding;
+
+                if (binding?.Path is string property
+                    && property == dataGridSortDescription.PropertyPath
                     && !collectionView1.SortDescriptions.Contains(dataGridSortDescription))
                 {
                     collectionView1.SortDescriptions.Add(dataGridSortDescription);

@@ -1,10 +1,20 @@
 #include "common.h"
+#include "AvnString.h"
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
+-(AvnAppDelegate* _Nonnull) initWithEvents: (IAvnApplicationEvents* _Nonnull) events;
 @end
 
 NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
 
 @implementation AvnAppDelegate
+ComPtr<IAvnApplicationEvents> _events;
+
+- (AvnAppDelegate *)initWithEvents:(IAvnApplicationEvents *)events
+{
+    _events = events;
+    return self;
+}
+
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
     if([[NSApplication sharedApplication] activationPolicy] != AvnDesiredActivationPolicy)
@@ -27,10 +37,28 @@ NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivati
     [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
 
+- (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames
+{
+    auto array = CreateAvnStringArray(filenames);
+    
+    _events->FilesOpened(array);
+}
+
+- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
+{
+    auto array = CreateAvnStringArray(urls);
+    
+    _events->FilesOpened(array);
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+{
+    return _events->TryShutdown() ? NSTerminateNow : NSTerminateCancel;
+}
+
 @end
 
 @interface AvnApplication : NSApplication
-
 
 @end
 
@@ -63,9 +91,9 @@ NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivati
 
 @end
 
-extern void InitializeAvnApp()
+extern void InitializeAvnApp(IAvnApplicationEvents* events)
 {
     NSApplication* app = [AvnApplication sharedApplication];
-    id delegate = [AvnAppDelegate new];
+    id delegate = [[AvnAppDelegate alloc] initWithEvents:events];
     [app setDelegate:delegate];
 }

@@ -45,38 +45,41 @@ namespace Avalonia.Media.TextFormatting
         public GlyphRun GlyphRun { get; }
 
         /// <inheritdoc/>
-        public override void Draw(DrawingContext drawingContext)
+        public override void Draw(DrawingContext drawingContext, Point origin)
         {
-            if (GlyphRun.GlyphIndices.Length == 0)
+            using (drawingContext.PushPostTransform(Matrix.CreateTranslation(origin)))
             {
-                return;
-            }
+                if (GlyphRun.GlyphIndices.Length == 0)
+                {
+                    return;
+                }
 
-            if (Properties.Typeface == null)
-            {
-                return;
-            }
+                if (Properties.Typeface == default)
+                {
+                    return;
+                }
 
-            if (Properties.ForegroundBrush == null)
-            {
-                return;
-            }
+                if (Properties.ForegroundBrush == null)
+                {
+                    return;
+                }
 
-            if (Properties.BackgroundBrush != null)
-            {
-                drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
-            }
+                if (Properties.BackgroundBrush != null)
+                {
+                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
+                }
 
-            drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
+                drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
 
-            if (Properties.TextDecorations == null)
-            {
-                return;
-            }
+                if (Properties.TextDecorations == null)
+                {
+                    return;
+                }
 
-            foreach (var textDecoration in Properties.TextDecorations)
-            {
-                textDecoration.Draw(drawingContext, this);
+                foreach (var textDecoration in Properties.TextDecorations)
+                {
+                    textDecoration.Draw(drawingContext, this);
+                }
             }
         }
 
@@ -87,7 +90,9 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The split result.</returns>
         public SplitTextCharactersResult Split(int length)
         {
-            var glyphCount = GlyphRun.FindGlyphIndex(GlyphRun.Characters.Start + length);
+            var glyphCount = GlyphRun.IsLeftToRight ?
+                GlyphRun.FindGlyphIndex(GlyphRun.Characters.Start + length) :
+                GlyphRun.FindGlyphIndex(GlyphRun.Characters.End - length);
 
             if (GlyphRun.Characters.Length == length)
             {
@@ -99,29 +104,64 @@ namespace Avalonia.Media.TextFormatting
                 return new SplitTextCharactersResult(this, null);
             }
 
-            var firstGlyphRun = new GlyphRun(
-                Properties.Typeface.GlyphTypeface,
-                Properties.FontRenderingEmSize,
-                GlyphRun.GlyphIndices.Take(glyphCount),
-                GlyphRun.GlyphAdvances.Take(glyphCount),
-                GlyphRun.GlyphOffsets.Take(glyphCount),
-                GlyphRun.Characters.Take(length),
-                GlyphRun.GlyphClusters.Take(glyphCount));
+            if (GlyphRun.IsLeftToRight)
+            {
+                var firstGlyphRun = new GlyphRun(
+                    Properties.Typeface.GlyphTypeface,
+                    Properties.FontRenderingEmSize,
+                    GlyphRun.GlyphIndices.Take(glyphCount),
+                    GlyphRun.GlyphAdvances.Take(glyphCount),
+                    GlyphRun.GlyphOffsets.Take(glyphCount),
+                    GlyphRun.Characters.Take(length),
+                    GlyphRun.GlyphClusters.Take(glyphCount),
+                    GlyphRun.BiDiLevel);
 
-            var firstTextRun = new ShapedTextCharacters(firstGlyphRun, Properties);
+                var firstTextRun = new ShapedTextCharacters(firstGlyphRun, Properties);
 
-            var secondGlyphRun = new GlyphRun(
-                Properties.Typeface.GlyphTypeface,
-                Properties.FontRenderingEmSize,
-                GlyphRun.GlyphIndices.Skip(glyphCount),
-                GlyphRun.GlyphAdvances.Skip(glyphCount),
-                GlyphRun.GlyphOffsets.Skip(glyphCount),
-                GlyphRun.Characters.Skip(length),
-                GlyphRun.GlyphClusters.Skip(glyphCount));
+                var secondGlyphRun = new GlyphRun(
+                    Properties.Typeface.GlyphTypeface,
+                    Properties.FontRenderingEmSize,
+                    GlyphRun.GlyphIndices.Skip(glyphCount),
+                    GlyphRun.GlyphAdvances.Skip(glyphCount),
+                    GlyphRun.GlyphOffsets.Skip(glyphCount),
+                    GlyphRun.Characters.Skip(length),
+                    GlyphRun.GlyphClusters.Skip(glyphCount),
+                    GlyphRun.BiDiLevel);
 
-            var secondTextRun = new ShapedTextCharacters(secondGlyphRun, Properties);
+                var secondTextRun = new ShapedTextCharacters(secondGlyphRun, Properties);
 
-            return new SplitTextCharactersResult(firstTextRun, secondTextRun);
+                return new SplitTextCharactersResult(firstTextRun, secondTextRun);
+            }
+            else
+            {
+                var take = GlyphRun.GlyphIndices.Length - glyphCount;
+                
+                var firstGlyphRun = new GlyphRun(
+                    Properties.Typeface.GlyphTypeface,
+                    Properties.FontRenderingEmSize,
+                    GlyphRun.GlyphIndices.Take(take),
+                    GlyphRun.GlyphAdvances.Take(take),
+                    GlyphRun.GlyphOffsets.Take(take),
+                    GlyphRun.Characters.Skip(length),
+                    GlyphRun.GlyphClusters.Take(take),
+                    GlyphRun.BiDiLevel);
+
+                var firstTextRun = new ShapedTextCharacters(firstGlyphRun, Properties);
+
+                var secondGlyphRun = new GlyphRun(
+                    Properties.Typeface.GlyphTypeface,
+                    Properties.FontRenderingEmSize,
+                    GlyphRun.GlyphIndices.Skip(take),
+                    GlyphRun.GlyphAdvances.Skip(take),
+                    GlyphRun.GlyphOffsets.Skip(take),
+                    GlyphRun.Characters.Take(length),
+                    GlyphRun.GlyphClusters.Skip(take),
+                    GlyphRun.BiDiLevel);
+
+                var secondTextRun = new ShapedTextCharacters(secondGlyphRun, Properties);
+
+                return new SplitTextCharactersResult(secondTextRun,firstTextRun);
+            }
         }
 
         public readonly struct SplitTextCharactersResult

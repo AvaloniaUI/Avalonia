@@ -8,7 +8,7 @@ namespace Avalonia.Direct2D1.Media
         public RadialGradientBrushImpl(
             IRadialGradientBrush brush,
             SharpDX.Direct2D1.RenderTarget target,
-            Size destinationSize)
+            Rect destinationRect)
         {
             if (brush.GradientStops.Count == 0)
             {
@@ -21,12 +21,13 @@ namespace Avalonia.Direct2D1.Media
                 Position = (float)s.Offset
             }).ToArray();
 
-            var centerPoint = brush.Center.ToPixels(destinationSize);
-            var gradientOrigin = brush.GradientOrigin.ToPixels(destinationSize) - centerPoint;
+            var position = destinationRect.Position;
+            var centerPoint = position + brush.Center.ToPixels(destinationRect.Size);
+            var gradientOrigin = position + brush.GradientOrigin.ToPixels(destinationRect.Size) - centerPoint;
             
             // Note: Direct2D supports RadiusX and RadiusY but Cairo backend supports only Radius property
-            var radiusX = brush.Radius * destinationSize.Width;
-            var radiusY = brush.Radius * destinationSize.Height;
+            var radiusX = brush.Radius * destinationRect.Width;
+            var radiusY = brush.Radius * destinationRect.Height;
 
             using (var stops = new SharpDX.Direct2D1.GradientStopCollection(
                 target,

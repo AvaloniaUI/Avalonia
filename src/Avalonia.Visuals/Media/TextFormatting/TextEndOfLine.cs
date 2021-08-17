@@ -5,5 +5,11 @@
     /// </summary>
     public class TextEndOfLine : TextRun
     {
+        public TextEndOfLine(int textSourceLength = DefaultTextSourceLength)
+        {
+            TextSourceLength = textSourceLength;
+        }
+
+        public override int TextSourceLength { get; }
     }
 }

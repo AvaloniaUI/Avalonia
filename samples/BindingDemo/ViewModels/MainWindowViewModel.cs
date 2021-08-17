@@ -5,14 +5,14 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Threading;
-using ReactiveUI;
+using MiniMvvm;
 using Avalonia.Controls;
 using Avalonia.Metadata;
 using Avalonia.Controls.Selection;
 
 namespace BindingDemo.ViewModels
 {
-    public class MainWindowViewModel : ReactiveObject
+    public class MainWindowViewModel : ViewModelBase
     {
         private string _booleanString = "True";
         private double _doubleValue = 5.0;
@@ -32,13 +32,13 @@ namespace BindingDemo.ViewModels
 
             Selection = new SelectionModel<TestItem> { SingleSelect = false };
 
-            ShuffleItems = ReactiveCommand.Create(() =>
+            ShuffleItems = MiniCommand.Create(() =>
             {
                 var r = new Random();
                 Items.Move(r.Next(Items.Count), 1);
             });
 
-            StringValueCommand = ReactiveCommand.Create<object>(param =>
+            StringValueCommand = MiniCommand.Create<object>(param =>
             {
                 BooleanFlag = !BooleanFlag;
                 StringValue = param.ToString();
@@ -60,7 +60,7 @@ namespace BindingDemo.ViewModels
 
         public ObservableCollection<TestItem> Items { get; }
         public SelectionModel<TestItem> Selection { get; }
-        public ReactiveCommand<Unit, Unit> ShuffleItems { get; }
+        public MiniCommand ShuffleItems { get; }
 
         public string BooleanString
         {
@@ -93,7 +93,7 @@ namespace BindingDemo.ViewModels
         }
 
         public IObservable<DateTimeOffset> CurrentTimeObservable { get; }
-        public ReactiveCommand<object, Unit> StringValueCommand { get; }
+        public MiniCommand StringValueCommand { get; }
 
         public DataAnnotationsErrorViewModel DataAnnotationsValidation { get; } = new DataAnnotationsErrorViewModel();
         public ExceptionErrorViewModel ExceptionDataValidation { get; } = new ExceptionErrorViewModel();

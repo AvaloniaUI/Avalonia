@@ -1,9 +1,12 @@
 using System;
 using System.Reactive.Linq;
+using Avalonia.Input.TextInput;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -78,7 +81,9 @@ namespace Avalonia.Controls.Presenters
         static TextPresenter()
         {
             AffectsRender<TextPresenter>(SelectionBrushProperty, TextBlock.ForegroundProperty, 
-                                         SelectionForegroundBrushProperty, CaretBrushProperty);
+                                         SelectionForegroundBrushProperty, CaretBrushProperty,
+                                         SelectionStartProperty, SelectionEndProperty);
+            
             AffectsMeasure<TextPresenter>(TextProperty, PasswordCharProperty, RevealPasswordProperty, 
                 TextAlignmentProperty, TextWrappingProperty, TextBlock.FontSizeProperty,
                 TextBlock.FontStyleProperty, TextBlock.FontWeightProperty, TextBlock.FontFamilyProperty);
@@ -312,7 +317,24 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
-            context.DrawText(Foreground, new Point(), FormattedText);
+            double top = 0;
+            var textSize = FormattedText.Bounds.Size;
+
+            if (Bounds.Height < textSize.Height)
+            {
+                switch (VerticalAlignment)
+                {
+                    case VerticalAlignment.Center:
+                        top += (Bounds.Height - textSize.Height) / 2;
+                        break;
+
+                    case VerticalAlignment.Bottom:
+                        top += (Bounds.Height - textSize.Height);
+                        break;
+                }
+            }
+
+            context.DrawText(Foreground, new Point(0, top), FormattedText);
         }
 
         public override void Render(DrawingContext context)
@@ -339,38 +361,41 @@ namespace Avalonia.Controls.Presenters
 
             RenderInternal(context);
 
-            if (selectionStart == selectionEnd)
+            if (selectionStart == selectionEnd && _caretBlink)
             {
-                var caretBrush = CaretBrush;
+                var caretBrush = CaretBrush?.ToImmutable();
 
                 if (caretBrush is null)
                 {
-                    var backgroundColor = (Background as SolidColorBrush)?.Color;
+                    var backgroundColor = (Background as ISolidColorBrush)?.Color;
                     if (backgroundColor.HasValue)
                     {
                         byte red = (byte)~(backgroundColor.Value.R);
                         byte green = (byte)~(backgroundColor.Value.G);
                         byte blue = (byte)~(backgroundColor.Value.B);
 
-                        caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+                        caretBrush = new ImmutableSolidColorBrush(Color.FromRgb(red, green, blue));
                     }
                     else
+                    {
                         caretBrush = Brushes.Black;
+                    }
                 }
 
-                if (_caretBlink)
-                {
-                    var charPos = FormattedText.HitTestTextPosition(CaretIndex);
-                    var x = Math.Floor(charPos.X) + 0.5;
-                    var y = Math.Floor(charPos.Y) + 0.5;
-                    var b = Math.Ceiling(charPos.Bottom) - 0.5;
-
-                    context.DrawLine(
-                        new Pen(caretBrush, 1),
-                        new Point(x, y),
-                        new Point(x, b));
-                }
+                var (p1, p2) = GetCaretPoints();
+                context.DrawLine(
+                    new ImmutablePen(caretBrush, 1),
+                    p1, p2);
             }
+        }
+
+        (Point, Point) GetCaretPoints()
+        {
+            var charPos = FormattedText.HitTestTextPosition(CaretIndex);
+            var x = Math.Floor(charPos.X) + 0.5;
+            var y = Math.Floor(charPos.Y) + 0.5;
+            var b = Math.Ceiling(charPos.Bottom) - 0.5;
+            return (new Point(x, y), new Point(x, b));
         }
 
         public void ShowCaret()
@@ -519,6 +544,12 @@ namespace Avalonia.Controls.Presenters
         {
             _caretBlink = !_caretBlink;
             InvalidateVisual();
+        }
+
+        internal Rect GetCursorRectangle()
+        {
+            var (p1, p2) = GetCaretPoints();
+            return new Rect(p1, p2);
         }
     }
 }

@@ -71,6 +71,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [InlineData("𐐷𐐷𐐷𐐷𐐷")]
+        [InlineData("01234567🎉\n")]
         [InlineData("𐐷1234")]
         [Theory]
         public void Should_Get_Next_Caret_CharacterHit(string text)
@@ -109,9 +110,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 nextCharacterHit = new CharacterHit(0, clusters[1] - clusters[0]);
 
-                for (var i = 0; i < clusters.Length; i++)
+                foreach (var cluster in clusters)
                 {
-                    Assert.Equal(clusters[i], nextCharacterHit.FirstCharacterIndex);
+                    Assert.Equal(cluster, nextCharacterHit.FirstCharacterIndex);
 
                     nextCharacterHit = textLine.GetNextCaretCharacterHit(nextCharacterHit);
                 }
@@ -127,6 +128,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [InlineData("𐐷𐐷𐐷𐐷𐐷")]
+        [InlineData("01234567🎉\n")]
         [InlineData("𐐷1234")]
         [Theory]
         public void Should_Get_Previous_Caret_CharacterHit(string text)
@@ -269,14 +271,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     }
                 }
 
-                characterHit = textLine.GetCharacterHitFromDistance(textLine.LineMetrics.Size.Width);
+                characterHit = textLine.GetCharacterHitFromDistance(textLine.Width);
 
                 Assert.Equal(MultiBufferTextSource.TextRange.End, characterHit.FirstCharacterIndex);
             }
         }
 
         [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingCharacter, "01234 0\u2026")]
-        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingWord, "01234 \u2026")]
+        [InlineData("01234 01234", 8, TextCollapsingStyle.TrailingWord, "01234\u2026")]
         [Theory]
         public void Should_Collapse_Line(string text, int numberOfCharacters, TextCollapsingStyle style, string expected)
         {
@@ -333,8 +335,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        [Fact]
-        public void Should_Ignore_Invisible_Characters()
+        [Fact(Skip = "Verify this")]
+        public void Should_Ignore_NewLine_Characters()
         {
             using (Start())
             {
@@ -354,6 +356,28 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var nextCharacterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(8, 2));
 
                 Assert.Equal(new CharacterHit(8, 2), nextCharacterHit);
+            }
+        }
+        
+        [Fact]
+        public void TextLineBreak_Should_Contain_TextEndOfLine()
+        {
+            using (Start())
+            {
+                var defaultTextRunProperties =
+                    new GenericTextRunProperties(Typeface.Default);
+
+                const string text = "0123456789";
+
+                var source = new SingleBufferTextSource(text, defaultTextRunProperties);
+
+                var textParagraphProperties = new GenericTextParagraphProperties(defaultTextRunProperties);
+
+                var formatter = TextFormatter.Current;
+
+                var textLine = formatter.FormatLine(source, 0, double.PositiveInfinity, textParagraphProperties);
+
+                Assert.NotNull(textLine.TextLineBreak.TextEndOfLine);
             }
         }
 

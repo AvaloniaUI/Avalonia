@@ -104,12 +104,26 @@ namespace Avalonia.Media
             _figuresPropertiesObserver?.Dispose();
 
             _figuresObserver = figures?.ForEachItem(
-                _ => InvalidateGeometry(),
-                _ => InvalidateGeometry(),
-                () => InvalidateGeometry());
+                s =>
+                {
+                    s.SegmentsInvalidated += InvalidateGeometryFromSegments;
+                    InvalidateGeometry();
+                },
+                s =>
+                {
+                    s.SegmentsInvalidated -= InvalidateGeometryFromSegments;
+                    InvalidateGeometry();
+                },
+                InvalidateGeometry);
+            
             _figuresPropertiesObserver = figures?.TrackItemPropertyChanged(_ => InvalidateGeometry());
+ 
         }
 
+        private void InvalidateGeometryFromSegments(object _, EventArgs __)
+        {
+            InvalidateGeometry();
+        }
 
         public override string ToString()
             => $"{(FillRule != FillRule.EvenOdd ? "F1 " : "")}{(string.Join(" ", Figures))}";

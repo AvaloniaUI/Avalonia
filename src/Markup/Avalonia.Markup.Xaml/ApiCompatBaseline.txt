@@ -1,4 +1,0 @@
-Compat issues with assembly Avalonia.Markup.Xaml:
-MembersMustExist : Member 'public Avalonia.Data.Binding Avalonia.Markup.Xaml.Templates.TreeDataTemplate.ItemsSource.get()' does not exist in the implementation but it does exist in the contract.
-MembersMustExist : Member 'public void Avalonia.Markup.Xaml.Templates.TreeDataTemplate.ItemsSource.set(Avalonia.Data.Binding)' does not exist in the implementation but it does exist in the contract.
-Total Issues: 2

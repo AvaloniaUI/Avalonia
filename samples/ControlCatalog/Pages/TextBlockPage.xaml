@@ -18,8 +18,8 @@
       </StackPanel.Styles>
       <Border>
         <StackPanel Width="200" Spacing="8">
-          <TextBlock TextTrimming="CharacterEllipsis" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
-          <TextBlock TextTrimming="WordEllipsis" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+          <TextBlock Margin="0 0 10 0" TextTrimming="CharacterEllipsis" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+          <TextBlock Margin="0 0 10 0" TextTrimming="WordEllipsis" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
           <TextBlock Text="Left aligned text" TextAlignment="Left" />
           <TextBlock Text="Center aligned text" TextAlignment="Center" />
           <TextBlock Text="Right aligned text" TextAlignment="Right" />

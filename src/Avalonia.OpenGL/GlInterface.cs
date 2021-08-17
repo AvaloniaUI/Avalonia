@@ -117,6 +117,19 @@ namespace Avalonia.OpenGL
         public delegate int GlCheckFramebufferStatus(int target);
         [GlEntryPoint("glCheckFramebufferStatus")]
         public GlCheckFramebufferStatus CheckFramebufferStatus { get; }
+
+        public delegate void GlBlitFramebuffer(int srcX0,
+            int srcY0,
+            int srcX1,
+            int srcY1,
+            int dstX0,
+            int dstY0,
+            int dstX1,
+            int dstY1,
+            int mask,
+            int filter);
+        [GlMinVersionEntryPoint("glBlitFramebuffer", 3, 0), GlOptionalEntryPoint]
+        public GlBlitFramebuffer BlitFramebuffer { get; }
         
         public delegate void GlGenRenderbuffers(int count, int[] res);
         [GlEntryPoint("glGenRenderbuffers")]

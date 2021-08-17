@@ -188,6 +188,28 @@ namespace Avalonia.Direct2D1
             return new WicBitmapImpl(stream);
         }
 
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new WriteableWicBitmapImpl(stream, width, true, interpolationMode);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new WriteableWicBitmapImpl(stream, height, false, interpolationMode);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            return new WriteableWicBitmapImpl(fileName);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
+        {
+            return new WriteableWicBitmapImpl(stream);
+        }
+
         /// <inheritdoc />
         public IBitmapImpl LoadBitmapToWidth(Stream stream, int width, BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
         {
@@ -213,7 +235,7 @@ namespace Avalonia.Direct2D1
             return new WicBitmapImpl(format, alphaFormat, data, size, dpi, stride);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun, out double width)
+        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
         {
             var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
 
@@ -236,24 +258,42 @@ namespace Avalonia.Direct2D1
 
             run.Advances = new float[glyphCount];
 
-            width = 0;
+            var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
 
-            for (var i = 0; i < glyphCount; i++)
+            if (glyphRun.GlyphAdvances.IsEmpty)
             {
-                run.Advances[i] = (float)glyphRun.GlyphAdvances[i];
-                width += run.Advances[i];
+                for (var i = 0; i < glyphCount; i++)
+                {
+                    var advance = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
+
+                    run.Advances[i] = advance;
+                }
+            }
+            else
+            {
+                for (var i = 0; i < glyphCount; i++)
+                {
+                    var advance = (float)glyphRun.GlyphAdvances[i];
+
+                    run.Advances[i] = advance;
+                }
+            }
+
+            if (glyphRun.GlyphOffsets.IsEmpty)
+            {
+                return new GlyphRunImpl(run);
             }
 
             run.Offsets = new GlyphOffset[glyphCount];
 
             for (var i = 0; i < glyphCount; i++)
             {
-                var offset = glyphRun.GlyphOffsets[i];
+                var (x, y) = glyphRun.GlyphOffsets[i];
 
                 run.Offsets[i] = new GlyphOffset
                 {
-                    AdvanceOffset = (float)offset.X,
-                    AscenderOffset = (float)offset.Y
+                    AdvanceOffset = (float)x,
+                    AscenderOffset = (float)y
                 };
             }
 
