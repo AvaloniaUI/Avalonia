@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.MaskedTextBox
@@ -26,6 +27,9 @@ namespace Avalonia.Controls.MaskedTextBox
 
         public static readonly StyledProperty<CultureInfo> CultureProperty =
            AvaloniaProperty.Register<MaskedTextBox, CultureInfo>(nameof(Culture));
+
+        public static readonly StyledProperty<bool> HidePromptOnLeaveProperty =
+         AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(HidePromptOnLeave));
 
         /// <summary>
         /// Dependency property to store the mask to apply to the TextBox
@@ -77,12 +81,35 @@ namespace Avalonia.Controls.MaskedTextBox
             set => SetValue(AsciiOnlyProperty, value);
         }
 
+        public bool HidePromptOnLeave
+        {
+            get => GetValue(HidePromptOnLeaveProperty);
+            set => SetValue(HidePromptOnLeaveProperty, value);
+        }
+
         public CultureInfo Culture
         {
             get => GetValue(CultureProperty);
             set => SetValue(CultureProperty, value);
         }
         #endregion
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            if (HidePromptOnLeave == true)
+            {
+                Text = _maskedTextProvider.ToDisplayString();
+            }
+            base.OnGotFocus(e);
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            if (HidePromptOnLeave == true)
+            {
+                Text = _maskedTextProvider.ToString(!HidePromptOnLeave, true);
+            }
+            base.OnLostFocus(e);
+        }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {

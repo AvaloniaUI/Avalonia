@@ -20,7 +20,7 @@
                  Watermark="Floating Watermark"
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
-        <c:MaskedTextBox AllowPromptAsInput="False" AsciiOnly="True"  Width="200" Height="50" Mask="(LLL) 999-0000"></c:MaskedTextBox>
+        <c:MaskedTextBox  AllowPromptAsInput="False" AsciiOnly="True"  Width="200" Height="50" Mask="(LLL) 999-0000"></c:MaskedTextBox>
         
         <TextBox Width="200" Text="Validation Error">
           <DataValidationErrors.Error>
