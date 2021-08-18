@@ -9,14 +9,20 @@ namespace Avalonia.Controls.MaskedTextBox
     public class MaskedTextBox : TextBox, IStyleable
     {
         private MaskedTextProvider _maskedTextProvider;
-        private bool _allowPromptAsInput;
 
         #region Properties
         /// <summary>
         /// Dependency property to store the mask to apply to the TextBox
         /// </summary>
         public static readonly StyledProperty<bool> AllowPromptAsInputProperty =
-            AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AllowPromptAsInput));
+            AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AllowPromptAsInput), true);
+
+        /// <summary>
+        /// Dependency property to store the mask to apply to the TextBox
+        /// </summary>
+        public static readonly StyledProperty<bool> AsciiOnlyProperty =
+            AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly), true);
+
         /// <summary>
         /// Dependency property to store the mask to apply to the TextBox
         /// </summary>
@@ -29,18 +35,11 @@ namespace Avalonia.Controls.MaskedTextBox
         public static readonly StyledProperty<char> PromptCharProperty =
              AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
 
+
         public bool AllowPromptAsInput
         {
-            get => _allowPromptAsInput;
-            set
-            {
-                _allowPromptAsInput = value;
-                if (MaskProvider != null && MaskProvider.AllowPromptAsInput != value)
-                {
-                    _maskedTextProvider = new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, value, PromptChar, '\0', false);
-                }
-
-            }
+            get => GetValue(AllowPromptAsInputProperty);
+            set => SetValue(AllowPromptAsInputProperty, value);
         }
 
         /// <summary>
@@ -67,6 +66,12 @@ namespace Avalonia.Controls.MaskedTextBox
             get => GetValue(PromptCharProperty);
             set => SetValue(PromptCharProperty, value);
         }
+
+        public bool AsciiOnly
+        {
+            get => GetValue(AsciiOnlyProperty);
+            set => SetValue(AsciiOnlyProperty, value);
+        }
         #endregion
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
@@ -75,9 +80,17 @@ namespace Avalonia.Controls.MaskedTextBox
             {
                 if (MaskProvider == null && !string.IsNullOrEmpty(Mask))
                 {
-                    _maskedTextProvider ??= new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', false);
+                    _maskedTextProvider ??= new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
                 }
                 RefreshText(MaskProvider, 0);
+            }
+            else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput)
+            {
+                _maskedTextProvider = new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
+            }
+            else if (change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly)
+            {
+                _maskedTextProvider = new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
             }
             base.OnPropertyChanged(change);
         }
@@ -111,7 +124,7 @@ namespace Avalonia.Controls.MaskedTextBox
                     }
                     break;
                 case Key.Space:
-                    if (provider.InsertAt(@" ", position))
+                    if (provider.InsertAt(" ", position))
                     {
                         RefreshText(provider, position);
                     }
