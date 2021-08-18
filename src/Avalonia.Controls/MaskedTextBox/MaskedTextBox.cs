@@ -84,11 +84,8 @@ namespace Avalonia.Controls.MaskedTextBox
                 }
                 RefreshText(MaskProvider, 0);
             }
-            else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput)
-            {
-                _maskedTextProvider = new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
-            }
-            else if (change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly)
+            else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput
+                  || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly)
             {
                 _maskedTextProvider = new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
             }
