@@ -23,6 +23,10 @@ namespace Avalonia.Controls.MaskedTextBox
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
 
+
+        public static readonly StyledProperty<CultureInfo> CultureProperty =
+           AvaloniaProperty.Register<MaskedTextBox, CultureInfo>(nameof(Culture));
+
         /// <summary>
         /// Dependency property to store the mask to apply to the TextBox
         /// </summary>
@@ -72,6 +76,12 @@ namespace Avalonia.Controls.MaskedTextBox
             get => GetValue(AsciiOnlyProperty);
             set => SetValue(AsciiOnlyProperty, value);
         }
+
+        public CultureInfo Culture
+        {
+            get => GetValue(CultureProperty);
+            set => SetValue(CultureProperty, value);
+        }
         #endregion
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
@@ -80,14 +90,14 @@ namespace Avalonia.Controls.MaskedTextBox
             {
                 if (MaskProvider == null && !string.IsNullOrEmpty(Mask))
                 {
-                    _maskedTextProvider ??= new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
+                    _maskedTextProvider ??= new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
                 }
                 RefreshText(MaskProvider, 0);
             }
             else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput
                   || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly)
             {
-                _maskedTextProvider = new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
+                _maskedTextProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
             }
             base.OnPropertyChanged(change);
         }
