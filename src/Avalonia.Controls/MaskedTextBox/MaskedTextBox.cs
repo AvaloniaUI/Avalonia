@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using Avalonia.Input;
 using Avalonia.Styling;
 
@@ -8,19 +9,39 @@ namespace Avalonia.Controls.MaskedTextBox
     public class MaskedTextBox : TextBox, IStyleable
     {
         private MaskedTextProvider _maskedTextProvider;
+        private bool _allowPromptAsInput;
 
         #region Properties
         /// <summary>
         /// Dependency property to store the mask to apply to the TextBox
         /// </summary>
+        public static readonly StyledProperty<bool> AllowPromptAsInputProperty =
+            AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AllowPromptAsInput));
+        /// <summary>
+        /// Dependency property to store the mask to apply to the TextBox
+        /// </summary>
         public static readonly StyledProperty<string> MaskProperty =
-            AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask));
+            AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask), string.Empty);
 
         /// <summary>
         /// Dependency property to store the prompt char to apply to the TextBox mask
         /// </summary>
         public static readonly StyledProperty<char> PromptCharProperty =
              AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
+
+        public bool AllowPromptAsInput
+        {
+            get => _allowPromptAsInput;
+            set
+            {
+                _allowPromptAsInput = value;
+                if (MaskProvider != null && MaskProvider.AllowPromptAsInput != value)
+                {
+                    _maskedTextProvider = new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, value, PromptChar, '\0', false);
+                }
+
+            }
+        }
 
         /// <summary>
         /// Gets or sets the mask to apply to the TextBox
@@ -36,7 +57,7 @@ namespace Avalonia.Controls.MaskedTextBox
         /// <summary>
         /// Gets the MaskTextProvider for the specified Mask
         /// </summary>
-        public MaskedTextProvider MaskProvider => _maskedTextProvider ??= new MaskedTextProvider(Mask) { PromptChar = PromptChar };
+        public MaskedTextProvider MaskProvider => _maskedTextProvider;
 
         /// <summary>
         /// Gets or sets the prompt char to apply to the TextBox mask
@@ -52,6 +73,10 @@ namespace Avalonia.Controls.MaskedTextBox
         {
             if (change.Property == MaskProperty)
             {
+                if (MaskProvider == null && !string.IsNullOrEmpty(Mask))
+                {
+                    _maskedTextProvider ??= new MaskedTextProvider(Mask, CultureInfo.CurrentCulture, AllowPromptAsInput, PromptChar, '\0', false);
+                }
                 RefreshText(MaskProvider, 0);
             }
             base.OnPropertyChanged(change);
