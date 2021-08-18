@@ -21,7 +21,7 @@ namespace Avalonia.Controls.MaskedTextBox
         /// Dependency property to store the mask to apply to the TextBox
         /// </summary>
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
-            AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly), true);
+            AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
 
         /// <summary>
         /// Dependency property to store the mask to apply to the TextBox
