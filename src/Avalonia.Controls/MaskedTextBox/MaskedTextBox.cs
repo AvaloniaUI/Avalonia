@@ -119,11 +119,7 @@ namespace Avalonia.Controls.MaskedTextBox
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (change.Property == TextProperty && Text != MaskProvider.ToDisplayString())
-            {
-                Text = MaskProvider.ToDisplayString();
-            }
-            else if (change.Property == MaskProperty)
+            if (change.Property == MaskProperty)
             {
                 if (MaskProvider == null && !string.IsNullOrEmpty(Mask))
                 {
