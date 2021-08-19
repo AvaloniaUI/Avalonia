@@ -9,7 +9,6 @@ namespace Avalonia.Controls.MaskedTextBox
 {
     public class MaskedTextBox : TextBox, IStyleable
     {
-        private MaskedTextProvider _maskedTextProvider;
 
         #region Properties
         /// <summary>
@@ -37,6 +36,8 @@ namespace Avalonia.Controls.MaskedTextBox
         public static readonly StyledProperty<string> MaskProperty =
             AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask), string.Empty);
 
+        public static new readonly StyledProperty<char> PasswordCharProperty =
+            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
         /// <summary>
         /// Dependency property to store the prompt char to apply to the TextBox mask
         /// </summary>
@@ -64,8 +65,13 @@ namespace Avalonia.Controls.MaskedTextBox
         /// <summary>
         /// Gets the MaskTextProvider for the specified Mask
         /// </summary>
-        public MaskedTextProvider MaskProvider => _maskedTextProvider;
+        public MaskedTextProvider MaskProvider { get; private set; }
 
+        public new char PasswordChar
+        {
+            get => GetValue(PasswordCharProperty);
+            set => SetValue(PasswordCharProperty, value);
+        }
         /// <summary>
         /// Gets or sets the prompt char to apply to the TextBox mask
         /// </summary>
@@ -97,7 +103,7 @@ namespace Avalonia.Controls.MaskedTextBox
         {
             if (HidePromptOnLeave == true)
             {
-                Text = _maskedTextProvider.ToDisplayString();
+                Text = MaskProvider.ToDisplayString();
             }
             base.OnGotFocus(e);
         }
@@ -106,25 +112,29 @@ namespace Avalonia.Controls.MaskedTextBox
         {
             if (HidePromptOnLeave == true)
             {
-                Text = _maskedTextProvider.ToString(!HidePromptOnLeave, true);
+                Text = MaskProvider.ToString(!HidePromptOnLeave, true);
             }
             base.OnLostFocus(e);
         }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (change.Property == MaskProperty)
+            if (change.Property == TextProperty && Text != MaskProvider.ToDisplayString())
+            {
+                Text = MaskProvider.ToDisplayString();
+            }
+            else if (change.Property == MaskProperty)
             {
                 if (MaskProvider == null && !string.IsNullOrEmpty(Mask))
                 {
-                    _maskedTextProvider ??= new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
+                    MaskProvider ??= new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
                 }
                 RefreshText(MaskProvider, 0);
             }
             else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput
                   || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly)
             {
-                _maskedTextProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, '\0', AsciiOnly);
+                MaskProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
             }
             base.OnPropertyChanged(change);
         }
