@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 
@@ -140,15 +143,43 @@ namespace Avalonia.Controls.MaskedTextBox
         /// override the key down to handle delete of a character
         /// </summary>
         /// <param name="e">Arguments for the event</param>
-        protected override void OnKeyDown(KeyEventArgs e)
+        protected override async void OnKeyDown(KeyEventArgs e)
         {
-            base.OnKeyDown(e);
+
             var provider = MaskProvider;
             if (provider is null)
             {
                 return;
             }
+            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
+            bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
+
+            if (Match(keymap.Paste))
+            {
+                var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
+
+                if (text is null)
+                    return;
+                foreach (var item in text)
+                {
+                    var index = GetNextCharacterPosition(CaretIndex) - CaretIndex;
+                    CaretIndex = index == 0 ? CaretIndex : CaretIndex + index;
+                    if (MaskProvider.InsertAt(item, GetNextCharacterPosition(CaretIndex)))
+                    {
+                        CaretIndex++;
+                    }
+                    else
+                    {
+                        CaretIndex -= index;
+                    }
+                }
+
+                Text = MaskProvider.ToDisplayString();
+                e.Handled = true;
+                return;
+            }
+            base.OnKeyDown(e);
             var position = CaretIndex;
             switch (e.Key)
             {
@@ -174,7 +205,7 @@ namespace Avalonia.Controls.MaskedTextBox
                 case Key.Back:
                     if (position > 0)
                     {
-                        provider.RemoveAt(position);  
+                        provider.RemoveAt(position);
                     }
                     RefreshText(provider, position);
                     e.Handled = true;
