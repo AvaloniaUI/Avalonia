@@ -175,34 +175,33 @@ namespace Avalonia.Controls
                 return;
             }
             base.OnKeyDown(e);
-            var position = CaretIndex;
             switch (e.Key)
             {
                 case Key.Delete:
-                    if (position < Text.Length)
+                    if (CaretIndex < Text.Length)
                     {
-                        if (MaskProvider.RemoveAt(position))
+                        if (MaskProvider.RemoveAt(CaretIndex))
                         {
-                            RefreshText(MaskProvider, position);
+                            RefreshText(MaskProvider, CaretIndex);
                         }
 
                         e.Handled = true;
                     }
                     break;
                 case Key.Space:
-                    if (MaskProvider.InsertAt(" ", position))
+                    if (MaskProvider.InsertAt(" ", CaretIndex))
                     {
-                        RefreshText(MaskProvider, position);
+                        RefreshText(MaskProvider, CaretIndex);
                     }
 
                     e.Handled = true;
                     break;
                 case Key.Back:
-                    if (position > 0)
+                    if (CaretIndex > 0)
                     {
-                        MaskProvider.RemoveAt(position);
+                        MaskProvider.RemoveAt(CaretIndex);
                     }
-                    RefreshText(MaskProvider, position);
+                    RefreshText(MaskProvider, CaretIndex);
                     e.Handled = true;
                     break;
             }
@@ -227,24 +226,21 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var position = CaretIndex;
-            var provider = MaskProvider;
-            var ifIsPositionInMiddle = position < Text.Length;
-            if (provider is not null)
+            if (MaskProvider is not null)
             {
-                if (ifIsPositionInMiddle)
+                if (CaretIndex < Text.Length)
                 {
-                    position = GetNextCharacterPosition(position);
+                    CaretIndex = GetNextCharacterPosition(CaretIndex);
 
-                    if (provider.InsertAt(e.Text, position))
+                    if (MaskProvider.InsertAt(e.Text, CaretIndex))
                     {
-                        position++;
+                        CaretIndex++;
                     }
 
-                    position = GetNextCharacterPosition(position);
+                    CaretIndex = GetNextCharacterPosition(CaretIndex);
                 }
 
-                RefreshText(provider, position);
+                RefreshText(MaskProvider, CaretIndex);
             }
 
             e.Handled = true;
@@ -261,7 +257,7 @@ namespace Avalonia.Controls
             if (MaskProvider is not null)
             {
                 var position = MaskProvider.FindEditPositionFrom(startPosition, true);
-                if (position != -1)
+                if (CaretIndex != -1)
                 {
                     return position;
                 }
