@@ -14,7 +14,24 @@ namespace Avalonia.Controls
 {
     public class MaskedTextBox : TextBox, IStyleable
     {
+        public MaskedTextBox() { }
 
+        /// <summary>
+        ///  Constructs the MaskedTextBox with the specified MaskedTextProvider object.
+        /// </summary>
+        public MaskedTextBox(MaskedTextProvider maskedTextProvider)
+        {
+            if (maskedTextProvider is null)
+            {
+                throw new ArgumentNullException(nameof(maskedTextProvider));
+            }
+            AllowPromptAsInput = maskedTextProvider.AllowPromptAsInput;
+            AsciiOnly = maskedTextProvider.AsciiOnly;
+            Culture = maskedTextProvider.Culture;
+            Mask = maskedTextProvider.Mask;
+            PasswordChar = maskedTextProvider.PasswordChar;
+            PromptChar = maskedTextProvider.PromptChar;
+        }
         public static readonly StyledProperty<bool> AllowPromptAsInputProperty =
             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AllowPromptAsInput), true);
 
@@ -81,6 +98,28 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        ///  Specifies whether the test string required input positions, as specified by the mask, have
+        ///  all been assigned.
+        /// </summary>
+        public bool? MaskCompleted
+        {
+            get
+            {
+                return MaskProvider?.MaskCompleted;
+            }
+        }
+
+        /// <summary>
+        ///  Specifies whether all inputs (required and optional) have been provided into the mask successfully.
+        /// </summary>
+        public bool? MaskFull
+        {
+            get
+            {
+                return MaskProvider?.MaskFull;
+            }
+        }
+        /// <summary>
         /// Gets the MaskTextProvider for the specified Mask.
         /// </summary>
         public MaskedTextProvider? MaskProvider { get; private set; }
@@ -127,15 +166,15 @@ namespace Avalonia.Controls
         {
             if (change.Property == MaskProperty)
             {
-                if (MaskProvider == null && !string.IsNullOrEmpty(Mask))
-                {
-                    MaskProvider ??= new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
-                }
-                RefreshText(MaskProvider!, 0);
+                MaskProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
+                RefreshText(MaskProvider, 0);
+
             }
             else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput
+                  || change.Property == PasswordCharProperty && MaskProvider != null && MaskProvider.PasswordChar != PasswordChar
+                  || change.Property == PromptCharProperty && MaskProvider != null && MaskProvider.PromptChar != PromptChar
                   || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
-                  || change.Property == CultureProperty && MaskProvider != null && MaskProvider.Culture != Culture)
+                  || change.Property == CultureProperty && MaskProvider != null && !MaskProvider.Culture.Equals(Culture))
             {
                 MaskProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
                 RefreshText(MaskProvider, 0);
