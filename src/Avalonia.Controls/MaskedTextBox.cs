@@ -131,7 +131,8 @@ namespace Avalonia.Controls
                 RefreshText(MaskProvider, 0);
             }
             else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput
-                  || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly)
+                  || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
+                  || change.Property == CultureProperty && MaskProvider != null && MaskProvider.Culture != Culture)
             {
                 MaskProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
             }
@@ -226,22 +227,21 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (MaskProvider is not null)
+
+            if (CaretIndex < Text.Length)
             {
-                if (CaretIndex < Text.Length)
+                CaretIndex = GetNextCharacterPosition(CaretIndex);
+
+                if (MaskProvider.InsertAt(e.Text, CaretIndex))
                 {
-                    CaretIndex = GetNextCharacterPosition(CaretIndex);
-
-                    if (MaskProvider.InsertAt(e.Text, CaretIndex))
-                    {
-                        CaretIndex++;
-                    }
-
-                    CaretIndex = GetNextCharacterPosition(CaretIndex);
+                    CaretIndex++;
                 }
 
-                RefreshText(MaskProvider, CaretIndex);
+                CaretIndex = GetNextCharacterPosition(CaretIndex);
             }
+
+            RefreshText(MaskProvider, CaretIndex);
+
 
             e.Handled = true;
 

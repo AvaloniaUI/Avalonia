@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Presenters;
@@ -355,6 +356,24 @@ namespace Avalonia.Controls.UnitTests
                 RaiseKeyEvent(target, Key.Enter, 0);
 
                 Assert.Equal(Environment.NewLine, target.Text);
+            }
+        }
+
+        [Fact]
+        public void Mask_Should_Work_Correctly()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "00/00/0000",
+                    Culture = CultureInfo.GetCultureInfo("en-US")
+                };
+
+                RaiseTextEvent(target, "12102000");
+
+                Assert.Equal("12/10/2000", target.Text);
             }
         }
 
@@ -822,7 +841,7 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        private void RaiseTextEvent(TextBox textBox, string text)
+        private void RaiseTextEvent(MaskedTextBox textBox, string text)
         {
             textBox.RaiseEvent(new TextInputEventArgs
             {
