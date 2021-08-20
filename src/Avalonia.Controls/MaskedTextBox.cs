@@ -40,7 +40,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask), string.Empty);
 
         public static new readonly StyledProperty<char> PasswordCharProperty =
-            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
+            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar), '\0');
         /// <summary>
         /// Dependency property to store the prompt char to apply to the TextBox mask
         /// </summary>
@@ -135,6 +135,7 @@ namespace Avalonia.Controls
                   || change.Property == CultureProperty && MaskProvider != null && MaskProvider.Culture != Culture)
             {
                 MaskProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
+                RefreshText(MaskProvider, 0);
             }
             base.OnPropertyChanged(change);
         }
@@ -161,6 +162,7 @@ namespace Avalonia.Controls
 
                 if (text is null)
                     return;
+
                 foreach (var item in text)
                 {
                     var index = GetNextCharacterPosition(CaretIndex) - CaretIndex;
