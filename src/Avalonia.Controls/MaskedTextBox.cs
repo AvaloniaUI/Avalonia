@@ -8,7 +8,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 
-namespace Avalonia.Controls.MaskedTextBox
+namespace Avalonia.Controls
 {
     public class MaskedTextBox : TextBox, IStyleable
     {
@@ -149,6 +149,7 @@ namespace Avalonia.Controls.MaskedTextBox
             var provider = MaskProvider;
             if (provider is null)
             {
+                base.OnKeyDown(e);
                 return;
             }
             var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
@@ -219,6 +220,12 @@ namespace Avalonia.Controls.MaskedTextBox
             if (IsReadOnly)
             {
                 e.Handled = true;
+                base.OnTextInput(e);
+                return;
+            }
+            if (MaskProvider is null)
+            {
+                base.OnTextInput(e);
                 return;
             }
 
