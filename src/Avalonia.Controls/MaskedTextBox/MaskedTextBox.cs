@@ -174,12 +174,9 @@ namespace Avalonia.Controls.MaskedTextBox
                 case Key.Back:
                     if (position > 0)
                     {
-                        if (provider.RemoveAt(position))
-                        {
-                            RefreshText(provider, position);
-                        }
-                        position--;
+                        provider.RemoveAt(position);  
                     }
+                    RefreshText(provider, position);
                     e.Handled = true;
                     break;
             }
