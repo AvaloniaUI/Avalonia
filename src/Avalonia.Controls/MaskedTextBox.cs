@@ -25,15 +25,12 @@ namespace Avalonia.Controls
             {
                 throw new ArgumentNullException(nameof(maskedTextProvider));
             }
-            AllowPromptAsInput = maskedTextProvider.AllowPromptAsInput;
             AsciiOnly = maskedTextProvider.AsciiOnly;
             Culture = maskedTextProvider.Culture;
             Mask = maskedTextProvider.Mask;
             PasswordChar = maskedTextProvider.PasswordChar;
             PromptChar = maskedTextProvider.PromptChar;
         }
-        public static readonly StyledProperty<bool> AllowPromptAsInputProperty =
-            AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AllowPromptAsInput), true);
 
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
@@ -52,13 +49,6 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<char> PromptCharProperty =
              AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
-
-
-        public bool AllowPromptAsInput
-        {
-            get => GetValue(AllowPromptAsInputProperty);
-            set => SetValue(AllowPromptAsInputProperty, value);
-        }
 
         /// <summary>
         /// Gets or sets a value indicating if the masked text box is restricted to accept only ASCII characters.
@@ -164,19 +154,13 @@ namespace Avalonia.Controls
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (change.Property == MaskProperty)
+            if (change.Property == MaskProperty
+            || change.Property == PasswordCharProperty && MaskProvider != null && MaskProvider.PasswordChar != PasswordChar
+            || change.Property == PromptCharProperty && MaskProvider != null && MaskProvider.PromptChar != PromptChar
+            || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
+            || change.Property == CultureProperty && MaskProvider != null && !MaskProvider.Culture.Equals(Culture))
             {
-                MaskProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
-                RefreshText(MaskProvider, 0);
-
-            }
-            else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput
-                  || change.Property == PasswordCharProperty && MaskProvider != null && MaskProvider.PasswordChar != PasswordChar
-                  || change.Property == PromptCharProperty && MaskProvider != null && MaskProvider.PromptChar != PromptChar
-                  || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
-                  || change.Property == CultureProperty && MaskProvider != null && !MaskProvider.Culture.Equals(Culture))
-            {
-                MaskProvider = new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
+                MaskProvider = new MaskedTextProvider(Mask, Culture, true, PromptChar, PasswordChar, AsciiOnly);
                 RefreshText(MaskProvider, 0);
             }
             base.OnPropertyChanged(change);
@@ -271,8 +255,11 @@ namespace Avalonia.Controls
                 {
                     CaretIndex++;
                 }
-
-                CaretIndex = GetNextCharacterPosition(CaretIndex);
+                var nextPos = GetNextCharacterPosition(CaretIndex);
+                if (nextPos != 0 && CaretIndex != Text.Length)
+                {
+                    CaretIndex = nextPos;
+                }
             }
 
             RefreshText(MaskProvider, CaretIndex);
