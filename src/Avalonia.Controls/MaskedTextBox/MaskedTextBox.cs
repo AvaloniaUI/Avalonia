@@ -164,14 +164,10 @@ namespace Avalonia.Controls.MaskedTextBox
                 foreach (var item in text)
                 {
                     var index = GetNextCharacterPosition(CaretIndex) - CaretIndex;
-                    CaretIndex = index == 0 ? CaretIndex : CaretIndex + index;
-                    if (MaskProvider.InsertAt(item, GetNextCharacterPosition(CaretIndex)))
+                    index = index == 0 ? CaretIndex : CaretIndex + index;
+                    if (MaskProvider.InsertAt(item, index))
                     {
-                        CaretIndex++;
-                    }
-                    else
-                    {
-                        CaretIndex -= index;
+                        CaretIndex = ++index;
                     }
                 }
 
