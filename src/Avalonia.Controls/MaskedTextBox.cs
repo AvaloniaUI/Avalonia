@@ -8,42 +8,31 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     public class MaskedTextBox : TextBox, IStyleable
     {
 
-        #region Properties
-        /// <summary>
-        /// Dependency property to store the mask to apply to the TextBox
-        /// </summary>
         public static readonly StyledProperty<bool> AllowPromptAsInputProperty =
             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AllowPromptAsInput), true);
 
-        /// <summary>
-        /// Dependency property to store the mask to apply to the TextBox
-        /// </summary>
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
 
-
-        public static readonly StyledProperty<CultureInfo> CultureProperty =
-           AvaloniaProperty.Register<MaskedTextBox, CultureInfo>(nameof(Culture));
+        public static readonly StyledProperty<CultureInfo?> CultureProperty =
+           AvaloniaProperty.Register<MaskedTextBox, CultureInfo?>(nameof(Culture));
 
         public static readonly StyledProperty<bool> HidePromptOnLeaveProperty =
          AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(HidePromptOnLeave));
 
-        /// <summary>
-        /// Dependency property to store the mask to apply to the TextBox
-        /// </summary>
-        public static readonly StyledProperty<string> MaskProperty =
-            AvaloniaProperty.Register<MaskedTextBox, string>(nameof(Mask), string.Empty);
+        public static readonly StyledProperty<string?> MaskProperty =
+            AvaloniaProperty.Register<MaskedTextBox, string?>(nameof(Mask), string.Empty);
 
         public static new readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar), '\0');
-        /// <summary>
-        /// Dependency property to store the prompt char to apply to the TextBox mask
-        /// </summary>
+
         public static readonly StyledProperty<char> PromptCharProperty =
              AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
 
@@ -55,28 +44,58 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the mask to apply to the TextBox
+        /// Gets or sets a value indicating if the masked text box is restricted to accept only ASCII characters.
+        /// Default value is false.
         /// </summary>
-        public string Mask
+        public bool AsciiOnly
+        {
+            get => GetValue(AsciiOnlyProperty);
+            set => SetValue(AsciiOnlyProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the culture information associated with the masked text box.
+        /// </summary>
+        public CultureInfo? Culture
+        {
+            get => GetValue(CultureProperty);
+            set => SetValue(CultureProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating if the prompt character is hidden when the masked text box loses focus.
+        /// </summary>
+        public bool HidePromptOnLeave
+        {
+            get => GetValue(HidePromptOnLeaveProperty);
+            set => SetValue(HidePromptOnLeaveProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the mask to apply to the TextBox.
+        /// </summary>
+        public string? Mask
         {
             get => GetValue(MaskProperty);
             set => SetValue(MaskProperty, value);
         }
 
-        Type IStyleable.StyleKey => typeof(TextBox);
+        /// <summary>
+        /// Gets the MaskTextProvider for the specified Mask.
+        /// </summary>
+        public MaskedTextProvider? MaskProvider { get; private set; }
 
         /// <summary>
-        /// Gets the MaskTextProvider for the specified Mask
+        /// Gets or sets the character to be displayed in substitute for user input.
         /// </summary>
-        public MaskedTextProvider MaskProvider { get; private set; }
-
         public new char PasswordChar
         {
             get => GetValue(PasswordCharProperty);
             set => SetValue(PasswordCharProperty, value);
         }
+
         /// <summary>
-        /// Gets or sets the prompt char to apply to the TextBox mask
+        /// Gets or sets the character used to represent the absence of user input in MaskedTextBox.
         /// </summary>
         public char PromptChar
         {
@@ -84,27 +103,11 @@ namespace Avalonia.Controls
             set => SetValue(PromptCharProperty, value);
         }
 
-        public bool AsciiOnly
-        {
-            get => GetValue(AsciiOnlyProperty);
-            set => SetValue(AsciiOnlyProperty, value);
-        }
+        Type IStyleable.StyleKey => typeof(TextBox);
 
-        public bool HidePromptOnLeave
-        {
-            get => GetValue(HidePromptOnLeaveProperty);
-            set => SetValue(HidePromptOnLeaveProperty, value);
-        }
-
-        public CultureInfo Culture
-        {
-            get => GetValue(CultureProperty);
-            set => SetValue(CultureProperty, value);
-        }
-        #endregion
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
-            if (HidePromptOnLeave == true)
+            if (HidePromptOnLeave == true && MaskProvider != null)
             {
                 Text = MaskProvider.ToDisplayString();
             }
@@ -113,7 +116,7 @@ namespace Avalonia.Controls
 
         protected override void OnLostFocus(RoutedEventArgs e)
         {
-            if (HidePromptOnLeave == true)
+            if (HidePromptOnLeave == true && MaskProvider != null)
             {
                 Text = MaskProvider.ToString(!HidePromptOnLeave, true);
             }
@@ -128,7 +131,7 @@ namespace Avalonia.Controls
                 {
                     MaskProvider ??= new MaskedTextProvider(Mask, Culture, AllowPromptAsInput, PromptChar, PasswordChar, AsciiOnly);
                 }
-                RefreshText(MaskProvider, 0);
+                RefreshText(MaskProvider!, 0);
             }
             else if (change.Property == AllowPromptAsInputProperty && MaskProvider != null && MaskProvider.AllowPromptAsInput != AllowPromptAsInput
                   || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
@@ -139,12 +142,7 @@ namespace Avalonia.Controls
             }
             base.OnPropertyChanged(change);
         }
-        #region Overrides
 
-        /// <summary>
-        /// override the key down to handle delete of a character
-        /// </summary>
-        /// <param name="e">Arguments for the event</param>
         protected override async void OnKeyDown(KeyEventArgs e)
         {
             if (MaskProvider is null)
@@ -210,13 +208,9 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// override this method to replace the characters entered with the mask
-        /// </summary>
-        /// <param name="e">Arguments for event</param>
         protected override void OnTextInput(TextInputEventArgs e)
         {
-            //if the text is readonly do not add the text
+
             if (IsReadOnly)
             {
                 e.Handled = true;
@@ -249,11 +243,7 @@ namespace Avalonia.Controls
 
             base.OnTextInput(e);
         }
-        #endregion
 
-        #region Helper Methods
-
-        //gets the next position in the TextBox to move
         private int GetNextCharacterPosition(int startPosition)
         {
             if (MaskProvider is not null)
@@ -267,7 +257,6 @@ namespace Avalonia.Controls
             return startPosition;
         }
 
-        //refreshes the text of the TextBox
         private void RefreshText(MaskedTextProvider provider, int position)
         {
             if (provider is not null)
@@ -276,6 +265,6 @@ namespace Avalonia.Controls
                 CaretIndex = position;
             }
         }
-        #endregion
+
     }
 }
