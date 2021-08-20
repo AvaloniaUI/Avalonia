@@ -145,9 +145,7 @@ namespace Avalonia.Controls
         /// <param name="e">Arguments for the event</param>
         protected override async void OnKeyDown(KeyEventArgs e)
         {
-
-            var provider = MaskProvider;
-            if (provider is null)
+            if (MaskProvider is null)
             {
                 base.OnKeyDown(e);
                 return;
@@ -183,18 +181,18 @@ namespace Avalonia.Controls
                 case Key.Delete:
                     if (position < Text.Length)
                     {
-                        if (provider.RemoveAt(position))
+                        if (MaskProvider.RemoveAt(position))
                         {
-                            RefreshText(provider, position);
+                            RefreshText(MaskProvider, position);
                         }
 
                         e.Handled = true;
                     }
                     break;
                 case Key.Space:
-                    if (provider.InsertAt(" ", position))
+                    if (MaskProvider.InsertAt(" ", position))
                     {
-                        RefreshText(provider, position);
+                        RefreshText(MaskProvider, position);
                     }
 
                     e.Handled = true;
@@ -202,9 +200,9 @@ namespace Avalonia.Controls
                 case Key.Back:
                     if (position > 0)
                     {
-                        provider.RemoveAt(position);
+                        MaskProvider.RemoveAt(position);
                     }
-                    RefreshText(provider, position);
+                    RefreshText(MaskProvider, position);
                     e.Handled = true;
                     break;
             }
