@@ -52,6 +52,7 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
+        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -115,7 +116,7 @@ public:
         return Window;
     }
     
-    virtual HRESULT Show(bool activate) override
+    virtual HRESULT Show(bool activate, bool isDialog) override
     {
         START_COM_CALL;
         
@@ -124,7 +125,6 @@ public:
             SetPosition(lastPositionSet);
             UpdateStyle();
             
-            [Window setContentView: StandardContainer];
             [Window setTitle:_lastTitle];
             
             if(ShouldTakeFocusOnShow() && activate)
@@ -277,7 +277,7 @@ public:
         }
     }
     
-    virtual HRESULT Resize(double x, double y) override
+    virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override
     {
         if(_inResize)
         {
@@ -287,6 +287,7 @@ public:
         _inResize = true;
         
         START_COM_CALL;
+        auto resizeBlock = ResizeScope(View, reason);
         
         @autoreleasepool
         {
@@ -317,7 +318,7 @@ public:
             {
                 if(!_shown)
                 {
-                    BaseEvents->Resized(AvnSize{x,y});
+                    BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
                 [Window setContentSize:NSSize{x, y}];
@@ -577,6 +578,11 @@ public:
         return S_OK;
     }
 
+    virtual bool IsDialog()
+    {
+        return false;
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {
@@ -607,6 +613,7 @@ private:
     NSRect _preZoomSize;
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
+    bool _isDialog;
     AvnExtendClientAreaChromeHints _extendClientHints;
     
     FORWARD_IUNKNOWN()
@@ -667,13 +674,14 @@ private:
         }
     }
     
-    virtual HRESULT Show (bool activate) override
+    virtual HRESULT Show (bool activate, bool isDialog) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            WindowBaseImpl::Show(activate);
+            _isDialog = isDialog;
+            WindowBaseImpl::Show(activate, isDialog);
             
             HideOrShowTrafficLights();
             
@@ -704,6 +712,12 @@ private:
             auto cparent = dynamic_cast<WindowImpl*>(parent);
             if(cparent == nullptr)
                 return E_INVALIDARG;
+            
+            // If one tries to show a child window with a minimized parent window, then the parent window will be
+            // restored but MacOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
+            if (cparent->WindowState() == Minimized)
+                cparent->SetWindowState(Normal);
             
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             
@@ -1196,6 +1210,7 @@ private:
                 }
                 
                 _actualWindowState = _lastWindowState;
+                WindowEvents->WindowStateChanged(_actualWindowState);
             }
             
             
@@ -1211,6 +1226,11 @@ private:
         {
             WindowStateChanged();
         }
+    }
+    
+    virtual bool IsDialog() override
+    {
+        return _isDialog;
     }
     
 protected:
@@ -1373,6 +1393,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _lastKeyHandled;
     AvnPixelSize _lastPixelSize;
     NSObject<IRenderTarget>* _renderTarget;
+    AvnPlatformResizeReason _resizeReason;
 }
 
 - (void)onClosed
@@ -1484,7 +1505,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         _lastPixelSize.Height = (int)fsize.height;
         [self updateRenderTarget];
     
-        _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
+        auto reason = [self inLiveResize] ? ResizeUser : _resizeReason;
+        _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height}, reason);
     }
 }
 
@@ -1983,6 +2005,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
 }
 
+- (AvnPlatformResizeReason)getResizeReason
+{
+    return _resizeReason;
+}
+
+- (void)setResizeReason:(AvnPlatformResizeReason)reason
+{
+    _resizeReason = reason;
+}
+
 @end
 
 
@@ -2000,6 +2032,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 -(void) setIsExtended:(bool)value;
 {
     _isExtended = value;
+}
+
+-(bool) isDialog
+{
+    return _parent->IsDialog();
 }
 
 -(double) getScaling
@@ -2180,28 +2217,27 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(BOOL)canBecomeKeyWindow
 {
-    return _canBecomeKeyAndMain;
+    if (_canBecomeKeyAndMain)
+    {
+        // If the window has a child window being shown as a dialog then don't allow it to become the key window.
+        for(NSWindow* uch in [self childWindows])
+        {
+            auto ch = objc_cast<AvnWindow>(uch);
+            if(ch == nil)
+                continue;
+            if (ch.isDialog)
+                return false;
+        }
+        
+        return true;
+    }
+    
+    return false;
 }
 
 -(BOOL)canBecomeMainWindow
 {
     return _canBecomeKeyAndMain;
-}
-
--(bool) activateAppropriateChild: (bool)activating
-{
-    for(NSWindow* uch in [self childWindows])
-    {
-        auto ch = objc_cast<AvnWindow>(uch);
-        if(ch == nil)
-            continue;
-        [ch activateAppropriateChild:false];
-        return FALSE;
-    }
-    
-    if(!activating)
-        [self makeKeyAndOrderFront:self];
-    return TRUE;
 }
 
 -(bool)shouldTryToHandleEvents
@@ -2214,26 +2250,15 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isEnabled = enable;
 }
 
--(void)makeKeyWindow
-{
-    if([self activateAppropriateChild: true])
-    {
-        [super makeKeyWindow];
-    }
-}
-
 -(void)becomeKeyWindow
 {
     [self showWindowMenuWithAppMenu];
     
-    if([self activateAppropriateChild: true])
+    if(_parent != nullptr)
     {
-        if(_parent != nullptr)
-        {
-            _parent->BaseEvents->Activated();
-        }
+        _parent->BaseEvents->Activated();
     }
-    
+
     [super becomeKeyWindow];
 }
 
@@ -2243,7 +2268,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     if(parent != nil)
     {
         [parent removeChildWindow:self];
-        [parent activateAppropriateChild: false];
     }
 }
 
@@ -2378,7 +2402,7 @@ protected:
         return NSWindowStyleMaskBorderless;
     }
     
-    virtual HRESULT Resize(double x, double y) override
+    virtual HRESULT Resize(double x, double y, AvnPlatformResizeReason reason) override
     {
         START_COM_CALL;
         

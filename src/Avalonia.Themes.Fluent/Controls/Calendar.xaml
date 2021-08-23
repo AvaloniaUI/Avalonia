@@ -5,7 +5,12 @@
 // All other rights reserved.
 -->
 
-<Styles xmlns="https://github.com/avaloniaui">  
+<Styles xmlns="https://github.com/avaloniaui">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <Calendar />
+    </Border>
+  </Design.PreviewWith>
   <Style Selector="Calendar">
     <Setter Property="Foreground" Value="{DynamicResource CalendarViewForeground}" />
     <Setter Property="Background" Value="{DynamicResource CalendarViewBackground}" />
@@ -23,7 +28,8 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        HeaderBackground="{TemplateBinding HeaderBackground}"/>
+                        HeaderBackground="{TemplateBinding HeaderBackground}"
+                        CornerRadius="{TemplateBinding CornerRadius}"/>
 
         </StackPanel>
       </ControlTemplate>

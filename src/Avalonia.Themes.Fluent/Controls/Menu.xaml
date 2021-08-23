@@ -21,6 +21,7 @@
       <Border Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
               HorizontalAlignment="Stretch"
               Padding="{TemplateBinding Padding}">
         <ItemsPresenter Name="PART_ItemsPresenter"
