@@ -21,10 +21,12 @@ namespace Avalonia.Controls.Platform
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            while (true)
+            var handles = new[] { _signaled, cancellationToken.WaitHandle };
+
+            while (!cancellationToken.IsCancellationRequested)
             {
                 Signaled?.Invoke(null);
-                _signaled.WaitOne();
+                WaitHandle.WaitAny(handles);
             }
         }
 
