@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using System.Runtime.InteropServices;
 
 #if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
@@ -30,6 +31,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [Fact]
         public async Task TextLayout_Basic()
         {
+            // Skip test on OSX: text rendering is subtly different.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return;
+
             var t = new TextLayout(
                 "Avalonia!",
                 new Typeface(TestFontFamily),
@@ -58,6 +63,10 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [Fact]
         public async Task TextLayout_Rotated()
         {
+            // Skip test on OSX: text rendering is subtly different.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return;
+
             var t = new TextLayout(
                 "Avalonia!",
                 new Typeface(TestFontFamily),
