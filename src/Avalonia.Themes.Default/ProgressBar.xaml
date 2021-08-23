@@ -16,7 +16,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
             <Panel>
               <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}" IsVisible="{Binding !IsIndeterminate, RelativeSource={RelativeSource TemplatedParent}}"/>
               <Border Name="PART_IndeterminateIndicator" Background="{TemplateBinding Foreground}" IsVisible="{Binding IsIndeterminate, RelativeSource={RelativeSource TemplatedParent}}"/>

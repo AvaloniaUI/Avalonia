@@ -140,10 +140,5 @@ namespace Avalonia.Controls.Primitives
 
             return new OverlayPopupHost(overlayLayer);
         }
-
-        public override void Render(DrawingContext context)
-        {
-            context.FillRectangle(Brushes.White, new Rect(default, Bounds.Size));
-        }
     }
 }
