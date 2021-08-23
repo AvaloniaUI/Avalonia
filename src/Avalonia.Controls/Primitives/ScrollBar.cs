@@ -57,6 +57,18 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> AllowAutoHideProperty =
             AvaloniaProperty.Register<ScrollBar, bool>(nameof(AllowAutoHide), true);
 
+        /// <summary>
+        /// Defines the <see cref="HideDelay"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TimeSpan> HideDelayProperty =
+            AvaloniaProperty.Register<ScrollBar, TimeSpan>(nameof(HideDelay), TimeSpan.FromSeconds(2));
+
+        /// <summary>
+        /// Defines the <see cref="ShowDelay"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TimeSpan> ShowDelayProperty =
+            AvaloniaProperty.Register<ScrollBar, TimeSpan>(nameof(ShowDelay), TimeSpan.FromSeconds(0.5));
+
         private Button _lineUpButton;
         private Button _lineDownButton;
         private Button _pageUpButton;
@@ -125,6 +137,24 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(AllowAutoHideProperty);
             set => SetValue(AllowAutoHideProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets a value that determines how long will be the hide delay after user stops interacting with the scrollbar.
+        /// </summary>
+        public TimeSpan HideDelay
+        {
+            get => GetValue(HideDelayProperty);
+            set => SetValue(HideDelayProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets a value that determines how long will be the show delay when user starts interacting with the scrollbar.
+        /// </summary>
+        public TimeSpan ShowDelay
+        {
+            get => GetValue(ShowDelayProperty);
+            set => SetValue(ShowDelayProperty, value);
         }
 
         public event EventHandler<ScrollEventArgs> Scroll;
@@ -296,12 +326,12 @@ namespace Avalonia.Controls.Primitives
 
         private void CollapseAfterDelay()
         {
-            InvokeAfterDelay(Collapse, TimeSpan.FromSeconds(2));
+            InvokeAfterDelay(Collapse, HideDelay);
         }
 
         private void ExpandAfterDelay()
         {
-            InvokeAfterDelay(Expand, TimeSpan.FromMilliseconds(400));
+            InvokeAfterDelay(Expand, ShowDelay);
         }
 
         private void Collapse()

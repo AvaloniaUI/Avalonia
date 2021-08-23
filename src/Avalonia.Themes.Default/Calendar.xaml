@@ -22,6 +22,7 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
                         HeaderBackground="{TemplateBinding HeaderBackground}"/>
 
         </StackPanel>

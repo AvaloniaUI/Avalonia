@@ -39,6 +39,7 @@
   <Setter Property="Background" Value="{DynamicResource MenuFlyoutPresenterBackground}" />
   <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderBrush}" />
   <Setter Property="BorderThickness" Value="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}" />
+  <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
   <Setter Property="MaxWidth" Value="{DynamicResource FlyoutThemeMaxWidth}" />
   <Setter Property="MinHeight" Value="{DynamicResource MenuFlyoutThemeMinHeight}" />
   <Setter Property="Padding" Value="{DynamicResource MenuFlyoutPresenterThemePadding}" />
@@ -55,7 +56,7 @@
               MaxWidth="{TemplateBinding MaxWidth}"
               MinHeight="{TemplateBinding MinHeight}"
               HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-              CornerRadius="{DynamicResource OverlayCornerRadius}">
+              CornerRadius="{TemplateBinding CornerRadius}">
         <ScrollViewer Classes="menuscroller">
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
