@@ -337,7 +337,7 @@ namespace Avalonia.Controls
                 base.OnTextInput(e);
                 return;
             }
-            if (MaskProvider.ResetOnSpace && e.Text == " " || MaskProvider.ResetOnPrompt && e.Text == MaskProvider.PromptChar.ToString())
+            if ((MaskProvider.ResetOnSpace && e.Text == " " || MaskProvider.ResetOnPrompt && e.Text == MaskProvider.PromptChar.ToString()) && !string.IsNullOrEmpty(SelectedText))
             {
                 if (SelectionStart > SelectionEnd ? MaskProvider.RemoveAt(SelectionEnd, SelectionStart - 1) : MaskProvider.RemoveAt(SelectionStart, SelectionEnd - 1))
                 {
