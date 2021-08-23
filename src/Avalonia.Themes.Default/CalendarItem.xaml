@@ -8,14 +8,15 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="CalendarItem">
+    <Setter Property="CornerRadius" Value="1" />
     <Setter Property="Template">
       <ControlTemplate>
         <Panel>
           <Border BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   Background="{TemplateBinding Background}"
-                  Margin="0,2,0,2"
-                  CornerRadius="1">
+                  Margin="0,2,0,2">
 
             <Border CornerRadius="1"
                     BorderBrush="{DynamicResource ThemeBackgroundBrush}"

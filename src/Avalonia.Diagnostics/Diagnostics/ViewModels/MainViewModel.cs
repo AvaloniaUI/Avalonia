@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
@@ -22,6 +21,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
+        private bool _freezePopups;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -39,6 +39,12 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription = root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
             Console = new ConsoleViewModel(UpdateConsoleContext);
+        }
+
+        public bool FreezePopups
+        {
+            get => _freezePopups;
+            set => RaiseAndSetIfChanged(ref _freezePopups, value);
         }
 
         public bool ShouldVisualizeMarginPadding
