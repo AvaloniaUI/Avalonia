@@ -601,7 +601,11 @@
             <DataGridRowsPresenter Name="PART_RowsPresenter"
                                    Grid.Row="1"
                                    Grid.RowSpan="2"
-                                   Grid.ColumnSpan="3" />
+                                   Grid.ColumnSpan="3">
+              <DataGridRowsPresenter.GestureRecognizers>
+                <ScrollGestureRecognizer CanHorizontallyScroll="True" CanVerticallyScroll="True" />
+              </DataGridRowsPresenter.GestureRecognizers>
+            </DataGridRowsPresenter>
             <Rectangle Name="PART_BottomRightCorner"
                        Fill="{DynamicResource DataGridScrollBarsSeparatorBackground}"
                        Grid.Column="2"

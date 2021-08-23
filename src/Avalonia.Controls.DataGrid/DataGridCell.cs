@@ -173,7 +173,15 @@ namespace Avalonia.Controls
                     }
                     if (OwningRow != null)
                     {
-                        e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+                        var handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+
+                        // Do not handle PointerPressed with touch,
+                        // so we can start scroll gesture on the same event.
+                        if (e.Pointer.Type != PointerType.Touch)
+                        {
+                            e.Handled = handled;
+                        }
+
                         OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
                     }
                 }
@@ -197,7 +205,7 @@ namespace Avalonia.Controls
         }
 
         // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the 
-        // right gridline will be collapsed if this cell belongs to the lastVisibileColumn and there is no filler column
+        // right gridline will be collapsed if this cell belongs to the lastVisibleColumn and there is no filler column
         internal void EnsureGridLine(DataGridColumn lastVisibleColumn)
         {
             if (OwningGrid != null && _rightGridLine != null)
