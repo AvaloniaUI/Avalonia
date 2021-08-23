@@ -534,11 +534,7 @@ namespace Avalonia.Skia
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
             // TODO: This should be disposed
-            var paint = new SKPaint()
-            {
-                IsAntialias = true,
-                Style = SKPaintStyle.StrokeAndFill
-            };
+            var paint = new SKPaint();
 
             Canvas.SaveLayer(paint);
             _maskStack.Push(CreatePaint(paint, mask, bounds, true));
@@ -547,14 +543,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopOpacityMask()
         {
-            using (var paint = new SKPaint
-            {
-                IsAntialias = true,
-                Style = SKPaintStyle.StrokeAndFill,
-                BlendMode = SKBlendMode.DstIn,
-                Color = new SKColor(0, 0, 0, 255),
-                ColorFilter = SKColorFilter.CreateLumaColor()
-            })
+            using (var paint = new SKPaint { BlendMode = SKBlendMode.DstIn })
             {
                 Canvas.SaveLayer(paint);
                 using (var paintWrapper = _maskStack.Pop())
