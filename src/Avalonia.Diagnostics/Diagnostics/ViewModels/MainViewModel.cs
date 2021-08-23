@@ -24,6 +24,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
+        private bool _freezePopups;
         private IDisposable _selectedNodeChanged;
         private string _screenshotRoot;
         private Func<IControl, string, string> _getScreenshotFileName;
@@ -44,6 +45,12 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription = root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
             Console = new ConsoleViewModel(UpdateConsoleContext);
+        }
+
+        public bool FreezePopups
+        {
+            get => _freezePopups;
+            set => RaiseAndSetIfChanged(ref _freezePopups, value);
         }
 
         public bool ShouldVisualizeMarginPadding
