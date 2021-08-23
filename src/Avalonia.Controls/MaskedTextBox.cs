@@ -186,8 +186,7 @@ namespace Avalonia.Controls
 
                 foreach (var item in text)
                 {
-                    var index = GetNextCharacterPosition(CaretIndex) - CaretIndex;
-                    index = index == 0 ? CaretIndex : CaretIndex + index;
+                    var index = GetNextCharacterPosition(CaretIndex);
                     if (MaskProvider.InsertAt(item, index))
                     {
                         CaretIndex = ++index;
