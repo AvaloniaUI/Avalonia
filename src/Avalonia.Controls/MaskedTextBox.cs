@@ -14,6 +14,40 @@ namespace Avalonia.Controls
 {
     public class MaskedTextBox : TextBox, IStyleable
     {
+        public static readonly StyledProperty<bool> AsciiOnlyProperty =
+             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
+
+        public static readonly StyledProperty<CultureInfo?> CultureProperty =
+             AvaloniaProperty.Register<MaskedTextBox, CultureInfo?>(nameof(Culture));
+
+        public static readonly StyledProperty<bool> HidePromptOnLeaveProperty =
+             AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(HidePromptOnLeave));
+
+        public static readonly DirectProperty<MaskedTextBox, bool?> MaskCompletedProperty =
+             AvaloniaProperty.RegisterDirect<MaskedTextBox, bool?>(nameof(MaskCompleted), o => o.MaskCompleted);
+
+        public static readonly DirectProperty<MaskedTextBox, bool?> MaskFullProperty =
+             AvaloniaProperty.RegisterDirect<MaskedTextBox, bool?>(nameof(MaskFull), o => o.MaskFull);
+
+        public static readonly StyledProperty<string?> MaskProperty =
+             AvaloniaProperty.Register<MaskedTextBox, string?>(nameof(Mask), string.Empty);
+
+        public static new readonly StyledProperty<char> PasswordCharProperty =
+             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar), '\0');
+
+        public static readonly StyledProperty<char> PromptCharProperty =
+             AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
+
+        public static readonly DirectProperty<MaskedTextBox, bool> ResetOnPromptProperty =
+             AvaloniaProperty.RegisterDirect<MaskedTextBox, bool>(nameof(ResetOnPrompt), o => o.ResetOnPrompt, (o, v) => o.ResetOnPrompt = v);
+
+        public static readonly DirectProperty<MaskedTextBox, bool> ResetOnSpaceProperty =
+             AvaloniaProperty.RegisterDirect<MaskedTextBox, bool>(nameof(ResetOnSpace), o => o.ResetOnSpace, (o, v) => o.ResetOnSpace = v);
+
+        private bool _resetOnPrompt = true;
+
+        private bool _resetOnSpace = true;
+
         public MaskedTextBox() { }
 
         /// <summary>
@@ -31,25 +65,6 @@ namespace Avalonia.Controls
             PasswordChar = maskedTextProvider.PasswordChar;
             PromptChar = maskedTextProvider.PromptChar;
         }
-
-        public static readonly StyledProperty<bool> AsciiOnlyProperty =
-            AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
-
-        public static readonly StyledProperty<CultureInfo?> CultureProperty =
-           AvaloniaProperty.Register<MaskedTextBox, CultureInfo?>(nameof(Culture));
-
-        public static readonly StyledProperty<bool> HidePromptOnLeaveProperty =
-         AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(HidePromptOnLeave));
-
-        public static readonly StyledProperty<string?> MaskProperty =
-            AvaloniaProperty.Register<MaskedTextBox, string?>(nameof(Mask), string.Empty);
-
-        public static new readonly StyledProperty<char> PasswordCharProperty =
-            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar), '\0');
-
-        public static readonly StyledProperty<char> PromptCharProperty =
-             AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
-
         /// <summary>
         /// Gets or sets a value indicating if the masked text box is restricted to accept only ASCII characters.
         /// Default value is false.
@@ -93,10 +108,7 @@ namespace Avalonia.Controls
         /// </summary>
         public bool? MaskCompleted
         {
-            get
-            {
-                return MaskProvider?.MaskCompleted;
-            }
+            get => MaskProvider?.MaskCompleted;
         }
 
         /// <summary>
@@ -104,11 +116,9 @@ namespace Avalonia.Controls
         /// </summary>
         public bool? MaskFull
         {
-            get
-            {
-                return MaskProvider?.MaskFull;
-            }
+            get => MaskProvider?.MaskFull;
         }
+
         /// <summary>
         /// Gets the MaskTextProvider for the specified Mask.
         /// </summary>
@@ -132,6 +142,40 @@ namespace Avalonia.Controls
             set => SetValue(PromptCharProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating if selected characters should be reset when the prompt character is pressed.
+        /// </summary>
+        public bool ResetOnPrompt
+        {
+            get => _resetOnPrompt;
+            set
+            {
+                SetAndRaise(ResetOnPromptProperty, ref _resetOnPrompt, value);
+                if (MaskProvider != null)
+                {
+                    MaskProvider.ResetOnPrompt = value;
+                }
+
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating if selected characters should be reset when the space character is pressed.
+        /// </summary>
+        public bool ResetOnSpace
+        {
+            get => _resetOnSpace;
+            set
+            {
+                SetAndRaise(ResetOnSpaceProperty, ref _resetOnSpace, value);
+                if (MaskProvider != null)
+                {
+                    MaskProvider.ResetOnSpace = value;
+                }
+
+            }
+
+
+        }
         Type IStyleable.StyleKey => typeof(TextBox);
 
         protected override void OnGotFocus(GotFocusEventArgs e)
@@ -141,6 +185,73 @@ namespace Avalonia.Controls
                 Text = MaskProvider.ToDisplayString();
             }
             base.OnGotFocus(e);
+        }
+
+        protected override async void OnKeyDown(KeyEventArgs e)
+        {
+            if (MaskProvider is null)
+            {
+                base.OnKeyDown(e);
+                return;
+            }
+            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+
+            bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
+
+            if (Match(keymap.Paste))
+            {
+                var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
+
+                if (text is null)
+                    return;
+
+                foreach (var item in text)
+                {
+                    var index = GetNextCharacterPosition(CaretIndex);
+                    if (MaskProvider.InsertAt(item, index))
+                    {
+                        CaretIndex = ++index;
+                    }
+                }
+
+                Text = MaskProvider.ToDisplayString();
+                e.Handled = true;
+                return;
+            }
+            base.OnKeyDown(e);
+            switch (e.Key)
+            {
+                case Key.Delete:
+                    if (CaretIndex < Text.Length)
+                    {
+                        if (MaskProvider.RemoveAt(CaretIndex))
+                        {
+                            RefreshText(MaskProvider, CaretIndex);
+                        }
+
+                        e.Handled = true;
+                    }
+                    break;
+                case Key.Space:
+                    if (!MaskProvider.ResetOnSpace || string.IsNullOrEmpty(SelectedText))
+                    {
+                        if (MaskProvider.InsertAt(" ", CaretIndex))
+                        {
+                            RefreshText(MaskProvider, CaretIndex);
+                        }
+                    }
+
+                    e.Handled = true;
+                    break;
+                case Key.Back:
+                    if (CaretIndex > 0)
+                    {
+                        MaskProvider.RemoveAt(CaretIndex);
+                    }
+                    RefreshText(MaskProvider, CaretIndex);
+                    e.Handled = true;
+                    break;
+            }
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -156,7 +267,7 @@ namespace Avalonia.Controls
         {
             void UpdateMaskProvider()
             {
-                MaskProvider = new MaskedTextProvider(Mask, Culture, true, PromptChar, PasswordChar, AsciiOnly);
+                MaskProvider = new MaskedTextProvider(Mask, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
                 RefreshText(MaskProvider, 0);
             }
             if (change.Property == MaskProperty)
@@ -212,71 +323,6 @@ namespace Avalonia.Controls
             }
             base.OnPropertyChanged(change);
         }
-
-        protected override async void OnKeyDown(KeyEventArgs e)
-        {
-            if (MaskProvider is null)
-            {
-                base.OnKeyDown(e);
-                return;
-            }
-            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-
-            bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
-
-            if (Match(keymap.Paste))
-            {
-                var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
-
-                if (text is null)
-                    return;
-
-                foreach (var item in text)
-                {
-                    var index = GetNextCharacterPosition(CaretIndex);
-                    if (MaskProvider.InsertAt(item, index))
-                    {
-                        CaretIndex = ++index;
-                    }
-                }
-
-                Text = MaskProvider.ToDisplayString();
-                e.Handled = true;
-                return;
-            }
-            base.OnKeyDown(e);
-            switch (e.Key)
-            {
-                case Key.Delete:
-                    if (CaretIndex < Text.Length)
-                    {
-                        if (MaskProvider.RemoveAt(CaretIndex))
-                        {
-                            RefreshText(MaskProvider, CaretIndex);
-                        }
-
-                        e.Handled = true;
-                    }
-                    break;
-                case Key.Space:
-                    if (MaskProvider.InsertAt(" ", CaretIndex))
-                    {
-                        RefreshText(MaskProvider, CaretIndex);
-                    }
-
-                    e.Handled = true;
-                    break;
-                case Key.Back:
-                    if (CaretIndex > 0)
-                    {
-                        MaskProvider.RemoveAt(CaretIndex);
-                    }
-                    RefreshText(MaskProvider, CaretIndex);
-                    e.Handled = true;
-                    break;
-            }
-        }
-
         protected override void OnTextInput(TextInputEventArgs e)
         {
 
@@ -291,7 +337,13 @@ namespace Avalonia.Controls
                 base.OnTextInput(e);
                 return;
             }
-
+            if (MaskProvider.ResetOnSpace && e.Text == " " || MaskProvider.ResetOnPrompt && e.Text == MaskProvider.PromptChar.ToString())
+            {
+                if (SelectionStart > SelectionEnd ? MaskProvider.RemoveAt(SelectionEnd, SelectionStart - 1) : MaskProvider.RemoveAt(SelectionStart, SelectionEnd - 1))
+                {
+                    SelectedText = string.Empty;
+                }
+            }
 
             if (CaretIndex < Text.Length)
             {
