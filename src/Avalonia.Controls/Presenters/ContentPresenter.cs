@@ -328,7 +328,7 @@ namespace Avalonia.Controls.Presenters
             var newChild = content as IControl;
 
             // We want to allow creating Child from the Template, if Content is null.
-            // But it's important to use DataTemplates, otherwise we will break content presenters in many places,
+            // But it's important to not use DataTemplates, otherwise we will break content presenters in many places,
             // otherwise it will blow up every ContentPresenter without Content set.
             if (newChild == null
                 && (content != null || ContentTemplate != null))
