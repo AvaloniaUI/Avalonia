@@ -55,7 +55,7 @@ namespace Avalonia.Controls
         /// </summary>
         public MaskedTextBox(MaskedTextProvider maskedTextProvider)
         {
-            if (maskedTextProvider is null)
+            if (maskedTextProvider == null)
             {
                 throw new ArgumentNullException(nameof(maskedTextProvider));
             }
@@ -189,7 +189,7 @@ namespace Avalonia.Controls
 
         protected override async void OnKeyDown(KeyEventArgs e)
         {
-            if (MaskProvider is null)
+            if (MaskProvider == null)
             {
                 base.OnKeyDown(e);
                 return;
@@ -202,7 +202,7 @@ namespace Avalonia.Controls
             {
                 var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
 
-                if (text is null)
+                if (text == null)
                     return;
 
                 foreach (var item in text)
@@ -332,7 +332,7 @@ namespace Avalonia.Controls
                 base.OnTextInput(e);
                 return;
             }
-            if (MaskProvider is null)
+            if (MaskProvider == null)
             {
                 base.OnTextInput(e);
                 return;
@@ -370,7 +370,7 @@ namespace Avalonia.Controls
 
         private int GetNextCharacterPosition(int startPosition)
         {
-            if (MaskProvider is not null)
+            if (MaskProvider != null)
             {
                 var position = MaskProvider.FindEditPositionFrom(startPosition, true);
                 if (CaretIndex != -1)
@@ -383,7 +383,7 @@ namespace Avalonia.Controls
 
         private void RefreshText(MaskedTextProvider provider, int position)
         {
-            if (provider is not null)
+            if (provider != null)
             {
                 Text = provider.ToDisplayString();
                 CaretIndex = position;
