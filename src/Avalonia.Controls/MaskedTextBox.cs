@@ -154,14 +154,61 @@ namespace Avalonia.Controls
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            if (change.Property == MaskProperty
-            || change.Property == PasswordCharProperty && MaskProvider != null && MaskProvider.PasswordChar != PasswordChar
-            || change.Property == PromptCharProperty && MaskProvider != null && MaskProvider.PromptChar != PromptChar
-            || change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
-            || change.Property == CultureProperty && MaskProvider != null && !MaskProvider.Culture.Equals(Culture))
+            void UpdateMaskProvider()
             {
                 MaskProvider = new MaskedTextProvider(Mask, Culture, true, PromptChar, PasswordChar, AsciiOnly);
                 RefreshText(MaskProvider, 0);
+            }
+            if (change.Property == MaskProperty)
+            {
+                UpdateMaskProvider();
+
+                if (!string.IsNullOrEmpty(Mask))
+                {
+                    foreach (var c in Mask!)
+                    {
+                        if (!MaskedTextProvider.IsValidMaskChar(c))
+                        {
+                            throw new ArgumentException("Specified mask contains characters that are not valid.");
+                        }
+                    }
+                }
+            }
+            else if (change.Property == PasswordCharProperty)
+            {
+                if (!MaskedTextProvider.IsValidPasswordChar(PasswordChar))
+                {
+                    throw new ArgumentException("Specified character value is not allowed for this property.", nameof(PasswordChar));
+                }
+                if (MaskProvider != null && PasswordChar == MaskProvider.PromptChar)
+                {
+                    // Prompt and password chars must be different.
+                    throw new InvalidOperationException("PasswordChar and PromptChar values cannot be the same.");
+                }
+                if (MaskProvider != null && MaskProvider.PasswordChar != PasswordChar)
+                {
+                    UpdateMaskProvider();
+                }
+            }
+            else if (change.Property == PromptCharProperty)
+            {
+                if (!MaskedTextProvider.IsValidInputChar(PromptChar))
+                {
+                    throw new ArgumentException("Specified character value is not allowed for this property.");
+                }
+                if (PromptChar == PasswordChar)
+                {
+                    throw new InvalidOperationException("PasswordChar and PromptChar values cannot be the same.");
+                }
+                if (MaskProvider != null && MaskProvider.PromptChar != PromptChar)
+                {
+                    UpdateMaskProvider();
+                }
+            }
+            else if (change.Property == AsciiOnlyProperty && MaskProvider != null && MaskProvider.AsciiOnly != AsciiOnly
+                 || change.Property == CultureProperty && MaskProvider != null && !MaskProvider.Culture.Equals(Culture))
+            {
+                UpdateMaskProvider();
             }
             base.OnPropertyChanged(change);
         }
