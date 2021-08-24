@@ -17,8 +17,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> AsciiOnlyProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(AsciiOnly));
 
-        public static readonly StyledProperty<CultureInfo?> CultureProperty =
-             AvaloniaProperty.Register<MaskedTextBox, CultureInfo?>(nameof(Culture));
+        public static readonly DirectProperty<MaskedTextBox, CultureInfo?> CultureProperty =
+             AvaloniaProperty.RegisterDirect<MaskedTextBox, CultureInfo?>(nameof(Culture), o => o.Culture,
+                (o, v) => o.Culture = v, CultureInfo.CurrentCulture);
 
         public static readonly StyledProperty<bool> HidePromptOnLeaveProperty =
              AvaloniaProperty.Register<MaskedTextBox, bool>(nameof(HidePromptOnLeave));
@@ -44,6 +45,8 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<MaskedTextBox, bool> ResetOnSpaceProperty =
              AvaloniaProperty.RegisterDirect<MaskedTextBox, bool>(nameof(ResetOnSpace), o => o.ResetOnSpace, (o, v) => o.ResetOnSpace = v);
 
+        private CultureInfo? _culture;
+
         private bool _resetOnPrompt = true;
 
         private bool _resetOnSpace = true;
@@ -65,6 +68,7 @@ namespace Avalonia.Controls
             PasswordChar = maskedTextProvider.PasswordChar;
             PromptChar = maskedTextProvider.PromptChar;
         }
+
         /// <summary>
         /// Gets or sets a value indicating if the masked text box is restricted to accept only ASCII characters.
         /// Default value is false.
@@ -80,8 +84,8 @@ namespace Avalonia.Controls
         /// </summary>
         public CultureInfo? Culture
         {
-            get => GetValue(CultureProperty);
-            set => SetValue(CultureProperty, value);
+            get => _culture;
+            set => SetAndRaise(CultureProperty, ref _culture, value);
         }
 
         /// <summary>
@@ -158,6 +162,7 @@ namespace Avalonia.Controls
 
             }
         }
+
         /// <summary>
         /// Gets or sets a value indicating if selected characters should be reset when the space character is pressed.
         /// </summary>
@@ -176,6 +181,7 @@ namespace Avalonia.Controls
 
 
         }
+
         Type IStyleable.StyleKey => typeof(TextBox);
 
         protected override void OnGotFocus(GotFocusEventArgs e)
