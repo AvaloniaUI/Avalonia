@@ -200,6 +200,7 @@ namespace Avalonia.Controls
                 base.OnKeyDown(e);
                 return;
             }
+
             var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
             bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
@@ -224,7 +225,9 @@ namespace Avalonia.Controls
                 e.Handled = true;
                 return;
             }
+
             base.OnKeyDown(e);
+
             switch (e.Key)
             {
                 case Key.Delete:
@@ -331,7 +334,6 @@ namespace Avalonia.Controls
         }
         protected override void OnTextInput(TextInputEventArgs e)
         {
-
             if (IsReadOnly)
             {
                 e.Handled = true;
