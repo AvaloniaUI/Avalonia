@@ -246,7 +246,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(Services))
             {
-                MaskedTextBox textBox = new MaskedTextBox
+                var textBox = new MaskedTextBox
                 {
                     Text = "First Second Third Fourth",
                     CaretIndex = 19
@@ -393,7 +393,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Template = CreateTemplate(),
                     Mask = mask,
-                    PasswordChar='*',
+                    PasswordChar = '*',
                     Culture = CultureInfo.GetCultureInfo("en-US")
                 };
 
@@ -407,7 +407,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("00/00/0000", "12102000", "12/10/2000")]
         [InlineData("LLLL", "дбs", "дбs_")]
         [InlineData("AA#00", "S2 33", "S2_33")]
-        public void Mask_Should_Work_Correctly(string mask,string textEventArg ,string expected)
+        public void Mask_Should_Work_Correctly(string mask, string textEventArg, string expected)
         {
             using (UnitTestApplication.Start(Services))
             {
