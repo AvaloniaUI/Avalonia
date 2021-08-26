@@ -42,19 +42,16 @@ namespace Avalonia.Controls
         public ItemsSourceView(IEnumerable source)
         {
             source = source ?? throw new ArgumentNullException(nameof(source));
-
-            if (source is IList list)
+            _inner = source switch
             {
-                _inner = list;
-            }
-            else if (source is IEnumerable<object> objectEnumerable)
-            {
-                _inner = new List<object>(objectEnumerable);
-            }
-            else
-            {
-                _inner = new List<object>(source.Cast<object>());
-            }
+                ItemsSourceView => throw new ArgumentException("Cannot wrap an existing ItemsSourceView.", nameof(source)),
+                IList list => list,
+                INotifyCollectionChanged => throw new ArgumentException(
+                    "Collection implements INotifyCollectionChanged by not IList.",
+                    nameof(source)),
+                IEnumerable<object> iObj => new List<object>(iObj),
+                _ => new List<object>(source.Cast<object>())
+            };
         }
 
         /// <summary>
