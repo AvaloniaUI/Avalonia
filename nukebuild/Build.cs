@@ -16,7 +16,6 @@ using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Tools.Npm;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
-using Pharmacist.Core;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -89,10 +88,6 @@ partial class Build : NukeBuild
             Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
         }
         ExecWait("dotnet version:", "dotnet", "--version");
-        if (Parameters.IsRunningOnUnix)
-            ExecWait("Mono version:", "mono", "--version");
-
-
     }
 
     IReadOnlyCollection<Output> MsBuildCommon(
@@ -167,43 +162,7 @@ partial class Build : NukeBuild
                     .AddProperty("PackageVersion", Parameters.Version)
                     .SetConfiguration(Parameters.Configuration)
                 );
-
-            await CompileReactiveEvents();
         });
-
-    async Task CompileReactiveEvents()
-    {
-        var avaloniaBuildOutput = Path.Combine(RootDirectory, "packages", "Avalonia", "bin", Parameters.Configuration);
-        var avaloniaAssemblies = GlobFiles(avaloniaBuildOutput, "**/Avalonia*.dll")
-            .Where(file => !file.Contains("Avalonia.Build.Tasks") &&
-                            !file.Contains("Avalonia.Remote.Protocol"));
-
-        var eventsDirectory = GlobDirectories($"{RootDirectory}/src/**/Avalonia.ReactiveUI.Events").First();
-        var eventsBuildFile = Path.Combine(eventsDirectory, "Events_Avalonia.cs");
-        if (File.Exists(eventsBuildFile))
-            File.Delete(eventsBuildFile);
-
-        using (var stream = File.Create(eventsBuildFile))
-        using (var writer = new StreamWriter(stream))
-        {
-            await ObservablesForEventGenerator.ExtractEventsFromAssemblies(
-                writer, avaloniaAssemblies, new string[0], "netstandard2.0"
-            );
-        }
-
-        var eventsProject = Path.Combine(eventsDirectory, "Avalonia.ReactiveUI.Events.csproj");
-        if (Parameters.IsRunningOnWindows)
-            MsBuildCommon(eventsProject, c => c
-                .SetProcessArgumentConfigurator(a => a.Add("/r"))
-                .AddTargets("Build")
-            );
-        else
-            DotNetBuild(c => c
-                .SetProjectFile(eventsProject)
-                .AddProperty("PackageVersion", Parameters.Version)
-                .SetConfiguration(Parameters.Configuration)
-            );
-    }
 
     void RunCoreTest(string projectName)
     {
@@ -305,14 +264,19 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             var data = Parameters;
+            var pathToProjectSource = RootDirectory / "samples" / "ControlCatalog.NetCore";
+            var pathToPublish = pathToProjectSource / "bin" / data.Configuration / "publish";
+
+            DotNetPublish(c => c
+                .SetProject(pathToProjectSource / "ControlCatalog.NetCore.csproj")
+                .EnableNoBuild()
+                .SetConfiguration(data.Configuration)
+                .AddProperty("PackageVersion", data.Version)
+                .AddProperty("PublishDir", pathToPublish));
+
             Zip(data.ZipCoreArtifacts, data.BinRoot);
             Zip(data.ZipNuGetArtifacts, data.NugetRoot);
-            Zip(data.ZipTargetControlCatalogDesktopDir,
-                GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.dll").Concat(
-                    GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.config")).Concat(
-                    GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.so")).Concat(
-                    GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.dylib")).Concat(
-                    GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.exe")));
+            Zip(data.ZipTargetControlCatalogNetCoreDir, pathToPublish);
         });
 
     Target CreateIntermediateNugetPackages => _ => _

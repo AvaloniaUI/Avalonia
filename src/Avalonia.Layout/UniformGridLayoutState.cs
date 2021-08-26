@@ -44,7 +44,7 @@ namespace Avalonia.Layout
             Size availableSize,
             VirtualizingLayoutContext context,
             double layoutItemWidth,
-            double LayoutItemHeight,
+            double layoutItemHeight,
             UniformGridLayoutItemsStretch stretch,
             Orientation orientation,
             double minRowSpacing,
@@ -63,7 +63,7 @@ namespace Avalonia.Layout
                 if (realizedElement != null)
                 {
                     realizedElement.Measure(availableSize);
-                    SetSize(realizedElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
+                    SetSize(realizedElement, layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
                     _cachedFirstElement = null;
                 }
                 else
@@ -78,7 +78,7 @@ namespace Avalonia.Layout
 
                     _cachedFirstElement.Measure(availableSize);
 
-                    SetSize(_cachedFirstElement, layoutItemWidth, LayoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
+                    SetSize(_cachedFirstElement, layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
 
                     // See if we can move ownership to the flow algorithm. If we can, we do not need a local cache.
                     bool added = FlowAlgorithm.TryAddElement0(_cachedFirstElement);
@@ -93,7 +93,7 @@ namespace Avalonia.Layout
         private void SetSize(
             ILayoutable element,
             double layoutItemWidth,
-            double LayoutItemHeight,
+            double layoutItemHeight,
             Size availableSize,
             UniformGridLayoutItemsStretch stretch,
             Orientation orientation,
@@ -107,7 +107,7 @@ namespace Avalonia.Layout
             }
 
             EffectiveItemWidth = (double.IsNaN(layoutItemWidth) ? element.DesiredSize.Width : layoutItemWidth);
-            EffectiveItemHeight = (double.IsNaN(LayoutItemHeight) ? element.DesiredSize.Height : LayoutItemHeight);
+            EffectiveItemHeight = (double.IsNaN(layoutItemHeight) ? element.DesiredSize.Height : layoutItemHeight);
 
             var availableSizeMinor = orientation == Orientation.Horizontal ? availableSize.Width : availableSize.Height;
             var minorItemSpacing = orientation == Orientation.Vertical ? minRowSpacing : minColumnSpacing;

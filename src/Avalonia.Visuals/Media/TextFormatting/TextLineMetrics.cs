@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Avalonia.Utilities;
-
-namespace Avalonia.Media.TextFormatting
+﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Represents a metric for a <see cref="TextLine"/> objects,
@@ -9,29 +6,39 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public readonly struct TextLineMetrics
     {
-        public TextLineMetrics(Size size, double textBaseline, TextRange textRange, bool hasOverflowed)
+        public TextLineMetrics(bool hasOverflowed, double height, int newLineLength, double start, double textBaseline,
+            int trailingWhitespaceLength, double width,
+            double widthIncludingTrailingWhitespace)
         {
-            Size = size;
-            TextBaseline = textBaseline;
-            TextRange = textRange;
             HasOverflowed = hasOverflowed;
+            Height = height;
+            NewLineLength = newLineLength;
+            Start = start;
+            TextBaseline = textBaseline;
+            TrailingWhitespaceLength = trailingWhitespaceLength;
+            Width = width;
+            WidthIncludingTrailingWhitespace = widthIncludingTrailingWhitespace;
         }
+        
+        /// <summary>
+        /// Gets a value that indicates whether content of the line overflows the specified paragraph width.
+        /// </summary>
+        public bool HasOverflowed { get; }
 
         /// <summary>
-        /// Gets the text range that is covered by the text line.
+        /// Gets the height of a line of text.
         /// </summary>
-        /// <value>
-        /// The text range that is covered by the text line.
-        /// </value>
-        public TextRange TextRange { get; }
-
+        public double Height { get; }
+        
         /// <summary>
-        /// Gets the size of the text line.
+        /// Gets the number of newline characters at the end of a line.
         /// </summary>
-        /// <value>
-        /// The size.
-        /// </value>
-        public Size Size { get; }
+        public int NewLineLength { get; }
+        
+        /// <summary>
+        /// Gets the distance from the start of a paragraph to the starting point of a line.
+        /// </summary>
+        public double Start { get; }
 
         /// <summary>
         /// Gets the distance from the top to the baseline of the line of text.
@@ -39,58 +46,18 @@ namespace Avalonia.Media.TextFormatting
         public double TextBaseline { get; }
 
         /// <summary>
-        /// Gets a boolean value that indicates whether content of the line overflows 
-        /// the specified paragraph width.
+        /// Gets the number of whitespace code points beyond the last non-blank character in a line.
         /// </summary>
-        public bool HasOverflowed { get; }
+        public int TrailingWhitespaceLength { get; }
 
         /// <summary>
-        /// Creates the text line metrics.
+        /// Gets the width of a line of text, excluding trailing whitespace characters.
         /// </summary>
-        /// <param name="textRuns">The text runs.</param>
-        /// <param name="textRange">The text range that is covered by the text line.</param>
-        /// <param name="paragraphWidth">The paragraph width.</param>
-        /// <param name="paragraphProperties">The text alignment.</param>
-        /// <returns></returns>
-        public static TextLineMetrics Create(IEnumerable<TextRun> textRuns, TextRange textRange, double paragraphWidth,
-            TextParagraphProperties paragraphProperties)
-        {
-            var lineWidth = 0.0;
-            var ascent = 0.0;
-            var descent = 0.0;
-            var lineGap = 0.0;
+        public double Width { get; }
 
-            foreach (var textRun in textRuns)
-            {
-                var shapedRun = (ShapedTextCharacters)textRun;
-
-                var fontMetrics =
-                    new FontMetrics(shapedRun.Properties.Typeface, shapedRun.Properties.FontRenderingEmSize);
-
-                lineWidth += shapedRun.Size.Width;
-
-                if (ascent > fontMetrics.Ascent)
-                {
-                    ascent = fontMetrics.Ascent;
-                }
-
-                if (descent < fontMetrics.Descent)
-                {
-                    descent = fontMetrics.Descent;
-                }
-
-                if (lineGap < fontMetrics.LineGap)
-                {
-                    lineGap = fontMetrics.LineGap;
-                }
-            }
-
-            var size = new Size(lineWidth,
-                double.IsNaN(paragraphProperties.LineHeight) || MathUtilities.IsZero(paragraphProperties.LineHeight) ?
-                    descent - ascent + lineGap :
-                    paragraphProperties.LineHeight);
-
-            return new TextLineMetrics(size, -ascent, textRange, size.Width > paragraphWidth);
-        }
+        /// <summary>
+        /// Gets the width of a line of text, including trailing whitespace characters.
+        /// </summary>
+        public double WidthIncludingTrailingWhitespace { get; }
     }
 }

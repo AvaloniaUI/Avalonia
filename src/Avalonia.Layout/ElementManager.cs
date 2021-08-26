@@ -40,7 +40,7 @@ namespace Avalonia.Layout
             {
                 if (IsVirtualizingContext)
                 {
-                    // We proactively clear elements laid out outside of the realizaton
+                    // We proactively clear elements laid out outside of the realization
                     // rect so that they are available for reuse during the current
                     // measure pass.
                     // This is useful during fast panning scenarios in which the realization
@@ -207,7 +207,7 @@ namespace Avalonia.Layout
             }
         }
 
-        public bool IsIndexValidInData(int currentIndex) => currentIndex >= 0 && currentIndex < _context.ItemCount;
+        public bool IsIndexValidInData(int currentIndex) => (uint)currentIndex < _context.ItemCount;
 
         public ILayoutable GetRealizedElement(int dataIndex)
         {
@@ -325,7 +325,10 @@ namespace Avalonia.Layout
                         break;
 
                     case NotifyCollectionChangedAction.Move:
-                        throw new NotImplementedException();
+                        int size = args.OldItems != null ? args.OldItems.Count : 1;
+                        OnItemsRemoved(args.OldStartingIndex, size);
+                        OnItemsAdded(args.NewStartingIndex, size);
+                        break;
                 }
             }
         }

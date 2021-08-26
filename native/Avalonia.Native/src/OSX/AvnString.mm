@@ -43,6 +43,8 @@ public:
     
     virtual HRESULT Pointer(void**retOut) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(retOut == nullptr)
@@ -58,14 +60,19 @@ public:
     
     virtual HRESULT Length(int*retOut) override
     {
-        if(retOut == nullptr)
+        START_COM_CALL;
+        
+        @autoreleasepool
         {
-            return E_POINTER;
+            if(retOut == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            *retOut = _length;
+            
+            return S_OK;
         }
-        
-        *retOut = _length;
-        
-        return S_OK;
     }
 };
 
@@ -85,6 +92,16 @@ public:
         }
     }
     
+    AvnStringArrayImpl(NSArray<NSURL*>* array)
+    {
+        for(int c = 0; c < [array count]; c++)
+        {
+            ComPtr<IAvnString> s;
+            *s.getPPV() = new AvnStringImpl([array objectAtIndex:c].absoluteString);
+            _list.push_back(s);
+        }
+    }
+    
     AvnStringArrayImpl(NSString* string)
     {
         ComPtr<IAvnString> s;
@@ -99,10 +116,15 @@ public:
     
     virtual HRESULT Get(unsigned int index, IAvnString**ppv) override
     {
-        if(_list.size() <= index)
-            return E_INVALIDARG;
-        *ppv = _list[index].getRetainedReference();
-        return S_OK;
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            if(_list.size() <= index)
+                return E_INVALIDARG;
+            *ppv = _list[index].getRetainedReference();
+            return S_OK;
+        }
     }
 };
 
@@ -113,6 +135,11 @@ IAvnString* CreateAvnString(NSString* string)
 
 
 IAvnStringArray* CreateAvnStringArray(NSArray<NSString*> * array)
+{
+    return new AvnStringArrayImpl(array);
+}
+
+IAvnStringArray* CreateAvnStringArray(NSArray<NSURL*> * array)
 {
     return new AvnStringArrayImpl(array);
 }

@@ -22,12 +22,12 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the <see cref="IMultiValueConverter"/> to use.
         /// </summary>
-        public IMultiValueConverter Converter { get; set; }
+        public IMultiValueConverter? Converter { get; set; }
 
         /// <summary>
         /// Gets or sets a parameter to pass to <see cref="Converter"/>.
         /// </summary>
-        public object ConverterParameter { get; set; }
+        public object? ConverterParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the value to use when the binding is unable to produce a value.
@@ -52,12 +52,12 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the relative source for the binding.
         /// </summary>
-        public RelativeSource RelativeSource { get; set; }
+        public RelativeSource? RelativeSource { get; set; }
 
         /// <summary>
         /// Gets or sets the string format.
         /// </summary>
-        public string StringFormat { get; set; }
+        public string? StringFormat { get; set; }
 
         public MultiBinding()
         {
@@ -69,7 +69,7 @@ namespace Avalonia.Data
         public InstancedBinding Initiate(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
-            object anchor = null,
+            object? anchor = null,
             bool enableDataValidation = false)
         {
             var targetType = targetProperty?.PropertyType ?? typeof(object);
@@ -105,7 +105,7 @@ namespace Avalonia.Data
             }
         }
 
-        private object ConvertValue(IList<object> values, Type targetType, IMultiValueConverter converter)
+        private object ConvertValue(IList<object?> values, Type targetType, IMultiValueConverter? converter)
         {
             for (var i = 0; i < values.Count; ++i)
             {
@@ -116,7 +116,7 @@ namespace Avalonia.Data
             }
 
             var culture = CultureInfo.CurrentCulture;
-            values = new System.Collections.ObjectModel.ReadOnlyCollection<object>(values);
+            values = new System.Collections.ObjectModel.ReadOnlyCollection<object?>(values);
             object converted;
             if (converter != null)
             {

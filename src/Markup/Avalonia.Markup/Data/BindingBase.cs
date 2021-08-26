@@ -38,22 +38,22 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the <see cref="IValueConverter"/> to use.
         /// </summary>
-        public IValueConverter Converter { get; set; }
+        public IValueConverter? Converter { get; set; }
 
         /// <summary>
         /// Gets or sets a parameter to pass to <see cref="Converter"/>.
         /// </summary>
-        public object ConverterParameter { get; set; }
+        public object? ConverterParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the value to use when the binding is unable to produce a value.
         /// </summary>
-        public object FallbackValue { get; set; }
+        public object? FallbackValue { get; set; }
 
         /// <summary>
         /// Gets or sets the value to use when the binding result is null.
         /// </summary>
-        public object TargetNullValue { get; set; }
+        public object? TargetNullValue { get; set; }
 
         /// <summary>
         /// Gets or sets the binding mode.
@@ -68,26 +68,27 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the string format.
         /// </summary>
-        public string StringFormat { get; set; }
+        public string? StringFormat { get; set; }
 
-        public WeakReference DefaultAnchor { get; set; }
+        public WeakReference? DefaultAnchor { get; set; }
 
-        public WeakReference<INameScope> NameScope { get; set; }
+        public WeakReference<INameScope>? NameScope { get; set; }
 
         protected abstract ExpressionObserver CreateExpressionObserver(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
-            object anchor,
+            object? anchor,
             bool enableDataValidation);
 
         /// <inheritdoc/>
         public InstancedBinding Initiate(
             IAvaloniaObject target,
             AvaloniaProperty targetProperty,
-            object anchor = null,
+            object? anchor = null,
             bool enableDataValidation = false)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
             anchor = anchor ?? DefaultAnchor?.Target;
 
             enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
@@ -133,18 +134,13 @@ namespace Avalonia.Data
             IAvaloniaObject target,
             ExpressionNode node,
             bool targetIsDataContext,
-            object anchor)
+            object? anchor)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
             if (!(target is IDataContextProvider))
             {
-                target = anchor as IDataContextProvider;
-
-                if (target == null)
-                {
-                    throw new InvalidOperationException("Cannot find a DataContext to bind to.");
-                }
+                target = anchor as IDataContextProvider ?? throw new InvalidOperationException("Cannot find a DataContext to bind to.");
             }
 
             if (!targetIsDataContext)
@@ -171,10 +167,9 @@ namespace Avalonia.Data
             string elementName,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
-            NameScope.TryGetTarget(out var scope);
-            if (scope == null)
+            if (NameScope is null || !NameScope.TryGetTarget(out var scope) || scope is null)
                 throw new InvalidOperationException("Name scope is null or was already collected");
             var result = new ExpressionObserver(
                 NameScopeLocator.Track(scope, elementName),
@@ -188,9 +183,9 @@ namespace Avalonia.Data
             RelativeSource relativeSource,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
-            IObservable<object> controlLocator;
+            IObservable<object?> controlLocator;
 
             switch (relativeSource.Tree)
             {
@@ -220,7 +215,7 @@ namespace Avalonia.Data
             object source,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            _ = source ?? throw new ArgumentNullException(nameof(source));
 
             return new ExpressionObserver(source, node);
         }
@@ -229,7 +224,7 @@ namespace Avalonia.Data
             IAvaloniaObject target,
             ExpressionNode node)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
 
             var result = new ExpressionObserver(
                 () => target.GetValue(StyledElement.TemplatedParentProperty),
@@ -240,7 +235,7 @@ namespace Avalonia.Data
             return result;
         }
 
-        protected IObservable<object> GetParentDataContext(IAvaloniaObject target)
+        protected IObservable<object?> GetParentDataContext(IAvaloniaObject target)
         {
             // The DataContext is based on the visual parent and not the logical parent: this may
             // seem counter intuitive considering the fact that property inheritance works on the logical
@@ -252,7 +247,7 @@ namespace Avalonia.Data
                 .Select(x =>
                 {
                     return (x as IAvaloniaObject)?.GetObservable(StyledElement.DataContextProperty) ??
-                           Observable.Return((object)null);
+                           Observable.Return((object?)null);
                 }).Switch();
         }
 

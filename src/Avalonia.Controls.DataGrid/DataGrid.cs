@@ -25,6 +25,7 @@ using System.ComponentModel.DataAnnotations;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
+using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Controls
 {
@@ -67,7 +68,7 @@ namespace Avalonia.Controls
         private const double DATAGRID_minimumColumnHeaderHeight = 4;
         internal const double DATAGRID_maximumStarColumnWidth = 10000;
         internal const double DATAGRID_minimumStarColumnWidth = 0.001;
-        private const double DATAGRID_mouseWheelDelta = 72.0;
+        private const double DATAGRID_mouseWheelDelta = 50.0;
         private const double DATAGRID_maxHeadersThickness = 32768;
 
         private const double DATAGRID_defaultRowHeight = 22;
@@ -75,7 +76,6 @@ namespace Avalonia.Controls
         private const double DATAGRID_defaultMinColumnWidth = 20;
         private const double DATAGRID_defaultMaxColumnWidth = double.PositiveInfinity;
 
-        private List<Exception> _validationErrors;
         private List<Exception> _bindingValidationErrors;
         private IDisposable _validationSubscription;
 
@@ -102,7 +102,6 @@ namespace Avalonia.Controls
         private bool _areHandlersSuspended;
         private bool _autoSizingColumns;
         private IndexToValueTable<bool> _collapsedSlotsTable;
-        private DataGridCellCoordinates _currentCellCoordinates;
         private Control _clickedElement;
 
         // used to store the current column during a Reset
@@ -141,7 +140,6 @@ namespace Avalonia.Controls
         private DataGridSelectedItemsCollection _selectedItems;
         private bool _temporarilyResetCurrentCell;
         private object _uneditedValue; // Represents the original current cell value at the time it enters editing mode.
-        private ICellEditBinding _currentCellEditBinding;
 
         // An approximation of the sum of the heights in pixels of the scrolling rows preceding
         // the first displayed scrolling row.  Since the scrolled off rows are discarded, the grid
@@ -535,7 +533,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<DataGrid, int>(
                 nameof(SelectedIndex),
                 o => o.SelectedIndex,
-                (o, v) => o.SelectedIndex = v);
+                (o, v) => o.SelectedIndex = v,
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Gets or sets the index of the current selection.
@@ -553,7 +552,8 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<DataGrid, object>(
                 nameof(SelectedItem),
                 o => o.SelectedItem,
-                (o, v) => o.SelectedItem = v);
+                (o, v) => o.SelectedItem = v,
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Gets or sets the data item corresponding to the selected row.
@@ -910,6 +910,11 @@ namespace Avalonia.Controls
 
                     // Clear all row selections
                     ClearRowSelection(resetAnchorSlot: true);
+
+                    if (DataConnection.CollectionView != null)
+                    {
+                        DataConnection.CollectionView.MoveCurrentTo(null);
+                    }
                 }
                 else
                 {
@@ -2210,32 +2215,71 @@ namespace Avalonia.Controls
         /// <param name="e">PointerWheelEventArgs</param>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            if (IsEnabled && !e.Handled && DisplayData.NumDisplayedScrollingElements > 0)
+            e.Handled = e.Handled || UpdateScroll(e.Delta * DATAGRID_mouseWheelDelta);
+        }
+
+        internal bool UpdateScroll(Vector delta)
+        {
+            if (IsEnabled && DisplayData.NumDisplayedScrollingElements > 0)
             {
-                double scrollHeight = 0;
-                if (e.Delta.Y > 0)
+                var handled = false;
+                var scrollHeight = 0d;
+
+                // Vertical scroll handling
+                if (delta.Y > 0)
                 {
-                    scrollHeight = Math.Max(-_verticalOffset, -DATAGRID_mouseWheelDelta);
+                    scrollHeight = Math.Max(-_verticalOffset, -delta.Y);
                 }
-                else if (e.Delta.Y < 0)
+                else if (delta.Y < 0)
                 {
                     if (_vScrollBar != null && VerticalScrollBarVisibility == ScrollBarVisibility.Visible)
                     {
-                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), DATAGRID_mouseWheelDelta);
+                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), -delta.Y);
                     }
                     else
                     {
                         double maximum = EdgedRowsHeightCalculated - CellsHeight;
-                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), DATAGRID_mouseWheelDelta);
+                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), -delta.Y);
                     }
                 }
+
                 if (scrollHeight != 0)
                 {
                     DisplayData.PendingVerticalScrollHeight = scrollHeight;
+                    handled = true;
+                }
+
+                // Horizontal scroll handling
+                if (delta.X != 0)
+                {
+                    var originalHorizontalOffset = HorizontalOffset;
+                    var horizontalOffset = originalHorizontalOffset - delta.X;
+                    var widthNotVisible = Math.Max(0, ColumnsInternal.VisibleEdgedColumnsWidth - CellsWidth);
+
+                    if (horizontalOffset < 0)
+                    {
+                        horizontalOffset = 0;
+                    }
+                    if (horizontalOffset > widthNotVisible)
+                    {
+                        horizontalOffset = widthNotVisible;
+                    }
+
+                    if (horizontalOffset != originalHorizontalOffset)
+                    {
+                        HorizontalOffset = horizontalOffset;
+                        handled = true;
+                    }
+                }
+
+                if (handled)
+                {
                     InvalidateRowsMeasure(invalidateIndividualElements: false);
-                    e.Handled = true;
+                    return true;
                 }
             }
+
+            return false;
         }
 
         /// <summary>
@@ -5352,7 +5396,7 @@ namespace Avalonia.Controls
             _focusedRow = null;
         }
 
-        private void SelectAll()
+        public void SelectAll()
         {
             SetRowsSelection(0, SlotCount - 1);
         }
@@ -5727,7 +5771,7 @@ namespace Avalonia.Controls
                 {
                     if (SelectionMode == DataGridSelectionMode.Single || !ctrl)
                     {
-                        // Unselect the currectly selected rows except the new selected row
+                        // Unselect the currently selected rows except the new selected row
                         action = DataGridSelectionAction.SelectCurrent;
                     }
                     else

@@ -115,27 +115,165 @@ namespace Avalonia.Media.TextFormatting
         /// Draws the text layout.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public void Draw(DrawingContext context)
+        /// <param name="origin">The origin.</param>
+        public void Draw(DrawingContext context, Point origin)
         {
             if (!TextLines.Any())
             {
                 return;
             }
 
+            var (currentX, currentY) = origin;
+
+            foreach (var textLine in TextLines)
+            {
+                textLine.Draw(context, new Point(currentX + textLine.Start, currentY));
+
+                currentY += textLine.Height;
+            }
+        }
+
+        /// <summary>
+        /// Get the pixel location relative to the top-left of the layout box given the text position.
+        /// </summary>
+        /// <param name="textPosition">The text position.</param>
+        /// <returns></returns>
+        public Rect HitTestTextPosition(int textPosition)
+        {
+            if (TextLines.Count == 0)
+            {
+                return new Rect();
+            }
+
+            if (textPosition < 0 || textPosition >= _text.Length)
+            {
+                var lastLine = TextLines[TextLines.Count - 1];
+
+                var lineX = lastLine.Width;
+
+                var lineY = Size.Height - lastLine.Height;
+
+                return new Rect(lineX, lineY, 0, lastLine.Height);
+            }
+
             var currentY = 0.0;
 
             foreach (var textLine in TextLines)
             {
-                var offsetX = TextLine.GetParagraphOffsetX(textLine.LineMetrics.Size.Width, Size.Width,
-                    _paragraphProperties.TextAlignment);
-
-                using (context.PushPostTransform(Matrix.CreateTranslation(offsetX, currentY)))
+                if (textLine.TextRange.End < textPosition)
                 {
-                    textLine.Draw(context);
+                    currentY += textLine.Height;
+
+                    continue;
                 }
 
-                currentY += textLine.LineMetrics.Size.Height;
+                var characterHit = new CharacterHit(textPosition);
+
+                var startX = textLine.GetDistanceFromCharacterHit(characterHit);
+
+                var nextCharacterHit = textLine.GetNextCaretCharacterHit(characterHit);
+
+                var endX = textLine.GetDistanceFromCharacterHit(nextCharacterHit);
+
+                return new Rect(startX, currentY, endX - startX, textLine.Height);
             }
+
+            return new Rect();
+        }
+
+        public IEnumerable<Rect> HitTestTextRange(int start, int length)
+        {
+            if (start + length <= 0)
+            {
+                return Array.Empty<Rect>();
+            }
+
+            var result = new List<Rect>(TextLines.Count);
+
+            var currentY = 0d;
+
+            foreach (var textLine in TextLines)
+            {
+                var currentX = textLine.Start;
+
+                if (textLine.TextRange.End < start)
+                {
+                    currentY += textLine.Height;
+
+                    continue;
+                }
+
+                if (start > textLine.TextRange.Start)
+                {
+                    currentX += textLine.GetDistanceFromCharacterHit(new CharacterHit(start));
+                }
+
+                var endX = textLine.GetDistanceFromCharacterHit(new CharacterHit(start + length));
+
+                result.Add(new Rect(currentX, currentY, endX - currentX, textLine.Height));
+
+                if (textLine.TextRange.Start + textLine.TextRange.Length >= start + length)
+                {
+                    break;
+                }
+
+                currentY += textLine.Height;
+            }
+
+            return result;
+        }
+
+        public TextHitTestResult HitTestPoint(in Point point)
+        {
+            var currentY = 0d;
+
+            var lineIndex = 0;
+            TextLine currentLine = null;
+            CharacterHit characterHit;
+
+            for (; lineIndex < TextLines.Count; lineIndex++)
+            {
+                currentLine = TextLines[lineIndex];
+
+                if (currentY + currentLine.Height > point.Y)
+                {
+                    characterHit = currentLine.GetCharacterHitFromDistance(point.X);
+
+                    return GetHitTestResult(currentLine, characterHit, point);
+                }
+
+                currentY += currentLine.Height;
+            }
+
+            if (currentLine is null)
+            {
+                return new TextHitTestResult();
+            }
+
+            characterHit = currentLine.GetNextCaretCharacterHit(new CharacterHit(currentLine.TextRange.End));
+
+            return GetHitTestResult(currentLine, characterHit, point);
+        }
+
+        private TextHitTestResult GetHitTestResult(TextLine textLine, CharacterHit characterHit, Point point)
+        {
+            var (x, y) = point;
+
+            var lastTrailingIndex = textLine.TextRange.Start + textLine.TextRange.Length;
+
+            var isInside = x >= 0 && x <= textLine.Width && y >= 0 && y <= textLine.Height;
+
+            if (x >= textLine.Width && textLine.TextRange.Length > 0 && textLine.NewLineLength > 0)
+            {
+                lastTrailingIndex -= textLine.NewLineLength;
+            }
+
+            var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+
+            var isTrailing = lastTrailingIndex == textPosition && characterHit.TrailingLength > 0 ||
+                             y > Size.Height;
+
+            return new TextHitTestResult { IsInside = isInside, IsTrailing = isTrailing, TextPosition = textPosition };
         }
 
         /// <summary>
@@ -155,7 +293,8 @@ namespace Avalonia.Media.TextFormatting
         {
             var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
 
-            return new GenericTextParagraphProperties(textRunStyle, textAlignment, textWrapping, lineHeight);
+            return new GenericTextParagraphProperties(FlowDirection.LeftToRight, textAlignment, true, false,
+                textRunStyle, textWrapping, lineHeight, 0);
         }
 
         /// <summary>
@@ -166,12 +305,14 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="height">The current height.</param>
         private static void UpdateBounds(TextLine textLine, ref double width, ref double height)
         {
-            if (width < textLine.LineMetrics.Size.Width)
+            var lineWidth = textLine.Width + textLine.Start * 2;
+            
+            if (width < lineWidth)
             {
-                width = textLine.LineMetrics.Size.Width;
+                width = lineWidth;
             }
 
-            height += textLine.LineMetrics.Size.Height;
+            height += textLine.Height;
         }
 
         /// <summary>
@@ -190,8 +331,9 @@ namespace Avalonia.Media.TextFormatting
                 new ShapedTextCharacters(glyphRun, _paragraphProperties.DefaultTextRunProperties)
             };
 
-            return new TextLineImpl(textRuns,
-                TextLineMetrics.Create(textRuns, new TextRange(startingIndex, 1), MaxWidth, _paragraphProperties));
+            var textRange = new TextRange(startingIndex, 1);
+
+            return new TextLineImpl(textRuns, textRange, MaxWidth, _paragraphProperties);
         }
 
         /// <summary>
@@ -205,7 +347,7 @@ namespace Avalonia.Media.TextFormatting
 
                 TextLines = new List<TextLine> { textLine };
 
-                Size = new Size(0, textLine.LineMetrics.Size.Height);
+                Size = new Size(0, textLine.Height);
             }
             else
             {
@@ -230,7 +372,7 @@ namespace Avalonia.Media.TextFormatting
                     if (textLines.Count > 0)
                     {
                         if (textLines.Count == MaxLines || !double.IsPositiveInfinity(MaxHeight) &&
-                            height + textLine.LineMetrics.Size.Height > MaxHeight)
+                            height + textLine.Height > MaxHeight)
                         {
                             if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
                             {
@@ -244,7 +386,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                     }
 
-                    var hasOverflowed = textLine.LineMetrics.HasOverflowed;
+                    var hasOverflowed = textLine.HasOverflowed;
 
                     if (hasOverflowed && _textTrimming != TextTrimming.None)
                     {
@@ -257,7 +399,7 @@ namespace Avalonia.Media.TextFormatting
 
                     previousLine = textLine;
 
-                    if (currentPosition != _text.Length || textLine.TextLineBreak == null)
+                    if (currentPosition != _text.Length || textLine.TextLineBreak?.RemainingCharacters == null)
                     {
                         continue;
                     }
@@ -290,6 +432,128 @@ namespace Avalonia.Media.TextFormatting
             };
         }
 
+        public int GetLineIndexFromCharacterIndex(int charIndex)
+        {
+            if (TextLines is null)
+            {
+                return -1;
+            }
+
+            if (charIndex < 0)
+            {
+                return -1;
+            }
+
+            if (charIndex > _text.Length - 1)
+            {
+                return TextLines.Count - 1;
+            }
+
+            for (var index = 0; index < TextLines.Count; index++)
+            {
+                var textLine = TextLines[index];
+
+                if (textLine.TextRange.End < charIndex)
+                {
+                    continue;
+                }
+
+                if (charIndex >= textLine.Start && charIndex <= textLine.TextRange.End)
+                {
+                    return index;
+                }
+            }
+
+            return TextLines.Count - 1;
+        }
+
+        public int GetCharacterIndexFromPoint(Point point, bool snapToText)
+        {
+            if (TextLines is null)
+            {
+                return -1;
+            }
+
+            var (x, y) = point;
+
+            if (!snapToText && y > Size.Height)
+            {
+                return -1;
+            }
+
+            var currentY = 0d;
+
+            foreach (var textLine in TextLines)
+            {
+                if (currentY + textLine.Height <= y)
+                {
+                    currentY += textLine.Height;
+
+                    continue;
+                }
+
+                if (x > textLine.WidthIncludingTrailingWhitespace)
+                {
+                    if (snapToText)
+                    {
+                        return textLine.TextRange.End;
+                    }
+
+                    return -1;
+                }
+
+                var characterHit = textLine.GetCharacterHitFromDistance(x);
+
+                return characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+            }
+
+            return _text.Length;
+        }
+
+        public Rect GetRectFromCharacterIndex(int characterIndex, bool trailingEdge)
+        {
+            if (TextLines is null)
+            {
+                return Rect.Empty;
+            }
+
+            var distanceY = 0d;
+
+            var currentIndex = 0;
+
+            foreach (var textLine in TextLines)
+            {
+                if (currentIndex + textLine.TextRange.Length < characterIndex)
+                {
+                    distanceY += textLine.Height;
+
+                    currentIndex += textLine.TextRange.Length;
+
+                    continue;
+                }
+
+                var characterHit = new CharacterHit(characterIndex);
+
+                while (characterHit.FirstCharacterIndex < characterIndex)
+                {
+                    characterHit = textLine.GetNextCaretCharacterHit(characterHit);
+                }
+
+                var distanceX = textLine.GetDistanceFromCharacterHit(trailingEdge ?
+                    characterHit :
+                    new CharacterHit(characterHit.FirstCharacterIndex));
+
+                if (characterHit.TrailingLength > 0)
+                {
+                    distanceX += 1;
+                }
+
+                return new Rect(distanceX, distanceY, 0, textLine.Height);
+            }
+
+            return Rect.Empty;
+        }
+
         private readonly struct FormattedTextSource : ITextSource
         {
             private readonly ReadOnlySlice<char> _text;
@@ -306,16 +570,16 @@ namespace Avalonia.Media.TextFormatting
 
             public TextRun GetTextRun(int textSourceIndex)
             {
-                if (textSourceIndex > _text.End)
+                if (textSourceIndex > _text.Length)
                 {
-                    return new TextEndOfLine();
+                    return null;
                 }
 
                 var runText = _text.Skip(textSourceIndex);
 
                 if (runText.IsEmpty)
                 {
-                    return new TextEndOfLine();
+                    return new TextEndOfParagraph();
                 }
 
                 var textStyleRun = CreateTextStyleRun(runText, _defaultProperties, _textModifier);

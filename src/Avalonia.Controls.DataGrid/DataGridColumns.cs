@@ -5,6 +5,7 @@
 
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
@@ -141,9 +142,9 @@ namespace Avalonia.Controls
             Debug.Assert(dataGridColumn != null);
 
             if (dataGridColumn is DataGridBoundColumn dataGridBoundColumn && 
-                dataGridBoundColumn.Binding is Binding binding)
+                dataGridBoundColumn.Binding is BindingBase binding)
             {
-                string path = binding.Path;
+                var path = (binding as Binding)?.Path ?? (binding as CompiledBindingExtension)?.Path.ToString();
 
                 if (string.IsNullOrWhiteSpace(path))
                 {

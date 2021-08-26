@@ -33,18 +33,18 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         {
             var state = (IBusModifierMask)k.state;
             KeyModifiers mods = default;
-            if (state.HasFlagCustom(IBusModifierMask.ControlMask))
+            if (state.HasAllFlags(IBusModifierMask.ControlMask))
                 mods |= KeyModifiers.Control;
-            if (state.HasFlagCustom(IBusModifierMask.Mod1Mask))
+            if (state.HasAllFlags(IBusModifierMask.Mod1Mask))
                 mods |= KeyModifiers.Alt;
-            if (state.HasFlagCustom(IBusModifierMask.ShiftMask))
+            if (state.HasAllFlags(IBusModifierMask.ShiftMask))
                 mods |= KeyModifiers.Shift;
-            if (state.HasFlagCustom(IBusModifierMask.Mod4Mask))
+            if (state.HasAllFlags(IBusModifierMask.Mod4Mask))
                 mods |= KeyModifiers.Meta;
             FireForward(new X11InputMethodForwardedKey
             {
                 KeyVal = (int)k.keyval,
-                Type = state.HasFlagCustom(IBusModifierMask.ReleaseMask) ? RawKeyEventType.KeyUp : RawKeyEventType.KeyDown,
+                Type = state.HasAllFlags(IBusModifierMask.ReleaseMask) ? RawKeyEventType.KeyUp : RawKeyEventType.KeyDown,
                 Modifiers = mods
             });
         }
@@ -82,13 +82,13 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         protected override Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode)
         {
             IBusModifierMask state = default;
-            if (args.Modifiers.HasFlagCustom(RawInputModifiers.Control))
+            if (args.Modifiers.HasAllFlags(RawInputModifiers.Control))
                 state |= IBusModifierMask.ControlMask;
-            if (args.Modifiers.HasFlagCustom(RawInputModifiers.Alt))
+            if (args.Modifiers.HasAllFlags(RawInputModifiers.Alt))
                 state |= IBusModifierMask.Mod1Mask;
-            if (args.Modifiers.HasFlagCustom(RawInputModifiers.Shift))
+            if (args.Modifiers.HasAllFlags(RawInputModifiers.Shift))
                 state |= IBusModifierMask.ShiftMask;
-            if (args.Modifiers.HasFlagCustom(RawInputModifiers.Meta))
+            if (args.Modifiers.HasAllFlags(RawInputModifiers.Meta))
                 state |= IBusModifierMask.Mod4Mask;
 
             if (args.Type == RawKeyEventType.KeyUp)

@@ -115,7 +115,7 @@ namespace Avalonia.Controls.Platform
 
         protected IMenu? Menu { get; private set; }
 
-        protected static TimeSpan MenuShowDelay { get; } = TimeSpan.FromMilliseconds(400);
+        public static TimeSpan MenuShowDelay { get; set; } = TimeSpan.FromMilliseconds(400);
 
         protected internal virtual void GotFocus(object sender, GotFocusEventArgs e)
         {
@@ -449,7 +449,11 @@ namespace Avalonia.Controls.Platform
         protected void Click(IMenuItem item)
         {
             item.RaiseClick();
-            CloseMenu(item);
+
+            if (!item.StaysOpenOnClick)
+            {
+                CloseMenu(item);
+            }
         }
 
         protected void CloseMenu(IMenuItem item)

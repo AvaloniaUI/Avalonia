@@ -6,8 +6,8 @@
     <x:Double x:Key="ListAccentLowOpacity">0.6</x:Double>
     <x:Double x:Key="ListAccentMediumOpacity">0.8</x:Double>
 
-    <StreamGeometry x:Key="DataGridSortIconAscendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
-    <StreamGeometry x:Key="DataGridSortIconDescendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
+    <StreamGeometry x:Key="DataGridSortIconDescendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
+    <StreamGeometry x:Key="DataGridSortIconAscendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
     <StreamGeometry x:Key="DataGridRowGroupHeaderIconClosedPath">M515 93l930 931l-930 931l90 90l1022 -1021l-1022 -1021z</StreamGeometry>
     <StreamGeometry x:Key="DataGridRowGroupHeaderIconOpenedPath">M1939 1581l90 -90l-1005 -1005l-1005 1005l90 90l915 -915z</StreamGeometry>
 
@@ -162,6 +162,10 @@
   </Style>
   <Style Selector="DataGridCell:invalid /template/ Rectangle#InvalidVisualElement">
     <Setter Property="IsVisible" Value="True" />
+  </Style>
+  <Style Selector="DataGridCell > TextBox DataValidationErrors">
+    <Setter Property="Template" Value="{DynamicResource TooltipDataValidationContentTemplate}" />
+    <Setter Property="ErrorTemplate" Value="{DynamicResource TooltipDataValidationErrorTemplate}" />
   </Style>
 
   <Style Selector="DataGridColumnHeader">
@@ -597,7 +601,11 @@
             <DataGridRowsPresenter Name="PART_RowsPresenter"
                                    Grid.Row="1"
                                    Grid.RowSpan="2"
-                                   Grid.ColumnSpan="3" />
+                                   Grid.ColumnSpan="3">
+              <DataGridRowsPresenter.GestureRecognizers>
+                <ScrollGestureRecognizer CanHorizontallyScroll="True" CanVerticallyScroll="True" />
+              </DataGridRowsPresenter.GestureRecognizers>
+            </DataGridRowsPresenter>
             <Rectangle Name="PART_BottomRightCorner"
                        Fill="{DynamicResource DataGridScrollBarsSeparatorBackground}"
                        Grid.Column="2"

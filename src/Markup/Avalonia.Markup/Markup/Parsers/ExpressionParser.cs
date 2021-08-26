@@ -11,25 +11,25 @@ namespace Avalonia.Markup.Parsers
     internal class ExpressionParser
     {
         private readonly bool _enableValidation;
-        private readonly Func<string, string, Type> _typeResolver;
-        private readonly INameScope _nameScope;
+        private readonly Func<string, string, Type>? _typeResolver;
+        private readonly INameScope? _nameScope;
 
-        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver, INameScope nameScope)
+        public ExpressionParser(bool enableValidation, Func<string, string, Type>? typeResolver, INameScope? nameScope)
         {
             _typeResolver = typeResolver;
             _nameScope = nameScope;
             _enableValidation = enableValidation;
         }
 
-        public (ExpressionNode Node, SourceMode Mode) Parse(ref CharacterReader r)
+        public (ExpressionNode? Node, SourceMode Mode) Parse(ref CharacterReader r)
         {
-            ExpressionNode rootNode = null;
-            ExpressionNode node = null;
+            ExpressionNode? rootNode = null;
+            ExpressionNode? node = null;
             var (astNodes, mode) = BindingExpressionGrammar.Parse(ref r);
 
             foreach (var astNode in astNodes)
             {
-                ExpressionNode nextNode = null;
+                ExpressionNode? nextNode = null;
                 switch (astNode)
                 {
                     case BindingExpressionGrammar.EmptyExpressionNode _:
@@ -57,13 +57,13 @@ namespace Avalonia.Markup.Parsers
                         nextNode = ParseFindAncestor(ancestor);
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
-                        nextNode = new ElementNameNode(_nameScope, elementName.Name);
+                        nextNode = new ElementNameNode(_nameScope ?? throw new NotSupportedException("Invalid element name binding with null name scope!"), elementName.Name);
                         break;
                     case BindingExpressionGrammar.TypeCastNode typeCast:
                         nextNode = ParseTypeCastNode(typeCast);
                         break;
                 }
-                if (rootNode is null)
+                if (node is null)
                 {
                     rootNode = node = nextNode;
                 }
@@ -79,7 +79,7 @@ namespace Avalonia.Markup.Parsers
 
         private FindAncestorNode ParseFindAncestor(BindingExpressionGrammar.AncestorNode node)
         {
-            Type ancestorType = null;
+            Type? ancestorType = null;
             var ancestorLevel = node.Level;
 
             if (!(node.Namespace is null) && !(node.TypeName is null))
@@ -97,7 +97,7 @@ namespace Avalonia.Markup.Parsers
 
         private TypeCastNode ParseTypeCastNode(BindingExpressionGrammar.TypeCastNode node)
         {
-            Type castType = null;
+            Type? castType = null;
             if (!(node.Namespace is null) && !(node.TypeName is null))
             {
                 if (_typeResolver == null)

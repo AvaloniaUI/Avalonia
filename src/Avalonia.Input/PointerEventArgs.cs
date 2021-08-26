@@ -107,7 +107,9 @@ namespace Avalonia.Input
         None,
         Left,
         Right,
-        Middle
+        Middle,
+        XButton1,
+        XButton2
     }
 
     public class PointerPressedEventArgs : PointerEventArgs

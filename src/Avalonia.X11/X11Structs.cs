@@ -1693,7 +1693,7 @@ namespace Avalonia.X11 {
 	[StructLayout (LayoutKind.Sequential)]
 	internal struct XcursorImage
 	{
-		private int version;
+		public int version;
 		public int size;       /* nominal size for matching */
 		public int width;      /* actual width */
 		public int height;     /* actual height */

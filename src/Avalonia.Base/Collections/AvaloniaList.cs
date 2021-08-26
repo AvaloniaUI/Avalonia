@@ -455,6 +455,28 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
+        /// Ensures that the capacity of the list is at least <see cref="capacity"/>.
+        /// </summary>
+        /// <param name="capacity">The capacity.</param>
+        public void EnsureCapacity(int capacity)
+        {
+            // Adapted from List<T> implementation.
+            var currentCapacity = _inner.Capacity;
+
+            if (currentCapacity < capacity)
+            {
+                var newCapacity = currentCapacity == 0 ? 4 : currentCapacity * 2;
+
+                if (newCapacity < capacity)
+                {
+                    newCapacity = capacity;
+                }
+
+                _inner.Capacity = newCapacity;
+            }
+        }
+
+        /// <summary>
         /// Removes an item from the collection.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -632,24 +654,6 @@ namespace Avalonia.Collections
 
         /// <inheritdoc/>
         Delegate[] INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
-
-        private void EnsureCapacity(int capacity)
-        {
-            // Adapted from List<T> implementation.
-            var currentCapacity = _inner.Capacity;
-
-            if (currentCapacity < capacity)
-            {
-                var newCapacity = currentCapacity == 0 ? 4 : currentCapacity * 2;
-
-                if (newCapacity < capacity)
-                {
-                    newCapacity = capacity;
-                }
-
-                _inner.Capacity = newCapacity;
-            }
-        }
 
         /// <summary>
         /// Raises the <see cref="CollectionChanged"/> event with an add action.

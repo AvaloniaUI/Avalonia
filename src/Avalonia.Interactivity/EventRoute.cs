@@ -88,14 +88,14 @@ namespace Avalonia.Interactivity
             }
             else
             {
-                if (_event.RoutingStrategies.HasFlagCustom(RoutingStrategies.Tunnel))
+                if (_event.RoutingStrategies.HasAllFlags(RoutingStrategies.Tunnel))
                 {
                     e.Route = RoutingStrategies.Tunnel;
                     RaiseEventImpl(e);
                     _event.InvokeRouteFinished(e);
                 }
 
-                if (_event.RoutingStrategies.HasFlagCustom(RoutingStrategies.Bubble))
+                if (_event.RoutingStrategies.HasAllFlags(RoutingStrategies.Bubble))
                 {
                     e.Route = RoutingStrategies.Bubble;
                     RaiseEventImpl(e);
@@ -159,7 +159,7 @@ namespace Avalonia.Interactivity
 
                 // Raise the event handler.
                 if (entry.Handler is object &&
-                    entry.Routes.HasFlagCustom(e.Route) &&
+                    entry.Routes.HasAllFlags(e.Route) &&
                     (!e.Handled || entry.HandledEventsToo))
                 {
                     if (entry.Adapter is object)

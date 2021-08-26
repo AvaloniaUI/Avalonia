@@ -114,6 +114,8 @@ public:
     
     virtual HRESULT RunLoop(IAvnLoopCancellation* cancel) override
     {
+        START_COM_CALL;
+        
         auto can = dynamic_cast<LoopCancellation*>(cancel);
         if(can->Cancelled)
             return S_OK;

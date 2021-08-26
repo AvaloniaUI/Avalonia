@@ -166,11 +166,9 @@ namespace Avalonia.Controls
         {
             item.IsExpanded = true;
 
-            var panel = item.Presenter.Panel;
-
-            if (panel != null)
+            if (item.Presenter?.Panel != null)
             {
-                foreach (var child in panel.Children)
+                foreach (var child in item.Presenter.Panel.Children)
                 {
                     if (child is TreeViewItem treeViewItem)
                     {
@@ -412,7 +410,7 @@ namespace Avalonia.Controls
                 e.Handled = UpdateSelectionFromEventSource(
                     e.Source,
                     true,
-                    (e.KeyModifiers & KeyModifiers.Shift) != 0);
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift));
             }
         }
 
@@ -521,8 +519,8 @@ namespace Avalonia.Controls
                     e.Handled = UpdateSelectionFromEventSource(
                         e.Source,
                         true,
-                        (e.KeyModifiers & KeyModifiers.Shift) != 0,
-                        (e.KeyModifiers & KeyModifiers.Control) != 0,
+                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+                        e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
                         point.Properties.IsRightButtonPressed);
                 }
             }
@@ -558,9 +556,9 @@ namespace Avalonia.Controls
             }
 
             var mode = SelectionMode;
-            var toggle = toggleModifier || (mode & SelectionMode.Toggle) != 0;
-            var multi = (mode & SelectionMode.Multiple) != 0;
-            var range = multi && selectedContainer != null && rangeModifier;
+            var toggle = toggleModifier || mode.HasAllFlags(SelectionMode.Toggle);
+            var multi = mode.HasAllFlags(SelectionMode.Multiple);
+            var range = multi && rangeModifier && selectedContainer != null;
 
             if (rightButton)
             {

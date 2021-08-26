@@ -67,6 +67,14 @@ namespace Avalonia.Rendering.SceneGraph
         /// The scaling mode.
         /// </value>
         public BitmapInterpolationMode BitmapInterpolationMode { get; }
+        
+        /// <summary>
+        /// The bitmap blending mode.
+        /// </summary>
+        /// <value>
+        /// The blending mode.
+        /// </value>
+        public BitmapBlendingMode BitmapBlendingMode { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -85,12 +93,12 @@ namespace Avalonia.Rendering.SceneGraph
         public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             return transform == Transform &&
-                Equals(source.Item, Source.Item) &&
-                source.Item.Version == SourceVersion &&
-                opacity == Opacity &&
-                sourceRect == SourceRect &&
-                destRect == DestRect &&
-                bitmapInterpolationMode == BitmapInterpolationMode;
+                   Equals(source.Item, Source.Item) &&
+                   source.Item.Version == SourceVersion &&
+                   opacity == Opacity &&
+                   sourceRect == SourceRect &&
+                   destRect == DestRect &&
+                   bitmapInterpolationMode == BitmapInterpolationMode;
         }
 
         /// <inheritdoc/>

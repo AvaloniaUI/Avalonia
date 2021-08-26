@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -32,7 +33,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             DelayedBinding.ApplyBindings(border);
 
-            var brush = (SolidColorBrush)border.Background;
+            var brush = (ISolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
@@ -79,7 +80,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             DelayedBinding.ApplyBindings(border);
 
-            var brush = (SolidColorBrush)border.Background;
+            var brush = (ISolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
@@ -107,7 +108,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             DelayedBinding.ApplyBindings(border);
 
-            var brush = (SolidColorBrush)border.Background;
+            var brush = (ISolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
@@ -139,7 +140,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
             DelayedBinding.ApplyBindings(border);
 
-            var brush = (SolidColorBrush)border.Background;
+            var brush = (ISolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
@@ -211,7 +212,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
-                var brush = (SolidColorBrush)button.Background;
+                var brush = (ISolidColorBrush)button.Background;
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
@@ -240,7 +241,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var button = window.FindControl<Button>("button");
-                var brush = (SolidColorBrush)button.Background;
+                var brush = (ISolidColorBrush)button.Background;
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
@@ -274,7 +275,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var border = window.FindControl<Border>("border");
-                var brush = (SolidColorBrush)border.Background;
+                var brush = (ISolidColorBrush)border.Background;
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
@@ -316,7 +317,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.Show();
 
                 var border = (Border)button.GetVisualChildren().Single();
-                var brush = (SolidColorBrush)border.Background;
+                var brush = (ISolidColorBrush)border.Background;
 
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
@@ -647,7 +648,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 DelayedBinding.ApplyBindings(border);
 
-                var brush = (SolidColorBrush)border.Background;
+                var brush = (ISolidColorBrush)border.Background;
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
 
                 window.Content = null;
@@ -656,7 +657,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 window.Content = border;
 
-                brush = (SolidColorBrush)border.Background;
+                brush = (ISolidColorBrush)border.Background;
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
         }
@@ -809,6 +810,82 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
+        [Fact]
+        public void Resource_In_Non_Matching_Style_Is_Not_Resolved()
+        {
+            using var app = StyledWindow();
+
+            var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <local:TrackingResourceProvider/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector='Border.nomatch'>
+            <Setter Property='Tag' Value='{DynamicResource foo}'/>
+        </Style>
+        <Style Selector='Border'>
+            <Setter Property='Tag' Value='{DynamicResource bar}'/>
+        </Style>
+    </Window.Styles>
+
+    <Border Name='border'/>
+</Window>";
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var border = window.FindControl<Border>("border");
+
+            Assert.Equal("bar", border.Tag);
+
+            var resourceProvider = (TrackingResourceProvider)window.Resources.MergedDictionaries[0];
+            Assert.Equal(new[] { "bar" }, resourceProvider.RequestedResources);
+        }
+
+        [Fact]
+        public void Resource_In_Non_Active_Style_Is_Not_Resolved()
+        {
+            using var app = StyledWindow();
+
+            var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions'>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <local:TrackingResourceProvider/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector='Border'>
+            <Setter Property='Tag' Value='{DynamicResource foo}'/>
+        </Style>
+        <Style Selector='Border'>
+            <Setter Property='Tag' Value='{DynamicResource bar}'/>
+        </Style>
+    </Window.Styles>
+
+    <Border Name='border'/>
+</Window>";
+
+            var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var border = window.FindControl<Border>("border");
+
+            Assert.Equal("bar", border.Tag);
+
+            var resourceProvider = (TrackingResourceProvider)window.Resources.MergedDictionaries[0];
+            Assert.Equal(new[] { "bar" }, resourceProvider.RequestedResources);
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
@@ -837,6 +914,25 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                             }.RegisterInNameScope(scope)))
                 }
             };
+        }
+    }
+
+    public class TrackingResourceProvider : IResourceProvider
+    {
+        public IResourceHost Owner { get; private set; }
+        public bool HasResources => true;
+        public List<object> RequestedResources { get; } = new List<object>();
+
+        public event EventHandler OwnerChanged;
+
+        public void AddOwner(IResourceHost owner) => Owner = owner;
+        public void RemoveOwner(IResourceHost owner) => Owner = null;
+
+        public bool TryGetResource(object key, out object value)
+        {
+            RequestedResources.Add(key);
+            value = key;
+            return true;
         }
     }
 }
