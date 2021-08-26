@@ -32,7 +32,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object>());
 
-        private protected readonly IList _inner;
+        private IList? _inner;
         private NotifyCollectionChangedEventHandler? _collectionChanged;
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the number of items in the collection.
         /// </summary>
-        public int Count => _inner.Count;
+        public int Count => Inner.Count;
 
         /// <summary>
         /// Gets a value that indicates whether the items source can provide a unique key for each item.
@@ -66,6 +66,19 @@ namespace Avalonia.Controls
         /// TODO: Not yet implemented in Avalonia.
         /// </remarks>
         public bool HasKeyIndexMapping => false;
+
+        /// <summary>
+        /// Gets the inner collection.
+        /// </summary>
+        public IList Inner
+        {
+            get
+            {
+                if (_inner is null)
+                    ThrowDisposed();
+                return _inner!;
+            }
+        }
 
         /// <summary>
         /// Retrieves the item at the specified index.
@@ -81,6 +94,9 @@ namespace Avalonia.Controls
         {
             add
             {
+                if (_inner is null)
+                    ThrowDisposed();
+
                 if (_collectionChanged is null)
                 {
                     if (_inner is INotifyCollectionChanged incc)
@@ -94,6 +110,9 @@ namespace Avalonia.Controls
 
             remove
             {
+                if (_inner is null)
+                    ThrowDisposed();
+
                 _collectionChanged -= value;
 
                 if (_collectionChanged is null)
@@ -113,6 +132,8 @@ namespace Avalonia.Controls
             {
                 incc.CollectionChanged -= OnCollectionChanged;
             }
+
+            _inner = null;
         }
 
         /// <summary>
@@ -120,9 +141,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
-        public object? GetAt(int index) => _inner[index];
+        public object? GetAt(int index) => Inner[index];
 
-        public int IndexOf(object? item) => _inner.IndexOf(item);
+        public int IndexOf(object? item) => Inner.IndexOf(item);
 
         public static ItemsSourceView GetOrCreate(IEnumerable? items)
         {
@@ -168,7 +189,7 @@ namespace Avalonia.Controls
 
         internal void AddListener(ICollectionChangedListener listener)
         {
-            if (_inner is INotifyCollectionChanged incc)
+            if (Inner is INotifyCollectionChanged incc)
             {
                 CollectionChangedEventManager.Instance.AddListener(incc, listener);
             }
@@ -176,7 +197,7 @@ namespace Avalonia.Controls
 
         internal void RemoveListener(ICollectionChangedListener listener)
         {
-            if (_inner is INotifyCollectionChanged incc)
+            if (Inner is INotifyCollectionChanged incc)
             {
                 CollectionChangedEventManager.Instance.RemoveListener(incc, listener);
             }
@@ -191,6 +212,8 @@ namespace Avalonia.Controls
         {
             OnItemsSourceChanged(e);
         }
+
+        private void ThrowDisposed() => throw new ObjectDisposedException(nameof(ItemsSourceView));
     }
 
     public class ItemsSourceView<T> : ItemsSourceView, IReadOnlyList<T>
@@ -229,10 +252,10 @@ namespace Avalonia.Controls
         /// <param name="index">The index.</param>
         /// <returns>The item.</returns>
         [return: MaybeNull]
-        public new T GetAt(int index) => (T)_inner[index];
+        public new T GetAt(int index) => (T)Inner[index];
 
-        public IEnumerator<T> GetEnumerator() => _inner.Cast<T>().GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => Inner.Cast<T>().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
 
         public static new ItemsSourceView<T> GetOrCreate(IEnumerable? items)
         {
