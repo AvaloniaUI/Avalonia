@@ -33,7 +33,7 @@ namespace Avalonia.Controls
         public static ItemsSourceView Empty { get; } = new ItemsSourceView(Array.Empty<object>());
 
         private protected readonly IList _inner;
-        private INotifyCollectionChanged? _notifyCollectionChanged;
+        private NotifyCollectionChangedEventHandler? _collectionChanged;
 
         /// <summary>
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
@@ -55,8 +55,6 @@ namespace Avalonia.Controls
             {
                 _inner = new List<object>(source.Cast<object>());
             }
-
-            ListenToCollectionChanges();
         }
 
         /// <summary>
@@ -82,14 +80,41 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when the collection has changed to indicate the reason for the change and which items changed.
         /// </summary>
-        public event NotifyCollectionChangedEventHandler? CollectionChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
+        {
+            add
+            {
+                if (_collectionChanged is null)
+                {
+                    if (_inner is INotifyCollectionChanged incc)
+                    {
+                        incc.CollectionChanged += OnCollectionChanged;
+                    }
+                }
+
+                _collectionChanged += value;
+            }
+
+            remove
+            {
+                _collectionChanged -= value;
+
+                if (_collectionChanged is null)
+                {
+                    if (_inner is INotifyCollectionChanged incc)
+                    {
+                        incc.CollectionChanged -= OnCollectionChanged;
+                    }
+                }
+            }
+        }
 
         /// <inheritdoc/>
         public void Dispose()
         {
-            if (_notifyCollectionChanged != null)
+            if (_inner is INotifyCollectionChanged incc)
             {
-                _notifyCollectionChanged.CollectionChanged -= OnCollectionChanged;
+                incc.CollectionChanged -= OnCollectionChanged;
             }
         }
 
@@ -162,16 +187,7 @@ namespace Avalonia.Controls
 
         protected void OnItemsSourceChanged(NotifyCollectionChangedEventArgs args)
         {
-            CollectionChanged?.Invoke(this, args);
-        }
-
-        private void ListenToCollectionChanges()
-        {
-            if (_inner is INotifyCollectionChanged incc)
-            {
-                incc.CollectionChanged += OnCollectionChanged;
-                _notifyCollectionChanged = incc;
-            }
+            _collectionChanged?.Invoke(this, args);
         }
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
