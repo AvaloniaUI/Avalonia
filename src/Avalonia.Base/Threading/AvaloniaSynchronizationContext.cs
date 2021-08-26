@@ -38,7 +38,16 @@ namespace Avalonia.Threading
                 d(state);
             else
             {
-                Dispatcher.UIThread.Post(() => d(state), DispatcherPriority.Send);
+                try
+                {
+                    Dispatcher.UIThread.InvokeAsync(() => d(state), DispatcherPriority.Send).Wait();
+                }
+                catch (System.AggregateException aex)
+                {
+
+                    throw aex.InnerExceptions[0];
+                }
+                
             }
                 
         }
