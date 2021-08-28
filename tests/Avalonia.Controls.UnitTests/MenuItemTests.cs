@@ -254,7 +254,7 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
-        public void MenuItem_Not_Invokes_CanExecute_When_Parent_MenuItem_Closed()
+        public void MenuItem_Does_Not_Invoke_CanExecute_When_Parent_MenuItem_Closed()
         {
             using (Application())
             {
