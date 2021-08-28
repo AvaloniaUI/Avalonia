@@ -2,7 +2,6 @@
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -126,7 +125,7 @@ namespace Avalonia.Input.UnitTests
         {
             private readonly Action _action;
             public DelegateCommand(Action action) => _action = action;
-            public event EventHandler CanExecuteChanged;
+            public event EventHandler CanExecuteChanged { add { } remove { } }
             public bool CanExecute(object parameter) => true;
             public void Execute(object parameter) => _action();
         }
