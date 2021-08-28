@@ -62,7 +62,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void MenuItem_Is_Disabled_Bound_Command_Is_Removed()
+        public void MenuItem_Is_Disabled_When_Bound_Command_Is_Removed()
         {
             var viewModel = new
             {
