@@ -1672,6 +1672,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = true;
             [self mouseEvent:event withType:MiddleButtonDown];
@@ -1704,6 +1705,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = false;
             [self mouseEvent:event withType:MiddleButtonUp];
