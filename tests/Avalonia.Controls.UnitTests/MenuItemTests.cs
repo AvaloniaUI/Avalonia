@@ -85,7 +85,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void MenuItem_Is_Enabled_When_When_Added_To_Logical_Tree_And_Bound_Command_Is_Added()
+        public void MenuItem_Is_Enabled_When_Added_To_Logical_Tree_And_Bound_Command_Is_Added()
         {
             var viewModel = new
             {
@@ -194,7 +194,8 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
-
+                
+                Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
 
@@ -216,7 +217,7 @@ namespace Avalonia.Controls.UnitTests
         }
         
         [Fact]
-        public void MenuItem_Not_Invokes_CanExecute_When_MenuFlyout_Closed()
+        public void MenuItem_Does_Not_Invoke_CanExecute_When_MenuFlyout_Closed()
         {
             using (Application())
             {
@@ -232,7 +233,8 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = button };
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
-
+                
+                Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
 
@@ -271,7 +273,8 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 contextMenu.Open();
-
+                
+                Assert.True(target.IsEffectivelyEnabled);
                 target.Command = command;
                 Assert.Equal(0, canExecuteCallCount);
 

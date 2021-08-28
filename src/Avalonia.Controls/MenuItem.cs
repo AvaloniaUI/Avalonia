@@ -107,6 +107,7 @@ namespace Avalonia.Controls
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
+        private bool _commandBindingError;
         private Popup? _popup;
         private KeyGesture? _hotkey;
         private bool _isEmbeddedInMenu;
@@ -500,13 +501,11 @@ namespace Avalonia.Controls
             base.UpdateDataValidation(property, value);
             if (property == CommandProperty)
             {
-                if (value.Type == BindingValueType.BindingError)
+                _commandBindingError = value.Type == BindingValueType.BindingError;
+                if (_commandBindingError && _commandCanExecute)
                 {
-                    if (_commandCanExecute)
-                    {
-                        _commandCanExecute = false;
-                        UpdateIsEffectivelyEnabled();
-                    }
+                    _commandCanExecute = false;
+                    UpdateIsEffectivelyEnabled();
                 }
             }
         }
@@ -574,11 +573,8 @@ namespace Avalonia.Controls
         {
             if (Command == null)
             {
-                if (_commandCanExecute)
-                {
-                    _commandCanExecute = false;
-                    UpdateIsEffectivelyEnabled();
-                }
+                _commandCanExecute = !_commandBindingError;
+                UpdateIsEffectivelyEnabled();
                 return;
             }
             
