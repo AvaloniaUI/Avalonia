@@ -500,6 +500,10 @@ namespace Avalonia.Controls
             }
         }
 
+        public event EventHandler<TextBoxClipboardEventArgs> CopyingToClipboard;
+        public event EventHandler<TextBoxClipboardEventArgs> CuttingToClipboard;
+        public event EventHandler<TextBoxClipboardEventArgs> PastingFromClipboard;
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
@@ -638,27 +642,54 @@ namespace Avalonia.Controls
         public async void Cut()
         {
             var text = GetSelection();
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
-            SnapshotUndoRedo();
-            Copy();
-            DeleteSelection();
+            var eventArgs = new TextBoxClipboardEventArgs();
+            CuttingToClipboard?.Invoke(this, eventArgs);
+            if (!eventArgs.Handled)
+            {
+                SnapshotUndoRedo();
+                await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
+                    .SetTextAsync(text);
+                DeleteSelection();
+            }
         }
 
         public async void Copy()
         {
             var text = GetSelection();
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
-            await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
-                .SetTextAsync(text);
+            var eventArgs = new TextBoxClipboardEventArgs();
+            CopyingToClipboard?.Invoke(this, eventArgs);
+            if (!eventArgs.Handled)
+            {
+                await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
+                    .SetTextAsync(text);
+            }
         }
 
         public async void Paste()
         {
+            var eventArgs = new TextBoxClipboardEventArgs();
+            PastingFromClipboard?.Invoke(this, eventArgs);
+            if (eventArgs.Handled)
+            {
+                return;
+            }
+
             var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
 
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
             SnapshotUndoRedo();
             HandleTextInput(text);
