@@ -145,6 +145,18 @@ namespace Avalonia.Controls
                 (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
+        public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "CopyingToClipboard", RoutingStrategies.Bubble);
+
+        public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "CuttingToClipboard", RoutingStrategies.Bubble);
+
+        public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "PastingFromClipboard", RoutingStrategies.Bubble);
+
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -500,9 +512,23 @@ namespace Avalonia.Controls
             }
         }
 
-        public event EventHandler<TextBoxClipboardEventArgs> CopyingToClipboard;
-        public event EventHandler<TextBoxClipboardEventArgs> CuttingToClipboard;
-        public event EventHandler<TextBoxClipboardEventArgs> PastingFromClipboard;
+        public event EventHandler<RoutedEventArgs> CopyingToClipboard
+        {
+            add => AddHandler(CopyingToClipboardEvent, value);
+            remove => RemoveHandler(CopyingToClipboardEvent, value);
+        }
+
+        public event EventHandler<RoutedEventArgs> CuttingToClipboard
+        {
+            add => AddHandler(CuttingToClipboardEvent, value);
+            remove => RemoveHandler(CuttingToClipboardEvent, value);
+        }
+
+        public event EventHandler<RoutedEventArgs> PastingFromClipboard
+        {
+            add => AddHandler(PastingFromClipboardEvent, value);
+            remove => RemoveHandler(PastingFromClipboardEvent, value);
+        }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -647,8 +673,8 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var eventArgs = new TextBoxClipboardEventArgs();
-            CuttingToClipboard?.Invoke(this, eventArgs);
+            var eventArgs = new RoutedEventArgs(CuttingToClipboardEvent);
+            RaiseEvent(eventArgs);
             if (!eventArgs.Handled)
             {
                 SnapshotUndoRedo();
@@ -666,8 +692,8 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var eventArgs = new TextBoxClipboardEventArgs();
-            CopyingToClipboard?.Invoke(this, eventArgs);
+            var eventArgs = new RoutedEventArgs(CopyingToClipboardEvent);
+            RaiseEvent(eventArgs);
             if (!eventArgs.Handled)
             {
                 await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
@@ -677,8 +703,8 @@ namespace Avalonia.Controls
 
         public async void Paste()
         {
-            var eventArgs = new TextBoxClipboardEventArgs();
-            PastingFromClipboard?.Invoke(this, eventArgs);
+            var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
+            RaiseEvent(eventArgs);
             if (eventArgs.Handled)
             {
                 return;
