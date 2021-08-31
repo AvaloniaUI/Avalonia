@@ -891,6 +891,9 @@ namespace Avalonia.Win32.Interop
             uint uStartScan, uint cScanLines,
            IntPtr lpvBits, [In] ref BITMAPINFO lpbmi, uint fuColorUse);
 
+        [DllImport("gdi32.dll")]
+        public static extern long GetBitmapBits([In] IntPtr hbmp, [In] int cbBuffer, [Out] byte[] lpvBits);
+
         [DllImport("user32.dll")]
         public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
 

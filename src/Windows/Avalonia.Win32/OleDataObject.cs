@@ -44,7 +44,75 @@ namespace Avalonia.Win32
 
         public object Get(string dataFormat)
         {
+            if (dataFormat == "Unknown_Format_2")
+            {
+                return GetImage();
+            }
+
             return GetDataFromOleHGLOBAL(dataFormat, DVASPECT.DVASPECT_CONTENT);
+        }
+
+        private object GetImage()
+        {
+            // read bitmapInfo
+            var bitmapInfoData = GetDataFromOleHGLOBAL("Unknown_Format_8", DVASPECT.DVASPECT_CONTENT) as byte[];
+
+            if (bitmapInfoData == null)
+            {
+                return null;
+            }
+
+            var bitmapInfo = ReadBitmapInfo(bitmapInfoData);
+
+            // get bitmap handle HBITMAP
+            var formatEtc = new FORMATETC();
+            formatEtc.cfFormat = 2; // Unknown_Format_2
+            formatEtc.dwAspect = DVASPECT.DVASPECT_CONTENT;
+            formatEtc.lindex = -1;
+            formatEtc.tymed = TYMED.TYMED_GDI;
+
+            if (_wrapped.QueryGetData(ref formatEtc) == 0)
+            {
+                _wrapped.GetData(ref formatEtc, out STGMEDIUM medium);
+                try
+                {
+                    if (medium.unionmember != IntPtr.Zero && medium.tymed == TYMED.TYMED_GDI)
+                    {
+                        // get image bytes
+                        var bufer = new byte[bitmapInfo.biSizeImage];
+                        UnmanagedMethods.GetBitmapBits(medium.unionmember, bufer.Length, bufer);
+                        return bufer;
+                    }
+                }
+                finally
+                {
+                    UnmanagedMethods.ReleaseStgMedium(ref medium);
+                }
+            }
+
+            return null;
+        }
+
+        private UnmanagedMethods.BITMAPINFO ReadBitmapInfo(byte[] data)
+        {
+            using var memStream = new MemoryStream(data);
+            using var reader = new BinaryReader(memStream);
+            var header = new UnmanagedMethods.BITMAPINFO
+            {
+                biSize = reader.ReadUInt32(),
+                biWidth = reader.ReadInt32(),
+                biHeight = reader.ReadInt32(),
+                biPlanes = reader.ReadUInt16(),
+                biBitCount = reader.ReadUInt16(),
+                biCompression = (UnmanagedMethods.BitmapCompressionMode)reader.ReadUInt32(),
+                biSizeImage = reader.ReadUInt32(),
+                biXPelsPerMeter = reader.ReadInt32(),
+                biYPelsPerMeter = reader.ReadInt32(),
+                biClrUsed = reader.ReadUInt32(),
+                biClrImportant = reader.ReadUInt32()
+            };
+
+            return header;
         }
 
         private object GetDataFromOleHGLOBAL(string format, DVASPECT aspect)
