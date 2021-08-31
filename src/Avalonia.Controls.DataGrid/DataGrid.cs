@@ -4489,8 +4489,19 @@ namespace Avalonia.Controls
                 element = dataGridColumn.GenerateEditingElementInternal(dataGridCell, dataGridRow.DataContext);
                 if (element != null)
                 {
-                    // Subscribe to the new element's events
-                    element.Initialized += EditingElement_Initialized;
+                    
+                    if (element.IsInitialized)
+                    {
+                        Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            PreparingCellForEditPrivate(element as Control);
+                        });
+                    }
+                    else
+                    {
+                        // Subscribe to the new element's events
+                        element.Initialized += EditingElement_Initialized;
+                    }
                 }
             }
             else
