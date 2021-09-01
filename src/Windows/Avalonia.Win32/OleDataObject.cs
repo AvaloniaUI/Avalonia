@@ -44,7 +44,7 @@ namespace Avalonia.Win32
 
         public object Get(string dataFormat)
         {
-            if (dataFormat == "Unknown_Format_2")
+            if (dataFormat == ClipboardFormats.GetFormat(2)) // check for CF_BITMAP
             {
                 return GetImage();
             }
@@ -54,8 +54,8 @@ namespace Avalonia.Win32
 
         private object GetImage()
         {
-            // read bitmapInfo
-            var bitmapInfoData = GetDataFromOleHGLOBAL("Unknown_Format_8", DVASPECT.DVASPECT_CONTENT) as byte[];
+            // read bitmapInfo CF_DIB format
+            var bitmapInfoData = GetDataFromOleHGLOBAL(ClipboardFormats.GetFormat(8), DVASPECT.DVASPECT_CONTENT) as byte[];
 
             if (bitmapInfoData == null)
             {
@@ -66,7 +66,7 @@ namespace Avalonia.Win32
 
             // get bitmap handle HBITMAP
             var formatEtc = new FORMATETC();
-            formatEtc.cfFormat = 2; // Unknown_Format_2
+            formatEtc.cfFormat = 2; // CF_BITMAP
             formatEtc.dwAspect = DVASPECT.DVASPECT_CONTENT;
             formatEtc.lindex = -1;
             formatEtc.tymed = TYMED.TYMED_GDI;
