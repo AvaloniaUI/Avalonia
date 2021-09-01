@@ -493,7 +493,7 @@ namespace Avalonia
             // In theory this should only need to check for logical tree attachment, but in practise
             // due to ContentControlMixin only taking effect when the template has finished being
             // applied, some controls are attached to the visual tree before the logical tree.
-            if (((ILogical)this).IsAttachedToLogicalTree || ((IVisual)this).IsAttachedToVisualTree)
+            if (((ILogical)this).IsAttachedToLogicalTree)
             {
                 if (e is BindingChainException b &&
                     string.IsNullOrEmpty(b.ExpressionErrorPoint) &&

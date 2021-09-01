@@ -57,10 +57,8 @@ namespace Avalonia.LogicalTree
             private void Detached(object sender, LogicalTreeAttachmentEventArgs e)
             {
                 _value = null;
-                if (_relativeTo.IsAttachedToLogicalTree)
-                {
-                    PublishNext(null);
-                }
+                PublishNext(null);
+
             }
 
             private void Update()
