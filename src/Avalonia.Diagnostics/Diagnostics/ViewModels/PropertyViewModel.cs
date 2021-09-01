@@ -24,6 +24,9 @@ namespace Avalonia.Diagnostics.ViewModels
         public abstract bool? IsAttached { get; }
         public abstract void Update();
         public abstract string PropertyType { get; }
+        public string Type => PropertyType == AssignedType
+            ? PropertyType
+            : $"{PropertyType} {{{AssignedType}}}";
 
 
         protected static string GetTypeName(Type type)

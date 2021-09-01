@@ -16,7 +16,7 @@
           </MenuItem.Icon>
         </MenuItem>
         <MenuItem Header="_Dettails">
-          <MenuItem Header="Show Property Type" Command="{Binding ToggleShowDettailsPropertyType}">
+          <MenuItem Header="Split Property Type" Command="{Binding ToggleShowDettailsPropertyType}">
             <MenuItem.Icon>
               <CheckBox BorderThickness="0"
                         IsChecked="{Binding ShowDettailsPropertyType}"
