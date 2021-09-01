@@ -58,7 +58,6 @@ namespace Avalonia.LogicalTree
             {
                 _value = null;
                 PublishNext(null);
-
             }
 
             private void Update()
