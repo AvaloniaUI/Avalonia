@@ -2102,7 +2102,7 @@ namespace Avalonia.Controls
                     {
                         if (ItemFilter == null)
                         {
-                            throw new Exception("ItemFilter property can not be unassigned when FilterMode has value AutoCompleteFilterMode.Custom");
+                            throw new Exception("ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
                         }
                         else
                         {
