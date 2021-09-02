@@ -2094,7 +2094,21 @@ namespace Avalonia.Controls
                 bool inResults = !(stringFiltering || objectFiltering);
                 if (!inResults)
                 {
-                    inResults = stringFiltering ? TextFilter(text, FormatValue(item)) : ItemFilter(text, item);
+                    if (stringFiltering)
+                    {
+                        inResults = TextFilter(text, FormatValue(item));
+                    }
+                    else
+                    {
+                        if (ItemFilter == null)
+                        {
+                            throw new Exception("ItemFilter property can not be unassigned when FilterMode has value AutoCompleteFilterMode.Custom");
+                        }
+                        else
+                        {
+                            inResults = ItemFilter(text, item);
+                        }
+                    }
                 }
 
                 if (view_count > view_index && inResults && _view[view_index] == item)
