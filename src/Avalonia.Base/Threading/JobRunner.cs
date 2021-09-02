@@ -190,8 +190,9 @@ namespace Avalonia.Threading
         }
 
         /// <summary>
-        /// A tipizzed job to run.
+        /// A typed job to run.
         /// </summary>
+        /// <typeparam name="T">Type of job parameter</typeparam>
         private sealed class Job<T> : IJob
         {
             private readonly Action<T> _action;
@@ -237,10 +238,10 @@ namespace Avalonia.Threading
             }
         }
 
-
         /// <summary>
         /// A job to run thath return value.
         /// </summary>
+        /// <typeparam name="TResult">Type of job result</typeparam>
         private sealed class JobWithResult<TResult> : IJob
         {
             private readonly Func<TResult> _function;
