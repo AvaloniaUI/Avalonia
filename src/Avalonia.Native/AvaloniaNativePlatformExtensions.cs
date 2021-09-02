@@ -69,6 +69,13 @@ namespace Avalonia
         public bool ShowInDock { get; set; } = true;
 
         /// <summary>
+        /// If you will distribute you app in Mac App Store - it should be with sandbox enabled.
+        /// This parameter enables <see cref="Application.SandboxBookmarkAdded"/> event.
+        /// It's called when a user selects a document in OpenFileDialog or SaveFileDialog or via <see cref="Application.UrlsOpened"/> event.
+        /// </summary>
+        public bool AppStoreSandbox { get; set; } = false;
+
+        /// <summary>
         /// By default, Avalonia adds items like Quit, Hide to the OSX Application Menu.
         /// You can prevent Avalonia from adding those items to the OSX Application Menu with this property. The default value is false.
         /// </summary>

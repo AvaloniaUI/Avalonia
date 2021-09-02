@@ -58,6 +58,8 @@ namespace Avalonia
 
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened; 
 
+        public event EventHandler<SandboxBookmarkAddedEventArgs>? SandboxBookmarkAdded; 
+
         /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
         /// </summary>
@@ -252,9 +254,14 @@ namespace Avalonia
         {
         }
         
-        void  IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
+        void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
         {
             UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
+        }
+
+        void IApplicationPlatformEvents.RaiseBookmarkAdded(ISandboxBookmark bookmark)
+        {
+            SandboxBookmarkAdded?.Invoke(this, new SandboxBookmarkAddedEventArgs(bookmark));
         }
 
         private void NotifyResourcesChanged(ResourcesChangedEventArgs e)

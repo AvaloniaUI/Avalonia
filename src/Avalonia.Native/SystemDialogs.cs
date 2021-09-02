@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
+using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
@@ -90,6 +91,11 @@ namespace Avalonia.Native
             }
 
             _tcs.SetResult(results);
+        }
+
+        public void SandboxBookmarkAdded(IAvnSandboxBookmark bookmark)
+        {
+            ((IApplicationPlatformEvents)Application.Current).RaiseBookmarkAdded(new SandboxBookmark(bookmark));
         }
     }
 }

@@ -15,6 +15,11 @@ namespace Avalonia.Native
             ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(urls.ToStringArray());
         }
 
+        void IAvnApplicationEvents.SandboxBookmarkAdded(IAvnSandboxBookmark bookmark)
+        {
+            ((IApplicationPlatformEvents)Application.Current).RaiseBookmarkAdded(new SandboxBookmark(bookmark));
+        }
+
         public int TryShutdown()
         {
             if (ShutdownRequested is null) return 1;

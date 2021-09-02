@@ -427,6 +427,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateMenu(IAvnMenuEvents* cb, IAvnMenu** ppv);
      HRESULT CreateMenuItem(IAvnMenuItem** ppv);
      HRESULT CreateMenuItemSeparator(IAvnMenuItem** ppv);
+     HRESULT CreateSandboxBookmark(char* utf8String, IAvnSandboxBookmark**ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -536,7 +537,8 @@ interface IAvnWindowEvents : IAvnWindowBaseEvents
 [uuid(e34ae0f8-18b4-48a3-b09d-2e6b19a3cf5e)]
 interface IAvnMacOptions : IUnknown
 {
-     HRESULT SetShowInDock(int show);
+     HRESULT SetShowInDock(bool show);
+     HRESULT SetAppStoreSandbox(bool enabled);
      HRESULT SetApplicationTitle(char* utf8string);
      HRESULT SetDisableDefaultApplicationMenuItems(bool enabled);
 }
@@ -575,6 +577,7 @@ interface IAvnPlatformThreadingInterface : IUnknown
 interface IAvnSystemDialogEvents : IUnknown
 {
      void OnCompleted(int numResults, void* ptrFirstResult);
+     void SandboxBookmarkAdded(IAvnSandboxBookmark* bookmark);
 }
 
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]
@@ -742,5 +745,15 @@ interface IAvnNativeControlHostTopLevelAttachment : IUnknown
 interface IAvnApplicationEvents : IUnknown
 {
      void FilesOpened (IAvnStringArray* urls);
+     void SandboxBookmarkAdded (IAvnSandboxBookmark* bookmark);
      bool TryShutdown();
+}
+
+[uuid(2fe57400-d987-471b-a457-f0e3e1e0da2f)]
+interface IAvnSandboxBookmark : IUnknown
+{
+    HRESULT GetURL(IAvnString**ppv);
+    HRESULT GetBytes(IAvnString**ppv);
+    void Open();
+    void Close();
 }
