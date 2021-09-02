@@ -278,9 +278,9 @@ namespace Avalonia.Skia
 
                                 if (fb != null)
                                 {
-                                    //TODO: figure out how to get the brush rect
+                                    //TODO: figure out how to get the brush size
                                     currentWrapper = context.CreatePaint(new SKPaint { IsAntialias = true }, fb,
-                                        default);
+                                        new Size());
                                 }
                                 else
                                 {
