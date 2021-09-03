@@ -35,6 +35,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
     <Setter Property="SelectionBrush" Value="{DynamicResource TextControlSelectionHighlightColor}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />    
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
     <Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}" />
@@ -50,6 +51,7 @@
               Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
               MinWidth="{TemplateBinding MinWidth}"
               MinHeight="{TemplateBinding MinHeight}">
             </Border>
@@ -76,9 +78,7 @@
                                 IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        <!-- TODO eliminate this margin... text layout issue? -->
                         <TextPresenter Name="PART_TextPresenter"
-                                      Margin="0 1 0 0"
                                       Text="{TemplateBinding Text, Mode=TwoWay}"
                                       CaretIndex="{TemplateBinding CaretIndex}"
                                       SelectionStart="{TemplateBinding SelectionStart}"
@@ -149,10 +149,6 @@
 
   <Style Selector="TextBox:error /template/ Border#PART_BorderElement">
     <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
-  </Style>
-
-  <Style Selector="TextBox /template/ Border#PART_BorderElement">
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </Style>
 
   <Style Selector="TextBox /template/ DockPanel#PART_InnerDockPanel">

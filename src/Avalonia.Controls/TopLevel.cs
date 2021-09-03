@@ -90,6 +90,7 @@ namespace Avalonia.Controls
         /// </summary>
         static TopLevel()
         {
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
             TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
@@ -224,7 +225,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the acheived <see cref="WindowTransparencyLevel"/> that the platform was able to provide.
+        /// Gets the achieved <see cref="WindowTransparencyLevel"/> that the platform was able to provide.
         /// </summary>
         public WindowTransparencyLevel ActualTransparencyLevel
         {
@@ -376,11 +377,15 @@ namespace Avalonia.Controls
             LayoutManager?.Dispose();
         }
 
+        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
+        protected virtual void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
+
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
         /// <param name="clientSize">The new client size.</param>
-        protected virtual void HandleResized(Size clientSize)
+        /// <param name="reason">The reason for the resize.</param>
+        protected virtual void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
             ClientSize = clientSize;
             FrameSize = PlatformImpl.FrameSize;
