@@ -113,7 +113,8 @@ namespace Avalonia.Native
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
-                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform);
+                .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
+                .Bind<ISandboxBookmarkFactory>().ToConstant(new SandboxBookmarkFactory(_factory));
 
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
