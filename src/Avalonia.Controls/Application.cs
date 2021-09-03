@@ -106,7 +106,7 @@ namespace Avalonia
         /// <value>
         /// The application's global data templates.
         /// </value>
-        public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
+        public DataTemplates DataTemplates => _dataTemplates ??= new DataTemplates();
 
         /// <summary>
         /// Gets the application's focus manager.
