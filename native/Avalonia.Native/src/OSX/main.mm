@@ -130,7 +130,7 @@ public:
         
         @autoreleasepool
         {
-            SetAppStoreSandbox(enabled);
+            ::SetAppStoreSandbox(enabled);
             return S_OK;
         }
     }
