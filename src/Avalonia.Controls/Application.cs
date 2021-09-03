@@ -56,8 +56,16 @@ namespace Avalonia
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
+        /// <summary>
+        /// Raised on macOS file opening via file association or registered protocol url activation
+        /// </summary>
         public event EventHandler<UrlOpenedEventArgs>? UrlsOpened; 
 
+        /// <summary>
+        /// Raised on every access to files outside of mac app store sandbox via
+        /// <see cref="UrlsOpened"/> event or open/save file dialogs user selections.
+        /// To enable this event - set MacOSPlatformOptions.AppStoreSandbox to true.
+        /// </summary>
         public event EventHandler<SandboxBookmarkAddedEventArgs>? SandboxBookmarkAdded; 
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace Avalonia.Native
         }
 
         public string Url => _bookmark.URL.String;
-        public byte[] Data => _bookmark.Bytes.Bytes;
+        public byte[] BookmarkData => _bookmark.Bytes.Bytes;
 
         public IDisposable Open()
         {
