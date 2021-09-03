@@ -427,7 +427,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateMenu(IAvnMenuEvents* cb, IAvnMenu** ppv);
      HRESULT CreateMenuItem(IAvnMenuItem** ppv);
      HRESULT CreateMenuItemSeparator(IAvnMenuItem** ppv);
-     HRESULT CreateSandboxBookmark(char* utf8String, IAvnSandboxBookmark**ppv);
+     HRESULT CreateSandboxBookmark(void* utf8Text, int len, IAvnSandboxBookmark**ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]

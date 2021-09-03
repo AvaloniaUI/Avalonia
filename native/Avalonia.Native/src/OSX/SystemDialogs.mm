@@ -1,5 +1,6 @@
 #include "common.h"
 #include "window.h"
+#include "SandboxBookmark.h"
 
 class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemDialogs>
 {
@@ -135,6 +136,11 @@ public:
                         {
                             auto url = [urls objectAtIndex:i];
                             
+                            if(GetAppStoreSandbox())
+                            {
+                                events->SandboxBookmarkAdded(CreateSandboxBookmark(url));
+                            }
+                            
                             auto string = [url path];
                             
                             strings[i] = (void*)[string UTF8String];
@@ -217,6 +223,11 @@ public:
                     void* strings[1];
                     
                     auto url = [panel URL];
+                    
+                    if(GetAppStoreSandbox())
+                    {
+                        events->SandboxBookmarkAdded(CreateSandboxBookmark(url));
+                    }
                     
                     auto string = [url path];   
                     strings[0] = (void*)[string UTF8String];

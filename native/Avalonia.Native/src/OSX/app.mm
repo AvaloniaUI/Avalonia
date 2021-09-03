@@ -1,5 +1,6 @@
 #include "common.h"
 #include "AvnString.h"
+#include "SandboxBookmark.h"
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
 -(AvnAppDelegate* _Nonnull) initWithEvents: (IAvnApplicationEvents* _Nonnull) events;
 @end
@@ -39,6 +40,17 @@ ComPtr<IAvnApplicationEvents> _events;
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames
 {
+    if(GetAppStoreSandbox())
+    {
+        for(int c = 0; c < [filenames count]; c++)
+        {
+            NSString* str = [filenames objectAtIndex:c];
+            NSURL* url = [NSURL URLWithString:str];
+            IAvnSandboxBookmark* bookmark = CreateSandboxBookmark(url);
+            _events->SandboxBookmarkAdded(bookmark);
+        }
+    }
+    
     auto array = CreateAvnStringArray(filenames);
     
     _events->FilesOpened(array);
@@ -46,6 +58,16 @@ ComPtr<IAvnApplicationEvents> _events;
 
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
 {
+    if(GetAppStoreSandbox())
+    {
+        for(int c = 0; c < [urls count]; c++)
+        {
+            NSURL* url = [urls objectAtIndex:c];
+            IAvnSandboxBookmark* bookmark = CreateSandboxBookmark(url);
+            _events->SandboxBookmarkAdded(bookmark);
+        }
+    }
+    
     auto array = CreateAvnStringArray(urls);
     
     _events->FilesOpened(array);
