@@ -2100,7 +2100,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        if (ItemFilter == null)
+                        if (ItemFilter is null)
                         {
                             throw new Exception("ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
                         }
