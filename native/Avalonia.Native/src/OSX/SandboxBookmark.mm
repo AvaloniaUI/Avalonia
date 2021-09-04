@@ -29,21 +29,8 @@ public:
     {
         _bookmarkData = bookmarkData;
         
-        // resolve the bookmark data into an NSURL object that will allow us to use the file
         BOOL bookmarkDataIsStale;
         _url = [NSURL URLByResolvingBookmarkData:bookmarkData options:NSURLBookmarkResolutionWithSecurityScope|NSURLBookmarkResolutionWithoutUI relativeToURL:nil bookmarkDataIsStale:&bookmarkDataIsStale error:NULL];
-        
-        // if the bookmark data is stale we'll attempt to recreate it with the existing url object if possible (not guaranteed)
-//        if (bookmarkDataIsStale) {
-//            bookmarkData = nil;
-//            [self.bookmarkPersistanceDelegate clearBookmarkDataForURL:fileURL];
-//            if (allowedURL) {
-//                bookmarkData = [self persistPermissionURL:allowedURL];
-//                if (!bookmarkData) {
-//                    _url = nil;
-//                }
-//            }
-//        }
     }
     
     virtual HRESULT GetURL (IAvnString**ppv) override

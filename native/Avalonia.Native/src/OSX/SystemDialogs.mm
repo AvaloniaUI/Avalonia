@@ -136,7 +136,7 @@ public:
                         {
                             auto url = [urls objectAtIndex:i];
                             
-                            if(GetAppStoreSandbox())
+                            if(GetIsAppStoreSandboxEnabled())
                             {
                                 events->SandboxBookmarkAdded(CreateSandboxBookmark(url));
                             }
@@ -224,7 +224,7 @@ public:
                     
                     auto url = [panel URL];
                     
-                    if(GetAppStoreSandbox())
+                    if(GetIsAppStoreSandboxEnabled())
                     {
                         events->SandboxBookmarkAdded(CreateSandboxBookmark(url));
                     }

@@ -40,7 +40,7 @@ ComPtr<IAvnApplicationEvents> _events;
 
 - (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames
 {
-    if(GetAppStoreSandbox())
+    if(GetIsAppStoreSandboxEnabled())
     {
         for(int c = 0; c < [filenames count]; c++)
         {
@@ -58,7 +58,7 @@ ComPtr<IAvnApplicationEvents> _events;
 
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
 {
-    if(GetAppStoreSandbox())
+    if(GetIsAppStoreSandboxEnabled())
     {
         for(int c = 0; c < [urls count]; c++)
         {
