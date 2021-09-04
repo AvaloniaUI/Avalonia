@@ -15,6 +15,7 @@ class SandboxBookmarkImpl : public ComSingleObject<IAvnSandboxBookmark, &IID_IAv
 private:
     NSURL* _url;
     NSData* _bookmarkData;
+    BOOL _dataIsStale;
     
 public:
     FORWARD_IUNKNOWN()
@@ -22,6 +23,7 @@ public:
     SandboxBookmarkImpl(NSURL* url)
     {
         _url = url;
+        _dataIsStale = false;
         _bookmarkData = [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:NULL];
     }
     
@@ -29,8 +31,7 @@ public:
     {
         _bookmarkData = bookmarkData;
         
-        BOOL bookmarkDataIsStale;
-        _url = [NSURL URLByResolvingBookmarkData:bookmarkData options:NSURLBookmarkResolutionWithSecurityScope|NSURLBookmarkResolutionWithoutUI relativeToURL:nil bookmarkDataIsStale:&bookmarkDataIsStale error:NULL];
+        _url = [NSURL URLByResolvingBookmarkData:bookmarkData options:NSURLBookmarkResolutionWithSecurityScope|NSURLBookmarkResolutionWithoutUI relativeToURL:nil bookmarkDataIsStale:&_dataIsStale error:NULL];
     }
     
     virtual HRESULT GetURL (IAvnString**ppv) override
@@ -57,6 +58,30 @@ public:
          }
     }
     
+    bool GetDataIsStale() override
+    {
+        START_COM_CALL;
+        return _dataIsStale;
+    }
+    
+    void Restore () override
+    {
+        START_COM_CALL;
+        
+        if(!_dataIsStale)
+        {
+            return;
+        }
+        
+        @autoreleasepool
+        {
+            _bookmarkData = [_url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:NULL];
+            if(_bookmarkData)
+            {
+                _dataIsStale = false;
+            }
+        }
+    }
     
     void Open () override
     {

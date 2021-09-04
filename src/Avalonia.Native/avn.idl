@@ -754,6 +754,8 @@ interface IAvnSandboxBookmark : IUnknown
 {
     HRESULT GetURL(IAvnString**ppv);
     HRESULT GetBytes(IAvnString**ppv);
+    bool GetDataIsStale();
+    void Restore();
     void Open();
     void Close();
 }

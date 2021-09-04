@@ -29,6 +29,10 @@ namespace Avalonia.Platform
         /// You will need this to restore a bookmark after app restart using <see cref="ISandboxBookmarkFactory"/>
         /// </summary>
         byte[] BookmarkData { get; }
+        
+        bool DataIsStale { get; }
+
+        void Restore();
 
         /// <summary>
         /// Use this method inside a using() every time you want to access a file of that bookmark
