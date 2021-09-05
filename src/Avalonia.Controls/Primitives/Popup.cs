@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
+using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
@@ -18,7 +20,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Displays a popup window.
     /// </summary>
-    public class Popup : Control, IVisualTreeHost
+    public class Popup : Control, IVisualTreeHost, IPopupHostProvider
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), true);
@@ -134,6 +136,7 @@ namespace Avalonia.Controls.Primitives
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
         private IInputElement _overlayInputPassThroughElement;
+        private Action<IPopupHost?>? _popupHostChangedHandler;
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -351,6 +354,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IVisual? IVisualTreeHost.Root => _openState?.PopupHost.HostedVisualTreeRoot;
 
+        IPopupHost? IPopupHostProvider.PopupHost => Host;
+
+        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
+        { 
+            add => _popupHostChangedHandler += value; 
+            remove => _popupHostChangedHandler -= value;
+        }
+
         /// <summary>
         /// Opens the popup.
         /// </summary>
@@ -383,18 +394,8 @@ namespace Avalonia.Controls.Primitives
 
             var handlerCleanup = new CompositeDisposable(5);
 
-            void DeferCleanup(IDisposable? disposable)
-            {
-                if (disposable is null)
-                {
-                    return;
-                }
-
-                handlerCleanup.Add(disposable);
-            }
-
-            DeferCleanup(popupHost.BindConstraints(this, WidthProperty, MinWidthProperty, MaxWidthProperty,
-                HeightProperty, MinHeightProperty, MaxHeightProperty, TopmostProperty));
+            popupHost.BindConstraints(this, WidthProperty, MinWidthProperty, MaxWidthProperty,
+                HeightProperty, MinHeightProperty, MaxHeightProperty, TopmostProperty).DisposeWith(handlerCleanup);
 
             popupHost.SetChild(Child);
             ((ISetLogicalParent)popupHost).SetParent(this);
@@ -408,19 +409,19 @@ namespace Avalonia.Controls.Primitives
                 PlacementConstraintAdjustment,
                 PlacementRect);
 
-            DeferCleanup(SubscribeToEventHandler<IPopupHost, EventHandler<TemplateAppliedEventArgs>>(popupHost, RootTemplateApplied,
+            SubscribeToEventHandler<IPopupHost, EventHandler<TemplateAppliedEventArgs>>(popupHost, RootTemplateApplied,
                 (x, handler) => x.TemplateApplied += handler,
-                (x, handler) => x.TemplateApplied -= handler));
+                (x, handler) => x.TemplateApplied -= handler).DisposeWith(handlerCleanup);
 
             if (topLevel is Window window)
             {
-                DeferCleanup(SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
+                SubscribeToEventHandler<Window, EventHandler>(window, WindowDeactivated,
                     (x, handler) => x.Deactivated += handler,
-                    (x, handler) => x.Deactivated -= handler));
+                    (x, handler) => x.Deactivated -= handler).DisposeWith(handlerCleanup);
                 
-                DeferCleanup(SubscribeToEventHandler<IWindowImpl, Action>(window.PlatformImpl, WindowLostFocus,
+                SubscribeToEventHandler<IWindowImpl, Action>(window.PlatformImpl, WindowLostFocus,
                         (x, handler) => x.LostFocus += handler,
-                        (x, handler) => x.LostFocus -= handler));
+                        (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
             }
             else
             {
@@ -428,13 +429,13 @@ namespace Avalonia.Controls.Primitives
 
                 if (parentPopupRoot?.Parent is Popup popup)
                 {
-                    DeferCleanup(SubscribeToEventHandler<Popup, EventHandler<EventArgs>>(popup, ParentClosed,
+                    SubscribeToEventHandler<Popup, EventHandler<EventArgs>>(popup, ParentClosed,
                         (x, handler) => x.Closed += handler,
-                        (x, handler) => x.Closed -= handler));
+                        (x, handler) => x.Closed -= handler).DisposeWith(handlerCleanup);
                 }
             }
 
-            DeferCleanup(InputManager.Instance?.Process.Subscribe(ListenForNonClientClick));
+            InputManager.Instance?.Process.Subscribe(ListenForNonClientClick).DisposeWith(handlerCleanup);
 
             var cleanupPopup = Disposable.Create((popupHost, handlerCleanup), state =>
             {
@@ -456,17 +457,17 @@ namespace Avalonia.Controls.Primitives
                     dismissLayer.IsVisible = true;
                     dismissLayer.InputPassThroughElement = _overlayInputPassThroughElement;
                     
-                    DeferCleanup(Disposable.Create(() =>
+                    Disposable.Create(() =>
                     {
                         dismissLayer.IsVisible = false;
                         dismissLayer.InputPassThroughElement = null;
-                    }));
+                    }).DisposeWith(handlerCleanup);
                     
-                    DeferCleanup(SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
+                    SubscribeToEventHandler<LightDismissOverlayLayer, EventHandler<PointerPressedEventArgs>>(
                         dismissLayer,
                         PointerPressedDismissOverlay,
                         (x, handler) => x.PointerPressed += handler,
-                        (x, handler) => x.PointerPressed -= handler));
+                        (x, handler) => x.PointerPressed -= handler).DisposeWith(handlerCleanup);
                 }
             }
 
@@ -482,6 +483,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             Opened?.Invoke(this, EventArgs.Empty);
+
+            _popupHostChangedHandler?.Invoke(Host);
         }
 
         /// <summary>
@@ -590,6 +593,8 @@ namespace Avalonia.Controls.Primitives
 
             _openState.Dispose();
             _openState = null;
+
+            _popupHostChangedHandler?.Invoke(null);
 
             using (BeginIgnoringIsOpen())
             {

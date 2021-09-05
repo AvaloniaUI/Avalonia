@@ -90,6 +90,7 @@ namespace Avalonia.Controls
         /// </summary>
         static TopLevel()
         {
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
             TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
@@ -224,7 +225,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the acheived <see cref="WindowTransparencyLevel"/> that the platform was able to provide.
+        /// Gets the achieved <see cref="WindowTransparencyLevel"/> that the platform was able to provide.
         /// </summary>
         public WindowTransparencyLevel ActualTransparencyLevel
         {

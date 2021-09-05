@@ -37,6 +37,7 @@
     <Setter Property="Background" Value="{DynamicResource TimePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerButtonBorderBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource TimePickerBorderThemeThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
@@ -59,6 +60,7 @@
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
                     IsEnabled="{TemplateBinding IsEnabled}"
                     MinWidth="{DynamicResource TimePickerThemeMinWidth}"
                     MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
@@ -72,11 +74,11 @@
                                   BorderBrush="{TemplateBinding BorderBrush}"
                                   Background="{TemplateBinding Background}"
                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                  CornerRadius="{TemplateBinding CornerRadius}"
                                   Content="{TemplateBinding Content}"
                                   TextBlock.Foreground="{TemplateBinding Foreground}"
                                   HorizontalContentAlignment="Stretch"
-                                  VerticalContentAlignment="Stretch"
-                                  CornerRadius="{DynamicResource ControlCornerRadius}" />
+                                  VerticalContentAlignment="Stretch" />
                 </ControlTemplate>
               </Button.Template>
 
@@ -176,13 +178,14 @@
     <Setter Property="Background" Value="{DynamicResource TimePickerFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TimePickerFlyoutPresenterBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource DateTimeFlyoutBorderThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="Background"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{DynamicResource OverlayCornerRadius}"
+                CornerRadius="{TemplateBinding CornerRadius}"
                 Padding="{DynamicResource DateTimeFlyoutBorderPadding}"
                 MaxHeight="398">
           <Grid Name="ContentPanel" RowDefinitions="*,Auto">

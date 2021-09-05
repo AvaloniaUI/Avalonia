@@ -451,7 +451,7 @@ namespace Avalonia.Win32
                     value.Y,
                     0,
                     0,
-                    SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
+                    SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
             }
         }
 
@@ -764,8 +764,8 @@ namespace Avalonia.Win32
                 RegisterTouchWindow(_hwnd, 0);
             }
 
-            if (ShCoreAvailable)
-            {
+            if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
+			{
                 var monitor = MonitorFromWindow(
                     _hwnd,
                     MONITOR.MONITOR_DEFAULTTONEAREST);
