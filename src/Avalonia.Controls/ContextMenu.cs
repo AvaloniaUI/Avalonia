@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -18,7 +21,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control context menu.
     /// </summary>
-    public class ContextMenu : MenuBase, ISetterValue
+    public class ContextMenu : MenuBase, ISetterValue, IPopupHostProvider
     {
         /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
@@ -79,6 +82,7 @@ namespace Avalonia.Controls
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;
+        private Action<IPopupHost?>? _popupHostChangedHandler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
@@ -220,7 +224,8 @@ namespace Avalonia.Controls
 
             if (e.OldValue is ContextMenu oldMenu)
             {
-                control.PointerReleased -= ControlPointerReleased;
+                control.ContextRequested -= ControlContextRequested;
+                control.DetachedFromVisualTree -= ControlDetachedFromVisualTree;
                 oldMenu._attachedControls?.Remove(control);
                 ((ISetLogicalParent?)oldMenu._popup)?.SetParent(null);
             }
@@ -229,7 +234,8 @@ namespace Avalonia.Controls
             {
                 newMenu._attachedControls ??= new List<Control>();
                 newMenu._attachedControls.Add(control);
-                control.PointerReleased += ControlPointerReleased;
+                control.ContextRequested += ControlContextRequested;
+                control.DetachedFromVisualTree += ControlDetachedFromVisualTree;
             }
         }
 
@@ -269,7 +275,7 @@ namespace Avalonia.Controls
             }
 
             control ??= _attachedControls![0];
-            Open(control, PlacementTarget ?? control);
+            Open(control, PlacementTarget ?? control, false);
         }
 
         /// <summary>
@@ -299,12 +305,20 @@ namespace Avalonia.Controls
             }
         }
 
+        IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
+
+        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
+        { 
+            add => _popupHostChangedHandler += value; 
+            remove => _popupHostChangedHandler -= value;
+        }
+
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new MenuItemContainerGenerator(this);
         }
 
-        private void Open(Control control, Control placementTarget)
+        private void Open(Control control, Control placementTarget, bool requestedByPointer)
         {
             if (IsOpen)
             {
@@ -329,6 +343,8 @@ namespace Avalonia.Controls
 
                 _popup.Opened += PopupOpened;
                 _popup.Closed += PopupClosed;
+                _popup.Closing += PopupClosing;
+                _popup.KeyUp += PopupKeyUp;
             }
 
             if (_popup.Parent != control)
@@ -336,6 +352,10 @@ namespace Avalonia.Controls
                 ((ISetLogicalParent)_popup).SetParent(null);
                 ((ISetLogicalParent)_popup).SetParent(control);
             }
+
+            _popup.PlacementMode = !requestedByPointer && PlacementMode == PlacementMode.Pointer
+                ? PlacementMode.Bottom
+                : PlacementMode;
 
             _popup.PlacementTarget = placementTarget;
             _popup.Child = this;
@@ -353,6 +373,13 @@ namespace Avalonia.Controls
         {
             _previousFocus = FocusManager.Instance?.Current;
             Focus();
+
+            _popupHostChangedHandler?.Invoke(_popup!.Host);
+        }
+
+        private void PopupClosing(object sender, CancelEventArgs e)
+        {
+            e.Cancel = CancelClosing();
         }
 
         private void PopupClosed(object sender, EventArgs e)
@@ -381,29 +408,44 @@ namespace Avalonia.Controls
                 RoutedEvent = MenuClosedEvent,
                 Source = this,
             });
+            
+            _popupHostChangedHandler?.Invoke(null);
         }
 
-        private static void ControlPointerReleased(object sender, PointerReleasedEventArgs e)
+        private void PopupKeyUp(object sender, KeyEventArgs e)
         {
-            var control = (Control)sender;
-            var contextMenu = control.ContextMenu;
-
-            if (control.ContextMenu.IsOpen)
+            if (IsOpen)
             {
-                if (contextMenu.CancelClosing())
-                    return;
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
-                control.ContextMenu.Close();
+                if (keymap.OpenContextMenu.Any(k => k.Matches(e))
+                    && !CancelClosing())
+                {
+                    Close();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private static void ControlContextRequested(object sender, ContextRequestedEventArgs e)
+        {
+            if (sender is Control control
+                && control.ContextMenu is ContextMenu contextMenu
+                && !e.Handled
+                && !contextMenu.CancelOpening())
+            {
+                var requestedByPointer = e.TryGetPosition(null, out _);
+                contextMenu.Open(control, e.Source as Control ?? control, requestedByPointer);
                 e.Handled = true;
             }
+        }
 
-            if (e.InitialPressMouseButton == MouseButton.Right)
+        private static void ControlDetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (sender is Control control
+                && control.ContextMenu is ContextMenu contextMenu)
             {
-                if (contextMenu.CancelOpening())
-                    return;
-
-                contextMenu.Open(control, e.Source as Control ?? control);
-                e.Handled = true;
+                contextMenu.Close();
             }
         }
 

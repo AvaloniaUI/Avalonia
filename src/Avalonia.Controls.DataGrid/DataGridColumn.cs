@@ -27,7 +27,6 @@ namespace Avalonia.Controls
         private double? _minWidth;
         private bool _settingWidthInternally;
         private int _displayIndexWithFiller;
-        private bool _isVisible;
         private object _header;
         private DataGridColumnHeader _headerCell;
         private IControl _editingElement;
@@ -40,7 +39,6 @@ namespace Avalonia.Controls
         /// </summary>
         protected internal DataGridColumn()
         {
-            _isVisible = true;
             _displayIndexWithFiller = -1;
             IsInitialDesiredWidthDetermined = false;
             InheritsWidth = true;
@@ -174,31 +172,41 @@ namespace Avalonia.Controls
             get => _editBinding;
         }
 
+
+        /// <summary>
+        /// Defines the <see cref="IsVisible"/> property.
+        /// </summary>
+        public static StyledProperty<bool> IsVisibleProperty =
+             Control.IsVisibleProperty.AddOwner<DataGridColumn>();
+
         /// <summary>
         /// Determines whether or not this column is visible.
         /// </summary>
         public bool IsVisible
         {
-            get
+            get => GetValue(IsVisibleProperty);
+            set => SetValue(IsVisibleProperty, value);
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsVisibleProperty)
             {
-                return _isVisible;
-            }
-            set
-            {
-                if (value != IsVisible)
+                OwningGrid?.OnColumnVisibleStateChanging(this);
+                var isVisible = (change as AvaloniaPropertyChangedEventArgs<bool>).NewValue.Value;
+
+                if (_headerCell != null)
                 {
-                    OwningGrid?.OnColumnVisibleStateChanging(this);
-                    _isVisible = value;
-
-                    if (_headerCell != null)
-                    {
-                        _headerCell.IsVisible = value;
-                    }
-
-                    OwningGrid?.OnColumnVisibleStateChanged(this);
+                    _headerCell.IsVisible = isVisible;
                 }
+
+                OwningGrid?.OnColumnVisibleStateChanged(this);
+                NotifyPropertyChanged(change.Property.Name);
             }
         }
+
 
         /// <summary>
         /// Actual visible width after Width, MinWidth, and MaxWidth setting at the Column level and DataGrid level
@@ -787,7 +795,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// If the DataGrid is using using layout rounding, the pixel snapping will force all widths to
+        /// If the DataGrid is using layout rounding, the pixel snapping will force all widths to
         /// whole numbers. Since the column widths aren't visual elements, they don't go through the normal
         /// rounding process, so we need to do it ourselves.  If we don't, then we'll end up with some
         /// pixel gaps and/or overlaps between columns.
