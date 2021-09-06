@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
-
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
