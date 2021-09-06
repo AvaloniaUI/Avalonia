@@ -641,6 +641,7 @@ private:
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
         [Window setTabbingMode:NSWindowTabbingModeDisallowed];
+        [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     }
     
     void HideOrShowTrafficLights ()
@@ -1091,14 +1092,7 @@ private:
     {
         _fullScreenActive = true;
         
-        [Window setHasShadow:YES];
-        [Window setTitleVisibility:NSWindowTitleVisible];
-        [Window setTitlebarAppearsTransparent:NO];
         [Window setTitle:_lastTitle];
-        
-        Window.styleMask = Window.styleMask | NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
-        Window.styleMask = Window.styleMask & ~NSWindowStyleMaskFullSizeContentView;
-    
         [Window toggleFullScreen:nullptr];
     }
     
