@@ -118,7 +118,14 @@ jobs:
       script: |
         set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
         nuke --target CiAzureWindows --configuration Release
-      
+
+  - bash: |
+      if [ -f '$(Build.SourcesDirectory)/artifacts/dotMemoryLog.zip' ]; then
+        echo "##vso[task.setVariable variable=FILEEXISTS]true"
+      fi
+    condition: not(canceled())
+    displayName: 'Check exist dotMemoryLog.zip'
+
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'VSTest'
@@ -136,4 +143,11 @@ jobs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
     condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish dotMemory Log'
+    condition: eq(variables.FILEEXISTS, 'true')
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/dotMemoryLog.zip'
+      artifactName: 'dotMemory Log'
 
