@@ -145,6 +145,18 @@ namespace Avalonia.Controls
                 (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
+        public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "CopyingToClipboard", RoutingStrategies.Bubble);
+
+        public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "CuttingToClipboard", RoutingStrategies.Bubble);
+
+        public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                "PastingFromClipboard", RoutingStrategies.Bubble);
+
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -500,6 +512,24 @@ namespace Avalonia.Controls
             }
         }
 
+        public event EventHandler<RoutedEventArgs> CopyingToClipboard
+        {
+            add => AddHandler(CopyingToClipboardEvent, value);
+            remove => RemoveHandler(CopyingToClipboardEvent, value);
+        }
+
+        public event EventHandler<RoutedEventArgs> CuttingToClipboard
+        {
+            add => AddHandler(CuttingToClipboardEvent, value);
+            remove => RemoveHandler(CuttingToClipboardEvent, value);
+        }
+
+        public event EventHandler<RoutedEventArgs> PastingFromClipboard
+        {
+            add => AddHandler(PastingFromClipboardEvent, value);
+            remove => RemoveHandler(PastingFromClipboardEvent, value);
+        }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
@@ -638,27 +668,54 @@ namespace Avalonia.Controls
         public async void Cut()
         {
             var text = GetSelection();
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
-            SnapshotUndoRedo();
-            Copy();
-            DeleteSelection();
+            var eventArgs = new RoutedEventArgs(CuttingToClipboardEvent);
+            RaiseEvent(eventArgs);
+            if (!eventArgs.Handled)
+            {
+                SnapshotUndoRedo();
+                await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
+                    .SetTextAsync(text);
+                DeleteSelection();
+            }
         }
 
         public async void Copy()
         {
             var text = GetSelection();
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
-            await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
-                .SetTextAsync(text);
+            var eventArgs = new RoutedEventArgs(CopyingToClipboardEvent);
+            RaiseEvent(eventArgs);
+            if (!eventArgs.Handled)
+            {
+                await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
+                    .SetTextAsync(text);
+            }
         }
 
         public async void Paste()
         {
+            var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
+            RaiseEvent(eventArgs);
+            if (eventArgs.Handled)
+            {
+                return;
+            }
+
             var text = await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard))).GetTextAsync();
 
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
             SnapshotUndoRedo();
             HandleTextInput(text);

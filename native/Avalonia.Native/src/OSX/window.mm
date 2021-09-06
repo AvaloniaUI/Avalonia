@@ -641,6 +641,7 @@ private:
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
         [Window setTabbingMode:NSWindowTabbingModeDisallowed];
+        [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     }
     
     void HideOrShowTrafficLights ()
@@ -1091,14 +1092,7 @@ private:
     {
         _fullScreenActive = true;
         
-        [Window setHasShadow:YES];
-        [Window setTitleVisibility:NSWindowTitleVisible];
-        [Window setTitlebarAppearsTransparent:NO];
         [Window setTitle:_lastTitle];
-        
-        Window.styleMask = Window.styleMask | NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
-        Window.styleMask = Window.styleMask & ~NSWindowStyleMaskFullSizeContentView;
-    
         [Window toggleFullScreen:nullptr];
     }
     
@@ -1672,6 +1666,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = true;
             [self mouseEvent:event withType:MiddleButtonDown];
@@ -1704,6 +1699,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = false;
             [self mouseEvent:event withType:MiddleButtonUp];

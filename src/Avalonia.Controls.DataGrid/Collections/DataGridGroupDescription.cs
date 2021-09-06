@@ -83,8 +83,9 @@ namespace Avalonia.Collections
             if (key == null)
                 key = item;
 
-            if (_valueConverter != null)
-                key = _valueConverter.Convert(key, typeof(object), level, culture);
+            var valueConverter = ValueConverter;
+            if (valueConverter != null)
+                key = valueConverter.Convert(key, typeof(object), level, culture);
 
             return key;
         }
@@ -98,6 +99,8 @@ namespace Avalonia.Collections
                 return base.KeysMatch(groupKey, itemKey);
         }
         public override string PropertyName => _propertyPath;
+
+        public IValueConverter ValueConverter { get => _valueConverter; set => _valueConverter = value; }
 
         private Type GetPropertyType(object o)
         {
