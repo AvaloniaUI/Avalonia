@@ -148,7 +148,9 @@ partial class Build : NukeBuild
     Target Compile => _ => _
         .DependsOn(Clean, CompileNative)
         .DependsOn(CompileHtmlPreviewer)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         .Executes(async () =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             if (Parameters.IsRunningOnWindows)
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
@@ -253,11 +255,28 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
+            var data = Parameters;
+
+            //Add verbose log at dotMemoryUnit https://stackoverflow.com/questions/53535857/dotmemory-unit-standalone-launcher-with-xunit-hang-at-the-end-of-the-test
+            var logOptions = "--log-level=VERBOSE --core-log-mask=MemoryDumpGt,GcCb,MetaDataGt,Snapshot,Api,Bridge,FieldResolverGt,ClassRecoveryGt,AppDomainRecoveryGt";
             var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
-            DotMemoryUnit(
-                $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
-                timeout: 120_000);
+            try
+            {
+                DotMemoryUnit(
+                    $"{logOptions} {XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
+                    timeout: 120_000);
+            }
+            catch
+            {
+                // When RunLeakTests fails, collect log of dotMemoryUnit and add it in ArtifactsDir 
+                var jetLogsPath = Path.Combine(Environment.GetEnvironmentVariable("TEMP")
+                    , "JetLogs");
+                var logArtifactPath = data.ArtifactsDir / "dotMemoryLog.zip";
+                Zip(logArtifactPath, jetLogsPath);
+                throw;
+            }
         });
+        
 
     Target ZipFiles => _ => _
         .After(CreateNugetPackages, Compile, RunCoreLibsTests, Package)
