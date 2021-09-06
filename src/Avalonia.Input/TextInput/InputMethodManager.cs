@@ -83,7 +83,10 @@ namespace Avalonia.Input.TextInput
 
         public void NotifyInputMethodUpdated(ITextInputMethodRoot? root)
         {
-            // TODO how to filter the window with the current focused element?
+            if (_focusedElement?.VisualRoot != root)
+            {
+                return;
+            } 
             var inputMethod = root?.InputMethod;
             if(_im != inputMethod)
                 _im?.SetActive(false);
