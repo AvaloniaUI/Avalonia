@@ -214,7 +214,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
-                Text = MaskProvider.ToDisplayString();
+                base.Text = MaskProvider.ToDisplayString();
             }
             base.OnGotFocus(e);
         }
@@ -296,7 +296,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
-                Text = MaskProvider.ToString(!HidePromptOnLeave, true);
+                base.Text = MaskProvider.ToString(!HidePromptOnLeave, true);
             }
             base.OnLostFocus(e);
         }
