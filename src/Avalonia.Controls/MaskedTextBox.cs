@@ -297,10 +297,8 @@ namespace Avalonia.Controls
                     base.OnPropertyChanged(change);
                     return;
                 }
-                if (Text != null)
-                {
-                    MaskProvider.Set(Text);
-                }
+
+                MaskProvider.Set(Text);
                 RefreshText(MaskProvider, CaretIndex);
             }
             else if (change.Property == MaskProperty)
