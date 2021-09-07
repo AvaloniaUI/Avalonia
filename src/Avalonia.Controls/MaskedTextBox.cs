@@ -49,6 +49,8 @@ namespace Avalonia.Controls
 
         private bool _resetOnPrompt = true;
 
+        private bool _ignoreTextChanges;
+
         private bool _resetOnSpace = true;
 
         public MaskedTextBox() { }
@@ -184,37 +186,11 @@ namespace Avalonia.Controls
 
         Type IStyleable.StyleKey => typeof(TextBox);
 
-        public new string Text
-        {
-            get
-            {
-                return base.Text;
-            }
-            set
-            {
-                if (MaskProvider == null)
-                {
-                    base.Text = value;
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(value))
-                {
-                    MaskProvider.Clear();
-                    RefreshText(MaskProvider, CaretIndex);
-                }
-                else if (MaskProvider.Set(value))
-                {
-                    RefreshText(MaskProvider, CaretIndex);
-                }
-            }
-        }
-
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
-                base.Text = MaskProvider.ToDisplayString();
+                Text = MaskProvider.ToDisplayString();
             }
             base.OnGotFocus(e);
         }
@@ -296,7 +272,7 @@ namespace Avalonia.Controls
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
-                base.Text = MaskProvider.ToString(!HidePromptOnLeave, true);
+                Text = MaskProvider.ToString(!HidePromptOnLeave, true);
             }
             base.OnLostFocus(e);
         }
@@ -308,10 +284,19 @@ namespace Avalonia.Controls
                 MaskProvider = new MaskedTextProvider(Mask, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
                 RefreshText(MaskProvider, 0);
             }
-
-
-
-            if (change.Property == MaskProperty)
+            if (change.Property == TextProperty && MaskProvider != null && _ignoreTextChanges == false)
+            {
+                if (string.IsNullOrEmpty(Text))
+                {
+                    MaskProvider.Clear();
+                    RefreshText(MaskProvider, CaretIndex);
+                }
+                else if (MaskProvider.Set(Text))
+                {
+                    RefreshText(MaskProvider, CaretIndex);
+                }
+            }
+            else if (change.Property == MaskProperty)
             {
                 UpdateMaskProvider();
 
@@ -366,46 +351,55 @@ namespace Avalonia.Controls
         }
         protected override void OnTextInput(TextInputEventArgs e)
         {
-            if (IsReadOnly)
+            _ignoreTextChanges = true;
+            try
             {
+                if (IsReadOnly)
+                {
+                    e.Handled = true;
+                    base.OnTextInput(e);
+                    return;
+                }
+                if (MaskProvider == null)
+                {
+                    base.OnTextInput(e);
+                    return;
+                }
+                if ((MaskProvider.ResetOnSpace && e.Text == " " || MaskProvider.ResetOnPrompt && e.Text == MaskProvider.PromptChar.ToString()) && !string.IsNullOrEmpty(SelectedText))
+                {
+                    if (SelectionStart > SelectionEnd ? MaskProvider.RemoveAt(SelectionEnd, SelectionStart - 1) : MaskProvider.RemoveAt(SelectionStart, SelectionEnd - 1))
+                    {
+                        SelectedText = string.Empty;
+                    }
+                }
+
+                if (CaretIndex < Text.Length)
+                {
+                    CaretIndex = GetNextCharacterPosition(CaretIndex);
+
+                    if (MaskProvider.InsertAt(e.Text, CaretIndex))
+                    {
+                        CaretIndex++;
+                    }
+                    var nextPos = GetNextCharacterPosition(CaretIndex);
+                    if (nextPos != 0 && CaretIndex != Text.Length)
+                    {
+                        CaretIndex = nextPos;
+                    }
+                }
+
+                RefreshText(MaskProvider, CaretIndex);
+
+
                 e.Handled = true;
+
                 base.OnTextInput(e);
-                return;
             }
-            if (MaskProvider == null)
+            finally
             {
-                base.OnTextInput(e);
-                return;
-            }
-            if ((MaskProvider.ResetOnSpace && e.Text == " " || MaskProvider.ResetOnPrompt && e.Text == MaskProvider.PromptChar.ToString()) && !string.IsNullOrEmpty(SelectedText))
-            {
-                if (SelectionStart > SelectionEnd ? MaskProvider.RemoveAt(SelectionEnd, SelectionStart - 1) : MaskProvider.RemoveAt(SelectionStart, SelectionEnd - 1))
-                {
-                    SelectedText = string.Empty;
-                }
+                _ignoreTextChanges = false;
             }
 
-            if (CaretIndex < Text.Length)
-            {
-                CaretIndex = GetNextCharacterPosition(CaretIndex);
-
-                if (MaskProvider.InsertAt(e.Text, CaretIndex))
-                {
-                    CaretIndex++;
-                }
-                var nextPos = GetNextCharacterPosition(CaretIndex);
-                if (nextPos != 0 && CaretIndex != Text.Length)
-                {
-                    CaretIndex = nextPos;
-                }
-            }
-
-            RefreshText(MaskProvider, CaretIndex);
-
-
-            e.Handled = true;
-
-            base.OnTextInput(e);
         }
 
         private int GetNextCharacterPosition(int startPosition)
@@ -425,7 +419,7 @@ namespace Avalonia.Controls
         {
             if (provider != null)
             {
-                base.Text = provider.ToDisplayString();
+                Text = provider.ToDisplayString();
                 CaretIndex = position;
             }
         }
