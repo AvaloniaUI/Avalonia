@@ -184,6 +184,32 @@ namespace Avalonia.Controls
 
         Type IStyleable.StyleKey => typeof(TextBox);
 
+        public new string Text
+        {
+            get
+            {
+                return base.Text;
+            }
+            set
+            {
+                if (MaskProvider == null)
+                {
+                    base.Text = value;
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(value))
+                {
+                    MaskProvider.Clear();
+                    RefreshText(MaskProvider, CaretIndex);
+                }
+                else if (MaskProvider.Set(value))
+                {
+                    RefreshText(MaskProvider, CaretIndex);
+                }
+            }
+        }
+
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
@@ -226,7 +252,10 @@ namespace Avalonia.Controls
                 return;
             }
 
-            base.OnKeyDown(e);
+            if (e.Key != Key.Back)
+            {
+                base.OnKeyDown(e);
+            }
 
             switch (e.Key)
             {
@@ -255,9 +284,9 @@ namespace Avalonia.Controls
                 case Key.Back:
                     if (CaretIndex > 0)
                     {
-                        MaskProvider.RemoveAt(CaretIndex);
+                        MaskProvider.RemoveAt(CaretIndex - 1);
                     }
-                    RefreshText(MaskProvider, CaretIndex);
+                    RefreshText(MaskProvider, CaretIndex - 1);
                     e.Handled = true;
                     break;
             }
@@ -279,6 +308,9 @@ namespace Avalonia.Controls
                 MaskProvider = new MaskedTextProvider(Mask, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
                 RefreshText(MaskProvider, 0);
             }
+
+
+
             if (change.Property == MaskProperty)
             {
                 UpdateMaskProvider();
@@ -393,7 +425,7 @@ namespace Avalonia.Controls
         {
             if (provider != null)
             {
-                Text = provider.ToDisplayString();
+                base.Text = provider.ToDisplayString();
                 CaretIndex = position;
             }
         }
