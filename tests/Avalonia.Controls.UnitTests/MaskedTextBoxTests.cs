@@ -360,19 +360,18 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData("00/00/0000", "12102000", "12/10/2000")]
+        [InlineData("00/00/0000", "12102000", "12.10.2000")]
         [InlineData("LLLL", "дбs", "____")]
         [InlineData("AA", "Ü1", "__")]
         public void AsciiOnly_Should_Not_Accept_Non_Ascii(string mask, string textEventArg, string expected)
         {
-            using (UnitTestApplication.Start(Services))
+            using (UnitTestApplication.Start())
             {
                 var target = new MaskedTextBox
                 {
                     Template = CreateTemplate(),
                     Mask = mask,
-                    AsciiOnly = true,
-                    Culture = CultureInfo.GetCultureInfo("en-US")
+                    AsciiOnly = true
                 };
 
                 RaiseTextEvent(target, textEventArg);
@@ -384,54 +383,51 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Programmatically_Set_Text_Should_Not_Be_Removed_On_Key_Press()
         {
-            using (UnitTestApplication.Start(Services))
+            using (UnitTestApplication.Start())
             {
                 var target = new MaskedTextBox
                 {
                     Template = CreateTemplate(),
                     Mask = "00:00:00.000",
-                    Text = "12:34:56.000",
-                    Culture = CultureInfo.GetCultureInfo("en-US")
+                    Text = "12:34:56,000"
                 };
 
                 target.CaretIndex = target.Text.Length;
                 RaiseKeyEvent(target, Key.Back, 0);
 
-                Assert.Equal("12:34:56.00_", target.Text);
+                Assert.Equal("12:34:56,00_", target.Text);
             }
         }
 
         [Fact]
         public void Invalid_Programmatically_Set_Text_Should_Be_Rejected()
         {
-            using (UnitTestApplication.Start(Services))
+            using (UnitTestApplication.Start())
             {
                 var target = new MaskedTextBox
                 {
                     Template = CreateTemplate(),
                     Mask = "00:00:00.000",
-                    Text = "12:34:560000",
-                    Culture = CultureInfo.GetCultureInfo("en-US")
+                    Text = "12:34:560000"
                 };
 
-                Assert.Equal("__:__:__.___", target.Text);
+                Assert.Equal("__:__:__,___", target.Text);
             }
         }
 
         [Theory]
-        [InlineData("00/00/0000", "12102000", "**/**/****")]
+        [InlineData("00/00/0000", "12102000", "**.**.****")]
         [InlineData("LLLL", "дбs", "***_")]
         [InlineData("AA#00", "S2 33", "**_**")]
         public void PasswordChar_Should_Hide_User_Input(string mask, string textEventArg, string expected)
         {
-            using (UnitTestApplication.Start(Services))
+            using (UnitTestApplication.Start())
             {
                 var target = new MaskedTextBox
                 {
                     Template = CreateTemplate(),
                     Mask = mask,
-                    PasswordChar = '*',
-                    Culture = CultureInfo.GetCultureInfo("en-US")
+                    PasswordChar = '*'
                 };
 
                 RaiseTextEvent(target, textEventArg);
@@ -441,18 +437,17 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData("00/00/0000", "12102000", "12/10/2000")]
+        [InlineData("00/00/0000", "12102000", "12.10.2000")]
         [InlineData("LLLL", "дбs", "дбs_")]
         [InlineData("AA#00", "S2 33", "S2_33")]
         public void Mask_Should_Work_Correctly(string mask, string textEventArg, string expected)
         {
-            using (UnitTestApplication.Start(Services))
+            using (UnitTestApplication.Start())
             {
                 var target = new MaskedTextBox
                 {
                     Template = CreateTemplate(),
-                    Mask = mask,
-                    Culture = CultureInfo.GetCultureInfo("en-US")
+                    Mask = mask
                 };
 
                 RaiseTextEvent(target, textEventArg);
@@ -932,6 +927,12 @@ namespace Avalonia.Controls.UnitTests
                 RoutedEvent = InputElement.TextInputEvent,
                 Text = text
             });
+        }
+
+        private static IDisposable Start()
+        {
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            return UnitTestApplication.Start(Services);
         }
 
         private class Class1 : NotifyingBase
