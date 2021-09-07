@@ -381,6 +381,43 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Programmatically_Set_Text_Should_Not_Be_Removed_On_Key_Press()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "00:00:00.000",
+                    Text = "12:34:56.000",
+                    Culture = CultureInfo.GetCultureInfo("en-US")
+                };
+
+                target.CaretIndex = target.Text.Length;
+                RaiseKeyEvent(target, Key.Back, 0);
+
+                Assert.Equal("12:34:56.00_", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Invalid_Programmatically_Set_Text_Should_Be_Rejected()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new MaskedTextBox
+                {
+                    Template = CreateTemplate(),
+                    Mask = "00:00:00.000",
+                    Text = "12:34:560000",
+                    Culture = CultureInfo.GetCultureInfo("en-US")
+                };
+
+                Assert.Equal("__:__:__.___", target.Text);
+            }
+        }
+
         [Theory]
         [InlineData("00/00/0000", "12102000", "**/**/****")]
         [InlineData("LLLL", "дбs", "***_")]

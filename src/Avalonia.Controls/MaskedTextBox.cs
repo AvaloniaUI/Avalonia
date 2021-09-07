@@ -282,6 +282,10 @@ namespace Avalonia.Controls
             void UpdateMaskProvider()
             {
                 MaskProvider = new MaskedTextProvider(Mask, Culture, true, PromptChar, PasswordChar, AsciiOnly) { ResetOnSpace = ResetOnSpace, ResetOnPrompt = ResetOnPrompt };
+                if (Text != null)
+                {
+                    MaskProvider.Set(Text);
+                }
                 RefreshText(MaskProvider, 0);
             }
             if (change.Property == TextProperty && MaskProvider != null && _ignoreTextChanges == false)
@@ -290,11 +294,14 @@ namespace Avalonia.Controls
                 {
                     MaskProvider.Clear();
                     RefreshText(MaskProvider, CaretIndex);
+                    base.OnPropertyChanged(change);
+                    return;
                 }
-                else if (MaskProvider.Set(Text))
+                if (Text != null)
                 {
-                    RefreshText(MaskProvider, CaretIndex);
+                    MaskProvider.Set(Text);
                 }
+                RefreshText(MaskProvider, CaretIndex);
             }
             else if (change.Property == MaskProperty)
             {
