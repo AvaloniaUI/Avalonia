@@ -263,10 +263,8 @@ namespace Avalonia.Win32
                 {
                     ShowWindow(value, true);
                 }
-                else
-                {
-                    _showWindowState = value;
-                }
+
+                _showWindowState = value;                
             }
         }
 
