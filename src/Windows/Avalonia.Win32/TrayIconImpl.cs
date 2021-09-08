@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.LogicalTree;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -132,7 +134,7 @@ namespace Avalonia.Win32
                 SizeToContent = SizeToContent.WidthAndHeight,
                 Background = null,
                 TransparencyLevelHint = WindowTransparencyLevel.Transparent,
-                Content = new MenuFlyoutPresenter()
+                Content = new TrayIconMenuFlyoutPresenter()
                 {
                     Items = new List<MenuItem>
                                 {
@@ -159,6 +161,22 @@ namespace Avalonia.Win32
         {
             WM_TRAYICON = WindowsMessage.WM_APP + 1024,
             WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024
+        }
+
+        class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter, IStyleable
+        {
+            Type IStyleable.StyleKey => typeof(MenuFlyoutPresenter);
+
+            public override void Close()
+            {
+                // DefaultMenuInteractionHandler calls this
+                var host = this.FindLogicalAncestorOfType<TrayPopupRoot>();
+                if (host != null)
+                {
+                    SelectedIndex = -1;
+                    host.Close();
+                }
+            }
         }
 
         class TrayPopupRoot : Window
