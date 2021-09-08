@@ -22,7 +22,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Opening_Context_Menu_Does_not_Lose_Selection()
         {
-            using (UnitTestApplication.Start(FocusServices))
+            using (Start(FocusServices))
             {
                 var target1 = new MaskedTextBox
                 {
@@ -62,7 +62,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Opening_Context_Flyout_Does_not_Lose_Selection()
         {
-            using (UnitTestApplication.Start(FocusServices))
+            using (Start(FocusServices))
             {
                 var target1 = new MaskedTextBox
                 {
@@ -107,7 +107,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void CaretIndex_Can_Moved_To_Position_After_The_End_Of_Text_With_Arrow_Key()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -125,7 +125,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Press_Ctrl_A_Select_All_Text()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -143,7 +143,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Press_Ctrl_A_Select_All_Null_Text()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Press_Ctrl_Z_Will_Not_Modify_Text()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -177,7 +177,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Typing_Beginning_With_0_Should_Not_Modify_Text_When_Bound_To_Int()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var source = new Class1();
                 var target = new MaskedTextBox
@@ -205,7 +205,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 MaskedTextBox textBox = new MaskedTextBox
                 {
@@ -244,7 +244,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Delete_Should_Remove_The_Word_After_The_Caret_If_There_Is_No_Selection()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var textBox = new MaskedTextBox
                 {
@@ -284,7 +284,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Setting_SelectionStart_To_SelectionEnd_Sets_CaretPosition_To_SelectionStart()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var textBox = new MaskedTextBox
                 {
@@ -300,7 +300,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Setting_Text_Updates_CaretPosition()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -327,7 +327,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Press_Enter_Does_Not_Accept_Return()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -345,7 +345,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Press_Enter_Add_Default_Newline()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -365,7 +365,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("AA", "Ü1", "__")]
         public void AsciiOnly_Should_Not_Accept_Non_Ascii(string mask, string textEventArg, string expected)
         {
-            using (UnitTestApplication.Start())
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -383,7 +383,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Programmatically_Set_Text_Should_Not_Be_Removed_On_Key_Press()
         {
-            using (UnitTestApplication.Start())
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -402,7 +402,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Invalid_Programmatically_Set_Text_Should_Be_Rejected()
         {
-            using (UnitTestApplication.Start())
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -421,7 +421,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("AA#00", "S2 33", "**_**")]
         public void PasswordChar_Should_Hide_User_Input(string mask, string textEventArg, string expected)
         {
-            using (UnitTestApplication.Start())
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -442,7 +442,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("AA#00", "S2 33", "S2_33")]
         public void Mask_Should_Work_Correctly(string mask, string textEventArg, string expected)
         {
-            using (UnitTestApplication.Start())
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -459,7 +459,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Press_Enter_Add_Custom_Newline()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -484,7 +484,7 @@ namespace Avalonia.Controls.UnitTests
             TextWrapping wrapping,
             ScrollBarVisibility expected)
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -499,7 +499,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectionEnd_Doesnt_Cause_Exception()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -521,7 +521,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectionStart_Doesnt_Cause_Exception()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -543,7 +543,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectionStartEnd_Are_Valid_AterTextChange()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -564,7 +564,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectedText_Changes_OnSelectionChange()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -584,7 +584,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectedText_EditsText()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -606,7 +606,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectedText_CanClearText()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -624,7 +624,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectedText_NullClearsText()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -642,7 +642,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void CoerceCaretIndex_Doesnt_Cause_Exception_with_malformed_line_ending()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -662,7 +662,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(Key.End)]
         public void Textbox_doesnt_crash_when_Receives_input_and_template_not_applied(Key key)
         {
-            using (UnitTestApplication.Start(FocusServices))
+            using (Start(FocusServices))
             {
                 var target1 = new MaskedTextBox
                 {
@@ -683,7 +683,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TextBox_GotFocus_And_LostFocus_Work_Properly()
         {
-            using (UnitTestApplication.Start(FocusServices))
+            using (Start(FocusServices))
             {
                 var target1 = new MaskedTextBox
                 {
@@ -726,7 +726,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TextBox_CaretIndex_Persists_When_Focus_Lost()
         {
-            using (UnitTestApplication.Start(FocusServices))
+            using (Start(FocusServices))
             {
                 var target1 = new MaskedTextBox
                 {
@@ -761,7 +761,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void TextBox_Reveal_Password_Reset_When_Lost_Focus()
         {
-            using (UnitTestApplication.Start(FocusServices))
+            using (Start(FocusServices))
             {
                 var target1 = new MaskedTextBox
                 {
@@ -795,7 +795,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Setting_Bound_Text_To_Null_Works()
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var source = new Class1 { Bar = "bar" };
                 var target = new MaskedTextBox { DataContext = source };
@@ -823,7 +823,7 @@ namespace Avalonia.Controls.UnitTests
             bool fromClipboard,
             string expected)
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -861,7 +861,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(Key.Enter, KeyModifiers.None)]
         public void Keys_Allow_Undo(Key key, KeyModifiers modifiers)
         {
-            using (UnitTestApplication.Start(Services))
+            using (Start())
             {
                 var target = new MaskedTextBox
                 {
@@ -929,10 +929,10 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        private static IDisposable Start()
+        private static IDisposable Start(TestServices services = null)
         {
             CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
-            return UnitTestApplication.Start(Services);
+            return UnitTestApplication.Start(services ?? Services);
         }
 
         private class Class1 : NotifyingBase
