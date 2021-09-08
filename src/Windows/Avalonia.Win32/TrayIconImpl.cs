@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Platform;
@@ -24,7 +21,7 @@ namespace Avalonia.Win32
 
         internal static void ProcWnd(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if(msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.ContainsKey(wParam.ToInt32()))
+            if (msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.ContainsKey(wParam.ToInt32()))
             {
                 s_trayIcons[wParam.ToInt32()].WndProc(hWnd, msg, wParam, lParam);
             }
@@ -63,14 +60,8 @@ namespace Avalonia.Win32
         {
             throw new NotImplementedException();
         }
-        /// <summary>
-        /// Custom Win32 window messages for the NotifyIcon
-        /// </summary>
-        public enum CustomWindowsMessage : uint
-        {
-            WM_TRAYICON = WindowsMessage.WM_APP + 1024,
-            WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024
-        }
+
+
         private void UpdateIcon(bool remove = false)
         {
             var iconData = new NOTIFYICONDATA()
@@ -106,23 +97,15 @@ namespace Avalonia.Win32
 
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            Debug.WriteLine(wParam);
             if (msg == (uint)CustomWindowsMessage.WM_TRAYMOUSE)
             {
                 // Determine the type of message and call the matching event handlers
                 switch (lParam.ToInt32())
                 {
                     case (int)WindowsMessage.WM_LBUTTONUP:
-                        //if (!_doubleClick)
-                        //{
-                        //    Click?.Invoke(this, new EventArgs());
-                        //}
-                        //_doubleClick = false;
                         break;
 
                     case (int)WindowsMessage.WM_LBUTTONDBLCLK:
-                        //DoubleClick?.Invoke(this, new EventArgs());
-                        //_doubleClick = true;
                         break;
 
                     case (int)WindowsMessage.WM_RBUTTONUP:
@@ -167,6 +150,15 @@ namespace Avalonia.Win32
             _trayMenu.Position = new PixelPoint(pt.X, pt.Y);
 
             _trayMenu.Show();
+        }
+
+        /// <summary>
+        /// Custom Win32 window messages for the NotifyIcon
+        /// </summary>
+        enum CustomWindowsMessage : uint
+        {
+            WM_TRAYICON = WindowsMessage.WM_APP + 1024,
+            WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024
         }
 
         class TrayPopupRoot : Window
