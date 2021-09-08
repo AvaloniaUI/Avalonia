@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
+using System.Reactive.Disposables;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
@@ -80,7 +82,7 @@ namespace Avalonia.Controls
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
-        private IDisposable _subscriptionsOnOpen;
+        private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
 
         /// <summary>
         /// Initializes static members of the <see cref="ComboBox"/> class.
@@ -291,6 +293,7 @@ namespace Avalonia.Controls
 
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
+            _popup.Closed += PopupClosed;
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)
@@ -303,8 +306,7 @@ namespace Avalonia.Controls
 
         private void PopupClosed(object sender, EventArgs e)
         {
-            _subscriptionsOnOpen?.Dispose();
-            _subscriptionsOnOpen = null;
+            _subscriptionsOnOpen.Clear();
 
             if (CanFocus(this))
             {
@@ -316,20 +318,34 @@ namespace Avalonia.Controls
         {
             TryFocusSelectedItem();
 
-            _subscriptionsOnOpen?.Dispose();
-            _subscriptionsOnOpen = null;
+            _subscriptionsOnOpen.Clear();
 
             var toplevel = this.GetVisualRoot() as TopLevel;
             if (toplevel != null)
             {
-                _subscriptionsOnOpen = toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
+                toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
                 {
                     //eat wheel scroll event outside dropdown popup while it's open
                     if (IsDropDownOpen && (ev.Source as IVisual).GetVisualRoot() == toplevel)
                     {
                         ev.Handled = true;
                     }
-                }, Interactivity.RoutingStrategies.Tunnel);
+                }, Interactivity.RoutingStrategies.Tunnel).DisposeWith(_subscriptionsOnOpen);
+            }
+
+            this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
+
+            foreach (var parent in this.GetVisualAncestors().OfType<IControl>())
+            {
+                parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
+            }
+        }
+
+        private void IsVisibleChanged(bool isVisible)
+        {
+            if (!isVisible && IsDropDownOpen)
+            {
+                IsDropDownOpen = false;
             }
         }
 
