@@ -16,8 +16,9 @@ namespace Avalonia.Win32
     /// </summary>
     public enum CustomWindowsMessage : uint
     {
-        WM_TRAYICON = (uint)WindowsMessage.WM_APP + 1024,
-        WM_TRAYMOUSE = (uint)WindowsMessage.WM_USER + 1024
+        WM_TRAYICON = WindowsMessage.WM_APP + 1024,
+        WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024
+
     }
 
     public class TrayIconManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup
@@ -66,15 +67,15 @@ namespace Avalonia.Win32
             LostFocus += TrayPopupRoot_LostFocus;
         }
 
-        private void TrayPopupRoot_LostFocus(object sender, Interactivity.RoutedEventArgs e)
-        {
-            Close();
-        }
-
         private void MoveResize(PixelPoint position, Size size, double scaling)
         {
             PlatformImpl.Move(position);
             PlatformImpl.Resize(size, PlatformResizeReason.Layout);
+        }
+
+        private void TrayPopupRoot_LostFocus(object sender, Interactivity.RoutedEventArgs e)
+        {
+            Close();
         }
 
         protected override void ArrangeCore(Rect finalRect)
@@ -87,7 +88,7 @@ namespace Avalonia.Win32
                 Gravity = PopupGravity.BottomRight,
                 AnchorRectangle = new Rect(Position.ToPoint(1) / Screens.Primary.PixelDensity, new Size(1, 1)),
                 Size = finalRect.Size,
-                ConstraintAdjustment = PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY | PopupPositionerConstraintAdjustment.SlideX | PopupPositionerConstraintAdjustment.SlideY,
+                ConstraintAdjustment = PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY,
             });
         }
     }
@@ -119,24 +120,24 @@ namespace Avalonia.Win32
         private void CreateMessageWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
+            _wndProcDelegate = new WndProc(WndProc);
 
-            UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
+            WNDCLASSEX wndClassEx = new WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
+                cbSize = Marshal.SizeOf<WNDCLASSEX>(),
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = UnmanagedMethods.GetModuleHandle(null),
+                hInstance = GetModuleHandle(null),
                 lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
             };
 
-            ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
+            ushort atom = RegisterClassEx(ref wndClassEx);
 
             if (atom == 0)
             {
                 throw new Win32Exception();
             }
 
-            _hwnd = UnmanagedMethods.CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            _hwnd = CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
             if (_hwnd == IntPtr.Zero)
             {
@@ -181,47 +182,19 @@ namespace Avalonia.Win32
 
                 if (!_iconAdded)
                 {
-                    UnmanagedMethods.Shell_NotifyIcon(NIM.ADD, iconData);
+                    Shell_NotifyIcon(NIM.ADD, iconData);
                     _iconAdded = true;
                 }
                 else
                 {
-                    UnmanagedMethods.Shell_NotifyIcon(NIM.MODIFY, iconData);
+                    Shell_NotifyIcon(NIM.MODIFY, iconData);
                 }
             }
             else
             {
-                UnmanagedMethods.Shell_NotifyIcon(NIM.DELETE, iconData);
+                Shell_NotifyIcon(NIM.DELETE, iconData);
                 _iconAdded = false;
             }
-        }
-
-        private void OnRightClicked()
-        {
-            UnmanagedMethods.GetCursorPos(out UnmanagedMethods.POINT pt);
-            var cursor = new PixelPoint(pt.X, pt.Y);
-
-            var trayMenu = new TrayPopupRoot()
-            {
-                Position = cursor,
-                SystemDecorations = SystemDecorations.None,
-                SizeToContent = SizeToContent.WidthAndHeight,
-                Background = null,
-                TransparencyLevelHint = WindowTransparencyLevel.Transparent,
-                Content = new MenuFlyoutPresenter()
-                {
-                    Items = new List<MenuItem>
-                    {
-                        new MenuItem {  Header = "Item 1"},
-                        new MenuItem {  Header = "Item 2"},
-                        new MenuItem {  Header = "Item 3"},
-                        new MenuItem {  Header = "Item 4"},
-                        new MenuItem {  Header = "Item 5"}
-                    }
-                }
-            };
-
-            trayMenu.Show();
         }
 
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -232,9 +205,18 @@ namespace Avalonia.Win32
                 switch (lParam.ToInt32())
                 {
                     case (int)WindowsMessage.WM_LBUTTONUP:
+                        //if (!_doubleClick)
+                        //{
+                        //    Click?.Invoke(this, new EventArgs());
+                        //}
+                        //_doubleClick = false;
+
+                        Debug.WriteLine($"Clicked {lParam:X}");
                         break;
 
                     case (int)WindowsMessage.WM_LBUTTONDBLCLK:
+                        //DoubleClick?.Invoke(this, new EventArgs());
+                        //_doubleClick = true;
                         break;
 
                     case (int)WindowsMessage.WM_RBUTTONUP:
@@ -246,7 +228,35 @@ namespace Avalonia.Win32
                 }
             }
 
-            return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+            return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+        private static void OnRightClicked()
+        {
+            var _trayMenu = new TrayPopupRoot()
+            {
+                SystemDecorations = SystemDecorations.None,
+                SizeToContent = SizeToContent.WidthAndHeight,
+                Background = null,
+                TransparencyLevelHint = WindowTransparencyLevel.Transparent,
+                Content = new MenuFlyoutPresenter()
+                {
+                    Items = new List<MenuItem>
+                                {
+                                    new MenuItem {  Header = "Item 1"},
+                                    new MenuItem {  Header = "Item 2"},
+                                    new MenuItem {  Header = "Item 3"},
+                                    new MenuItem {  Header = "Item 4"},
+                                    new MenuItem {  Header = "Item 5"}
+                                }
+                }
+            };
+
+            GetCursorPos(out UnmanagedMethods.POINT pt);
+
+            _trayMenu.Position = new PixelPoint(pt.X, pt.Y);
+
+            _trayMenu.Show();
         }
     }
 }
