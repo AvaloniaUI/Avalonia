@@ -186,6 +186,30 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, PointerWheelEventArgs>(
                 "PointerWheelChanged",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="PointerMagnifyGesture"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerMagnifyGestureEventArgs> PointerMagnifyGestureEvent =
+            RoutedEvent.Register<InputElement, PointerMagnifyGestureEventArgs>(
+                "PointerMagnifyGesture",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="PointerRotateGesture"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerRotateGestureEventArgs> PointerRotateGestureEvent =
+            RoutedEvent.Register<InputElement, PointerRotateGestureEventArgs>(
+                "PointerRotateGesture",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+        
+        /// <summary>
+        /// Defines the <see cref="PointerSwipeGesture"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerSwipeGestureEventArgs> PointerSwipeGestureEvent =
+            RoutedEvent.Register<InputElement, PointerSwipeGestureEventArgs>(
+                "PointerSwipeGesture",
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Tapped"/> event.
@@ -223,6 +247,9 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
+            PointerMagnifyGestureEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMagnifyGesture(e));
+            PointerRotateGestureEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerRotateGesture(e));
+            PointerSwipeGestureEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerSwipeGesture(e));
         }
 
         public InputElement()
@@ -349,12 +376,42 @@ namespace Avalonia.Input
         }
         
         /// <summary>
-        /// Occurs when the mouse wheen is scrolled over the control.
+        /// Occurs when the mouse is scrolled over the control.
         /// </summary>
         public event EventHandler<PointerWheelEventArgs> PointerWheelChanged
         {
             add { AddHandler(PointerWheelChangedEvent, value); }
             remove { RemoveHandler(PointerWheelChangedEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when the user uses magnify (Pitch to Zoom) gesture on a trackpad and pointer is over the control.
+        /// Works only on macOS.
+        /// </summary>
+        public event EventHandler<PointerMagnifyGestureEventArgs> PointerMagnifyGesture
+        {
+            add { AddHandler(PointerMagnifyGestureEvent, value); }
+            remove { RemoveHandler(PointerMagnifyGestureEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when the user uses rotate gesture on a trackpad and pointer is over the control.
+        /// Works only on macOS.
+        /// </summary>
+        public event EventHandler<PointerRotateGestureEventArgs> PointerRotateGesture
+        {
+            add { AddHandler(PointerRotateGestureEvent, value); }
+            remove { RemoveHandler(PointerRotateGestureEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when the user uses swipe gesture on a trackpad and pointer is over the control.
+        /// Works only on macOS.
+        /// </summary>
+        public event EventHandler<PointerSwipeGestureEventArgs> PointerSwipeGesture
+        {
+            add { AddHandler(PointerSwipeGestureEvent, value); }
+            remove { RemoveHandler(PointerSwipeGestureEvent, value); }
         }
 
         /// <summary>
@@ -615,6 +672,30 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+        }
+        
+        /// <summary>
+        /// Called before the <see cref="PointerMagnifyGesture"/> trackpad event occurs.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnPointerMagnifyGesture(PointerMagnifyGestureEventArgs e)
+        {
+        }
+        
+        /// <summary>
+        /// Called before the <see cref="PointerRotateGesture"/> trackpad event occurs.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnPointerRotateGesture(PointerRotateGestureEventArgs e)
+        {
+        }
+        
+        /// <summary>
+        /// Called before the <see cref="PointerSwipeGesture"/> trackpad event occurs.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnPointerSwipeGesture(PointerSwipeGestureEventArgs e)
         {
         }
 
