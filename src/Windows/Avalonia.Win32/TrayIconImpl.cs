@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -16,16 +17,24 @@ namespace Avalonia.Win32
     {
         private readonly int _uniqueId = 0;
         private static int _nextUniqueId = 0;
-        private WndProc _wndProcDelegate;
-        private IntPtr _hwnd;
         private bool _iconAdded;
         private IconImpl _icon;
+
+        private static Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
+
+        internal static void ProcWnd(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            if(msg == (int)CustomWindowsMessage.WM_TRAYMOUSE && s_trayIcons.ContainsKey(wParam.ToInt32()))
+            {
+                s_trayIcons[wParam.ToInt32()].WndProc(hWnd, msg, wParam, lParam);
+            }
+        }
 
         public TrayIconImpl()
         {
             _uniqueId = ++_nextUniqueId;
 
-            CreateMessageWindow();
+            s_trayIcons.Add(_uniqueId, this);
 
             UpdateIcon();
         }
@@ -34,34 +43,6 @@ namespace Avalonia.Win32
         ~TrayIconImpl()
         {
             UpdateIcon(false);
-        }
-
-        private void CreateMessageWindow()
-        {
-            // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            _wndProcDelegate = new WndProc(WndProc);
-
-            WNDCLASSEX wndClassEx = new WNDCLASSEX
-            {
-                cbSize = Marshal.SizeOf<WNDCLASSEX>(),
-                lpfnWndProc = _wndProcDelegate,
-                hInstance = GetModuleHandle(null),
-                lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
-            };
-
-            ushort atom = RegisterClassEx(ref wndClassEx);
-
-            if (atom == 0)
-            {
-                throw new Win32Exception();
-            }
-
-            _hwnd = CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-
-            if (_hwnd == IntPtr.Zero)
-            {
-                throw new Win32Exception();
-            }
         }
 
         public void SetIcon(IWindowIconImpl icon)
@@ -94,7 +75,7 @@ namespace Avalonia.Win32
         {
             var iconData = new NOTIFYICONDATA()
             {
-                hWnd = _hwnd,
+                hWnd = Win32Platform.Instance.Handle,
                 uID = _uniqueId,
                 uFlags = NIF.TIP | NIF.MESSAGE,
                 uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE,
@@ -125,6 +106,7 @@ namespace Avalonia.Win32
 
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            Debug.WriteLine(wParam);
             if (msg == (uint)CustomWindowsMessage.WM_TRAYMOUSE)
             {
                 // Determine the type of message and call the matching event handlers
@@ -180,7 +162,7 @@ namespace Avalonia.Win32
                 }
             };
 
-            GetCursorPos(out UnmanagedMethods.POINT pt);
+            GetCursorPos(out POINT pt);
 
             _trayMenu.Position = new PixelPoint(pt.X, pt.Y);
 
@@ -197,6 +179,8 @@ namespace Avalonia.Win32
                 Topmost = true;
 
                 Deactivated += TrayPopupRoot_Deactivated;
+
+                ShowInTaskbar = false;
             }
 
             private void TrayPopupRoot_Deactivated(object sender, EventArgs e)
