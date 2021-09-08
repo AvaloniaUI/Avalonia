@@ -39,7 +39,7 @@ namespace Avalonia.Threading
             if (Dispatcher.UIThread.CheckAccess())
                 d(state);
             else
-                Dispatcher.UIThread.InvokeAsync(() => d(state), DispatcherPriority.Send).Wait();
+                Dispatcher.UIThread.InvokeAsync(() => d(state), DispatcherPriority.Send).GetAwaiter().GetResult();
         }
 
 
