@@ -1,4 +1,7 @@
 ﻿using System;
+using Avalonia.Controls;
+
+#nullable enable
 
 namespace Avalonia.Platform
 {
@@ -7,7 +10,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Sets the icon of this tray icon.
         /// </summary>
-        void SetIcon(IWindowIconImpl icon);
+        void SetIcon(IWindowIconImpl? icon);
 
         /// <summary>
         /// Sets the icon of this tray icon.

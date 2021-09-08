@@ -93,8 +93,6 @@ namespace ControlCatalog
             Styles.Insert(0, FluentLight);
 
             AvaloniaXamlLoader.Load(this);
-
-            
         }
 
         public override void OnFrameworkInitializationCompleted()
@@ -102,14 +100,6 @@ namespace ControlCatalog
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
                 desktopLifetime.MainWindow = new MainWindow();
-
-                var trayIcon1 = new TrayIcon();
-
-                trayIcon1.Icon = desktopLifetime.MainWindow.Icon;
-
-                var trayIcon2 = new TrayIcon();
-
-                trayIcon2.Icon = desktopLifetime.MainWindow.Icon;
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 singleViewLifetime.MainView = new MainView();

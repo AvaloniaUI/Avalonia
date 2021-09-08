@@ -10,6 +10,8 @@ using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
+#nullable enable
+
 namespace Avalonia.Win32
 {
     public class TrayIconImpl : ITrayIconImpl
@@ -17,7 +19,8 @@ namespace Avalonia.Win32
         private readonly int _uniqueId = 0;
         private static int _nextUniqueId = 0;
         private bool _iconAdded;
-        private IconImpl _icon;
+        private IconImpl? _icon;
+        private string? _tooltipText;
 
         private static Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
 
@@ -34,8 +37,6 @@ namespace Avalonia.Win32
             _uniqueId = ++_nextUniqueId;
 
             s_trayIcons.Add(_uniqueId, this);
-
-            UpdateIcon();
         }
 
 
@@ -44,7 +45,7 @@ namespace Avalonia.Win32
             UpdateIcon(false);
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
             _icon = icon as IconImpl;
             UpdateIcon();
@@ -52,15 +53,13 @@ namespace Avalonia.Win32
 
         public void SetIsVisible(bool visible)
         {
-            if (visible)
-            {
-
-            }
+            UpdateIcon(!visible);
         }
 
-        public void SetToolTipText(string text)
+        public void SetToolTipText(string? text)
         {
-            throw new NotImplementedException();
+            _tooltipText = text;
+            UpdateIcon(!_iconAdded);
         }
 
 
@@ -73,7 +72,7 @@ namespace Avalonia.Win32
                 uFlags = NIF.TIP | NIF.MESSAGE,
                 uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE,
                 hIcon = _icon?.HIcon ?? new IconImpl(new System.Drawing.Bitmap(32, 32)).HIcon,
-                szTip = "Tool tip text here."
+                szTip = _tooltipText ?? ""
             };
 
             if (!remove)

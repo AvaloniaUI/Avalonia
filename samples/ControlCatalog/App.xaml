@@ -1,6 +1,17 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.App">
+  <TrayIcon.TrayIcons>
+    <TrayIcons>
+      <TrayIcon Icon="/Assets/test_icon.ico" ToolTipText="Avalonia Tray Icon ToolTip">
+        <NativeMenu.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="About" />
+          </NativeMenu>
+        </NativeMenu.Menu>
+      </TrayIcon>
+    </TrayIcons>
+  </TrayIcon.TrayIcons>
   <Application.Styles>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="16" />
