@@ -293,6 +293,11 @@ namespace Avalonia.Win32
             }
         }
 
+        public ITrayIconImpl CreateTrayIcon ()
+        {
+            return new TrayIconImpl();
+        }
+
         public IWindowImpl CreateWindow()
         {
             return new WindowImpl();

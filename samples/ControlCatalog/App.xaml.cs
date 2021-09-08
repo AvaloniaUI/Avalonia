@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
@@ -92,12 +93,20 @@ namespace ControlCatalog
             Styles.Insert(0, FluentLight);
 
             AvaloniaXamlLoader.Load(this);
+
+            
         }
 
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+            {
                 desktopLifetime.MainWindow = new MainWindow();
+
+                var trayIcon = new TrayIcon();
+
+                trayIcon.Icon = desktopLifetime.MainWindow.Icon;
+            }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 singleViewLifetime.MainView = new MainView();
 

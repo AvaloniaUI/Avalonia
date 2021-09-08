@@ -134,6 +134,11 @@ namespace Avalonia.Native
             }
         }
 
+        public ITrayIconImpl CreateTrayIcon ()
+        {
+            throw new NotImplementedException();
+        }
+
         public IWindowImpl CreateWindow()
         {
             return new WindowImpl(_factory, _options, _platformGl);

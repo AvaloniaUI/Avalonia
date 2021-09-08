@@ -1172,6 +1172,9 @@ namespace Avalonia.Win32.Interop
             GCW_ATOM = -32
         }
 
+        [DllImport("shell32", CharSet = CharSet.Auto)]
+        public static extern int Shell_NotifyIcon(NIM dwMessage, NOTIFYICONDATA lpData);
+
         [DllImport("user32.dll", EntryPoint = "SetClassLongPtr")]
         private static extern IntPtr SetClassLong64(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
 
@@ -2270,5 +2273,62 @@ namespace Avalonia.Win32.Interop
         public uint LayerMask;
         public uint VisibleMask;
         public uint DamageMask;
+    }
+
+    public enum NIM : uint
+    {
+        ADD = 0x00000000,
+        MODIFY = 0x00000001,
+        DELETE = 0x00000002,
+        SETFOCUS = 0x00000003,
+        SETVERSION = 0x00000004
+    }
+
+    [Flags]
+    public enum NIF : uint
+    {
+        MESSAGE = 0x00000001,
+        ICON = 0x00000002,
+        TIP = 0x00000004,
+        STATE = 0x00000008,
+        INFO = 0x00000010,
+        GUID = 0x00000020,
+        REALTIME = 0x00000040,
+        SHOWTIP = 0x00000080
+    }
+
+    [Flags]
+    public enum NIIF : uint
+    {
+        NONE = 0x00000000,
+        INFO = 0x00000001,
+        WARNING = 0x00000002,
+        ERROR = 0x00000003,
+        USER = 0x00000004,
+        ICON_MASK = 0x0000000F,
+        NOSOUND = 0x00000010,
+        LARGE_ICON = 0x00000020,
+        RESPECT_QUIET_TIME = 0x00000080
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    public class NOTIFYICONDATA
+    {
+        public int cbSize = Marshal.SizeOf<NOTIFYICONDATA>();
+        public IntPtr hWnd;
+        public int uID;
+        public NIF uFlags;
+        public int uCallbackMessage;
+        public IntPtr hIcon;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string szTip;
+        public int dwState = 0;
+        public int dwStateMask = 0;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string szInfo;
+        public int uTimeoutOrVersion;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string szInfoTitle;
+        public NIIF dwInfoFlags;
     }
 }

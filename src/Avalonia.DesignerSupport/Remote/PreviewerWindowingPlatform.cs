@@ -16,7 +16,9 @@ namespace Avalonia.DesignerSupport.Remote
         private static DetachableTransportConnection s_lastWindowTransport;
         private static PreviewerWindowImpl s_lastWindow;
         public static List<object> PreFlightMessages = new List<object>();
-        
+
+        public ITrayIconImpl CreateTrayIcon() => new TrayIconStub();
+
         public IWindowImpl CreateWindow() => new WindowStub();
 
         public IWindowImpl CreateEmbeddableWindow()
