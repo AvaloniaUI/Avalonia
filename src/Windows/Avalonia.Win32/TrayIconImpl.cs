@@ -6,93 +6,12 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    /// <summary>
-    /// Custom Win32 window messages for the NotifyIcon
-    /// </summary>
-    public enum CustomWindowsMessage : uint
-    {
-        WM_TRAYICON = WindowsMessage.WM_APP + 1024,
-        WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024
-
-    }
-
-    public class TrayIconManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup
-    {
-        public delegate void MoveResizeDelegate(PixelPoint position, Size size, double scaling);
-        private readonly MoveResizeDelegate _moveResize;
-        private Window _hiddenWindow;
-
-        public TrayIconManagedPopupPositionerPopupImplHelper(MoveResizeDelegate moveResize)
-        {
-            _moveResize = moveResize;
-            _hiddenWindow = new Window();
-        }
-
-        public IReadOnlyList<ManagedPopupPositionerScreenInfo> Screens =>
-        _hiddenWindow.Screens.All.Select(s => new ManagedPopupPositionerScreenInfo(
-            s.Bounds.ToRect(1), s.Bounds.ToRect(1))).ToList();
-
-        public Rect ParentClientAreaScreenGeometry
-        {
-            get
-            {
-                var point = _hiddenWindow.Screens.Primary.Bounds.TopLeft;
-                var size = _hiddenWindow.Screens.Primary.Bounds.Size;
-                return new Rect(point.X, point.Y, size.Width * _hiddenWindow.Screens.Primary.PixelDensity, size.Height * _hiddenWindow.Screens.Primary.PixelDensity);
-            }
-        }
-
-        public void MoveAndResize(Point devicePoint, Size virtualSize)
-        {
-            _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _hiddenWindow.Screens.Primary.PixelDensity);
-        }
-
-        public virtual double Scaling => _hiddenWindow.Screens.Primary.PixelDensity;
-    }
-
-    public class TrayPopupRoot : Window
-    {
-        private ManagedPopupPositioner _positioner;
-
-        public TrayPopupRoot()
-        {
-            _positioner = new ManagedPopupPositioner(new TrayIconManagedPopupPositionerPopupImplHelper(MoveResize));
-            Topmost = true;
-
-            LostFocus += TrayPopupRoot_LostFocus;
-        }
-
-        private void MoveResize(PixelPoint position, Size size, double scaling)
-        {
-            PlatformImpl.Move(position);
-            PlatformImpl.Resize(size, PlatformResizeReason.Layout);
-        }
-
-        private void TrayPopupRoot_LostFocus(object sender, Interactivity.RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        protected override void ArrangeCore(Rect finalRect)
-        {
-            base.ArrangeCore(finalRect);
-
-            _positioner.Update(new PopupPositionerParameters
-            {
-                Anchor = PopupAnchor.TopLeft,
-                Gravity = PopupGravity.BottomRight,
-                AnchorRectangle = new Rect(Position.ToPoint(1) / Screens.Primary.PixelDensity, new Size(1, 1)),
-                Size = finalRect.Size,
-                ConstraintAdjustment = PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY,
-            });
-        }
-    }
-
     public class TrayIconImpl : ITrayIconImpl
     {
         private readonly int _uniqueId = 0;
@@ -163,7 +82,14 @@ namespace Avalonia.Win32
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// Custom Win32 window messages for the NotifyIcon
+        /// </summary>
+        public enum CustomWindowsMessage : uint
+        {
+            WM_TRAYICON = WindowsMessage.WM_APP + 1024,
+            WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024
+        }
         private void UpdateIcon(bool remove = false)
         {
             var iconData = new NOTIFYICONDATA()
@@ -210,8 +136,6 @@ namespace Avalonia.Win32
                         //    Click?.Invoke(this, new EventArgs());
                         //}
                         //_doubleClick = false;
-
-                        Debug.WriteLine($"Clicked {lParam:X}");
                         break;
 
                     case (int)WindowsMessage.WM_LBUTTONDBLCLK:
@@ -226,9 +150,13 @@ namespace Avalonia.Win32
                     default:
                         break;
                 }
-            }
 
-            return DefWindowProc(hWnd, msg, wParam, lParam);
+                return IntPtr.Zero;
+            }
+            else
+            {
+                return DefWindowProc(hWnd, msg, wParam, lParam);
+            }
         }
 
         private static void OnRightClicked()
@@ -257,6 +185,86 @@ namespace Avalonia.Win32
             _trayMenu.Position = new PixelPoint(pt.X, pt.Y);
 
             _trayMenu.Show();
+        }
+
+        class TrayPopupRoot : Window
+        {
+            private ManagedPopupPositioner _positioner;
+
+            public TrayPopupRoot()
+            {
+                _positioner = new ManagedPopupPositioner(new TrayIconManagedPopupPositionerPopupImplHelper(MoveResize));
+                Topmost = true;
+
+                Deactivated += TrayPopupRoot_Deactivated;
+            }
+
+            private void TrayPopupRoot_Deactivated(object sender, EventArgs e)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    Close();
+                });
+            }
+
+            private void MoveResize(PixelPoint position, Size size, double scaling)
+            {
+                PlatformImpl.Move(position);
+                PlatformImpl.Resize(size, PlatformResizeReason.Layout);
+            }
+
+            private void TrayPopupRoot_LostFocus(object sender, Interactivity.RoutedEventArgs e)
+            {
+                Close();
+            }
+
+            protected override void ArrangeCore(Rect finalRect)
+            {
+                base.ArrangeCore(finalRect);
+
+                _positioner.Update(new PopupPositionerParameters
+                {
+                    Anchor = PopupAnchor.TopLeft,
+                    Gravity = PopupGravity.BottomRight,
+                    AnchorRectangle = new Rect(Position.ToPoint(1) / Screens.Primary.PixelDensity, new Size(1, 1)),
+                    Size = finalRect.Size,
+                    ConstraintAdjustment = PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY,
+                });
+            }
+
+            class TrayIconManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup
+            {
+                public delegate void MoveResizeDelegate(PixelPoint position, Size size, double scaling);
+                private readonly MoveResizeDelegate _moveResize;
+                private Window _hiddenWindow;
+
+                public TrayIconManagedPopupPositionerPopupImplHelper(MoveResizeDelegate moveResize)
+                {
+                    _moveResize = moveResize;
+                    _hiddenWindow = new Window();
+                }
+
+                public IReadOnlyList<ManagedPopupPositionerScreenInfo> Screens =>
+                _hiddenWindow.Screens.All.Select(s => new ManagedPopupPositionerScreenInfo(
+                    s.Bounds.ToRect(1), s.Bounds.ToRect(1))).ToList();
+
+                public Rect ParentClientAreaScreenGeometry
+                {
+                    get
+                    {
+                        var point = _hiddenWindow.Screens.Primary.Bounds.TopLeft;
+                        var size = _hiddenWindow.Screens.Primary.Bounds.Size;
+                        return new Rect(point.X, point.Y, size.Width * _hiddenWindow.Screens.Primary.PixelDensity, size.Height * _hiddenWindow.Screens.Primary.PixelDensity);
+                    }
+                }
+
+                public void MoveAndResize(Point devicePoint, Size virtualSize)
+                {
+                    _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _hiddenWindow.Screens.Primary.PixelDensity);
+                }
+
+                public virtual double Scaling => _hiddenWindow.Screens.Primary.PixelDensity;
+            }
         }
     }
 }

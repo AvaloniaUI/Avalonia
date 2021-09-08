@@ -103,9 +103,13 @@ namespace ControlCatalog
             {
                 desktopLifetime.MainWindow = new MainWindow();
 
-                var trayIcon = new TrayIcon();
+                var trayIcon1 = new TrayIcon();
 
-                trayIcon.Icon = desktopLifetime.MainWindow.Icon;
+                trayIcon1.Icon = desktopLifetime.MainWindow.Icon;
+
+                var trayIcon2 = new TrayIcon();
+
+                trayIcon2.Icon = desktopLifetime.MainWindow.Icon;
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 singleViewLifetime.MainView = new MainView();
