@@ -15,8 +15,12 @@ namespace ControlCatalog.ViewModels
                     lifetime.Shutdown();
                 }
             });
+            
+            ToggleCommand = MiniCommand.Create(() => { });
         }
 
         public MiniCommand ExitCommand { get; }
+        
+        public MiniCommand ToggleCommand { get; }
     }
 }
