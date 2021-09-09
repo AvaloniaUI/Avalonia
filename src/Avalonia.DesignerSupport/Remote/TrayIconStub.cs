@@ -13,6 +13,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         public INativeMenuExporter MenuExporter => throw new NotImplementedException();
 
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetIcon(IWindowIconImpl icon)
         {   
         }

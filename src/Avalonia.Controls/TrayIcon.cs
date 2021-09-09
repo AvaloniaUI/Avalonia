@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 
@@ -12,7 +13,7 @@ namespace Avalonia.Controls
     {
     }
 
-    public class TrayIcon : AvaloniaObject, IDataContextProvider, INativeMenuExporterProvider
+    public class TrayIcon : AvaloniaObject, IDataContextProvider, INativeMenuExporterProvider, IDisposable
     {
         private readonly ITrayIconImpl _impl;
 
@@ -44,6 +45,21 @@ namespace Avalonia.Controls
                     }
                 }
             });
+
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                lifetime.Exit += Lifetime_Exit;
+            }
+        }
+
+        private static void Lifetime_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
+        {
+            var trayIcons = GetTrayIcons(Application.Current);
+
+            foreach(var icon in trayIcons)
+            {
+                icon.Dispose();
+            }
         }
 
         private static void Icons_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -84,6 +100,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> IsVisibleProperty =
             Visual.IsVisibleProperty.AddOwner<TrayIcon>();
+        private bool _disposedValue;
 
         public static void SetTrayIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(TrayIconsProperty, trayIcons);
 
@@ -160,5 +177,7 @@ namespace Avalonia.Controls
                 _impl.SetToolTipText(change.NewValue.GetValueOrDefault<string?>());
             }
         }
+
+        public void Dispose() => _impl.Dispose();
     }
 }

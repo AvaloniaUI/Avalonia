@@ -6,7 +6,7 @@ using Avalonia.Controls.Platform;
 
 namespace Avalonia.Platform
 {
-    public interface ITrayIconImpl
+    public interface ITrayIconImpl : IDisposable
     {
         /// <summary>
         /// Sets the icon of this tray icon.

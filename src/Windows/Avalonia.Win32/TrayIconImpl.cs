@@ -25,6 +25,7 @@ namespace Avalonia.Win32
         private readonly Win32NativeToManagedMenuExporter _exporter;
 
         private static Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
+        private bool _disposedValue;
 
         public INativeMenuExporter MenuExporter => _exporter;
 
@@ -43,12 +44,6 @@ namespace Avalonia.Win32
             _uniqueId = ++_nextUniqueId;
 
             s_trayIcons.Add(_uniqueId, this);
-        }
-
-
-        ~TrayIconImpl()
-        {
-            UpdateIcon(false);
         }
 
         public void SetIcon(IWindowIconImpl? icon)
@@ -257,6 +252,29 @@ namespace Avalonia.Win32
 
                 public virtual double Scaling => _hiddenWindow.Screens.Primary.PixelDensity;
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                UpdateIcon(true);
+
+                _disposedValue = true;
+            }
+        }
+
+         ~TrayIconImpl()
+         {
+             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+             Dispose(disposing: false);
+         }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
