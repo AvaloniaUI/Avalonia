@@ -12,7 +12,7 @@ namespace Avalonia.Controls
     {
     }
 
-    public class TrayIcon : AvaloniaObject, IDataContextProvider
+    public class TrayIcon : AvaloniaObject, IDataContextProvider, INativeMenuExporterProvider
     {
         private readonly ITrayIconImpl _impl;
 
@@ -140,6 +140,8 @@ namespace Avalonia.Controls
             get => GetValue(IsVisibleProperty);
             set => SetValue(IsVisibleProperty, value);
         }
+
+        public INativeMenuExporter? NativeMenuExporter => _impl.MenuExporter;
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {

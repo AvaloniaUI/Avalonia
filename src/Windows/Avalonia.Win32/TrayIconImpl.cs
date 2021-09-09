@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
@@ -21,8 +22,11 @@ namespace Avalonia.Win32
         private bool _iconAdded;
         private IconImpl? _icon;
         private string? _tooltipText;
+        private readonly Win32NativeToManagedMenuExporter _exporter;
 
         private static Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
+
+        public INativeMenuExporter MenuExporter => _exporter;
 
         internal static void ProcWnd(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -34,6 +38,8 @@ namespace Avalonia.Win32
 
         public TrayIconImpl()
         {
+            _exporter = new Win32NativeToManagedMenuExporter();
+
             _uniqueId = ++_nextUniqueId;
 
             s_trayIcons.Add(_uniqueId, this);
@@ -125,7 +131,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private static void OnRightClicked()
+        private void OnRightClicked()
         {
             var _trayMenu = new TrayPopupRoot()
             {
@@ -135,14 +141,7 @@ namespace Avalonia.Win32
                 TransparencyLevelHint = WindowTransparencyLevel.Transparent,
                 Content = new TrayIconMenuFlyoutPresenter()
                 {
-                    Items = new List<MenuItem>
-                                {
-                                    new MenuItem {  Header = "Item 1"},
-                                    new MenuItem {  Header = "Item 2"},
-                                    new MenuItem {  Header = "Item 3"},
-                                    new MenuItem {  Header = "Item 4"},
-                                    new MenuItem {  Header = "Item 5"}
-                                }
+                    Items = _exporter.GetMenu()
                 }
             };
 
