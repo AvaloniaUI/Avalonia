@@ -35,7 +35,7 @@ namespace Avalonia.Win32
                     }
                     else if (item.HasClickHandlers && item is INativeMenuItemExporterEventsImplBridge bridge)
                     {
-                        newItem.Click += (_,_) => bridge.RaiseClicked();
+                        newItem.Click += (s, e) => bridge.RaiseClicked();
                     }
 
                     items.Add(newItem);

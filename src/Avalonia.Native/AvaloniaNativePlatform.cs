@@ -136,7 +136,7 @@ namespace Avalonia.Native
 
         public ITrayIconImpl CreateTrayIcon ()
         {
-            throw new NotImplementedException();
+            return new TrayIconImpl(_factory);
         }
 
         public IWindowImpl CreateWindow()

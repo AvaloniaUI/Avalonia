@@ -22,6 +22,7 @@ extern AvnDragDropEffects ConvertDragDropEffects(NSDragOperation nsop);
 extern IAvnCursorFactory* CreateCursorFactory();
 extern IAvnGlDisplay* GetGlDisplay();
 extern IAvnMenu* CreateAppMenu(IAvnMenuEvents* events);
+extern IAvnTrayIcon* CreateTrayIcon(IAvnTrayIconEvents* events);
 extern IAvnMenuItem* CreateAppMenuItem();
 extern IAvnMenuItem* CreateAppMenuItemSeparator();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);

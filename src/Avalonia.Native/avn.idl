@@ -427,6 +427,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateMenu(IAvnMenuEvents* cb, IAvnMenu** ppv);
      HRESULT CreateMenuItem(IAvnMenuItem** ppv);
      HRESULT CreateMenuItemSeparator(IAvnMenuItem** ppv);
+     HRESULT CreateTrayIcon(IAvnTrayIconEvents* cb, IAvnTrayIcon** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -663,6 +664,20 @@ interface IAvnGlSurfaceRenderingSession : IUnknown
 {
      HRESULT GetPixelSize(AvnPixelSize* ret);
      HRESULT GetScaling(double* ret);
+}
+
+[uuid(60992d19-38f0-4141-a0a9-76ac303801f3)]
+interface IAvnTrayIcon : IUnknown
+{
+    HRESULT SetIcon(void* data, size_t length);
+    HRESULT SetMenu(IAvnMenu* menu);
+}
+
+[uuid(a687a6d9-73aa-4fef-9b4a-61587d7285d3)]
+interface IAvnTrayIconEvents : IUnknown
+{
+     void Clicked ();
+     void DoubleClicked ();
 }
 
 [uuid(a7724dc1-cf6b-4fa8-9d23-228bf2593edc)]
