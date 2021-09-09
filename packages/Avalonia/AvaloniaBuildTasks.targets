@@ -42,12 +42,20 @@
   </Target>
   
   <PropertyGroup>
-    <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences</BuildAvaloniaResourcesDependsOn>
+    <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences;ReGenerateAvaloniaResourcesOnResourceDeletion</BuildAvaloniaResourcesDependsOn>
   </PropertyGroup>
+  
+  <Target Name="ReGenerateAvaloniaResourcesOnResourceDeletion" BeforeTargets="GenerateAvaloniaResources">
+    <Hash ItemsToHash="@(AvaloniaResource);@(AvaloniaXaml);$(MSBuildAllProjects)">
+      <Output TaskParameter="HashResult" PropertyName="UpdatedInputCacheContents" />
+    </Hash>
+
+    <WriteLinesToFile Overwrite="true" File="$(MSBuildProjectFile).Inputs.cache" Lines="$(UpdatedInputCacheContents)" WriteOnlyWhenDifferent="True" />
+  </Target>
   
   <Target Name="GenerateAvaloniaResources" 
           BeforeTargets="CoreCompile;CoreResGen"
-          Inputs="@(AvaloniaResource);@(AvaloniaXaml);$(MSBuildAllProjects)"
+          Inputs="@(AvaloniaResource);@(AvaloniaXaml);$(MSBuildProjectFile).Inputs.cache;$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
 	  DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
     <ItemGroup>
