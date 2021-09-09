@@ -1,7 +1,5 @@
 ﻿using System;
 using Avalonia.Data;
-using Avalonia.Controls;
-using Avalonia.Styling;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
@@ -33,29 +31,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Priority = Priority,
                 StringFormat = StringFormat,
                 Source = Source,
-                DefaultAnchor = new WeakReference(GetDefaultAnchor(provider))
+                DefaultAnchor = new WeakReference(provider.GetDefaultAnchor())
             };
-        }
-
-        private static object GetDefaultAnchor(IServiceProvider provider)
-        {
-            // If the target is not a control, so we need to find an anchor that will let us look
-            // up named controls and style resources. First look for the closest IControl in
-            // the context.
-            object anchor = provider.GetFirstParent<IControl>();
-
-            if (anchor is null)
-            {
-                // Try to find IDataContextProvider, this was added to allow us to find
-                // a datacontext for Application class when using NativeMenuItems.
-                anchor = provider.GetFirstParent<IDataContextProvider>();
-            }
-
-            // If a control was not found, then try to find the highest-level style as the XAML
-            // file could be a XAML file containing only styles.
-            return anchor ??
-                    provider.GetService<IRootObjectProvider>()?.RootObject as IStyle ??
-                    provider.GetLastParent<IStyle>();
         }
 
         protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
