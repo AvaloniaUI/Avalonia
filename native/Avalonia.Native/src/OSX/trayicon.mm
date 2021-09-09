@@ -1,5 +1,6 @@
 #include "common.h"
 #include "trayicon.h"
+#include "menu.h"
 
 extern IAvnTrayIcon* CreateTrayIcon(IAvnTrayIconEvents* cb)
 {
@@ -52,7 +53,12 @@ HRESULT AvnTrayIcon::SetMenu (IAvnMenu* menu)
     
     @autoreleasepool
     {
+        auto appMenu = dynamic_cast<AvnAppMenu*>(menu);
         
+        if(appMenu != nullptr)
+        {
+            [_native setMenu:appMenu->GetNative()];
+        }
     }
     
     return  S_OK;

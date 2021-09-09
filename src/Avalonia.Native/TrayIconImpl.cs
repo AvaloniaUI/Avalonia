@@ -31,6 +31,8 @@ namespace Avalonia.Native
         public TrayIconImpl(IAvaloniaNativeFactory factory)
         {
             _native = factory.CreateTrayIcon(new TrayIconEvents(this));
+
+            MenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
         
         public void Dispose()
