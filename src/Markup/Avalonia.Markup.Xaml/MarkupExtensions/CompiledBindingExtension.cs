@@ -44,6 +44,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             // the context.
             object anchor = provider.GetFirstParent<IControl>();
 
+            if (anchor is null)
+            {
+                // Try to find IDataContextProvider, this was added to allow us to find
+                // a datacontext for Application class when using NativeMenuItems.
+                anchor = provider.GetFirstParent<IDataContextProvider>();
+            }
+
             // If a control was not found, then try to find the highest-level style as the XAML
             // file could be a XAML file containing only styles.
             return anchor ??
