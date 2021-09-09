@@ -31,7 +31,7 @@ namespace Avalonia.Win32
 
                     if(item.Menu != null)
                     {
-                        newItem.ContextMenu = new ContextMenu() { Items = Populate(item.Menu) };
+                        newItem.Items = Populate(item.Menu);
                     }
                     else if (item.HasClickHandlers && item is INativeMenuItemExporterEventsImplBridge bridge)
                     {
