@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     {
     }
 
-    public class TrayIcon : AvaloniaObject, IDataContextProvider, INativeMenuExporterProvider, IDisposable
+    public class TrayIcon : AvaloniaObject, INativeMenuExporterProvider, IDisposable
     {
         private readonly ITrayIconImpl _impl;
 
@@ -80,12 +80,6 @@ namespace Avalonia.Controls
             = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons>("TrayIcons");
 
         /// <summary>
-        /// Defines the <see cref="DataContext"/> property.
-        /// </summary>
-        public static readonly StyledProperty<object?> DataContextProperty =
-            StyledElement.DataContextProperty.AddOwner<Application>();
-
-        /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
         public static readonly StyledProperty<WindowIcon> IconProperty =
@@ -116,20 +110,6 @@ namespace Avalonia.Controls
 
 
         public new ITrayIconImpl PlatformImpl => _impl;
-
-
-        /// <summary>
-        /// Gets or sets the Applications's data context.
-        /// </summary>
-        /// <remarks>
-        /// The data context property specifies the default object that will
-        /// be used for data binding.
-        /// </remarks>
-        public object? DataContext
-        {
-            get => GetValue(DataContextProperty);
-            set => SetValue(DataContextProperty, value);
-        }
 
         /// <summary>
         /// Gets or sets the icon of the TrayIcon.

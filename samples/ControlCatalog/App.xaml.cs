@@ -5,11 +5,17 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
     public class App : Application
     {
+        public App()
+        {
+            DataContext = new ApplicationViewModel();
+        }
+
         private static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
         {
             Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml")
