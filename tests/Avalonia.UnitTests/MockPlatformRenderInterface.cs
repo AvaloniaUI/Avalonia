@@ -57,6 +57,11 @@ namespace Avalonia.UnitTests
             return Mock.Of<IGeometryImpl>();
         }
 
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
         public IWriteableBitmapImpl CreateWriteableBitmap(
             PixelSize size,
             Vector dpi,

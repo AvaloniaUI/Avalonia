@@ -42,6 +42,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            throw new NotImplementedException();
+        }
+
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             throw new NotImplementedException();

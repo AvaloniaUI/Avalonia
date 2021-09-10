@@ -50,7 +50,7 @@ namespace Avalonia.Media
 
         public override Geometry Clone()
         {
-            var result = new GeometryGroup { FillRule = FillRule };
+            var result = new GeometryGroup { FillRule = FillRule, Transform = Transform };
             if (_children?.Count > 0)
                 result.Children = new GeometryCollection(_children);
             return result;

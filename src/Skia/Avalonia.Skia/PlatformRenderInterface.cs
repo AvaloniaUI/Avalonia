@@ -67,6 +67,11 @@ namespace Avalonia.Skia
             return new GeometryGroupImpl(fillRule, children);
         }
 
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            return new CombinedGeometryImpl(combineMode, g1, g2);
+        }
+
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {

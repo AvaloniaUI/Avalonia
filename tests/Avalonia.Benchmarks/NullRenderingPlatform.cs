@@ -41,6 +41,11 @@ namespace Avalonia.Benchmarks
             throw new NotImplementedException();
         }
 
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            throw new NotImplementedException();
+        }
+
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             throw new NotImplementedException();
