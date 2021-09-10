@@ -23,6 +23,14 @@ namespace Avalonia.Platform
         /// </summary>
         void SetIsVisible (bool visible);
 
+        /// <summary>
+        /// Gets the MenuExporter to allow native menus to be exported to the TrayIcon.
+        /// </summary>
         INativeMenuExporter? MenuExporter { get; }
+
+        /// <summary>
+        /// Gets or Sets the Action that is called when the TrayIcon is clicked.
+        /// </summary>
+        Action? OnClicked { get; set; }
     }
 }

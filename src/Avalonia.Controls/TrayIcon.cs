@@ -22,6 +22,15 @@ namespace Avalonia.Controls
             _impl = impl;
 
             _impl.SetIsVisible(IsVisible);
+
+            _impl.OnClicked = () => Clicked?.Invoke(this, EventArgs.Empty);
+
+            Clicked += TrayIcon_Clicked;
+        }
+
+        private void TrayIcon_Clicked(object sender, EventArgs e)
+        {
+            
         }
 
         public TrayIcon () : this(PlatformManager.CreateTrayIcon())
@@ -52,28 +61,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void Lifetime_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
-        {
-            var trayIcons = GetTrayIcons(Application.Current);
-
-            foreach(var icon in trayIcons)
-            {
-                icon.Dispose();
-            }
-        }
-
-        private static void Icons_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            
-        }
-
-        private static void RemoveIcons (IEnumerable<TrayIcon> icons)
-        {
-            foreach(var icon in icons)
-            {
-                icon.Dispose();
-            }
-        }
+        /// <summary>
+        /// Raised when the TrayIcon is clicked.
+        /// Note, this is only supported on Win32.
+        /// Linux and OSX this event is not raised.
+        /// </summary>
+        public event EventHandler? Clicked;
 
         /// <summary>
         /// Defines the <see cref="TrayIcons"/> attached property.
@@ -131,6 +124,29 @@ namespace Avalonia.Controls
         }
 
         public INativeMenuExporter? NativeMenuExporter => _impl.MenuExporter;
+
+        private static void Lifetime_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
+        {
+            var trayIcons = GetTrayIcons(Application.Current);
+
+            foreach (var icon in trayIcons)
+            {
+                icon.Dispose();
+            }
+        }
+
+        private static void Icons_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+
+        }
+
+        private static void RemoveIcons(IEnumerable<TrayIcon> icons)
+        {
+            foreach (var icon in icons)
+            {
+                icon.Dispose();
+            }
+        }
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {

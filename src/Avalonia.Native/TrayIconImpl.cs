@@ -4,6 +4,8 @@ using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 
+#nullable enable
+
 namespace Avalonia.Native
 {
     class TrayIconEvents : CallbackBase, IAvnTrayIconEvents
@@ -34,7 +36,9 @@ namespace Avalonia.Native
 
             MenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
-        
+
+        public Action? OnClicked { get; set; }
+
         public void Dispose()
         {
             

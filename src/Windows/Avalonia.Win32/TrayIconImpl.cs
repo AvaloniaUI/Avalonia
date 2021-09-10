@@ -23,9 +23,19 @@ namespace Avalonia.Win32
         private IconImpl? _icon;
         private string? _tooltipText;
         private readonly Win32NativeToManagedMenuExporter _exporter;
-
         private static Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
         private bool _disposedValue;
+
+        public TrayIconImpl()
+        {
+            _exporter = new Win32NativeToManagedMenuExporter();
+
+            _uniqueId = ++_nextUniqueId;
+
+            s_trayIcons.Add(_uniqueId, this);
+        }
+
+        public Action? OnClicked { get; set; }
 
         public INativeMenuExporter MenuExporter => _exporter;
 
@@ -35,15 +45,6 @@ namespace Avalonia.Win32
             {
                 s_trayIcons[wParam.ToInt32()].WndProc(hWnd, msg, wParam, lParam);
             }
-        }
-
-        public TrayIconImpl()
-        {
-            _exporter = new Win32NativeToManagedMenuExporter();
-
-            _uniqueId = ++_nextUniqueId;
-
-            s_trayIcons.Add(_uniqueId, this);
         }
 
         public void SetIcon(IWindowIconImpl? icon)
@@ -62,7 +63,6 @@ namespace Avalonia.Win32
             _tooltipText = text;
             UpdateIcon(!_iconAdded);
         }
-
 
         private void UpdateIcon(bool remove = false)
         {
@@ -105,9 +105,7 @@ namespace Avalonia.Win32
                 switch (lParam.ToInt32())
                 {
                     case (int)WindowsMessage.WM_LBUTTONUP:
-                        break;
-
-                    case (int)WindowsMessage.WM_LBUTTONDBLCLK:
+                        OnClicked?.Invoke();
                         break;
 
                     case (int)WindowsMessage.WM_RBUTTONUP:
@@ -264,11 +262,11 @@ namespace Avalonia.Win32
             }
         }
 
-         ~TrayIconImpl()
-         {
-             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-             Dispose(disposing: false);
-         }
+        ~TrayIconImpl()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: false);
+        }
 
         public void Dispose()
         {

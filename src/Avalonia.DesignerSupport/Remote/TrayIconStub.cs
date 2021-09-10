@@ -11,7 +11,9 @@ namespace Avalonia.DesignerSupport.Remote
         public Action DoubleClicked { get; set; }
         public Action RightClicked { get; set; }
 
-        public INativeMenuExporter MenuExporter => throw new NotImplementedException();
+        public INativeMenuExporter MenuExporter => null;
+
+        public Action OnClicked { get; set; }
 
         public void Dispose()
         {
