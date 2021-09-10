@@ -4489,13 +4489,11 @@ namespace Avalonia.Controls
                 element = dataGridColumn.GenerateEditingElementInternal(dataGridCell, dataGridRow.DataContext);
                 if (element != null)
                 {
-                    
+
+                    dataGridCell.Content = element;
                     if (element.IsInitialized)
                     {
-                        Threading.Dispatcher.UIThread.Post(() =>
-                        {
-                            PreparingCellForEditPrivate(element as Control);
-                        });
+                        PreparingCellForEditPrivate(element as Control);
                     }
                     else
                     {
@@ -4508,9 +4506,10 @@ namespace Avalonia.Controls
             {
                 // Generate Element and apply column style if available
                 element = dataGridColumn.GenerateElementInternal(dataGridCell, dataGridRow.DataContext);
+                dataGridCell.Content = element;
             }
 
-            dataGridCell.Content = element;
+            
         }
 
         private void PreparingCellForEditPrivate(Control editingElement)
