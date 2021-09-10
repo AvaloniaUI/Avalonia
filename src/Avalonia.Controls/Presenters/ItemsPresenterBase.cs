@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Linq;
+
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
@@ -37,6 +39,7 @@ namespace Avalonia.Controls.Presenters
         private IDisposable _itemsSubscription;
         private bool _createdPanel;
         private IItemContainerGenerator _generator;
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
@@ -130,6 +133,14 @@ namespace Avalonia.Controls.Presenters
 
         protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
 
+        int? IChildIndexProvider.TotalCount => Items.TryGetCountFast(out var count) ? count : null;
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
@@ -170,7 +181,19 @@ namespace Avalonia.Controls.Presenters
                 result.ItemTemplate = ItemTemplate;
             }
 
+            result.Materialized += ContainerActionHandler;
+            result.Dematerialized += ContainerActionHandler;
+            result.Recycled += ContainerActionHandler;
+
             return result;
+        }
+
+        private void ContainerActionHandler(object sender, ItemContainerEventArgs e)
+        {
+            for (var i = 0; i < e.Containers.Count; i++)
+            {
+                _childIndexChanged?.Invoke(sender, new ChildIndexChangedEventArgs(e.Containers[i].ContainerControl));
+            }
         }
 
         /// <inheritdoc/>
@@ -250,26 +273,16 @@ namespace Avalonia.Controls.Presenters
             (e.NewValue as IItemsPresenterHost)?.RegisterItemsPresenter(this);
         }
 
-        (int Index, int? TotalCount) IChildIndexProvider.GetChildIndex(ILogical child)
+        int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            int? totalCount = null;
-            if (Items.TryGetCountFast(out var count))
+            if (child is IControl control && ItemContainerGenerator is { } generator)
             {
-                totalCount = count;
+                var index = ItemContainerGenerator.IndexFromContainer(control);
+
+                return index;
             }
 
-            if (child is IControl control)
-            {
-
-                if (ItemContainerGenerator is { } generator)
-                {
-                    var index = ItemContainerGenerator.IndexFromContainer(control);
-                    
-                    return (index, totalCount);
-                }
-            }
-
-            return (-1, totalCount);
+            return -1;
         }
     }
 }

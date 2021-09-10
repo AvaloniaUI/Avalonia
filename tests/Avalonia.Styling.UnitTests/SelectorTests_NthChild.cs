@@ -1,4 +1,7 @@
+using System.Threading.Tasks;
+
 using Avalonia.Controls;
+
 using Xunit;
 
 namespace Avalonia.Styling.UnitTests
@@ -21,7 +24,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Nth_Child_Match_Control_In_Panel()
+        public async Task Nth_Child_Match_Control_In_Panel()
         {
             Border b1, b2, b3, b4;
             var panel = new StackPanel();
@@ -35,14 +38,14 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(2, 0);
 
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b1).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b2).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b3).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b4).Result);
+            Assert.False(await target.Match(b1).Activator!.Take(1));
+            Assert.True(await target.Match(b2).Activator!.Take(1));
+            Assert.False(await target.Match(b3).Activator!.Take(1));
+            Assert.True(await target.Match(b4).Activator!.Take(1));
         }
 
         [Fact]
-        public void Nth_Child_Match_Control_In_Panel_With_Offset()
+        public async Task Nth_Child_Match_Control_In_Panel_With_Offset()
         {
             Border b1, b2, b3, b4;
             var panel = new StackPanel();
@@ -56,14 +59,14 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(2, 1);
 
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b1).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b2).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b3).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b4).Result);
+            Assert.True(await target.Match(b1).Activator!.Take(1));
+            Assert.False(await target.Match(b2).Activator!.Take(1));
+            Assert.True(await target.Match(b3).Activator!.Take(1));
+            Assert.False(await target.Match(b4).Activator!.Take(1));
         }
 
         [Fact]
-        public void Nth_Child_Match_Control_In_Panel_With_Negative_Offset()
+        public async Task Nth_Child_Match_Control_In_Panel_With_Negative_Offset()
         {
             Border b1, b2, b3, b4;
             var panel = new StackPanel();
@@ -77,14 +80,14 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(4, -1);
 
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b1).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b2).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b3).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b4).Result);
+            Assert.False(await target.Match(b1).Activator!.Take(1));
+            Assert.False(await target.Match(b2).Activator!.Take(1));
+            Assert.True(await target.Match(b3).Activator!.Take(1));
+            Assert.False(await target.Match(b4).Activator!.Take(1));
         }
 
         [Fact]
-        public void Nth_Child_Match_Control_In_Panel_With_Singular_Step()
+        public async Task Nth_Child_Match_Control_In_Panel_With_Singular_Step()
         {
             Border b1, b2, b3, b4;
             var panel = new StackPanel();
@@ -98,14 +101,14 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(1, 2);
 
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b1).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b2).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b3).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b4).Result);
+            Assert.False(await target.Match(b1).Activator!.Take(1));
+            Assert.True(await target.Match(b2).Activator!.Take(1));
+            Assert.True(await target.Match(b3).Activator!.Take(1));
+            Assert.True(await target.Match(b4).Activator!.Take(1));
         }
 
         [Fact]
-        public void Nth_Child_Match_Control_In_Panel_With_Singular_Step_With_Negative_Offset()
+        public async Task Nth_Child_Match_Control_In_Panel_With_Singular_Step_With_Negative_Offset()
         {
             Border b1, b2, b3, b4;
             var panel = new StackPanel();
@@ -119,14 +122,14 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(1, -1);
 
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b1).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b2).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b3).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b4).Result);
+            Assert.True(await target.Match(b1).Activator!.Take(1));
+            Assert.True(await target.Match(b2).Activator!.Take(1));
+            Assert.True(await target.Match(b3).Activator!.Take(1));
+            Assert.True(await target.Match(b4).Activator!.Take(1));
         }
 
         [Fact]
-        public void Nth_Child_Match_Control_In_Panel_With_Zero_Step_With_Offset()
+        public async Task Nth_Child_Match_Control_In_Panel_With_Zero_Step_With_Offset()
         {
             Border b1, b2, b3, b4;
             var panel = new StackPanel();
@@ -140,14 +143,14 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(0, 2);
 
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b1).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b2).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b3).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b4).Result);
+            Assert.False(await target.Match(b1).Activator!.Take(1));
+            Assert.True(await target.Match(b2).Activator!.Take(1));
+            Assert.False(await target.Match(b3).Activator!.Take(1));
+            Assert.False(await target.Match(b4).Activator!.Take(1));
         }
 
         [Fact]
-        public void Nth_Child_Doesnt_Match_Control_In_Panel_With_Zero_Step_With_Negative_Offset()
+        public async Task Nth_Child_Doesnt_Match_Control_In_Panel_With_Zero_Step_With_Negative_Offset()
         {
             Border b1, b2, b3, b4;
             var panel = new StackPanel();
@@ -161,14 +164,14 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(0, -2);
 
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b1).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b2).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b3).Result);
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b4).Result);
+            Assert.False(await target.Match(b1).Activator!.Take(1));
+            Assert.False(await target.Match(b2).Activator!.Take(1));
+            Assert.False(await target.Match(b3).Activator!.Take(1));
+            Assert.False(await target.Match(b4).Activator!.Take(1));
         }
 
         [Fact]
-        public void Nth_Child_Match_Control_In_Panel_With_Previous_Selector()
+        public async Task Nth_Child_Match_Control_In_Panel_With_Previous_Selector()
         {
             Border b1, b2;
             Button b3, b4;
@@ -184,14 +187,16 @@ namespace Avalonia.Styling.UnitTests
             var previous = default(Selector).OfType<Border>();
             var target = previous.NthChild(2, 0);
 
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b1).Result);
-            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(b2).Result);
+            Assert.False(await target.Match(b1).Activator!.Take(1));
+            Assert.True(await target.Match(b2).Activator!.Take(1));
+            Assert.Null(target.Match(b3).Activator);
             Assert.Equal(SelectorMatchResult.NeverThisType, target.Match(b3).Result);
+            Assert.Null(target.Match(b4).Activator);
             Assert.Equal(SelectorMatchResult.NeverThisType, target.Match(b4).Result);
         }
 
         [Fact]
-        public void Nth_Child_Doesnt_Match_Control_Out_Of_Panel_Parent()
+        public async Task Nth_Child_Doesnt_Match_Control_Out_Of_Panel_Parent()
         {
             Border b1;
             var contentControl = new ContentControl();
@@ -199,7 +204,7 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(1, 0);
 
-            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(b1).Result);
+            Assert.False(await target.Match(b1).Activator!.Take(1));
         }
 
         [Fact]

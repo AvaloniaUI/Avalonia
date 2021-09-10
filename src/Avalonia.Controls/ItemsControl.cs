@@ -57,6 +57,7 @@ namespace Avalonia.Controls
         private IEnumerable _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -146,11 +147,30 @@ namespace Avalonia.Controls
             protected set;
         }
 
+        int? IChildIndexProvider.TotalCount => (Presenter as IChildIndexProvider)?.TotalCount ?? ItemCount;
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
         /// <inheritdoc/>
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
         {
+            if (Presenter is IChildIndexProvider oldInnerProvider)
+            {
+                oldInnerProvider.ChildIndexChanged -= PresenterChildIndexChanged;
+            }
+
             Presenter = presenter;
             ItemContainerGenerator.Clear();
+
+            if (Presenter is IChildIndexProvider innerProvider)
+            {
+                innerProvider.ChildIndexChanged += PresenterChildIndexChanged;
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+            }
         }
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
@@ -508,20 +528,15 @@ namespace Avalonia.Controls
             return null;
         }
 
-        (int Index, int? TotalCount) IChildIndexProvider.GetChildIndex(ILogical child)
+        private void PresenterChildIndexChanged(object sender, ChildIndexChangedEventArgs e)
         {
-            if (Presenter is IChildIndexProvider innerProvider)
-            {
-                return innerProvider.GetChildIndex(child);
-            }
+            _childIndexChanged?.Invoke(this, e);
+        }
 
-            if (child is IControl control)
-            {
-                var index = ItemContainerGenerator.IndexFromContainer(control);
-                return (index, ItemCount);
-            }
-
-            return (-1, ItemCount);
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return Presenter is IChildIndexProvider innerProvider
+                ? innerProvider.GetChildIndex(child) : -1;
         }
     }
 }
