@@ -103,9 +103,6 @@ namespace Avalonia.Controls
 
         public static TrayIcons GetTrayIcons(AvaloniaObject o) => o.GetValue(TrayIconsProperty);
 
-
-        public new ITrayIconImpl PlatformImpl => _impl;
-
         /// <summary>
         /// Gets or sets the icon of the TrayIcon.
         /// </summary>
