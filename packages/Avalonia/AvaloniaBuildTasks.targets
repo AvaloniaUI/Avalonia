@@ -50,12 +50,12 @@
       <Output TaskParameter="HashResult" PropertyName="UpdatedInputCacheContents" />
     </Hash>
 
-    <WriteLinesToFile Overwrite="true" File="$(MSBuildProjectFile).Inputs.cache" Lines="$(UpdatedInputCacheContents)" WriteOnlyWhenDifferent="True" />
+    <WriteLinesToFile Overwrite="true" File="$(IntermediateOutputPath)/Avalonia/Inputs.cache" Lines="$(UpdatedInputCacheContents)" WriteOnlyWhenDifferent="True" />
   </Target>
   
   <Target Name="GenerateAvaloniaResources" 
           BeforeTargets="CoreCompile;CoreResGen"
-          Inputs="@(AvaloniaResource);@(AvaloniaXaml);$(MSBuildProjectFile).Inputs.cache;$(MSBuildAllProjects)"
+          Inputs="@(AvaloniaResource);@(AvaloniaXaml);$(IntermediateOutputPath)/Avalonia/Inputs.cache;$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
 	  DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
     <ItemGroup>
