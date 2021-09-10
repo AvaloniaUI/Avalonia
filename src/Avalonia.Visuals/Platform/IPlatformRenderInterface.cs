@@ -60,6 +60,14 @@ namespace Avalonia.Platform
         IStreamGeometryImpl CreateStreamGeometry();
 
         /// <summary>
+        /// Creates a geometry group implementation.
+        /// </summary>
+        /// <param name="fillRule">The fill rule.</param>
+        /// <param name="children">The geometries to group.</param>
+        /// <returns>A combined geometry.</returns>
+        IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children);
+
+        /// <summary>
         /// Creates a renderer.
         /// </summary>
         /// <param name="surfaces">

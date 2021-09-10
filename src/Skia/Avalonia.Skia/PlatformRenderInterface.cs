@@ -62,6 +62,11 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl();
         }
 
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            return new GeometryGroupImpl(fillRule, children);
+        }
+
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {

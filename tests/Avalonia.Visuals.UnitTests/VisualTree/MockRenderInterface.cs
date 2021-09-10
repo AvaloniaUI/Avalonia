@@ -37,6 +37,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             return new MockStreamGeometry();
         }
 
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            throw new NotImplementedException();
+        }
+
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             throw new NotImplementedException();

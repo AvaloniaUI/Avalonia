@@ -36,6 +36,11 @@ namespace Avalonia.Benchmarks
             return new MockStreamGeometryImpl();
         }
 
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            throw new NotImplementedException();
+        }
+
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             throw new NotImplementedException();

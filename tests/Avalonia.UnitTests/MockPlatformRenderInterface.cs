@@ -52,6 +52,11 @@ namespace Avalonia.UnitTests
             return new MockStreamGeometryImpl();
         }
 
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
         public IWriteableBitmapImpl CreateWriteableBitmap(
             PixelSize size,
             Vector dpi,
