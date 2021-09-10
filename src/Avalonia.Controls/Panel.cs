@@ -34,6 +34,8 @@ namespace Avalonia.Controls
             AffectsRender<Panel>(BackgroundProperty);
         }
 
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
         /// </summary>
@@ -55,6 +57,14 @@ namespace Avalonia.Controls
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
+        }
+
+        int? IChildIndexProvider.TotalCount => Children.Count;
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
         }
 
         /// <summary>
@@ -141,6 +151,7 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
 
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
             InvalidateMeasureOnChildrenChanged();
         }
 
@@ -165,15 +176,9 @@ namespace Avalonia.Controls
             panel?.InvalidateMeasure();
         }
 
-        (int Index, int? TotalCount) IChildIndexProvider.GetChildIndex(ILogical child)
+        int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            if (child is IControl control)
-            {
-                var index = Children.IndexOf(control);
-                return (index, Children.Count);
-            }
-
-            return (-1, Children.Count);
+            return child is IControl control ? Children.IndexOf(control) : -1;
         }
     }
 }

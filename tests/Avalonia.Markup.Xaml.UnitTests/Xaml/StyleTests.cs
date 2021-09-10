@@ -1,3 +1,6 @@
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
@@ -289,7 +292,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var b1 = window.FindControl<Border>("b1");
                 var b2 = window.FindControl<Border>("b2");
 
-                Assert.Equal(Colors.Red, ((ISolidColorBrush)b1.Background).Color);
+                Assert.Equal(Brushes.Red, b1.Background);
                 Assert.Null(b2.Background);
             }
         }
@@ -303,7 +306,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
-        <Style Selector='Border:nth-child(2n+1)'>
+        <Style Selector='Border:nth-child(2n)'>
             <Setter Property='Background' Value='Red'/>
         </Style>
     </Window.Styles>
@@ -318,11 +321,119 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var b1 = window.FindControl<Border>("b1");
                 var b2 = window.FindControl<Border>("b2");
 
+                Assert.Null(b1.Background);
+                Assert.Equal(Brushes.Red, b2.Background);
+
                 parent.Children.Remove(b1);
-                parent.Children.Add(b1);
 
                 Assert.Null(b1.Background);
-                Assert.Equal(Colors.Red, ((ISolidColorBrush)b2.Background).Color);
+                Assert.Null(b2.Background);
+
+                parent.Children.Add(b1);
+
+                Assert.Equal(Brushes.Red, b1.Background);
+                Assert.Null(b2.Background);
+            }
+        }
+
+
+        [Fact]
+        public void Style_Can_Use_NthChild_Selector_With_ListBox()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='ListBoxItem:nth-child(2n)'>
+            <Setter Property='Background' Value='{Binding}'/>
+        </Style>
+    </Window.Styles>
+    <ListBox x:Name='list' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var collection = new ObservableCollection<IBrush>()
+                {
+                    Brushes.Red, Brushes.Green, Brushes.Blue
+                };
+
+                var list = window.FindControl<ListBox>("list");
+                list.VirtualizationMode = ItemVirtualizationMode.Simple;
+                list.Items = collection;
+
+                window.Show();
+
+                var items = list.Presenter.Panel.Children.Cast<ListBoxItem>();
+                ListBoxItem At(int index) => items.ElementAt(index);
+
+                Assert.Equal(Brushes.Transparent, At(0).Background);
+                Assert.Equal(Brushes.Green, At(1).Background);
+                Assert.Equal(Brushes.Transparent, At(2).Background);
+
+                collection.Remove(Brushes.Green);
+
+                Assert.Equal(Brushes.Transparent, At(0).Background);
+                Assert.Equal(Brushes.Blue, At(1).Background);
+
+                collection.Add(Brushes.Violet);
+                collection.Add(Brushes.Black);
+
+                Assert.Equal(Brushes.Transparent, At(0).Background);
+                Assert.Equal(Brushes.Blue, At(1).Background);
+                Assert.Equal(Brushes.Transparent, At(2).Background);
+                Assert.Equal(Brushes.Black, At(3).Background);
+            }
+        }
+
+        [Fact]
+        public void Style_Can_Use_NthChild_Selector_With_ItemsRepeater()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='Foreground' Value='Transparent'/>
+        </Style>
+        <Style Selector='TextBlock:nth-child(2n)'>
+            <Setter Property='Foreground' Value='{Binding}'/>
+        </Style>
+    </Window.Styles>
+    <ItemsRepeater x:Name='list' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var collection = new ObservableCollection<IBrush>()
+                {
+                    Brushes.Red, Brushes.Green, Brushes.Blue
+                };
+
+                var list = window.FindControl<ItemsRepeater>("list");
+                list.Items = collection;
+
+                window.Show();
+
+                var items = list.Children;
+                TextBlock At(int index) => (TextBlock)list.GetOrCreateElement(index);
+
+                Assert.Equal(Brushes.Transparent, At(0).Foreground);
+                Assert.Equal(Brushes.Green, At(1).Foreground);
+                Assert.Equal(Brushes.Transparent, At(2).Foreground);
+
+                collection.Remove(Brushes.Green);
+
+                Assert.Equal(Brushes.Transparent, At(0).Foreground);
+                Assert.Equal(Brushes.Blue, At(1).Foreground);
+
+                collection.Add(Brushes.Violet);
+                collection.Add(Brushes.Black);
+
+                Assert.Equal(Brushes.Transparent, At(0).Foreground);
+                Assert.Equal(Brushes.Blue, At(1).Foreground);
+                Assert.Equal(Brushes.Transparent, At(2).Foreground);
+                Assert.Equal(Brushes.Black, At(3).Foreground);
             }
         }
 

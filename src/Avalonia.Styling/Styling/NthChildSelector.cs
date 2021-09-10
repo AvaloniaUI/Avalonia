@@ -3,21 +3,10 @@ using System;
 using System.Text;
 
 using Avalonia.LogicalTree;
+using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
-    public interface IChildIndexProvider
-    {
-        (int Index, int? TotalCount) GetChildIndex(ILogical child);
-    }
-
-    public class NthLastChildSelector : NthChildSelector
-    {
-        public NthLastChildSelector(Selector? previous, int step, int offset) : base(previous, step, offset, true)
-        {
-        }
-    }
-
     public class NthChildSelector : Selector
     {
         private const string NthChildSelectorName = "nth-child";
@@ -55,42 +44,49 @@ namespace Avalonia.Styling
 
             if (controlParent is IChildIndexProvider childIndexProvider)
             {
-                var (index, totalCount) = childIndexProvider.GetChildIndex(logical);
-                if (index < 0)
-                {
-                    return SelectorMatch.NeverThisInstance;
-                }
-
-                if (_reversed)
-                {
-                    if (totalCount is int totalCountValue)
-                    {
-                        index = totalCountValue - index;
-                    }
-                    else
-                    {
-                        return SelectorMatch.NeverThisInstance;
-                    }
-                }
-                else
-                {
-                    // nth child index is 1-based
-                    index += 1;
-                }
-                
-
-                var n = Math.Sign(Step);
-
-                var diff = index - Offset;
-                var match = diff == 0 || (Math.Sign(diff) == n && diff % Step == 0);
-
-                return match ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
+                return subscribe
+                    ? new SelectorMatch(new NthChildActivator(logical, childIndexProvider, Step, Offset, _reversed))
+                    : Evaluate(logical, childIndexProvider, Step, Offset, _reversed);
             }
             else
             {
                 return SelectorMatch.NeverThisInstance;
             }
+        }
 
+        internal static SelectorMatch Evaluate(
+            ILogical logical, IChildIndexProvider childIndexProvider,
+            int step, int offset, bool reversed)
+        {
+            var index = childIndexProvider.GetChildIndex(logical);
+            if (index < 0)
+            {
+                return SelectorMatch.NeverThisInstance;
+            }
+
+            if (reversed)
+            {
+                if (childIndexProvider.TotalCount is int totalCountValue)
+                {
+                    index = totalCountValue - index;
+                }
+                else
+                {
+                    return SelectorMatch.NeverThisInstance;
+                }
+            }
+            else
+            {
+                // nth child index is 1-based
+                index += 1;
+            }
+
+            var n = Math.Sign(step);
+
+            var diff = index - offset;
+            var match = diff == 0 || (Math.Sign(diff) == n && diff % step == 0);
+
+            return match ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
         }
 
         protected override Selector? MovePrevious() => _previous;

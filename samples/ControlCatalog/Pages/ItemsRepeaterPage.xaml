@@ -1,17 +1,28 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.ItemsRepeaterPage">
+  <UserControl.Styles>
+    <Style Selector="ItemsRepeater TextBlock.oddTemplate">
+      <Setter Property="Background" Value="Yellow" />
+      <Setter Property="Foreground" Value="Black" />
+    </Style>
+    <Style Selector="ItemsRepeater TextBlock.evenTemplate">
+      <Setter Property="Background" Value="Wheat" />
+      <Setter Property="Foreground" Value="Black" />
+    </Style>
+    <Style Selector="ItemsRepeater TextBlock:nth-child(5n+3)">
+      <Setter Property="Foreground" Value="Red" />
+    </Style>
+  </UserControl.Styles>
   <UserControl.Resources>
     <RecyclePool x:Key="RecyclePool" />
     <DataTemplate x:Key="odd">
-      <TextBlock Background="Yellow"
-                 Foreground="Black"
+      <TextBlock Classes="oddTemplate"
                  Height="{Binding Height}"
                  Text="{Binding Text}"/>
     </DataTemplate>
     <DataTemplate x:Key="even">
-      <TextBlock Background="Wheat"
-                 Foreground="Black"
+      <TextBlock Classes="evenTemplate"
                  Height="{Binding Height}"
                  Text="{Binding Text}"/>
     </DataTemplate>
