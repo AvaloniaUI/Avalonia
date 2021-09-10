@@ -26,17 +26,6 @@ namespace Avalonia.Controls
             _impl.SetIsVisible(IsVisible);
 
             _impl.OnClicked = () => Clicked?.Invoke(this, EventArgs.Empty);
-
-            var timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += Timer_Tick;
-
-            timer.Start();
-        }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            IsVisible = !IsVisible;
         }
 
         public TrayIcon () : this(PlatformManager.CreateTrayIcon())

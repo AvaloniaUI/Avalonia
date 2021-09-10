@@ -41,7 +41,7 @@ namespace Avalonia.Native
 
         public void Dispose()
         {
-            
+            _native.Dispose();
         }
 
         public unsafe void SetIcon(IWindowIconImpl? icon)
@@ -73,7 +73,7 @@ namespace Avalonia.Native
 
         public void SetIsVisible(bool visible)
         {
-            
+            _native.SetIsVisible(visible.AsComBool());
         }
 
         public INativeMenuExporter? MenuExporter { get; }

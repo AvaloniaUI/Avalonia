@@ -22,9 +22,13 @@ public:
     
     AvnTrayIcon(IAvnTrayIconEvents* events);
     
+    ~AvnTrayIcon ();
+    
     virtual HRESULT SetIcon (void* data, size_t length) override;
     
     virtual HRESULT SetMenu (IAvnMenu* menu) override;
+    
+    virtual HRESULT SetIsVisible (bool isVisible) override;
 };
 
 #endif /* trayicon_h */

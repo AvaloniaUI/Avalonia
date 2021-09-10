@@ -14,7 +14,17 @@ AvnTrayIcon::AvnTrayIcon(IAvnTrayIconEvents* events)
 {
     _events = events;
     
-    _native = [[NSStatusBar systemStatusBar] 	statusItemWithLength: NSSquareStatusItemLength];
+    _native = [[NSStatusBar systemStatusBar] statusItemWithLength: NSSquareStatusItemLength];
+    
+}
+
+AvnTrayIcon::~AvnTrayIcon()
+{
+    if(_native != nullptr)
+    {
+        [[_native statusBar] removeStatusItem:_native];
+        _native = nullptr;
+    }
 }
 
 HRESULT AvnTrayIcon::SetIcon (void* data, size_t length)
@@ -57,8 +67,20 @@ HRESULT AvnTrayIcon::SetMenu (IAvnMenu* menu)
         
         if(appMenu != nullptr)
         {
-            [_native setMenu:appMenu->GetNative()];
+            [_native setMenu:appMenu->GetNative()];	
         }
+    }
+    
+    return  S_OK;
+}
+
+HRESULT AvnTrayIcon::SetIsVisible(bool isVisible)
+{
+    START_COM_CALL;
+    
+    @autoreleasepool
+    {
+        [_native setVisible:isVisible];
     }
     
     return  S_OK;

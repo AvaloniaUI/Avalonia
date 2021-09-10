@@ -671,6 +671,7 @@ interface IAvnTrayIcon : IUnknown
 {
     HRESULT SetIcon(void* data, size_t length);
     HRESULT SetMenu(IAvnMenu* menu);
+    HRESULT SetIsVisible(bool isVisible);
 }
 
 [uuid(a687a6d9-73aa-4fef-9b4a-61587d7285d3)]
