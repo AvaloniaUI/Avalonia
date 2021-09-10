@@ -129,15 +129,12 @@ namespace Avalonia.Controls
         {
             var trayIcons = GetTrayIcons(Application.Current);
 
-            foreach (var icon in trayIcons)
-            {
-                icon.Dispose();
-            }
+            RemoveIcons(trayIcons);
         }
 
         private static void Icons_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-
+            RemoveIcons(e.OldItems.Cast<TrayIcon>());
         }
 
         private static void RemoveIcons(IEnumerable<TrayIcon> icons)
