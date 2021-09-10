@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
+using Avalonia.Threading;
 
 #nullable enable
 
@@ -25,12 +27,16 @@ namespace Avalonia.Controls
 
             _impl.OnClicked = () => Clicked?.Invoke(this, EventArgs.Empty);
 
-            Clicked += TrayIcon_Clicked;
+            var timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += Timer_Tick;
+
+            timer.Start();
         }
 
-        private void TrayIcon_Clicked(object sender, EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e)
         {
-            
+            IsVisible = !IsVisible;
         }
 
         public TrayIcon () : this(PlatformManager.CreateTrayIcon())
