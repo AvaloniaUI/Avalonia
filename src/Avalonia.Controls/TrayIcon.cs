@@ -71,11 +71,13 @@ namespace Avalonia.Controls
         {
             foreach(var icon in icons)
             {
-                icon.Remove();
+                icon.Dispose();
             }
         }
 
-
+        /// <summary>
+        /// Defines the <see cref="TrayIcons"/> attached property.
+        /// </summary>
         public static readonly AttachedProperty<TrayIcons> TrayIconsProperty
             = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons>("TrayIcons");
 
@@ -85,28 +87,21 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowIcon> IconProperty =
             Window.IconProperty.AddOwner<TrayIcon>();
 
-
+        /// <summary>
+        /// Defines the <see cref="ToolTipText"/> property.
+        /// </summary>
         public static readonly StyledProperty<string?> ToolTipTextProperty =
             AvaloniaProperty.Register<TrayIcon, string?>(nameof(ToolTipText));
 
         /// <summary>
-        /// Defines the <see cref="IsVisibleProperty"/> property.
+        /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsVisibleProperty =
             Visual.IsVisibleProperty.AddOwner<TrayIcon>();
-        private bool _disposedValue;
 
         public static void SetTrayIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(TrayIconsProperty, trayIcons);
 
         public static TrayIcons GetTrayIcons(AvaloniaObject o) => o.GetValue(TrayIconsProperty);
-
-        /// <summary>
-        /// Removes the notify icon from the taskbar notification area.
-        /// </summary>
-        public void Remove()
-        {
-
-        }
 
 
         public new ITrayIconImpl PlatformImpl => _impl;
@@ -158,6 +153,9 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Disposes the tray icon (removing it from the tray area).
+        /// </summary>
         public void Dispose() => _impl.Dispose();
     }
 }
