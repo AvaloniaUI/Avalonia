@@ -149,6 +149,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 try
                 {
                     TryCreateAndRegisterCore(angle, backdropCornerRadius);
+                    return;
                 }
                 catch (Exception e)
                 {
