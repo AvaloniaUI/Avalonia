@@ -317,7 +317,11 @@ namespace Avalonia.Controls.Primitives
         public double HorizontalOffset
         {
             get { return GetValue(HorizontalOffsetProperty); }
-            set { SetValue(HorizontalOffsetProperty, value); }
+            set
+            {
+                SetValue(HorizontalOffsetProperty, value);
+                HandlePositionChange();
+            }
         }
 
         /// <summary>
@@ -326,7 +330,11 @@ namespace Avalonia.Controls.Primitives
         public double VerticalOffset
         {
             get { return GetValue(VerticalOffsetProperty); }
-            set { SetValue(VerticalOffsetProperty, value); }
+            set
+            {
+                SetValue(VerticalOffsetProperty, value);
+                HandlePositionChange();
+            }
         }
 
         /// <summary>
@@ -518,6 +526,24 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDetachedFromLogicalTree(e);
             Close();
+        }
+        
+        private void HandlePositionChange()
+        {
+            if (_openState != null)
+            {
+                var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
+                if (placementTarget == null)
+                    return;
+                _openState.PopupHost.ConfigurePosition(
+                    placementTarget,
+                    PlacementMode,
+                    new Point(HorizontalOffset, VerticalOffset),
+                    PlacementAnchor,
+                    PlacementGravity,
+                    PlacementConstraintAdjustment,
+                    PlacementRect);
+            }
         }
 
         private static IDisposable SubscribeToEventHandler<T, TEventHandler>(T target, TEventHandler handler, Action<T, TEventHandler> subscribe, Action<T, TEventHandler> unsubscribe)
