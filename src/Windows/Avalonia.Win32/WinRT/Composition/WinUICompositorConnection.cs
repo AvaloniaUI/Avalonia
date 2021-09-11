@@ -44,7 +44,7 @@ namespace Avalonia.Win32.WinRT.Composition
             _compositorInterop = _compositor.QueryInterface<ICompositorInterop>();
             _compositorDesktopInterop = _compositor.QueryInterface<ICompositorDesktopInterop>();
             using var device = MicroComRuntime.CreateProxyFor<IUnknown>(_angle.GetDirect3DDevice(), true);
-
+            
             _device = _compositorInterop.CreateGraphicsDevice(device);
             _blurBrush = CreateAcrylicBlurBackdropBrush();
             _micaBrush = CreateMicaBackdropBrush();
@@ -71,15 +71,18 @@ namespace Avalonia.Win32.WinRT.Composition
                     AvaloniaLocator.CurrentMutable.BindToSelf(connect);
                     AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
                     tcs.SetResult(true);
+                    
                 }
                 catch (Exception e)
                 {
                     tcs.SetException(e);
                     return;
                 }
-
                 connect.RunLoop();
-            }) { IsBackground = true };
+            })
+            {
+                IsBackground = true
+            };
             th.SetApartmentState(ApartmentState.STA);
             th.Start();
             return tcs.Task.Result;
@@ -94,9 +97,9 @@ namespace Avalonia.Win32.WinRT.Composition
             {
                 _parent = parent;
             }
-
             public void Dispose()
             {
+                
             }
 
             public void Invoke(IAsyncAction asyncInfo, AsyncStatus asyncStatus)
@@ -107,7 +110,6 @@ namespace Avalonia.Win32.WinRT.Composition
             }
 
             public MicroComShadow Shadow { get; set; }
-
             public void OnReferencedFromNative()
             {
             }
@@ -116,12 +118,12 @@ namespace Avalonia.Win32.WinRT.Composition
             {
             }
         }
-
+        
         private void RunLoop()
         {
             {
                 var st = Stopwatch.StartNew();
-                using (var act = _compositor5.RequestCommitAsync())
+                using (var act = _compositor5.RequestCommitAsync()) 
                     act.SetCompleted(new RunLoopHandler(this));
                 while (true)
                 {
@@ -152,6 +154,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 {
                     Logger.TryGet(LogEventLevel.Error, "WinUIComposition")
                         ?.Log(null, "Unable to initialize WinUI compositor: {0}", e);
+
                 }
             }
 
@@ -168,19 +171,17 @@ namespace Avalonia.Win32.WinRT.Composition
             using var sc = _syncContext.EnsureLocked();
             using var desktopTarget = _compositorDesktopInterop.CreateDesktopWindowTarget(hWnd, 0);
             using var target = desktopTarget.QueryInterface<ICompositionTarget>();
-
-            using var drawingSurface = _device.CreateDrawingSurface(new UnmanagedMethods.SIZE(),
-                DirectXPixelFormat.B8G8R8A8UIntNormalized,
+            
+            using var drawingSurface = _device.CreateDrawingSurface(new UnmanagedMethods.SIZE(), DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 DirectXAlphaMode.Premultiplied);
             using var surface = drawingSurface.QueryInterface<ICompositionSurface>();
             using var surfaceInterop = drawingSurface.QueryInterface<ICompositionDrawingSurfaceInterop>();
-
+            
             using var surfaceBrush = _compositor.CreateSurfaceBrushWithSurface(surface);
             using var brush = surfaceBrush.QueryInterface<ICompositionBrush>();
 
             using var spriteVisual = _compositor.CreateSpriteVisual();
             spriteVisual.SetBrush(brush);
-
             using var visual = spriteVisual.QueryInterface<IVisual>();
             using var visual2 = spriteVisual.QueryInterface<IVisual2>();
             using var container = _compositor.CreateContainerVisual();
@@ -188,7 +189,7 @@ namespace Avalonia.Win32.WinRT.Composition
             using var containerVisual2 = container.QueryInterface<IVisual2>();
             containerVisual2.SetRelativeSizeAdjustment(new Vector2(1, 1));
             using var containerChildren = container.Children;
-
+            
             target.SetRoot(containerVisual);
 
             using var blur = CreateBlurVisual(_blurBrush);
@@ -200,10 +201,10 @@ namespace Avalonia.Win32.WinRT.Composition
             }
 
             var compositionRoundedRectangleGeometry = ClipVisual(blur, mica);
-
+            
             containerChildren.InsertAtTop(blur);
             containerChildren.InsertAtTop(visual);
-
+            
             return new WinUICompositedWindow(_syncContext, _compositor, _pumpLock, target, surfaceInterop, visual,
                 blur, mica, compositionRoundedRectangleGeometry);
         }
@@ -223,9 +224,8 @@ namespace Avalonia.Win32.WinRT.Composition
 
         private unsafe ICompositionBrush CreateAcrylicBlurBackdropBrush()
         {
-            using var backDropParameterFactory =
-                NativeWinRTMethods.CreateActivationFactory<ICompositionEffectSourceParameterFactory>(
-                    "Windows.UI.Composition.CompositionEffectSourceParameter");
+            using var backDropParameterFactory = NativeWinRTMethods.CreateActivationFactory<ICompositionEffectSourceParameterFactory>(
+                "Windows.UI.Composition.CompositionEffectSourceParameter");
             using var backdropString = new HStringInterop("backdrop");
             using var backDropParameter =
                 backDropParameterFactory.Create(backdropString.Handle);
@@ -235,7 +235,8 @@ namespace Avalonia.Win32.WinRT.Composition
             using var compositionEffectBrush = blurEffectFactory.CreateBrush();
             using var backdrop = _compositor2.CreateBackdropBrush();
             using var backdropBrush = backdrop.QueryInterface<ICompositionBrush>();
-
+            
+            
             var saturateEffect = new SaturationEffect(blurEffect);
             using var satEffectFactory = _compositor.CreateEffectFactory(saturateEffect);
             using var sat = satEffectFactory.CreateBrush();
@@ -259,8 +260,8 @@ namespace Avalonia.Win32.WinRT.Composition
             foreach (var visual in containerVisuals)
             {
                 visual?.SetClip(geometricClipWithGeometry.QueryInterface<ICompositionClip>());
-            }
-
+        }
+        
             return roundedRectangleGeometry.CloneReference();
         }
 
@@ -269,8 +270,8 @@ namespace Avalonia.Win32.WinRT.Composition
             using var spriteVisual = _compositor.CreateSpriteVisual();
             using var visual = spriteVisual.QueryInterface<IVisual>();
             using var visual2 = spriteVisual.QueryInterface<IVisual2>();
-
-
+           
+            
             spriteVisual.SetBrush(compositionBrush);
             visual.SetIsVisible(0);
             visual2.SetRelativeSizeAdjustment(new Vector2(1.0f, 1.0f));
