@@ -234,7 +234,7 @@ namespace Avalonia.Input.Navigation
             // Return the first visible element.
             var uiElement = e as InputElement;
 
-            if (uiElement is null || uiElement.IsVisible)
+            if (uiElement is null || IsVisibleAndEnabled(uiElement))
             {
                 if (e is IVisual elementAsVisual)
                 {
@@ -245,7 +245,7 @@ namespace Avalonia.Input.Navigation
                     {
                         if (children[i] is InputElement ie)
                         {
-                            if (ie.IsVisible)
+                            if (IsVisibleAndEnabled(ie))
                                 return ie;
                             else
                             {
@@ -270,7 +270,7 @@ namespace Avalonia.Input.Navigation
             // Return the last visible element.
             var uiElement = e as InputElement;
 
-            if (uiElement == null || uiElement.IsVisible)
+            if (uiElement == null || IsVisibleAndEnabled(uiElement))
             {
                 var elementAsVisual = e as IVisual;
 
@@ -283,7 +283,7 @@ namespace Avalonia.Input.Navigation
                     {
                         if (children[i] is InputElement ie)
                         {
-                            if (ie.IsVisible)
+                            if (IsVisibleAndEnabled(ie))
                                 return ie;
                             else
                             {
@@ -600,7 +600,7 @@ namespace Avalonia.Input.Navigation
                     var vchild = children[i];
                     if (vchild == elementAsVisual)
                         break;
-                    if (vchild.IsVisible == true && vchild is IInputElement ie)
+                    if (vchild is IInputElement ie && IsVisibleAndEnabled(ie))
                         prev = ie;
                 }
                 return prev;
@@ -668,5 +668,6 @@ namespace Avalonia.Input.Navigation
         }
 
         private static bool IsTabStopOrGroup(IInputElement e) => IsTabStop(e) || IsGroup(e);
+        private static bool IsVisibleAndEnabled(IInputElement e) => e.IsVisible && e.IsEnabled;
     }
 }

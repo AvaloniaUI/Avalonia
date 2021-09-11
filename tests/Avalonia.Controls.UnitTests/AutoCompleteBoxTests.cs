@@ -106,6 +106,16 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Custom_FilterMode_Without_ItemFilter_Setting_Throws_Exception()
+        {
+            RunTest((control, textbox) =>
+            {
+                control.FilterMode = AutoCompleteFilterMode.Custom;
+                Assert.Throws<Exception>(() => { control.Text = "a"; });
+            });
+        }
+
+        [Fact]
         public void Text_Completion_Via_Text_Property()
         {
             RunTest((control, textbox) =>

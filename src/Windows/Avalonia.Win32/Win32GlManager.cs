@@ -1,4 +1,3 @@
-using System;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
@@ -9,7 +8,6 @@ namespace Avalonia.Win32
 {
     static class Win32GlManager
     {
-        private static readonly Version Windows7 = new Version(6, 1);
 
         public static void Initialize()
         {
@@ -22,7 +20,7 @@ namespace Avalonia.Win32
                     return wgl;
                 }
 
-                if (opts?.AllowEglInitialization ?? Win32Platform.WindowsVersion > Windows7)
+                if (opts?.AllowEglInitialization ?? Win32Platform.WindowsVersion > PlatformConstants.Windows7)
                 {
                     var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
 
