@@ -145,7 +145,9 @@ namespace Avalonia.Controls.Primitives
         {
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>((x, e) => x.ChildChanged(e));
-            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));            
+            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));    
+            VerticalOffsetProperty.Changed.AddClassHandler<Popup>((x, _) => x.HandlePositionChange());    
+            HorizontalOffsetProperty.Changed.AddClassHandler<Popup>((x, _) => x.HandlePositionChange());
         }
 
         /// <summary>
@@ -317,11 +319,7 @@ namespace Avalonia.Controls.Primitives
         public double HorizontalOffset
         {
             get { return GetValue(HorizontalOffsetProperty); }
-            set
-            {
-                SetValue(HorizontalOffsetProperty, value);
-                HandlePositionChange();
-            }
+            set { SetValue(HorizontalOffsetProperty, value); }
         }
 
         /// <summary>
@@ -330,11 +328,7 @@ namespace Avalonia.Controls.Primitives
         public double VerticalOffset
         {
             get { return GetValue(VerticalOffsetProperty); }
-            set
-            {
-                SetValue(VerticalOffsetProperty, value);
-                HandlePositionChange();
-            }
+            set { SetValue(VerticalOffsetProperty, value); }
         }
 
         /// <summary>
