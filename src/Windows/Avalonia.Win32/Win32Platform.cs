@@ -89,6 +89,12 @@ namespace Avalonia
         /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
         /// </remarks>
         public bool UseWindowsUIComposition { get; set; } = true;
+
+        /// <summary>
+        /// When <see cref="UseWindowsUIComposition"/> enabled, create rounded corner blur brushes
+        /// If set to zero the brushes will be created using default settings (sharp corners)
+        /// </summary>
+        public float CompositionBackdropCornerRadius { get; set; }
     }
 }
 

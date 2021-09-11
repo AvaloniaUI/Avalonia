@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -26,12 +27,15 @@ namespace Avalonia.Win32.WinRT.Composition
         private EglPlatformOpenGlInterface _gl;
         private ICompositorDesktopInterop _compositorDesktopInterop;
         private ICompositionBrush _blurBrush;
+        private readonly ICompositionBrush _micaBrush;
         private object _pumpLock = new object();
+        private readonly float _backdropCornerRadius;
 
-        public WinUICompositorConnection(EglPlatformOpenGlInterface gl, object pumpLock)
+        public WinUICompositorConnection(EglPlatformOpenGlInterface gl, object pumpLock, float backdropCornerRadius)
         {
             _gl = gl;
             _pumpLock = pumpLock;
+            _backdropCornerRadius = backdropCornerRadius;
             _syncContext = _gl.PrimaryEglContext;
             _angle = (AngleWin32EglDisplay)_gl.Display;
             _compositor = NativeWinRTMethods.CreateInstance<ICompositor>("Windows.UI.Composition.Compositor");
@@ -40,15 +44,15 @@ namespace Avalonia.Win32.WinRT.Composition
             _compositorInterop = _compositor.QueryInterface<ICompositorInterop>();
             _compositorDesktopInterop = _compositor.QueryInterface<ICompositorDesktopInterop>();
             using var device = MicroComRuntime.CreateProxyFor<IUnknown>(_angle.GetDirect3DDevice(), true);
-            
+
             _device = _compositorInterop.CreateGraphicsDevice(device);
-            _blurBrush = CreateBlurBrush();
-            
+            _blurBrush = CreateAcrylicBlurBackdropBrush();
+            _micaBrush = CreateMicaBackdropBrush();
         }
 
         public EglPlatformOpenGlInterface Egl => _gl;
 
-        static bool TryCreateAndRegisterCore(EglPlatformOpenGlInterface angle)
+        static bool TryCreateAndRegisterCore(EglPlatformOpenGlInterface angle, float backdropCornerRadius)
         {
             var tcs = new TaskCompletionSource<bool>();
             var pumpLock = new object();
@@ -63,22 +67,19 @@ namespace Avalonia.Win32.WinRT.Composition
                         dwSize = Marshal.SizeOf<NativeWinRTMethods.DispatcherQueueOptions>(),
                         threadType = NativeWinRTMethods.DISPATCHERQUEUE_THREAD_TYPE.DQTYPE_THREAD_CURRENT
                     });
-                    connect = new WinUICompositorConnection(angle, pumpLock);
+                    connect = new WinUICompositorConnection(angle, pumpLock, backdropCornerRadius);
                     AvaloniaLocator.CurrentMutable.BindToSelf(connect);
                     AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
                     tcs.SetResult(true);
-                    
                 }
                 catch (Exception e)
                 {
                     tcs.SetException(e);
                     return;
                 }
+
                 connect.RunLoop();
-            })
-            {
-                IsBackground = true
-            };
+            }) { IsBackground = true };
             th.SetApartmentState(ApartmentState.STA);
             th.Start();
             return tcs.Task.Result;
@@ -93,9 +94,9 @@ namespace Avalonia.Win32.WinRT.Composition
             {
                 _parent = parent;
             }
+
             public void Dispose()
             {
-                
             }
 
             public void Invoke(IAsyncAction asyncInfo, AsyncStatus asyncStatus)
@@ -106,6 +107,7 @@ namespace Avalonia.Win32.WinRT.Composition
             }
 
             public MicroComShadow Shadow { get; set; }
+
             public void OnReferencedFromNative()
             {
             }
@@ -114,12 +116,12 @@ namespace Avalonia.Win32.WinRT.Composition
             {
             }
         }
-        
+
         private void RunLoop()
         {
             {
                 var st = Stopwatch.StartNew();
-                using (var act = _compositor5.RequestCommitAsync()) 
+                using (var act = _compositor5.RequestCommitAsync())
                     act.SetCompleted(new RunLoopHandler(this));
                 while (true)
                 {
@@ -130,7 +132,8 @@ namespace Avalonia.Win32.WinRT.Composition
             }
         }
 
-        public static void TryCreateAndRegister(EglPlatformOpenGlInterface angle)
+        public static void TryCreateAndRegister(EglPlatformOpenGlInterface angle,
+            float  backdropCornerRadius)
         {
             const int majorRequired = 10;
             const int buildRequired = 17134;
@@ -143,14 +146,12 @@ namespace Avalonia.Win32.WinRT.Composition
             {
                 try
                 {
-                    TryCreateAndRegisterCore(angle);
-                    return;
+                    TryCreateAndRegisterCore(angle, backdropCornerRadius);
                 }
                 catch (Exception e)
                 {
                     Logger.TryGet(LogEventLevel.Error, "WinUIComposition")
                         ?.Log(null, "Unable to initialize WinUI compositor: {0}", e);
-
                 }
             }
 
@@ -167,17 +168,19 @@ namespace Avalonia.Win32.WinRT.Composition
             using var sc = _syncContext.EnsureLocked();
             using var desktopTarget = _compositorDesktopInterop.CreateDesktopWindowTarget(hWnd, 0);
             using var target = desktopTarget.QueryInterface<ICompositionTarget>();
-            
-            using var drawingSurface = _device.CreateDrawingSurface(new UnmanagedMethods.SIZE(), DirectXPixelFormat.B8G8R8A8UIntNormalized,
+
+            using var drawingSurface = _device.CreateDrawingSurface(new UnmanagedMethods.SIZE(),
+                DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 DirectXAlphaMode.Premultiplied);
             using var surface = drawingSurface.QueryInterface<ICompositionSurface>();
             using var surfaceInterop = drawingSurface.QueryInterface<ICompositionDrawingSurfaceInterop>();
-            
+
             using var surfaceBrush = _compositor.CreateSurfaceBrushWithSurface(surface);
             using var brush = surfaceBrush.QueryInterface<ICompositionBrush>();
 
             using var spriteVisual = _compositor.CreateSpriteVisual();
             spriteVisual.SetBrush(brush);
+
             using var visual = spriteVisual.QueryInterface<IVisual>();
             using var visual2 = spriteVisual.QueryInterface<IVisual2>();
             using var container = _compositor.CreateContainerVisual();
@@ -185,47 +188,90 @@ namespace Avalonia.Win32.WinRT.Composition
             using var containerVisual2 = container.QueryInterface<IVisual2>();
             containerVisual2.SetRelativeSizeAdjustment(new Vector2(1, 1));
             using var containerChildren = container.Children;
-            
+
             target.SetRoot(containerVisual);
 
-            using var blur = CreateBlurVisual(); 
-            
+            using var blur = CreateBlurVisual(_blurBrush);
+            IVisual mica = null;
+            if (_micaBrush != null)
+            {
+                mica = CreateBlurVisual(_micaBrush);
+                containerChildren.InsertAtTop(mica);
+            }
+
+            var compositionRoundedRectangleGeometry = ClipVisual(blur, mica);
+
             containerChildren.InsertAtTop(blur);
             containerChildren.InsertAtTop(visual);
-            
-            return new WinUICompositedWindow(_syncContext, _compositor, _pumpLock, target, surfaceInterop, visual, blur);
+
+            return new WinUICompositedWindow(_syncContext, _compositor, _pumpLock, target, surfaceInterop, visual,
+                blur, mica, compositionRoundedRectangleGeometry);
         }
 
-
-        private unsafe ICompositionBrush CreateBlurBrush()
+        private ICompositionBrush CreateMicaBackdropBrush()
         {
-            using var backDropParameterFactory = NativeWinRTMethods.CreateActivationFactory<ICompositionEffectSourceParameterFactory>(
-                "Windows.UI.Composition.CompositionEffectSourceParameter");
+            if (Win32Platform.WindowsVersion.Build < 22000)
+                return null;
+
+            using var compositorWithBlurredWallpaperBackdropBrush =
+                _compositor.QueryInterface<ICompositorWithBlurredWallpaperBackdropBrush>();
+            using var blurredWallpaperBackdropBrush =
+                compositorWithBlurredWallpaperBackdropBrush?.TryCreateBlurredWallpaperBackdropBrush();
+            using var micaBackdropBrush = blurredWallpaperBackdropBrush?.QueryInterface<ICompositionBrush>();
+            return micaBackdropBrush.CloneReference();
+        }
+
+        private unsafe ICompositionBrush CreateAcrylicBlurBackdropBrush()
+        {
+            using var backDropParameterFactory =
+                NativeWinRTMethods.CreateActivationFactory<ICompositionEffectSourceParameterFactory>(
+                    "Windows.UI.Composition.CompositionEffectSourceParameter");
             using var backdropString = new HStringInterop("backdrop");
             using var backDropParameter =
                 backDropParameterFactory.Create(backdropString.Handle);
             using var backDropParameterAsSource = backDropParameter.QueryInterface<IGraphicsEffectSource>();
             var blurEffect = new WinUIGaussianBlurEffect(backDropParameterAsSource);
             using var blurEffectFactory = _compositor.CreateEffectFactory(blurEffect);
+            using var compositionEffectBrush = blurEffectFactory.CreateBrush();
             using var backdrop = _compositor2.CreateBackdropBrush();
             using var backdropBrush = backdrop.QueryInterface<ICompositionBrush>();
-            
-            
+
             var saturateEffect = new SaturationEffect(blurEffect);
             using var satEffectFactory = _compositor.CreateEffectFactory(saturateEffect);
             using var sat = satEffectFactory.CreateBrush();
-            sat.SetSourceParameter(backdropString.Handle, backdropBrush);
-            return sat.QueryInterface<ICompositionBrush>();
+            compositionEffectBrush.SetSourceParameter(backdropString.Handle, backdropBrush);
+            return compositionEffectBrush.QueryInterface<ICompositionBrush>();
         }
-        
-        private unsafe IVisual CreateBlurVisual()
+
+        private ICompositionRoundedRectangleGeometry ClipVisual(params IVisual[] containerVisuals)
+        {
+            if (_backdropCornerRadius == 0)
+                return null;
+            using var roundedRectangleGeometry = _compositor5.CreateRoundedRectangleGeometry();
+            roundedRectangleGeometry.SetCornerRadius(new Vector2(_backdropCornerRadius, _backdropCornerRadius));
+
+            using var compositor6 = _compositor.QueryInterface<ICompositor6>();
+            using var compositionGeometry = roundedRectangleGeometry
+                .QueryInterface<ICompositionGeometry>();
+
+            using var geometricClipWithGeometry =
+                compositor6.CreateGeometricClipWithGeometry(compositionGeometry);
+            foreach (var visual in containerVisuals)
+            {
+                visual?.SetClip(geometricClipWithGeometry.QueryInterface<ICompositionClip>());
+            }
+
+            return roundedRectangleGeometry.CloneReference();
+        }
+
+        private unsafe IVisual CreateBlurVisual(ICompositionBrush compositionBrush)
         {
             using var spriteVisual = _compositor.CreateSpriteVisual();
             using var visual = spriteVisual.QueryInterface<IVisual>();
             using var visual2 = spriteVisual.QueryInterface<IVisual2>();
-           
-            
-            spriteVisual.SetBrush(_blurBrush);
+
+
+            spriteVisual.SetBrush(compositionBrush);
             visual.SetIsVisible(0);
             visual2.SetRelativeSizeAdjustment(new Vector2(1.0f, 1.0f));
 
