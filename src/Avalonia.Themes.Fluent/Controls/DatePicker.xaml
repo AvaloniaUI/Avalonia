@@ -8,6 +8,12 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=netstandard">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <DatePicker CornerRadius="10" />
+    </Border>
+  </Design.PreviewWith>
+  
   <Styles.Resources>
     <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,4</Thickness>
     <x:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</x:Double>
@@ -50,6 +56,7 @@
     <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackground}" />
     <Setter Property="HorizontalContentAlignment" Value="Center"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <!-- 
@@ -67,7 +74,7 @@
                   Padding="{TemplateBinding Padding}"
                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                  CornerRadius="{DynamicResource ControlCornerRadius}"/>
+                  CornerRadius="{TemplateBinding CornerRadius}"/>
         </Border>
       </ControlTemplate>
     </Setter>
@@ -121,6 +128,7 @@
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
@@ -140,6 +148,7 @@
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
                     IsEnabled="{TemplateBinding IsEnabled}"
                     MinWidth="{DynamicResource DatePickerThemeMinWidth}"
                     MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
@@ -158,7 +167,7 @@
                                     TextBlock.Foreground="{TemplateBinding Foreground}"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch"
-                                    CornerRadius="{DynamicResource ControlCornerRadius}"/>
+                                    CornerRadius="{TemplateBinding CornerRadius}"/>
                 </ControlTemplate>
               </Button.Template>
               <Grid Name="ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
@@ -246,13 +255,14 @@
     <Setter Property="Background" Value="{DynamicResource DatePickerFlyoutPresenterBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource DatePickerFlyoutPresenterBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource DateTimeFlyoutBorderThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="Background" Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Padding="{DynamicResource DateTimeFlyoutBorderPadding}"
-                MaxHeight="398" CornerRadius="{DynamicResource OverlayCornerRadius}">
+                MaxHeight="398" CornerRadius="{TemplateBinding CornerRadius}">
           <Grid Name="ContentRoot" RowDefinitions="*,Auto">
             <Grid Name="PickerContainer">
               <!--Column Definitions set in code, ignore here-->

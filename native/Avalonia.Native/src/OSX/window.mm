@@ -641,6 +641,7 @@ private:
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
         [Window setTabbingMode:NSWindowTabbingModeDisallowed];
+        [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     }
     
     void HideOrShowTrafficLights ()
@@ -712,6 +713,12 @@ private:
             auto cparent = dynamic_cast<WindowImpl*>(parent);
             if(cparent == nullptr)
                 return E_INVALIDARG;
+            
+            // If one tries to show a child window with a minimized parent window, then the parent window will be
+            // restored but MacOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
+            if (cparent->WindowState() == Minimized)
+                cparent->SetWindowState(Normal);
             
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             
@@ -1085,14 +1092,7 @@ private:
     {
         _fullScreenActive = true;
         
-        [Window setHasShadow:YES];
-        [Window setTitleVisibility:NSWindowTitleVisible];
-        [Window setTitlebarAppearsTransparent:NO];
         [Window setTitle:_lastTitle];
-        
-        Window.styleMask = Window.styleMask | NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
-        Window.styleMask = Window.styleMask & ~NSWindowStyleMaskFullSizeContentView;
-    
         [Window toggleFullScreen:nullptr];
     }
     
@@ -1204,6 +1204,7 @@ private:
                 }
                 
                 _actualWindowState = _lastWindowState;
+                WindowEvents->WindowStateChanged(_actualWindowState);
             }
             
             
@@ -1665,6 +1666,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = true;
             [self mouseEvent:event withType:MiddleButtonDown];
@@ -1697,6 +1699,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = false;
             [self mouseEvent:event withType:MiddleButtonUp];

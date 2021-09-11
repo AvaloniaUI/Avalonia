@@ -32,7 +32,8 @@
         <Border Name="border"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock Name="PlaceholderTextBlock"
                        Grid.Column="0"
