@@ -145,7 +145,9 @@ namespace Avalonia.Controls.Primitives
         {
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>((x, e) => x.ChildChanged(e));
-            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));            
+            IsOpenProperty.Changed.AddClassHandler<Popup>((x, e) => x.IsOpenChanged((AvaloniaPropertyChangedEventArgs<bool>)e));    
+            VerticalOffsetProperty.Changed.AddClassHandler<Popup>((x, _) => x.HandlePositionChange());    
+            HorizontalOffsetProperty.Changed.AddClassHandler<Popup>((x, _) => x.HandlePositionChange());
         }
 
         /// <summary>
@@ -518,6 +520,24 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDetachedFromLogicalTree(e);
             Close();
+        }
+        
+        private void HandlePositionChange()
+        {
+            if (_openState != null)
+            {
+                var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
+                if (placementTarget == null)
+                    return;
+                _openState.PopupHost.ConfigurePosition(
+                    placementTarget,
+                    PlacementMode,
+                    new Point(HorizontalOffset, VerticalOffset),
+                    PlacementAnchor,
+                    PlacementGravity,
+                    PlacementConstraintAdjustment,
+                    PlacementRect);
+            }
         }
 
         private static IDisposable SubscribeToEventHandler<T, TEventHandler>(T target, TEventHandler handler, Action<T, TEventHandler> subscribe, Action<T, TEventHandler> unsubscribe)
