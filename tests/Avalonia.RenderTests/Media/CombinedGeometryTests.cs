@@ -48,7 +48,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 }
             };
 
-            var testName = $"GeometryCombineMode_{mode}";
+            var testName = $"{nameof(GeometryCombineMode)}_{mode}";
             await RenderToFile(target, testName);
             CompareImages(testName);
         }
