@@ -303,6 +303,17 @@ public:
         }
     }
     
+    virtual HRESULT CreateTrayIcon (IAvnTrayIconEvents*cb, IAvnTrayIcon** ppv) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreateTrayIcon(cb);
+            return S_OK;
+        }
+    }
+    
     virtual HRESULT CreateMenu (IAvnMenuEvents* cb, IAvnMenu** ppv) override
     {
         START_COM_CALL;

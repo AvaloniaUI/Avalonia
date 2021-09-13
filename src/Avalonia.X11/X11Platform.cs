@@ -100,6 +100,12 @@ namespace Avalonia.X11
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
+
+        public ITrayIconImpl CreateTrayIcon ()
+        {
+            throw new NotImplementedException();
+        }
+
         public IWindowImpl CreateWindow()
         {
             return new X11Window(this, null);

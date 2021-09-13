@@ -17,6 +17,7 @@ namespace Avalonia.Native
         private IAvnWindow _nativeWindow;
         private NativeMenu _menu;
         private __MicroComIAvnMenuProxy _nativeMenu;
+        private IAvnTrayIcon _trayIcon;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -30,6 +31,14 @@ namespace Avalonia.Native
         {
             _factory = factory;
 
+            DoLayoutReset();
+        }
+
+        public AvaloniaNativeMenuExporter(IAvnTrayIcon trayIcon, IAvaloniaNativeFactory factory)
+        {
+            _factory = factory;
+            _trayIcon = trayIcon;
+            
             DoLayoutReset();
         }
 
@@ -82,15 +91,25 @@ namespace Avalonia.Native
 
                 if (_nativeWindow is null)
                 {
-                    var appMenu = NativeMenu.GetMenu(Application.Current);
-
-                    if (appMenu == null)
+                    if (_trayIcon is null)
                     {
-                        appMenu = CreateDefaultAppMenu();
-                        NativeMenu.SetMenu(Application.Current, appMenu);
-                    }
+                        var appMenu = NativeMenu.GetMenu(Application.Current);
 
-                    SetMenu(appMenu);
+                        if (appMenu == null)
+                        {
+                            appMenu = CreateDefaultAppMenu();
+                            NativeMenu.SetMenu(Application.Current, appMenu);
+                        }
+
+                        SetMenu(appMenu);
+                    }
+                    else
+                    {
+                        if (_menu != null)
+                        {
+                            SetMenu(_trayIcon, _menu);
+                        }
+                    }
                 }
                 else
                 {
@@ -169,6 +188,27 @@ namespace Avalonia.Native
             if(setMenu)
             {
                 avnWindow.SetMainMenu(_nativeMenu);
+            }
+        }
+
+        private void SetMenu(IAvnTrayIcon trayIcon, NativeMenu menu)
+        {
+            var setMenu = false;
+
+            if (_nativeMenu is null)
+            {
+                _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
+
+                _nativeMenu.Initialize(this, menu, "");     
+
+                setMenu = true;           
+            }
+
+            _nativeMenu.Update(_factory, menu);
+
+            if(setMenu)
+            {
+                trayIcon.SetMenu(_nativeMenu);
             }
         }
     }

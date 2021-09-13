@@ -126,6 +126,11 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
+        public ITrayIconImpl CreateTrayIcon()
+        {
+            throw new NotImplementedException();
+        }
+
         private static void SetupToplevel<T>(Mock<T> mock) where T : class, ITopLevelImpl
         {
             mock.SetupGet(x => x.MouseDevice).Returns(new MouseDevice());

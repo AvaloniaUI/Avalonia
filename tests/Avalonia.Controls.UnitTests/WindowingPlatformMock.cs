@@ -25,6 +25,11 @@ namespace Avalonia.Controls.UnitTests
             throw new NotImplementedException();
         }
 
+        public ITrayIconImpl CreateTrayIcon()
+        {
+            throw new NotImplementedException();
+        }
+
         public IPopupImpl CreatePopup() => _popupImpl?.Invoke() ?? Mock.Of<IPopupImpl>(x => x.RenderScaling == 1);
     }
 }

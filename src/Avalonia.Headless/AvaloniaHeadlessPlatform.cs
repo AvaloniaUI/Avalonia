@@ -51,6 +51,11 @@ namespace Avalonia.Headless
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
 
             public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true);
+
+            public ITrayIconImpl CreateTrayIcon()
+            {
+                throw new NotImplementedException();
+            }
         }
         
         internal static void Initialize()
