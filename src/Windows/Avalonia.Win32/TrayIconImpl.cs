@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -179,13 +181,28 @@ namespace Avalonia.Win32
                 _positioner = new ManagedPopupPositioner(new TrayIconManagedPopupPositionerPopupImplHelper(MoveResize));
                 Topmost = true;
 
+                Activated += TrayPopupRoot_Activated;
                 Deactivated += TrayPopupRoot_Deactivated;
+
+                LostFocus += TrayPopupRoot_LostFocus1;
 
                 ShowInTaskbar = false;
             }
 
+            private void TrayPopupRoot_LostFocus1(object sender, Interactivity.RoutedEventArgs e)
+            {
+                Debug.WriteLine("TrayIcon - Lost Focus");
+            }
+
+            private void TrayPopupRoot_Activated(object sender, EventArgs e)
+            {
+                Debug.WriteLine("TrayIcon - Activated");
+            }
+
             private void TrayPopupRoot_Deactivated(object sender, EventArgs e)
             {
+                Debug.WriteLine("TrayIcon - Deactivated");
+
                 Dispatcher.UIThread.Post(() =>
                 {
                     Close();
