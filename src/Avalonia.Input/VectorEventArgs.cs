@@ -5,6 +5,11 @@ namespace Avalonia.Input
 {
     public class VectorEventArgs : RoutedEventArgs
     {
+        public VectorEventArgs()
+        {
+            
+        }
+        
         public VectorEventArgs(RoutedEvent routedEvent,
             KeyModifiers modifiers,
             Vector vector)
@@ -14,7 +19,7 @@ namespace Avalonia.Input
             Vector = vector;
         }
         
-        public Vector Vector { get; }
+        public Vector Vector { get; set; }
         public KeyModifiers KeyModifiers { get; }
     }
 }
