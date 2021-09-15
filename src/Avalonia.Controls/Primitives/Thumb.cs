@@ -60,9 +60,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastPoint.HasValue)
             {
-                var ev = new VectorEventArgs(DragCompletedEvent, 
-                    KeyModifiers.None, 
-                    _lastPoint.Value);
+                var ev = new VectorEventArgs(DragCompletedEvent, KeyModifiers.None, _lastPoint.Value);
 
                 _lastPoint = null;
 
