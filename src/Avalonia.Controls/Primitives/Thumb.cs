@@ -60,11 +60,9 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastPoint.HasValue)
             {
-                var ev = new VectorEventArgs
-                {
-                    RoutedEvent = DragCompletedEvent,
-                    Vector = _lastPoint.Value,
-                };
+                var ev = new VectorEventArgs(DragCompletedEvent, 
+                    KeyModifiers.None, 
+                    _lastPoint.Value);
 
                 _lastPoint = null;
 
@@ -80,11 +78,8 @@ namespace Avalonia.Controls.Primitives
         {
             if (_lastPoint.HasValue)
             {
-                var ev = new VectorEventArgs
-                {
-                    RoutedEvent = DragDeltaEvent,
-                    Vector = e.GetPosition(this) - _lastPoint.Value,
-                };
+                var vector = e.GetPosition(this) - _lastPoint.Value;
+                var ev = new VectorEventArgs(DragDeltaEvent, e.KeyModifiers, vector);
 
                 RaiseEvent(ev);
             }
@@ -95,11 +90,7 @@ namespace Avalonia.Controls.Primitives
             e.Handled = true;
             _lastPoint = e.GetPosition(this);
 
-            var ev = new VectorEventArgs
-            {
-                RoutedEvent = DragStartedEvent,
-                Vector = (Vector)_lastPoint,
-            };
+            var ev = new VectorEventArgs(DragStartedEvent, e.KeyModifiers, (Vector)_lastPoint);
 
             PseudoClasses.Add(":pressed");
 
@@ -113,11 +104,8 @@ namespace Avalonia.Controls.Primitives
                 e.Handled = true;
                 _lastPoint = null;
 
-                var ev = new VectorEventArgs
-                {
-                    RoutedEvent = DragCompletedEvent,
-                    Vector = (Vector)e.GetPosition(this),
-                };
+                var vector = (Vector)e.GetPosition(this);
+                var ev = new VectorEventArgs(DragCompletedEvent, e.KeyModifiers, vector);
 
                 RaiseEvent(ev);
             }

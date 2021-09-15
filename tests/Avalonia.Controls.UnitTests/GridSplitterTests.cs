@@ -104,13 +104,10 @@ namespace Avalonia.Controls.UnitTests
             root.Measure(new Size(100, 300));
             root.Arrange(new Rect(0, 0, 100, 300));
 
-            splitter.RaiseEvent(
-                new VectorEventArgs { RoutedEvent = Thumb.DragStartedEvent });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragStartedEvent, KeyModifiers.None, Vector.Zero));
 
-            splitter.RaiseEvent(new VectorEventArgs
-            {
-                RoutedEvent = Thumb.DragDeltaEvent, Vector = new Vector(100, 1000)
-            });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragDeltaEvent, 
+                KeyModifiers.None, new Vector(100, 1000)));
         }
 
         [Theory]
@@ -142,14 +139,11 @@ namespace Avalonia.Controls.UnitTests
             root.Measure(new Size(100, 200));
             root.Arrange(new Rect(0, 0, 100, 200));
 
-            splitter.RaiseEvent(
-                new VectorEventArgs { RoutedEvent = Thumb.DragStartedEvent });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragStartedEvent, KeyModifiers.None, Vector.Zero));
 
-            splitter.RaiseEvent(new VectorEventArgs
-            {
-                RoutedEvent = Thumb.DragDeltaEvent,
-                Vector = new Vector(0, -100)
-            });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragDeltaEvent,
+                KeyModifiers.None, 
+                new Vector(0, -100)));
 
             if (showsPreview)
             {
@@ -162,11 +156,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(rowDefinitions[2].Height, new GridLength(130, GridUnitType.Star));
             }
 
-            splitter.RaiseEvent(new VectorEventArgs
-            {
-                RoutedEvent = Thumb.DragDeltaEvent,
-                Vector = new Vector(0, 100)
-            });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragDeltaEvent, KeyModifiers.None, new Vector(0, 100)));
 
             if (showsPreview)
             {
@@ -179,10 +169,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(rowDefinitions[2].Height, new GridLength(90, GridUnitType.Star));
             }
 
-            splitter.RaiseEvent(new VectorEventArgs
-            {
-                RoutedEvent = Thumb.DragCompletedEvent
-            });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragCompletedEvent, KeyModifiers.None, Vector.Zero));
 
             Assert.Equal(rowDefinitions[0].Height, new GridLength(110, GridUnitType.Star));
             Assert.Equal(rowDefinitions[2].Height, new GridLength(90, GridUnitType.Star));
@@ -218,13 +205,11 @@ namespace Avalonia.Controls.UnitTests
             root.Arrange(new Rect(0, 0, 200, 100));
 
             splitter.RaiseEvent(
-                new VectorEventArgs { RoutedEvent = Thumb.DragStartedEvent });
+                new VectorEventArgs(Thumb.DragStartedEvent, KeyModifiers.None, Vector.Zero));
 
-            splitter.RaiseEvent(new VectorEventArgs
-            {
-                RoutedEvent = Thumb.DragDeltaEvent,
-                Vector = new Vector(-100, 0)
-            });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragDeltaEvent, 
+                KeyModifiers.None, 
+                new Vector(-100, 0)));
 
             if (showsPreview)
             {
@@ -237,11 +222,9 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(columnDefinitions[2].Width, new GridLength(120, GridUnitType.Star));
             }
 
-            splitter.RaiseEvent(new VectorEventArgs
-            {
-                RoutedEvent = Thumb.DragDeltaEvent,
-                Vector = new Vector(100, 0)
-            });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragDeltaEvent, 
+                KeyModifiers.None, 
+                new Vector(100, 0)));
 
             if (showsPreview)
             {
@@ -254,10 +237,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(columnDefinitions[2].Width, new GridLength(80, GridUnitType.Star));
             }
 
-            splitter.RaiseEvent(new VectorEventArgs
-            {
-                RoutedEvent = Thumb.DragCompletedEvent
-            });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragCompletedEvent, KeyModifiers.None, Vector.Zero));
 
             Assert.Equal(columnDefinitions[0].Width, new GridLength(120, GridUnitType.Star));
             Assert.Equal(columnDefinitions[2].Width, new GridLength(80, GridUnitType.Star));
@@ -360,13 +340,11 @@ namespace Avalonia.Controls.UnitTests
             root.Arrange(new Rect(0, 0, 200, 200));
 
             splitter.RaiseEvent(
-                new VectorEventArgs { RoutedEvent = Thumb.DragStartedEvent });
+                new VectorEventArgs(Thumb.DragStartedEvent, KeyModifiers.None, Vector.Zero));
 
-            splitter.RaiseEvent(new VectorEventArgs
-            {
-                RoutedEvent = Thumb.DragDeltaEvent,
-                Vector = new Vector(-100, 0)
-            });
+            splitter.RaiseEvent(new VectorEventArgs(Thumb.DragDeltaEvent, 
+                KeyModifiers.None, 
+                new Vector(-100, 0)));
 
             Assert.Equal(columnDefinitions[0].Width, new GridLength(0, GridUnitType.Star));
             Assert.Equal(columnDefinitions[2].Width, new GridLength(200, GridUnitType.Star));

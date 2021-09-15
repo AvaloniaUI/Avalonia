@@ -74,11 +74,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 handler => target.Scroll -= handler,
                 () =>
                 {
-                    var ev = new VectorEventArgs
-                    {
-                        RoutedEvent = Thumb.DragDeltaEvent,
-                        Vector = new Vector(0, 0)
-                    };
+                    var ev = new VectorEventArgs(Thumb.DragDeltaEvent, KeyModifiers.None, Vector.Zero);
 
                     track.Thumb.RaiseEvent(ev);
                 });
@@ -103,11 +99,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 handler => target.Scroll -= handler,
                 () =>
                 {
-                    var ev = new VectorEventArgs
-                    {
-                        RoutedEvent = Thumb.DragCompletedEvent,
-                        Vector = new Vector(0, 0)
-                    };
+                    var ev = new VectorEventArgs(Thumb.DragCompletedEvent, KeyModifiers.None, Vector.Zero);
 
                     track.Thumb.RaiseEvent(ev);
                 });
