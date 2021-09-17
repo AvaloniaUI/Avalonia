@@ -55,10 +55,6 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             }
 
             await snw.RegisterStatusNotifierItemAsync(sysTraySrvName);
-
-            tx.Ready();
-
-            await yx.ActivateAsync(1, 1);
         }
     }
 
@@ -83,9 +79,19 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             ObjectPath = new ObjectPath($"/StatusNotifierItem");
             props = new StatusNotifierItemProperties();
 
+            var dummyicons = new[] { (1, 1, new byte[8 * 4]), (1, 1, new byte[8 * 4]), };
+            
+            
+ 
             props.Title = "Avalonia Test Tray";
+            props.IconPixmap = dummyicons;
             props.Id = ID;
-//     
+            props.IconName = "Avalonia";
+            props.ToolTip = ("Avalonia Test Tooltip", dummyicons, "Avalonia Test Tooltip Message", "And another one");
+            
+            
+            
+ //     
             //     
             // public string Category { get; set; } = default;
             //
@@ -98,6 +104,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             // public int WindowId { get; set; } = default;
         }
 
+         
 
         // static class StatusNotifierItemExtensions
         // {
@@ -148,7 +155,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public async Task SecondaryActivateAsync(int X, int Y)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public async Task ScrollAsync(int Delta, string Orientation)
@@ -193,11 +200,21 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             return Disposable.Create(() => NewStatusAsync -= handler);
         }
 
+        public async Task<object> GetAsync(string prop)
+        {
+            return default;
+        }
+
         public Action<string> NewStatusAsync { get; set; }
 
         public async Task<StatusNotifierItemProperties> GetAllAsync()
         {
             return props;
+        }
+
+        public async Task SetAsync(string prop, object val)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler)
@@ -335,7 +352,9 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError = null);
         Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError = null);
         Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError = null);
+        Task<object> GetAsync(string prop);
         Task<StatusNotifierItemProperties> GetAllAsync();
+        Task SetAsync(string prop, object val);
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
     }
 
