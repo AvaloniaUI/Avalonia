@@ -77,8 +77,6 @@ namespace Avalonia.X11
                     sni.SetIcon(new Pixmap(w, h, byteBuf));
                 }
             }
-
-            ;
         }
 
         public void SetIsVisible(bool visible)

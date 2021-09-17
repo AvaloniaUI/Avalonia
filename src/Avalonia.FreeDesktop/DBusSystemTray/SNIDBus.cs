@@ -23,7 +23,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         private static int GetTID()
         {
-            trayinstanceID = (int)new Random().Next(0, 100);
+            trayinstanceID = 4;
             return trayinstanceID;
         }
 
@@ -65,13 +65,12 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             //     await Task.Delay(2000);
             //     tx.InvalidateAll();
             // });
-
         }
 
         public async void Dispose()
         {
             var con = DBusHelper.Connection;
-            
+
             if (await con.UnregisterServiceAsync(_sysTraySrvName))
             {
                 con.UnregisterObject(_statusNotifierItem);
@@ -107,8 +106,10 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             props = new StatusNotifierItemProperties
             {
                 Title = "Avalonia Test Tray",
-                Status = "Avalonia Test Tray", 
-                Id = "Avalonia Test Tray"
+                Status = "Avalonia Test Tray",
+                Id = "Avalonia Test Tray",
+                AttentionIconPixmap = new[] { new Pixmap(0, 0, new byte[] {  }), new Pixmap(0, 0, new byte[] {  }) },
+                // IconPixmap = new[] { new Pixmap(1, 1, new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }) }
             };
         }
 
@@ -123,21 +124,21 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public async Task SecondaryActivateAsync(int X, int Y)
         {
-            //throw new NotImplementedException();
+            //throw new NotImplementedException();5
         }
 
         public async Task ScrollAsync(int Delta, string Orientation)
         {
         }
-
-
+        
         public void InvalidateAll()
         {
             OnTitleChanged?.Invoke();
             OnIconChanged?.Invoke();
             OnOverlayIconChanged?.Invoke();
+            OnAttentionIconChanged?.Invoke();
         }
-        
+
         public async Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError = null)
         {
             OnTitleChanged += handler;
@@ -216,8 +217,8 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public void SetIcon(Pixmap pixmap)
         {
-            props.IconPixmap = pixmap;
-            InvalidateAll();
+           props.IconPixmap = new[] { pixmap };
+           InvalidateAll();
         }
     }
 
@@ -372,32 +373,49 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public string IconName;
 
-        public Pixmap IconPixmap;
+        public Pixmap[] IconPixmap;
 
         public string OverlayIconName;
 
-        public Pixmap OverlayIconPixmap;
+        public Pixmap[] OverlayIconPixmap;
 
         public string AttentionIconName;
 
-        public Pixmap AttentionIconPixmap;
+        public Pixmap[] AttentionIconPixmap;
 
         public string AttentionMovieName;
 
-        public (string, Pixmap, string, string) ToolTip;
+        public ToolTip ToolTip;
     }
 
-    public struct Pixmap
-     {
-         private readonly int Width;
-         private readonly int Height;
-         private readonly byte[] Data;
+    public readonly struct ToolTip
+    {
+        public readonly string First;
+        public readonly Pixmap[] Second;
+        public readonly string Third;
+        public readonly string Fourth;
 
-         public Pixmap(int width, int height, byte[] data)
-         {
-             Width = width;
-             Height = height;
-             Data = data;
-         }
-     }
+        public ToolTip(string first, Pixmap[] second, string third, string fourth)
+        {
+            First = first;
+            Second = second;
+            Third = third;
+            Fourth = fourth;
+        }
+    }
+
+
+    public readonly struct Pixmap
+    {
+        public readonly int Width;
+        public readonly int Height;
+        public readonly byte[] Data;
+
+        public Pixmap(int width, int height, byte[] data)
+        {
+            Width = width;
+            Height = height;
+            Data = data;
+        }
+    }
 }
