@@ -29,42 +29,24 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public async void Initialize()
         {
+            var con = DBusHelper.Connection;
+
+            _snw = con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
+                "/StatusNotifierWatcher");
+
             var x = Process.GetCurrentProcess().Id;
             var y = GetTID();
 
             _sysTraySrvName = $"org.kde.StatusNotifierItem-{x}-{y}";
             _statusNotifierItem = new StatusNotifierItem();
-            var con = DBusHelper.Connection;
 
             await con.RegisterObjectAsync(_statusNotifierItem);
 
             await con.RegisterServiceAsync(_sysTraySrvName, () =>
             {
             });
-
-            while (!await con.IsServiceActiveAsync(_sysTraySrvName))
-            {
-                await Task.Delay(150);
-            }
-
-            var yx = con.CreateProxy<IStatusNotifierItem>(_sysTraySrvName, _statusNotifierItem.ObjectPath);
-
-            _snw =
-                DBusHelper.Connection.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
-                    "/StatusNotifierWatcher");
-
-            while (!await DBusHelper.Connection.IsServiceActiveAsync("org.kde.StatusNotifierWatcher"))
-            {
-                await Task.Delay(150);
-            }
-
-            await _snw.RegisterStatusNotifierItemAsync(_sysTraySrvName);
-            //
-            // Task.Run(async () =>
-            // {
-            //     await Task.Delay(2000);
-            //     tx.InvalidateAll();
-            // });
+ 
+            await _snw.RegisterStatusNotifierItemAsync(_sysTraySrvName); 
         }
 
         public async void Dispose()
@@ -108,7 +90,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
                 Title = "Avalonia Test Tray",
                 Status = "Avalonia Test Tray",
                 Id = "Avalonia Test Tray",
-                AttentionIconPixmap = new[] { new Pixmap(0, 0, new byte[] {  }), new Pixmap(0, 0, new byte[] {  }) },
+                AttentionIconPixmap = new[] { new Pixmap(0, 0, new byte[] { }), new Pixmap(0, 0, new byte[] { }) },
                 // IconPixmap = new[] { new Pixmap(1, 1, new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }) }
             };
         }
@@ -130,7 +112,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         public async Task ScrollAsync(int Delta, string Orientation)
         {
         }
-        
+
         public void InvalidateAll()
         {
             OnTitleChanged?.Invoke();
@@ -217,8 +199,8 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public void SetIcon(Pixmap pixmap)
         {
-           props.IconPixmap = new[] { pixmap };
-           InvalidateAll();
+            props.IconPixmap = new[] { pixmap };
+            InvalidateAll();
         }
     }
 
