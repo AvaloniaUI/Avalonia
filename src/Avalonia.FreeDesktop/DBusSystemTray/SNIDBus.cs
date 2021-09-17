@@ -21,8 +21,14 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
             var path =
                  Connection.Session.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
-                    "org.kde.StatusNotifierWatcher");
+                    "/StatusNotifierWatcher");
+            
              await path.RegisterStatusNotifierHostAsync(serviceName);
+
+             await path.WatchPropertiesAsync(x =>
+             {
+
+             });
 
              await path.WatchStatusNotifierHostRegisteredAsync(() =>
              {
