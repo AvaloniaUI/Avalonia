@@ -103,7 +103,7 @@ namespace Avalonia.X11
 
         public ITrayIconImpl CreateTrayIcon ()
         {
-            return new X11TrayIconImpl();
+            return new X11TrayIconImpl(this);
         }
 
         public IWindowImpl CreateWindow()
