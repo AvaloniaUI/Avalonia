@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Platform;
+using Avalonia.FreeDesktop.DBusSystemTray;
 using Avalonia.Platform;
 
 namespace Avalonia.X11
@@ -9,9 +10,11 @@ namespace Avalonia.X11
         public INativeMenuExporter MenuExporter => null;
 
         public Action OnClicked { get; set; }
-
+        private SNIDBus sni = new SNIDBus();
+        
         public void Dispose()
         {
+            
             
         }
 
@@ -27,7 +30,7 @@ namespace Avalonia.X11
 
         public void SetToolTipText(string text)
         {
-            
+            sni.Initialize();
         }
     }
 }
