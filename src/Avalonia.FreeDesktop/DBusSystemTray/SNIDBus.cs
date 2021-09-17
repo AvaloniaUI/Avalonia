@@ -10,13 +10,16 @@ using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop.DBusSystemTray
 {
-    public class SNIDBus
+    public class SNIDBus : IDisposable
     {
         public SNIDBus()
         {
         }
 
         private static int trayinstanceID = 0;
+        private IStatusNotifierWatcher _snw;
+        private string _sysTraySrvName;
+        private StatusNotifierItem _statusNotifierItem;
 
         private static int GetTID()
         {
@@ -29,32 +32,55 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             var x = Process.GetCurrentProcess().Id;
             var y = GetTID();
 
-            var sysTraySrvName = $"org.kde.StatusNotifierItem-{x}-{y}";
-            var tx = new StatusNotifierItem();
+            _sysTraySrvName = $"org.kde.StatusNotifierItem-{x}-{y}";
+            _statusNotifierItem = new StatusNotifierItem();
+            var con = DBusHelper.Connection;
 
-            await DBusHelper.Connection.RegisterObjectAsync(tx);
+            await con.RegisterObjectAsync(_statusNotifierItem);
 
-            await DBusHelper.Connection.RegisterServiceAsync(sysTraySrvName, () =>
+            await con.RegisterServiceAsync(_sysTraySrvName, () =>
             {
             });
 
-            while (!await DBusHelper.Connection.IsServiceActiveAsync(sysTraySrvName))
+            while (!await con.IsServiceActiveAsync(_sysTraySrvName))
             {
-                await Task.Delay(1000);
+                await Task.Delay(150);
             }
 
-            var yx = DBusHelper.Connection.CreateProxy<IStatusNotifierItem>(sysTraySrvName, tx.ObjectPath);
+            var yx = con.CreateProxy<IStatusNotifierItem>(_sysTraySrvName, _statusNotifierItem.ObjectPath);
 
-            var snw =
+            _snw =
                 DBusHelper.Connection.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
                     "/StatusNotifierWatcher");
 
             while (!await DBusHelper.Connection.IsServiceActiveAsync("org.kde.StatusNotifierWatcher"))
             {
-                await Task.Delay(1000);
+                await Task.Delay(150);
             }
 
-            await snw.RegisterStatusNotifierItemAsync(sysTraySrvName);
+            await _snw.RegisterStatusNotifierItemAsync(_sysTraySrvName);
+            //
+            // Task.Run(async () =>
+            // {
+            //     await Task.Delay(2000);
+            //     tx.InvalidateAll();
+            // });
+
+        }
+
+        public async void Dispose()
+        {
+            var con = DBusHelper.Connection;
+            
+            if (await con.UnregisterServiceAsync(_sysTraySrvName))
+            {
+                con.UnregisterObject(_statusNotifierItem);
+            }
+        }
+
+        public void SetIcon(Pixmap pixmap)
+        {
+            _statusNotifierItem.SetIcon(pixmap);
         }
     }
 
@@ -77,72 +103,14 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         {
             var ID = Guid.NewGuid().ToString().Replace("-", "");
             ObjectPath = new ObjectPath($"/StatusNotifierItem");
-            props = new StatusNotifierItemProperties();
 
-            var dummyicons = new[] { (1, 1, new byte[8 * 4]), (1, 1, new byte[8 * 4]), };
-            
-            
- 
-            props.Title = "Avalonia Test Tray";
-            props.IconPixmap = dummyicons;
-            props.Id = ID;
-            props.IconName = "Avalonia";
-            props.ToolTip = ("Avalonia Test Tooltip", dummyicons, "Avalonia Test Tooltip Message", "And another one");
-            
-            
-            
- //     
-            //     
-            // public string Category { get; set; } = default;
-            //
-            // public string Id { get; set; } = default;
-            //
-            // public string Title { get; set; } = default;
-            //
-            // public string Status { get; set; } = default;
-            //
-            // public int WindowId { get; set; } = default;
+            props = new StatusNotifierItemProperties
+            {
+                Title = "Avalonia Test Tray",
+                Status = "Avalonia Test Tray", 
+                Id = "Avalonia Test Tray"
+            };
         }
-
-         
-
-        // static class StatusNotifierItemExtensions
-        // {
-        //     public static Task<string> GetCategoryAsync(this IStatusNotifierItem o) => o.GetAsync<string>("Category");
-        //     public static Task<string> GetIdAsync(this IStatusNotifierItem o) => o.GetAsync<string>("Id");
-        //     public static Task<string> GetTitleAsync(this IStatusNotifierItem o) => o.GetAsync<string>("Title");
-        //     public static Task<string> GetStatusAsync(this IStatusNotifierItem o) => o.GetAsync<string>("Status");
-        //     public static Task<int> GetWindowIdAsync(this IStatusNotifierItem o) => o.GetAsync<int>("WindowId");
-        //
-        //     public static Task<string> GetIconThemePathAsync(this IStatusNotifierItem o) =>
-        //         o.GetAsync<string>("IconThemePath");
-        //
-        //     public static Task<ObjectPath> GetMenuAsync(this IStatusNotifierItem o) => o.GetAsync<ObjectPath>("Menu");
-        //     public static Task<bool> GetItemIsMenuAsync(this IStatusNotifierItem o) => o.GetAsync<bool>("ItemIsMenu");
-        //     public static Task<string> GetIconNameAsync(this IStatusNotifierItem o) => o.GetAsync<string>("IconName");
-        //
-        //     public static Task<(int, int, byte[])[]> GetIconPixmapAsync(this IStatusNotifierItem o) =>
-        //         o.GetAsync<(int, int, byte[])[]>("IconPixmap");
-        //
-        //     public static Task<string> GetOverlayIconNameAsync(this IStatusNotifierItem o) =>
-        //         o.GetAsync<string>("OverlayIconName");
-        //
-        //     public static Task<(int, int, byte[])[]> GetOverlayIconPixmapAsync(this IStatusNotifierItem o) =>
-        //         o.GetAsync<(int, int, byte[])[]>("OverlayIconPixmap");
-        //
-        //     public static Task<string> GetAttentionIconNameAsync(this IStatusNotifierItem o) =>
-        //         o.GetAsync<string>("AttentionIconName");
-        //
-        //     public static Task<(int, int, byte[])[]> GetAttentionIconPixmapAsync(this IStatusNotifierItem o) =>
-        //         o.GetAsync<(int, int, byte[])[]>("AttentionIconPixmap");
-        //
-        //     public static Task<string> GetAttentionMovieNameAsync(this IStatusNotifierItem o) =>
-        //         o.GetAsync<string>("AttentionMovieName");
-        //
-        //     public static Task<(string, (int, int, byte[])[], string, string)>
-        //         GetToolTipAsync(this IStatusNotifierItem o) =>
-        //         o.GetAsync<(string, (int, int, byte[])[], string, string)>("ToolTip");
-        // }
 
         public async Task ContextMenuAsync(int X, int Y)
         {
@@ -162,6 +130,14 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         {
         }
 
+
+        public void InvalidateAll()
+        {
+            OnTitleChanged?.Invoke();
+            OnIconChanged?.Invoke();
+            OnOverlayIconChanged?.Invoke();
+        }
+        
         public async Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError = null)
         {
             OnTitleChanged += handler;
@@ -202,20 +178,35 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public async Task<object> GetAsync(string prop)
         {
-            return default;
+            return prop switch
+            {
+                "Category" => props.Category,
+                "Id" => props.Id,
+                "Title" => props.Title,
+                "Status" => props.Status,
+                "WindowId" => props.WindowId,
+                "IconThemePath" => props.IconThemePath,
+                "ItemIsMenu" => props.ItemIsMenu,
+                "IconName" => props.IconName,
+                "IconPixmap" => props.IconPixmap,
+                "OverlayIconName" => props.OverlayIconName,
+                "OverlayIconPixmap" => props.OverlayIconPixmap,
+                "AttentionIconName" => props.AttentionIconName,
+                "AttentionIconPixmap" => props.AttentionIconPixmap,
+                "AttentionMovieName" => props.AttentionMovieName,
+                "ToolTip" => props.ToolTip,
+                _ => default
+            };
         }
-
-        public Action<string> NewStatusAsync { get; set; }
 
         public async Task<StatusNotifierItemProperties> GetAllAsync()
         {
             return props;
         }
 
-        public async Task SetAsync(string prop, object val)
-        {
-            throw new NotImplementedException();
-        }
+        public Action<string> NewStatusAsync { get; set; }
+
+        public Task SetAsync(string prop, object val) => Task.CompletedTask;
 
         public async Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler)
         {
@@ -223,9 +214,10 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             return Disposable.Create(() => OnPropertyChange -= handler);
         }
 
-        public void Ready()
+        public void SetIcon(Pixmap pixmap)
         {
-            OnTitleChanged?.Invoke();
+            props.IconPixmap = pixmap;
+            InvalidateAll();
         }
     }
 
@@ -251,11 +243,11 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     [Dictionary]
     class StatusNotifierWatcherProperties
     {
-        public string[] RegisteredStatusNotifierItems { get; set; } = default;
+        public string[] RegisteredStatusNotifierItems;
 
-        public bool IsStatusNotifierHostRegistered { get; set; } = default;
+        public bool IsStatusNotifierHostRegistered;
 
-        public int ProtocolVersion { get; set; } = default;
+        public int ProtocolVersion;
     }
 
     static class StatusNotifierWatcherExtensions
@@ -300,7 +292,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     [Dictionary]
     class ApplicationProperties
     {
-        public bool Busy { get; set; } = default;
+        public bool Busy;
     }
 
     static class ApplicationExtensions
@@ -330,7 +322,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     [Dictionary]
     class ProfilerProperties
     {
-        public IDictionary<string, object> Capabilities { get; set; } = default;
+        public IDictionary<string, object> Capabilities;
     }
 
     static class ProfilerExtensions
@@ -362,36 +354,50 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     [Dictionary]
     class StatusNotifierItemProperties
     {
-        public string Category { get; set; } = default;
+        public string Category;
 
-        public string Id { get; set; } = default;
+        public string Id;
 
-        public string Title { get; set; } = default;
+        public string Title;
 
-        public string Status { get; set; } = default;
+        public string Status;
 
-        public int WindowId { get; set; } = default;
+        public int WindowId;
 
-        public string IconThemePath { get; set; } = default;
+        public string IconThemePath;
 
-        public ObjectPath Menu { get; set; } = default;
+        public ObjectPath Menu;
 
-        public bool ItemIsMenu { get; set; } = default;
+        public bool ItemIsMenu;
 
-        public string IconName { get; set; } = default;
+        public string IconName;
 
-        public (int, int, byte[])[] IconPixmap { get; set; } = default;
+        public Pixmap IconPixmap;
 
-        public string OverlayIconName { get; set; } = default;
+        public string OverlayIconName;
 
-        public (int, int, byte[])[] OverlayIconPixmap { get; set; } = default;
+        public Pixmap OverlayIconPixmap;
 
-        public string AttentionIconName { get; set; } = default;
+        public string AttentionIconName;
 
-        public (int, int, byte[])[] AttentionIconPixmap { get; set; } = default;
+        public Pixmap AttentionIconPixmap;
 
-        public string AttentionMovieName { get; set; } = default;
+        public string AttentionMovieName;
 
-        public (string, (int, int, byte[])[], string, string) ToolTip { get; set; } = default;
+        public (string, Pixmap, string, string) ToolTip;
     }
+
+    public struct Pixmap
+     {
+         private readonly int Width;
+         private readonly int Height;
+         private readonly byte[] Data;
+
+         public Pixmap(int width, int height, byte[] data)
+         {
+             Width = width;
+             Height = height;
+             Data = data;
+         }
+     }
 }
