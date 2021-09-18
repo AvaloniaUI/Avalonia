@@ -32,10 +32,10 @@ namespace Avalonia.FreeDesktop
             return new DBusMenuExporterImpl(DBusHelper.Connection, path);
         }
 
-        public static ObjectPath GenerateDBusMenuObjPath = "/net/avaloniaui/dbusmenu/"
+        public static ObjectPath GenerateDBusMenuObjPath => "/net/avaloniaui/dbusmenu/"
                                                            + Guid.NewGuid().ToString().Replace("-", "");
 
-        class DBusMenuExporterImpl : ITopLevelNativeMenuExporter, IDBusMenu, IDisposable
+        private class DBusMenuExporterImpl : ITopLevelNativeMenuExporter, IDBusMenu, IDisposable
         {
             private readonly Connection _dbus;
             private readonly uint _xid;
