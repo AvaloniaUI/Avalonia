@@ -65,6 +65,8 @@ namespace Avalonia.FreeDesktop
                     // and it's not important to know if it succeeds
                     // since even if we register the window it's not guaranteed that
                     // menu will be actually exported
+                    
+                    Dispose();
                 }
             }
 

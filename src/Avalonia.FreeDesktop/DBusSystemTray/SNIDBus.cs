@@ -93,6 +93,8 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
                 AttentionIconPixmap = new[] { new Pixmap(0, 0, new byte[] { }), new Pixmap(0, 0, new byte[] { }) },
                 // IconPixmap = new[] { new Pixmap(1, 1, new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }) }
             };
+            
+            InvalidateAll();
         }
 
         public async Task ContextMenuAsync(int X, int Y)
