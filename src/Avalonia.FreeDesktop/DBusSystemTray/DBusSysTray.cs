@@ -8,24 +8,19 @@ using Avalonia.Controls.Platform;
 using Tmds.DBus;
 
 [assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
-
 namespace Avalonia.FreeDesktop.DBusSystemTray
 {
-    public class SNIDBus : IDisposable
-    {
-        public SNIDBus()
-        {
-        }
-
+    public class DBusSysTray : IDisposable
+    { 
         private static int trayinstanceID = 0;
         private IStatusNotifierWatcher _snw;
         private string _sysTraySrvName;
-        private StatusNotifierItem _statusNotifierItem;
+        private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
         public INativeMenuExporter NativeMenuExporter;
 
         private static int GetTID()
         {
-            return trayinstanceID = new Random().Next(0, 100);
+            return trayinstanceID++;
         }
 
         public async void Initialize()
@@ -39,16 +34,15 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             var y = GetTID();
 
             _sysTraySrvName = $"org.kde.StatusNotifierItem-{x}-{y}";
-            _statusNotifierItem = new StatusNotifierItem();
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj();
 
-            await con.RegisterObjectAsync(_statusNotifierItem);
+            await con.RegisterObjectAsync(_statusNotifierItemDbusObj);
 
             await con.RegisterServiceAsync(_sysTraySrvName);
 
             await _snw.RegisterStatusNotifierItemAsync(_sysTraySrvName);
 
-            NativeMenuExporter = _statusNotifierItem.NativeMenuExporter;
-
+            NativeMenuExporter = _statusNotifierItemDbusObj.NativeMenuExporter;
         }
 
         public async void Dispose()
@@ -57,17 +51,17 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
             if (await con.UnregisterServiceAsync(_sysTraySrvName))
             {
-                con.UnregisterObject(_statusNotifierItem);
+                con.UnregisterObject(_statusNotifierItemDbusObj);
             }
         }
 
         public void SetIcon(Pixmap pixmap)
         {
-            _statusNotifierItem.SetIcon(pixmap);
+            _statusNotifierItemDbusObj.SetIcon(pixmap);
         }
     }
 
-    internal class StatusNotifierItem : IStatusNotifierItem
+    internal class StatusNotifierItemDbusObj : IStatusNotifierItem
     {
         private event Action<PropertyChanges> OnPropertyChange;
         public event Action OnTitleChanged;
@@ -81,7 +75,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         readonly StatusNotifierItemProperties props;
 
-        public StatusNotifierItem()
+        public StatusNotifierItemDbusObj()
         {
             var ID = Guid.NewGuid().ToString().Replace("-", "");
             ObjectPath = new ObjectPath($"/StatusNotifierItem");

@@ -9,60 +9,21 @@ namespace Avalonia.X11
 {
     class X11TrayIconImpl : ITrayIconImpl
     {
-        private readonly AvaloniaX11Platform _avaloniaX11Platform;
         public INativeMenuExporter MenuExporter { get; }
-
         public Action OnClicked { get; set; }
-        private SNIDBus sni = new SNIDBus();
 
-        public X11TrayIconImpl(AvaloniaX11Platform avaloniaX11Platform)
+        private DBusSysTray dBusSysTray;
+
+        public X11TrayIconImpl()
         {
-            _avaloniaX11Platform = avaloniaX11Platform;
-            sni.Initialize();
-            MenuExporter = sni.NativeMenuExporter;
+            dBusSysTray = new DBusSysTray();
+            dBusSysTray.Initialize();
+            MenuExporter = dBusSysTray.NativeMenuExporter;
         }
 
         public void Dispose()
         {
-            sni?.Dispose();
-        }
-
-        [StructLayout(LayoutKind.Explicit)]
-        readonly struct BGRA32
-        {
-            [FieldOffset(3)] public readonly byte A;
-
-            [FieldOffset(2)] public readonly byte R;
-
-            [FieldOffset(1)] public readonly byte G;
-
-            [FieldOffset(0)] public readonly byte B;
-
-            public ARGB32 ToARGB32()
-            {
-                return new ARGB32(A, R, G, B);
-            }
-        }
-
-
-        [StructLayout(LayoutKind.Explicit)]
-        readonly struct ARGB32
-        {
-            [FieldOffset(0)] public readonly byte A;
-
-            [FieldOffset(1)] public readonly byte R;
-
-            [FieldOffset(2)] public readonly byte G;
-
-            [FieldOffset(3)] public readonly byte B;
-
-            public ARGB32(byte a, byte r, byte g, byte b)
-            {
-                A = a;
-                R = r;
-                G = g;
-                B = b;
-            }
+            dBusSysTray?.Dispose();
         }
 
         public void SetIcon(IWindowIconImpl icon)
@@ -74,25 +35,25 @@ namespace Avalonia.X11
 
             var rx = x11icon.Data.AsSpan(2);
             var pixLength = w * h;
-            var pixelArray = new ARGB32[pixLength];
+
+            var pixByteArrayCounter = 0;
+            var pixByteArray = new byte[w * h * 4];
 
             for (var i = 0; i < pixLength; i++)
             {
                 var u = rx[i].ToUInt32();
-                var a = (byte)((u & 0xFF000000) >> 24);
-                var r = (byte)((u & 0x00FF0000) >> 16);
-                var g = (byte)((u & 0x0000FF00) >> 8);
-                var b = (byte)((u & 0x000000FF));
-                pixelArray[i] = new ARGB32(a, r, g, b);
+                pixByteArray[pixByteArrayCounter++] = (byte)((u & 0xFF000000) >> 24);
+                pixByteArray[pixByteArrayCounter++] = (byte)((u & 0xFF0000) >> 16);
+                pixByteArray[pixByteArrayCounter++] = (byte)((u & 0xFF00) >> 8);
+                pixByteArray[pixByteArrayCounter++] = (byte)(u & 0xFF);
             }
 
-            var pixmapBytes = MemoryMarshal.Cast<ARGB32, byte>(pixelArray).ToArray();
-
-            sni.SetIcon(new Pixmap(w, h, pixmapBytes));
+            dBusSysTray.SetIcon(new Pixmap(w, h, pixByteArray));
         }
- 
+
         public void SetIsVisible(bool visible)
         {
+            
         }
 
         public void SetToolTipText(string text)
