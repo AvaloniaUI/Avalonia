@@ -16,16 +16,30 @@ namespace Avalonia.FreeDesktop
 {
     public class DBusMenuExporter
     {
-        public static ITopLevelNativeMenuExporter TryCreate(IntPtr xid)
+        public static ITopLevelNativeMenuExporter TryCreateTopLevelNativeMenu(IntPtr xid)
         {
+            return null;
+            
             if (DBusHelper.Connection == null)
                 return null;
 
             return new DBusMenuExporterImpl(DBusHelper.Connection, xid);
         }
+        
+        public static INativeMenuExporter TryCreateDetachedNativeMenu(ObjectPath path)
+        {
+            if (DBusHelper.Connection == null)
+                return null;
+
+            return new DBusMenuExporterImpl(DBusHelper.Connection, path);
+        }
+
+        public static ObjectPath GenerateDBusMenuObjPath = "/net/avaloniaui/dbusmenu/"
+                                                           + Guid.NewGuid().ToString().Replace("-", "");
 
         class DBusMenuExporterImpl : ITopLevelNativeMenuExporter, IDBusMenu, IDisposable
         {
+            private readonly string _targetServiceName;
             private readonly Connection _dbus;
             private readonly uint _xid;
             private IRegistrar _registar;
@@ -37,26 +51,41 @@ namespace Avalonia.FreeDesktop
             private readonly HashSet<NativeMenu> _menus = new HashSet<NativeMenu>();
             private bool _resetQueued;
             private int _nextId = 1;
+            private bool AppMenu = true;
             public DBusMenuExporterImpl(Connection dbus, IntPtr xid)
             {
                 _dbus = dbus;
                 _xid = (uint)xid.ToInt32();
-                ObjectPath = new ObjectPath("/net/avaloniaui/dbusmenu/"
-                                            + Guid.NewGuid().ToString().Replace("-", ""));
+                ObjectPath = GenerateDBusMenuObjPath;
                 SetNativeMenu(new NativeMenu());
                 Init();
             }
 
+            public DBusMenuExporterImpl(Connection dbus, ObjectPath path)
+            {
+                _dbus = dbus;
+                AppMenu = false;
+                ObjectPath = path;
+                SetNativeMenu(new NativeMenu());
+                Init();
+            }
             async void Init()
             {
                 try
                 {
-                    await _dbus.RegisterObjectAsync(this);
-                    _registar = DBusHelper.Connection.CreateProxy<IRegistrar>(
-                        "com.canonical.AppMenu.Registrar",
-                        "/com/canonical/AppMenu/Registrar");
-                    if (!_disposed)
-                        await _registar.RegisterWindowAsync(_xid, ObjectPath);
+                    if (AppMenu)
+                    {
+                        await _dbus.RegisterObjectAsync(this);
+                        _registar = DBusHelper.Connection.CreateProxy<IRegistrar>(
+                            "com.canonical.AppMenu.Registrar",
+                            "/com/canonical/AppMenu/Registrar");
+                        if (!_disposed)
+                            await _registar.RegisterWindowAsync(_xid, ObjectPath);
+                    }
+                    else
+                    {
+                        await _dbus.RegisterObjectAsync(this);
+                    }
                 }
                 catch (Exception e)
                 {

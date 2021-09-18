@@ -48,8 +48,8 @@ namespace Avalonia.X11
         
         public X11IconData(Bitmap bitmap)
         {
-            _width = Math.Min(bitmap.PixelSize.Width, 128);
-            _height = Math.Min(bitmap.PixelSize.Height, 128);
+            _width = Math.Min(bitmap.PixelSize.Width, 256);
+            _height = Math.Min(bitmap.PixelSize.Height, 256);
             _bdata = new uint[_width * _height];
             fixed (void* ptr = _bdata)
             {

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Avalonia.Controls.Platform;
 using Tmds.DBus;
 
 [assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
@@ -20,11 +21,11 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         private IStatusNotifierWatcher _snw;
         private string _sysTraySrvName;
         private StatusNotifierItem _statusNotifierItem;
+        public INativeMenuExporter NativeMenuExporter;
 
         private static int GetTID()
         {
-            trayinstanceID = 4;
-            return trayinstanceID;
+            return trayinstanceID = new Random().Next(0, 100);
         }
 
         public async void Initialize()
@@ -42,11 +43,12 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
             await con.RegisterObjectAsync(_statusNotifierItem);
 
-            await con.RegisterServiceAsync(_sysTraySrvName, () =>
-            {
-            });
- 
-            await _snw.RegisterStatusNotifierItemAsync(_sysTraySrvName); 
+            await con.RegisterServiceAsync(_sysTraySrvName);
+
+            await _snw.RegisterStatusNotifierItemAsync(_sysTraySrvName);
+
+            NativeMenuExporter = _statusNotifierItem.NativeMenuExporter;
+
         }
 
         public async void Dispose()
@@ -68,7 +70,6 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     internal class StatusNotifierItem : IStatusNotifierItem
     {
         private event Action<PropertyChanges> OnPropertyChange;
-
         public event Action OnTitleChanged;
         public event Action OnIconChanged;
         public event Action OnAttentionIconChanged;
@@ -84,18 +85,25 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         {
             var ID = Guid.NewGuid().ToString().Replace("-", "");
             ObjectPath = new ObjectPath($"/StatusNotifierItem");
+            var blankPixmaps = new[] { new Pixmap(0, 0, new byte[] { }), new Pixmap(0, 0, new byte[] { }) };
+
+            var dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
+
+            NativeMenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusmenuPath);
 
             props = new StatusNotifierItemProperties
             {
+                Menu = "/MenuBar", // Needs a dbus menu somehow
+                ItemIsMenu = false,
+                ToolTip = new ToolTip("", blankPixmaps, "Avalonia Test Tray", ""),
+                Category = "",
                 Title = "Avalonia Test Tray",
                 Status = "Avalonia Test Tray",
                 Id = "Avalonia Test Tray",
-                AttentionIconPixmap = new[] { new Pixmap(0, 0, new byte[] { }), new Pixmap(0, 0, new byte[] { }) },
-                // IconPixmap = new[] { new Pixmap(1, 1, new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }) }
             };
-            
-            InvalidateAll();
         }
+
+        public INativeMenuExporter NativeMenuExporter;
 
         public async Task ContextMenuAsync(int X, int Y)
         {
@@ -207,7 +215,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     }
 
     [DBusInterface("org.kde.StatusNotifierWatcher")]
-    interface IStatusNotifierWatcher : IDBusObject
+    internal interface IStatusNotifierWatcher : IDBusObject
     {
         Task RegisterStatusNotifierItemAsync(string Service);
         Task RegisterStatusNotifierHostAsync(string Service);
@@ -226,7 +234,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     }
 
     [Dictionary]
-    class StatusNotifierWatcherProperties
+    internal class StatusNotifierWatcherProperties
     {
         public string[] RegisteredStatusNotifierItems;
 
@@ -235,7 +243,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         public int ProtocolVersion;
     }
 
-    static class StatusNotifierWatcherExtensions
+    internal static class StatusNotifierWatcherExtensions
     {
         public static Task<string[]> GetRegisteredStatusNotifierItemsAsync(this IStatusNotifierWatcher o) =>
             o.GetAsync<string[]>("RegisteredStatusNotifierItems");
@@ -247,74 +255,6 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             o.GetAsync<int>("ProtocolVersion");
     }
 
-    [DBusInterface("org.gtk.Actions")]
-    interface IActions : IDBusObject
-    {
-        Task<string[]> ListAsync();
-        Task<(bool description, Signature, object[])> DescribeAsync(string ActionName);
-        Task<IDictionary<string, (bool, Signature, object[])>> DescribeAllAsync();
-        Task ActivateAsync(string ActionName, object[] Parameter, IDictionary<string, object> PlatformData);
-        Task SetStateAsync(string ActionName, object Value, IDictionary<string, object> PlatformData);
-
-        Task<IDisposable> WatchChangedAsync(
-            Action<(string[] removals, IDictionary<string, bool> enableChanges, IDictionary<string, object> stateChanges
-                , IDictionary<string, (bool, Signature, object[])> additions)> handler,
-            Action<Exception> onError = null);
-    }
-
-    [DBusInterface("org.gtk.Application")]
-    interface IApplication : IDBusObject
-    {
-        Task ActivateAsync(IDictionary<string, object> PlatformData);
-        Task OpenAsync(string[] Uris, string Hint, IDictionary<string, object> PlatformData);
-        Task<int> CommandLineAsync(ObjectPath Path, byte[][] Arguments, IDictionary<string, object> PlatformData);
-        Task<T> GetAsync<T>(string prop);
-        Task<ApplicationProperties> GetAllAsync();
-        Task SetAsync(string prop, object val);
-        Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
-    }
-
-    [Dictionary]
-    class ApplicationProperties
-    {
-        public bool Busy;
-    }
-
-    static class ApplicationExtensions
-    {
-        public static Task<bool> GetBusyAsync(this IApplication o) => o.GetAsync<bool>("Busy");
-    }
-
-    [DBusInterface("org.freedesktop.Application")]
-    interface IApplication0 : IDBusObject
-    {
-        Task ActivateAsync(IDictionary<string, object> PlatformData);
-        Task OpenAsync(string[] Uris, IDictionary<string, object> PlatformData);
-        Task ActivateActionAsync(string ActionName, object[] Parameter, IDictionary<string, object> PlatformData);
-    }
-
-    [DBusInterface("org.gnome.Sysprof3.Profiler")]
-    interface IProfiler : IDBusObject
-    {
-        Task StartAsync(IDictionary<string, object> Options, CloseSafeHandle Fd);
-        Task StopAsync();
-        Task<T> GetAsync<T>(string prop);
-        Task<ProfilerProperties> GetAllAsync();
-        Task SetAsync(string prop, object val);
-        Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
-    }
-
-    [Dictionary]
-    class ProfilerProperties
-    {
-        public IDictionary<string, object> Capabilities;
-    }
-
-    static class ProfilerExtensions
-    {
-        public static Task<IDictionary<string, object>> GetCapabilitiesAsync(this IProfiler o) =>
-            o.GetAsync<IDictionary<string, object>>("Capabilities");
-    }
 
     [DBusInterface("org.kde.StatusNotifierItem")]
     interface IStatusNotifierItem : IDBusObject
@@ -337,7 +277,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
 
     [Dictionary]
-    class StatusNotifierItemProperties
+    internal class StatusNotifierItemProperties
     {
         public string Category;
 
@@ -387,7 +327,6 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             Fourth = fourth;
         }
     }
-
 
     public readonly struct Pixmap
     {
