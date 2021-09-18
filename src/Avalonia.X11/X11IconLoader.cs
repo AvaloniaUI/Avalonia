@@ -57,10 +57,12 @@ namespace Avalonia.X11
                 iptr[0] = _width;
                 iptr[1] = _height;
             }
+            
             using(var rt = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateRenderTarget(new[]{this}))
             using (var ctx = rt.CreateDrawingContext(null))
                 ctx.DrawBitmap(bitmap.PlatformImpl, 1, new Rect(bitmap.Size),
                     new Rect(0, 0, _width, _height));
+            
             Data = new UIntPtr[_width * _height + 2];
             Data[0] = new UIntPtr((uint)_width);
             Data[1] = new UIntPtr((uint)_height);
@@ -70,8 +72,6 @@ namespace Avalonia.X11
                 for (var x = 0; x < _width; x++)
                     Data[r + x] = new UIntPtr(_bdata[r + x]);
             }
-
-            _bdata = null;
         }
 
         public void Save(Stream outputStream)
