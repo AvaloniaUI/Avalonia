@@ -17,13 +17,10 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         private IStatusNotifierWatcher _statusNotifierWatcher;
         private string _sysTrayServiceName;
         private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
-        private Action _activateDelegate;
-
-        public INativeMenuExporter NativeMenuExporter { get; private set; }
-
+ 
         private static int GetTID() => s_trayIconInstanceId++;
 
-        public async void Initialize()
+        public async void Initialize(ObjectPath dbusmenuPath)
         {
             var con = DBusHelper.Connection;
 
@@ -34,16 +31,14 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             var tid = GetTID();
 
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
-            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj();
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(dbusmenuPath);
 
             await con.RegisterObjectAsync(_statusNotifierItemDbusObj);
 
             await con.RegisterServiceAsync(_sysTrayServiceName);
 
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
-
-            NativeMenuExporter = _statusNotifierItemDbusObj.NativeMenuExporter;
-        }
+         }
 
         public async void Dispose()
         {
@@ -86,26 +81,22 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         public event Action OnAttentionIconChanged;
         public event Action OnOverlayIconChanged;
         public event Action OnTooltipChanged;
-        public INativeMenuExporter NativeMenuExporter { get; set; }
+        public Action<INativeMenuExporter> SetNativeMenuExporter { get; set; }
         public Action<string> NewStatusAsync { get; set; }
         public Action ActivationDelegate { get; set; }
         public ObjectPath ObjectPath { get; }
 
-        public StatusNotifierItemDbusObj()
+        public StatusNotifierItemDbusObj(ObjectPath dbusmenuPath)
         {
             var ID = Guid.NewGuid().ToString().Replace("-", "");
             ObjectPath = new ObjectPath($"/StatusNotifierItem");
-
-            var dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
-
-            NativeMenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusmenuPath);
-
+            
             _backingProperties = new StatusNotifierItemProperties
             {
                 Menu = dbusmenuPath, // Needs a dbus menu somehow
                 ToolTip = new ToolTip("")
             };
-            
+
             InvalidateAll();
         }
 
@@ -175,8 +166,9 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         {
             if (prop.Contains("Menu"))
             {
-               return _backingProperties.Menu;
+                return _backingProperties.Menu;
             }
+
             return default;
         }
 

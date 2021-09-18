@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
+using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusSystemTray;
 using Avalonia.Platform;
 
@@ -20,8 +21,14 @@ namespace Avalonia.X11
         public X11TrayIconImpl()
         {
             _dBusSysTray = new DBusSysTray();
-            _dBusSysTray.Initialize();
-            MenuExporter = _dBusSysTray.NativeMenuExporter;
+            
+            
+            var dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
+            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusmenuPath);
+
+            
+            _dBusSysTray.Initialize(dbusmenuPath);
+            
         }
 
         public void Dispose()
