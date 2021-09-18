@@ -163,25 +163,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public async Task<object> GetAsync(string prop)
         {
-            return prop switch
-            {
-                "Category" => _backingProperties.Category,
-                "Id" => _backingProperties.Id,
-                "Title" => _backingProperties.Title,
-                "Status" => _backingProperties.Status,
-                "WindowId" => _backingProperties.WindowId,
-                "IconThemePath" => _backingProperties.IconThemePath,
-                "ItemIsMenu" => _backingProperties.ItemIsMenu,
-                "IconName" => _backingProperties.IconName,
-                "IconPixmap" => _backingProperties.IconPixmap,
-                "OverlayIconName" => _backingProperties.OverlayIconName,
-                "OverlayIconPixmap" => _backingProperties.OverlayIconPixmap,
-                "AttentionIconName" => _backingProperties.AttentionIconName,
-                "AttentionIconPixmap" => _backingProperties.AttentionIconPixmap,
-                "AttentionMovieName" => _backingProperties.AttentionMovieName,
-                "ToolTip" => _backingProperties.ToolTip,
-                _ => default
-            };
+            return default;
         }
 
         public async Task<StatusNotifierItemProperties> GetAllAsync()
