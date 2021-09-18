@@ -37,7 +37,6 @@ namespace Avalonia.FreeDesktop
 
         class DBusMenuExporterImpl : ITopLevelNativeMenuExporter, IDBusMenu, IDisposable
         {
-            private readonly string _targetServiceName;
             private readonly Connection _dbus;
             private readonly uint _xid;
             private IRegistrar _registar;
