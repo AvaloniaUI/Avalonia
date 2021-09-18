@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
@@ -40,16 +38,13 @@ namespace Avalonia.X11
 
             [FieldOffset(0)] public readonly byte B;
 
-            public BGRA32(byte a, byte r, byte g, byte b)
+            public ARGB32 ToARGB32()
             {
-                A = a;
-                R = r;
-                G = g;
-                B = b;
+                return new ARGB32(A, R, G, B);
             }
         }
-
-
+        
+        
         [StructLayout(LayoutKind.Explicit)]
         readonly struct ARGB32
         {
@@ -70,44 +65,32 @@ namespace Avalonia.X11
             }
         }
 
-        static unsafe class X11IconToPixmap
-        {
-        }
-
         public void SetIcon(IWindowIconImpl icon)
         {
             if (icon is X11IconData x11icon)
             {
-                var w = 6;
-                var h = 6;
-                var rb = 4;
-                var pixelBuf = new ARGB32[w * h];
+                var w = (int)x11icon.Data[0];
+                var h = (int)x11icon.Data[1];
+
+                using var fb = x11icon.Lock();
+
+                var pixLength = w * h;
+                var pixelArray = new ARGB32[pixLength];
                 
-                 
-                var gold = new ARGB32(255, 212, 175, 55);
-                var red = new ARGB32(255, 255, 0, 0);
-                var blue = new ARGB32(255, 0, 0, 255);
-
-                var ix = 0;
-                for (var y = 0; y < h; y++)
+                for (var i = 0; i < pixLength; i++)
                 {
-                    var offset = y * w;
-                    for (var x = 0; x < w; x++)
-                    {
-                        pixelBuf[offset + x] = (ix % 2 == 1) ? gold : blue;
-                        ix++;
-                    }
-                    ix++;
+                    var ins = new IntPtr(fb.Address.ToInt64() + i * 4);
+                    pixelArray[i] = Marshal.PtrToStructure<BGRA32>(ins).ToARGB32();
                 }
-
-                var pixmapBytes = MemoryMarshal.Cast<ARGB32, byte>(pixelBuf.AsSpan()).ToArray();
+                
+                var pixmapBytes = MemoryMarshal.Cast<ARGB32, byte>(pixelArray).ToArray();
                 
                 sni.SetIcon(new Pixmap(w, h, pixmapBytes));
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int PixCoord(int x, int y, int w) => x + (y *w);
+        private int PixCoord(int x, int y, int w) => x + (y * w);
 
         public void SetIsVisible(bool visible)
         {
