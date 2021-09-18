@@ -12,18 +12,18 @@ namespace Avalonia.X11
         public INativeMenuExporter MenuExporter { get; }
         public Action OnClicked { get; set; }
 
-        private DBusSysTray dBusSysTray;
+        private readonly DBusSysTray _dBusSysTray;
 
         public X11TrayIconImpl()
         {
-            dBusSysTray = new DBusSysTray();
-            dBusSysTray.Initialize();
-            MenuExporter = dBusSysTray.NativeMenuExporter;
+            _dBusSysTray = new DBusSysTray();
+            _dBusSysTray.Initialize();
+            MenuExporter = _dBusSysTray.NativeMenuExporter;
         }
 
         public void Dispose()
         {
-            dBusSysTray?.Dispose();
+            _dBusSysTray?.Dispose();
         }
 
         public void SetIcon(IWindowIconImpl icon)
@@ -48,7 +48,7 @@ namespace Avalonia.X11
                 pixByteArray[pixByteArrayCounter++] = (byte)(u & 0xFF);
             }
 
-            dBusSysTray.SetIcon(new Pixmap(w, h, pixByteArray));
+            _dBusSysTray.SetIcon(new Pixmap(w, h, pixByteArray));
         }
 
         public void SetIsVisible(bool visible)
@@ -58,6 +58,7 @@ namespace Avalonia.X11
 
         public void SetToolTipText(string text)
         {
+            _dBusSysTray.SetTitleAndTooltip(text);
         }
     }
 }

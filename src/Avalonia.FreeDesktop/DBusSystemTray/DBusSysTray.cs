@@ -8,39 +8,38 @@ using Avalonia.Controls.Platform;
 using Tmds.DBus;
 
 [assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
+
 namespace Avalonia.FreeDesktop.DBusSystemTray
 {
     public class DBusSysTray : IDisposable
-    { 
-        private static int trayinstanceID = 0;
-        private IStatusNotifierWatcher _snw;
-        private string _sysTraySrvName;
+    {
+        private static int s_trayIconInstanceId = 0;
+        private IStatusNotifierWatcher _statusNotifierWatcher;
+        private string _sysTrayServiceName;
         private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
-        public INativeMenuExporter NativeMenuExporter;
 
-        private static int GetTID()
-        {
-            return trayinstanceID++;
-        }
+        public INativeMenuExporter NativeMenuExporter { get; private set; }
+
+        private static int GetTID() => s_trayIconInstanceId++;
 
         public async void Initialize()
         {
             var con = DBusHelper.Connection;
 
-            _snw = con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
+            _statusNotifierWatcher = con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
                 "/StatusNotifierWatcher");
 
-            var x = Process.GetCurrentProcess().Id;
-            var y = GetTID();
+            var pid = Process.GetCurrentProcess().Id;
+            var tid = GetTID();
 
-            _sysTraySrvName = $"org.kde.StatusNotifierItem-{x}-{y}";
+            _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj();
 
             await con.RegisterObjectAsync(_statusNotifierItemDbusObj);
 
-            await con.RegisterServiceAsync(_sysTraySrvName);
+            await con.RegisterServiceAsync(_sysTrayServiceName);
 
-            await _snw.RegisterStatusNotifierItemAsync(_sysTraySrvName);
+            await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
             NativeMenuExporter = _statusNotifierItemDbusObj.NativeMenuExporter;
         }
@@ -49,7 +48,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         {
             var con = DBusHelper.Connection;
 
-            if (await con.UnregisterServiceAsync(_sysTraySrvName))
+            if (await con.UnregisterServiceAsync(_sysTrayServiceName))
             {
                 con.UnregisterObject(_statusNotifierItemDbusObj);
             }
@@ -58,6 +57,11 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         public void SetIcon(Pixmap pixmap)
         {
             _statusNotifierItemDbusObj.SetIcon(pixmap);
+        }
+
+        public void SetTitleAndTooltip(string text)
+        {
+            _statusNotifierItemDbusObj.SetTitleAndTooltip(text);
         }
     }
 
@@ -68,32 +72,26 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         public event Action OnIconChanged;
         public event Action OnAttentionIconChanged;
         public event Action OnOverlayIconChanged;
-
-
-        public Action NewToolTipAsync;
+        public event Action OnTooltipChanged;
+        
         public ObjectPath ObjectPath { get; }
 
-        readonly StatusNotifierItemProperties props;
+        readonly StatusNotifierItemProperties _backingProperties;
 
         public StatusNotifierItemDbusObj()
         {
             var ID = Guid.NewGuid().ToString().Replace("-", "");
             ObjectPath = new ObjectPath($"/StatusNotifierItem");
-            var blankPixmaps = new[] { new Pixmap(0, 0, new byte[] { }), new Pixmap(0, 0, new byte[] { }) };
 
             var dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
             NativeMenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusmenuPath);
 
-            props = new StatusNotifierItemProperties
+            _backingProperties = new StatusNotifierItemProperties
             {
                 Menu = "/MenuBar", // Needs a dbus menu somehow
                 ItemIsMenu = false,
-                ToolTip = new ToolTip("", blankPixmaps, "Avalonia Test Tray", ""),
-                Category = "",
-                Title = "Avalonia Test Tray",
-                Status = "Avalonia Test Tray",
-                Id = "Avalonia Test Tray",
+                ToolTip = new ToolTip("")
             };
         }
 
@@ -123,6 +121,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             OnIconChanged?.Invoke();
             OnOverlayIconChanged?.Invoke();
             OnAttentionIconChanged?.Invoke();
+            OnTooltipChanged?.Invoke();
         }
 
         public async Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError = null)
@@ -143,8 +142,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             OnAttentionIconChanged += handler;
             return Disposable.Create(() => OnAttentionIconChanged -= handler);
         }
-
-
+        
         public async Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError = null)
         {
             OnOverlayIconChanged += handler;
@@ -153,8 +151,8 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public async Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError = null)
         {
-            NewToolTipAsync += handler;
-            return Disposable.Create(() => NewToolTipAsync -= handler);
+            OnTooltipChanged += handler;
+            return Disposable.Create(() => OnTooltipChanged -= handler);
         }
 
         public async Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError = null)
@@ -167,28 +165,28 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         {
             return prop switch
             {
-                "Category" => props.Category,
-                "Id" => props.Id,
-                "Title" => props.Title,
-                "Status" => props.Status,
-                "WindowId" => props.WindowId,
-                "IconThemePath" => props.IconThemePath,
-                "ItemIsMenu" => props.ItemIsMenu,
-                "IconName" => props.IconName,
-                "IconPixmap" => props.IconPixmap,
-                "OverlayIconName" => props.OverlayIconName,
-                "OverlayIconPixmap" => props.OverlayIconPixmap,
-                "AttentionIconName" => props.AttentionIconName,
-                "AttentionIconPixmap" => props.AttentionIconPixmap,
-                "AttentionMovieName" => props.AttentionMovieName,
-                "ToolTip" => props.ToolTip,
+                "Category" => _backingProperties.Category,
+                "Id" => _backingProperties.Id,
+                "Title" => _backingProperties.Title,
+                "Status" => _backingProperties.Status,
+                "WindowId" => _backingProperties.WindowId,
+                "IconThemePath" => _backingProperties.IconThemePath,
+                "ItemIsMenu" => _backingProperties.ItemIsMenu,
+                "IconName" => _backingProperties.IconName,
+                "IconPixmap" => _backingProperties.IconPixmap,
+                "OverlayIconName" => _backingProperties.OverlayIconName,
+                "OverlayIconPixmap" => _backingProperties.OverlayIconPixmap,
+                "AttentionIconName" => _backingProperties.AttentionIconName,
+                "AttentionIconPixmap" => _backingProperties.AttentionIconPixmap,
+                "AttentionMovieName" => _backingProperties.AttentionMovieName,
+                "ToolTip" => _backingProperties.ToolTip,
                 _ => default
             };
         }
 
         public async Task<StatusNotifierItemProperties> GetAllAsync()
         {
-            return props;
+            return _backingProperties;
         }
 
         public Action<string> NewStatusAsync { get; set; }
@@ -203,7 +201,18 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public void SetIcon(Pixmap pixmap)
         {
-            props.IconPixmap = new[] { pixmap };
+            _backingProperties.IconPixmap = new[] { pixmap };
+            InvalidateAll();
+        }
+
+        public void SetTitleAndTooltip(string text)
+        {
+            _backingProperties.Id = text;
+            _backingProperties.Category = "ApplicationStatus";
+            _backingProperties.Status = text;
+            _backingProperties.Title = text;
+            _backingProperties.ToolTip = new ToolTip(text);
+
             InvalidateAll();
         }
     }
@@ -306,13 +315,24 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         public ToolTip ToolTip;
     }
 
-    public readonly struct ToolTip
+    public struct ToolTip
     {
         public readonly string First;
         public readonly Pixmap[] Second;
         public readonly string Third;
         public readonly string Fourth;
 
+        private static readonly Pixmap[] s_blankPixmaps =
+        {
+            new Pixmap(0, 0, new byte[] { }),
+            new Pixmap(0, 0, new byte[] { })
+        };
+        
+        public ToolTip(string message) : this("", s_blankPixmaps, message, "")
+        {
+            
+        }
+        
         public ToolTip(string first, Pixmap[] second, string third, string fourth)
         {
             First = first;
