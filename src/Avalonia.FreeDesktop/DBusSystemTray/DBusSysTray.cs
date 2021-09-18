@@ -17,6 +17,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         private IStatusNotifierWatcher _statusNotifierWatcher;
         private string _sysTrayServiceName;
         private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
+        private Action _activateDelegate;
 
         public INativeMenuExporter NativeMenuExporter { get; private set; }
 
@@ -63,21 +64,33 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         {
             _statusNotifierItemDbusObj.SetTitleAndTooltip(text);
         }
-    }
 
+        public void SetActivationDelegate(Action activationDelegate)
+        {
+            _statusNotifierItemDbusObj.ActivationDelegate = activationDelegate;
+        }
+    }
+    
+    /// <summary>
+    /// DBus Object used for setting system tray icons.
+    /// </summary>
+    /// <remarks>
+    /// Useful guide: https://web.archive.org/web/20210818173850/https://www.notmart.org/misc/statusnotifieritem/statusnotifieritem.html
+    /// </remarks>
     internal class StatusNotifierItemDbusObj : IStatusNotifierItem
     {
+        private readonly StatusNotifierItemProperties _backingProperties;
         private event Action<PropertyChanges> OnPropertyChange;
         public event Action OnTitleChanged;
         public event Action OnIconChanged;
         public event Action OnAttentionIconChanged;
         public event Action OnOverlayIconChanged;
         public event Action OnTooltipChanged;
-        
+        public INativeMenuExporter NativeMenuExporter { get; set; }
+        public Action<string> NewStatusAsync { get; set; }
+        public Action ActivationDelegate { get; set; }
         public ObjectPath ObjectPath { get; }
-
-        readonly StatusNotifierItemProperties _backingProperties;
-
+        
         public StatusNotifierItemDbusObj()
         {
             var ID = Guid.NewGuid().ToString().Replace("-", "");
@@ -95,20 +108,17 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             };
         }
 
-        public INativeMenuExporter NativeMenuExporter;
-
         public async Task ContextMenuAsync(int X, int Y)
         {
         }
 
         public async Task ActivateAsync(int X, int Y)
         {
-            // OnPropertyChange?.Invoke(new PropertyChanges());
+            ActivationDelegate?.Invoke();
         }
 
         public async Task SecondaryActivateAsync(int X, int Y)
         {
-            //throw new NotImplementedException();5
         }
 
         public async Task ScrollAsync(int Delta, string Orientation)
@@ -129,8 +139,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             OnTitleChanged += handler;
             return Disposable.Create(() => OnTitleChanged -= handler);
         }
-
-
+        
         public async Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError = null)
         {
             OnIconChanged += handler;
@@ -170,8 +179,6 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         {
             return _backingProperties;
         }
-
-        public Action<string> NewStatusAsync { get; set; }
 
         public Task SetAsync(string prop, object val) => Task.CompletedTask;
 

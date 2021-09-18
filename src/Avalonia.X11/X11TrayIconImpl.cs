@@ -14,6 +14,9 @@ namespace Avalonia.X11
 
         private readonly DBusSysTray _dBusSysTray;
 
+        private X11IconData lastIcon;
+
+
         public X11TrayIconImpl()
         {
             _dBusSysTray = new DBusSysTray();
@@ -29,6 +32,8 @@ namespace Avalonia.X11
         public void SetIcon(IWindowIconImpl icon)
         {
             if (!(icon is X11IconData x11icon)) return;
+
+            lastIcon = x11icon;
 
             var w = (int)x11icon.Data[0];
             var h = (int)x11icon.Data[1];
@@ -49,11 +54,23 @@ namespace Avalonia.X11
             }
 
             _dBusSysTray.SetIcon(new Pixmap(w, h, pixByteArray));
+
+            _dBusSysTray.SetActivationDelegate(() =>
+            {
+                OnClicked?.Invoke();
+            });
         }
 
         public void SetIsVisible(bool visible)
         {
-            
+            if (visible && lastIcon != null)
+            {
+                SetIcon(lastIcon);
+            }
+            else
+            {
+                _dBusSysTray.SetIcon(new Pixmap(1, 1, new byte[] { 0, 0, 0, 0 }));
+            }
         }
 
         public void SetToolTipText(string text)
