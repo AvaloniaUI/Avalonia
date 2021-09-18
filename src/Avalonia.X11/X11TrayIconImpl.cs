@@ -43,8 +43,8 @@ namespace Avalonia.X11
                 return new ARGB32(A, R, G, B);
             }
         }
-        
-        
+
+
         [StructLayout(LayoutKind.Explicit)]
         readonly struct ARGB32
         {
@@ -67,31 +67,30 @@ namespace Avalonia.X11
 
         public void SetIcon(IWindowIconImpl icon)
         {
-            if (icon is X11IconData x11icon)
+            if (!(icon is X11IconData x11icon)) return;
+
+            var w = (int)x11icon.Data[0];
+            var h = (int)x11icon.Data[1];
+
+            var rx = x11icon.Data.AsSpan(2);
+            var pixLength = w * h;
+            var pixelArray = new ARGB32[pixLength];
+
+            for (var i = 0; i < pixLength; i++)
             {
-                var w = (int)x11icon.Data[0];
-                var h = (int)x11icon.Data[1];
-
-                using var fb = x11icon.Lock();
-
-                var pixLength = w * h;
-                var pixelArray = new ARGB32[pixLength];
-                
-                for (var i = 0; i < pixLength; i++)
-                {
-                    var ins = new IntPtr(fb.Address.ToInt64() + i * 4);
-                    pixelArray[i] = Marshal.PtrToStructure<BGRA32>(ins).ToARGB32();
-                }
-                
-                var pixmapBytes = MemoryMarshal.Cast<ARGB32, byte>(pixelArray).ToArray();
-                
-                sni.SetIcon(new Pixmap(w, h, pixmapBytes));
+                var u = rx[i].ToUInt32();
+                var a = (byte)((u & 0xFF000000) >> 24);
+                var r = (byte)((u & 0x00FF0000) >> 16);
+                var g = (byte)((u & 0x0000FF00) >> 8);
+                var b = (byte)((u & 0x000000FF));
+                pixelArray[i] = new ARGB32(a, r, g, b);
             }
+
+            var pixmapBytes = MemoryMarshal.Cast<ARGB32, byte>(pixelArray).ToArray();
+
+            sni.SetIcon(new Pixmap(w, h, pixmapBytes));
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int PixCoord(int x, int y, int w) => x + (y * w);
-
+ 
         public void SetIsVisible(bool visible)
         {
         }
