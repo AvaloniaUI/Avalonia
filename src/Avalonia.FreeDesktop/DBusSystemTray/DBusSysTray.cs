@@ -55,9 +55,9 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             }
         }
 
-        public void SetIcon(Pixmap pixmap)
+        public void SetIcon(DbusPixmap dbusPixmap)
         {
-            _statusNotifierItemDbusObj.SetIcon(pixmap);
+            _statusNotifierItemDbusObj.SetIcon(dbusPixmap);
         }
 
         public void SetTitleAndTooltip(string text)
@@ -70,7 +70,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             _statusNotifierItemDbusObj.ActivationDelegate = activationDelegate;
         }
     }
-    
+
     /// <summary>
     /// DBus Object used for setting system tray icons.
     /// </summary>
@@ -90,7 +90,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         public Action<string> NewStatusAsync { get; set; }
         public Action ActivationDelegate { get; set; }
         public ObjectPath ObjectPath { get; }
-        
+
         public StatusNotifierItemDbusObj()
         {
             var ID = Guid.NewGuid().ToString().Replace("-", "");
@@ -102,10 +102,11 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
             _backingProperties = new StatusNotifierItemProperties
             {
-                Menu = "/MenuBar", // Needs a dbus menu somehow
-                ItemIsMenu = false,
+                Menu = dbusmenuPath, // Needs a dbus menu somehow
                 ToolTip = new ToolTip("")
             };
+            
+            InvalidateAll();
         }
 
         public async Task ContextMenuAsync(int X, int Y)
@@ -139,7 +140,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             OnTitleChanged += handler;
             return Disposable.Create(() => OnTitleChanged -= handler);
         }
-        
+
         public async Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError = null)
         {
             OnIconChanged += handler;
@@ -151,7 +152,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             OnAttentionIconChanged += handler;
             return Disposable.Create(() => OnAttentionIconChanged -= handler);
         }
-        
+
         public async Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError = null)
         {
             OnOverlayIconChanged += handler;
@@ -172,6 +173,10 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public async Task<object> GetAsync(string prop)
         {
+            if (prop.Contains("Menu"))
+            {
+               return _backingProperties.Menu;
+            }
             return default;
         }
 
@@ -188,9 +193,9 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
             return Disposable.Create(() => OnPropertyChange -= handler);
         }
 
-        public void SetIcon(Pixmap pixmap)
+        public void SetIcon(DbusPixmap dbusPixmap)
         {
-            _backingProperties.IconPixmap = new[] { pixmap };
+            _backingProperties.IconPixmap = new[] { dbusPixmap };
             InvalidateAll();
         }
 
@@ -211,42 +216,7 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     {
         Task RegisterStatusNotifierItemAsync(string Service);
         Task RegisterStatusNotifierHostAsync(string Service);
-
-        Task<IDisposable> WatchStatusNotifierItemRegisteredAsync(Action<string> handler,
-            Action<Exception> onError = null);
-
-        Task<IDisposable> WatchStatusNotifierItemUnregisteredAsync(Action<string> handler,
-            Action<Exception> onError = null);
-
-        Task<IDisposable> WatchStatusNotifierHostRegisteredAsync(Action handler, Action<Exception> onError = null);
-        Task<T> GetAsync<T>(string prop);
-        Task<StatusNotifierWatcherProperties> GetAllAsync();
-        Task SetAsync(string prop, object val);
-        Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
     }
-
-    [Dictionary]
-    internal class StatusNotifierWatcherProperties
-    {
-        public string[] RegisteredStatusNotifierItems;
-
-        public bool IsStatusNotifierHostRegistered;
-
-        public int ProtocolVersion;
-    }
-
-    internal static class StatusNotifierWatcherExtensions
-    {
-        public static Task<string[]> GetRegisteredStatusNotifierItemsAsync(this IStatusNotifierWatcher o) =>
-            o.GetAsync<string[]>("RegisteredStatusNotifierItems");
-
-        public static Task<bool> GetIsStatusNotifierHostRegisteredAsync(this IStatusNotifierWatcher o) =>
-            o.GetAsync<bool>("IsStatusNotifierHostRegistered");
-
-        public static Task<int> GetProtocolVersionAsync(this IStatusNotifierWatcher o) =>
-            o.GetAsync<int>("ProtocolVersion");
-    }
-
 
     [DBusInterface("org.kde.StatusNotifierItem")]
     interface IStatusNotifierItem : IDBusObject
@@ -266,7 +236,6 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         Task SetAsync(string prop, object val);
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
     }
-
 
     [Dictionary]
     internal class StatusNotifierItemProperties
@@ -289,40 +258,38 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public string IconName;
 
-        public Pixmap[] IconPixmap;
+        public DbusPixmap[] IconPixmap;
 
         public string OverlayIconName;
 
-        public Pixmap[] OverlayIconPixmap;
+        public DbusPixmap[] OverlayIconPixmap;
 
         public string AttentionIconName;
 
-        public Pixmap[] AttentionIconPixmap;
+        public DbusPixmap[] AttentionIconPixmap;
 
         public string AttentionMovieName;
 
         public ToolTip ToolTip;
     }
 
-    public struct ToolTip
+    internal struct ToolTip
     {
         public readonly string First;
-        public readonly Pixmap[] Second;
+        public readonly DbusPixmap[] Second;
         public readonly string Third;
         public readonly string Fourth;
 
-        private static readonly Pixmap[] s_blankPixmaps =
+        private static readonly DbusPixmap[] s_blank =
         {
-            new Pixmap(0, 0, new byte[] { }),
-            new Pixmap(0, 0, new byte[] { })
+            new DbusPixmap(0, 0, new byte[] { }), new DbusPixmap(0, 0, new byte[] { })
         };
-        
-        public ToolTip(string message) : this("", s_blankPixmaps, message, "")
+
+        public ToolTip(string message) : this("", s_blank, message, "")
         {
-            
         }
-        
-        public ToolTip(string first, Pixmap[] second, string third, string fourth)
+
+        public ToolTip(string first, DbusPixmap[] second, string third, string fourth)
         {
             First = first;
             Second = second;
@@ -331,13 +298,13 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
         }
     }
 
-    public readonly struct Pixmap
+    public readonly struct DbusPixmap
     {
         public readonly int Width;
         public readonly int Height;
         public readonly byte[] Data;
 
-        public Pixmap(int width, int height, byte[] data)
+        public DbusPixmap(int width, int height, byte[] data)
         {
             Width = width;
             Height = height;

@@ -18,8 +18,6 @@ namespace Avalonia.FreeDesktop
     {
         public static ITopLevelNativeMenuExporter TryCreateTopLevelNativeMenu(IntPtr xid)
         {
-            return null;
-            
             if (DBusHelper.Connection == null)
                 return null;
 
@@ -94,8 +92,6 @@ namespace Avalonia.FreeDesktop
                     // and it's not important to know if it succeeds
                     // since even if we register the window it's not guaranteed that
                     // menu will be actually exported
-                    
-                    Dispose();
                 }
             }
 
