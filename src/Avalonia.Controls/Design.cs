@@ -60,15 +60,15 @@ namespace Avalonia.Controls
             return target.GetValue(PreviewWithProperty);
         }
 
-        public static readonly AttachedProperty<Style> DesignStyleProperty = AvaloniaProperty
-            .RegisterAttached<Control, Style>("DesignStyle", typeof(Design));
+        public static readonly AttachedProperty<IStyle> DesignStyleProperty = AvaloniaProperty
+            .RegisterAttached<Control, IStyle>("DesignStyle", typeof(Design));
 
-        public static void SetDesignStyle(Control control, Style value)
+        public static void SetDesignStyle(Control control, IStyle value)
         {
             control.SetValue(DesignStyleProperty, value);
         }
 
-        public static Style GetDesignStyle(Control control)
+        public static IStyle GetDesignStyle(Control control)
         {
             return control.GetValue(DesignStyleProperty);
         }
