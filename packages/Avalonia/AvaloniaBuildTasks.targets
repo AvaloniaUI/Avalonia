@@ -42,20 +42,24 @@
   </Target>
   
   <PropertyGroup>
-    <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences;ReGenerateAvaloniaResourcesOnResourceDeletion</BuildAvaloniaResourcesDependsOn>
+    <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences;_GenerateAvaloniaResourcesDependencyCache</BuildAvaloniaResourcesDependsOn>
   </PropertyGroup>
   
-  <Target Name="ReGenerateAvaloniaResourcesOnResourceDeletion" BeforeTargets="GenerateAvaloniaResources">
+  <Target Name="_GenerateAvaloniaResourcesDependencyCache" BeforeTargets="GenerateAvaloniaResources">
+    <ItemGroup>
+      <CustomAdditionalGenerateAvaloniaResourcesInputs Include="$(IntermediateOutputPath)/Avalonia/Inputs.cache" />
+    </ItemGroup>
+    
     <Hash ItemsToHash="@(AvaloniaResource);@(AvaloniaXaml);$(MSBuildAllProjects)">
-      <Output TaskParameter="HashResult" PropertyName="UpdatedInputCacheContents" />
+      <Output TaskParameter="HashResult" PropertyName="AvaloniaResourcesDependencyHash" />
     </Hash>
 
-    <WriteLinesToFile Overwrite="true" File="$(IntermediateOutputPath)/Avalonia/Inputs.cache" Lines="$(UpdatedInputCacheContents)" WriteOnlyWhenDifferent="True" />
+    <WriteLinesToFile Overwrite="true" File="@(CustomAdditionalGenerateAvaloniaResourcesInputs)" Lines="$(AvaloniaResourcesDependencyHash)" WriteOnlyWhenDifferent="True" />
   </Target>
   
   <Target Name="GenerateAvaloniaResources" 
           BeforeTargets="CoreCompile;CoreResGen"
-          Inputs="@(AvaloniaResource);@(AvaloniaXaml);$(IntermediateOutputPath)/Avalonia/Inputs.cache;$(MSBuildAllProjects)"
+          Inputs="@(AvaloniaResource);@(AvaloniaXaml);@(CustomAdditionalGenerateAvaloniaResourcesInputs);$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
 	  DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
     <ItemGroup>
