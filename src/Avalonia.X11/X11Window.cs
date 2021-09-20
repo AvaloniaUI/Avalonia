@@ -805,13 +805,14 @@ namespace Avalonia.X11
             
             if (_handle != IntPtr.Zero)
             {
-                XDestroyWindow(_x11.Display, _handle);
                 _platform.Windows.Remove(_handle);
                 _platform.XI2?.OnWindowDestroyed(_handle);
+                var handle = _handle;
                 _handle = IntPtr.Zero;
                 Closed?.Invoke();
                 _mouse.Dispose();
                 _touch.Dispose();
+                XDestroyWindow(_x11.Display, handle);
             }
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
