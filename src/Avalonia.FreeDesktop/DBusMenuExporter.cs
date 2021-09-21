@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop.DBusMenu;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Tmds.DBus;
 #pragma warning disable 1998
@@ -66,6 +67,7 @@ namespace Avalonia.FreeDesktop
                 SetNativeMenu(new NativeMenu());
                 Init();
             }
+            
             async void Init()
             {
                 try
@@ -274,17 +276,24 @@ namespace Avalonia.FreeDesktop
                         if (item.ToggleType != NativeMenuItemToggleType.None)
                             return item.IsChecked ? 1 : 0;
                     }
-
+                    
                     if (name == "icon-data")
                     {
                         if (item.Icon != null)
                         {
-                            var ms = new MemoryStream();
-                            item.Icon.Save(ms);
-                            return ms.ToArray();
+                            var loader = AvaloniaLocator.Current.GetService<IPlatformIconLoader>();
+
+                            if (loader != null)
+                            {
+                                var icon = loader.LoadIcon(item.Icon.PlatformImpl.Item);
+
+                                using var ms = new MemoryStream();
+                                icon.Save(ms);
+                                return ms.ToArray();
+                            }
                         }
                     }
-
+                    
                     if (name == "children-display")
                         return menu != null ? "submenu" : null;
                 }
