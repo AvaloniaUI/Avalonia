@@ -9,7 +9,7 @@ using Avalonia.Platform;
 namespace Avalonia.X11
 {
    internal class X11TrayIconImpl : ITrayIconImpl
-    {
+   {
         
         private readonly DBusSysTray _dBusSysTray;
         private X11IconData lastIcon;
