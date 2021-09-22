@@ -303,7 +303,8 @@ namespace Avalonia.Controls.Platform
                 {
                     item.Parent.SelectedItem.Close();
                     SelectItemAndAncestors(item);
-                    Open(item, false);
+                    if (item.HasSubMenu)
+                        Open(item, false);
                 }
                 else
                 {
