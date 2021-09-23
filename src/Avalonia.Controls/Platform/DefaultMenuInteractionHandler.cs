@@ -275,7 +275,7 @@ namespace Avalonia.Controls.Platform
                 return;
             }
 
-            if (item.HasSubMenu && item.IsEnabled)
+            if (item.HasSubMenu && item.IsEffectivelyEnabled)
             {
                 Open(item, true);
             }
