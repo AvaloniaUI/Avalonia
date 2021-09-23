@@ -120,15 +120,15 @@ namespace Avalonia.X11
         public void SetIsVisible(bool visible)
         {
             if (con == null || _isDisposed || !_ctorFinished) return;
-            
+
             if (visible & !_isActive)
             {
-                    DestroyTrayIcon();
-                    CreateTrayIcon();
+                DestroyTrayIcon();
+                CreateTrayIcon();
             }
             else if (!visible & _isActive)
             {
-                     DestroyTrayIcon();
+                DestroyTrayIcon();
             }
         }
 
@@ -139,8 +139,7 @@ namespace Avalonia.X11
             _statusNotifierItemDbusObj?.SetTitleAndTooltip(_tooltipText);
         }
     }
-
-
+    
     /// <summary>
     /// DBus Object used for setting system tray icons.
     /// </summary>
@@ -285,7 +284,7 @@ namespace Avalonia.X11
     }
 
     [DBusInterface("org.kde.StatusNotifierItem")]
-    interface IStatusNotifierItem : IDBusObject
+    internal interface IStatusNotifierItem : IDBusObject
     {
         Task ContextMenuAsync(int X, int Y);
         Task ActivateAsync(int X, int Y);
@@ -364,7 +363,7 @@ namespace Avalonia.X11
         }
     }
 
-    public readonly struct DbusPixmap
+    internal readonly struct DbusPixmap
     {
         public readonly int Width;
         public readonly int Height;
