@@ -5,30 +5,33 @@ using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusSystemTray;
 using Avalonia.Platform;
+using Tmds.DBus;
 
 namespace Avalonia.X11
 {
-   internal class X11TrayIconImpl : ITrayIconImpl
-   {
-        
-        private readonly DBusSysTray _dBusSysTray;
-        private X11IconData lastIcon;
-        
+    internal class X11TrayIconImpl : ITrayIconImpl
+    {
+        private DBusSysTray _dBusSysTray;
+        private readonly ObjectPath _dbusmenuPath;
+
         public INativeMenuExporter MenuExporter { get; }
         public Action OnClicked { get; set; }
 
-        
+
         public X11TrayIconImpl()
         {
-            _dBusSysTray = new DBusSysTray();
+            var con = DBusHelper.TryGetConnection();
             
-            
-            var dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
-            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusmenuPath);
+            _dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
+            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusmenuPath, con);
 
-            
-            _dBusSysTray.Initialize(dbusmenuPath);
-            
+            _dBusSysTray = new DBusSysTray(con);
+            _dBusSysTray.Initialize(_dbusmenuPath);
+
+            _dBusSysTray.SetActivationDelegate(() =>
+            {
+                OnClicked?.Invoke();
+            });
         }
 
         public void Dispose()
@@ -39,9 +42,7 @@ namespace Avalonia.X11
         public void SetIcon(IWindowIconImpl icon)
         {
             if (!(icon is X11IconData x11icon)) return;
-
-            lastIcon = x11icon;
-
+            
             var w = (int)x11icon.Data[0];
             var h = (int)x11icon.Data[1];
 
@@ -61,22 +62,18 @@ namespace Avalonia.X11
             }
 
             _dBusSysTray.SetIcon(new DbusPixmap(w, h, pixByteArray));
-
-            _dBusSysTray.SetActivationDelegate(() =>
-            {
-                OnClicked?.Invoke();
-            });
         }
 
         public void SetIsVisible(bool visible)
         {
-            if (visible && lastIcon != null)
+            if (visible)
             {
-                SetIcon(lastIcon);
+                // _dBusSysTray = new DBusSysTray();
+                // _dBusSysTray.Initialize(_dbusmenuPath);
             }
             else
             {
-                _dBusSysTray.SetIcon(new DbusPixmap(1, 1, new byte[] { 0, 0, 0, 0 }));
+                // _dBusSysTray?.Dispose();
             }
         }
 

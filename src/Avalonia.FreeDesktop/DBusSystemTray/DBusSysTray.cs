@@ -14,16 +14,22 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
     public class DBusSysTray : IDisposable
     {
         private static int s_trayIconInstanceId = 0;
+        
         private IStatusNotifierWatcher _statusNotifierWatcher;
         private string _sysTrayServiceName;
         private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
- 
+
+        private Connection con;
+        
         private static int GetTID() => s_trayIconInstanceId++;
 
+        public DBusSysTray(Connection connection)
+        {
+            con = connection;
+        }
+        
         public async void Initialize(ObjectPath dbusmenuPath)
         {
-            var con = DBusHelper.Connection;
-
             _statusNotifierWatcher = con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
                 "/StatusNotifierWatcher");
 
@@ -88,7 +94,6 @@ namespace Avalonia.FreeDesktop.DBusSystemTray
 
         public StatusNotifierItemDbusObj(ObjectPath dbusmenuPath)
         {
-            var ID = Guid.NewGuid().ToString().Replace("-", "");
             ObjectPath = new ObjectPath($"/StatusNotifierItem");
             
             _backingProperties = new StatusNotifierItemProperties

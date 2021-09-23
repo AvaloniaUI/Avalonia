@@ -25,12 +25,9 @@ namespace Avalonia.FreeDesktop
             return new DBusMenuExporterImpl(DBusHelper.Connection, xid);
         }
         
-        public static INativeMenuExporter TryCreateDetachedNativeMenu(ObjectPath path)
+        public static INativeMenuExporter TryCreateDetachedNativeMenu(ObjectPath path, Connection currentConection)
         {
-            if (DBusHelper.Connection == null)
-                return null;
-
-            return new DBusMenuExporterImpl(DBusHelper.Connection, path);
+            return new DBusMenuExporterImpl(currentConection, path);
         }
 
         public static ObjectPath GenerateDBusMenuObjPath => "/net/avaloniaui/dbusmenu/"
