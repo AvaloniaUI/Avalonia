@@ -53,6 +53,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PopupPositionerConstraintAdjustment>(
                 nameof(PlacementConstraintAdjustment),
                 PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY |
+                PopupPositionerConstraintAdjustment.SlideX | PopupPositionerConstraintAdjustment.SlideY |
                 PopupPositionerConstraintAdjustment.ResizeX | PopupPositionerConstraintAdjustment.ResizeY);
 
         /// <summary>
