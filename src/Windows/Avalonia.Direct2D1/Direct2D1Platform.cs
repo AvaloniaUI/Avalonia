@@ -175,6 +175,8 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
         public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => new GeometryGroupImpl(fillRule, children);
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => new CombinedGeometryImpl(combineMode, g1, g2);
 
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
