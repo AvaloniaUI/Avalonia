@@ -297,5 +297,28 @@ namespace Avalonia.Visuals.UnitTests.Media
                 Assert.Equal(new Point(20, 20), figure.StartPoint);
             }
         }
+
+        [Fact]
+        public void Should_Parse_Flags_Without_Separator()
+        {
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                parser.Parse("a.898.898 0 01.27.188");
+
+                var figure = pathGeometry.Figures[0];
+
+                var segments = figure.Segments;
+                
+                Assert.NotNull(segments);
+                
+                Assert.Equal(1, segments.Count);
+
+                var arcSegment = segments[0];
+
+                Assert.IsType<ArcSegment>(arcSegment);
+            }
+        }
     }
 }
