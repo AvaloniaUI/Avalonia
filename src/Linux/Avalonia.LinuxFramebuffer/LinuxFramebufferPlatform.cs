@@ -44,7 +44,6 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
         }
