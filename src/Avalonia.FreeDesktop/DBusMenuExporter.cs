@@ -85,7 +85,9 @@ namespace Avalonia.FreeDesktop
                 }
                 catch (Exception e)
                 {
-                    Console.Error.WriteLine(e);
+                    Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.X11Platform)
+                        ?.Log(this, e.Message);
+
                     // It's not really important if this code succeeds,
                     // and it's not important to know if it succeeds
                     // since even if we register the window it's not guaranteed that
