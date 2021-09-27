@@ -38,7 +38,7 @@ namespace Avalonia.X11
 
         public X11TrayIconImpl()
         {
-            con = DBusHelper.TryGetConnection();
+            con = DBusHelper.TryInitialize();
             _dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusmenuPath, con);
             CreateTrayIcon();
@@ -113,7 +113,7 @@ namespace Avalonia.X11
             }
 
             _icon = new DbusPixmap(w, h, pixByteArray);
-            _statusNotifierItemDbusObj.SetIcon(_icon);
+            _statusNotifierItemDbusObj?.SetIcon(_icon);
         }
 
 
@@ -139,7 +139,7 @@ namespace Avalonia.X11
             _statusNotifierItemDbusObj?.SetTitleAndTooltip(_tooltipText);
         }
     }
-    
+
     /// <summary>
     /// DBus Object used for setting system tray icons.
     /// </summary>
@@ -162,7 +162,8 @@ namespace Avalonia.X11
 
         public StatusNotifierItemDbusObj(ObjectPath dbusmenuPath)
         {
-            ObjectPath = new ObjectPath($"/StatusNotifierItem");
+            var guid = Guid.NewGuid().ToString().Replace("-", "");
+            ObjectPath = new ObjectPath($"/net/avaloniaui/sni/{guid}");
 
             _backingProperties = new StatusNotifierItemProperties
             {
