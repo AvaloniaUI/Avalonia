@@ -157,10 +157,9 @@ namespace Avalonia.Input
 
                     _restoreFocusElement?.Focus();
                     _restoreFocusElement = null;
+                    
+                    e.Handled = true;
                 }
-
-                // We always handle the Alt key.
-                e.Handled = true;
             }
             else if (_altIsDown)
             {

@@ -186,7 +186,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (PageTransition != null && (from != null || to != null))
                 {
-                    await PageTransition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
+                    await PageTransition.Start((Visual)from, (Visual)to, fromIndex < toIndex, default);
                 }
                 else if (to != null)
                 {

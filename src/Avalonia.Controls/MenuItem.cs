@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
         /// </summary>
-        public static readonly StyledProperty<KeyGesture> HotKeyProperty =
+        public static readonly StyledProperty<KeyGesture?> HotKeyProperty =
             HotKeyManager.HotKeyProperty.AddOwner<MenuItem>();
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Avalonia.Controls
         private ICommand? _command;
         private bool _commandCanExecute = true;
         private Popup? _popup;
-        private KeyGesture _hotkey;
+        private KeyGesture? _hotkey;
         private bool _isEmbeddedInMenu;
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets an <see cref="KeyGesture"/> associated with this control
         /// </summary>
-        public KeyGesture HotKey
+        public KeyGesture? HotKey
         {
             get { return GetValue(HotKeyProperty); }
             set { SetValue(HotKeyProperty, value); }

@@ -17,7 +17,6 @@ namespace Avalonia.Win32.WinRT.Composition
     class WinUICompositorConnection : IRenderTimer
     {
         private readonly EglContext _syncContext;
-        private IntPtr _queue;
         private ICompositor _compositor;
         private ICompositor2 _compositor2;
         private ICompositor5 _compositor5;
@@ -145,6 +144,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 try
                 {
                     TryCreateAndRegisterCore(angle);
+                    return;
                 }
                 catch (Exception e)
                 {

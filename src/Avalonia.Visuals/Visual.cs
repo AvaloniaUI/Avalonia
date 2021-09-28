@@ -489,11 +489,8 @@ namespace Avalonia
 
         protected internal sealed override void LogBindingError(AvaloniaProperty property, Exception e)
         {
-            // Don't log a binding error unless the control is attached to a logical or visual tree.
-            // In theory this should only need to check for logical tree attachment, but in practise
-            // due to ContentControlMixin only taking effect when the template has finished being
-            // applied, some controls are attached to the visual tree before the logical tree.
-            if (((ILogical)this).IsAttachedToLogicalTree || ((IVisual)this).IsAttachedToVisualTree)
+            // Don't log a binding error unless the control is attached to a logical tree.
+            if (((ILogical)this).IsAttachedToLogicalTree)
             {
                 if (e is BindingChainException b &&
                     string.IsNullOrEmpty(b.ExpressionErrorPoint) &&

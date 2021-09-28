@@ -3,11 +3,46 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Layout;
 using Avalonia.Rendering;
 using JetBrains.Annotations;
 
 namespace Avalonia.Platform
 {
+    /// <summary>
+    /// Describes the reason for a <see cref="ITopLevelImpl.Resized"/> message.
+    /// </summary>
+    public enum PlatformResizeReason
+    {
+        /// <summary>
+        /// The resize reason is unknown or unspecified.
+        /// </summary>
+        Unspecified,
+
+        /// <summary>
+        /// The resize was due to the user resizing the window, for example by dragging the
+        /// window frame.
+        /// </summary>
+        User,
+
+        /// <summary>
+        /// The resize was initiated by the application, for example by setting one of the sizing-
+        /// related properties on <see cref="Window"/> such as <see cref="Layoutable.Width"/> or
+        /// <see cref="Layoutable.Height"/>.
+        /// </summary>
+        Application,
+
+        /// <summary>
+        /// The resize was initiated by the layout system.
+        /// </summary>
+        Layout,
+
+        /// <summary>
+        /// The resize was due to a change in DPI.
+        /// </summary>
+        DpiChange,
+    }
+
     /// <summary>
     /// Defines a platform-specific top-level window implementation.
     /// </summary>
@@ -21,6 +56,11 @@ namespace Avalonia.Platform
         /// Gets the client size of the toplevel.
         /// </summary>
         Size ClientSize { get; }
+
+        /// <summary>
+        /// Gets the total size of the toplevel, excluding shadows.
+        /// </summary>
+        Size? FrameSize { get; }
 
         /// <summary>
         /// Gets the scaling factor for the toplevel. This is used for rendering.
@@ -52,7 +92,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Gets or sets a method called when the toplevel is resized.
         /// </summary>
-        Action<Size> Resized { get; set; }
+        Action<Size, PlatformResizeReason> Resized { get; set; }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel's scaling changes.

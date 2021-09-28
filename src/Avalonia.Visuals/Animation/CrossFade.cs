@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
 using Avalonia.Styling;
@@ -97,49 +99,39 @@ namespace Avalonia.Animation
             set => _fadeOutAnimation.Easing = value;
         }
 
-        /// <summary>
-        /// Starts the animation.
-        /// </summary>
-        /// <param name="from">
-        /// The control that is being transitioned away from. May be null.
-        /// </param>
-        /// <param name="to">
-        /// The control that is being transitioned to. May be null.
-        /// </param>
-        /// <returns>
-        /// A <see cref="Task"/> that tracks the progress of the animation.
-        /// </returns>
-        public async Task Start(Visual from, Visual to)
+        /// <inheritdoc cref="Start(Visual, Visual, CancellationToken)" />
+        public async Task Start(Visual from, Visual to, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             var tasks = new List<Task>();
-
-            if (to != null)
+            using (var disposables = new CompositeDisposable())
             {
-                to.Opacity = 0;
-            }
+                if (to != null)
+                {
+                    disposables.Add(to.SetValue(Visual.OpacityProperty, 0, Data.BindingPriority.Animation));
+                }
 
-            if (from != null)
-            {
-                tasks.Add(_fadeOutAnimation.RunAsync(from));
-            }
+                if (from != null)
+                {
+                    tasks.Add(_fadeOutAnimation.RunAsync(from, null, cancellationToken));
+                }
 
-            if (to != null)
-            {
-                to.IsVisible = true;
-                tasks.Add(_fadeInAnimation.RunAsync(to));
+                if (to != null)
+                {
+                    to.IsVisible = true;
+                    tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
+                }
 
-            }
+                await Task.WhenAll(tasks);
 
-            await Task.WhenAll(tasks);
-
-            if (from != null)
-            {
-                from.IsVisible = false;
-            }
-
-            if (to != null)
-            {
-                to.Opacity = 1;
+                if (from != null && !cancellationToken.IsCancellationRequested)
+                {
+                    from.IsVisible = false;
+                }
             }
         }
 
@@ -155,12 +147,13 @@ namespace Avalonia.Animation
         /// <param name="forward">
         /// Unused for cross-fades.
         /// </param>
+        /// <param name="cancellationToken">allowed cancel transition</param>
         /// <returns>
         /// A <see cref="Task"/> that tracks the progress of the animation.
         /// </returns>
-        Task IPageTransition.Start(Visual from, Visual to, bool forward)
+        Task IPageTransition.Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken)
         {
-            return Start(from, to);
+            return Start(from, to, cancellationToken);
         }
     }
 }

@@ -283,7 +283,11 @@ namespace Avalonia.Controls
         //TODO TabStop
         private void DataGridRowGroupHeader_PointerPressed(PointerPressedEventArgs e)
         {
-            if (OwningGrid != null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (OwningGrid == null)
+            {
+                return;
+            }
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 if (OwningGrid.IsDoubleClickRecordsClickOnCall(this) && !e.Handled)
                 {
@@ -300,6 +304,15 @@ namespace Avalonia.Controls
                     e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, OwningGrid.CurrentColumnIndex, RowGroupInfo.Slot, allowEdit: false);
                 }
             }
+            else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                if (!e.Handled)
+                {
+                    OwningGrid.Focus();
+                }
+                e.Handled = OwningGrid.UpdateStateOnMouseRightButtonDown(e, OwningGrid.CurrentColumnIndex, RowGroupInfo.Slot, allowEdit: false);
+            }
+
         }
 
         private void EnsureChildClip(Visual child, double frozenLeftEdge)

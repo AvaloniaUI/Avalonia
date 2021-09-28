@@ -201,6 +201,65 @@ namespace Avalonia.Controls.UnitTests
                 
             }
             
-        } 
+        }
+
+        [Fact]
+        public void Close_Window_On_Alt_F4_When_ComboBox_Is_Focus()
+        {
+            var inputManagerMock = new Moq.Mock<IInputManager>();
+            var services = TestServices.StyledWindow.With(inputManager: inputManagerMock.Object);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+
+                window.KeyDown += (s, e) =>
+                 {
+                     if (e.Handled == false 
+                     && e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) == true 
+                     && e.Key == Key.F4 )
+                     {
+                         e.Handled = true;
+                         window.Close();
+                     }
+                 };
+
+                var count = 0;
+
+                var target = new ComboBox
+                {
+                    Items = new[] { new Canvas() },
+                    SelectedIndex = 0,
+                    Template = GetTemplate(),
+                };
+
+                window.Content = target;
+
+
+                window.Closing +=
+                    (sender, e) =>
+                    {
+                        count++;
+                    };
+
+                window.Show();
+
+                target.Focus();
+
+                _helper.Down(target);
+                _helper.Up(target);
+                Assert.True(target.IsDropDownOpen);
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    KeyModifiers = KeyModifiers.Alt,
+                    Key = Key.F4
+                });
+
+
+                Assert.Equal(1, count);
+            }
+        }
     }
 }

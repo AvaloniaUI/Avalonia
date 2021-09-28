@@ -19,7 +19,6 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
 
-        private LightDismissOverlayLayer? _overlay;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Menu"/> class.

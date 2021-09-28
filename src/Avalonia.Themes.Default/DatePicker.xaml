@@ -134,6 +134,7 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
                   IsEnabled="{TemplateBinding IsEnabled}"
                   MinWidth="{DynamicResource DatePickerThemeMinWidth}"
                   MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
@@ -148,6 +149,7 @@
                                   BorderBrush="{TemplateBinding BorderBrush}"
                                   Background="{TemplateBinding Background}"
                                   BorderThickness="{TemplateBinding BorderThickness}"
+                                  CornerRadius="{TemplateBinding CornerRadius}"
                                   Content="{TemplateBinding Content}"
                                   TextBlock.Foreground="{TemplateBinding Foreground}"
                                   HorizontalContentAlignment="Stretch"
@@ -242,6 +244,7 @@
         <Border Name="Background" Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
                 Padding="{DynamicResource DateTimeFlyoutBorderPadding}"
                 MaxHeight="398">
           <Grid Name="ContentRoot" RowDefinitions="*,Auto">

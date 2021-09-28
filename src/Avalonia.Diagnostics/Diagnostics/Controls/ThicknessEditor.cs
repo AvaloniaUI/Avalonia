@@ -10,8 +10,8 @@ namespace Avalonia.Diagnostics.Controls
             AvaloniaProperty.RegisterDirect<ThicknessEditor, Thickness>(nameof(Thickness), o => o.Thickness,
                 (o, v) => o.Thickness = v, defaultBindingMode: BindingMode.TwoWay);
 
-        public static readonly DirectProperty<ThicknessEditor, string> HeaderProperty =
-            AvaloniaProperty.RegisterDirect<ThicknessEditor, string>(nameof(Header), o => o.Header,
+        public static readonly DirectProperty<ThicknessEditor, string?> HeaderProperty =
+            AvaloniaProperty.RegisterDirect<ThicknessEditor, string?>(nameof(Header), o => o.Header,
                 (o, v) => o.Header = v);
 
         public static readonly DirectProperty<ThicknessEditor, bool> IsPresentProperty =
@@ -36,7 +36,7 @@ namespace Avalonia.Diagnostics.Controls
             AvaloniaProperty.Register<ThicknessEditor, IBrush>(nameof(Highlight));
 
         private Thickness _thickness;
-        private string _header;
+        private string? _header;
         private bool _isPresent = true;
         private double _left;
         private double _top;
@@ -50,7 +50,7 @@ namespace Avalonia.Diagnostics.Controls
             set => SetAndRaise(ThicknessProperty, ref _thickness, value);
         }
 
-        public string Header
+        public string? Header
         {
             get => _header;
             set => SetAndRaise(HeaderProperty, ref _header, value);
