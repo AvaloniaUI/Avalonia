@@ -23,7 +23,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         private EglPlatformOpenGlInterface _platformGl;
         public IPlatformOpenGlInterface PlatformOpenGlInterface => _platformGl;
 
-        public DrmOutput(string path = null)
+        public DrmOutput(string path = null, bool deferModeset = false)
         {
             var card = new DrmCard(path);
 
@@ -41,12 +41,13 @@ namespace Avalonia.LinuxFramebuffer.Output
                 .FirstOrDefault();
             if(mode == null)
                 throw new InvalidOperationException("Unable to find a usable DRM mode");
-            Init(card, resources, connector, mode);
+
+            Init(card, resources, connector, mode, deferModeset);
         }
 
-        public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
+        public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo, bool deferModeset = false)
         {
-            Init(card, resources, connector, modeInfo);
+            Init(card, resources, connector, modeInfo, deferModeset);
         }
 
         [DllImport("libEGL.so.1")]
@@ -60,6 +61,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         private IntPtr _currentBo;
         private IntPtr _gbmTargetSurface;
         private uint _crtcId;
+        private Action<IntPtr> _deferedModesetActivator;
 
         void FbDestroyCallback(IntPtr bo, IntPtr userData)
         {
@@ -105,7 +107,7 @@ namespace Avalonia.LinuxFramebuffer.Output
         }
         
         
-        void Init(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo)
+        void Init(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo, bool deferModeset)
         {
             FbDestroyDelegate = FbDestroyCallback;
             _card = card;
@@ -136,7 +138,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(_gbmTargetSurface == null)
                 throw new InvalidOperationException("Unable to create GBM surface");
 
-            _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), false, 0x31D7, device, null);
+            _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), false, EglConsts.EGL_PLATFORM_GBM_MESA, device, null);
             _platformGl = new EglPlatformOpenGlInterface(_eglDisplay);
             _eglSurface =  _platformGl.CreateWindowSurface(_gbmTargetSurface);
 
@@ -149,27 +151,36 @@ namespace Avalonia.LinuxFramebuffer.Output
                 _eglSurface.SwapBuffers();
             }
 
-            var bo = gbm_surface_lock_front_buffer(_gbmTargetSurface);
+            _currentBo = gbm_surface_lock_front_buffer(_gbmTargetSurface);
+            _mode = modeInfo.Mode;
+
+            if (deferModeset)
+            {
+                _deferedModesetActivator = (IntPtr bo) => { DoDrmModeSet(bo, connector, modeInfo); };
+            }
+            else
+            {
+                DoDrmModeSet(_currentBo, connector, modeInfo);
+
+                // Go trough two cycles of buffer swapping (there are render artifacts otherwise)
+                for (var c = 0; c < 2; c++)
+                    using (CreateGlRenderTarget().BeginDraw())
+                    {
+                        _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
+                        _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
+                    }
+            }
+        }
+
+        private void DoDrmModeSet(IntPtr bo, DrmConnector connector, DrmModeInfo modeInfo)
+        {
             var fbId = GetFbIdForBo(bo);
             var connectorId = connector.Id;
             var mode = modeInfo.Mode;
 
-            
             var res = drmModeSetCrtc(_card.Fd, _crtcId, fbId, 0, 0, &connectorId, 1, &mode);
             if (res != 0)
                 throw new Win32Exception(res, "drmModeSetCrtc failed");
-
-            _mode = mode;
-            _currentBo = bo;
-            
-            // Go trough two cycles of buffer swapping (there are render artifacts otherwise)
-            for(var c=0;c<2;c++)
-                using (CreateGlRenderTarget().BeginDraw())
-                {
-                    _deferredContext.GlInterface.ClearColor(0, 0, 0, 0);
-                    _deferredContext.GlInterface.Clear(GlConsts.GL_COLOR_BUFFER_BIT | GlConsts.GL_STENCIL_BUFFER_BIT);
-                }
-            
         }
 
         public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
@@ -203,47 +214,66 @@ namespace Avalonia.LinuxFramebuffer.Output
 
                 public void Dispose()
                 {
+                    using var clearContext = _clearContext;
+
                     _parent._deferredContext.GlInterface.Flush();
                     _parent._eglSurface.SwapBuffers();
-                    
+
                     var nextBo = gbm_surface_lock_front_buffer(_parent._gbmTargetSurface);
                     if (nextBo == IntPtr.Zero)
                     {
                         // Not sure what else can be done
                         Console.WriteLine("gbm_surface_lock_front_buffer failed");
+                        return;
                     }
-                    else
-                    {
 
-                        var fb = _parent.GetFbIdForBo(nextBo);
-                        bool waitingForFlip = true;
+                    DoPageFlipOrModeSet(nextBo);
 
-                        drmModePageFlip(_parent._card.Fd, _parent._crtcId, fb, DrmModePageFlip.Event, null);
-
-                        DrmEventPageFlipHandlerDelegate flipCb =
-                            (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
-                            {
-                                waitingForFlip = false;
-                            };
-                        var cbHandle = GCHandle.Alloc(flipCb);
-                        var ctx = new DrmEventContext
-                        {
-                            version = 4, page_flip_handler = Marshal.GetFunctionPointerForDelegate(flipCb)
-                        };
-                        while (waitingForFlip)
-                        {
-                            var pfd = new pollfd {events = 1, fd = _parent._card.Fd};
-                            poll(&pfd, new IntPtr(1), -1);
-                            drmHandleEvent(_parent._card.Fd, &ctx);
-                        }
-
-                        cbHandle.Free();
-                        gbm_surface_release_buffer(_parent._gbmTargetSurface, _parent._currentBo);
-                        _parent._currentBo = nextBo;
-                    }
-                    _clearContext.Dispose();
+                    gbm_surface_release_buffer(_parent._gbmTargetSurface, _parent._currentBo);
+                    _parent._currentBo = nextBo;
                 }
 
+                private void DoPageFlipOrModeSet(IntPtr nextBo)
+                {
+                    if (_parent._deferedModesetActivator is not null)
+                    {
+                        try
+                        {
+                            _parent._deferedModesetActivator(nextBo);
+                        }
+                        finally
+                        {
+                            _parent._deferedModesetActivator = null;
+                        }
+
+                        return;
+                    }
+
+                    var fb = _parent.GetFbIdForBo(nextBo);
+                    bool waitingForFlip = true;
+
+                    drmModePageFlip(_parent._card.Fd, _parent._crtcId, fb, DrmModePageFlip.Event, null);
+
+                    DrmEventPageFlipHandlerDelegate flipCb =
+                        (int fd, uint sequence, uint tv_sec, uint tv_usec, void* user_data) =>
+                        {
+                            waitingForFlip = false;
+                        };
+                    var cbHandle = GCHandle.Alloc(flipCb);
+                    var ctx = new DrmEventContext
+                    {
+                        version = 4,
+                        page_flip_handler = Marshal.GetFunctionPointerForDelegate(flipCb)
+                    };
+                    while (waitingForFlip)
+                    {
+                        var pfd = new pollfd { events = 1, fd = _parent._card.Fd };
+                        poll(&pfd, new IntPtr(1), -1);
+                        drmHandleEvent(_parent._card.Fd, &ctx);
+                    }
+
+                    cbHandle.Free();
+                }
 
                 public IGlContext Context => _parent._deferredContext;
 
