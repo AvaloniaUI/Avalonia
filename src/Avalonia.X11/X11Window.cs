@@ -190,7 +190,7 @@ namespace Avalonia.X11
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
             if (platform.Options.UseDBusMenu)
-                NativeMenuExporter = DBusMenuExporter.TryCreate(_handle);
+                NativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
             NativeControlHost = new X11NativeControlHost(_platform, this);
             DispatcherTimer.Run(() =>
             {
