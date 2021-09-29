@@ -179,12 +179,12 @@ namespace Avalonia.Controls.Primitives
         //TODO TabStop
         private void DataGridRowHeader_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (OwningGrid == null)
             {
                 return;
             }
 
-            if (OwningGrid != null)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 if (!e.Handled)
                 //if (!e.Handled && OwningGrid.IsTabStop)
@@ -197,6 +197,19 @@ namespace Avalonia.Controls.Primitives
                     Debug.Assert(sender == this);
                     e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, -1, Slot, false);
                     OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
+                }
+            }
+            else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                if (!e.Handled)
+                {
+                    OwningGrid.Focus();
+                }
+                if (OwningRow != null)
+                {
+                    Debug.Assert(sender is DataGridRowHeader);
+                    Debug.Assert(sender == this);
+                    e.Handled = OwningGrid.UpdateStateOnMouseRightButtonDown(e, -1, Slot, false);
                 }
             }
         } 
