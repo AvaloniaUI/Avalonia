@@ -81,17 +81,21 @@ namespace Avalonia.Input
                 var e = (PointerPressedEventArgs)ev;
                 var visual = (IVisual)ev.Source;
 
-                if (e.ClickCount <= 1)
+#pragma warning disable CS0618 // Type or member is obsolete
+                var clickCount = e.ClickCount;
+#pragma warning restore CS0618 // Type or member is obsolete
+                if (clickCount <= 1)
                 {
                     s_lastPress = new WeakReference<IInteractive>(ev.Source);
                 }
-                else if (s_lastPress != null && e.ClickCount == 2 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+                else if (s_lastPress != null && clickCount == 2 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
                         e.Source.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
                     }
                 }
+
             }
         }
 
