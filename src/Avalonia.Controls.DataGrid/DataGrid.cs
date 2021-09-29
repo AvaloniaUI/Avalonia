@@ -3039,6 +3039,12 @@ namespace Avalonia.Controls
             }
         }
 
+        //TODO: Ensure right button is checked for
+        internal bool UpdateStateOnMouseRightButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex, int slot, bool allowEdit)
+        {
+            KeyboardHelper.GetMetaKeyState(pointerPressedEventArgs.KeyModifiers, out bool ctrl, out bool shift);
+            return UpdateStateOnMouseRightButtonDown(pointerPressedEventArgs, columnIndex, slot, allowEdit, shift, ctrl);
+        }
         //TODO: Ensure left button is checked for
         internal bool UpdateStateOnMouseLeftButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex, int slot, bool allowEdit)
         {
@@ -4489,17 +4495,27 @@ namespace Avalonia.Controls
                 element = dataGridColumn.GenerateEditingElementInternal(dataGridCell, dataGridRow.DataContext);
                 if (element != null)
                 {
-                    // Subscribe to the new element's events
-                    element.Initialized += EditingElement_Initialized;
+
+                    dataGridCell.Content = element;
+                    if (element.IsInitialized)
+                    {
+                        PreparingCellForEditPrivate(element as Control);
+                    }
+                    else
+                    {
+                        // Subscribe to the new element's events
+                        element.Initialized += EditingElement_Initialized;
+                    }
                 }
             }
             else
             {
                 // Generate Element and apply column style if available
                 element = dataGridColumn.GenerateElementInternal(dataGridCell, dataGridRow.DataContext);
+                dataGridCell.Content = element;
             }
 
-            dataGridCell.Content = element;
+            
         }
 
         private void PreparingCellForEditPrivate(Control editingElement)
@@ -5709,6 +5725,35 @@ namespace Avalonia.Controls
         {
             ProcessVerticalScroll(e.ScrollEventType);
             VerticalScroll?.Invoke(sender, e);
+        }
+
+        //TODO: Ensure right button is checked for
+        private bool UpdateStateOnMouseRightButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex, int slot, bool allowEdit, bool shift, bool ctrl)
+        {
+            Debug.Assert(slot >= 0);
+
+            if (shift || ctrl)
+            {
+                return true;
+            }
+            if (IsSlotOutOfBounds(slot))
+            {
+                return true;
+            }
+            if (GetRowSelection(slot))
+            {
+                return true;
+            }
+            // Unselect everything except the row that was clicked on
+            try
+            {
+                UpdateSelectionAndCurrency(columnIndex, slot, DataGridSelectionAction.SelectCurrent, scrollIntoView: false);
+            }
+            finally
+            {
+                NoSelectionChangeCount--;
+            }
+            return true;
         }
 
         //TODO: Ensure left button is checked for

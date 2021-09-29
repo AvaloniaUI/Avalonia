@@ -37,31 +37,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Source = Source,
                 StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
-                DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext)),
+                DefaultAnchor = new WeakReference(descriptorContext.GetDefaultAnchor()),
                 TargetNullValue = TargetNullValue,
                 NameScope = new WeakReference<INameScope>(serviceProvider.GetService<INameScope>())
             };
-        }
-
-        private static object GetDefaultAnchor(IServiceProvider context)
-        {
-            // If the target is not a control, so we need to find an anchor that will let us look
-            // up named controls and style resources. First look for the closest IControl in
-            // the context.
-            object anchor = context.GetFirstParent<IControl>();
-
-            if(anchor is null)
-            {
-                // Try to find IDataContextProvider, this was added to allow us to find
-                // a datacontext for Application class when using NativeMenuItems.
-                anchor = context.GetFirstParent<IDataContextProvider>();
-            }
-
-            // If a control was not found, then try to find the highest-level style as the XAML
-            // file could be a XAML file containing only styles.
-            return anchor ??
-                    context.GetService<IRootObjectProvider>()?.RootObject as IStyle ??
-                    context.GetLastParent<IStyle>();
         }
 
         public IValueConverter Converter { get; set; }
