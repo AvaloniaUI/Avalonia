@@ -6,6 +6,7 @@ Avalonia requires at least Visual Studio 2019 and .NET Core SDK 3.1 to build on 
 
 ```
 git clone https://github.com/AvaloniaUI/Avalonia.git
+cd Avalonia
 git submodule update --init
 ```
 
