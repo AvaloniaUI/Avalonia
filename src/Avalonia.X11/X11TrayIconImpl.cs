@@ -15,27 +15,25 @@ namespace Avalonia.X11
 {
     internal class X11TrayIconImpl : ITrayIconImpl
     {
-        private readonly ObjectPath _dbusmenuPath;
-
+        
         private static int s_trayIconInstanceId = 0;
-
-        private IStatusNotifierWatcher _statusNotifierWatcher;
-        private string _sysTrayServiceName;
+        private static int GetTID() => s_trayIconInstanceId++;
+        private ObjectPath _dbusmenuPath;
         private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
-
         private Connection con;
         private DbusPixmap _icon;
+        
+        private IStatusNotifierWatcher _statusNotifierWatcher;
+
+        private string _sysTrayServiceName;
         private string _tooltipText;
         private bool _isActive;
         private bool _isDisposed;
         private readonly bool _ctorFinished;
-
-        private static int GetTID() => s_trayIconInstanceId++;
-
+        
         public INativeMenuExporter MenuExporter { get; }
         public Action OnClicked { get; set; }
-
-
+        
         public X11TrayIconImpl()
         {
             con = DBusHelper.TryGetConnection();
@@ -44,8 +42,7 @@ namespace Avalonia.X11
             CreateTrayIcon();
             _ctorFinished = true;
         }
-
-
+        
         public async void CreateTrayIcon()
         {
             _statusNotifierWatcher = con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
@@ -81,7 +78,6 @@ namespace Avalonia.X11
             _isActive = false;
         }
 
-
         public void Dispose()
         {
             _isDisposed = true;
@@ -115,8 +111,7 @@ namespace Avalonia.X11
             _icon = new DbusPixmap(w, h, pixByteArray);
             _statusNotifierItemDbusObj.SetIcon(_icon);
         }
-
-
+        
         public void SetIsVisible(bool visible)
         {
             if (con == null || _isDisposed || !_ctorFinished) return;
