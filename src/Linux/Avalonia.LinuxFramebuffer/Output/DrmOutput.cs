@@ -235,7 +235,7 @@ namespace Avalonia.LinuxFramebuffer.Output
 
                 private void DoPageFlipOrModeSet(IntPtr nextBo)
                 {
-                    if (_parent._deferedModesetActivator is not null)
+                    if (_parent._deferedModesetActivator != null)
                     {
                         try
                         {
