@@ -215,11 +215,6 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (CancelOpening())
-            {
-                return false;
-            }
-
             if (Popup.Parent != null && Popup.Parent != placementTarget)
             {
                 ((ISetLogicalParent)Popup).SetParent(null);
@@ -234,6 +229,11 @@ namespace Avalonia.Controls.Primitives
             if (Popup.Child == null)
             {
                 Popup.Child = CreatePresenter();
+            }
+
+            if (CancelOpening())
+            {
+                return false;
             }
 
             PositionPopup(showAtPointer);
