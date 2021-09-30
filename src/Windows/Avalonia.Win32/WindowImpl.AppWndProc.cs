@@ -123,6 +123,12 @@ namespace Avalonia.Win32
                         break;
                     }
 
+                case WindowsMessage.WM_SYSCOMMAND:
+                    // Disable system handling of Alt/F10 menu keys.
+                    if ((SysCommands)wParam == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0)
+                        return IntPtr.Zero;
+                    break;
+
                 case WindowsMessage.WM_MENUCHAR:
                     {
                         // mute the system beep
