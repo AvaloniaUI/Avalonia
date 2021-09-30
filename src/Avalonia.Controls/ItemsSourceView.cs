@@ -94,15 +94,9 @@ namespace Avalonia.Controls
         {
             add
             {
-                if (_inner is null)
-                    ThrowDisposed();
-
-                if (_collectionChanged is null)
+                if (_collectionChanged is null && Inner is INotifyCollectionChanged incc)
                 {
-                    if (_inner is INotifyCollectionChanged incc)
-                    {
-                        incc.CollectionChanged += OnCollectionChanged;
-                    }
+                    incc.CollectionChanged += OnCollectionChanged;
                 }
 
                 _collectionChanged += value;
@@ -110,17 +104,11 @@ namespace Avalonia.Controls
 
             remove
             {
-                if (_inner is null)
-                    ThrowDisposed();
-
                 _collectionChanged -= value;
 
-                if (_collectionChanged is null)
+                if (_collectionChanged is null && Inner is INotifyCollectionChanged incc)
                 {
-                    if (_inner is INotifyCollectionChanged incc)
-                    {
-                        incc.CollectionChanged -= OnCollectionChanged;
-                    }
+                    incc.CollectionChanged -= OnCollectionChanged;
                 }
             }
         }
