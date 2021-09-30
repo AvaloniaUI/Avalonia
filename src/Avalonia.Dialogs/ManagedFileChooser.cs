@@ -1,13 +1,11 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Dialogs
 {
@@ -35,7 +33,9 @@ namespace Avalonia.Dialogs
             if (_quickLinksRoot != null)
             {
                 var isQuickLink = _quickLinksRoot.IsLogicalAncestorOf(e.Source as Control);
+#pragma warning disable CS0618 // Type or member is obsolete
                 if (e.ClickCount == 2 || isQuickLink)
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     if (model.ItemType == ManagedFileChooserItemType.File)
                     {
