@@ -262,7 +262,7 @@ namespace Avalonia.Base.UnitTests
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
-                if (level >= Logging.LogEventLevel.Warning)
+                if (level >= Avalonia.Logging.LogEventLevel.Warning)
                 {
                     called = true;
                 }
@@ -285,7 +285,7 @@ namespace Avalonia.Base.UnitTests
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
-                if (level >= Logging.LogEventLevel.Warning)
+                if (level >= Avalonia.Logging.LogEventLevel.Warning)
                 {
                     called = true;
                 }

@@ -280,8 +280,8 @@ namespace Avalonia.Collections
         /// <summary>
         /// Gets a range of items from the collection.
         /// </summary>
-        /// <param name="index">The first index to remove.</param>
-        /// <param name="count">The number of items to remove.</param>
+        /// <param name="index">The zero-based <see cref="AvaloniaList{T}"/> index at which the range starts.</param>
+        /// <param name="count">The number of elements in the range.</param>
         public IEnumerable<T> GetRange(int index, int count)
         {
             return _inner.GetRange(index, count);
@@ -451,6 +451,28 @@ namespace Avalonia.Collections
                     newIndex,
                     oldIndex);
                 _collectionChanged(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Ensures that the capacity of the list is at least <see cref="Capacity"/>.
+        /// </summary>
+        /// <param name="capacity">The capacity.</param>
+        public void EnsureCapacity(int capacity)
+        {
+            // Adapted from List<T> implementation.
+            var currentCapacity = _inner.Capacity;
+
+            if (currentCapacity < capacity)
+            {
+                var newCapacity = currentCapacity == 0 ? 4 : currentCapacity * 2;
+
+                if (newCapacity < capacity)
+                {
+                    newCapacity = capacity;
+                }
+
+                _inner.Capacity = newCapacity;
             }
         }
 
@@ -632,24 +654,6 @@ namespace Avalonia.Collections
 
         /// <inheritdoc/>
         Delegate[] INotifyCollectionChangedDebug.GetCollectionChangedSubscribers() => _collectionChanged?.GetInvocationList();
-
-        private void EnsureCapacity(int capacity)
-        {
-            // Adapted from List<T> implementation.
-            var currentCapacity = _inner.Capacity;
-
-            if (currentCapacity < capacity)
-            {
-                var newCapacity = currentCapacity == 0 ? 4 : currentCapacity * 2;
-
-                if (newCapacity < capacity)
-                {
-                    newCapacity = capacity;
-                }
-
-                _inner.Capacity = newCapacity;
-            }
-        }
 
         /// <summary>
         /// Raises the <see cref="CollectionChanged"/> event with an add action.

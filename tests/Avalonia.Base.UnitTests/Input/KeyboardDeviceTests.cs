@@ -126,7 +126,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             private readonly Action _action;
             public DelegateCommand(Action action) => _action = action;
-            public event EventHandler CanExecuteChanged;
+            public event EventHandler CanExecuteChanged { add { } remove { } }
             public bool CanExecute(object parameter) => true;
             public void Execute(object parameter) => _action();
         }

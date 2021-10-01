@@ -161,21 +161,42 @@ namespace Avalonia.Controls
         private void DataGridCell_PointerPressed(PointerPressedEventArgs e)
         {
             // OwningGrid is null for TopLeftHeaderCell and TopRightHeaderCell because they have no OwningRow
-            if (OwningGrid != null)
+            if (OwningGrid == null)
             {
-                OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
-                if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+                return;
+            }
+            OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            {
+                if (!e.Handled)
+                //if (!e.Handled && OwningGrid.IsTabStop)
                 {
-                    if (!e.Handled)
-                    //if (!e.Handled && OwningGrid.IsTabStop)
+                    OwningGrid.Focus();
+                }
+                if (OwningRow != null)
+                {
+                    var handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+
+                    // Do not handle PointerPressed with touch,
+                    // so we can start scroll gesture on the same event.
+                    if (e.Pointer.Type != PointerType.Touch)
                     {
-                        OwningGrid.Focus();
+                        e.Handled = handled;
                     }
-                    if (OwningRow != null)
-                    {
-                        e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
-                        OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
-                    }
+
+                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
+                }
+            }
+            else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                if (!e.Handled)
+                //if (!e.Handled && OwningGrid.IsTabStop)
+                {
+                    OwningGrid.Focus();
+                }
+                if (OwningRow != null)
+                {
+                    e.Handled = OwningGrid.UpdateStateOnMouseRightButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
                 }
             }
         }
@@ -197,7 +218,7 @@ namespace Avalonia.Controls
         }
 
         // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the 
-        // right gridline will be collapsed if this cell belongs to the lastVisibileColumn and there is no filler column
+        // right gridline will be collapsed if this cell belongs to the lastVisibleColumn and there is no filler column
         internal void EnsureGridLine(DataGridColumn lastVisibleColumn)
         {
             if (OwningGrid != null && _rightGridLine != null)

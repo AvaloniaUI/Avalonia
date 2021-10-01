@@ -31,9 +31,11 @@ namespace Avalonia.Controls.Embedding.Offscreen
             set
             {
                 _clientSize = value;
-                Resized?.Invoke(value);
+                Resized?.Invoke(value, PlatformResizeReason.Unspecified);
             }
         }
+
+        public Size? FrameSize => null;
 
         public double RenderScaling
         {
@@ -47,7 +49,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }

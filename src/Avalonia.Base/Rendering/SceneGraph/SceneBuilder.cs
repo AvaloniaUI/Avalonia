@@ -164,10 +164,12 @@ namespace Avalonia.Rendering.SceneGraph
             var visual = node.Visual;
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
+#pragma warning disable CS0618 // Type or member is obsolete
             var clipToBoundsRadius = visual is IVisualWithRoundRectClip roundRectClip ?
                 roundRectClip.ClipToBoundsRadius :
                 default;
-            
+#pragma warning restore CS0618 // Type or member is obsolete
+
             var bounds = new Rect(visual.Bounds.Size);
             var contextImpl = (DeferredDrawingContextImpl)context.PlatformImpl;
 
@@ -258,14 +260,25 @@ namespace Avalonia.Rendering.SceneGraph
                         }
                         else if (visualChildren.Count > 1)
                         {
-                            var sortedChildren = new IVisual[visualChildren.Count];
-                            visualChildren.CopyTo(sortedChildren, 0);
+                            var count = visualChildren.Count;
+                            var sortedChildren = new (IVisual visual, int index)[count];
 
-                            Array.Sort(sortedChildren, ZIndexComparer.ComparisonInstance);
+                            for (var i = 0; i < count; i++)
+                            {
+                                sortedChildren[i] = (visualChildren[i], i);
+                            }
+
+                            // Regular Array.Sort is unstable, we need to provide indices as well to avoid reshuffling elements.
+                            Array.Sort(sortedChildren, (lhs, rhs) =>
+                            {
+                                var result = ZIndexComparer.Instance.Compare(lhs.visual, rhs.visual);
+
+                                return result == 0 ? lhs.index.CompareTo(rhs.index) : result;
+                            });
 
                             foreach (var child in sortedChildren)
                             {
-                                var childNode = GetOrCreateChildNode(scene, child, node);
+                                var childNode = GetOrCreateChildNode(scene, child.Item1, node);
                                 Update(context, scene, (VisualNode)childNode, clip, forceRecurse);
                             }
                         }

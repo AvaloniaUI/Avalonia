@@ -96,6 +96,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             var root = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     target,
@@ -126,10 +127,41 @@ namespace Avalonia.Base.UnitTests.Input
 
             var root = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     (current = new Button { Content = "Outside" }),
                     target,
+                }
+            };
+
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
+
+            Assert.Same(next, result);
+        }
+
+        [Fact]
+        public void ShiftTab_Should_Navigate_Outside_When_Null_Returned_As_Next()
+        {
+            Button current;
+            Button next;
+            var target = new CustomNavigatingStackPanel
+            {
+                Children =
+                {
+                    new Button { Content = "Button 1" },
+                    (current = new Button { Content = "Button 2" }),
+                    new Button { Content = "Button 3" },
+                },
+            };
+
+            var root = new StackPanel
+            {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                Children =
+                {
+                    target,
+                    (next = new Button { Content = "Outside" }),
                 }
             };
 
@@ -155,6 +187,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             var root = new StackPanel
             {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
                 Children =
                 {
                     target,

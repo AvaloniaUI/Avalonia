@@ -11,6 +11,7 @@
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />    
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="MinHeight" Value="32" />
     <!--<Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
     <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />-->
@@ -21,11 +22,13 @@
                   Grid.ColumnSpan="2"
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}" />
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}" />
 
           <Grid VerticalAlignment="Top" Height="32">
             <Border x:Name="NormalRectangle"
                 BorderThickness="{DynamicResource CheckBoxBorderThemeThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
                 UseLayoutRounding="False"
                 Height="20"
                 Width="20" />
@@ -48,14 +51,6 @@
         </Grid>
       </ControlTemplate>
     </Setter>
-  </Style>
-  
-  <Style Selector="CheckBox /template/ Border#PART_Border">
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-  </Style>
-
-  <Style Selector="CheckBox /template/ Border#NormalRectangle">
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </Style>
 
   <!-- Unchecked Normal State -->
