@@ -235,6 +235,12 @@ namespace Avalonia.Controls
             return new NoneAutomationPeer(factory, this);
         }
 
+        internal AutomationPeer? GetAutomationPeer()
+        {
+            VerifyAccess();
+            return _automationPeer;
+        }
+
         internal AutomationPeer GetOrCreateAutomationPeer(IAutomationNodeFactory factory)
         {
             VerifyAccess();
