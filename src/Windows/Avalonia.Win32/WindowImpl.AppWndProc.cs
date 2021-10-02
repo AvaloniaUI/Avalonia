@@ -79,8 +79,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DESTROY:
                     {
-                        if (_automationNode is object)
-                            UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
+                        UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
 
                         //Window doesn't exist anymore
                         _hwnd = IntPtr.Zero;
@@ -484,14 +483,9 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETOBJECT:
                     if ((long)lParam == UiaRootObjectId)
                     {
-                        if (_automationNode is null)
-                        {
-                            var peer = ControlAutomationPeer.CreatePeerForElement((Control)_owner);
-                            _automationNode = new RootAutomationNode(peer);
-                        }
-
-                        var r = UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, _automationNode);
-                        return r;
+                        var peer = ControlAutomationPeer.CreatePeerForElement((Control)_owner);
+                        var node = AutomationNode.GetOrCreate(peer);
+                        return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
                     }
                     break;
             }

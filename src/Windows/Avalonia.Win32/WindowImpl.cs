@@ -87,7 +87,6 @@ namespace Avalonia.Win32
         private POINT _maxTrackSize;
         private WindowImpl _parent;        
         private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
-        private AutomationNode _automationNode;
         private bool _isCloseRequested;
         private bool _shown;
         private bool _hiddenWindowIsParent;

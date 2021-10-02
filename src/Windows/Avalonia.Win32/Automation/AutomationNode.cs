@@ -160,11 +160,6 @@ namespace Avalonia.Win32.Automation
                 return null;
             }
 
-            if (Peer.GetType().Name == "PopupAutomationPeer")
-            {
-                System.Diagnostics.Debug.WriteLine("Popup automation node navigate " + direction);
-            }
-
             return InvokeSync(() =>
             {
                 return direction switch
@@ -183,10 +178,10 @@ namespace Avalonia.Win32.Automation
 
         public static AutomationNode? GetOrCreate(AutomationPeer? peer)
         {
-            if (peer is null)
-                return null;
-            return s_nodes.GetValue(peer, x => new AutomationNode(x));
+            return peer is null ? null : s_nodes.GetValue(peer, Create);
         }
+
+        public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
 
         IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
@@ -292,6 +287,11 @@ namespace Avalonia.Win32.Automation
             }
 
             return peer is object ? GetOrCreate(peer) : null;
+        }
+
+        private static AutomationNode Create(AutomationPeer peer)
+        {
+            return peer is AAP.IRootProvider ? new RootAutomationNode(peer) : new AutomationNode(peer);
         }
 
         private static UiaControlTypeId ToUiaControlType(AutomationControlType role)
