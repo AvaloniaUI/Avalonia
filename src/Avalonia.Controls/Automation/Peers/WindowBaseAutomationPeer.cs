@@ -1,5 +1,5 @@
+using System;
 using System.ComponentModel;
-using Avalonia.Automation.Platform;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,25 +14,27 @@ namespace Avalonia.Automation.Peers
     {
         private Control? _focus;
 
-        public WindowBaseAutomationPeer(IAutomationNode node, WindowBase owner)
-            : base(node, owner)
+        public WindowBaseAutomationPeer(WindowBase owner)
+            : base(owner)
         {
         }
 
         public new WindowBase Owner => (WindowBase)base.Owner;
         public ITopLevelImpl PlatformImpl => Owner.PlatformImpl;
 
+        public event EventHandler? FocusChanged;
+
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.Window;
         }
 
-        public AutomationPeer? GetFocus() => _focus is object ? GetOrCreatePeer(_focus) : null;
+        public AutomationPeer? GetFocus() => _focus is object ? GetOrCreate(_focus) : null;
 
         public AutomationPeer? GetPeerFromPoint(Point p)
         {
             var hit = Owner.GetVisualAt(p)?.FindAncestorOfType<Control>(includeSelf: true);
-            return hit is object ? GetOrCreatePeer(hit) : null;
+            return hit is object ? GetOrCreate(hit) : null;
         }
 
         protected void StartTrackingFocus()
@@ -54,8 +56,10 @@ namespace Avalonia.Automation.Peers
             
             if (_focus != oldFocus)
             {
-                var peer = _focus is object ? GetOrCreatePeer(_focus) : null;
-                ((IRootAutomationNode)Node).FocusChanged(peer);
+                var peer = _focus is object ?
+                    _focus == Owner ? this :
+                    GetOrCreate(_focus) : null;
+                FocusChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 

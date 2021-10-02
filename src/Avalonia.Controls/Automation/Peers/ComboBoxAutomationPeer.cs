@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Avalonia.Automation.Platform;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
@@ -12,8 +11,8 @@ namespace Avalonia.Automation.Peers
     {
         private UnrealizedSelectionPeer[]? _selection;
 
-        public ComboBoxAutomationPeer(IAutomationNodeFactory factory, ComboBox owner)
-            : base(factory, owner) 
+        public ComboBoxAutomationPeer(ComboBox owner)
+            : base(owner) 
         {
         }
 
@@ -39,7 +38,7 @@ namespace Avalonia.Automation.Peers
             // peer to represent the unrealized item.
             if (Owner.SelectedItem is object selection)
             {
-                _selection ??= new[] { new UnrealizedSelectionPeer(Node.Factory, this) };
+                _selection ??= new[] { new UnrealizedSelectionPeer(this) };
                 _selection[0].Item = selection;
                 return _selection;
             }
@@ -70,8 +69,7 @@ namespace Avalonia.Automation.Peers
             private readonly ComboBoxAutomationPeer _owner;
             private object? _item;
 
-            public UnrealizedSelectionPeer(IAutomationNodeFactory factory, ComboBoxAutomationPeer owner)
-                : base(factory) 
+            public UnrealizedSelectionPeer(ComboBoxAutomationPeer owner)
             {
                 _owner = owner;
             }

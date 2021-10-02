@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using Avalonia.Automation.Platform;
 
 #nullable enable
 
@@ -56,33 +54,6 @@ namespace Avalonia.Automation.Peers
     /// </summary>
     public abstract class AutomationPeer
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AutomationPeer"/> class.
-        /// </summary>
-        /// <param name="factory">
-        /// The factory to use to create the platform automation node.
-        /// </param>
-        protected AutomationPeer(IAutomationNodeFactory factory)
-        {
-            Node = factory.CreateNode(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AutomationPeer"/> class.
-        /// </summary>
-        /// <param name="node">
-        /// The platform automation node.
-        /// </param>
-        protected AutomationPeer(IAutomationNode node)
-        {
-            Node = node;
-        }
-
-        /// <summary>
-        /// Gets the related node in the platform UI Automation tree.
-        /// </summary>
-        public IAutomationNode Node { get; }
-
         /// <summary>
         /// Attempts to bring the element associated with the automation peer into view.
         /// </summary>
@@ -188,18 +159,20 @@ namespace Avalonia.Automation.Peers
         /// <returns>true if a context menu is present for the element; otherwise false.</returns>
         public bool ShowContextMenu() => ShowContextMenuCore();
 
+        public event EventHandler<AutomationPropertyChangedEventArgs>? PropertyChanged;
+
         /// <summary>
         /// Raises an event to notify the automation client of a changed property value.
         /// </summary>
-        /// <param name="automationProperty">The property that changed.</param>
+        /// <param name="property">The property that changed.</param>
         /// <param name="oldValue">The previous value of the property.</param>
         /// <param name="newValue">The new value of the property.</param>
         public void RaisePropertyChangedEvent(
-            AutomationProperty automationProperty,
+            AutomationProperty property,
             object? oldValue,
             object? newValue)
         {
-            Node.PropertyChanged(automationProperty, oldValue, newValue);
+            PropertyChanged?.Invoke(this, new AutomationPropertyChangedEventArgs(property, oldValue, newValue));
         }
 
         protected virtual string GetLocalizedControlTypeCore()

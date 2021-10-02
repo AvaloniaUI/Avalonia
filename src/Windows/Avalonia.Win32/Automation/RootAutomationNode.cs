@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Automation.Provider;
 using Avalonia.Win32.Interop.Automation;
 
@@ -10,12 +9,12 @@ using Avalonia.Win32.Interop.Automation;
 namespace Avalonia.Win32.Automation
 {
     internal class RootAutomationNode : AutomationNode,
-        IRawElementProviderFragmentRoot,
-        IRootAutomationNode
+        IRawElementProviderFragmentRoot
     {
-        public RootAutomationNode(Func<IAutomationNode, AutomationPeer> peerGetter)
-            : base(peerGetter)
+        public RootAutomationNode(AutomationPeer peer)
+            : base(peer)
         {
+            ((IRootProvider)peer).FocusChanged += FocusChanged;
         }
 
         public override IRawElementProviderFragmentRoot? FragmentRoot => this;
@@ -30,20 +29,19 @@ namespace Avalonia.Win32.Automation
             var p = WindowImpl.PointToClient(new PixelPoint((int)x, (int)y));
             var peer = (WindowBaseAutomationPeer)Peer;
             var found = InvokeSync(() => peer.GetPeerFromPoint(p));
-            var result = found?.Node as IRawElementProviderFragment;
+            var result = GetOrCreate(found) as IRawElementProviderFragment;
             return result;
         }
 
         public IRawElementProviderFragment? GetFocus()
         {
             var focus = InvokeSync(() => Peer.GetFocus());
-            return (AutomationNode?)focus?.Node;
+            return GetOrCreate(focus);
         }
 
-        public void FocusChanged(AutomationPeer? focus)
+        public void FocusChanged(object sender, EventArgs e)
         {
-            var node = focus?.Node as AutomationNode;
-            RaiseFocusChanged(node);
+            RaiseFocusChanged(GetOrCreate(Peer.GetFocus()));
         }
 
         public Rect ToScreen(Rect rect)

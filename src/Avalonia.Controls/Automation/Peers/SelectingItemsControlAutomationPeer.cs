@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Automation.Platform;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -16,16 +15,16 @@ namespace Avalonia.Automation.Peers
     {
         private ISelectionModel _selection;
 
-        protected SelectingItemsControlAutomationPeer(IAutomationNodeFactory factory, SelectingItemsControl owner)
-            : base(factory, owner) 
+        protected SelectingItemsControlAutomationPeer(SelectingItemsControl owner)
+            : base(owner) 
         {
             _selection = owner.GetValue(ListBox.SelectionProperty);
             _selection.SelectionChanged += OwnerSelectionChanged;
             owner.PropertyChanged += OwnerPropertyChanged;
         }
 
-        public bool CanSelectMultiple => GetSelectionModeCore().HasFlagCustom(SelectionMode.Multiple);
-        public bool IsSelectionRequired => GetSelectionModeCore().HasFlagCustom(SelectionMode.AlwaysSelected);
+        public bool CanSelectMultiple => GetSelectionModeCore().HasAllFlags(SelectionMode.Multiple);
+        public bool IsSelectionRequired => GetSelectionModeCore().HasAllFlags(SelectionMode.AlwaysSelected);
         public IReadOnlyList<AutomationPeer> GetSelection() => GetSelectionCore() ?? Array.Empty<AutomationPeer>();
 
         protected virtual IReadOnlyList<AutomationPeer>? GetSelectionCore()
@@ -42,7 +41,7 @@ namespace Avalonia.Automation.Peers
 
                     if (container is Control c && ((IVisual)c).IsAttachedToVisualTree)
                     {
-                        var peer = GetOrCreatePeer(c);
+                        var peer = GetOrCreate(c);
 
                         if (peer is object)
                         {

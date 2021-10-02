@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 
@@ -19,15 +18,7 @@ namespace Avalonia.Automation.Peers
         private AutomationPeer? _parent;
         private bool _parentValid;
 
-        public ControlAutomationPeer(IAutomationNodeFactory factory, Control owner)
-            : base(factory)
-        {
-            Owner = owner ?? throw new ArgumentNullException("owner");
-            Initialize();
-        }
-
-        protected ControlAutomationPeer(IAutomationNode node, Control owner)
-            : base(node)
+        public ControlAutomationPeer(Control owner)
         {
             Owner = owner ?? throw new ArgumentNullException("owner");
             Initialize();
@@ -35,15 +26,18 @@ namespace Avalonia.Automation.Peers
 
         public Control Owner { get; }
 
-        public static AutomationPeer GetOrCreatePeer(IAutomationNodeFactory factory, Control element)
+        public event EventHandler? ChildrenChanged;
+
+        public AutomationPeer GetOrCreate(Control element)
         {
-            element = element ?? throw new ArgumentNullException("element");
-            return element.GetOrCreateAutomationPeer(factory);
+            if (element == Owner)
+                return this;
+            return CreatePeerForElement(element);
         }
 
-        public AutomationPeer GetOrCreatePeer(Control element)
+        public static AutomationPeer CreatePeerForElement(Control element)
         {
-            return element == Owner ? this : GetOrCreatePeer(Node.Factory, element);
+            return element.GetOrCreateAutomationPeer();
         }
 
         protected override void BringIntoViewCore() => Owner.BringIntoView();
@@ -79,7 +73,7 @@ namespace Avalonia.Automation.Peers
             {
                 if (child is Control c && c.IsVisible)
                 {
-                    result.Add(GetOrCreatePeer(c));
+                    result.Add(GetOrCreate(c));
                 }
             }
 
@@ -89,7 +83,7 @@ namespace Avalonia.Automation.Peers
         protected override AutomationPeer? GetLabeledByCore()
         {
             var label = AutomationProperties.GetLabeledBy(Owner);
-            return label is Control c ? GetOrCreatePeer(c) : null;
+            return label is Control c ? GetOrCreate(c) : null;
         }
 
         protected override string? GetNameCore()
@@ -116,7 +110,7 @@ namespace Avalonia.Automation.Peers
         protected void InvalidateChildren()
         {
             _childrenValid = false;
-            Node!.ChildrenChanged();
+            ChildrenChanged?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -185,7 +179,7 @@ namespace Avalonia.Automation.Peers
             {
                 var parent = Owner.GetVisualParent();
                 if (parent is Control c)
-                    (GetOrCreatePeer(c) as ControlAutomationPeer)?.InvalidateChildren();
+                    (GetOrCreate(c) as ControlAutomationPeer)?.InvalidateChildren();
             }
             else if (e.Property == Visual.TransformedBoundsProperty)
             {
@@ -211,7 +205,7 @@ namespace Avalonia.Automation.Peers
                 {
                     if (parent is Control c)
                     {
-                        var parentPeer = GetOrCreatePeer(c);
+                        var parentPeer = GetOrCreate(c);
                         parentPeer.GetChildren();
                     }
 

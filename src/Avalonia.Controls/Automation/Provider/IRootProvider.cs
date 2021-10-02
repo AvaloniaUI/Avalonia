@@ -1,4 +1,5 @@
-﻿using Avalonia.Automation.Peers;
+﻿using System;
+using Avalonia.Automation.Peers;
 using Avalonia.Platform;
 
 #nullable enable
@@ -10,5 +11,6 @@ namespace Avalonia.Automation.Provider
         ITopLevelImpl? PlatformImpl { get; }
         AutomationPeer? GetFocus();
         AutomationPeer? GetPeerFromPoint(Point p);
+        event EventHandler? FocusChanged;
     }
 }

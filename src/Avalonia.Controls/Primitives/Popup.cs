@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Presenters;
@@ -543,9 +542,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new PopupAutomationPeer(factory, this);
+            return new PopupAutomationPeer(this);
         }
 
         private static IDisposable SubscribeToEventHandler<T, TEventHandler>(T target, TEventHandler handler, Action<T, TEventHandler> subscribe, Action<T, TEventHandler> unsubscribe)

@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls.Metadata;
 using Avalonia.Data;
 using Avalonia.Interactivity;
@@ -171,9 +170,9 @@ namespace Avalonia.Controls.Primitives
             RaiseEvent(e);
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new ToggleButtonAutomationPeer(factory, this);
+            return new ToggleButtonAutomationPeer(this);
         }
 
         private void OnIsCheckedChanged(AvaloniaPropertyChangedEventArgs e)

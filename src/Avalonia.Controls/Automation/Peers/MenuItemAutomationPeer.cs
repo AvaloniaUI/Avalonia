@@ -1,5 +1,4 @@
-﻿using Avalonia.Automation.Platform;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 
 #nullable enable
@@ -8,8 +7,8 @@ namespace Avalonia.Automation.Peers
 {
     public class MenuItemAutomationPeer : ControlAutomationPeer
     {
-        public MenuItemAutomationPeer(IAutomationNodeFactory factory, MenuItem owner)
-            : base(factory, owner) 
+        public MenuItemAutomationPeer(MenuItem owner)
+            : base(owner) 
         { 
         }
 

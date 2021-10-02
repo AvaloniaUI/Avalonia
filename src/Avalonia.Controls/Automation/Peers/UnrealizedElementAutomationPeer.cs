@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Automation.Platform;
 
 #nullable enable
 
@@ -11,11 +10,6 @@ namespace Avalonia.Automation.Peers
     /// </summary>
     public abstract class UnrealizedElementAutomationPeer : AutomationPeer
     {
-        protected UnrealizedElementAutomationPeer(IAutomationNodeFactory factory)
-            : base(factory)
-        {
-        }
-
         public void SetParent(AutomationPeer? parent) => TrySetParent(parent);
         protected override void BringIntoViewCore() => GetParent()?.BringIntoView();
         protected override Rect GetBoundingRectangleCore() => GetParent()?.GetBoundingRectangle() ?? default;

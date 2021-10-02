@@ -1,12 +1,11 @@
-﻿using Avalonia.Automation.Platform;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
 namespace Avalonia.Automation.Peers
 {
     public class TabItemAutomationPeer : ListItemAutomationPeer
     {
-        public TabItemAutomationPeer(IAutomationNodeFactory factory, TabItem owner)
-            : base(factory, owner)
+        public TabItemAutomationPeer(TabItem owner)
+            : base(owner)
         {
         }
 

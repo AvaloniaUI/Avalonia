@@ -20,14 +20,14 @@ namespace Avalonia.Win32.Automation
             get
             {
                 var peer = InvokeSync<ISelectionItemProvider, ISelectionProvider?>(x => x.SelectionContainer);
-                return (peer as AutomationPeer)?.Node as AutomationNode;
+                return GetOrCreate(peer as AutomationPeer);
             }
         }
 
         public UIA.IRawElementProviderSimple[] GetSelection()
         {
             var peers = InvokeSync<ISelectionProvider, IReadOnlyList<AutomationPeer>>(x => x.GetSelection());
-            return peers?.Select(x => (UIA.IRawElementProviderSimple)x.Node).ToArray() ??
+            return peers?.Select(x => (UIA.IRawElementProviderSimple)GetOrCreate(x)!).ToArray() ??
                 Array.Empty<UIA.IRawElementProviderSimple>();
         }
 

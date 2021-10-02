@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -108,9 +107,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new NoneAutomationPeer(factory, this);
+            return new NoneAutomationPeer(this);
         }
 
         internal static string RemoveAccessKeyMarker(string text)

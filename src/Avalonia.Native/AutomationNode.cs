@@ -1,22 +1,19 @@
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Native.Interop;
 
 #nullable enable
 
 namespace Avalonia.Native
 {
-    internal class AutomationNode : IRootAutomationNode
+    internal class AutomationNode
     {
-        public AutomationNode(AutomationNodeFactory factory, IAvnAutomationNode native)
+        public AutomationNode(IAvnAutomationNode native)
         {
             Native = native;
-            Factory = factory;
         }
 
         public IAvnAutomationNode Native { get; }
-        public IAutomationNodeFactory Factory { get; }
 
         public void ChildrenChanged() => Native.ChildrenChanged();
 

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
@@ -298,9 +297,9 @@ namespace Avalonia.Controls
             _popup.Closed += PopupClosed;
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new ComboBoxAutomationPeer(factory, this);
+            return new ComboBoxAutomationPeer(this);
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)

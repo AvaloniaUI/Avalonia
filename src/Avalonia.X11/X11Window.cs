@@ -7,7 +7,6 @@ using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -1163,6 +1162,5 @@ namespace Avalonia.X11
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;
-        public Func<IAutomationNode, AutomationPeer> AutomationStarted { get; set; }
     }
 }

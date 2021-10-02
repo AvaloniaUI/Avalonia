@@ -1,4 +1,3 @@
-using Avalonia.Automation.Platform;
 using Avalonia.Controls;
 
 #nullable enable
@@ -11,8 +10,8 @@ namespace Avalonia.Automation.Peers
     /// </summary>
     public class NoneAutomationPeer : ControlAutomationPeer
     {
-        public NoneAutomationPeer(IAutomationNodeFactory factory, Control owner)
-            : base(factory, owner) 
+        public NoneAutomationPeer(Control owner)
+            : base(owner) 
         { 
         }
 

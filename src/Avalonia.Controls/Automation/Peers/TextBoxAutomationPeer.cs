@@ -1,5 +1,4 @@
-﻿using Avalonia.Automation.Platform;
-using Avalonia.Automation.Provider;
+﻿using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
 #nullable enable
@@ -8,8 +7,8 @@ namespace Avalonia.Automation.Peers
 {
     public class TextBoxAutomationPeer : ControlAutomationPeer, IValueProvider
     {
-        public TextBoxAutomationPeer(IAutomationNodeFactory factory, TextBox owner)
-            : base(factory, owner)
+        public TextBoxAutomationPeer(TextBox owner)
+            : base(owner)
         {
         }
 

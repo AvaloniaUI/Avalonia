@@ -1,5 +1,4 @@
-﻿using Avalonia.Automation.Platform;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
 #nullable enable
 
@@ -7,8 +6,8 @@ namespace Avalonia.Automation.Peers
 {
     public class ContentControlAutomationPeer : ControlAutomationPeer
     {
-        protected ContentControlAutomationPeer(IAutomationNodeFactory factory, ContentControl owner)
-            : base(factory, owner) 
+        protected ContentControlAutomationPeer(ContentControl owner)
+            : base(owner) 
         { 
         }
 

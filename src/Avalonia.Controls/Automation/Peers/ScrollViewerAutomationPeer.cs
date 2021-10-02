@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Automation.Platform;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Utilities;
@@ -10,8 +9,8 @@ namespace Avalonia.Automation.Peers
 {
     public class ScrollViewerAutomationPeer : ControlAutomationPeer, IScrollProvider
     {
-        public ScrollViewerAutomationPeer(IAutomationNodeFactory factory, ScrollViewer owner)
-            : base(factory, owner)
+        public ScrollViewerAutomationPeer(ScrollViewer owner)
+            : base(owner)
         {
         }
 

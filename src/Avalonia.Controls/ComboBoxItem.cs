@@ -1,7 +1,6 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 
 namespace Avalonia.Controls
 {
@@ -16,9 +15,9 @@ namespace Avalonia.Controls
                 .Subscribe(_ => (Parent as ComboBox)?.ItemFocused(this));
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new ComboBoxItemAutomationPeer(factory, this);
+            return new ComboBoxItemAutomationPeer(this);
         }
     }
 }

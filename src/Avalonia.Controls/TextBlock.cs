@@ -1,6 +1,5 @@
 using System.Reactive.Linq;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -513,9 +512,9 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new TextBlockAutomationPeer(factory, this);
+            return new TextBlockAutomationPeer(this);
         }
 
         private static bool IsValidMaxLines(int maxLines) => maxLines >= 0;

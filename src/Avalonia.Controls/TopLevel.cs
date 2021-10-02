@@ -1,7 +1,5 @@
 using System;
 using System.Reactive.Linq;
-using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;

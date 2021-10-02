@@ -1,5 +1,4 @@
-﻿using Avalonia.Automation.Platform;
-using Avalonia.Automation.Provider;
+﻿using Avalonia.Automation.Provider;
 using Avalonia.Controls.Primitives;
 
 #nullable enable
@@ -8,8 +7,8 @@ namespace Avalonia.Automation.Peers
 {
     public class ToggleButtonAutomationPeer : ContentControlAutomationPeer, IToggleProvider
     {
-        public ToggleButtonAutomationPeer(IAutomationNodeFactory factory, ToggleButton owner)
-            : base(factory, owner)
+        public ToggleButtonAutomationPeer(ToggleButton owner)
+            : base(owner)
         {
         }
 

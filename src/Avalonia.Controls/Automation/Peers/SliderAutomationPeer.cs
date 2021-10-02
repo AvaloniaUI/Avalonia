@@ -1,4 +1,3 @@
-using Avalonia.Automation.Platform;
 using Avalonia.Controls;
 
 #nullable enable
@@ -7,8 +6,8 @@ namespace Avalonia.Automation.Peers
 {
     public class SliderAutomationPeer : RangeBaseAutomationPeer
     {
-        public SliderAutomationPeer(IAutomationNodeFactory factory, Slider owner)
-            : base(factory, owner)
+        public SliderAutomationPeer(Slider owner)
+            : base(owner)
         {
         }
 

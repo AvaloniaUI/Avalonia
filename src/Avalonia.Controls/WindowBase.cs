@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -65,7 +64,6 @@ namespace Avalonia.Controls
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
-            impl.AutomationStarted = HandleAutomationStarted;
         }
 
         /// <summary>
@@ -263,17 +261,6 @@ namespace Avalonia.Controls
         /// <returns>The actual size of the window.</returns>
         protected virtual Size ArrangeSetBounds(Size size) => size;
 
-        protected sealed override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
-        {
-            throw new NotSupportedException(
-                "Automation peer for window controls must be created by the operating system.");
-        }
-
-        protected virtual AutomationPeer OnCreateAutomationPeer(IAutomationNode node)
-        {
-            throw new NotImplementedException("OnCreateAutomationPeer must be implemented in a derived class.");
-        }
-
         /// <summary>
         /// Handles a window position change notification from 
         /// <see cref="IWindowBaseImpl.PositionChanged"/>.
@@ -309,13 +296,6 @@ namespace Avalonia.Controls
             IsActive = false;
 
             Deactivated?.Invoke(this, EventArgs.Empty);
-        }
-
-        private AutomationPeer HandleAutomationStarted(IAutomationNode node)
-        {
-            var peer = OnCreateAutomationPeer(node);
-            SetAutomationPeer(peer);
-            return peer;
         }
 
         private void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)

@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls.Primitives;
 
 #nullable enable
@@ -8,8 +7,8 @@ namespace Avalonia.Automation.Peers
 {
     public class PopupRootAutomationPeer : WindowBaseAutomationPeer
     {
-        public PopupRootAutomationPeer(IAutomationNode node, PopupRoot owner)
-            : base(node, owner)
+        public PopupRootAutomationPeer(PopupRoot owner)
+            : base(owner)
         {
             if (owner.IsVisible)
                 StartTrackingFocus();

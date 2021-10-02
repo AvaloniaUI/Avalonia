@@ -1,5 +1,4 @@
-﻿using Avalonia.Automation.Platform;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
 #nullable enable
 
@@ -7,8 +6,8 @@ namespace Avalonia.Automation.Peers
 {
     public class CheckBoxAutomationPeer : ToggleButtonAutomationPeer
     {
-        public CheckBoxAutomationPeer(IAutomationNodeFactory factory, CheckBox owner)
-            : base(factory, owner) 
+        public CheckBoxAutomationPeer(CheckBox owner)
+            : base(owner) 
         {
         }
 

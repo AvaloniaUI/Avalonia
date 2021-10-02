@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Automation;
@@ -15,7 +16,7 @@ namespace Avalonia.Native
 
         public AvnAutomationPeer(AutomationPeer inner) => _inner = inner;
 
-        public IAvnAutomationNode Node => ((AutomationNode)_inner.Node).Native;
+        public IAvnAutomationNode Node => throw new NotImplementedException();
         public IAvnString? AcceleratorKey => _inner.GetAcceleratorKey().ToAvnString();
         public IAvnString? AccessKey => _inner.GetAccessKey().ToAvnString();
         public AvnAutomationControlType AutomationControlType => (AvnAutomationControlType)_inner.GetAutomationControlType();

@@ -1,5 +1,4 @@
-﻿using Avalonia.Automation.Platform;
-using Avalonia.Automation.Provider;
+﻿using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
 #nullable enable
@@ -11,8 +10,8 @@ namespace Avalonia.Automation.Peers
         private bool _searchedForScrollable;
         private IScrollProvider? _scroller;
 
-        public ItemsControlAutomationPeer(IAutomationNodeFactory factory, ItemsControl owner)
-            : base(factory, owner)
+        public ItemsControlAutomationPeer(ItemsControl owner)
+            : base(owner)
         {
         }
 
@@ -31,7 +30,7 @@ namespace Avalonia.Automation.Peers
                 if (!_searchedForScrollable)
                 {
                     if (Owner.GetValue(ListBox.ScrollProperty) is Control scrollable)
-                        _scroller = GetOrCreatePeer(scrollable) as IScrollProvider;
+                        _scroller = GetOrCreate(scrollable) as IScrollProvider;
                     _searchedForScrollable = true;
                 }
 

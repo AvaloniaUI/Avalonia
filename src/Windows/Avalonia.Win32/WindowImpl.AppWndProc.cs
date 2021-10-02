@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Remote;
 using Avalonia.Input;
@@ -483,16 +484,14 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_GETOBJECT:
                     if ((long)lParam == UiaRootObjectId)
                     {
-                        if (_automationNode is null && AutomationStarted is object)
+                        if (_automationNode is null)
                         {
-                            _automationNode = new RootAutomationNode(AutomationStarted);
+                            var peer = ControlAutomationPeer.CreatePeerForElement((Control)_owner);
+                            _automationNode = new RootAutomationNode(peer);
                         }
 
-                        if (_automationNode is object)
-                        {
-                            var r = UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, _automationNode);
-                            return r;
-                        }
+                        var r = UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, _automationNode);
+                        return r;
                     }
                     break;
             }

@@ -1,4 +1,3 @@
-using Avalonia.Automation.Platform;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
@@ -9,8 +8,8 @@ namespace Avalonia.Automation.Peers
     public class ButtonAutomationPeer : ContentControlAutomationPeer,
         IInvokeProvider
     {
-        public ButtonAutomationPeer(IAutomationNodeFactory factory,  Button owner)
-            : base(factory, owner) 
+        public ButtonAutomationPeer(Button owner)
+            : base(owner) 
         {
         }
 

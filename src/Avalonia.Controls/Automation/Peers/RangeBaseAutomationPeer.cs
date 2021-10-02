@@ -1,4 +1,3 @@
-using Avalonia.Automation.Platform;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls.Primitives;
 
@@ -8,8 +7,8 @@ namespace Avalonia.Automation.Peers
 {
     public abstract class RangeBaseAutomationPeer : ControlAutomationPeer, IRangeValueProvider
     {
-        public RangeBaseAutomationPeer(IAutomationNodeFactory factory, RangeBase owner)
-            : base(factory, owner) 
+        public RangeBaseAutomationPeer(RangeBase owner)
+            : base(owner) 
         {
             owner.PropertyChanged += OwnerPropertyChanged;
         }

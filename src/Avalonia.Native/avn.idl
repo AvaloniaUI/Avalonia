@@ -569,7 +569,6 @@ interface IAvnWindowBaseEvents : IUnknown
      AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
                                          IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
-     IAvnAutomationPeer* AutomationStarted(IAvnAutomationNode* node);
 }
 
 [uuid(1ae178ee-1fcc-447f-b6dd-b7bb727f934c)]

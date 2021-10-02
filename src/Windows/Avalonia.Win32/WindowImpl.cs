@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -177,7 +176,6 @@ namespace Avalonia.Win32
         public Action LostFocus { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
-        public Func<IAutomationNode, AutomationPeer> AutomationStarted { get; set; }
 
         public Thickness BorderThickness
         {

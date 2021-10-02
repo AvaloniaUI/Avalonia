@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop.Automation;
 using AAP = Avalonia.Automation.Provider;
@@ -18,7 +18,6 @@ namespace Avalonia.Win32.Automation
 {
     [ComVisible(true)]
     internal partial class AutomationNode : MarshalByRefObject,
-        IAutomationNode,
         IRawElementProviderSimple,
         IRawElementProviderSimple2,
         IRawElementProviderFragment,
@@ -46,6 +45,9 @@ namespace Avalonia.Win32.Automation
             { SelectionPatternIdentifiers.SelectionProperty, UiaPropertyId.SelectionSelection },
         };
 
+        private static ConditionalWeakTable<AutomationPeer, AutomationNode> s_nodes =
+            new ConditionalWeakTable<AutomationPeer, AutomationNode>();
+
         private readonly int[] _runtimeId;
         private int _raiseFocusChanged;
         private int _raisePropertyChanged;
@@ -54,22 +56,16 @@ namespace Avalonia.Win32.Automation
         {
             _runtimeId = new int[] { 3, GetHashCode() };
             Peer = peer;
-        }
-
-        protected AutomationNode(Func<IAutomationNode, AutomationPeer> peerGetter)
-        {
-            _runtimeId = new int[] { 3, GetHashCode() };
-            Peer = peerGetter(this);
+            s_nodes.Add(peer, this);
         }
 
         public AutomationPeer Peer { get; protected set; }
-        public IAutomationNodeFactory Factory => AutomationNodeFactory.Instance;
 
         public Rect BoundingRectangle
         {
             get => InvokeSync(() =>
             {
-                if (GetRoot()?.Node is RootAutomationNode root)
+                if (GetRoot() is RootAutomationNode root)
                     return root.ToScreen(Peer.GetBoundingRectangle());
                 return default;
             });
@@ -77,7 +73,7 @@ namespace Avalonia.Win32.Automation
 
         public virtual IRawElementProviderFragmentRoot? FragmentRoot
         {
-            get => InvokeSync(() => GetRoot())?.Node as IRawElementProviderFragmentRoot;
+            get => InvokeSync(() => GetRoot()) as IRawElementProviderFragmentRoot;
         }
 
         public virtual IRawElementProviderSimple? HostRawElementProvider => null;
@@ -147,7 +143,7 @@ namespace Avalonia.Win32.Automation
 
         public virtual IRawElementProviderFragment? Navigate(NavigateDirection direction)
         {
-            IAutomationNode? GetSibling(int direction)
+            AutomationNode? GetSibling(int direction)
             {
                 var children = Peer.GetParent()?.GetChildren();
 
@@ -157,7 +153,7 @@ namespace Avalonia.Win32.Automation
                     {
                         var j = i + direction;
                         if (j >= 0 && j < children.Count)
-                            return children[j].Node;
+                            return GetOrCreate(children[j]);
                     }
                 }
 
@@ -173,17 +169,24 @@ namespace Avalonia.Win32.Automation
             {
                 return direction switch
                 {
-                    NavigateDirection.Parent => Peer.GetParent()?.Node,
+                    NavigateDirection.Parent => GetOrCreate(Peer.GetParent()),
                     NavigateDirection.NextSibling => GetSibling(1),
                     NavigateDirection.PreviousSibling => GetSibling(-1),
-                    NavigateDirection.FirstChild => Peer.GetChildren().FirstOrDefault()?.Node,
-                    NavigateDirection.LastChild => Peer.GetChildren().LastOrDefault()?.Node,
+                    NavigateDirection.FirstChild => GetOrCreate(Peer.GetChildren().FirstOrDefault()),
+                    NavigateDirection.LastChild => GetOrCreate(Peer.GetChildren().LastOrDefault()),
                     _ => null,
                 };
             }) as IRawElementProviderFragment;
         }
 
         public void SetFocus() => InvokeSync(() => Peer.SetFocus());
+
+        public static AutomationNode? GetOrCreate(AutomationPeer? peer)
+        {
+            if (peer is null)
+                return null;
+            return s_nodes.GetValue(peer, x => new AutomationNode(x));
+        }
 
         IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
@@ -275,7 +278,7 @@ namespace Avalonia.Win32.Automation
             }
         }
 
-        private AutomationPeer GetRoot()
+        private AutomationNode? GetRoot()
         {
             Dispatcher.UIThread.VerifyAccess();
 
@@ -288,7 +291,7 @@ namespace Avalonia.Win32.Automation
                 parent = peer.GetParent();
             }
 
-            return peer;
+            return peer is object ? GetOrCreate(peer) : null;
         }
 
         private static UiaControlTypeId ToUiaControlType(AutomationControlType role)

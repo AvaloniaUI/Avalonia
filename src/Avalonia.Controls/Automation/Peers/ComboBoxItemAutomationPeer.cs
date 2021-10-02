@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Automation.Platform;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -11,8 +10,8 @@ namespace Avalonia.Automation.Peers
 {
     public class ComboBoxItemAutomationPeer : ListItemAutomationPeer
     {
-        public ComboBoxItemAutomationPeer(IAutomationNodeFactory factory, ComboBoxItem owner)
-            : base(factory, owner)
+        public ComboBoxItemAutomationPeer(ComboBoxItem owner)
+            : base(owner)
         {
         }
 

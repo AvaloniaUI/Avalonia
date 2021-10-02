@@ -1,5 +1,4 @@
-﻿using Avalonia.Automation.Platform;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
 #nullable enable
 
@@ -7,8 +6,8 @@ namespace Avalonia.Automation.Peers
 {
     public class TabControlAutomationPeer : SelectingItemsControlAutomationPeer
     {
-        public TabControlAutomationPeer(IAutomationNodeFactory factory, TabControl owner)
-            : base(factory, owner) 
+        public TabControlAutomationPeer(TabControl owner)
+            : base(owner) 
         {
         }
 

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
@@ -495,9 +494,9 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer(IAutomationNodeFactory factory)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            return new MenuItemAutomationPeer(factory, this);
+            return new MenuItemAutomationPeer(this);
         }
 
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Automation.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
@@ -11,8 +10,8 @@ namespace Avalonia.Automation.Peers
 {
     public class PopupAutomationPeer : ControlAutomationPeer
     {
-        public PopupAutomationPeer(IAutomationNodeFactory factory, Popup owner)
-            : base(factory, owner)
+        public PopupAutomationPeer(Popup owner)
+            : base(owner)
         {
             owner.Opened += PopupOpenedClosed;
             owner.Closed += PopupOpenedClosed;
@@ -22,7 +21,7 @@ namespace Avalonia.Automation.Peers
         {
             var host = (IVisualTreeHost)Owner;
             System.Diagnostics.Debug.WriteLine($"Popup children='{host}'");
-            return host.Root is Control c ? new[] { GetOrCreatePeer(c) } : null;
+            return host.Root is Control c ? new[] { GetOrCreate(c) } : null;
         }
 
         protected override bool IsContentElementCore() => false;
@@ -46,7 +45,7 @@ namespace Avalonia.Automation.Peers
         private AutomationPeer? GetPopupRoot()
         {
             var popupRoot = ((IVisualTreeHost)Owner).Root as Control;
-            return popupRoot is object ? GetOrCreatePeer(popupRoot) : null;
+            return popupRoot is object ? GetOrCreate(popupRoot) : null;
         }
     }
 }
