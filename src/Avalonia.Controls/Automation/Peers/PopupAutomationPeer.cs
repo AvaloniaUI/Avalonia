@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
-using Avalonia.VisualTree;
 
 #nullable enable
 
@@ -19,9 +19,8 @@ namespace Avalonia.Automation.Peers
 
         protected override IReadOnlyList<AutomationPeer>? GetChildrenCore()
         {
-            var host = (IVisualTreeHost)Owner;
-            System.Diagnostics.Debug.WriteLine($"Popup children='{host}'");
-            return host.Root is Control c ? new[] { GetOrCreate(c) } : null;
+            var host = (IPopupHostProvider)Owner;
+            return host.PopupHost is Control c ? new[] { GetOrCreate(c) } : null;
         }
 
         protected override bool IsContentElementCore() => false;
@@ -44,7 +43,7 @@ namespace Avalonia.Automation.Peers
 
         private AutomationPeer? GetPopupRoot()
         {
-            var popupRoot = ((IVisualTreeHost)Owner).Root as Control;
+            var popupRoot = ((IPopupHostProvider)Owner).PopupHost as Control;
             return popupRoot is object ? GetOrCreate(popupRoot) : null;
         }
     }
