@@ -7,6 +7,7 @@ namespace Avalonia.Automation.Peers
 {
     public enum AutomationControlType
     {
+        None,
         Button,
         Calendar,
         CheckBox,

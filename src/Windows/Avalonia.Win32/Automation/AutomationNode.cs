@@ -298,6 +298,7 @@ namespace Avalonia.Win32.Automation
         {
             return role switch
             {
+                AutomationControlType.None => UiaControlTypeId.Group,
                 AutomationControlType.Button => UiaControlTypeId.Button,
                 AutomationControlType.Calendar => UiaControlTypeId.Calendar,
                 AutomationControlType.CheckBox => UiaControlTypeId.CheckBox,
