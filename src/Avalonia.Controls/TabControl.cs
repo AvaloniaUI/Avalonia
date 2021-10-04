@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -69,6 +70,7 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
             SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
         }
 
         /// <summary>
@@ -230,11 +232,6 @@ namespace Avalonia.Controls
                     e.Handled = UpdateSelectionFromEventSource(e.Source);
                 }
             }
-        }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new TabControlAutomationPeer(this);
         }
     }
 }

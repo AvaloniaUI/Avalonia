@@ -14,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.Automation;
 
 #nullable enable
 
@@ -110,6 +111,8 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ContextMenu>(DefaultPanel);
             PlacementModeProperty.OverrideDefaultValue<ContextMenu>(PlacementMode.Pointer);
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
+            AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<ContextMenu>(AccessibilityView.Control);
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<ContextMenu>(AutomationControlType.Menu);
         }
 
         /// <summary>
@@ -317,11 +320,6 @@ namespace Avalonia.Controls
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new MenuItemContainerGenerator(this);
-        }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new ContextMenuAutomationPeer(this);
         }
 
         private void Open(Control control, Control placementTarget, bool requestedByPointer)

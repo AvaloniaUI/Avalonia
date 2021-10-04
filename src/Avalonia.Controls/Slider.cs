@@ -9,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Utilities;
+using Avalonia.Automation;
 
 namespace Avalonia.Controls
 {
@@ -106,6 +107,7 @@ namespace Avalonia.Controls
                 RoutingStrategies.Bubble);
 
             ValueProperty.OverrideMetadata<Slider>(new DirectPropertyMetadata<double>(enableDataValidation: true));
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Slider>(AutomationControlType.Slider);
         }
 
         /// <summary>
@@ -208,11 +210,6 @@ namespace Avalonia.Controls
             }
 
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
-        }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new SliderAutomationPeer(this);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

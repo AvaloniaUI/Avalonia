@@ -1,3 +1,4 @@
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
@@ -38,6 +39,8 @@ namespace Avalonia.Controls
         static Menu()
         {
             ItemsPanelProperty.OverrideDefaultValue(typeof(Menu), DefaultPanel);
+            AutomationProperties.AccessibilityViewProperty.OverrideDefaultValue<Menu>(AccessibilityView.Control);
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Menu>(AutomationControlType.Menu);
         }
 
         /// <inheritdoc/>
@@ -91,11 +94,6 @@ namespace Avalonia.Controls
             {
                 inputRoot.AccessKeyHandler.MainMenu = this;
             }
-        }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new MenuAutomationPeer(this);
         }
     }
 }

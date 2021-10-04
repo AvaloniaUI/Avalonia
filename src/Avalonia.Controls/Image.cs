@@ -1,3 +1,4 @@
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -34,6 +35,7 @@ namespace Avalonia.Controls
         {
             AffectsRender<Image>(SourceProperty, StretchProperty, StretchDirectionProperty);
             AffectsMeasure<Image>(SourceProperty, StretchProperty, StretchDirectionProperty);
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<Image>(AutomationControlType.Image);
         }
 
         /// <summary>
@@ -124,11 +126,6 @@ namespace Avalonia.Controls
             {
                 return new Size();
             }
-        }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new ImageAutomationPeer(this);
         }
     }
 }

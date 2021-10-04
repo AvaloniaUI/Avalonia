@@ -1,3 +1,4 @@
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 
@@ -8,9 +9,9 @@ namespace Avalonia.Controls
     /// </summary>
     public class CheckBox : ToggleButton
     {
-        protected override AutomationPeer OnCreateAutomationPeer()
+        static CheckBox()
         {
-            return new CheckBoxAutomationPeer(this);
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<CheckBox>(AutomationControlType.CheckBox);
         }
     }
 }
