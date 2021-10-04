@@ -14,11 +14,13 @@ namespace Avalonia.Win32.Automation
         public RootAutomationNode(AutomationPeer peer)
             : base(peer)
         {
-            ((IRootProvider)peer).FocusChanged += FocusChanged;
+            Peer = base.Peer.GetProvider<IRootProvider>() ?? throw new AvaloniaInternalException(
+                "Attempt to create RootAutomationNode from peer which does not implement IRootProvider.");
+            Peer.FocusChanged += FocusChanged;
         }
 
         public override IRawElementProviderFragmentRoot? FragmentRoot => this;
-        public new IRootProvider Peer => (IRootProvider)base.Peer;
+        public new IRootProvider Peer { get; }
         public WindowImpl? WindowImpl => Peer.PlatformImpl as WindowImpl;
         
         public IRawElementProviderFragment? ElementProviderFromPoint(double x, double y)

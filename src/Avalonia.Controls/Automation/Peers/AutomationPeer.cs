@@ -160,6 +160,13 @@ namespace Avalonia.Automation.Peers
         /// <returns>true if a context menu is present for the element; otherwise false.</returns>
         public bool ShowContextMenu() => ShowContextMenuCore();
 
+        /// <summary>
+        /// Tries to get a provider of the specified type from the peer.
+        /// </summary>
+        /// <typeparam name="T">The provider type.</typeparam>
+        /// <returns>The provider, or null if not implemented on this peer.</returns>
+        public T? GetProvider<T>() => (T?)GetProviderCore(typeof(T));
+
         public event EventHandler<AutomationPropertyChangedEventArgs>? PropertyChanged;
 
         /// <summary>
@@ -223,6 +230,12 @@ namespace Avalonia.Automation.Peers
         protected abstract bool IsKeyboardFocusableCore();
         protected abstract void SetFocusCore();
         protected abstract bool ShowContextMenuCore();
+        
+        protected virtual object? GetProviderCore(Type providerType)
+        {
+            return providerType.IsAssignableFrom(this.GetType()) ? this : null;
+        }
+
         protected internal abstract bool TrySetParent(AutomationPeer? parent);
 
         protected void EnsureEnabled()

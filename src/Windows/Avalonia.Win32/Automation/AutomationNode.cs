@@ -99,17 +99,19 @@ namespace Avalonia.Win32.Automation
         [return: MarshalAs(UnmanagedType.IUnknown)]
         public virtual object? GetPatternProvider(int patternId)
         {
+            AutomationNode? ThisIfPeerImplementsProvider<T>() => Peer.GetProvider<T>() is object ? this : null;
+
             return (UiaPatternId)patternId switch
             {
-                UiaPatternId.ExpandCollapse => Peer is IExpandCollapseProvider ? this : null,
-                UiaPatternId.Invoke => Peer is AAP.IInvokeProvider ? this : null,
-                UiaPatternId.RangeValue => Peer is AAP.IRangeValueProvider ? this : null,
-                UiaPatternId.Scroll => Peer is AAP.IScrollProvider ? this : null,
+                UiaPatternId.ExpandCollapse => ThisIfPeerImplementsProvider<IExpandCollapseProvider>(),
+                UiaPatternId.Invoke => ThisIfPeerImplementsProvider<AAP.IInvokeProvider>(),
+                UiaPatternId.RangeValue => ThisIfPeerImplementsProvider<AAP.IRangeValueProvider>(),
+                UiaPatternId.Scroll => ThisIfPeerImplementsProvider<AAP.IScrollProvider>(),
                 UiaPatternId.ScrollItem => this,
-                UiaPatternId.Selection => Peer is AAP.ISelectionProvider ? this : null,
-                UiaPatternId.SelectionItem => Peer is AAP.ISelectionItemProvider ? this : null,
-                UiaPatternId.Toggle => Peer is AAP.IToggleProvider ? this : null,
-                UiaPatternId.Value => Peer is AAP.IValueProvider ? this : null,
+                UiaPatternId.Selection => ThisIfPeerImplementsProvider<ISelectionProvider>(),
+                UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
+                UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
                 _ => null,
             };
         }
@@ -232,7 +234,7 @@ namespace Avalonia.Win32.Automation
 
         protected void InvokeSync<TInterface>(Action<TInterface> action)
         {
-            if (Peer is TInterface i)
+            if (Peer.GetProvider<TInterface>() is TInterface i)
             {
                 try
                 {
@@ -248,7 +250,7 @@ namespace Avalonia.Win32.Automation
         [return: MaybeNull]
         protected TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
         {
-            if (Peer is TInterface i)
+            if (Peer.GetProvider<TInterface>() is TInterface i)
             {
                 try
                 {
@@ -280,7 +282,7 @@ namespace Avalonia.Win32.Automation
             var peer = Peer;
             var parent = peer.GetParent();
 
-            while (!(peer is AAP.IRootProvider) && parent is object)
+            while (peer.GetProvider<AAP.IRootProvider>() is null && parent is object)
             {
                 peer = parent;
                 parent = peer.GetParent();
@@ -291,7 +293,9 @@ namespace Avalonia.Win32.Automation
 
         private static AutomationNode Create(AutomationPeer peer)
         {
-            return peer is AAP.IRootProvider ? new RootAutomationNode(peer) : new AutomationNode(peer);
+            return peer.GetProvider<AAP.IRootProvider>() is object ?
+                new RootAutomationNode(peer) :
+                new AutomationNode(peer);
         }
 
         private static UiaControlTypeId ToUiaControlType(AutomationControlType role)
