@@ -27,7 +27,7 @@
     </Style>
     <StyleInclude Source="/SideBar.xaml" />
   </Application.Styles>
-  <TrayIcon.TrayIcons>
+  <TrayIcon.Icons>
     <TrayIcons>
       <TrayIcon Icon="/Assets/test_icon.ico" ToolTipText="Avalonia Tray Icon ToolTip">
         <NativeMenu.Menu>
@@ -46,5 +46,5 @@
         </NativeMenu.Menu>
       </TrayIcon>
     </TrayIcons>
-  </TrayIcon.TrayIcons>
+  </TrayIcon.Icons>
 </Application>

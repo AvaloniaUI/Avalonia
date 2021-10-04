@@ -106,7 +106,6 @@ namespace ControlCatalog
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
                 desktopLifetime.MainWindow = new MainWindow();
-                desktopLifetime.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 singleViewLifetime.MainView = new MainView();

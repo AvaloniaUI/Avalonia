@@ -33,7 +33,7 @@ namespace Avalonia.Controls
 
         static TrayIcon ()
         {
-            TrayIconsProperty.Changed.Subscribe(args =>
+            IconsProperty.Changed.Subscribe(args =>
             {
                 if (args.Sender is Application application)
                 {
@@ -65,8 +65,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TrayIcons"/> attached property.
         /// </summary>
-        public static readonly AttachedProperty<TrayIcons> TrayIconsProperty
-            = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons>("TrayIcons");
+        public static readonly AttachedProperty<TrayIcons> IconsProperty
+            = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons>("Icons");
 
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
@@ -86,9 +86,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsVisibleProperty =
             Visual.IsVisibleProperty.AddOwner<TrayIcon>();
 
-        public static void SetTrayIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(TrayIconsProperty, trayIcons);
+        public static void SetIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
 
-        public static TrayIcons GetTrayIcons(AvaloniaObject o) => o.GetValue(TrayIconsProperty);
+        public static TrayIcons GetIcons(AvaloniaObject o) => o.GetValue(IconsProperty);
 
         /// <summary>
         /// Gets or sets the icon of the TrayIcon.
@@ -121,7 +121,7 @@ namespace Avalonia.Controls
 
         private static void Lifetime_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
         {
-            var trayIcons = GetTrayIcons(Application.Current);
+            var trayIcons = GetIcons(Application.Current);
 
             RemoveIcons(trayIcons);
         }
