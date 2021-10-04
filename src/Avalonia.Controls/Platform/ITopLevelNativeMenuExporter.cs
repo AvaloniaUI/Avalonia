@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Platform
 {
     public interface INativeMenuExporter
     {
-        void SetNativeMenu(NativeMenu menu);
+        void SetNativeMenu(NativeMenu? menu);
     }
 
     public interface ITopLevelNativeMenuExporter : INativeMenuExporter

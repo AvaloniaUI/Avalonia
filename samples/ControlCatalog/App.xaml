@@ -30,7 +30,7 @@
   <TrayIcon.Icons>
     <TrayIcons>
       <TrayIcon Icon="/Assets/test_icon.ico" ToolTipText="Avalonia Tray Icon ToolTip">
-        <NativeMenu.Menu>
+        <TrayIcon.Menu>
           <NativeMenu>
             <NativeMenuItem Header="Settings">
               <NativeMenu>
@@ -43,7 +43,7 @@
             </NativeMenuItem>
             <NativeMenuItem Header="Exit" Command="{Binding ExitCommand}" />
           </NativeMenu>
-        </NativeMenu.Menu>
+        </TrayIcon.Menu>
       </TrayIcon>
     </TrayIcons>
   </TrayIcon.Icons>

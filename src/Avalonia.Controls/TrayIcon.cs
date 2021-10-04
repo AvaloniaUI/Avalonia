@@ -69,6 +69,12 @@ namespace Avalonia.Controls
             = AvaloniaProperty.RegisterAttached<TrayIcon, Application, TrayIcons>("Icons");
 
         /// <summary>
+        /// Defines the <see cref="Menu"/> property.
+        /// </summary>
+        public static readonly StyledProperty<NativeMenu?> MenuProperty
+            = AvaloniaProperty.Register<TrayIcon, NativeMenu?>(nameof(Menu));
+
+        /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
         public static readonly StyledProperty<WindowIcon> IconProperty =
@@ -89,6 +95,15 @@ namespace Avalonia.Controls
         public static void SetIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
 
         public static TrayIcons GetIcons(AvaloniaObject o) => o.GetValue(IconsProperty);
+
+        /// <summary>
+        /// Gets or sets the Menu of the TrayIcon.
+        /// </summary>
+        public NativeMenu? Menu
+        {
+            get => GetValue(MenuProperty);
+            set => SetValue(MenuProperty, value);
+        }
 
         /// <summary>
         /// Gets or sets the icon of the TrayIcon.
@@ -154,6 +169,10 @@ namespace Avalonia.Controls
             else if (change.Property == ToolTipTextProperty)
             {
                 _impl.SetToolTipText(change.NewValue.GetValueOrDefault<string?>());
+            }
+            else if (change.Property == MenuProperty)
+            {
+                _impl.MenuExporter?.SetNativeMenu(change.NewValue.GetValueOrDefault<NativeMenu>());
             }
         }
 
