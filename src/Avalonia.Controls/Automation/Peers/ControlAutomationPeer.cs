@@ -148,16 +148,21 @@ namespace Avalonia.Automation.Peers
 
         protected override string? GetAcceleratorKeyCore() => AutomationProperties.GetAcceleratorKey(Owner);
         protected override string? GetAccessKeyCore() => AutomationProperties.GetAccessKey(Owner);
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
         protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
         protected override Rect GetBoundingRectangleCore() => GetBounds(Owner.TransformedBounds);
-        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
         protected override string GetClassNameCore() => Owner.GetType().Name;
         protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
-        protected override bool IsContentElementCore() => true;
-        protected override bool IsControlElementCore() => true;
+        protected override bool IsContentElementCore() => AutomationProperties.GetAccessibilityView(Owner) >= AccessibilityView.Content;
+        protected override bool IsControlElementCore() => AutomationProperties.GetAccessibilityView(Owner) >= AccessibilityView.Control;
         protected override bool IsEnabledCore() => Owner.IsEnabled;
         protected override bool IsKeyboardFocusableCore() => Owner.Focusable;
         protected override void SetFocusCore() => Owner.Focus();
+
+        protected override AutomationControlType GetControlTypeOverrideCore()
+        {
+            return AutomationProperties.GetControlTypeOverride(Owner) ?? GetAutomationControlTypeCore();
+        }
 
         private static Rect GetBounds(TransformedBounds? bounds)
         {

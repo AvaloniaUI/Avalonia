@@ -74,7 +74,7 @@ namespace Avalonia.Automation.Peers
         /// <summary>
         /// Gets the control type for the element that is associated with the UI Automation peer.
         /// </summary>
-        public AutomationControlType GetAutomationControlType() => GetAutomationControlTypeCore();
+        public AutomationControlType GetAutomationControlType() => GetControlTypeOverrideCore();
 
         /// <summary>
         /// Gets the automation ID of the element that is associated with the UI Automation peer.
@@ -230,7 +230,12 @@ namespace Avalonia.Automation.Peers
         protected abstract bool IsKeyboardFocusableCore();
         protected abstract void SetFocusCore();
         protected abstract bool ShowContextMenuCore();
-        
+
+        protected virtual AutomationControlType GetControlTypeOverrideCore()
+        {
+            return GetAutomationControlTypeCore();
+        }
+
         protected virtual object? GetProviderCore(Type providerType)
         {
             return providerType.IsAssignableFrom(this.GetType()) ? this : null;

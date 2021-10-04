@@ -1,8 +1,30 @@
 using System;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 
 namespace Avalonia.Automation
 {
+    /// <summary>
+    /// Declares how a control should included in different views of the automation tree.
+    /// </summary>
+    public enum AccessibilityView
+    {
+        /// <summary>
+        /// The control is included in the Raw view of the automation tree.
+        /// </summary>
+        Raw,
+
+        /// <summary>
+        /// The control is included in the Control view of the automation tree.
+        /// </summary>
+        Control,
+
+        /// <summary>
+        /// The control is included in the Content view of the automation tree.
+        /// </summary>
+        Content,
+    }
+
     public static class AutomationProperties
     {
         internal const int AutomationPositionInSetDefault = -1;
@@ -15,6 +37,15 @@ namespace Avalonia.Automation
             AvaloniaProperty.RegisterAttached<StyledElement, string>(
                 "AcceleratorKey",
                 typeof(AutomationProperties));
+
+        /// <summary>
+        /// Defines the AutomationProperties.AccessibilityView attached property.
+        /// </summary>
+        public static readonly AttachedProperty<AccessibilityView> AccessibilityViewProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, AccessibilityView>(
+                "AccessibilityView",
+                typeof(AutomationProperties),
+                defaultValue: AccessibilityView.Content);
 
         /// <summary>
         /// Defines the AutomationProperties.AccessKey attached property
@@ -30,6 +61,14 @@ namespace Avalonia.Automation
         public static readonly AttachedProperty<string> AutomationIdProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string>(
                 "AutomationId",
+                typeof(AutomationProperties));
+
+        /// <summary>
+        /// Defines the AutomationProperties.ControlTypeOverride attached property.
+        /// </summary>
+        public static readonly AttachedProperty<AutomationControlType?> ControlTypeOverrideProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, AutomationControlType?>(
+                "ControlTypeOverride",
                 typeof(AutomationProperties));
 
         /// <summary>
@@ -172,6 +211,32 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
+        /// Helper for setting AccessibilityView property on a StyledElement. 
+        /// </summary>
+        public static void SetAccessibilityView(StyledElement element, AccessibilityView value)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            element.SetValue(AccessibilityViewProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading AccessibilityView property from a StyledElement.
+        /// </summary>
+        public static AccessibilityView GetAccessibilityView(StyledElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            return element.GetValue(AccessibilityViewProperty);
+        }
+
+        /// <summary>
         /// Helper for setting AccessKey property on a StyledElement. 
         /// </summary>
         public static void SetAccessKey(StyledElement element, string value)
@@ -221,6 +286,32 @@ namespace Avalonia.Automation
             }
 
             return element.GetValue(AutomationIdProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting ControlTypeOverride property on a StyledElement. 
+        /// </summary>
+        public static void SetControlTypeOverride(StyledElement element, AutomationControlType? value)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            element.SetValue(ControlTypeOverrideProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading ControlTypeOverride property from a StyledElement.
+        /// </summary>
+        public static AutomationControlType? GetControlTypeOverride(StyledElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            return element.GetValue(ControlTypeOverrideProperty);
         }
 
         /// <summary>
