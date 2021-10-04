@@ -60,6 +60,19 @@ namespace Avalonia.Controls
             return target.GetValue(PreviewWithProperty);
         }
 
+        public static readonly AttachedProperty<IStyle> DesignStyleProperty = AvaloniaProperty
+            .RegisterAttached<Control, IStyle>("DesignStyle", typeof(Design));
+
+        public static void SetDesignStyle(Control control, IStyle value)
+        {
+            control.SetValue(DesignStyleProperty, value);
+        }
+
+        public static IStyle GetDesignStyle(Control control)
+        {
+            return control.GetValue(DesignStyleProperty);
+        }
+
         public static void ApplyDesignModeProperties(Control target, Control source)
         {
             if (source.IsSet(WidthProperty))
@@ -68,6 +81,8 @@ namespace Avalonia.Controls
                 target.Height = source.GetValue(HeightProperty);
             if (source.IsSet(DataContextProperty))
                 target.DataContext = source.GetValue(DataContextProperty);
+            if (source.IsSet(DesignStyleProperty))
+                target.Styles.Add(source.GetValue(DesignStyleProperty));
         }
     }
 }
