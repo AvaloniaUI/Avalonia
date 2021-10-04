@@ -1,7 +1,8 @@
 using System;
 using System.Reactive.Disposables;
-using Avalonia.Media;
 using Avalonia.Platform;
+
+#nullable enable
 
 namespace Avalonia.Controls.Platform
 {
@@ -22,7 +23,7 @@ namespace Avalonia.Controls.Platform
         {
         }
 
-        public static ITrayIconImpl CreateTrayIcon ()
+        public static ITrayIconImpl? CreateTrayIcon ()
         {
             var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
 

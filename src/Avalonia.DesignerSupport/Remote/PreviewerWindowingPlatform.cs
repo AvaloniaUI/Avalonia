@@ -17,7 +17,7 @@ namespace Avalonia.DesignerSupport.Remote
         private static PreviewerWindowImpl s_lastWindow;
         public static List<object> PreFlightMessages = new List<object>();
 
-        public ITrayIconImpl CreateTrayIcon() => new TrayIconStub();
+        public ITrayIconImpl CreateTrayIcon() => null;
 
         public IWindowImpl CreateWindow() => new WindowStub();
 

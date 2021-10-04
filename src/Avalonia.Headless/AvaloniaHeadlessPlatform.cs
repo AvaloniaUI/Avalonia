@@ -52,10 +52,7 @@ namespace Avalonia.Headless
 
             public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true);
 
-            public ITrayIconImpl CreateTrayIcon()
-            {
-                throw new NotImplementedException();
-            }
+            public ITrayIconImpl CreateTrayIcon() => return null;
         }
         
         internal static void Initialize()

@@ -128,7 +128,7 @@ namespace Avalonia.UnitTests
 
         public ITrayIconImpl CreateTrayIcon()
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         private static void SetupToplevel<T>(Mock<T> mock) where T : class, ITopLevelImpl

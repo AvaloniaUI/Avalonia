@@ -16,15 +16,18 @@ namespace Avalonia.Controls
 
     public class TrayIcon : AvaloniaObject, INativeMenuExporterProvider, IDisposable
     {
-        private readonly ITrayIconImpl _impl;
+        private readonly ITrayIconImpl? _impl;
 
-        private TrayIcon(ITrayIconImpl impl)
+        private TrayIcon(ITrayIconImpl? impl)
         {
-            _impl = impl;
+            if (impl != null)
+            {
+                _impl = impl;
 
-            _impl.SetIsVisible(IsVisible);
+                _impl.SetIsVisible(IsVisible);
 
-            _impl.OnClicked = () => Clicked?.Invoke(this, EventArgs.Empty);
+                _impl.OnClicked = () => Clicked?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public TrayIcon () : this(PlatformManager.CreateTrayIcon())
@@ -160,25 +163,25 @@ namespace Avalonia.Controls
 
             if(change.Property == IconProperty)
             {
-                _impl.SetIcon(Icon.PlatformImpl);
+                _impl?.SetIcon(Icon.PlatformImpl);
             }
             else if (change.Property == IsVisibleProperty)
             {
-                _impl.SetIsVisible(change.NewValue.GetValueOrDefault<bool>());
+                _impl?.SetIsVisible(change.NewValue.GetValueOrDefault<bool>());
             }
             else if (change.Property == ToolTipTextProperty)
             {
-                _impl.SetToolTipText(change.NewValue.GetValueOrDefault<string?>());
+                _impl?.SetToolTipText(change.NewValue.GetValueOrDefault<string?>());
             }
             else if (change.Property == MenuProperty)
             {
-                _impl.MenuExporter?.SetNativeMenu(change.NewValue.GetValueOrDefault<NativeMenu>());
+                _impl?.MenuExporter?.SetNativeMenu(change.NewValue.GetValueOrDefault<NativeMenu>());
             }
         }
 
         /// <summary>
         /// Disposes the tray icon (removing it from the tray area).
         /// </summary>
-        public void Dispose() => _impl.Dispose();
+        public void Dispose() => _impl?.Dispose();
     }
 }

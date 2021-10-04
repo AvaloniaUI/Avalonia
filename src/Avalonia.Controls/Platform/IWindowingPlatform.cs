@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Avalonia.Platform
 {
     public interface IWindowingPlatform
@@ -6,6 +8,6 @@ namespace Avalonia.Platform
 
         IWindowImpl CreateEmbeddableWindow();
 
-        ITrayIconImpl CreateTrayIcon();
+        ITrayIconImpl? CreateTrayIcon();
     }
 }
