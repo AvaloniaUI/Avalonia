@@ -12,8 +12,6 @@ namespace Avalonia.Controls.Platform
 
     public interface ITopLevelNativeMenuExporter : INativeMenuExporter
     {
-        new void SetNativeMenu(NativeMenu menu);
-
         bool IsNativeMenuExported { get; }
 
         event EventHandler OnIsNativeMenuExportedChanged;
