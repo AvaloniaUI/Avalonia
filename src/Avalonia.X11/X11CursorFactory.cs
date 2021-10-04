@@ -25,7 +25,7 @@ namespace Avalonia.X11
             {
                 {StandardCursorType.Arrow, CursorFontShape.XC_top_left_arrow},
                 {StandardCursorType.Cross, CursorFontShape.XC_cross},
-                {StandardCursorType.Hand, CursorFontShape.XC_hand1},
+                {StandardCursorType.Hand, CursorFontShape.XC_hand2},
                 {StandardCursorType.Help, CursorFontShape.XC_question_arrow},
                 {StandardCursorType.Ibeam, CursorFontShape.XC_xterm},
                 {StandardCursorType.No, CursorFontShape.XC_X_cursor},
