@@ -2300,7 +2300,7 @@ namespace Avalonia.Win32.Interop
         public uint DamageMask;
     }
 
-    public enum NIM : uint
+    internal enum NIM : uint
     {
         ADD = 0x00000000,
         MODIFY = 0x00000001,
@@ -2310,7 +2310,7 @@ namespace Avalonia.Win32.Interop
     }
 
     [Flags]
-    public enum NIF : uint
+    internal enum NIF : uint
     {
         MESSAGE = 0x00000001,
         ICON = 0x00000002,
@@ -2323,7 +2323,7 @@ namespace Avalonia.Win32.Interop
     }
 
     [Flags]
-    public enum NIIF : uint
+    internal enum NIIF : uint
     {
         NONE = 0x00000000,
         INFO = 0x00000001,
@@ -2337,7 +2337,7 @@ namespace Avalonia.Win32.Interop
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    public class NOTIFYICONDATA
+    internal class NOTIFYICONDATA
     {
         public int cbSize = Marshal.SizeOf<NOTIFYICONDATA>();
         public IntPtr hWnd;
