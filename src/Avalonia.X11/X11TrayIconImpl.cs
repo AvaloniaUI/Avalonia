@@ -43,7 +43,7 @@ namespace Avalonia.X11
                     ?.Log(this, "Unable to get a dbus connection for system tray icons.");
                 return;
             }
-            
+
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _con);
             CreateTrayIcon();
@@ -52,8 +52,8 @@ namespace Avalonia.X11
 
         public async void CreateTrayIcon()
         {
-            if(_con is null) return;
-            
+            if (_con is null) return;
+
             _statusNotifierWatcher = _con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
                 "/StatusNotifierWatcher");
 
@@ -82,7 +82,7 @@ namespace Avalonia.X11
 
         public async void DestroyTrayIcon()
         {
-            if(_con is null) return;
+            if (_con is null) return;
 
             _con.UnregisterObject(_statusNotifierItemDbusObj);
             await _con.UnregisterServiceAsync(_sysTrayServiceName);
@@ -179,22 +179,17 @@ namespace Avalonia.X11
             InvalidateAll();
         }
 
-        public async Task ContextMenuAsync(int X, int Y)
-        {
-        }
+        public Task ContextMenuAsync(int X, int Y) => Task.CompletedTask;
 
-        public async Task ActivateAsync(int X, int Y)
+        public Task ActivateAsync(int X, int Y)
         {
             ActivationDelegate?.Invoke();
+            return Task.CompletedTask;
         }
 
-        public async Task SecondaryActivateAsync(int X, int Y)
-        {
-        }
+        public Task SecondaryActivateAsync(int X, int Y) => Task.CompletedTask;
 
-        public async Task ScrollAsync(int Delta, string Orientation)
-        {
-        }
+        public Task ScrollAsync(int Delta, string Orientation) => Task.CompletedTask;
 
         public void InvalidateAll()
         {
@@ -205,58 +200,52 @@ namespace Avalonia.X11
             OnTooltipChanged?.Invoke();
         }
 
-        public async Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError = null)
         {
             OnTitleChanged += handler;
-            return Disposable.Create(() => OnTitleChanged -= handler);
+            return Task.FromResult(Disposable.Create(() => OnTitleChanged -= handler));
         }
 
-        public async Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError = null)
         {
             OnIconChanged += handler;
-            return Disposable.Create(() => OnIconChanged -= handler);
+            return Task.FromResult(Disposable.Create(() => OnIconChanged -= handler));
         }
 
-        public async Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError = null)
         {
             OnAttentionIconChanged += handler;
-            return Disposable.Create(() => OnAttentionIconChanged -= handler);
+            return Task.FromResult(Disposable.Create(() => OnAttentionIconChanged -= handler));
         }
 
-        public async Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError = null)
         {
             OnOverlayIconChanged += handler;
-            return Disposable.Create(() => OnOverlayIconChanged -= handler);
+            return Task.FromResult(Disposable.Create(() => OnOverlayIconChanged -= handler));
         }
 
-        public async Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError = null)
         {
             OnTooltipChanged += handler;
-            return Disposable.Create(() => OnTooltipChanged -= handler);
+            return Task.FromResult(Disposable.Create(() => OnTooltipChanged -= handler));
         }
 
-        public async Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError = null)
         {
             NewStatusAsync += handler;
-            return Disposable.Create(() => NewStatusAsync -= handler);
+            return Task.FromResult(Disposable.Create(() => NewStatusAsync -= handler));
         }
 
-        public async Task<object> GetAsync(string prop)
-        {
-            return null;
-        }
+        public Task<object> GetAsync(string prop) => Task.FromResult(new object());
 
-        public async Task<StatusNotifierItemProperties> GetAllAsync()
-        {
-            return _backingProperties;
-        }
+        public Task<StatusNotifierItemProperties> GetAllAsync() => Task.FromResult(_backingProperties);
 
         public Task SetAsync(string prop, object val) => Task.CompletedTask;
 
-        public async Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler)
+        public Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler)
         {
             OnPropertyChange += handler;
-            return Disposable.Create(() => OnPropertyChange -= handler);
+            return Task.FromResult(Disposable.Create(() => OnPropertyChange -= handler));
         }
 
         public void SetIcon(DbusPixmap dbusPixmap)
