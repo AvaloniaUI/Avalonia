@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
@@ -10,17 +9,17 @@ using Avalonia.Logging;
 using Avalonia.Platform;
 using Tmds.DBus;
 
-[assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
+[assembly: InternalsVisibleTo(Connection.DynamicAssemblyName)]
 
 namespace Avalonia.X11
 {
     internal class X11TrayIconImpl : ITrayIconImpl
     {
-        private static int s_trayIconInstanceId = 0;
+        private static int s_trayIconInstanceId;
         private static int GetTID() => s_trayIconInstanceId++;
-        private ObjectPath _dbusmenuPath;
+        private readonly ObjectPath _dbusMenuPath;
         private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
-        private Connection _con;
+        private readonly Connection _con;
         private DbusPixmap _icon;
 
         private IStatusNotifierWatcher _statusNotifierWatcher;
@@ -45,8 +44,8 @@ namespace Avalonia.X11
                 return;
             }
             
-            _dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
-            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusmenuPath, _con);
+            _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
+            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _con);
             CreateTrayIcon();
             _ctorFinished = true;
         }
@@ -62,7 +61,7 @@ namespace Avalonia.X11
             var tid = GetTID();
 
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
-            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusmenuPath);
+            _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
 
             await _con.RegisterObjectAsync(_statusNotifierItemDbusObj);
 
