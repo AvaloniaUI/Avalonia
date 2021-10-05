@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.Logging;
 using Avalonia.Platform;
 using Tmds.DBus;
 
@@ -19,7 +20,7 @@ namespace Avalonia.X11
         private static int GetTID() => s_trayIconInstanceId++;
         private ObjectPath _dbusmenuPath;
         private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
-        private Connection con;
+        private Connection _con;
         private DbusPixmap _icon;
 
         private IStatusNotifierWatcher _statusNotifierWatcher;
@@ -35,16 +36,26 @@ namespace Avalonia.X11
 
         public X11TrayIconImpl()
         {
-            con = DBusHelper.TryGetConnection();
+            _con = DBusHelper.TryGetConnection();
+
+            if (_con is null)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
+                    ?.Log(this, "Unable to get a dbus connection for system tray icons.");
+                return;
+            }
+            
             _dbusmenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
-            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusmenuPath, con);
+            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusmenuPath, _con);
             CreateTrayIcon();
             _ctorFinished = true;
         }
 
         public async void CreateTrayIcon()
         {
-            _statusNotifierWatcher = con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
+            if(_con is null) return;
+            
+            _statusNotifierWatcher = _con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
                 "/StatusNotifierWatcher");
 
             var pid = Process.GetCurrentProcess().Id;
@@ -53,9 +64,9 @@ namespace Avalonia.X11
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusmenuPath);
 
-            await con.RegisterObjectAsync(_statusNotifierItemDbusObj);
+            await _con.RegisterObjectAsync(_statusNotifierItemDbusObj);
 
-            await con.RegisterServiceAsync(_sysTrayServiceName);
+            await _con.RegisterServiceAsync(_sysTrayServiceName);
 
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
@@ -72,8 +83,10 @@ namespace Avalonia.X11
 
         public async void DestroyTrayIcon()
         {
-            con.UnregisterObject(_statusNotifierItemDbusObj);
-            await con.UnregisterServiceAsync(_sysTrayServiceName);
+            if(_con is null) return;
+
+            _con.UnregisterObject(_statusNotifierItemDbusObj);
+            await _con.UnregisterServiceAsync(_sysTrayServiceName);
             _isActive = false;
         }
 
@@ -81,12 +94,12 @@ namespace Avalonia.X11
         {
             _isDisposed = true;
             DestroyTrayIcon();
-            con.Dispose();
+            _con?.Dispose();
         }
 
         public void SetIcon(IWindowIconImpl icon)
         {
-            if (con == null || _isDisposed) return;
+            if (_con is null || _isDisposed) return;
             if (!(icon is X11IconData x11icon)) return;
 
             var w = (int)x11icon.Data[0];
@@ -113,7 +126,7 @@ namespace Avalonia.X11
 
         public void SetIsVisible(bool visible)
         {
-            if (con == null || _isDisposed || !_ctorFinished) return;
+            if (_con is null || _isDisposed || !_ctorFinished) return;
 
             if (visible & !_isActive)
             {
@@ -128,7 +141,7 @@ namespace Avalonia.X11
 
         public void SetToolTipText(string text)
         {
-            if (con == null || _isDisposed) return;
+            if (_con is null || _isDisposed) return;
             _tooltipText = text;
             _statusNotifierItemDbusObj?.SetTitleAndTooltip(_tooltipText);
         }
