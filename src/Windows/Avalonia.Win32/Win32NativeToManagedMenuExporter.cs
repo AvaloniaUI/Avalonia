@@ -10,18 +10,18 @@ namespace Avalonia.Win32
     {
         private NativeMenu? _nativeMenu;
 
-        public void SetNativeMenu(NativeMenu nativeMenu)
+        public void SetNativeMenu(NativeMenu? nativeMenu)
         {
             _nativeMenu = nativeMenu;
         }
 
-        private IEnumerable<MenuItem>? Populate (NativeMenu nativeMenu)
+        private IEnumerable<MenuItem> Populate (NativeMenu nativeMenu)
         {
             var items = new List<MenuItem>();
 
             foreach (var menuItem in nativeMenu.Items)
             {
-                if (menuItem is NativeMenuItemSeparator separator)
+                if (menuItem is NativeMenuItemSeparator)
                 {
                     items.Add(new MenuItem { Header = "-" });   
                 }
