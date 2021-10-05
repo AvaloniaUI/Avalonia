@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         {
             IconsProperty.Changed.Subscribe(args =>
             {
-                if (args.Sender is Application application)
+                if (args.Sender is Application)
                 {
                     if(args.OldValue.Value != null)
                     {
@@ -135,7 +135,7 @@ namespace Avalonia.Controls
             set => SetValue(IsVisibleProperty, value);
         }
 
-        public INativeMenuExporter? NativeMenuExporter => _impl.MenuExporter;
+        public INativeMenuExporter? NativeMenuExporter => _impl?.MenuExporter;
 
         private static void Lifetime_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
         {
