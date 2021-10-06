@@ -31,7 +31,7 @@ namespace Avalonia.FreeDesktop
         }
 
         public static ObjectPath GenerateDBusMenuObjPath => "/net/avaloniaui/dbusmenu/"
-                                                           + Guid.NewGuid().ToString().Replace("-", "");
+                                                           + Guid.NewGuid().ToString("N");
 
         private class DBusMenuExporterImpl : ITopLevelNativeMenuExporter, IDBusMenu, IDisposable
         {
