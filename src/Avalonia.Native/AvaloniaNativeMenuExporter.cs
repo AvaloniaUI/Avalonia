@@ -9,15 +9,15 @@ using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
+    internal class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
     {
-        private IAvaloniaNativeFactory _factory;
+        private readonly IAvaloniaNativeFactory _factory;
         private bool _resetQueued = true;
-        private bool _exported = false;
-        private IAvnWindow _nativeWindow;
+        private bool _exported;
+        private readonly IAvnWindow _nativeWindow;
         private NativeMenu _menu;
         private __MicroComIAvnMenuProxy _nativeMenu;
-        private IAvnTrayIcon _trayIcon;
+        private readonly IAvnTrayIcon _trayIcon;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -48,7 +48,7 @@ namespace Avalonia.Native
 
         public void SetNativeMenu(NativeMenu menu)
         {
-            _menu = menu == null ? new NativeMenu() : menu;
+            _menu = menu ?? new NativeMenu();
             DoLayoutReset(true);
         }
 
@@ -137,7 +137,7 @@ namespace Avalonia.Native
 
             var appMenuHolder = menuItem?.Parent;
 
-            if (menu.Parent is null)
+            if (menuItem is null)
             {
                 menuItem = new NativeMenuItem();
             }
@@ -155,7 +155,7 @@ namespace Avalonia.Native
 
             if (_nativeMenu is null)
             {
-                _nativeMenu = (__MicroComIAvnMenuProxy)__MicroComIAvnMenuProxy.Create(_factory);
+                _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
                 _nativeMenu.Initialize(this, appMenuHolder, "");
 
