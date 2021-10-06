@@ -85,10 +85,7 @@ namespace Avalonia.X11
             _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
 
-            _statusNotifierItemDbusObj.ActivationDelegate = () =>
-            {
-                OnClicked?.Invoke();
-            };
+            _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
 
             _isActive = true;
         }
