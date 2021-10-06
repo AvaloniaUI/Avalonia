@@ -205,13 +205,12 @@ namespace Avalonia.Win32
                 });
             }
 
-            class TrayIconManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup
+            private class TrayIconManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup
             {
-                public delegate void MoveResizeDelegate(PixelPoint position, Size size, double scaling);
-                private readonly MoveResizeDelegate _moveResize;
+                private readonly Action<PixelPoint, Size, double> _moveResize;
                 private readonly Window _hiddenWindow;
 
-                public TrayIconManagedPopupPositionerPopupImplHelper(MoveResizeDelegate moveResize)
+                public TrayIconManagedPopupPositionerPopupImplHelper(Action<PixelPoint, Size, double> moveResize)
                 {
                     _moveResize = moveResize;
                     _hiddenWindow = new Window();

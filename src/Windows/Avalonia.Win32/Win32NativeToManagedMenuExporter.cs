@@ -17,13 +17,11 @@ namespace Avalonia.Win32
 
         private IEnumerable<MenuItem> Populate (NativeMenu nativeMenu)
         {
-            var items = new List<MenuItem>();
-
             foreach (var menuItem in nativeMenu.Items)
             {
                 if (menuItem is NativeMenuItemSeparator)
                 {
-                    items.Add(new MenuItem { Header = "-" });   
+                    yield return new MenuItem { Header = "-" };   
                 }
                 else if (menuItem is NativeMenuItem item)
                 {
@@ -35,14 +33,12 @@ namespace Avalonia.Win32
                     }
                     else if (item.HasClickHandlers && item is INativeMenuItemExporterEventsImplBridge bridge)
                     {
-                        newItem.Click += (s, e) => bridge.RaiseClicked();
+                        newItem.Click += (_, __) => bridge.RaiseClicked();
                     }
 
-                    items.Add(newItem);
+                    yield return newItem;
                 }
             }
-
-            return items;
         }
 
         public IEnumerable<MenuItem>? GetMenu ()
