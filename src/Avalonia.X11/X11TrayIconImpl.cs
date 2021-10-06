@@ -300,6 +300,10 @@ namespace Avalonia.X11
     }
 
     [Dictionary]
+    /// This class is used by Tmds.Dbus to ferry properties
+    /// from the SNI spec.
+    /// Don't change this to actual C# properties since
+    /// Tmds.Dbus will get confused.
     internal class StatusNotifierItemProperties
     {
         public string? Category;
