@@ -103,12 +103,9 @@ namespace Avalonia.Native
 
                         SetMenu(appMenu);
                     }
-                    else
+                    else if (_menu != null)
                     {
-                        if (_menu != null)
-                        {
-                            SetMenu(_trayIcon, _menu);
-                        }
+                        SetMenu(_trayIcon, _menu);
                     }
                 }
                 else
