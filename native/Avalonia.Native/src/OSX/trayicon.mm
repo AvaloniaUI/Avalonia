@@ -2,18 +2,16 @@
 #include "trayicon.h"
 #include "menu.h"
 
-extern IAvnTrayIcon* CreateTrayIcon(IAvnTrayIconEvents* cb)
+extern IAvnTrayIcon* CreateTrayIcon()
 {
     @autoreleasepool
     {
-        return new AvnTrayIcon(cb);
+        return new AvnTrayIcon();
     }
 }
 
-AvnTrayIcon::AvnTrayIcon(IAvnTrayIconEvents* events)
+AvnTrayIcon::AvnTrayIcon()
 {
-    _events = events;
-    
     _native = [[NSStatusBar systemStatusBar] statusItemWithLength: NSSquareStatusItemLength];
     
 }

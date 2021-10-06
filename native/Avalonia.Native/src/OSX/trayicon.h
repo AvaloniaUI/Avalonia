@@ -15,12 +15,11 @@ class AvnTrayIcon : public ComSingleObject<IAvnTrayIcon, &IID_IAvnTrayIcon>
 {
 private:
     NSStatusItem* _native;
-    ComPtr<IAvnTrayIconEvents> _events;
     
 public:
     FORWARD_IUNKNOWN()
     
-    AvnTrayIcon(IAvnTrayIconEvents* events);
+    AvnTrayIcon();
     
     ~AvnTrayIcon ();
     

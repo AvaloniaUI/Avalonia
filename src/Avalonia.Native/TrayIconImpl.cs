@@ -8,31 +8,13 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    class TrayIconEvents : CallbackBase, IAvnTrayIconEvents
-    {
-        private TrayIconImpl _parent;
-
-        public TrayIconEvents (TrayIconImpl parent)
-        {
-            _parent = parent;
-        }
-
-        public void Clicked()
-        {   
-        }
-
-        public void DoubleClicked()
-        {
-        }
-    }
-    
     internal class TrayIconImpl : ITrayIconImpl
     {
         private readonly IAvnTrayIcon _native;
         
         public TrayIconImpl(IAvaloniaNativeFactory factory)
         {
-            _native = factory.CreateTrayIcon(new TrayIconEvents(this));
+            _native = factory.CreateTrayIcon();
 
             MenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
