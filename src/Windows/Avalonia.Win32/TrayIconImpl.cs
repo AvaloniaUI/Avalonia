@@ -181,43 +181,22 @@ namespace Avalonia.Win32
                 _positioner = new ManagedPopupPositioner(new TrayIconManagedPopupPositionerPopupImplHelper(MoveResize));
                 Topmost = true;
 
-                Activated += TrayPopupRoot_Activated;
                 Deactivated += TrayPopupRoot_Deactivated;
 
-                LostFocus += TrayPopupRoot_LostFocus1;
-
                 ShowInTaskbar = false;
-            }
 
-            private void TrayPopupRoot_LostFocus1(object sender, Interactivity.RoutedEventArgs e)
-            {
-                Debug.WriteLine("TrayIcon - Lost Focus");
-            }
-
-            private void TrayPopupRoot_Activated(object sender, EventArgs e)
-            {
-                Debug.WriteLine("TrayIcon - Activated");
+                ShowActivated = true;
             }
 
             private void TrayPopupRoot_Deactivated(object sender, EventArgs e)
             {
-                Debug.WriteLine("TrayIcon - Deactivated");
-
-                Dispatcher.UIThread.Post(() =>
-                {
-                    Close();
-                });
+                Close();
             }
 
             private void MoveResize(PixelPoint position, Size size, double scaling)
             {
                 PlatformImpl.Move(position);
                 PlatformImpl.Resize(size, PlatformResizeReason.Layout);
-            }
-
-            private void TrayPopupRoot_LostFocus(object sender, Interactivity.RoutedEventArgs e)
-            {
-                Close();
             }
 
             protected override void ArrangeCore(Rect finalRect)
