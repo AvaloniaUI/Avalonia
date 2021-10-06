@@ -1000,6 +1000,7 @@ namespace Avalonia.Win32
             if (!Design.IsDesignMode && activate)
             {
                 SetFocus(_hwnd);
+                SetForegroundWindow(_hwnd);
             }
         }
         
