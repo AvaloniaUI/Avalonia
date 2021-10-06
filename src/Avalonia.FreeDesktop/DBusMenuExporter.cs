@@ -37,16 +37,17 @@ namespace Avalonia.FreeDesktop
         {
             private readonly Connection _dbus;
             private readonly uint _xid;
-            private IRegistrar _registar;
+            private IRegistrar _registrar;
             private bool _disposed;
             private uint _revision = 1;
             private NativeMenu _menu;
-            private Dictionary<int, NativeMenuItemBase> _idsToItems = new Dictionary<int, NativeMenuItemBase>();
-            private Dictionary<NativeMenuItemBase, int> _itemsToIds = new Dictionary<NativeMenuItemBase, int>();
+            private readonly Dictionary<int, NativeMenuItemBase> _idsToItems = new Dictionary<int, NativeMenuItemBase>();
+            private readonly Dictionary<NativeMenuItemBase, int> _itemsToIds = new Dictionary<NativeMenuItemBase, int>();
             private readonly HashSet<NativeMenu> _menus = new HashSet<NativeMenu>();
             private bool _resetQueued;
             private int _nextId = 1;
-            private bool AppMenu = true;
+            private bool _appMenu = true;
+            
             public DBusMenuExporterImpl(Connection dbus, IntPtr xid)
             {
                 _dbus = dbus;
@@ -59,7 +60,7 @@ namespace Avalonia.FreeDesktop
             public DBusMenuExporterImpl(Connection dbus, ObjectPath path)
             {
                 _dbus = dbus;
-                AppMenu = false;
+                _appMenu = false;
                 ObjectPath = path;
                 SetNativeMenu(new NativeMenu());
                 Init();
@@ -69,14 +70,14 @@ namespace Avalonia.FreeDesktop
             {
                 try
                 {
-                    if (AppMenu)
+                    if (_appMenu)
                     {
                         await _dbus.RegisterObjectAsync(this);
-                        _registar = DBusHelper.Connection.CreateProxy<IRegistrar>(
+                        _registrar = DBusHelper.Connection.CreateProxy<IRegistrar>(
                             "com.canonical.AppMenu.Registrar",
                             "/com/canonical/AppMenu/Registrar");
                         if (!_disposed)
-                            await _registar.RegisterWindowAsync(_xid, ObjectPath);
+                            await _registrar.RegisterWindowAsync(_xid, ObjectPath);
                     }
                     else
                     {
@@ -102,7 +103,7 @@ namespace Avalonia.FreeDesktop
                 _disposed = true;
                 _dbus.UnregisterObject(this);
                 // Fire and forget
-                _registar?.UnregisterWindowAsync(_xid);
+                _registrar?.UnregisterWindowAsync(_xid);
             }
 
 
