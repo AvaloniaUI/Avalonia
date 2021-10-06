@@ -15,7 +15,7 @@ namespace Avalonia.Win32
             _nativeMenu = nativeMenu;
         }
 
-        private IEnumerable<MenuItem> Populate (NativeMenu nativeMenu)
+        private IEnumerable<MenuItem> Populate(NativeMenu nativeMenu)
         {
             foreach (var menuItem in nativeMenu.Items)
             {
@@ -41,7 +41,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IEnumerable<MenuItem>? GetMenu ()
+        public IEnumerable<MenuItem>? GetMenu()
         {
             if(_nativeMenu != null)
             {
