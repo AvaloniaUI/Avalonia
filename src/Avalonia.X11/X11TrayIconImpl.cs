@@ -19,20 +19,20 @@ namespace Avalonia.X11
     {
         private static int trayIconInstanceId; 
         private readonly ObjectPath _dbusMenuPath;
-        private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
-        private readonly Connection _connection;
+        private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
+        private readonly Connection? _connection;
         private DbusPixmap _icon;
 
         private IStatusNotifierWatcher _statusNotifierWatcher;
 
-        private string _sysTrayServiceName;
-        private string _tooltipText;
+        private string? _sysTrayServiceName;
+        private string? _tooltipText;
         private bool _isActive;
         private bool _isDisposed;
         private readonly bool _ctorFinished;
 
-        public INativeMenuExporter MenuExporter { get; }
-        public Action OnClicked { get; set; }
+        public INativeMenuExporter? MenuExporter { get; }
+        public Action? OnClicked { get; set; }
 
         public X11TrayIconImpl()
         {
@@ -53,8 +53,8 @@ namespace Avalonia.X11
 
         public async void CreateTrayIcon()
         {
-            if (_connection is null) return;
-
+            if(_connection is null) return;
+            
             _statusNotifierWatcher = _connection.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
                 "/StatusNotifierWatcher");
 
@@ -83,8 +83,7 @@ namespace Avalonia.X11
 
         public async void DestroyTrayIcon()
         {
-            if (_connection is null) return;
-
+            if(_connection is null) return;
             _connection.UnregisterObject(_statusNotifierItemDbusObj);
             await _connection.UnregisterServiceAsync(_sysTrayServiceName);
             _isActive = false;
@@ -97,9 +96,9 @@ namespace Avalonia.X11
             _connection?.Dispose();
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
-            if (_connection is null || _isDisposed) return;
+            if (_isDisposed) return;
             if (!(icon is X11IconData x11icon)) return;
 
             var w = (int)x11icon.Data[0];
@@ -119,12 +118,12 @@ namespace Avalonia.X11
             }
 
             _icon = new DbusPixmap(w, h, pixByteArray);
-            _statusNotifierItemDbusObj.SetIcon(_icon);
+            _statusNotifierItemDbusObj?.SetIcon(_icon);
         }
 
         public void SetIsVisible(bool visible)
         {
-            if (_connection is null || _isDisposed || !_ctorFinished) return;
+            if (_isDisposed || !_ctorFinished) return;
 
             if (visible & !_isActive)
             {
@@ -137,9 +136,9 @@ namespace Avalonia.X11
             }
         }
 
-        public void SetToolTipText(string text)
+        public void SetToolTipText(string? text)
         {
-            if (_connection is null || _isDisposed) return;
+            if (_isDisposed || text is null) return;
             _tooltipText = text;
             _statusNotifierItemDbusObj?.SetTitleAndTooltip(_tooltipText);
         }
@@ -154,15 +153,13 @@ namespace Avalonia.X11
     internal class StatusNotifierItemDbusObj : IStatusNotifierItem
     {
         private readonly StatusNotifierItemProperties _backingProperties;
-        private event Action<PropertyChanges> OnPropertyChange;
-        public event Action OnTitleChanged;
-        public event Action OnIconChanged;
-        public event Action OnAttentionIconChanged;
-        public event Action OnOverlayIconChanged;
-        public event Action OnTooltipChanged;
-        public Action<INativeMenuExporter> SetNativeMenuExporter { get; set; }
-        public Action<string> NewStatusAsync { get; set; }
-        public Action ActivationDelegate { get; set; }
+        public event Action? OnTitleChanged;
+        public event Action? OnIconChanged;
+        public event Action? OnAttentionIconChanged;
+        public event Action? OnOverlayIconChanged;
+        public event Action? OnTooltipChanged;
+        public Action<string>? NewStatusAsync { get; set; }
+        public Action? ActivationDelegate { get; set; }
         public ObjectPath ObjectPath { get; }
 
         public StatusNotifierItemDbusObj(ObjectPath dbusmenuPath)
@@ -199,37 +196,37 @@ namespace Avalonia.X11
             OnTooltipChanged?.Invoke();
         }
 
-        public Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError)
         {
             OnTitleChanged += handler;
             return Task.FromResult(Disposable.Create(() => OnTitleChanged -= handler));
         }
 
-        public Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError)
         {
             OnIconChanged += handler;
             return Task.FromResult(Disposable.Create(() => OnIconChanged -= handler));
         }
 
-        public Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError)
         {
             OnAttentionIconChanged += handler;
             return Task.FromResult(Disposable.Create(() => OnAttentionIconChanged -= handler));
         }
 
-        public Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError)
         {
             OnOverlayIconChanged += handler;
             return Task.FromResult(Disposable.Create(() => OnOverlayIconChanged -= handler));
         }
 
-        public Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError)
         {
             OnTooltipChanged += handler;
             return Task.FromResult(Disposable.Create(() => OnTooltipChanged -= handler));
         }
 
-        public Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError = null)
+        public Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError)
         {
             NewStatusAsync += handler;
             return Task.FromResult(Disposable.Create(() => NewStatusAsync -= handler));
@@ -241,11 +238,7 @@ namespace Avalonia.X11
 
         public Task SetAsync(string prop, object val) => Task.CompletedTask;
 
-        public Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler)
-        {
-            OnPropertyChange += handler;
-            return Task.FromResult(Disposable.Create(() => OnPropertyChange -= handler));
-        }
+        public Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler) => Task.FromResult(Disposable.Empty);
 
         public void SetIcon(DbusPixmap dbusPixmap)
         {
@@ -253,8 +246,10 @@ namespace Avalonia.X11
             InvalidateAll();
         }
 
-        public void SetTitleAndTooltip(string text)
+        public void SetTitleAndTooltip(string? text)
         {
+            if (text is null) return;
+            
             _backingProperties.Id = text;
             _backingProperties.Category = "ApplicationStatus";
             _backingProperties.Status = text;
@@ -279,12 +274,12 @@ namespace Avalonia.X11
         Task ActivateAsync(int x, int y);
         Task SecondaryActivateAsync(int x, int y);
         Task ScrollAsync(int delta, string orientation);
-        Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError = null);
-        Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError = null);
+        Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError);
+        Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError);
+        Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError);
+        Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError);
+        Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError);
+        Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError);
         Task<object> GetAsync(string prop);
         Task<StatusNotifierItemProperties> GetAllAsync();
         Task SetAsync(string prop, object val);
@@ -294,36 +289,18 @@ namespace Avalonia.X11
     [Dictionary]
     internal class StatusNotifierItemProperties
     {
-        public string Category;
+        public string? Category;
 
-        public string Id;
+        public string? Id;
 
-        public string Title;
+        public string? Title;
 
-        public string Status;
-
-        public int WindowId;
-
-        public string IconThemePath;
+        public string? Status;
 
         public ObjectPath Menu;
-
-        public bool ItemIsMenu;
-
-        public string IconName;
-
-        public DbusPixmap[] IconPixmap;
-
-        public string OverlayIconName;
-
-        public DbusPixmap[] OverlayIconPixmap;
-
-        public string AttentionIconName;
-
-        public DbusPixmap[] AttentionIconPixmap;
-
-        public string AttentionMovieName;
-
+        
+        public DbusPixmap[]? IconPixmap;
+        
         public ToolTip ToolTip;
     }
 
