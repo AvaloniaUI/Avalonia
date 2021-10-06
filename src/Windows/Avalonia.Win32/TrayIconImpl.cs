@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -19,20 +16,20 @@ namespace Avalonia.Win32
 {
     public class TrayIconImpl : ITrayIconImpl
     {
-        private readonly int _uniqueId = 0;
-        private static int _nextUniqueId = 0;
+        private readonly int _uniqueId;
+        private static int s_nextUniqueId;
         private bool _iconAdded;
         private IconImpl? _icon;
         private string? _tooltipText;
         private readonly Win32NativeToManagedMenuExporter _exporter;
-        private static Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
+        private static readonly Dictionary<int, TrayIconImpl> s_trayIcons = new Dictionary<int, TrayIconImpl>();
         private bool _disposedValue;
 
         public TrayIconImpl()
         {
             _exporter = new Win32NativeToManagedMenuExporter();
 
-            _uniqueId = ++_nextUniqueId;
+            _uniqueId = ++s_nextUniqueId;
 
             s_trayIcons.Add(_uniqueId, this);
         }
@@ -113,17 +110,12 @@ namespace Avalonia.Win32
                     case (int)WindowsMessage.WM_RBUTTONUP:
                         OnRightClicked();
                         break;
-
-                    default:
-                        break;
                 }
 
                 return IntPtr.Zero;
             }
-            else
-            {
-                return DefWindowProc(hWnd, msg, wParam, lParam);
-            }
+
+            return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         private void OnRightClicked()
@@ -150,13 +142,13 @@ namespace Avalonia.Win32
         /// <summary>
         /// Custom Win32 window messages for the NotifyIcon
         /// </summary>
-        enum CustomWindowsMessage : uint
+        private enum CustomWindowsMessage : uint
         {
             WM_TRAYICON = WindowsMessage.WM_APP + 1024,
             WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024
         }
 
-        class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter, IStyleable
+        private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter, IStyleable
         {
             Type IStyleable.StyleKey => typeof(MenuFlyoutPresenter);
 
@@ -172,9 +164,9 @@ namespace Avalonia.Win32
             }
         }
 
-        class TrayPopupRoot : Window
+        private class TrayPopupRoot : Window
         {
-            private ManagedPopupPositioner _positioner;
+            private readonly ManagedPopupPositioner _positioner;
 
             public TrayPopupRoot()
             {
@@ -195,8 +187,8 @@ namespace Avalonia.Win32
 
             private void MoveResize(PixelPoint position, Size size, double scaling)
             {
-                PlatformImpl.Move(position);
-                PlatformImpl.Resize(size, PlatformResizeReason.Layout);
+                PlatformImpl!.Move(position);
+                PlatformImpl!.Resize(size, PlatformResizeReason.Layout);
             }
 
             protected override void ArrangeCore(Rect finalRect)
@@ -217,7 +209,7 @@ namespace Avalonia.Win32
             {
                 public delegate void MoveResizeDelegate(PixelPoint position, Size size, double scaling);
                 private readonly MoveResizeDelegate _moveResize;
-                private Window _hiddenWindow;
+                private readonly Window _hiddenWindow;
 
                 public TrayIconManagedPopupPositionerPopupImplHelper(MoveResizeDelegate moveResize)
                 {
@@ -244,7 +236,7 @@ namespace Avalonia.Win32
                     _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _hiddenWindow.Screens.Primary.PixelDensity);
                 }
 
-                public virtual double Scaling => _hiddenWindow.Screens.Primary.PixelDensity;
+                public double Scaling => _hiddenWindow.Screens.Primary.PixelDensity;
             }
         }
 
