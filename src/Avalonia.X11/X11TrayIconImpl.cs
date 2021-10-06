@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
@@ -15,11 +17,10 @@ namespace Avalonia.X11
 {
     internal class X11TrayIconImpl : ITrayIconImpl
     {
-        private static int s_trayIconInstanceId;
-        private static int GetTID() => s_trayIconInstanceId++;
+        private static int trayIconInstanceId; 
         private readonly ObjectPath _dbusMenuPath;
         private StatusNotifierItemDbusObj _statusNotifierItemDbusObj;
-        private readonly Connection _con;
+        private readonly Connection _connection;
         private DbusPixmap _icon;
 
         private IStatusNotifierWatcher _statusNotifierWatcher;
@@ -35,9 +36,9 @@ namespace Avalonia.X11
 
         public X11TrayIconImpl()
         {
-            _con = DBusHelper.TryGetConnection();
+            _connection = DBusHelper.TryGetConnection();
 
-            if (_con is null)
+            if (_connection is null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
                     ?.Log(this, "Unable to get a dbus connection for system tray icons.");
@@ -45,27 +46,27 @@ namespace Avalonia.X11
             }
 
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
-            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _con);
+            MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
             CreateTrayIcon();
             _ctorFinished = true;
         }
 
         public async void CreateTrayIcon()
         {
-            if (_con is null) return;
+            if (_connection is null) return;
 
-            _statusNotifierWatcher = _con.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
+            _statusNotifierWatcher = _connection.CreateProxy<IStatusNotifierWatcher>("org.kde.StatusNotifierWatcher",
                 "/StatusNotifierWatcher");
 
             var pid = Process.GetCurrentProcess().Id;
-            var tid = GetTID();
+            var tid = trayIconInstanceId++;
 
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
 
-            await _con.RegisterObjectAsync(_statusNotifierItemDbusObj);
+            await _connection.RegisterObjectAsync(_statusNotifierItemDbusObj);
 
-            await _con.RegisterServiceAsync(_sysTrayServiceName);
+            await _connection.RegisterServiceAsync(_sysTrayServiceName);
 
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
@@ -82,10 +83,10 @@ namespace Avalonia.X11
 
         public async void DestroyTrayIcon()
         {
-            if (_con is null) return;
+            if (_connection is null) return;
 
-            _con.UnregisterObject(_statusNotifierItemDbusObj);
-            await _con.UnregisterServiceAsync(_sysTrayServiceName);
+            _connection.UnregisterObject(_statusNotifierItemDbusObj);
+            await _connection.UnregisterServiceAsync(_sysTrayServiceName);
             _isActive = false;
         }
 
@@ -93,30 +94,28 @@ namespace Avalonia.X11
         {
             _isDisposed = true;
             DestroyTrayIcon();
-            _con?.Dispose();
+            _connection?.Dispose();
         }
 
         public void SetIcon(IWindowIconImpl icon)
         {
-            if (_con is null || _isDisposed) return;
+            if (_connection is null || _isDisposed) return;
             if (!(icon is X11IconData x11icon)) return;
 
             var w = (int)x11icon.Data[0];
             var h = (int)x11icon.Data[1];
 
-            var rx = x11icon.Data.AsSpan(2);
             var pixLength = w * h;
-
             var pixByteArrayCounter = 0;
             var pixByteArray = new byte[w * h * 4];
 
             for (var i = 0; i < pixLength; i++)
             {
-                var u = rx[i].ToUInt32();
-                pixByteArray[pixByteArrayCounter++] = (byte)((u & 0xFF000000) >> 24);
-                pixByteArray[pixByteArrayCounter++] = (byte)((u & 0xFF0000) >> 16);
-                pixByteArray[pixByteArrayCounter++] = (byte)((u & 0xFF00) >> 8);
-                pixByteArray[pixByteArrayCounter++] = (byte)(u & 0xFF);
+                var rawPixel = x11icon.Data[i+2].ToUInt32();
+                pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF000000) >> 24);
+                pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF0000) >> 16);
+                pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF00) >> 8);
+                pixByteArray[pixByteArrayCounter++] = (byte)(rawPixel & 0xFF);
             }
 
             _icon = new DbusPixmap(w, h, pixByteArray);
@@ -125,7 +124,7 @@ namespace Avalonia.X11
 
         public void SetIsVisible(bool visible)
         {
-            if (_con is null || _isDisposed || !_ctorFinished) return;
+            if (_connection is null || _isDisposed || !_ctorFinished) return;
 
             if (visible & !_isActive)
             {
@@ -140,7 +139,7 @@ namespace Avalonia.X11
 
         public void SetToolTipText(string text)
         {
-            if (_con is null || _isDisposed) return;
+            if (_connection is null || _isDisposed) return;
             _tooltipText = text;
             _statusNotifierItemDbusObj?.SetTitleAndTooltip(_tooltipText);
         }
@@ -179,17 +178,17 @@ namespace Avalonia.X11
             InvalidateAll();
         }
 
-        public Task ContextMenuAsync(int X, int Y) => Task.CompletedTask;
+        public Task ContextMenuAsync(int x, int y) => Task.CompletedTask;
 
-        public Task ActivateAsync(int X, int Y)
+        public Task ActivateAsync(int x, int y)
         {
             ActivationDelegate?.Invoke();
             return Task.CompletedTask;
         }
 
-        public Task SecondaryActivateAsync(int X, int Y) => Task.CompletedTask;
+        public Task SecondaryActivateAsync(int x, int y) => Task.CompletedTask;
 
-        public Task ScrollAsync(int Delta, string Orientation) => Task.CompletedTask;
+        public Task ScrollAsync(int delta, string orientation) => Task.CompletedTask;
 
         public void InvalidateAll()
         {
@@ -276,10 +275,10 @@ namespace Avalonia.X11
     [DBusInterface("org.kde.StatusNotifierItem")]
     internal interface IStatusNotifierItem : IDBusObject
     {
-        Task ContextMenuAsync(int X, int Y);
-        Task ActivateAsync(int X, int Y);
-        Task SecondaryActivateAsync(int X, int Y);
-        Task ScrollAsync(int Delta, string Orientation);
+        Task ContextMenuAsync(int x, int y);
+        Task ActivateAsync(int x, int y);
+        Task SecondaryActivateAsync(int x, int y);
+        Task ScrollAsync(int delta, string orientation);
         Task<IDisposable> WatchNewTitleAsync(Action handler, Action<Exception> onError = null);
         Task<IDisposable> WatchNewIconAsync(Action handler, Action<Exception> onError = null);
         Task<IDisposable> WatchNewAttentionIconAsync(Action handler, Action<Exception> onError = null);
@@ -337,7 +336,7 @@ namespace Avalonia.X11
 
         private static readonly DbusPixmap[] s_blank =
         {
-            new DbusPixmap(0, 0, new byte[] { }), new DbusPixmap(0, 0, new byte[] { })
+            new DbusPixmap(0, 0, Array.Empty<byte>()), new DbusPixmap(0, 0, Array.Empty<byte>())
         };
 
         public ToolTip(string message) : this("", s_blank, message, "")
