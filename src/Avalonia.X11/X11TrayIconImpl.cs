@@ -17,7 +17,7 @@ namespace Avalonia.X11
 {
     internal class X11TrayIconImpl : ITrayIconImpl
     {
-        private static int trayIconInstanceId;
+        private static int s_TrayIconInstanceId;
         private readonly ObjectPath _dbusMenuPath;
         private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private readonly Connection? _connection;
@@ -71,7 +71,7 @@ namespace Avalonia.X11
             if (_statusNotifierWatcher is null) return;
 
             var pid = Process.GetCurrentProcess().Id;
-            var tid = trayIconInstanceId++;
+            var tid = s_TrayIconInstanceId++;
 
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
