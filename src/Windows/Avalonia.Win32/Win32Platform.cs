@@ -92,9 +92,10 @@ namespace Avalonia
 
         /// <summary>
         /// When <see cref="UseWindowsUIComposition"/> enabled, create rounded corner blur brushes
-        /// If set to zero the brushes will be created using default settings (sharp corners)
+        /// If set to null the brushes will be created using default settings (sharp corners)
+        /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app
         /// </summary>
-        public float CompositionBackdropCornerRadius { get; set; }
+        public float? CompositionBackdropCornerRadius { get; set; }
     }
 }
 

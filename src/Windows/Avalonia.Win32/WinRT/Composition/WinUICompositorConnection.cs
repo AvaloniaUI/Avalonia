@@ -17,7 +17,9 @@ namespace Avalonia.Win32.WinRT.Composition
 {
     class WinUICompositorConnection : IRenderTimer
     {
+        private readonly float? _backdropCornerRadius;
         private readonly EglContext _syncContext;
+        private readonly ICompositionBrush _micaBrush;
         private ICompositor _compositor;
         private ICompositor2 _compositor2;
         private ICompositor5 _compositor5;
@@ -27,11 +29,9 @@ namespace Avalonia.Win32.WinRT.Composition
         private EglPlatformOpenGlInterface _gl;
         private ICompositorDesktopInterop _compositorDesktopInterop;
         private ICompositionBrush _blurBrush;
-        private readonly ICompositionBrush _micaBrush;
         private object _pumpLock = new object();
-        private readonly float _backdropCornerRadius;
 
-        public WinUICompositorConnection(EglPlatformOpenGlInterface gl, object pumpLock, float backdropCornerRadius)
+        public WinUICompositorConnection(EglPlatformOpenGlInterface gl, object pumpLock, float? backdropCornerRadius)
         {
             _gl = gl;
             _pumpLock = pumpLock;
@@ -52,7 +52,7 @@ namespace Avalonia.Win32.WinRT.Composition
 
         public EglPlatformOpenGlInterface Egl => _gl;
 
-        static bool TryCreateAndRegisterCore(EglPlatformOpenGlInterface angle, float backdropCornerRadius)
+        static bool TryCreateAndRegisterCore(EglPlatformOpenGlInterface angle, float? backdropCornerRadius)
         {
             var tcs = new TaskCompletionSource<bool>();
             var pumpLock = new object();
@@ -135,7 +135,7 @@ namespace Avalonia.Win32.WinRT.Composition
         }
 
         public static void TryCreateAndRegister(EglPlatformOpenGlInterface angle,
-            float  backdropCornerRadius)
+            float? backdropCornerRadius)
         {
             const int majorRequired = 10;
             const int buildRequired = 17134;
@@ -247,10 +247,10 @@ namespace Avalonia.Win32.WinRT.Composition
 
         private ICompositionRoundedRectangleGeometry ClipVisual(params IVisual[] containerVisuals)
         {
-            if (_backdropCornerRadius == 0)
+            if (!_backdropCornerRadius.HasValue)
                 return null;
             using var roundedRectangleGeometry = _compositor5.CreateRoundedRectangleGeometry();
-            roundedRectangleGeometry.SetCornerRadius(new Vector2(_backdropCornerRadius, _backdropCornerRadius));
+            roundedRectangleGeometry.SetCornerRadius(new Vector2(_backdropCornerRadius.Value, _backdropCornerRadius.Value));
 
             using var compositor6 = _compositor.QueryInterface<ICompositor6>();
             using var compositionGeometry = roundedRectangleGeometry
