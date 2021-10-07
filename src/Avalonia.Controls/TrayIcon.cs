@@ -30,22 +30,22 @@ namespace Avalonia.Controls
             }
         }
 
-        public TrayIcon () : this(PlatformManager.CreateTrayIcon())
+        public TrayIcon() : this(PlatformManager.CreateTrayIcon())
         {
         }
 
-        static TrayIcon ()
+        static TrayIcon()
         {
             IconsProperty.Changed.Subscribe(args =>
             {
                 if (args.Sender is Application)
                 {
-                    if(args.OldValue.Value != null)
+                    if (args.OldValue.Value != null)
                     {
                         RemoveIcons(args.OldValue.Value);
                     }
 
-                    if(args.NewValue.Value != null)
+                    if (args.NewValue.Value != null)
                     {
                         args.NewValue.Value.CollectionChanged += Icons_CollectionChanged;
                     }
@@ -161,7 +161,7 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if(change.Property == IconProperty)
+            if (change.Property == IconProperty)
             {
                 _impl?.SetIcon(Icon.PlatformImpl);
             }

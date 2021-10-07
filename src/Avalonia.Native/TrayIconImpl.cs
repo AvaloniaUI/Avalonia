@@ -11,7 +11,7 @@ namespace Avalonia.Native
     internal class TrayIconImpl : ITrayIconImpl
     {
         private readonly IAvnTrayIcon _native;
-        
+
         public TrayIconImpl(IAvaloniaNativeFactory factory)
         {
             _native = factory.CreateTrayIcon();
@@ -28,7 +28,7 @@ namespace Avalonia.Native
 
         public unsafe void SetIcon(IWindowIconImpl? icon)
         {
-            if(icon is null)
+            if (icon is null)
             {
                 _native.SetIcon(null, IntPtr.Zero);
             }
@@ -40,7 +40,7 @@ namespace Avalonia.Native
 
                     var imageData = ms.ToArray();
 
-                    fixed(void* ptr = imageData)
+                    fixed (void* ptr = imageData)
                     {
                         _native.SetIcon(ptr, new IntPtr(imageData.Length));
                     }

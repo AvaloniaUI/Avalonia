@@ -53,7 +53,8 @@ namespace Avalonia.X11
 
         public async void CreateTrayIcon()
         {
-            if (_connection is null) return;
+            if (_connection is null)
+                return;
 
             try
             {
@@ -68,7 +69,8 @@ namespace Avalonia.X11
                         "DBUS: org.kde.StatusNotifierWatcher service is not available on this system. System Tray Icons will not work without it.");
             }
 
-            if (_statusNotifierWatcher is null) return;
+            if (_statusNotifierWatcher is null)
+                return;
 
             var pid = Process.GetCurrentProcess().Id;
             var tid = s_TrayIconInstanceId++;
@@ -92,7 +94,8 @@ namespace Avalonia.X11
 
         public async void DestroyTrayIcon()
         {
-            if (_connection is null) return;
+            if (_connection is null)
+                return;
             _connection.UnregisterObject(_statusNotifierItemDbusObj);
             await _connection.UnregisterServiceAsync(_sysTrayServiceName);
             _isActive = false;
@@ -107,8 +110,10 @@ namespace Avalonia.X11
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            if (_isDisposed) return;
-            if (!(icon is X11IconData x11icon)) return;
+            if (_isDisposed)
+                return;
+            if (!(icon is X11IconData x11icon))
+                return;
 
             var w = (int)x11icon.Data[0];
             var h = (int)x11icon.Data[1];
@@ -132,7 +137,8 @@ namespace Avalonia.X11
 
         public void SetIsVisible(bool visible)
         {
-            if (_isDisposed || !_ctorFinished) return;
+            if (_isDisposed || !_ctorFinished)
+                return;
 
             if (visible & !_isActive)
             {
@@ -147,7 +153,8 @@ namespace Avalonia.X11
 
         public void SetToolTipText(string? text)
         {
-            if (_isDisposed || text is null) return;
+            if (_isDisposed || text is null)
+                return;
             _tooltipText = text;
             _statusNotifierItemDbusObj?.SetTitleAndTooltip(_tooltipText);
         }
@@ -258,7 +265,8 @@ namespace Avalonia.X11
 
         public void SetTitleAndTooltip(string? text)
         {
-            if (text is null) return;
+            if (text is null)
+                return;
 
             _backingProperties.Id = text;
             _backingProperties.Category = "ApplicationStatus";

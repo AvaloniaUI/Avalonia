@@ -21,13 +21,13 @@ namespace Avalonia.Win32
             {
                 if (menuItem is NativeMenuItemSeparator)
                 {
-                    yield return new MenuItem { Header = "-" };   
+                    yield return new MenuItem { Header = "-" };
                 }
                 else if (menuItem is NativeMenuItem item)
                 {
                     var newItem = new MenuItem { Header = item.Header, Icon = item.Icon, Command = item.Command, CommandParameter = item.CommandParameter };
 
-                    if(item.Menu != null)
+                    if (item.Menu != null)
                     {
                         newItem.Items = Populate(item.Menu);
                     }
@@ -43,7 +43,7 @@ namespace Avalonia.Win32
 
         public IEnumerable<MenuItem>? GetMenu()
         {
-            if(_nativeMenu != null)
+            if (_nativeMenu != null)
             {
                 return Populate(_nativeMenu);
             }

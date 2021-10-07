@@ -10,17 +10,17 @@ namespace ControlCatalog.ViewModels
         {
             ExitCommand = MiniCommand.Create(() =>
             {
-                if(Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+                if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
                 {
                     lifetime.Shutdown();
                 }
             });
-            
+
             ToggleCommand = MiniCommand.Create(() => { });
         }
 
         public MiniCommand ExitCommand { get; }
-        
+
         public MiniCommand ToggleCommand { get; }
     }
 }

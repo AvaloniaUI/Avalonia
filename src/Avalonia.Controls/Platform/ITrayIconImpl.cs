@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 
 #nullable enable
@@ -21,7 +20,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Sets if the tray icon is visible or not.
         /// </summary>
-        void SetIsVisible (bool visible);
+        void SetIsVisible(bool visible);
 
         /// <summary>
         /// Gets the MenuExporter to allow native menus to be exported to the TrayIcon.
