@@ -35,6 +35,8 @@ namespace Avalonia.Rendering
         private IRef<IDrawOperation> _currentDraw;
         private readonly IDeferredRendererLock _lock;
         private readonly object _sceneLock = new object();
+        private readonly object _startStopLock = new object();
+        private readonly object _renderLoopIsRenderingLock = new object();
         private readonly Action _updateSceneIfNeededDelegate;
 
         /// <summary>
@@ -139,6 +141,8 @@ namespace Avalonia.Rendering
             }
 
             Stop();
+            // Wait for any in-progress rendering to complete
+            lock(_renderLoopIsRenderingLock){}
             DisposeRenderTarget();
         }
 
@@ -233,20 +237,26 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Start()
         {
-            if (!_running && _renderLoop != null)
+            lock (_startStopLock)
             {
-                _renderLoop.Add(this);
-                _running = true;
+                if (!_running && _renderLoop != null)
+                {
+                    _renderLoop.Add(this);
+                    _running = true;
+                }
             }
         }
 
         /// <inheritdoc/>
         public void Stop()
         {
-            if (_running && _renderLoop != null)
+            lock (_startStopLock)
             {
-                _renderLoop.Remove(this);
-                _running = false;
+                if (_running && _renderLoop != null)
+                {
+                    _renderLoop.Remove(this);
+                    _running = false;
+                }
             }
         }
 
@@ -255,18 +265,27 @@ namespace Avalonia.Rendering
 
         void IRenderLoopTask.Update(TimeSpan time) => UpdateScene();
 
-        void IRenderLoopTask.Render() => Render(false);
+        void IRenderLoopTask.Render()
+        {
+            lock (_renderLoopIsRenderingLock)
+            {
+                lock(_startStopLock)
+                    if(!_running)
+                        return;
+                Render(false);
+            }
+        }
 
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
-            return (_currentDraw.Item as BrushDrawOperation)?.ChildScenes?[brush.Visual]?.Size ?? Size.Empty;
+            return (_currentDraw?.Item as BrushDrawOperation)?.ChildScenes?[brush.Visual]?.Size ?? Size.Empty;
         }
 
         /// <inheritdoc/>
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
-            var childScene = (_currentDraw.Item as BrushDrawOperation)?.ChildScenes?[brush.Visual];
+            var childScene = (_currentDraw?.Item as BrushDrawOperation)?.ChildScenes?[brush.Visual];
 
             if (childScene != null)
             {

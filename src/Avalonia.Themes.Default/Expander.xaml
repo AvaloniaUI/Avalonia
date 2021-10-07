@@ -101,6 +101,7 @@
                               Grid.Column="1" 
                               Background="Transparent" 
                               Content="{TemplateBinding Content}" 
+                              ContentTemplate="{Binding $parent[Expander].HeaderTemplate}"
                               VerticalAlignment="Center" 
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"

@@ -184,6 +184,9 @@ namespace Avalonia.Markup.Parsers
             
         }
 
+        // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
+        // only reason they have overridden Equals methods is for unit testing.
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
         public class PropertySyntax : ISyntax
         {
             public string Name { get; set; } = string.Empty;
@@ -205,7 +208,7 @@ namespace Avalonia.Markup.Parsers
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
         }
-        
+
         public class ChildTraversalSyntax : ISyntax
         {
             public static ChildTraversalSyntax Instance { get;  } = new ChildTraversalSyntax();
@@ -231,5 +234,6 @@ namespace Avalonia.Markup.Parsers
                    && other.TypeName == TypeName
                    && other.TypeNamespace == TypeNamespace;
         }
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     }
 }
