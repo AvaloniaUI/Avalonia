@@ -23,7 +23,7 @@ namespace Avalonia.Controls.Platform
         {
         }
 
-        public static ITrayIconImpl? CreateTrayIcon ()
+        public static ITrayIconImpl? CreateTrayIcon()
         {
             var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
 
