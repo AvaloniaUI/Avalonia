@@ -115,6 +115,10 @@ namespace Avalonia.Win32
             CreateMessageWindow();
         }
 
+        internal static Win32Platform Instance => s_instance;
+
+        internal IntPtr Handle => _hwnd;
+
         /// <summary>
         /// Gets the actual WindowsVersion. Same as the info returned from RtlGetVersion.
         /// </summary>
@@ -268,6 +272,8 @@ namespace Avalonia.Win32
                     }
                 }
             }
+            
+            TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
@@ -298,6 +304,11 @@ namespace Avalonia.Win32
             {
                 throw new Win32Exception();
             }
+        }
+
+        public ITrayIconImpl CreateTrayIcon ()
+        {
+            return new TrayIconImpl();
         }
 
         public IWindowImpl CreateWindow()
