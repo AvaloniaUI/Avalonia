@@ -160,13 +160,19 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
+            var root = Root;
+            if (root is null)
+            {
+                return;
+            }
+
             switch (e.Modifiers)
             {
                 case RawInputModifiers.Control | RawInputModifiers.Shift:
                 {
                     IControl? control = null;
 
-                    foreach (var popupRoot in GetPopupRoots(Root))
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
                         control = GetHoveredControl(popupRoot);
 
@@ -176,7 +182,7 @@ namespace Avalonia.Diagnostics.Views
                         }
                     }
 
-                    control ??= GetHoveredControl(Root);
+                    control ??= GetHoveredControl(root);
 
                     if (control != null)
                     {
@@ -190,7 +196,7 @@ namespace Avalonia.Diagnostics.Views
                 {
                     vm.FreezePopups = !vm.FreezePopups;
 
-                    foreach (var popupRoot in GetPopupRoots(Root))
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
                         if (popupRoot.Parent is Popup popup)
                         {
