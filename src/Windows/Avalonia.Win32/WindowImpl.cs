@@ -507,7 +507,7 @@ namespace Avalonia.Win32
 
         public void Activate()
         {
-            SetActiveWindow(_hwnd);
+            SetForegroundWindow(_hwnd);
         }
 
         public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
@@ -1000,6 +1000,7 @@ namespace Avalonia.Win32
             if (!Design.IsDesignMode && activate)
             {
                 SetFocus(_hwnd);
+                SetForegroundWindow(_hwnd);
             }
         }
         
