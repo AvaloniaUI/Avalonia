@@ -17,7 +17,7 @@ namespace Avalonia.X11
 {
     internal class X11TrayIconImpl : ITrayIconImpl
     {
-        private static int s_TrayIconInstanceId;
+        private static int s_trayIconInstanceId;
         private readonly ObjectPath _dbusMenuPath;
         private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private readonly Connection? _connection;
@@ -62,7 +62,7 @@ namespace Avalonia.X11
                     "org.kde.StatusNotifierWatcher",
                     "/StatusNotifierWatcher");
             }
-            catch (Exception)
+            catch
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
                     ?.Log(this,
@@ -73,7 +73,7 @@ namespace Avalonia.X11
                 return;
 
             var pid = Process.GetCurrentProcess().Id;
-            var tid = s_TrayIconInstanceId++;
+            var tid = s_trayIconInstanceId++;
 
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
