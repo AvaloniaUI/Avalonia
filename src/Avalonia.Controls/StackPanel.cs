@@ -188,7 +188,7 @@ namespace Avalonia.Controls
             //  Iterate through children.
             //  While we still supported virtualization, this was hidden in a child iterator (see source history).
             //
-            for (int i = 0, count = children.Count; i < count; ++i)
+            for (int i = 0; i < children.Count; ++i)
             {
                 // Get next child.
                 var child = children[i];
@@ -247,7 +247,7 @@ namespace Avalonia.Controls
             //
             // Arrange and Position Children.
             //
-            for (int i = 0, count = children.Count; i < count; ++i)
+            for (int i = 0; i < children.Count; ++i)
             {
                 var child = children[i];
 
