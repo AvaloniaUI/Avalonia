@@ -1541,7 +1541,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return pt;
 }
 
-- (AvnPoint)toAvnPoint:(CGPoint)p
++ (AvnPoint)toAvnPoint:(CGPoint)p
 {
     AvnPoint result;
     
@@ -1598,7 +1598,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
-    auto avnPoint = [self toAvnPoint:localPoint];
+    auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
     AvnVector delta;
     
@@ -1943,7 +1943,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
     auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
-    auto avnPoint = [self toAvnPoint:localPoint];
+    auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
     auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
     NSDragOperation nsop = [info draggingSourceOperationMask];
@@ -2375,6 +2375,26 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         _parent->GetPosition(&position);
         _parent->BaseEvents->PositionChanged(position);
     }
+}
+
+- (AvnPoint) translateLocalPoint:(AvnPoint)pt
+{
+    pt.Y = [self frame].size.height - pt.Y;
+    return pt;
+}
+
+- (void)sendEvent:(NSEvent *)event
+{
+    if(event.type == NSEventTypeLeftMouseDown && _parent != nullptr)
+    {
+        auto avnPoint = [AvnView toAvnPoint:[event locationInWindow]];
+        auto point = [self translateLocalPoint:avnPoint];
+        AvnVector delta;
+        
+        _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, [event timestamp] * 1000, AvnInputModifiersNone, point, delta);
+    }
+    
+    [super sendEvent:event];
 }
 @end
 
