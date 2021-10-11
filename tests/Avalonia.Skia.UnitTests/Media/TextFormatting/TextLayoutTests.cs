@@ -516,7 +516,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, layout.TextLines.Count);
 
-                Assert.Equal(lineHeight, layout.Size.Height);
+                Assert.Equal(Math.Ceiling(lineHeight), layout.Size.Height);
             }
         }
 
