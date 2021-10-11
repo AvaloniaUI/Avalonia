@@ -409,7 +409,7 @@ namespace Avalonia.Media.TextFormatting
                     textLines.Add(emptyTextLine);
                 }
 
-                Size = new Size(width, height);
+                Size = new Size(Math.Ceiling(width), Math.Ceiling(height));
 
                 TextLines = textLines;
             }
