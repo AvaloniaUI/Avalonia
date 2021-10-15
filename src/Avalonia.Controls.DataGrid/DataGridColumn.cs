@@ -9,6 +9,7 @@ using Avalonia.VisualTree;
 using Avalonia.Collections;
 using Avalonia.Utilities;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Diagnostics;
 using Avalonia.Controls.Utils;
