@@ -745,6 +745,26 @@ namespace Avalonia.Win32.Interop
             WM_DISPATCH_WORK_ITEM = WM_USER,
         }
 
+        public enum DwmWindowAttribute : uint
+        {
+            DWMWA_NCRENDERING_ENABLED = 1,
+            DWMWA_NCRENDERING_POLICY,
+            DWMWA_TRANSITIONS_FORCEDISABLED,
+            DWMWA_ALLOW_NCPAINT,
+            DWMWA_CAPTION_BUTTON_BOUNDS,
+            DWMWA_NONCLIENT_RTL_LAYOUT,
+            DWMWA_FORCE_ICONIC_REPRESENTATION,
+            DWMWA_FLIP3D_POLICY,
+            DWMWA_EXTENDED_FRAME_BOUNDS,
+            DWMWA_HAS_ICONIC_BITMAP,
+            DWMWA_DISALLOW_PEEK,
+            DWMWA_EXCLUDED_FROM_PEEK,
+            DWMWA_CLOAK,
+            DWMWA_CLOAKED,
+            DWMWA_FREEZE_REPRESENTATION,
+            DWMWA_LAST
+        };
+
         public enum MapVirtualKeyMapTypes : uint
         {
             MAPVK_VK_TO_VSC = 0x00,
@@ -786,6 +806,31 @@ namespace Avalonia.Win32.Interop
             MNC_CLOSE = 1,
             MNC_EXECUTE = 2,
             MNC_SELECT = 3
+        }
+
+        public enum SysCommands
+        {
+            SC_SIZE = 0xF000,
+            SC_MOVE = 0xF010,
+            SC_MINIMIZE = 0xF020,
+            SC_MAXIMIZE = 0xF030,
+            SC_NEXTWINDOW = 0xF040,
+            SC_PREVWINDOW = 0xF050,
+            SC_CLOSE = 0xF060,
+            SC_VSCROLL = 0xF070,
+            SC_HSCROLL = 0xF080,
+            SC_MOUSEMENU = 0xF090,
+            SC_KEYMENU = 0xF100,
+            SC_ARRANGE = 0xF110,
+            SC_RESTORE = 0xF120,
+            SC_TASKLIST = 0xF130,
+            SC_SCREENSAVE = 0xF140,
+            SC_HOTKEY = 0xF150,
+            SC_DEFAULT = 0xF160,
+            SC_MONITORPOWER = 0xF170,
+            SC_CONTEXTHELP = 0xF180,
+            SC_SEPARATOR = 0xF00F,
+            SCF_ISSECURE = 0x00000001,
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1065,6 +1110,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr SetActiveWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
         [DllImport("user32.dll")]
         public static extern IntPtr SetCapture(IntPtr hWnd);
 
@@ -1151,6 +1199,9 @@ namespace Avalonia.Win32.Interop
             GCLP_HICONSM = -34,
             GCW_ATOM = -32
         }
+
+        [DllImport("shell32", CharSet = CharSet.Auto)]
+        public static extern int Shell_NotifyIcon(NIM dwMessage, NOTIFYICONDATA lpData);
 
         [DllImport("user32.dll", EntryPoint = "SetClassLongPtr")]
         private static extern IntPtr SetClassLong64(IntPtr hWnd, ClassLongIndex nIndex, IntPtr dwNewLong);
@@ -1387,6 +1438,9 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
@@ -2247,5 +2301,62 @@ namespace Avalonia.Win32.Interop
         public uint LayerMask;
         public uint VisibleMask;
         public uint DamageMask;
+    }
+
+    internal enum NIM : uint
+    {
+        ADD = 0x00000000,
+        MODIFY = 0x00000001,
+        DELETE = 0x00000002,
+        SETFOCUS = 0x00000003,
+        SETVERSION = 0x00000004
+    }
+
+    [Flags]
+    internal enum NIF : uint
+    {
+        MESSAGE = 0x00000001,
+        ICON = 0x00000002,
+        TIP = 0x00000004,
+        STATE = 0x00000008,
+        INFO = 0x00000010,
+        GUID = 0x00000020,
+        REALTIME = 0x00000040,
+        SHOWTIP = 0x00000080
+    }
+
+    [Flags]
+    internal enum NIIF : uint
+    {
+        NONE = 0x00000000,
+        INFO = 0x00000001,
+        WARNING = 0x00000002,
+        ERROR = 0x00000003,
+        USER = 0x00000004,
+        ICON_MASK = 0x0000000F,
+        NOSOUND = 0x00000010,
+        LARGE_ICON = 0x00000020,
+        RESPECT_QUIET_TIME = 0x00000080
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    internal class NOTIFYICONDATA
+    {
+        public int cbSize = Marshal.SizeOf<NOTIFYICONDATA>();
+        public IntPtr hWnd;
+        public int uID;
+        public NIF uFlags;
+        public int uCallbackMessage;
+        public IntPtr hIcon;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string szTip;
+        public int dwState = 0;
+        public int dwStateMask = 0;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string szInfo;
+        public int uTimeoutOrVersion;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string szInfoTitle;
+        public NIIF dwInfoFlags;
     }
 }

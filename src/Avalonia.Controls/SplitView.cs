@@ -133,7 +133,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<SplitView, object?>(nameof(Pane));
 
         /// <summary>
-        /// Defines the <see cref="HeaderTemplate"/> property.
+        /// Defines the <see cref="PaneTemplate"/> property.
         /// </summary>
         public static readonly StyledProperty<IDataTemplate?> PaneTemplateProperty =
             AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate?>(nameof(PaneTemplate));
