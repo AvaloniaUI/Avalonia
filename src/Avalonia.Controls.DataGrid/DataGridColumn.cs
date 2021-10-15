@@ -654,20 +654,28 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Switches the current state of sort direction
+        /// Clears the current sort direction
         /// </summary>
-        /// <param name="clear">Clear the current sort direction instead</param>
-        public void PerformSort(bool? clear)
+        public void ClearSort()
         {
             //InvokeProcessSort is already validating if sorting is possible
-            _headerCell?.InvokeProcessSort(clear == true ? Input.KeyModifiers.Control : Input.KeyModifiers.None);
+            _headerCell?.InvokeProcessSort(Input.KeyModifiers.Control);
+        }
+
+        /// <summary>
+        /// Switches the current state of sort direction
+        /// </summary>
+        public void Sort()
+        {
+            //InvokeProcessSort is already validating if sorting is possible
+            _headerCell?.InvokeProcessSort(Input.KeyModifiers.None);
         }
 
         /// <summary>
         /// Changes the sort direction of this column
         /// </summary>
         /// <param name="direction">New sort direction</param>
-        public void PerformSort(ListSortDirection direction)
+        public void Sort(ListSortDirection direction)
         {
             //InvokeProcessSort is already validating if sorting is possible
             _headerCell?.InvokeProcessSort(Input.KeyModifiers.None, direction);
