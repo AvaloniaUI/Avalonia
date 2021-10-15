@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -82,8 +83,32 @@ namespace Avalonia.Rendering.SceneGraph
 
         public override bool HitTest(Point p)
         {
-            // TODO: Implement line hit testing.
-            return false;
+            var a = P1;
+            var b = P2;
+            
+            //If dot1 or dot2 is negative, then the angle between the perpendicular and the segment is obtuse.
+            //The distance from a point to a straight line is defined as the
+            //length of the vector formed by the point and the closest point of the segment
+                    
+            Vector ap = p - a;
+            var dot1 = Vector.Dot(b - a, ap);
+            
+            if (dot1 < 0)
+                return ap.Length <= Pen.Thickness/2;
+
+            Vector bp = p - b;
+            var dot2 = Vector.Dot(a - b, bp);
+            
+            if(dot2 < 0)
+                return bp.Length <= Pen.Thickness/2;
+
+            var bXaX = b.X - a.X;
+            var bYaY = b.Y - a.Y;
+            
+            var distance = (bXaX * (p.Y - a.Y) - bYaY * (p.X - a.X)) /
+                           (Math.Sqrt(Math.Pow(bXaX, 2) + Math.Pow(bYaY, 2)));
+            
+            return Math.Abs(distance) <= Pen.Thickness/2;
         }
     }
 }
