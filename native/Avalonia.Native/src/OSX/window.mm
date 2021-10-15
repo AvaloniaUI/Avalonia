@@ -231,6 +231,8 @@ public:
     
     virtual HRESULT GetFrameSize(AvnSize* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
