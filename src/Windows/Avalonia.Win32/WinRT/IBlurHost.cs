@@ -7,7 +7,7 @@
         Mica
     }
     
-    public interface IBlurHost
+    internal interface IBlurHost
     {
         void SetBlur(BlurEffect enable);
     }
