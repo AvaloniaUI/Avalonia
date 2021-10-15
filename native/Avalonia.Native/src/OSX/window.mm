@@ -2387,13 +2387,35 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)sendEvent:(NSEvent *)event
 {
-    if(event.type == NSEventTypeLeftMouseDown && _parent != nullptr)
+    if(_parent != nullptr)
     {
-        auto avnPoint = [AvnView toAvnPoint:[event locationInWindow]];
-        auto point = [self translateLocalPoint:avnPoint];
-        AvnVector delta;
-        
-        _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, [event timestamp] * 1000, AvnInputModifiersNone, point, delta);
+        switch(event.type)
+        {
+            case NSEventTypeLeftMouseDown:
+            {
+                auto avnPoint = [AvnView toAvnPoint:[event locationInWindow]];
+                auto point = [self translateLocalPoint:avnPoint];
+                AvnVector delta;
+                
+                _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, [event timestamp] * 1000, AvnInputModifiersNone, point, delta);
+            }
+            break;
+                
+            case NSEventTypeMouseEntered:
+            {
+                _parent->UpdateCursor();
+            }
+            break;
+                
+            case NSEventTypeMouseExited:
+            {
+                [[NSCursor arrowCursor] set];
+            }
+            break;
+                
+            default:
+                break;
+        }
     }
     
     [super sendEvent:event];
