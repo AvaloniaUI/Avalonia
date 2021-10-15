@@ -588,13 +588,13 @@ namespace Avalonia.Controls
                 throw new AvaloniaInternalException("Cannot set ItemsSourceView during layout.");
             }
 
-            ItemsSourceView?.Dispose();
-            ItemsSourceView = newValue;
-
             if (oldValue != null)
             {
                 oldValue.CollectionChanged -= OnItemsSourceViewChanged;
             }
+
+            ItemsSourceView?.Dispose();
+            ItemsSourceView = newValue;
 
             if (newValue != null)
             {
