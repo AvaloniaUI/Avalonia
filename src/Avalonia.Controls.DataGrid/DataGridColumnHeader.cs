@@ -201,21 +201,21 @@ namespace Avalonia.Controls
             handled = true;
         }
 
-        internal void InvokeProcessSort(KeyModifiers keyModifiers)
+        internal void InvokeProcessSort(KeyModifiers keyModifiers, ListSortDirection? forcedDirection = null)
         {
             Debug.Assert(OwningGrid != null);
-            if (OwningGrid.WaitForLostFocus(() => InvokeProcessSort(keyModifiers)))
+            if (OwningGrid.WaitForLostFocus(() => InvokeProcessSort(keyModifiers, forcedDirection)))
             {
                 return;
             }
             if (OwningGrid.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true))
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(keyModifiers));
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(keyModifiers, forcedDirection));
             }
         }
 
         //TODO GroupSorting
-        internal void ProcessSort(KeyModifiers keyModifiers)
+        internal void ProcessSort(KeyModifiers keyModifiers, ListSortDirection? forcedDirection = null)
         {
             // if we can sort:
             //  - AllowUserToSortColumns and CanSort are true, and
@@ -259,7 +259,14 @@ namespace Avalonia.Controls
                         {
                             if (sort != null)
                             {
-                                newSort = sort.SwitchSortDirection();
+                                if (forcedDirection == null || sort.Direction != forcedDirection)
+                                {
+                                    newSort = sort.SwitchSortDirection();
+                                }
+                                else
+                                {
+                                    newSort = sort;
+                                } 
 
                                 // changing direction should not affect sort order, so we replace this column's
                                 // sort description instead of just adding it to the end of the collection
@@ -276,7 +283,10 @@ namespace Avalonia.Controls
                             }
                             else if (OwningColumn.CustomSortComparer != null)
                             {
-                                newSort = DataGridSortDescription.FromComparer(OwningColumn.CustomSortComparer);
+                                newSort = forcedDirection != null ?
+                                    DataGridSortDescription.FromComparer(OwningColumn.CustomSortComparer, forcedDirection.Value) :
+                                    DataGridSortDescription.FromComparer(OwningColumn.CustomSortComparer);
+
 
                                 owningGrid.DataConnection.SortDescriptions.Add(newSort);
                             }
@@ -290,6 +300,10 @@ namespace Avalonia.Controls
                                 }
 
                                 newSort = DataGridSortDescription.FromPath(propertyName, culture: collectionView.Culture);
+                                if (forcedDirection != null && newSort.Direction != forcedDirection)
+                                {
+                                    newSort = newSort.SwitchSortDirection();
+                                }
 
                                 owningGrid.DataConnection.SortDescriptions.Add(newSort);
                             }
