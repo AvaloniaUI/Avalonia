@@ -373,7 +373,13 @@ namespace Avalonia.Win32
         {
             if (_isUsingComposition)
             {
-                _blurHost?.SetBlur(transparencyLevel >= WindowTransparencyLevel.Blur);
+                _blurHost?.SetBlur(transparencyLevel switch
+                {
+                    WindowTransparencyLevel.Mica => BlurEffect.Mica,
+                    WindowTransparencyLevel.AcrylicBlur => BlurEffect.Acrylic,
+                    WindowTransparencyLevel.Blur => BlurEffect.Acrylic,
+                    _ => BlurEffect.None
+                });
 
                 return transparencyLevel;
             }
