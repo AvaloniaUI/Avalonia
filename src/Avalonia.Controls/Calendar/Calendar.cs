@@ -76,6 +76,7 @@ namespace Avalonia.Controls
         None = 3,
     }
 
+
     /// <summary>
     /// Provides data for the
     /// <see cref="E:Avalonia.Controls.Calendar.DisplayDateChanged" />
@@ -1579,13 +1580,14 @@ namespace Avalonia.Controls
 
                 if (!ctrl)
                 {
+                    // If we don't have [CTRL] pressed we want the same effect as if we toggle via the RepeatButtons 
                     if (e.Delta.Y > 0)
                     {
-                        ProcessPageUpKey(false);
+                        OnPreviousClick(); 
                     }
                     else
                     {
-                        ProcessPageDownKey(false);
+                        OnNextClick(); 
                     }
                 }
                 else
