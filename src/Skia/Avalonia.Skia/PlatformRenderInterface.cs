@@ -217,6 +217,8 @@ namespace Avalonia.Skia
 
             s_font.Size = (float)glyphRun.FontRenderingEmSize;
             s_font.Typeface = typeface;
+            s_font.Embolden = glyphTypeface.IsFakeBold;
+            s_font.SkewX = glyphTypeface.IsFakeItalic ? -0.2f : 0;
 
             SKTextBlob textBlob;
 

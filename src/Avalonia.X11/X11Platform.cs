@@ -52,11 +52,14 @@ namespace Avalonia.X11
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
-            DeferredDisplay = XOpenDisplay(IntPtr.Zero);
-            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
-                IntPtr.Zero);
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
+            DeferredDisplay = XOpenDisplay(IntPtr.Zero);
+            if (DeferredDisplay == IntPtr.Zero)
+                throw new Exception("XOpenDisplay failed");
+                
+            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
+                IntPtr.Zero);
             XError.Init();
             
             Info = new X11Info(Display, DeferredDisplay, useXim);
@@ -100,6 +103,12 @@ namespace Avalonia.X11
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
+
+        public ITrayIconImpl CreateTrayIcon ()
+        {
+            return new X11TrayIconImpl();
+        }
+
         public IWindowImpl CreateWindow()
         {
             return new X11Window(this, null);

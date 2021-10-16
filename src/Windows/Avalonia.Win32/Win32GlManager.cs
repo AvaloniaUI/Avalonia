@@ -27,7 +27,7 @@ namespace Avalonia.Win32
                     if (egl != null &&
                         opts?.UseWindowsUIComposition == true)
                     {
-                        WinUICompositorConnection.TryCreateAndRegister(egl);
+                        WinUICompositorConnection.TryCreateAndRegister(egl, opts.CompositionBackdropCornerRadius);
                     }
 
                     return egl;
