@@ -11,11 +11,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void HitTest_Should_Be_True()
         {
             var lineNode = new LineNode(
-                Matrix.Identity, 
+                Matrix.Identity,
                 new Pen(Brushes.Black, 3),
                 new Point(15, 10),
                 new Point(150, 73));
-            
+
             var pointsInside = new List<Point>()
             {
                 new Point(14, 8.9),
@@ -28,15 +28,15 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             foreach (var point in pointsInside)
             {
-                Assert.True(lineNode.HitTest(point)); 
+                Assert.True(lineNode.HitTest(point));
             }
         }
-        
+
         [Fact]
         public void HitTest_Should_Be_False()
         {
             var lineNode = new LineNode(
-                Matrix.Identity, 
+                Matrix.Identity,
                 new Pen(Brushes.Black, 3),
                 new Point(15, 10),
                 new Point(150, 73));
@@ -53,7 +53,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             foreach (var point in pointsOutside)
             {
-                Assert.False(lineNode.HitTest(point)); 
+                Assert.False(lineNode.HitTest(point));
             }
         }
     }
