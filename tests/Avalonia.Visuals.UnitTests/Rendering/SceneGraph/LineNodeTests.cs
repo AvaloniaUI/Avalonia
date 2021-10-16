@@ -17,7 +17,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 new Point(150, 150));
 
 
-            List<Point> pointsInside = new()
+            var pointsInside = new List<Point>()
             {
                 new Point(14, 14),
                 new Point(15, 15),
@@ -43,7 +43,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 new Point(150, 150));
 
 
-            List<Point> pointsOutside= new()
+            var pointsOutside= new List<Point>()
             {
                 new Point(13.9, 13.9),
                 new Point(30, 32.2),
