@@ -106,7 +106,7 @@ namespace Avalonia.Rendering.SceneGraph
             var bYaY = b.Y - a.Y;
 
             var distance = (bXaX * (p.Y - a.Y) - bYaY * (p.X - a.X)) /
-                           (Math.Sqrt(Math.Pow(bXaX, 2) + Math.Pow(bYaY, 2)));
+                           (Math.Sqrt(bXaX * bXaX + bYaY * bYaY));
 
             return Math.Abs(distance) <= Pen.Thickness / 2;
         }
