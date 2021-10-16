@@ -83,6 +83,20 @@ namespace Avalonia.Rendering.SceneGraph
 
         public override bool HitTest(Point p)
         {
+            if (!Transform.HasInverse)
+                return false;
+
+            p *= Transform.Invert();
+
+            var halfThickness = Pen.Thickness / 2;
+            var minX = Math.Min(P1.X, P2.X) - halfThickness;
+            var maxX = Math.Max(P1.X, P2.X) + halfThickness;
+            var minY = Math.Min(P1.Y, P2.Y) - halfThickness;
+            var maxY = Math.Max(P1.Y, P2.Y) + halfThickness;
+
+            if (p.X < minX || p.X > maxX || p.Y < minY || p.Y > maxY)
+                return false;
+
             var a = P1;
             var b = P2;
 
@@ -100,7 +114,7 @@ namespace Avalonia.Rendering.SceneGraph
             var dot2 = Vector.Dot(a - b, bp);
 
             if (dot2 < 0)
-                return bp.Length <= Pen.Thickness / 2;
+                return bp.Length <= halfThickness;
 
             var bXaX = b.X - a.X;
             var bYaY = b.Y - a.Y;
@@ -108,7 +122,7 @@ namespace Avalonia.Rendering.SceneGraph
             var distance = (bXaX * (p.Y - a.Y) - bYaY * (p.X - a.X)) /
                            (Math.Sqrt(bXaX * bXaX + bYaY * bYaY));
 
-            return Math.Abs(distance) <= Pen.Thickness / 2;
+            return Math.Abs(distance) <= halfThickness;
         }
     }
 }
