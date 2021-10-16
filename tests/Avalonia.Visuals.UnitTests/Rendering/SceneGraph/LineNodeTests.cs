@@ -13,18 +13,17 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var lineNode = new LineNode(
                 Matrix.Identity, 
                 new Pen(Brushes.Black, 3),
-                new Point(15, 15),
-                new Point(150, 150));
-
-
+                new Point(15, 10),
+                new Point(150, 73));
+            
             var pointsInside = new List<Point>()
             {
-                new Point(14, 14),
-                new Point(15, 15),
-                new Point(32.1, 30),
-                new Point(30, 32.1),
-                new Point(150, 150),
-                new Point(151, 151),
+                new Point(14, 8.9),
+                new Point(15, 10),
+                new Point(30, 15.5),
+                new Point(30, 18.5),
+                new Point(150, 73),
+                new Point(151, 71.9),
             };
 
             foreach (var point in pointsInside)
@@ -39,17 +38,17 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             var lineNode = new LineNode(
                 Matrix.Identity, 
                 new Pen(Brushes.Black, 3),
-                new Point(15, 15),
-                new Point(150, 150));
+                new Point(15, 10),
+                new Point(150, 73));
 
-
-            var pointsOutside= new List<Point>()
+            var pointsOutside = new List<Point>()
             {
-                new Point(13.9, 13.9),
-                new Point(30, 32.2),
-                new Point(32.2, 30),
-                new Point(151.1, 151.1),
-                new Point(200, 200),
+                new Point(14, 8),
+                new Point(14, 8.8),
+                new Point(30, 15.3),
+                new Point(30, 18.7),
+                new Point(151, 71.8),
+                new Point(155, 75),
             };
 
             foreach (var point in pointsOutside)
