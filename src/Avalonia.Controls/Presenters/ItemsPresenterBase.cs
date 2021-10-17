@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-using System.Linq;
 
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -133,7 +132,7 @@ namespace Avalonia.Controls.Presenters
 
         protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
 
-        int? IChildIndexProvider.TotalCount => Items.TryGetCountFast(out var count) ? count : null;
+        int? IChildIndexProvider.TotalCount => Items.TryGetCountFast(out var count) ? count : (int?)null;
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -161,6 +160,8 @@ namespace Avalonia.Controls.Presenters
             if (Panel != null)
             {
                 ItemsChanged(e);
+
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
             }
         }
 
@@ -192,7 +193,7 @@ namespace Avalonia.Controls.Presenters
         {
             for (var i = 0; i < e.Containers.Count; i++)
             {
-                _childIndexChanged?.Invoke(sender, new ChildIndexChangedEventArgs(e.Containers[i].ContainerControl));
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(e.Containers[i].ContainerControl));
             }
         }
 

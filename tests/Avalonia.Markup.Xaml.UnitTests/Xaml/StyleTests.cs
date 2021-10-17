@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -336,6 +337,45 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Fact]
+        public void Style_Can_Use_NthLastChild_Selector_After_Reoder()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Styles>
+        <Style Selector='Border:nth-last-child(2n)'>
+            <Setter Property='Background' Value='Red'/>
+        </Style>
+    </Window.Styles>
+    <StackPanel x:Name='parent'>
+        <Border x:Name='b1' />
+        <Border x:Name='b2' />
+    </StackPanel>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+                var parent = window.FindControl<StackPanel>("parent");
+                var b1 = window.FindControl<Border>("b1");
+                var b2 = window.FindControl<Border>("b2");
+
+                Assert.Equal(Brushes.Red, b1.Background);
+                Assert.Null(b2.Background);
+
+                parent.Children.Remove(b1);
+
+                Assert.Null(b1.Background);
+                Assert.Null(b2.Background);
+
+                parent.Children.Add(b1);
+
+                Assert.Null(b1.Background);
+                Assert.Equal(Brushes.Red, b2.Background);
+            }
+        }
+
 
         [Fact]
         public void Style_Can_Use_NthChild_Selector_With_ListBox()
@@ -364,25 +404,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.Show();
 
-                var items = list.Presenter.Panel.Children.Cast<ListBoxItem>();
-                ListBoxItem At(int index) => items.ElementAt(index);
+                IEnumerable<IBrush> GetColors() => list.Presenter.Panel.Children.Cast<ListBoxItem>().Select(t => t.Background);
 
-                Assert.Equal(Brushes.Transparent, At(0).Background);
-                Assert.Equal(Brushes.Green, At(1).Background);
-                Assert.Equal(Brushes.Transparent, At(2).Background);
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
 
                 collection.Remove(Brushes.Green);
 
-                Assert.Equal(Brushes.Transparent, At(0).Background);
-                Assert.Equal(Brushes.Blue, At(1).Background);
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);
 
-                Assert.Equal(Brushes.Transparent, At(0).Background);
-                Assert.Equal(Brushes.Blue, At(1).Background);
-                Assert.Equal(Brushes.Transparent, At(2).Background);
-                Assert.Equal(Brushes.Black, At(3).Background);
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue, Brushes.Transparent, Brushes.Black }, GetColors());
             }
         }
 
@@ -415,25 +448,19 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.Show();
 
-                var items = list.Children;
-                TextBlock At(int index) => (TextBlock)list.GetOrCreateElement(index);
+                IEnumerable<IBrush> GetColors() => Enumerable.Range(0, list.ItemsSourceView.Count)
+                    .Select(t => (list.GetOrCreateElement(t) as TextBlock)!.Foreground);
 
-                Assert.Equal(Brushes.Transparent, At(0).Foreground);
-                Assert.Equal(Brushes.Green, At(1).Foreground);
-                Assert.Equal(Brushes.Transparent, At(2).Foreground);
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
 
                 collection.Remove(Brushes.Green);
 
-                Assert.Equal(Brushes.Transparent, At(0).Foreground);
-                Assert.Equal(Brushes.Blue, At(1).Foreground);
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);
 
-                Assert.Equal(Brushes.Transparent, At(0).Foreground);
-                Assert.Equal(Brushes.Blue, At(1).Foreground);
-                Assert.Equal(Brushes.Transparent, At(2).Foreground);
-                Assert.Equal(Brushes.Black, At(3).Foreground);
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue, Brushes.Transparent, Brushes.Black }, GetColors());
             }
         }
 
