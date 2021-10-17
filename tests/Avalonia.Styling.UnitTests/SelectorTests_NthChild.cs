@@ -196,7 +196,7 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public async Task Nth_Child_Doesnt_Match_Control_Out_Of_Panel_Parent()
+        public void Nth_Child_Doesnt_Match_Control_Out_Of_Panel_Parent()
         {
             Border b1;
             var contentControl = new ContentControl();
@@ -204,7 +204,7 @@ namespace Avalonia.Styling.UnitTests
 
             var target = default(Selector).NthChild(1, 0);
 
-            Assert.False(await target.Match(b1).Activator!.Take(1));
+            Assert.Equal(SelectorMatch.NeverThisInstance, target.Match(b1));
         }
 
         [Fact]

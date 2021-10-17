@@ -3,8 +3,13 @@
              x:Class="ControlCatalog.Pages.ListBoxPage">
   <DockPanel>
     <DockPanel.Styles>
-      <Style Selector="ListBox ListBoxItem:nth-child(2n)">
+      <Style Selector="ListBox ListBoxItem:nth-child(5n+3)">
+        <Setter Property="Foreground" Value="Red" />
+        <Setter Property="FontWeight" Value="Bold" />
+      </Style>
+      <Style Selector="ListBox ListBoxItem:nth-last-child(5n+4)">
         <Setter Property="Foreground" Value="Blue" />
+        <Setter Property="FontWeight" Value="Bold" />
       </Style>
     </DockPanel.Styles>
     <StackPanel DockPanel.Dock="Top" Margin="4">

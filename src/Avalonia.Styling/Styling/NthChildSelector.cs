@@ -7,6 +7,12 @@ using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
 {
+    /// <summary>
+    /// The :nth-child() pseudo-class matches elements based on their position in a group of siblings.
+    /// </summary>
+    /// <remarks>
+    /// Element indices are 1-based.
+    /// </remarks>
     public class NthChildSelector : Selector
     {
         private const string NthChildSelectorName = "nth-child";
@@ -22,6 +28,12 @@ namespace Avalonia.Styling
             _reversed = reversed;
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="NthChildSelector"/>
+        /// </summary>
+        /// <param name="previous">Previous selector.</param>
+        /// <param name="step">Position step.</param>
+        /// <param name="offset">Initial index offset.</param>
         public NthChildSelector(Selector? previous, int step, int offset)
             : this(previous, step, offset, false)
         {

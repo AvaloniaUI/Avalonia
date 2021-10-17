@@ -44,7 +44,12 @@ namespace Avalonia.Styling.Activators
 
         private void ChildIndexChanged(object sender, ChildIndexChangedEventArgs e)
         {
-            if (e.Child is null
+            // Run matching again if:
+            // 1. Selector is reversed, so other item insertion/deletion might affect total count without changing subscribed item index.
+            // 2. e.Child is null, when all children indeces were changed.
+            // 3. Subscribed child index was changed.
+            if (_reversed
+                || e.Child is null                
                 || e.Child == _control)
             {
                 PublishNext(IsMatching());

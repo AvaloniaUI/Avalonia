@@ -3,6 +3,9 @@ using System;
 
 namespace Avalonia.LogicalTree
 {
+    /// <summary>
+    /// Event args for <see cref="IChildIndexProvider.ChildIndexChanged"/> event.
+    /// </summary>
     public class ChildIndexChangedEventArgs : EventArgs
     {
         public ChildIndexChangedEventArgs()

@@ -12,6 +12,11 @@
     </Style>
     <Style Selector="ItemsRepeater TextBlock:nth-child(5n+3)">
       <Setter Property="Foreground" Value="Red" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="ItemsRepeater TextBlock:nth-last-child(5n+4)">
+      <Setter Property="Foreground" Value="Blue" />
+      <Setter Property="FontWeight" Value="Bold" />
     </Style>
   </UserControl.Styles>
   <UserControl.Resources>
