@@ -164,7 +164,7 @@ namespace Avalonia.Controls
             for (int i = 0; i < totalChildrenCount; ++i)
             {
                 var child = children[i];
-                if (child == null)
+                if (child == null || !child.IsVisible)
                 { continue; }
 
                 Size childDesiredSize = child.DesiredSize;
