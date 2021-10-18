@@ -101,7 +101,11 @@ namespace Avalonia.Styling
                 data.result = new PropertySetterInstance<T>(
                     data.target,
                     property,
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8604 // Possible null reference argument.
                     (T)data.value);
+#pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
             }
         }
 
@@ -128,7 +132,11 @@ namespace Avalonia.Styling
                 data.result = new PropertySetterInstance<T>(
                     data.target,
                     property,
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8604 // Possible null reference argument.
                     (T)data.value);
+#pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
             }
         }
 

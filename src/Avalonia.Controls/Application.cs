@@ -175,7 +175,7 @@ namespace Avalonia
         /// - <see cref="ISingleViewApplicationLifetime"/>
         /// - <see cref="IControlledApplicationLifetime"/> 
         /// </summary>
-        public IApplicationLifetime ApplicationLifetime { get; set; }
+        public IApplicationLifetime? ApplicationLifetime { get; set; }
 
         event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
         {
