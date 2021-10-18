@@ -65,8 +65,8 @@ else
     else
         "$DOTNET_INSTALL_FILE" --install-dir "$DOTNET_DIRECTORY" --version "$DOTNET_VERSION" --no-path
     fi
-    "$DOTNET_INSTALL_FILE" --install-dir "$DOTNET_DIRECTORY" --version 3.1.408 --runtime dotnet
-    "$DOTNET_INSTALL_FILE" --install-dir "$DOTNET_DIRECTORY" --version 3.1.408 --runtime aspnetcore
+    "$DOTNET_INSTALL_FILE" --install-dir "$DOTNET_DIRECTORY" --version 3.1.20 --runtime dotnet
+    "$DOTNET_INSTALL_FILE" --install-dir "$DOTNET_DIRECTORY" --version 3.1.20 --runtime aspnetcore
 fi
 
 export PATH=$DOTNET_DIRECTORY:$PATH
