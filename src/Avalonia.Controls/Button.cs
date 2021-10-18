@@ -186,7 +186,7 @@ namespace Avalonia.Controls
             set => SetValue(FlyoutProperty, value);
         }
 
-        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -229,7 +229,7 @@ namespace Avalonia.Controls
             {
                 HotKey = _hotkey;
             }
-
+            
             base.OnAttachedToLogicalTree(e);
 
             if (Command != null)
@@ -277,10 +277,6 @@ namespace Avalonia.Controls
             {
                 // If Flyout doesn't have focusable content, close the flyout here
                 Flyout.Hide();
-            }
-            else if (e.Key == Key.Tab && IsPressed == true)
-            {
-                IsPressed = false;
             }
 
             base.OnKeyDown(e);
@@ -356,7 +352,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
             IsPressed = false;
