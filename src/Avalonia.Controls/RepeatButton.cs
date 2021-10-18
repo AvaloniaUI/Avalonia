@@ -78,10 +78,6 @@ namespace Avalonia.Controls
             {
                 StartTimer();
             }
-            else if (e.Key == Key.Tab)
-            {
-                StopTimer();
-            }
         }
 
         protected override void OnKeyUp(KeyEventArgs e)
