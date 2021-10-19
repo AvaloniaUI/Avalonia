@@ -42,6 +42,23 @@
         <Calendar Name="BlackoutDatesCalendar"
                   SelectionMode="SingleDate" />
       </StackPanel>
+
+      <StackPanel Orientation="Vertical">
+        <TextBlock Text="Pointer Wheel Event"/>
+        
+        <Calendar Name="PointerWheelExample" 
+                  SelectionMode="SingleDate"
+                  SwitchPageOnPointerWheel="False"
+                  PointerWheelChanged="Calendar_PointerWheelChanged"
+                  Margin="0,0,0,8"/>
+
+        <ToggleSwitch  IsChecked="{Binding #PointerWheelExample.SwitchPageOnPointerWheel}"
+                       HorizontalContentAlignment="Stretch"
+                       OnContent="Calendar handles pointer wheel"
+                       OffContent="You can handle the pointer wheel"
+                       MaxWidth="{Binding #PointerWheelExample.Bounds.Width}"/>
+        
+      </StackPanel>
       
     </StackPanel> 
   </StackPanel>

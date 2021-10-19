@@ -147,6 +147,11 @@ namespace ControlCatalog.ViewModels
             set { this.RaiseAndSetIfChanged(ref _notificationManager, value); }
         }
 
+        internal void ShowNotification(Avalonia.Controls.Notifications.Notification notification)
+        {
+            NotificationManager.Show(notification);
+        }
+
         public bool IsMenuItemChecked
         {
             get { return _isMenuItemChecked; }

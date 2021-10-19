@@ -1,11 +1,17 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
+using ControlCatalog.ViewModels;
 using System;
 
 namespace ControlCatalog.Pages
 {
     public class CalendarPage : UserControl
     {
+        private MainWindowViewModel _viewModel => this.DataContext as MainWindowViewModel;
+
         public CalendarPage()
         {
             this.InitializeComponent();
@@ -23,6 +29,15 @@ namespace ControlCatalog.Pages
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void Calendar_PointerWheelChanged(object sender, PointerWheelEventArgs e)
+        {
+            _viewModel.ShowNotification(
+                new Notification("Congratulation",
+                $"You have changed the pointer wheel by {e.Delta}",
+                NotificationType.Success,
+                TimeSpan.FromSeconds(2)));
         }
     }
 }
