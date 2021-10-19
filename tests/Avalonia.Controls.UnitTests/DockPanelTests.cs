@@ -1,3 +1,4 @@
+using Avalonia.Layout;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -78,6 +79,46 @@ namespace Avalonia.Controls.UnitTests
             DockPanel.SetDock(child, Dock.Right);
 
             Assert.False(target.IsMeasureValid);
+        }
+        
+        [Fact]
+        public void Should_Dock_Controls_Arrange_All_Visible()
+        {
+            var target = new DockPanel
+            {
+                Children =
+                {
+                    new Border { Width = 100, Height = 50, [DockPanel.DockProperty] = Dock.Left },
+                    new Border { Width = 50, Height = 50, [DockPanel.DockProperty] = Dock.Left }
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 150, 50), target.Bounds);
+            Assert.Equal(new Rect(0, 0, 100, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(100, 0, 50, 50), target.Children[1].Bounds);
+        }
+
+        [Fact]
+        public void Should_Dock_Controls_Arrange_Only_Visible()
+        {
+            var target = new DockPanel
+            {
+                Children =
+                {
+                    new Border { Width = 100, Height = 50, [DockPanel.DockProperty] = Dock.Left },
+                    new Border { Width = 50, Height = 50, [DockPanel.DockProperty] = Dock.Left, IsVisible = false}
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(new Rect(0, 0, 100, 50), target.Bounds);
+            Assert.Equal(new Rect(0, 0, 100, 50), target.Children[0].Bounds);
+            Assert.Equal(new Rect(0, 0, 0, 0), target.Children[1].Bounds);
         }
     }
 }
