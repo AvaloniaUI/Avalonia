@@ -358,6 +358,13 @@ namespace Avalonia.Controls
             IsPressed = false;
         }
 
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+
+            IsPressed = false;
+        }
+
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
@@ -375,10 +382,6 @@ namespace Avalonia.Controls
                 {
                     oldFlyout.Hide();
                 }
-            }
-            else if (change.Property == IsFocusedProperty && change.NewValue.GetValueOrDefault<bool>() == false)
-            {
-                IsPressed = false;
             }
         }
 
