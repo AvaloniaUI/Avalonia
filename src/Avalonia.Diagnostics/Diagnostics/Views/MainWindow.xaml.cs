@@ -19,7 +19,7 @@ namespace Avalonia.Diagnostics.Views
     {
         private readonly IDisposable _keySubscription;
         private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
-        private TopLevel? _root;
+        private AvaloniaObject? _root;
 
         public MainWindow()
         {
@@ -50,23 +50,23 @@ namespace Avalonia.Diagnostics.Views
             this.Opened += lh;
         }
 
-        public TopLevel? Root
+        public AvaloniaObject? Root
         {
             get => _root;
             set
             {
                 if (_root != value)
                 {
-                    if (_root != null)
+                    if (_root is ICloseable oldClosable)
                     {
-                        _root.Closed -= RootClosed;
+                        oldClosable.Closed -= RootClosed;
                     }
 
                     _root = value;
 
-                    if (_root != null)
+                    if (_root is  ICloseable newClosable)
                     {
-                        _root.Closed += RootClosed;
+                        newClosable.Closed += RootClosed;
                         DataContext = new MainViewModel(_root);
                     }
                     else
@@ -91,9 +91,9 @@ namespace Avalonia.Diagnostics.Views
 
             _frozenPopupStates.Clear();
 
-            if (_root != null)
+            if (_root is ICloseable cloneable)
             {
-                _root.Closed -= RootClosed;
+                cloneable.Closed -= RootClosed;
                 _root = null;
             }
 
@@ -105,7 +105,7 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private IControl? GetHoveredControl(TopLevel topLevel)
+        private IControl? GetHoveredControl(IVisual topLevel)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var point = (topLevel as IInputRoot)?.MouseDevice?.GetPosition(topLevel) ?? default;
@@ -172,7 +172,7 @@ namespace Avalonia.Diagnostics.Views
                 {
                     IControl? control = null;
 
-                    foreach (var popupRoot in GetPopupRoots(root))
+                    foreach (var popupRoot in GetPopupRoots((IVisual)root))
                     {
                         control = GetHoveredControl(popupRoot);
 
@@ -182,7 +182,7 @@ namespace Avalonia.Diagnostics.Views
                         }
                     }
 
-                    control ??= GetHoveredControl(root);
+                    control ??= GetHoveredControl((IVisual)root);
 
                     if (control != null)
                     {
@@ -196,7 +196,7 @@ namespace Avalonia.Diagnostics.Views
                 {
                     vm.FreezePopups = !vm.FreezePopups;
 
-                    foreach (var popupRoot in GetPopupRoots(root))
+                    foreach (var popupRoot in GetPopupRoots((IVisual)root))
                     {
                         if (popupRoot.Parent is Popup popup)
                         {

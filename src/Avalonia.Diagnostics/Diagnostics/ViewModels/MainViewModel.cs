@@ -9,7 +9,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class MainViewModel : ViewModelBase, IDisposable
     {
-        private readonly TopLevel _root;
+        private readonly AvaloniaObject _root;
         private readonly TreePageViewModel _logicalTree;
         private readonly TreePageViewModel _visualTree;
         private readonly EventsPageViewModel _events;
@@ -25,7 +25,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
-        public MainViewModel(TopLevel root)
+        public MainViewModel(AvaloniaObject root)
 #nullable restore
         {
             _root = root;
@@ -52,13 +52,13 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeMarginPadding;
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
         }
-        
+
         public bool ShouldVisualizeDirtyRects
         {
             get => _shouldVisualizeDirtyRects;
             set
             {
-                _root.Renderer.DrawDirtyRects = value;
+                ((TopLevel)_root).Renderer.DrawDirtyRects = value;
                 RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
             }
         }
@@ -78,7 +78,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _showFpsOverlay;
             set
             {
-                _root.Renderer.DrawFps = value;
+                ((TopLevel)_root).Renderer.DrawFps = value;
                 RaiseAndSetIfChanged(ref _showFpsOverlay, value);
             }
         }
@@ -157,7 +157,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get { return _pointerOverElement; }
             private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
         }
-        
+
         private void UpdateConsoleContext(ConsoleContext context)
         {
             context.root = _root;
@@ -189,8 +189,11 @@ namespace Avalonia.Diagnostics.ViewModels
             _pointerOverSubscription.Dispose();
             _logicalTree.Dispose();
             _visualTree.Dispose();
-            _root.Renderer.DrawDirtyRects = false;
-            _root.Renderer.DrawFps = false;
+            if (_root is TopLevel top)
+            {
+                top.Renderer.DrawDirtyRects = false;
+                top.Renderer.DrawFps = false;
+            }
         }
 
         private void UpdateFocusedControl()

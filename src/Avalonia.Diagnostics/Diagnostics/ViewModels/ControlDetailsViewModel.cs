@@ -16,21 +16,21 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
-        private readonly IVisual _control;
+        private readonly IAvaloniaObject _avaloniaObject;
         private readonly IDictionary<object, List<PropertyViewModel>> _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private bool _snapshotStyles;
         private bool _showInactiveStyles;
         private string? _styleStatus;
 
-        public ControlDetailsViewModel(TreePageViewModel treePage, IVisual control)
+        public ControlDetailsViewModel(TreePageViewModel treePage, IAvaloniaObject avaloniaObject)
         {
-            _control = control;
+            _avaloniaObject = avaloniaObject;
 
             TreePage = treePage;
 
-            var properties = GetAvaloniaProperties(control)
-                .Concat(GetClrProperties(control))
+            var properties = GetAvaloniaProperties(_avaloniaObject)
+                .Concat(GetClrProperties(_avaloniaObject))
                 .OrderBy(x => x, PropertyComparer.Instance)
                 .ThenBy(x => x.Name)
                 .ToList();
@@ -42,14 +42,16 @@ namespace Avalonia.Diagnostics.ViewModels
             view.Filter = FilterProperty;
             PropertiesView = view;
 
-            Layout = new ControlLayoutViewModel(control);
+            Layout =  avaloniaObject is IVisual 
+                ?  new ControlLayoutViewModel((IVisual)avaloniaObject)
+                : default;
 
-            if (control is INotifyPropertyChanged inpc)
+            if (avaloniaObject is INotifyPropertyChanged inpc)
             {
                 inpc.PropertyChanged += ControlPropertyChanged;
             }
 
-            if (control is AvaloniaObject ao)
+            if (avaloniaObject is AvaloniaObject ao)
             {
                 ao.PropertyChanged += ControlPropertyChanged;
             }
@@ -57,7 +59,7 @@ namespace Avalonia.Diagnostics.ViewModels
             AppliedStyles = new ObservableCollection<StyleViewModel>();
             PseudoClasses = new ObservableCollection<PseudoClassViewModel>();
 
-            if (control is StyledElement styledElement)
+            if (avaloniaObject is StyledElement styledElement)
             {
                 styledElement.Classes.CollectionChanged += OnClassesChanged;
 
@@ -163,7 +165,7 @@ namespace Avalonia.Diagnostics.ViewModels
             set => RaiseAndSetIfChanged(ref _styleStatus, value);
         }
 
-        public ControlLayoutViewModel Layout { get; }
+        public ControlLayoutViewModel? Layout { get; }
 
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
@@ -197,17 +199,17 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void Dispose()
         {
-            if (_control is INotifyPropertyChanged inpc)
+            if (_avaloniaObject is INotifyPropertyChanged inpc)
             {
                 inpc.PropertyChanged -= ControlPropertyChanged;
             }
 
-            if (_control is AvaloniaObject ao)
+            if (_avaloniaObject is AvaloniaObject ao)
             {
                 ao.PropertyChanged -= ControlPropertyChanged;
             }
 
-            if (_control is StyledElement se)
+            if (_avaloniaObject is StyledElement se)
             {
                 se.Classes.CollectionChanged -= OnClassesChanged;
             }
@@ -260,7 +262,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
 
-            Layout.ControlPropertyChanged(sender, e);
+            Layout?.ControlPropertyChanged(sender, e);
         }
 
         private void ControlPropertyChanged(object? sender, PropertyChangedEventArgs e)
