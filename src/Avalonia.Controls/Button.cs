@@ -376,6 +376,10 @@ namespace Avalonia.Controls
                     oldFlyout.Hide();
                 }
             }
+            else if (change.Property == IsFocusedProperty && change.NewValue.GetValueOrDefault<bool>() == false)
+            {
+                IsPressed = false;
+            }
         }
 
         protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
