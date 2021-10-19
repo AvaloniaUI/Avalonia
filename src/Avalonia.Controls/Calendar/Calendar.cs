@@ -953,6 +953,31 @@ namespace Avalonia.Controls
             }
         }
 
+
+
+        /// <summary>
+        /// Defines the <see cref="SwitchPageOnPointerWheel"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> SwitchPageOnPointerWheelProperty =
+            AvaloniaProperty.Register<Calendar, bool>(nameof(SwitchPageOnPointerWheel), true);
+
+        /// <summary>
+        /// Gets or sets if the displayed calendar page can be switched via pointer wheel.
+        /// </summary>
+        /// <value>
+        /// A <see cref="bool"/> indicating if the calendar should switch the displayed page on pointer wheel.
+        /// The default is <see langword="true"/>.
+        /// </value>
+        /// <remarks>
+        /// If you want to handle the pointer wheel event on your own set this property to <see langword="false"/>.
+        /// </remarks>
+        public bool SwitchPageOnPointerWheel
+        {
+            get { return GetValue(SwitchPageOnPointerWheelProperty); }
+            set { SetValue(SwitchPageOnPointerWheelProperty, value); }
+        }
+
+
         private static DateTime? SelectedDateMax(Calendar cal)
         {
             DateTime selectedDateMax;
@@ -1574,7 +1599,7 @@ namespace Avalonia.Controls
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             base.OnPointerWheelChanged(e);
-            if (!e.Handled)
+            if (!e.Handled && SwitchPageOnPointerWheel)
             {
                 CalendarExtensions.GetMetaKeyState(e.KeyModifiers, out bool ctrl, out bool shift);
 
