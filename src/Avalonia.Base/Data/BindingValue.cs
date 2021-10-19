@@ -247,9 +247,7 @@ namespace Avalonia.Data
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                _ => new BindingValue<T>((T)value)
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                _ => new BindingValue<T>((T)value!)
             };
         }
 
