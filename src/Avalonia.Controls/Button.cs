@@ -278,10 +278,7 @@ namespace Avalonia.Controls
                 // If Flyout doesn't have focusable content, close the flyout here
                 Flyout.Hide();
             }
-            else if (e.Key == Key.Tab && IsPressed == true)
-            {
-                IsPressed = false;
-            }
+
             base.OnKeyDown(e);
         }
 
