@@ -30,7 +30,7 @@ namespace Avalonia.PropertyStore
             IValueSink sink)
         {
             Property = property;
-            _value = value;
+            _value = value!;
             Priority = priority;
             _sink = sink;
         }
