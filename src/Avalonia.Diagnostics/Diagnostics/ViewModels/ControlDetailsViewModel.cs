@@ -17,30 +17,18 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
         private readonly IVisual _control;
-        private readonly IDictionary<object, List<PropertyViewModel>> _propertyIndex;
+        private IDictionary<object, List<PropertyViewModel>>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private bool _snapshotStyles;
         private bool _showInactiveStyles;
         private string? _styleStatus;
+        private DataGridCollectionView _propertiesView;
 
         public ControlDetailsViewModel(TreePageViewModel treePage, IVisual control)
         {
             _control = control;
 
             TreePage = treePage;
-
-            var properties = GetAvaloniaProperties(control)
-                .Concat(GetClrProperties(control))
-                .OrderBy(x => x, PropertyComparer.Instance)
-                .ThenBy(x => x.Name)
-                .ToList();
-
-            _propertyIndex = properties.GroupBy(x => x.Key).ToDictionary(x => x.Key, x => x.ToList());
-
-            var view = new DataGridCollectionView(properties);
-            view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
-            view.Filter = FilterProperty;
-            PropertiesView = view;
 
             Layout = new ControlLayoutViewModel(control);
 
@@ -133,7 +121,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public TreePageViewModel TreePage { get; }
 
-        public DataGridCollectionView PropertiesView { get; }
+        public DataGridCollectionView PropertiesView { get => _propertiesView; private set => RaiseAndSetIfChanged( ref _propertiesView , value); }
 
         public ObservableCollection<StyleViewModel> AppliedStyles { get; }
 
@@ -227,18 +215,21 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetClrProperties(object o)
+        private IEnumerable<PropertyViewModel> GetClrProperties(object o, bool showImplementedInterfaces)
         {
             foreach (var p in GetClrProperties(o, o.GetType()))
             {
                 yield return p;
             }
 
-            foreach (var i in o.GetType().GetInterfaces())
+            if (showImplementedInterfaces)
             {
-                foreach (var p in GetClrProperties(o, i))
+                foreach (var i in o.GetType().GetInterfaces())
                 {
-                    yield return p;
+                    foreach (var p in GetClrProperties(o, i))
+                    {
+                        yield return p;
+                    }
                 }
             }
         }
@@ -377,6 +368,23 @@ namespace Avalonia.Diagnostics.ViewModels
                     default: return 3;
                 }
             }
+        }
+
+        public void UpdatePropertiesView(bool showImplementedInterfaces)
+        {
+
+            var properties = GetAvaloniaProperties(_control)
+                .Concat(GetClrProperties(_control, showImplementedInterfaces))
+                .OrderBy(x => x, PropertyComparer.Instance)
+                .ThenBy(x => x.Name)
+                .ToList();
+
+            _propertyIndex = properties.GroupBy(x => x.Key).ToDictionary(x => x.Key, x => x.ToList());
+
+            var view = new DataGridCollectionView(properties);
+            view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
+            view.Filter = FilterProperty;
+            PropertiesView = view;
         }
     }
 }

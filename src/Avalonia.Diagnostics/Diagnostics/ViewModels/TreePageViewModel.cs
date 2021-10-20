@@ -39,6 +39,7 @@ namespace Avalonia.Diagnostics.ViewModels
                     Details = value != null ?
                         new ControlDetailsViewModel(this, value.Visual) :
                         null;
+                    Details?.UpdatePropertiesView(MainView.ShowImplementedInterfaces);
                     Details?.UpdateStyleFilters();
                 }
             }
@@ -133,6 +134,11 @@ namespace Avalonia.Diagnostics.ViewModels
             }
 
             return null;
+        }
+
+        internal void UpdatePropertiesView()
+        {
+            Details?.UpdatePropertiesView(MainView?.ShowImplementedInterfaces ?? true);
         }
     }
 }

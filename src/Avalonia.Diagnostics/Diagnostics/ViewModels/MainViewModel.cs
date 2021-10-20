@@ -22,6 +22,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
         private bool _freezePopups;
+        private bool _showImplementedInterfaces;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -52,7 +53,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get => _shouldVisualizeMarginPadding;
             set => RaiseAndSetIfChanged(ref _shouldVisualizeMarginPadding, value);
         }
-        
+
         public bool ShouldVisualizeDirtyRects
         {
             get => _shouldVisualizeDirtyRects;
@@ -157,7 +158,7 @@ namespace Avalonia.Diagnostics.ViewModels
             get { return _pointerOverElement; }
             private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
         }
-        
+
         private void UpdateConsoleContext(ConsoleContext context)
         {
             context.root = _root;
@@ -225,6 +226,22 @@ namespace Avalonia.Diagnostics.ViewModels
         public void SetOptions(DevToolsOptions options)
         {
             StartupScreenIndex = options.StartupScreenIndex;
+            ShowImplementedInterfaces = options.ShowImplementedInterfaces;
+        }
+
+        public bool ShowImplementedInterfaces 
+        { 
+            get => _showImplementedInterfaces; 
+            private set => RaiseAndSetIfChanged(ref _showImplementedInterfaces , value); 
+        }
+
+        public void ToggleShowImplementedInterfaces(object parametr)
+        {
+            ShowImplementedInterfaces = !ShowImplementedInterfaces;
+            if (Content is TreePageViewModel viewModel)
+            {
+                viewModel.UpdatePropertiesView();
+            }
         }
     }
 }
