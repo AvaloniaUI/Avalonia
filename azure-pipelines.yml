@@ -96,9 +96,9 @@ jobs:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET Core SDK 3.1.401'
+    displayName: 'Install .NET Core SDK 3.1.411'
     inputs:
-      version: 3.1.401
+      version: 3.1.411
 
   - task: UseDotNet@2
     displayName: 'Install .NET Core SDK 5.0.302'
