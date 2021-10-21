@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Threading;
+using System.Reactive.Linq;
+using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -17,11 +19,13 @@ namespace Avalonia.Diagnostics.ViewModels
         private ViewModelBase _content;
         private int _selectedTab;
         private string? _focusedControl;
-        private string? _pointerOverElement;
+        private IInputElement? _pointerOverElement;
         private bool _shouldVisualizeMarginPadding = true;
         private bool _shouldVisualizeDirtyRects;
         private bool _showFpsOverlay;
         private bool _freezePopups;
+        private string? _pointerOverElementName;
+        private IInputRoot? _pointerOverRoot;
 
 #nullable disable
         // Remove "nullable disable" after MemberNotNull will work on our CI.
@@ -36,8 +40,24 @@ namespace Avalonia.Diagnostics.ViewModels
             UpdateFocusedControl();
             KeyboardDevice.Instance.PropertyChanged += KeyboardPropertyChanged;
             SelectedTab = 0;
-            _pointerOverSubscription = root.GetObservable(TopLevel.PointerOverElementProperty)
-                .Subscribe(x => PointerOverElement = x?.GetType().Name);
+            if (root is TopLevel topLevel)
+            {
+                _pointerOverSubscription = topLevel.GetObservable(TopLevel.PointerOverElementProperty)
+                    .Subscribe(x => PointerOverElement = x);
+
+            }
+            else
+            {
+#nullable disable
+                _pointerOverSubscription = InputManager.Instance.PreProcess
+                    .OfType<Input.Raw.RawPointerEventArgs>()
+                    .Subscribe(e =>
+                        {
+                            PointerOverRoot = e.Root;
+                            PointerOverElement = e.Root.GetInputElementsAt(e.Position).FirstOrDefault();
+                        });                                     
+#nullable restore
+            }
             Console = new ConsoleViewModel(UpdateConsoleContext);
         }
 
@@ -152,10 +172,26 @@ namespace Avalonia.Diagnostics.ViewModels
             private set { RaiseAndSetIfChanged(ref _focusedControl, value); }
         }
 
-        public string? PointerOverElement
+        public IInputRoot? PointerOverRoot 
+        { 
+            get => _pointerOverRoot;
+            private  set => RaiseAndSetIfChanged( ref _pointerOverRoot , value); 
+        }
+
+        public IInputElement? PointerOverElement
         {
             get { return _pointerOverElement; }
-            private set { RaiseAndSetIfChanged(ref _pointerOverElement, value); }
+            private set
+            {
+                RaiseAndSetIfChanged(ref _pointerOverElement, value);
+                PointerOverElementName = value?.GetType()?.Name;
+            }
+        }
+
+        public string? PointerOverElementName
+        {
+            get => _pointerOverElementName;
+            private set => RaiseAndSetIfChanged(ref _pointerOverElementName, value);
         }
 
         private void UpdateConsoleContext(ConsoleContext context)

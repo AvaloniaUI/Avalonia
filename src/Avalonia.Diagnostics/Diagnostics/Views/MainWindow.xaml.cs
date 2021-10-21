@@ -105,7 +105,7 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private IControl? GetHoveredControl(IVisual topLevel)
+        private IControl? GetHoveredControl(TopLevel topLevel)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var point = (topLevel as IInputRoot)?.MouseDevice?.GetPosition(topLevel) ?? default;
@@ -123,7 +123,7 @@ namespace Avalonia.Diagnostics.Views
                 .FirstOrDefault();
         }
 
-        private static List<PopupRoot> GetPopupRoots(IVisual root)
+        private static List<PopupRoot> GetPopupRoots(TopLevel root)
         {
             var popupRoots = new List<PopupRoot>();
 
@@ -160,7 +160,8 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var root = Root;
+            var root = Root as TopLevel
+                ?? vm.PointerOverRoot as TopLevel;
             if (root is null)
             {
                 return;
@@ -172,7 +173,7 @@ namespace Avalonia.Diagnostics.Views
                 {
                     IControl? control = null;
 
-                    foreach (var popupRoot in GetPopupRoots((IVisual)root))
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
                         control = GetHoveredControl(popupRoot);
 
@@ -182,7 +183,7 @@ namespace Avalonia.Diagnostics.Views
                         }
                     }
 
-                    control ??= GetHoveredControl((IVisual)root);
+                    control ??= GetHoveredControl(root);
 
                     if (control != null)
                     {
@@ -196,7 +197,7 @@ namespace Avalonia.Diagnostics.Views
                 {
                     vm.FreezePopups = !vm.FreezePopups;
 
-                    foreach (var popupRoot in GetPopupRoots((IVisual)root))
+                    foreach (var popupRoot in GetPopupRoots(root))
                     {
                         if (popupRoot.Parent is Popup popup)
                         {
