@@ -6,13 +6,11 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -167,8 +165,6 @@ namespace Avalonia.Controls
             }
         }
 
-        int? IChildIndexProvider.TotalCount => ItemsSourceView.Count;
-
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
             add => _childIndexChanged += value;
@@ -180,6 +176,12 @@ namespace Avalonia.Controls
             return child is IControl control
                 ? GetElementIndex(control)
                 : -1;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            count = ItemsSourceView.Count;
+            return true;
         }
 
         /// <summary>

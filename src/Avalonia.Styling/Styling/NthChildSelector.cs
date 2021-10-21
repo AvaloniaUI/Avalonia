@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Text;
-
 using Avalonia.LogicalTree;
 using Avalonia.Styling.Activators;
 
@@ -51,7 +50,11 @@ namespace Avalonia.Styling
 
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
-            var logical = (ILogical)control;
+            if (!(control is ILogical logical))
+            {
+                return SelectorMatch.NeverThisType;
+            }
+
             var controlParent = logical.LogicalParent;
 
             if (controlParent is IChildIndexProvider childIndexProvider)
@@ -78,7 +81,7 @@ namespace Avalonia.Styling
 
             if (reversed)
             {
-                if (childIndexProvider.TotalCount is int totalCountValue)
+                if (childIndexProvider.TryGetTotalCount(out var totalCountValue))
                 {
                     index = totalCountValue - index;
                 }

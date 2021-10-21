@@ -1,6 +1,4 @@
 ﻿#nullable enable
-using System;
-
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Styling.Activators
@@ -15,7 +13,6 @@ namespace Avalonia.Styling.Activators
         private readonly int _step;
         private readonly int _offset;
         private readonly bool _reversed;
-        private EventHandler<ChildIndexChangedEventArgs>? _childIndexChangedHandler;
 
         public NthChildActivator(
             ILogical control,
@@ -29,17 +26,15 @@ namespace Avalonia.Styling.Activators
             _reversed = reversed;
         }
 
-        private EventHandler<ChildIndexChangedEventArgs> ChildIndexChangedHandler => _childIndexChangedHandler ??= ChildIndexChanged;
-
         protected override void Initialize()
         {
             PublishNext(IsMatching());
-            _provider.ChildIndexChanged += ChildIndexChangedHandler;
+            _provider.ChildIndexChanged += ChildIndexChanged;
         }
 
         protected override void Deinitialize()
         {
-            _provider.ChildIndexChanged -= ChildIndexChangedHandler;
+            _provider.ChildIndexChanged -= ChildIndexChanged;
         }
 
         private void ChildIndexChanged(object sender, ChildIndexChangedEventArgs e)

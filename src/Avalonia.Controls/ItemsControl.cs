@@ -13,7 +13,6 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
-using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -146,8 +145,6 @@ namespace Avalonia.Controls
             get;
             protected set;
         }
-
-        int? IChildIndexProvider.TotalCount => (Presenter as IChildIndexProvider)?.TotalCount ?? ItemCount;
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -537,6 +534,18 @@ namespace Avalonia.Controls
         {
             return Presenter is IChildIndexProvider innerProvider
                 ? innerProvider.GetChildIndex(child) : -1;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            if (Presenter is IChildIndexProvider presenter
+                && presenter.TryGetTotalCount(out count))
+            {
+                return true;
+            }
+
+            count = ItemCount;
+            return true;
         }
     }
 }
