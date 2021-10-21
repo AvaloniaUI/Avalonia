@@ -100,6 +100,11 @@ namespace Avalonia.Diagnostics
 
         internal static void Attach(Application application, DevToolsOptions options)
         {
+            // Skip if call on Design Mode
+            if(Avalonia.Controls.Design.IsDesignMode)
+            {
+                return;
+            }
             if (s_attachedToApplication == true)
             {
                 throw new ArgumentException("DevTools already attached to application", nameof(application));
