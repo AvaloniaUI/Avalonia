@@ -115,7 +115,10 @@ namespace Avalonia.Diagnostics.Controls
 
         public string FrameworkVersion =>
             RuntimeInformation.FrameworkDescription;
+        
         public string AvaloniaVersion { get; } = s_version.ToString(3);
+
+        public bool IsDevelopmentBuild { get; } = s_version.Build == 999;
 
         private string GetMachineId()
         {
