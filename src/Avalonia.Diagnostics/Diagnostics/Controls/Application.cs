@@ -4,12 +4,8 @@ using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 using App = Avalonia.Application;
 using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
 using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
-using System.Net.NetworkInformation;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
-using System.Globalization;
 
 namespace Avalonia.Diagnostics.Controls
 {
@@ -104,9 +100,6 @@ namespace Avalonia.Diagnostics.Controls
         public string RuntimeId =>
             RuntimeEnvironment.GetRuntimeIdentifier();
 
-        public string MachineId =>
-            GetMachineId();
-
         public string ProductVersion =>
             GetProductVersion();
 
@@ -132,26 +125,6 @@ namespace Avalonia.Diagnostics.Controls
         public string CommandLineArgs =>
             string.Join(Environment.NewLine, Environment.GetCommandLineArgs().Skip(1));
 
-        private string GetMachineId()
-        {
-            try
-            {
-                var macAddr =
-                (
-                    from nic in NetworkInterface.GetAllNetworkInterfaces()
-                    where nic.OperationalStatus == OperationalStatus.Up
-                    select nic.GetPhysicalAddress().ToString()
-                ).FirstOrDefault();
-
-                return BuildHash(macAddr, SHA256.Create());
-            }
-            catch (Exception e)
-            {
-
-
-                return Guid.NewGuid().ToString();
-            }
-        }
 
         private string GetProductVersion()
         {
@@ -165,29 +138,6 @@ namespace Avalonia.Diagnostics.Controls
 
             return "Unknown";
         }
-
-        private static string BuildHash(string input, HashAlgorithm? algoritm = default)
-        {
-            using (algoritm ??= SHA256.Create())
-            {
-                // Convert the input string to a byte array and compute the hash.
-                var data = algoritm.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-                // Create a new Stringbuilder to collect the bytes
-                // and create a string.
-                var builder = new StringBuilder();
-
-                // Use the first 16 bytes of the hash
-                for (int i = 0; i < Math.Min(data.Length, 16); i++)
-                {
-                    builder.Append(data[i].ToString("x2", CultureInfo.InvariantCulture));
-                }
-
-                // Return the hexadecimal string.
-                return builder.ToString();
-            }
-        }
-
 
         public static string GetRunningFrameworkVersion()
         {
