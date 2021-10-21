@@ -115,10 +115,22 @@ namespace Avalonia.Diagnostics.Controls
 
         public string FrameworkVersion =>
             RuntimeInformation.FrameworkDescription;
-        
+
         public string AvaloniaVersion { get; } = s_version.ToString(3);
 
         public bool IsDevelopmentBuild { get; } = s_version.Build == 999;
+
+        public string ApplicationData =>
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+        public string LocalApplicationData =>
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        public string CurrentDirectory =>
+            Environment.CurrentDirectory;
+
+        public string CommandLineArgs =>
+            string.Join(Environment.NewLine, Environment.GetCommandLineArgs().Skip(1));
 
         private string GetMachineId()
         {
