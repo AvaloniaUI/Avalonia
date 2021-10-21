@@ -18,6 +18,7 @@ namespace Avalonia.Diagnostics.Controls
 
     {
         private readonly App _application;
+        private static readonly Version s_version = typeof(IAvaloniaObject).Assembly.GetName().Version;
         public event EventHandler? Closed;
 
         public Application(App application)
@@ -114,6 +115,7 @@ namespace Avalonia.Diagnostics.Controls
 
         public string FrameworkVersion =>
             RuntimeInformation.FrameworkDescription;
+        public string AvaloniaVersion { get; } = s_version.ToString(3);
 
         private string GetMachineId()
         {
