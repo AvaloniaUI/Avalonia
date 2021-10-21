@@ -20,9 +20,9 @@ namespace Avalonia.LogicalTree
 
         /// <summary>
         /// Total children count or null if source is infinite.
-        /// Some Avalonia features might not work if <see cref="TotalCount"/> is null, for instance: nth-last-child selector.
+        /// Some Avalonia features might not work if <see cref="TryGetTotalCount"/> returns false, for instance: nth-last-child selector.
         /// </summary>
-        int? TotalCount { get; }
+        bool TryGetTotalCount(out int count);
 
         /// <summary>
         /// Notifies subscriber when child's index or total count was changed.

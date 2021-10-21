@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-
-using Avalonia.Controls.Presenters;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -58,8 +56,6 @@ namespace Avalonia.Controls
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
         }
-
-        int? IChildIndexProvider.TotalCount => Children.Count;
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -179,6 +175,12 @@ namespace Avalonia.Controls
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
             return child is IControl control ? Children.IndexOf(control) : -1;
+        }
+
+        public bool TryGetTotalCount(out int count)
+        {
+            count = Children.Count;
+            return true;
         }
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
@@ -131,8 +130,6 @@ namespace Avalonia.Controls.Presenters
         }
 
         protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
-
-        int? IChildIndexProvider.TotalCount => Items.TryGetCountFast(out var count) ? count : (int?)null;
 
         event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
         {
@@ -284,6 +281,11 @@ namespace Avalonia.Controls.Presenters
             }
 
             return -1;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            return Items.TryGetCountFast(out count);
         }
     }
 }

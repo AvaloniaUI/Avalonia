@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
-
 using Avalonia.Controls;
-
 using Xunit;
 
 namespace Avalonia.Styling.UnitTests
