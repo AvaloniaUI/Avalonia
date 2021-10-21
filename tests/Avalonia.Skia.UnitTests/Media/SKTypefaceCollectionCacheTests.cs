@@ -6,18 +6,24 @@ namespace Avalonia.Skia.UnitTests.Media
 {
     public class SKTypefaceCollectionCacheTests
     {
-        [Fact]
-        public void Should_Get_Near_Matching_Typeface()
+        private const string s_notoMono =
+            "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono";
+        
+        [InlineData(s_notoMono, FontWeight.SemiLight, FontStyle.Normal)]
+        [InlineData(s_notoMono, FontWeight.Bold, FontStyle.Italic)]
+        [InlineData(s_notoMono, FontWeight.Heavy, FontStyle.Oblique)]
+        [Theory]
+        public void Should_Get_Near_Matching_Typeface(string familyName, FontWeight fontWeight, FontStyle fontStyle)
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var notoMono =
-                    new FontFamily("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono");
+                var fontFamily = new FontFamily(familyName);
+                
+                var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(fontFamily);
 
-                var notoMonoCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(notoMono);
-
-                Assert.Equal("Noto Mono",
-                    notoMonoCollection.Get(new Typeface(notoMono, weight: FontWeight.Bold)).FamilyName);
+                var actual = typefaceCollection.Get(new Typeface(fontFamily, fontStyle, fontWeight))?.FamilyName;
+                
+                Assert.Equal("Noto Mono", actual);
             }
         }
         
