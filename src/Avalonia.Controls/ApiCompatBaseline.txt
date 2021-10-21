@@ -37,6 +37,7 @@ MembersMustExist : Member 'public System.Action<Avalonia.Size> Avalonia.Controls
 MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.Resized.set(System.Action<Avalonia.Size>)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public void Avalonia.Controls.Embedding.Offscreen.OffscreenTopLevelImplBase.SetCursor(Avalonia.Platform.IPlatformHandle)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public Avalonia.AvaloniaProperty Avalonia.AvaloniaProperty Avalonia.Controls.Notifications.NotificationCard.CloseOnClickProperty' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Controls.Platform.ITopLevelNativeMenuExporter.SetNativeMenu(Avalonia.Controls.NativeMenu)' is present in the contract but not in the implementation.
 EnumValuesMustMatch : Enum value 'Avalonia.Platform.ExtendClientAreaChromeHints Avalonia.Platform.ExtendClientAreaChromeHints.Default' is (System.Int32)2 in the implementation but (System.Int32)1 in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Nullable<Avalonia.Size> Avalonia.Platform.ITopLevelImpl.FrameSize' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public System.Nullable<Avalonia.Size> Avalonia.Platform.ITopLevelImpl.FrameSize.get()' is present in the implementation but not in the contract.
@@ -58,4 +59,5 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platfor
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
-Total Issues: 59
+InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.ITrayIconImpl Avalonia.Platform.IWindowingPlatform.CreateTrayIcon()' is present in the implementation but not in the contract.
+Total Issues: 61

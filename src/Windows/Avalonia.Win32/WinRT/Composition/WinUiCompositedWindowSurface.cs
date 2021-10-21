@@ -15,7 +15,7 @@ namespace Avalonia.Win32.WinRT.Composition
         private EglPlatformOpenGlInterface _egl;
         private readonly EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo _info;
         private IRef<WinUICompositedWindow> _window;
-        private bool _enableBlur;
+        private BlurEffect _blurEffect;
 
         public WinUiCompositedWindowSurface(WinUICompositorConnection connection, IEglWindowGlPlatformSurfaceInfo info) : base()
         {
@@ -31,7 +31,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 if (_window?.Item == null)
                 {
                     _window = RefCountable.Create(_connection.CreateWindow(_info.Handle));
-                    _window.Item.SetBlur(_enableBlur);
+                    _window.Item.SetBlur(_blurEffect);
                 }
 
                 return new CompositionRenderTarget(_egl, _window, _info);
@@ -100,10 +100,10 @@ namespace Avalonia.Win32.WinRT.Composition
             }
         }
 
-        public void SetBlur(bool enable)
+        public void SetBlur(BlurEffect blurEffect)
         {
-            _enableBlur = enable;
-            _window?.Item?.SetBlur(enable);
+            _blurEffect = blurEffect;
+            _window?.Item?.SetBlur(blurEffect);
         }
 
         public void Dispose()

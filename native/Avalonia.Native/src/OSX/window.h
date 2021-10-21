@@ -12,6 +12,7 @@ class WindowBaseImpl;
 -(AvnPixelSize) getPixelSize;
 -(AvnPlatformResizeReason) getResizeReason;
 -(void) setResizeReason:(AvnPlatformResizeReason)reason;
++ (AvnPoint)toAvnPoint:(CGPoint)p;
 @end
 
 @interface AutoFitContentView : NSView

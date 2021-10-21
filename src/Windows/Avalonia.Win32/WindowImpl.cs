@@ -376,7 +376,13 @@ namespace Avalonia.Win32
         {
             if (_isUsingComposition)
             {
-                _blurHost?.SetBlur(transparencyLevel >= WindowTransparencyLevel.Blur);
+                _blurHost?.SetBlur(transparencyLevel switch
+                {
+                    WindowTransparencyLevel.Mica => BlurEffect.Mica,
+                    WindowTransparencyLevel.AcrylicBlur => BlurEffect.Acrylic,
+                    WindowTransparencyLevel.Blur => BlurEffect.Acrylic,
+                    _ => BlurEffect.None
+                });
 
                 return transparencyLevel;
             }
@@ -510,7 +516,7 @@ namespace Avalonia.Win32
 
         public void Activate()
         {
-            SetActiveWindow(_hwnd);
+            SetForegroundWindow(_hwnd);
         }
 
         public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
@@ -1003,6 +1009,7 @@ namespace Avalonia.Win32
             if (!Design.IsDesignMode && activate)
             {
                 SetFocus(_hwnd);
+                SetForegroundWindow(_hwnd);
             }
         }
         
