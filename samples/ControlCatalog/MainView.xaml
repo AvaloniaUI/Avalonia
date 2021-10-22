@@ -98,6 +98,7 @@
             <ComboBoxItem>Transparent</ComboBoxItem>
             <ComboBoxItem>Blur</ComboBoxItem>
             <ComboBoxItem>AcrylicBlur</ComboBoxItem>
+            <ComboBoxItem>Mica</ComboBoxItem>
           </ComboBox>
           <ComboBox Items="{Binding WindowStates}" SelectedItem="{Binding WindowState}" />
         </StackPanel>
