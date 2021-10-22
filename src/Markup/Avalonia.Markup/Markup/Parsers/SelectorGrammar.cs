@@ -350,11 +350,27 @@ namespace Avalonia.Markup.Parsers
             }
             else
             {
-                var stepOrOffsetSpan = r.TakeWhile(c => c != ')' && c != 'n');
-                if (!int.TryParse(stepOrOffsetSpan.ToString().Trim(), out var stepOrOffset))
+                r.SkipWhitespace();
+
+                var stepOrOffset = 0;
+                var stepOrOffsetStr = r.TakeWhile(c => char.IsDigit(c) || c == '-' || c == '+').ToString();
+                if (stepOrOffsetStr.Length == 0
+                    || (stepOrOffsetStr.Length == 1
+                    && stepOrOffsetStr[0] == '+'))
+                {
+                    stepOrOffset = 1;
+                }
+                else if (stepOrOffsetStr.Length == 1
+                    && stepOrOffsetStr[0] == '-')
+                {
+                    stepOrOffset = -1;
+                }
+                else if (!int.TryParse(stepOrOffsetStr.ToString(), out stepOrOffset))
                 {
                     throw new ExpressionParseException(r.Position, "Couldn't parse nth-child step or offset value. Integer was expected.");
                 }
+
+                r.SkipWhitespace();
 
                 if (r.Peek == ')')
                 {
@@ -365,13 +381,41 @@ namespace Avalonia.Markup.Parsers
                 {
                     step = stepOrOffset;
 
-                    r.Skip(1); // skip 'n'
-                    var offsetSpan = r.TakeUntil(')').TrimStart();
-
-                    if (offsetSpan.Length != 0
-                        && !int.TryParse(offsetSpan.ToString().Trim(), out offset))
+                    if (r.Peek != 'n')
                     {
-                        throw new ExpressionParseException(r.Position, "Couldn't parse nth-child offset value. Integer was expected.");
+                        throw new ExpressionParseException(r.Position, "Couldn't parse nth-child step value, \"xn+y\" pattern was expected.");
+                    }
+
+                    r.Skip(1); // skip 'n'
+
+                    r.SkipWhitespace();
+
+                    if (r.Peek != ')')
+                    {
+                        int sign;
+                        var nextChar = r.Take();
+                        if (nextChar == '+')
+                        {
+                            sign = 1;
+                        }
+                        else if (nextChar == '-')
+                        {
+                            sign = -1;
+                        }
+                        else
+                        {
+                            throw new ExpressionParseException(r.Position, "Couldn't parse nth-child sign. '+' or '-' was expected.");
+                        }
+
+                        r.SkipWhitespace();
+
+                        if (sign != 0
+                            && !int.TryParse(r.TakeUntil(')').ToString(), out offset))
+                        {
+                            throw new ExpressionParseException(r.Position, "Couldn't parse nth-child offset value. Integer was expected.");
+                        }
+
+                        offset *= sign;
                     }
                 }
             }

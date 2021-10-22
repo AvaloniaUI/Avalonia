@@ -236,6 +236,75 @@ namespace Avalonia.Markup.UnitTests.Parsers
                 result);
         }
 
+        [Theory]
+        [InlineData(":nth-child(xn+2)")]
+        [InlineData(":nth-child(2n+b)")]
+        [InlineData(":nth-child(2n+)")]
+        [InlineData(":nth-child(2na)")]
+        [InlineData(":nth-child(2x+1)")]
+        public void NthChild_Invalid_Inputs(string input)
+        {
+            Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse(input));
+        }
+
+        [Theory]
+        [InlineData(":nth-child(+1)", 0, 1)]
+        [InlineData(":nth-child(1)", 0, 1)]
+        [InlineData(":nth-child(-1)", 0, -1)]
+        [InlineData(":nth-child(2n+1)", 2, 1)]
+        [InlineData(":nth-child(n)", 1, 0)]
+        [InlineData(":nth-child(+n)", 1, 0)]
+        [InlineData(":nth-child(-n)", -1, 0)]
+        [InlineData(":nth-child(-2n)", -2, 0)]
+        [InlineData(":nth-child(n+5)", 1, 5)]
+        [InlineData(":nth-child(n-5)", 1, -5)]
+        [InlineData(":nth-child( 2n + 1 )", 2, 1)]
+        [InlineData(":nth-child( 2n - 1 )", 2, -1)]
+        public void NthChild_Variations(string input, int step, int offset)
+        {
+            var result = SelectorGrammar.Parse(input);
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NthChildSyntax()
+                    {
+                        Step = step,
+                        Offset = offset
+                    }
+                },
+                result);
+        }
+
+        [Theory]
+        [InlineData(":nth-last-child(+1)", 0, 1)]
+        [InlineData(":nth-last-child(1)", 0, 1)]
+        [InlineData(":nth-last-child(-1)", 0, -1)]
+        [InlineData(":nth-last-child(2n+1)", 2, 1)]
+        [InlineData(":nth-last-child(n)", 1, 0)]
+        [InlineData(":nth-last-child(+n)", 1, 0)]
+        [InlineData(":nth-last-child(-n)", -1, 0)]
+        [InlineData(":nth-last-child(-2n)", -2, 0)]
+        [InlineData(":nth-last-child(n+5)", 1, 5)]
+        [InlineData(":nth-last-child(n-5)", 1, -5)]
+        [InlineData(":nth-last-child( 2n + 1 )", 2, 1)]
+        [InlineData(":nth-last-child( 2n - 1 )", 2, -1)]
+        public void NthLastChild_Variations(string input, int step, int offset)
+        {
+            var result = SelectorGrammar.Parse(input);
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.NthLastChildSyntax()
+                    {
+                        Step = step,
+                        Offset = offset
+                    }
+                },
+                result);
+        }
+
         [Fact]
         public void OfType_NthChild()
         {
