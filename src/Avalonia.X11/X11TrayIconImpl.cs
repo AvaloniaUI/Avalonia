@@ -11,16 +11,7 @@ namespace Avalonia.X11
         public X11TrayIconImpl()
         {
             _xEmbedTrayIcon = new XEmbedTrayIconImpl();
-
-            var _connection = DBusHelper.TryGetConnection();
-
-            if (_connection is null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
-                    ?.Log(this, "Unable to get a dbus connection for system tray icons.");
-            }
-
-            _dbusSniTrayIcon = new DbusSNITrayIconImpl(_connection);
+            _dbusSniTrayIcon = new DbusSNITrayIconImpl();
         }
 
         private readonly DbusSNITrayIconImpl _dbusSniTrayIcon;
