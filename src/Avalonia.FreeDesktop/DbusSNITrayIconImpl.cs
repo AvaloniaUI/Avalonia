@@ -6,49 +6,55 @@ using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
-using Avalonia.FreeDesktop;
 using Avalonia.Logging;
-using Avalonia.Platform;
 using Tmds.DBus;
 
 [assembly: InternalsVisibleTo(Connection.DynamicAssemblyName)]
 
 namespace Avalonia.FreeDesktop
 {
-    public class DbusSNITrayIconImpl 
+    public class DbusSNITrayIconImpl
     {
-        private static int s_trayIconInstanceId;
+        private static int s_trayIconInstanceId = 0;
         private readonly ObjectPath _dbusMenuPath;
         private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private readonly Connection? _connection;
         private DbusPixmap _icon;
-
         private IStatusNotifierWatcher? _statusNotifierWatcher;
-
         private string? _sysTrayServiceName;
         private string? _tooltipText;
-        private bool _isActive;
         private bool _isDisposed;
-        private readonly bool _ctorFinished;
+        private bool _serviceConnected;
+        private readonly IDisposable _serviceWatchDisposable;
+        private bool _isVisible;
 
         public INativeMenuExporter? MenuExporter { get; }
         public Action? OnClicked { get; set; }
 
-        public bool IsActive => _isActive;
- 
-        public DbusSNITrayIconImpl(Connection connection)
+        public bool IsActive => _serviceConnected;
+
+        public DbusSNITrayIconImpl()
         {
-            _connection = connection;
+            _connection = DBusHelper.TryGetConnection();
+
+            if (_connection is null)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
+                    ?.Log(this, "Unable to get a dbus connection for system tray icons.");
+
+                return;
+            }
+
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
+            InitializeSNWService();
             CreateTrayIcon();
-            _ctorFinished = true;
+            _serviceWatchDisposable = Watch();
         }
 
-        public async void CreateTrayIcon()
+        private void InitializeSNWService()
         {
-            if (_connection is null)
-                return;
+            if (_connection is null || _isDisposed) return;
 
             try
             {
@@ -61,10 +67,49 @@ namespace Avalonia.FreeDesktop
                 Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
                     ?.Log(this,
                         "DBUS: org.kde.StatusNotifierWatcher service is not available on this system. System Tray Icons will not work without it.");
+
+                return;
             }
 
-            if (_statusNotifierWatcher is null)
+            _serviceConnected = true;
+        }
+
+
+        private async Task<IDisposable> Watch() =>
+            await _connection?.ResolveServiceOwnerAsync("org.kde.StatusNotifierWatcher", OnNameChange)!;
+
+
+        private void OnNameChange(ServiceOwnerChangedEventArgs obj)
+        {
+            if (_isDisposed)
                 return;
+
+            if (!_serviceConnected & obj.NewOwner != null)
+            {
+                _serviceConnected = true;
+
+                if (_isVisible)
+                {
+                    DestroyTrayIcon();
+                    CreateTrayIcon();
+                }
+                else
+                {
+                    DestroyTrayIcon();
+                }
+            }
+            else if (_serviceConnected & obj.NewOwner is null)
+            {
+                s_trayIconInstanceId = 0;
+                _serviceConnected = false;
+            }
+        }
+
+        public void CreateTrayIcon()
+        {
+            if (_connection is null || !_serviceConnected || _isDisposed)
+                return;
+
 
             var pid = Process.GetCurrentProcess().Id;
             var tid = s_trayIconInstanceId++;
@@ -72,27 +117,33 @@ namespace Avalonia.FreeDesktop
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
 
-            await _connection.RegisterObjectAsync(_statusNotifierItemDbusObj);
 
-            await _connection.RegisterServiceAsync(_sysTrayServiceName);
-
-            await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+            try
+            {
+                _connection.RegisterObjectAsync(_statusNotifierItemDbusObj);
+                _connection.RegisterServiceAsync(_sysTrayServiceName);
+                _statusNotifierWatcher?.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+            }
+            catch (Exception e)
+            {
+                _serviceConnected = false;
+            }
 
             _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
 
             _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
-
-            _isActive = true;
+            _isVisible = true;
         }
 
-        public async void DestroyTrayIcon()
+        public void DestroyTrayIcon()
         {
-            if (_connection is null)
+            if (_connection is null || !_serviceConnected || _isDisposed)
                 return;
+
             _connection.UnregisterObject(_statusNotifierItemDbusObj);
-            await _connection.UnregisterServiceAsync(_sysTrayServiceName);
-            _isActive = false;
+            _connection.UnregisterServiceAsync(_sysTrayServiceName);
+            _isVisible = false;
         }
 
         public void Dispose()
@@ -100,12 +151,13 @@ namespace Avalonia.FreeDesktop
             _isDisposed = true;
             DestroyTrayIcon();
             _connection?.Dispose();
+            _serviceWatchDisposable?.Dispose();
         }
 
         public void SetIcon(UIntPtr[] x11iconData)
         {
             if (_isDisposed)
-                return; 
+                return;
             var w = (int)x11iconData[0];
             var h = (int)x11iconData[1];
 
@@ -128,15 +180,15 @@ namespace Avalonia.FreeDesktop
 
         public void SetIsVisible(bool visible)
         {
-            if (_isDisposed || !_ctorFinished)
+            if (_isDisposed)
                 return;
 
-            if (visible & !_isActive)
+            if (visible && !_isVisible)
             {
                 DestroyTrayIcon();
                 CreateTrayIcon();
             }
-            else if (!visible & _isActive)
+            else if (!visible && _isVisible)
             {
                 DestroyTrayIcon();
             }
@@ -239,7 +291,20 @@ namespace Avalonia.FreeDesktop
             return Task.FromResult(Disposable.Create(() => NewStatusAsync -= handler));
         }
 
-        public Task<object> GetAsync(string prop) => Task.FromResult(new object());
+        public async Task<object?> GetAsync(string prop)
+        {
+            return prop switch
+            {
+                nameof(_backingProperties.Category) => _backingProperties.Category,
+                nameof(_backingProperties.Id) => _backingProperties.Id,
+                nameof(_backingProperties.Menu) => _backingProperties.Menu,
+                nameof(_backingProperties.IconPixmap) => _backingProperties.IconPixmap,
+                nameof(_backingProperties.Status) => _backingProperties.Status,
+                nameof(_backingProperties.Title) => _backingProperties.Title,
+                nameof(_backingProperties.ToolTip) => _backingProperties.ToolTip,
+                _ => null
+            };
+        }
 
         public Task<StatusNotifierItemProperties> GetAllAsync() => Task.FromResult(_backingProperties);
 
