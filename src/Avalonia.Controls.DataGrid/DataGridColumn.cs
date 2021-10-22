@@ -9,6 +9,7 @@ using Avalonia.VisualTree;
 using Avalonia.Collections;
 using Avalonia.Utilities;
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Diagnostics;
 using Avalonia.Controls.Utils;
@@ -651,6 +652,34 @@ namespace Avalonia.Controls
                 parent = parent.GetVisualParent();
             }
             return null;
+        }
+
+        /// <summary>
+        /// Clears the current sort direction
+        /// </summary>
+        public void ClearSort()
+        {
+            //InvokeProcessSort is already validating if sorting is possible
+            _headerCell?.InvokeProcessSort(Input.KeyModifiers.Control);
+        }
+
+        /// <summary>
+        /// Switches the current state of sort direction
+        /// </summary>
+        public void Sort()
+        {
+            //InvokeProcessSort is already validating if sorting is possible
+            _headerCell?.InvokeProcessSort(Input.KeyModifiers.None);
+        }
+
+        /// <summary>
+        /// Changes the sort direction of this column
+        /// </summary>
+        /// <param name="direction">New sort direction</param>
+        public void Sort(ListSortDirection direction)
+        {
+            //InvokeProcessSort is already validating if sorting is possible
+            _headerCell?.InvokeProcessSort(Input.KeyModifiers.None, direction);
         }
 
         /// <summary>

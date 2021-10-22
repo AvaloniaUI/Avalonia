@@ -20,10 +20,12 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Displays a popup window.
     /// </summary>
+#pragma warning disable CS0612 // Type or member is obsolete
     public class Popup : Control, IVisualTreeHost, IPopupHostProvider
+#pragma warning restore CS0612 // Type or member is obsolete
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
-            AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), true);
+            AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), false);
 
         /// <summary>
         /// Defines the <see cref="Child"/> property.
