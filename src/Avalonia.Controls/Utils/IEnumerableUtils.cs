@@ -12,22 +12,35 @@ namespace Avalonia.Controls.Utils
             return items.IndexOf(item) != -1;
         }
 
-        public static int Count(this IEnumerable items)
+        public static bool TryGetCountFast(this IEnumerable items, out int count)
         {
             if (items != null)
             {
                 if (items is ICollection collection)
                 {
-                    return collection.Count;
+                    count = collection.Count;
+                    return true;
                 }
                 else if (items is IReadOnlyCollection<object> readOnly)
                 {
-                    return readOnly.Count;
+                    count = readOnly.Count;
+                    return true;
                 }
-                else
-                {
-                    return Enumerable.Count(items.Cast<object>());
-                }
+            }
+
+            count = 0;
+            return false;
+        }
+
+        public static int Count(this IEnumerable items)
+        {
+            if (TryGetCountFast(items, out var count))
+            {
+                return count;
+            }
+            else if (items != null)
+            {
+                return Enumerable.Count(items.Cast<object>());
             }
             else
             {

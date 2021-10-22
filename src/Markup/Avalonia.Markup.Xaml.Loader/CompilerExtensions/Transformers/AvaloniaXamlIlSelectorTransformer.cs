@@ -97,6 +97,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         case SelectorGrammar.NotSyntax not:
                             result = new XamlIlNotSelector(result, Create(not.Argument, typeResolver));
                             break;
+                        case SelectorGrammar.NthChildSyntax nth:
+                            result = new XamlIlNthChildSelector(result, nth.Step, nth.Offset, XamlIlNthChildSelector.SelectorType.NthChild);
+                            break;
+                        case SelectorGrammar.NthLastChildSyntax nth:
+                            result = new XamlIlNthChildSelector(result, nth.Step, nth.Offset, XamlIlNthChildSelector.SelectorType.NthLastChild);
+                            break;
                         case SelectorGrammar.CommaSyntax comma:
                             if (results == null) 
                                 results = new XamlIlOrSelectorNode(node, selectorType);
@@ -270,6 +276,35 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             context.Emit(Argument, codeGen, Type.GetClrType());
             EmitCall(context, codeGen,
                 m => m.Name == "Not" && m.Parameters.Count == 2 && m.Parameters[1].Equals(Type.GetClrType()));
+        }
+    }
+
+    class XamlIlNthChildSelector : XamlIlSelectorNode
+    {
+        private readonly int _step;
+        private readonly int _offset;
+        private readonly SelectorType _type;
+
+        public enum SelectorType
+        {
+            NthChild,
+            NthLastChild
+        }
+
+        public XamlIlNthChildSelector(XamlIlSelectorNode previous, int step, int offset, SelectorType type) : base(previous)
+        {
+            _step = step;
+            _offset = offset;
+            _type = type;
+        }
+
+        public override IXamlType TargetType => Previous?.TargetType;
+        protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            codeGen.Ldc_I4(_step);
+            codeGen.Ldc_I4(_offset);
+            EmitCall(context, codeGen,
+                m => m.Name == _type.ToString() && m.Parameters.Count == 3);
         }
     }
 
