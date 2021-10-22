@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -14,7 +16,7 @@ namespace Avalonia.Controls
     /// Controls can be added to a <see cref="Panel"/> by adding them to its <see cref="Children"/>
     /// collection. All children are layed out to fill the panel.
     /// </remarks>
-    public class Panel : Control, IPanel
+    public class Panel : Control, IPanel, IChildIndexProvider
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -29,6 +31,8 @@ namespace Avalonia.Controls
         {
             AffectsRender<Panel>(BackgroundProperty);
         }
+
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
@@ -51,6 +55,12 @@ namespace Avalonia.Controls
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
+        }
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
         }
 
         /// <summary>
@@ -137,6 +147,7 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
 
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
             InvalidateMeasureOnChildrenChanged();
         }
 
@@ -159,6 +170,17 @@ namespace Avalonia.Controls
             var control = e.Sender as IControl;
             var panel = control?.VisualParent as TPanel;
             panel?.InvalidateMeasure();
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return child is IControl control ? Children.IndexOf(control) : -1;
+        }
+
+        public bool TryGetTotalCount(out int count)
+        {
+            count = Children.Count;
+            return true;
         }
     }
 }
