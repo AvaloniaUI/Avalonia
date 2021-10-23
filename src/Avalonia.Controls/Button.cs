@@ -99,6 +99,7 @@ namespace Avalonia.Controls
             CommandParameterProperty.Changed.Subscribe(CommandParameterChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
             IsCancelProperty.Changed.Subscribe(IsCancelChanged);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Button>((lbl, args) => lbl.OnAccessKey(args));
         }
 
         public Button()
@@ -255,6 +256,8 @@ namespace Avalonia.Controls
                 Command.CanExecuteChanged -= CanExecuteChanged;
             }
         }
+
+        protected virtual void OnAccessKey(RoutedEventArgs e) => OnClick();
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
