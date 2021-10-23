@@ -192,7 +192,7 @@ namespace Avalonia
                         _values.SetValue(property, sentinel);
                     }
 
-                    NotifyValueChanged<T>(property, old!, default!, BindingPriority.Unset);
+                    NotifyValueChanged<T>(property, old, default, BindingPriority.Unset);
                 }
             }
         }
