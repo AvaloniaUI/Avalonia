@@ -13,7 +13,12 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
         public static void Execute()
         {
-            var codepointData = new Dictionary<int, UnicodeDataItem>();
+            if (!Directory.Exists("Generated"))
+            {
+                Directory.CreateDirectory("Generated");
+            }
+        
+            var unicodeData = new Dictionary<int, UnicodeDataItem>();
 
             var generalCategoryEntries =
                 UnicodeEnumsGenerator.CreateGeneralCategoryEnum();
@@ -26,7 +31,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             {
                 var generalCategory = generalCategoryMappings[name];
 
-                AddGeneralCategoryRange(codepointData, range, generalCategory);
+                AddGeneralCategoryRange(unicodeData, range, generalCategory);
             }
 
             var scriptEntries = UnicodeEnumsGenerator.CreateScriptEnum();
@@ -39,21 +44,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             {
                 var script = scriptMappings[name];
 
-                AddScriptRange(codepointData, range, script);
-            }
-
-            var biDiClassEntries =
-                    UnicodeEnumsGenerator.CreateBiDiClassEnum();
-
-            var biDiClassMappings = CreateTagToIndexMappings(biDiClassEntries);
-
-            var biDiData = ReadBiDiData();
-
-            foreach (var (range, name) in biDiData)
-            {
-                var biDiClass = biDiClassMappings[name];
-
-                AddBiDiClassRange(codepointData, range, biDiClass);
+                AddScriptRange(unicodeData, range, script);
             }
 
             var lineBreakClassEntries =
@@ -67,7 +58,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             {
                 var lineBreakClass = lineBreakClassMappings[name];
 
-                AddLineBreakClassRange(codepointData, range, lineBreakClass);
+                AddLineBreakClassRange(unicodeData, range, lineBreakClass);
             }
 
             //const int initialValue = (0 << UnicodeData.LINEBREAK_SHIFT) |
@@ -76,11 +67,10 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             var unicodeDataTrieBuilder = new UnicodeTrieBuilder(/*initialValue*/);
 
-            foreach (var properties in codepointData.Values)
+            foreach (var properties in unicodeData.Values)
             {
                 //[line break]|[biDi]|[script]|[category]
                 var value = (properties.LineBreakClass << UnicodeData.LINEBREAK_SHIFT) |
-                            (properties.BiDiClass << UnicodeData.BIDI_SHIFT) |
                             (properties.Script << UnicodeData.SCRIPT_SHIFT) | properties.GeneralCategory;
 
                 unicodeDataTrieBuilder.Set(properties.Codepoint, (uint)value);
@@ -93,32 +83,55 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 trie.Save(stream);
             }
             
-            var biDiPairBracketTypeEntries = UnicodeEnumsGenerator.CreateBiDiPairedBracketTypeEnum();
+            var biDiData = new Dictionary<int, BiDiDataItem>();
 
-            var biDiPairBracketTypeMappings = CreateTagToIndexMappings(biDiPairBracketTypeEntries);
+            var biDiClassEntries =
+                UnicodeEnumsGenerator.CreateBiDiClassEnum();
 
-            var biDiPairBracketTypeData = ReadBiDiPairedBracketTypeData();
+            var biDiClassMappings = CreateTagToIndexMappings(biDiClassEntries);
 
-            var biDiPairBracketTypeTrieBuilder = new UnicodeTrieBuilder(/*initialValue*/);
-            
-            foreach (var (range, name) in biDiPairBracketTypeData)
+            var biDiClassData = ReadBiDiData();
+
+            foreach (var (range, name) in biDiClassData)
             {
-                var type = biDiPairBracketTypeMappings[name];
+                var biDiClass = biDiClassMappings[name];
 
-                var value = range.End | (type << 16);
+                AddBiDiClassRange(biDiData, range, biDiClass);
+            }
 
-                biDiPairBracketTypeTrieBuilder.Set(range.Start, (uint)value);
+            var biDiPairedBracketTypeEntries = UnicodeEnumsGenerator.CreateBiDiPairedBracketTypeEnum();
+
+            var biDiPairedBracketTypeMappings = CreateTagToIndexMappings(biDiPairedBracketTypeEntries);
+
+            var biDiPairedBracketData = ReadBiDiPairedBracketData();
+            
+            foreach (var (range, name) in biDiPairedBracketData)
+            {
+                var bracketType = biDiPairedBracketTypeMappings[name];
+
+                AddBiDiBracket(biDiData, range, bracketType);
             }
             
-            using (var stream = File.Create("Generated\\BiDiPairBracketType.trie"))
+            var biDiTrieBuilder = new UnicodeTrieBuilder(/*initialValue*/);
+            
+            foreach (var properties in biDiData.Values)
             {
-                var trie = biDiPairBracketTypeTrieBuilder.Freeze();
+                //[bracket]|[bracketType]|[biDiClass]
+                var value = (properties.BiDiClass << UnicodeData.BIDICLASS_SHIFT) |
+                            (properties.BracketType << UnicodeData.BIDIPAIREDBRACKEDTYPE_SHIFT) | properties.Bracket;
+
+                biDiTrieBuilder.Set(properties.Codepoint, (uint)value);
+            }
+            
+            using (var stream = File.Create("Generated\\BiDi.trie"))
+            {
+                var trie = biDiTrieBuilder.Freeze();
 
                 trie.Save(stream);
             }
-            
+
             UnicodeEnumsGenerator.CreatePropertyValueAliasHelper(scriptEntries, generalCategoryEntries,
-                biDiClassEntries, lineBreakClassEntries, biDiPairBracketTypeEntries);
+                biDiClassEntries, lineBreakClassEntries, biDiPairedBracketTypeEntries);
         }
 
         private static Dictionary<string, int> CreateTagToIndexMappings(List<DataEntry> entries)
@@ -177,19 +190,36 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             }
         }
 
-        private static void AddBiDiClassRange(Dictionary<int, UnicodeDataItem> codepoints, CodepointRange range,
+        private static void AddBiDiClassRange(Dictionary<int, BiDiDataItem> codepoints, CodepointRange range,
             int biDiClass)
         {
             for (var i = range.Start; i <= range.End; i++)
             {
                 if (!codepoints.ContainsKey(i))
                 {
-                    codepoints.Add(i, new UnicodeDataItem { Codepoint = i, BiDiClass = biDiClass });
+                    codepoints.Add(i, new BiDiDataItem { Codepoint = i, BiDiClass = biDiClass });
                 }
                 else
                 {
                     codepoints[i].BiDiClass = biDiClass;
                 }
+            }
+        }
+
+        private static void AddBiDiBracket(Dictionary<int, BiDiDataItem> codepoints, CodepointRange range,
+            int bracketType)
+        {
+            if (!codepoints.ContainsKey(range.Start))
+            {
+                codepoints.Add(range.Start,
+                    new BiDiDataItem { Codepoint = range.Start, Bracket = range.End, BracketType = bracketType });
+            }
+            else
+            {
+                var codepoint = codepoints[range.Start];
+
+                codepoint.Bracket = range.End;
+                codepoint.BracketType = bracketType;
             }
         }
 
@@ -229,16 +259,13 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             return ReadUnicodeData("extracted/DerivedLineBreak.txt");
         }
         
-        public static List<(CodepointRange, string)> ReadBiDiPairedBracketTypeData()
+        public static List<(CodepointRange, string)> ReadBiDiPairedBracketData()
         {
-            return ReadUnicodeData("BidiBrackets.txt");
-        }
-
-        private static List<(CodepointRange, string)> ReadUnicodeData(string file)
-        {
+            const string file = "BidiBrackets.txt";
+        
             var data = new List<(CodepointRange, string)>();
-
-            var rx = new Regex(@"([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s+;\s+(\w+)\s+#.*", RegexOptions.Compiled);
+            
+            var regex = new Regex(@"^([0-9A-F]+);\s([0-9A-F]+);\s([ocn])");
 
             using (var client = new HttpClient())
             {
@@ -263,7 +290,61 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                 continue;
                             }
 
-                            var match = rx.Match(line);
+                            var match = regex.Match(line);
+
+                            if (!match.Success)
+                            {
+                                continue;
+                            }
+
+                            var start = Convert.ToInt32(match.Groups[1].Value, 16);
+
+                            var end = start;
+
+                            if (!string.IsNullOrEmpty(match.Groups[2].Value))
+                            {
+                                end = Convert.ToInt32(match.Groups[2].Value, 16);
+                            }
+
+                            data.Add((new CodepointRange(start, end), match.Groups[3].Value));
+                        }
+                    }
+                }
+            }
+
+            return data;
+        }
+
+        private static List<(CodepointRange, string)> ReadUnicodeData(string file)
+        {
+            var data = new List<(CodepointRange, string)>();
+
+            var regex = new Regex(@"([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s+;\s+(\w+)\s+#.*", RegexOptions.Compiled);
+
+            using (var client = new HttpClient())
+            {
+                var url = Path.Combine(Ucd, file);
+
+                using (var result = client.GetAsync(url).GetAwaiter().GetResult())
+                {
+                    if (!result.IsSuccessStatusCode)
+                    {
+                        return data;
+                    }
+
+                    using (var stream = result.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                    using (var reader = new StreamReader(stream))
+                    {
+                        while (!reader.EndOfStream)
+                        {
+                            var line = reader.ReadLine();
+
+                            if (string.IsNullOrEmpty(line))
+                            {
+                                continue;
+                            }
+
+                            var match = regex.Match(line);
 
                             if (!match.Success)
                             {
@@ -299,6 +380,17 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             public int BiDiClass { get; set; }
 
             public int LineBreakClass { get; set; }
+        }
+        
+        internal class BiDiDataItem
+        {
+            public int Codepoint { get; set; }
+
+            public int Bracket { get; set; }
+
+            public int BracketType { get; set; }
+
+            public int BiDiClass { get; set; }
         }
     }
 

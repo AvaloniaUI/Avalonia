@@ -1,4 +1,5 @@
-﻿using Avalonia.Utilities;
+﻿using System.Runtime.CompilerServices;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -34,6 +35,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         public BiDiClass BiDiClass => UnicodeData.GetBiDiClass(Value);
 
+        /// <summary>
+        /// Gets the <see cref="Unicode.BiDiPairedBracketType"/>.
+        /// </summary>
+        public BiDiPairedBracketType PairedBracketType => UnicodeData.GetBiDiPairedBracketType(Value);
+        
         /// <summary>
         /// Gets the <see cref="Unicode.LineBreakClass"/>.
         /// </summary>
@@ -92,6 +98,30 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 return false;
             }
+        }
+        
+        /// <summary>
+        /// Gets the codepoint representing the bracket pairing for this instance.
+        /// </summary>
+        /// <param name="codepoint">
+        /// When this method returns, contains the codepoint representing the bracket pairing for this instance;
+        /// otherwise, the default value for the type of the <paramref name="codepoint"/> parameter.
+        /// This parameter is passed uninitialized.
+        /// .</param>
+        /// <returns><see langword="true"/> if this instance has a bracket pairing; otherwise, <see langword="false"/></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetPairedBracket(out Codepoint codepoint)
+        {
+            if (PairedBracketType == BiDiPairedBracketType.None)
+            {
+                codepoint = default;
+                
+                return false;
+            }
+
+            codepoint = UnicodeData.GetBiDiPairedBracket(Value);
+
+            return true;
         }
 
         public static implicit operator int(Codepoint codepoint)
