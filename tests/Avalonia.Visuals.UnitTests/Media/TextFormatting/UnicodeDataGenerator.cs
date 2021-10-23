@@ -13,7 +13,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
         public static void Execute()
         {
-            var codepoints = new Dictionary<int, UnicodeDataItem>();
+            var codepointData = new Dictionary<int, UnicodeDataItem>();
 
             var generalCategoryEntries =
                 UnicodeEnumsGenerator.CreateGeneralCategoryEnum();
@@ -26,7 +26,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             {
                 var generalCategory = generalCategoryMappings[name];
 
-                AddGeneralCategoryRange(codepoints, range, generalCategory);
+                AddGeneralCategoryRange(codepointData, range, generalCategory);
             }
 
             var scriptEntries = UnicodeEnumsGenerator.CreateScriptEnum();
@@ -39,7 +39,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             {
                 var script = scriptMappings[name];
 
-                AddScriptRange(codepoints, range, script);
+                AddScriptRange(codepointData, range, script);
             }
 
             var biDiClassEntries =
@@ -53,7 +53,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             {
                 var biDiClass = biDiClassMappings[name];
 
-                AddBiDiClassRange(codepoints, range, biDiClass);
+                AddBiDiClassRange(codepointData, range, biDiClass);
             }
 
             var lineBreakClassEntries =
@@ -67,34 +67,58 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             {
                 var lineBreakClass = lineBreakClassMappings[name];
 
-                AddLineBreakClassRange(codepoints, range, lineBreakClass);
+                AddLineBreakClassRange(codepointData, range, lineBreakClass);
             }
 
             //const int initialValue = (0 << UnicodeData.LINEBREAK_SHIFT) |
             //                          (0 << UnicodeData.BIDI_SHIFT) |
             //                          (0 << UnicodeData.SCRIPT_SHIFT) | (int)GeneralCategory.Other;
 
-            var builder = new UnicodeTrieBuilder(/*initialValue*/);
+            var unicodeDataTrieBuilder = new UnicodeTrieBuilder(/*initialValue*/);
 
-            foreach (var properties in codepoints.Values)
+            foreach (var properties in codepointData.Values)
             {
                 //[line break]|[biDi]|[script]|[category]
                 var value = (properties.LineBreakClass << UnicodeData.LINEBREAK_SHIFT) |
                             (properties.BiDiClass << UnicodeData.BIDI_SHIFT) |
                             (properties.Script << UnicodeData.SCRIPT_SHIFT) | properties.GeneralCategory;
 
-                builder.Set(properties.Codepoint, (uint)value);
+                unicodeDataTrieBuilder.Set(properties.Codepoint, (uint)value);
             }
 
             using (var stream = File.Create("Generated\\UnicodeData.trie"))
             {
-                var trie = builder.Freeze();
+                var trie = unicodeDataTrieBuilder.Freeze();
 
                 trie.Save(stream);
             }
+            
+            var biDiPairBracketTypeEntries = UnicodeEnumsGenerator.CreateBiDiPairedBracketTypeEnum();
 
+            var biDiPairBracketTypeMappings = CreateTagToIndexMappings(biDiPairBracketTypeEntries);
+
+            var biDiPairBracketTypeData = ReadBiDiPairedBracketTypeData();
+
+            var biDiPairBracketTypeTrieBuilder = new UnicodeTrieBuilder(/*initialValue*/);
+            
+            foreach (var (range, name) in biDiPairBracketTypeData)
+            {
+                var type = biDiPairBracketTypeMappings[name];
+
+                var value = range.End | (type << 16);
+
+                biDiPairBracketTypeTrieBuilder.Set(range.Start, (uint)value);
+            }
+            
+            using (var stream = File.Create("Generated\\BiDiPairBracketType.trie"))
+            {
+                var trie = biDiPairBracketTypeTrieBuilder.Freeze();
+
+                trie.Save(stream);
+            }
+            
             UnicodeEnumsGenerator.CreatePropertyValueAliasHelper(scriptEntries, generalCategoryEntries,
-                biDiClassEntries, lineBreakClassEntries);
+                biDiClassEntries, lineBreakClassEntries, biDiPairBracketTypeEntries);
         }
 
         private static Dictionary<string, int> CreateTagToIndexMappings(List<DataEntry> entries)
@@ -203,6 +227,11 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         public static List<(CodepointRange, string)> ReadLineBreakClassData()
         {
             return ReadUnicodeData("extracted/DerivedLineBreak.txt");
+        }
+        
+        public static List<(CodepointRange, string)> ReadBiDiPairedBracketTypeData()
+        {
+            return ReadUnicodeData("BidiBrackets.txt");
         }
 
         private static List<(CodepointRange, string)> ReadUnicodeData(string file)
