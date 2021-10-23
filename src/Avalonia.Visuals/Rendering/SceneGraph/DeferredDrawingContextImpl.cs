@@ -303,9 +303,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var next = NextDrawAs<ClipNode>();
 
-            if (next == null || !next.Item.Equals(clip))
+            if (next == null || !next.Item.Equals(Transform, clip))
             {
-                Add(new ClipNode(clip));
+                Add(new ClipNode(Transform, clip));
             }
             else
             {
@@ -318,9 +318,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var next = NextDrawAs<ClipNode>();
 
-            if (next == null || !next.Item.Equals(clip))
+            if (next == null || !next.Item.Equals(Transform, clip))
             {
-                Add(new ClipNode(clip));
+                Add(new ClipNode(Transform, clip));
             }
             else
             {
@@ -333,9 +333,9 @@ namespace Avalonia.Rendering.SceneGraph
         {
             var next = NextDrawAs<GeometryClipNode>();
 
-            if (next == null || !next.Item.Equals(clip))
+            if (next == null || !next.Item.Equals(Transform, clip))
             {
-                Add(new GeometryClipNode(clip));
+                Add(new GeometryClipNode(Transform, clip));
             }
             else
             {
