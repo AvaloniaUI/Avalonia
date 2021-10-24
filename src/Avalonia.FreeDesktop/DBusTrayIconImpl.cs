@@ -108,6 +108,7 @@ namespace Avalonia.FreeDesktop
             }
             else if (_serviceConnected & obj.NewOwner is null)
             {
+                DestroyTrayIcon();
                 _serviceConnected = false;
             }
         }
@@ -137,7 +138,6 @@ namespace Avalonia.FreeDesktop
             _statusNotifierItemDbusObj.SetIcon(_icon);
 
             _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
-            _isVisible = true;
         }
 
         private void DestroyTrayIcon()
@@ -147,7 +147,6 @@ namespace Avalonia.FreeDesktop
 
             _connection.UnregisterObject(_statusNotifierItemDbusObj);
             _connection.UnregisterServiceAsync(_sysTrayServiceName);
-            _isVisible = false;
         }
 
         public void Dispose()
@@ -197,6 +196,8 @@ namespace Avalonia.FreeDesktop
             {
                 DestroyTrayIcon();
             }
+
+            _isVisible = visible;
         }
 
         public void SetToolTipText(string? text)
