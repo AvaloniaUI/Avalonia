@@ -15,7 +15,6 @@ namespace Avalonia.X11
         }
 
         private readonly DBusTrayIconImpl _dBusTrayIcon;
-
         private readonly XEmbedTrayIconImpl _xEmbedTrayIcon;
         private bool _isDisposed;
 
