@@ -89,19 +89,15 @@ namespace Avalonia.FreeDesktop
                 _serviceConnected = true;
                 InitializeSNWService();
 
+                DestroyTrayIcon();
+
                 if (_isVisible)
                 {
-                    DestroyTrayIcon();
                     CreateTrayIcon();
-                }
-                else
-                {
-                    DestroyTrayIcon();
                 }
             }
             else if (_serviceConnected & obj.NewOwner is null)
             {
-                s_trayIconInstanceId = 0;
                 _serviceConnected = false;
             }
         }
@@ -110,14 +106,12 @@ namespace Avalonia.FreeDesktop
             if (_connection is null || !_serviceConnected || _isDisposed)
                 return;
 
-
             var pid = Process.GetCurrentProcess().Id;
             var tid = s_trayIconInstanceId++;
 
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
-
-
+            
             try
             {
                 _connection.RegisterObjectAsync(_statusNotifierItemDbusObj);
@@ -360,11 +354,11 @@ namespace Avalonia.FreeDesktop
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
     }
 
-    [Dictionary]
     // This class is used by Tmds.Dbus to ferry properties
     // from the SNI spec.
     // Don't change this to actual C# properties since
     // Tmds.Dbus will get confused.
+    [Dictionary]
     internal class StatusNotifierItemProperties
     {
         public string? Category;
