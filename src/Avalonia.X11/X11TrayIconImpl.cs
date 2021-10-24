@@ -11,17 +11,17 @@ namespace Avalonia.X11
         public X11TrayIconImpl()
         {
             _xEmbedTrayIcon = new XEmbedTrayIconImpl();
-            _dbusSniTrayIcon = new DbusSNITrayIconImpl();
+            _dBusTrayIcon = new DBusTrayIconImpl();
         }
 
-        private readonly DbusSNITrayIconImpl _dbusSniTrayIcon;
+        private readonly DBusTrayIconImpl _dBusTrayIcon;
 
         private readonly XEmbedTrayIconImpl _xEmbedTrayIcon;
         private bool _isDisposed;
 
         public void Dispose()
         {
-            _dbusSniTrayIcon?.Dispose();
+            _dBusTrayIcon?.Dispose();
             _xEmbedTrayIcon?.Dispose();
             _isDisposed = true;
         }
@@ -30,12 +30,12 @@ namespace Avalonia.X11
         {
             if (_isDisposed) return;
 
-            if (_dbusSniTrayIcon?.IsActive ?? false)
+            if (_dBusTrayIcon?.IsActive ?? false)
             {
                 if (!(icon is X11IconData x11icon))
                     return;
 
-                _dbusSniTrayIcon.SetIcon(x11icon.Data);
+                _dBusTrayIcon.SetIcon(x11icon.Data);
             }
             else
             {
@@ -47,9 +47,9 @@ namespace Avalonia.X11
         {
             if (_isDisposed) return;
 
-            if (_dbusSniTrayIcon?.IsActive ?? false)
+            if (_dBusTrayIcon?.IsActive ?? false)
             {
-                _dbusSniTrayIcon.SetToolTipText(text);
+                _dBusTrayIcon.SetToolTipText(text);
             }
             else
             {
@@ -61,9 +61,9 @@ namespace Avalonia.X11
         {
             if (_isDisposed) return;
 
-            if (_dbusSniTrayIcon?.IsActive ?? false)
+            if (_dBusTrayIcon?.IsActive ?? false)
             {
-                _dbusSniTrayIcon.SetIsVisible(visible);
+                _dBusTrayIcon.SetIsVisible(visible);
             }
             else
             {
@@ -75,9 +75,9 @@ namespace Avalonia.X11
         {
             get
             {
-                if (_dbusSniTrayIcon?.IsActive ?? false)
+                if (_dBusTrayIcon?.IsActive ?? false)
                 {
-                    return _dbusSniTrayIcon.MenuExporter;
+                    return _dBusTrayIcon.MenuExporter;
                 }
                 else
                 {
@@ -90,9 +90,9 @@ namespace Avalonia.X11
         {
             get
             {
-                if (_dbusSniTrayIcon?.IsActive ?? false)
+                if (_dBusTrayIcon?.IsActive ?? false)
                 {
-                    return _dbusSniTrayIcon.OnClicked;
+                    return _dBusTrayIcon.OnClicked;
                 }
                 else
                 {
@@ -101,9 +101,9 @@ namespace Avalonia.X11
             }
             set
             {
-                if (_dbusSniTrayIcon?.IsActive ?? false)
+                if (_dBusTrayIcon?.IsActive ?? false)
                 {
-                     _dbusSniTrayIcon.OnClicked = value;
+                     _dBusTrayIcon.OnClicked = value;
                 }
                 else
                 {
