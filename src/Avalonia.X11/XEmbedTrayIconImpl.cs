@@ -11,17 +11,17 @@ namespace Avalonia.X11
         {
         }
 
-        private bool IsCalled;
+        private bool _isCalled;
 
         private void NotImplemented()
         {
-            if(IsCalled) return;
+            if(_isCalled) return;
             
             Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
                 ?.Log(this,
                     "TODO: XEmbed System Tray Icons is not implemented yet. Tray icons won't be available on this system.");
 
-            IsCalled = true;
+            _isCalled = true;
         }
         
         public void Dispose()
