@@ -138,7 +138,7 @@ namespace Avalonia.FreeDesktop
 
         private void DestroyTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed)
+            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null)
                 return;
 
             _connection.UnregisterObject(_statusNotifierItemDbusObj);
