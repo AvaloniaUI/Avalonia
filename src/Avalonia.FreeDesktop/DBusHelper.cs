@@ -51,10 +51,10 @@ namespace Avalonia.FreeDesktop
 
         public static Connection TryInitialize(string dbusAddress = null)
         {
-            return Connection ?? TryGetConnection(dbusAddress);
+            return Connection ?? TryCreateNewConnection(dbusAddress);
         }
         
-        public static Connection TryGetConnection(string dbusAddress = null)
+        public static Connection TryCreateNewConnection(string dbusAddress = null)
         { 
             var oldContext = SynchronizationContext.Current;
             try

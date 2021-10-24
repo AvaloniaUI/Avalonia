@@ -10,32 +10,34 @@ using Avalonia.Logging;
 using Tmds.DBus;
 
 [assembly: InternalsVisibleTo(Connection.DynamicAssemblyName)]
-
+[assembly: InternalsVisibleTo("Avalonia.X11")]
 namespace Avalonia.FreeDesktop
 {
-    public class DbusSNITrayIconImpl
+    internal class DBusTrayIconImpl
     {
-        private static int s_trayIconInstanceId = 0;
+        private static int s_trayIconInstanceId;
+        
         private readonly ObjectPath _dbusMenuPath;
-        private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private readonly Connection? _connection;
-        private DbusPixmap _icon;
+        private readonly IDisposable _serviceWatchDisposable;
+
+        private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private IStatusNotifierWatcher? _statusNotifierWatcher;
+        private DbusPixmap _icon;
+
         private string? _sysTrayServiceName;
         private string? _tooltipText;
         private bool _isDisposed;
         private bool _serviceConnected;
-        private readonly IDisposable _serviceWatchDisposable;
-        private bool _isVisible;
-
+        private bool _isVisible = true;
+        
+        public bool IsActive => _serviceConnected;
         public INativeMenuExporter? MenuExporter { get; }
         public Action? OnClicked { get; set; }
-
-        public bool IsActive => _serviceConnected;
-
-        public DbusSNITrayIconImpl()
+        
+        public DBusTrayIconImpl()
         {
-            _connection = DBusHelper.TryGetConnection();
+            _connection = DBusHelper.TryCreateNewConnection();
 
             if (_connection is null)
             {
@@ -46,9 +48,9 @@ namespace Avalonia.FreeDesktop
             }
 
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
+            
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
-            InitializeSNWService();
-            CreateTrayIcon();
+            
             _serviceWatchDisposable = Watch();
         }
 
@@ -73,12 +75,10 @@ namespace Avalonia.FreeDesktop
 
             _serviceConnected = true;
         }
-
-
+        
         private async Task<IDisposable> Watch() =>
             await _connection?.ResolveServiceOwnerAsync("org.kde.StatusNotifierWatcher", OnNameChange)!;
-
-
+        
         private void OnNameChange(ServiceOwnerChangedEventArgs obj)
         {
             if (_isDisposed)
@@ -87,6 +87,7 @@ namespace Avalonia.FreeDesktop
             if (!_serviceConnected & obj.NewOwner != null)
             {
                 _serviceConnected = true;
+                InitializeSNWService();
 
                 if (_isVisible)
                 {
@@ -104,8 +105,7 @@ namespace Avalonia.FreeDesktop
                 _serviceConnected = false;
             }
         }
-
-        public void CreateTrayIcon()
+        private void CreateTrayIcon()
         {
             if (_connection is null || !_serviceConnected || _isDisposed)
                 return;
@@ -136,7 +136,7 @@ namespace Avalonia.FreeDesktop
             _isVisible = true;
         }
 
-        public void DestroyTrayIcon()
+        private void DestroyTrayIcon()
         {
             if (_connection is null || !_serviceConnected || _isDisposed)
                 return;
