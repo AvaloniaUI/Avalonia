@@ -29,7 +29,7 @@ namespace Avalonia.Diagnostics.Models
             }
         }
 
-        public bool Handled { get; }
+        public bool Handled { get; set; }
 
         public RoutingStrategies Route { get; }
     }
