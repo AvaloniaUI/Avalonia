@@ -37,7 +37,7 @@ namespace Avalonia.FreeDesktop
         private bool _serviceConnected;
         private bool _isVisible = true;
         
-        public bool IsActive => _serviceConnected;
+        public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
         public Action? OnClicked { get; set; }
         
@@ -53,11 +53,15 @@ namespace Avalonia.FreeDesktop
                 return;
             }
 
+            IsActive = true;
+            
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
             
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
             
             _serviceWatchDisposable = Watch();
+            
+            
         }
 
         private void InitializeSNWService()
@@ -148,6 +152,7 @@ namespace Avalonia.FreeDesktop
 
         public void Dispose()
         {
+            IsActive = false;
             _isDisposed = true;
             DestroyTrayIcon();
             _connection?.Dispose();
