@@ -298,9 +298,8 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             return entries;
         }
 
-        public static void CreatePropertyValueAliasHelper(List<DataEntry> scriptEntries, 
-            IEnumerable<DataEntry> generalCategoryEntries, IEnumerable<DataEntry> biDiClassEntries, 
-            IEnumerable<DataEntry> lineBreakClassEntries, IEnumerable<DataEntry> biDiPairedBracketTypeEntries)
+        public static void CreatePropertyValueAliasHelper(UnicodeDataEntries unicodeDataEntries, 
+            BiDiDataEntries biDiDataEntries)
         {
             using (var stream = File.Create("Generated\\PropertyValueAliasHelper.cs"))
             using (var writer = new StreamWriter(stream))
@@ -313,17 +312,17 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                 writer.WriteLine("    internal static class PropertyValueAliasHelper");
                 writer.WriteLine("    {");
 
-                WritePropertyValueAliasGetTag(writer, scriptEntries, "Script", "Zzzz");
+                WritePropertyValueAliasGetTag(writer, unicodeDataEntries.Scripts, "Script", "Zzzz");
 
-                WritePropertyValueAlias(writer, scriptEntries, "Script", "Unknown");
+                WritePropertyValueAlias(writer, unicodeDataEntries.Scripts, "Script", "Unknown");
 
-                WritePropertyValueAlias(writer, generalCategoryEntries, "GeneralCategory", "Other");
-
-                WritePropertyValueAlias(writer, biDiClassEntries, "BiDiClass", "LeftToRight");
+                WritePropertyValueAlias(writer, unicodeDataEntries.GeneralCategories, "GeneralCategory", "Other");
                 
-                WritePropertyValueAlias(writer, biDiPairedBracketTypeEntries, "BiDiPairedBracketType", "None");
+                WritePropertyValueAlias(writer, unicodeDataEntries.LineBreakClasses, "LineBreakClass", "Unknown");
 
-                WritePropertyValueAlias(writer, lineBreakClassEntries, "LineBreakClass", "Unknown");
+                WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BiDiPairedBracketType", "None");
+                
+                WritePropertyValueAlias(writer, biDiDataEntries.BiDiClasses, "BiDiClass", "LeftToRight");
 
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
