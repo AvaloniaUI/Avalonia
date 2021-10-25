@@ -41,6 +41,7 @@
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             Content="{TemplateBinding Content}"
                             Margin="{TemplateBinding Padding}"
+                            RecognizesAccessKey="True"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
