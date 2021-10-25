@@ -20,7 +20,7 @@
   </Style>
 
   <Style Selector="ProgressRing:not(:indeterminate) /template/ Arc#Fill">
-    <Setter Property="EndAngle" Value="-90"/>
+    <Setter Property="SweepAngle" Value="-90"/>
     <Setter Property="StartAngle" Value="{Binding ValueAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
   </Style>
   
@@ -41,15 +41,15 @@
       <Animation Duration="0:0:1.5" IterationCount="INFINITE" FillMode="Both">
         <KeyFrame Cue="0%">
           <Setter Property="StartAngle" Value="-90"/>
-          <Setter Property="EndAngle" Value="-90"/>
+          <Setter Property="SweepAngle" Value="-90"/>
         </KeyFrame>
         <KeyFrame Cue="50%">
           <Setter Property="StartAngle" Value="90"/>
-          <Setter Property="EndAngle" Value="-90"/>
+          <Setter Property="SweepAngle" Value="-90"/>
         </KeyFrame>
         <KeyFrame Cue="100%">
           <Setter Property="StartAngle" Value="90"/>
-          <Setter Property="EndAngle" Value="90"/>
+          <Setter Property="SweepAngle" Value="90"/>
         </KeyFrame>
       </Animation>
     </Style.Animations>
@@ -59,15 +59,15 @@
       <Animation Duration="0:0:1.5" IterationCount="INFINITE" FillMode="Both">
         <KeyFrame Cue="0%">
           <Setter Property="StartAngle" Value="90"/>
-          <Setter Property="EndAngle" Value="90"/>
+          <Setter Property="SweepAngle" Value="90"/>
         </KeyFrame>
         <KeyFrame Cue="50%">
           <Setter Property="StartAngle" Value="270"/>
-          <Setter Property="EndAngle" Value="90"/>
+          <Setter Property="SweepAngle" Value="90"/>
         </KeyFrame>
         <KeyFrame Cue="100%">
           <Setter Property="StartAngle" Value="270"/>
-          <Setter Property="EndAngle" Value="270"/>
+          <Setter Property="SweepAngle" Value="270"/>
         </KeyFrame>
       </Animation>
     </Style.Animations>

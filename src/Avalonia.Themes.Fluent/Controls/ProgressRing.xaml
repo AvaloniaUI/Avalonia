@@ -20,7 +20,7 @@
 
 
   <Style Selector="ProgressRing:not(:indeterminate) /template/ Arc#Fill">
-    <Setter Property="EndAngle" Value="-90"/>
+    <Setter Property="SweepAngle" Value="-90"/>
     <Setter Property="StartAngle" Value="{Binding ValueAngle, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
   </Style>
   
@@ -39,15 +39,15 @@
       <Animation Duration="0:0:2" IterationCount="INFINITE" FillMode="Both">
         <KeyFrame Cue="0%">
           <Setter Property="StartAngle" Value="180"/>
-          <Setter Property="EndAngle" Value="0"/>
+          <Setter Property="SweepAngle" Value="0"/>
         </KeyFrame>
         <KeyFrame Cue="50%">
           <Setter Property="StartAngle" Value="630"/>
-          <Setter Property="EndAngle" Value="630"/>
+          <Setter Property="SweepAngle" Value="630"/>
         </KeyFrame>
         <KeyFrame Cue="100%">
           <Setter Property="StartAngle" Value="1260"/>
-          <Setter Property="EndAngle" Value="1080"/>
+          <Setter Property="SweepAngle" Value="1080"/>
         </KeyFrame>
       </Animation>
     </Style.Animations>
