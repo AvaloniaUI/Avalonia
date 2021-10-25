@@ -15,6 +15,7 @@
     <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource RepeatButtonBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />    
@@ -28,6 +29,7 @@
                           Background="{TemplateBinding Background}"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
                           Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Padding="{TemplateBinding Padding}"

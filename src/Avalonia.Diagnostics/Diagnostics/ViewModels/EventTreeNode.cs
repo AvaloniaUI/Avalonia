@@ -11,16 +11,13 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         private readonly EventsPageViewModel _parentViewModel;
         private bool _isRegistered;
-        private FiredEvent _currentEvent;
+        private FiredEvent? _currentEvent;
 
         public EventTreeNode(EventOwnerTreeNode parent, RoutedEvent @event, EventsPageViewModel vm)
             : base(parent, @event.Name)
         {
-            Contract.Requires<ArgumentNullException>(@event != null);
-            Contract.Requires<ArgumentNullException>(vm != null);
-
-            Event = @event;
-            _parentViewModel = vm;
+            Event = @event ?? throw new ArgumentNullException(nameof(@event));
+            _parentViewModel = vm ?? throw new ArgumentNullException(nameof(vm));
         }
 
         public RoutedEvent Event { get; }
@@ -58,22 +55,24 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 // FIXME: This leaks event handlers.
                 Event.AddClassHandler(typeof(object), HandleEvent, allRoutes, handledEventsToo: true);
+                Event.RouteFinished.Subscribe(HandleRouteFinished);
+                
                 _isRegistered = true;
             }
         }
 
-        private void HandleEvent(object sender, RoutedEventArgs e)
+        private void HandleEvent(object? sender, RoutedEventArgs e)
         {
             if (!_isRegistered || IsEnabled == false)
                 return;
             if (sender is IVisual v && BelongsToDevTool(v))
                 return;
 
-            var s = sender;
+            var s = sender!;
             var handled = e.Handled;
             var route = e.Route;
 
-            Action handler = delegate
+            void handler()
             {
                 if (_currentEvent == null || !_currentEvent.IsPartOfSameEventChain(e))
                 {
@@ -95,17 +94,43 @@ namespace Avalonia.Diagnostics.ViewModels
             else
                 handler();
         }
+        
+        private void HandleRouteFinished(RoutedEventArgs e)
+        {
+            if (!_isRegistered || IsEnabled == false)
+                return;
+            if (e.Source is IVisual v && BelongsToDevTool(v))
+                return;
+
+            var s = e.Source;
+            var handled = e.Handled;
+            var route = e.Route;
+
+            void handler()
+            {
+                if (_currentEvent != null && handled)
+                {
+                    var linkIndex = _currentEvent.EventChain.Count - 1;
+                    var link = _currentEvent.EventChain[linkIndex];
+
+                    link.Handled = true;
+                    _currentEvent.HandledBy = link;
+                }
+            }
+        }
 
         private static bool BelongsToDevTool(IVisual v)
         {
-            while (v != null)
+            var current = v;
+
+            while (current != null)
             {
-                if (v is MainView || v is MainWindow)
+                if (current is MainView || current is MainWindow)
                 {
                     return true;
                 }
 
-                v = v.VisualParent;
+                current = current.VisualParent;
             }
 
             return false;

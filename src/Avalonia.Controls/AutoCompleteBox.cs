@@ -2005,7 +2005,7 @@ namespace Avalonia.Controls
             // The TextBox.TextChanged event was not firing immediately and
             // was causing an immediate update, even with wrapping. If there is
             // a selection currently, no update should happen.
-            if (IsTextCompletionEnabled && TextBox != null && TextBoxSelectionLength > 0 && TextBoxSelectionStart != TextBox.Text.Length)
+            if (IsTextCompletionEnabled && TextBox != null && TextBoxSelectionLength > 0 && TextBoxSelectionStart != (TextBox.Text?.Length ?? 0))
             {
                 return;
             }
@@ -2094,7 +2094,21 @@ namespace Avalonia.Controls
                 bool inResults = !(stringFiltering || objectFiltering);
                 if (!inResults)
                 {
-                    inResults = stringFiltering ? TextFilter(text, FormatValue(item)) : ItemFilter(text, item);
+                    if (stringFiltering)
+                    {
+                        inResults = TextFilter(text, FormatValue(item));
+                    }
+                    else
+                    {
+                        if (ItemFilter is null)
+                        {
+                            throw new Exception("ItemFilter property can not be null when FilterMode has value AutoCompleteFilterMode.Custom");
+                        }
+                        else
+                        {
+                            inResults = ItemFilter(text, item);
+                        }
+                    }
                 }
 
                 if (view_count > view_index && inResults && _view[view_index] == item)
@@ -2303,7 +2317,7 @@ namespace Avalonia.Controls
             {
                 if (IsTextCompletionEnabled && TextBox != null && userInitiated)
                 {
-                    int currentLength = TextBox.Text.Length;
+                    int currentLength = TextBox.Text?.Length ?? 0;
                     int selectionStart = TextBoxSelectionStart;
                     if (selectionStart == text.Length && selectionStart > _textSelectionStart)
                     {

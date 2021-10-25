@@ -21,6 +21,8 @@ namespace Avalonia.iOS
         public IWindowImpl CreateWindow() => throw new NotSupportedException();
 
         public IWindowImpl CreateEmbeddableWindow() => throw new NotSupportedException();
+
+        public ITrayIconImpl CreateTrayIcon() => null;
     }
     
     class PlatformIconLoaderStub : IPlatformIconLoader

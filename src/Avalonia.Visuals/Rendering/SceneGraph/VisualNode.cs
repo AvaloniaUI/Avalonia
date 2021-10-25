@@ -358,6 +358,11 @@ namespace Avalonia.Rendering.SceneGraph
 
         internal void TryPreallocateChildren(int count)
         {
+            if (count == 0)
+            {
+                return;
+            }
+
             EnsureChildrenCreated(count);
         }
 

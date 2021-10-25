@@ -70,6 +70,7 @@
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
                   MinHeight="{TemplateBinding MinHeight}"
                   TemplatedControl.IsTemplateFocusTarget="True">
             <Grid Name="PART_Header"

@@ -53,6 +53,7 @@ namespace Avalonia.Win32
         private double _extendTitleBarHint = -1;
         private bool _isUsingComposition;
         private IBlurHost _blurHost;
+        private PlatformResizeReason _resizeReason;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -160,7 +161,7 @@ namespace Avalonia.Win32
 
         public Action<Rect> Paint { get; set; }
 
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
 
         public Action<double> ScalingChanged { get; set; }
 
@@ -213,6 +214,21 @@ namespace Avalonia.Win32
             }
         }
 
+        public Size? FrameSize
+        {
+            get
+            {
+                if (DwmIsCompositionEnabled(out var compositionEnabled) != 0 || !compositionEnabled)
+                {
+                    GetWindowRect(_hwnd, out var rcWindow);
+                    return new Size(rcWindow.Width, rcWindow.Height) / RenderScaling;
+                }
+
+                DwmGetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_EXTENDED_FRAME_BOUNDS, out var rect, Marshal.SizeOf(typeof(RECT)));
+                return new Size(rect.Width, rect.Height) / RenderScaling;
+            }
+        }
+
         public IScreenImpl Screen { get; }
 
         public IPlatformHandle Handle { get; private set; }
@@ -247,10 +263,8 @@ namespace Avalonia.Win32
                 {
                     ShowWindow(value, true);
                 }
-                else
-                {
-                    _showWindowState = value;
-                }
+
+                _showWindowState = value;                
             }
         }
 
@@ -359,7 +373,13 @@ namespace Avalonia.Win32
         {
             if (_isUsingComposition)
             {
-                _blurHost?.SetBlur(transparencyLevel >= WindowTransparencyLevel.Blur);
+                _blurHost?.SetBlur(transparencyLevel switch
+                {
+                    WindowTransparencyLevel.Mica => BlurEffect.Mica,
+                    WindowTransparencyLevel.AcrylicBlur => BlurEffect.Acrylic,
+                    WindowTransparencyLevel.Blur => BlurEffect.Acrylic,
+                    _ => BlurEffect.None
+                });
 
                 return transparencyLevel;
             }
@@ -435,7 +455,7 @@ namespace Avalonia.Win32
                     value.Y,
                     0,
                     0,
-                    SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
+                    SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
             }
         }
 
@@ -467,7 +487,7 @@ namespace Avalonia.Win32
                 : new ImmediateRenderer(root);
         }
 
-        public void Resize(Size value)
+        public void Resize(Size value, PlatformResizeReason reason)
         {
             int requestedClientWidth = (int)(value.Width * RenderScaling);
             int requestedClientHeight = (int)(value.Height * RenderScaling);
@@ -479,6 +499,7 @@ namespace Avalonia.Win32
             {
                 GetWindowRect(_hwnd, out var windowRect);
 
+                using var scope = SetResizeReason(reason);
                 SetWindowPos(
                     _hwnd,
                     IntPtr.Zero,
@@ -492,7 +513,7 @@ namespace Avalonia.Win32
 
         public void Activate()
         {
-            SetActiveWindow(_hwnd);
+            SetForegroundWindow(_hwnd);
         }
 
         public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
@@ -570,7 +591,7 @@ namespace Avalonia.Win32
             _shown = false;
         }
 
-        public virtual void Show(bool activate)
+        public virtual void Show(bool activate, bool isDialog)
         {
             SetParent(_parent);
             ShowWindow(_showWindowState, activate);
@@ -747,8 +768,8 @@ namespace Avalonia.Win32
                 RegisterTouchWindow(_hwnd, 0);
             }
 
-            if (ShCoreAvailable)
-            {
+            if (ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
+			{
                 var monitor = MonitorFromWindow(
                     _hwnd,
                     MONITOR.MONITOR_DEFAULTTONEAREST);
@@ -915,7 +936,7 @@ namespace Avalonia.Win32
                 _offScreenMargin = new Thickness();
                 _extendedMargins = new Thickness();
                 
-                Resize(new Size(rcWindow.Width/ RenderScaling, rcWindow.Height / RenderScaling));
+                Resize(new Size(rcWindow.Width/ RenderScaling, rcWindow.Height / RenderScaling), PlatformResizeReason.Layout);
             }
 
             if(!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
@@ -985,6 +1006,7 @@ namespace Avalonia.Win32
             if (!Design.IsDesignMode && activate)
             {
                 SetFocus(_hwnd);
+                SetForegroundWindow(_hwnd);
             }
         }
         
@@ -1120,7 +1142,7 @@ namespace Avalonia.Win32
                         SetParent(null);
 
                         if (shown)
-                            Show(activated);
+                            Show(activated, false);
                     }
                 }
                 else
@@ -1296,6 +1318,13 @@ namespace Avalonia.Win32
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0);
 
+        private ResizeReasonScope SetResizeReason(PlatformResizeReason reason)
+        {
+            var old = _resizeReason;
+            _resizeReason = reason;
+            return new ResizeReasonScope(this, old);
+        }
+
         private struct SavedWindowInfo
         {
             public WindowStyles Style { get; set; }
@@ -1309,6 +1338,20 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public SystemDecorations Decorations;
             public bool IsFullScreen;
+        }
+
+        private struct ResizeReasonScope : IDisposable
+        {
+            private readonly WindowImpl _owner;
+            private readonly PlatformResizeReason _restore;
+            
+            public ResizeReasonScope(WindowImpl owner, PlatformResizeReason restore)
+            {
+                _owner = owner;
+                _restore = restore;
+            }
+
+            public void Dispose() => _owner._resizeReason = _restore;
         }
     }
 }

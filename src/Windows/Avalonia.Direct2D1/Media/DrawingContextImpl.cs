@@ -543,7 +543,8 @@ namespace Avalonia.Direct2D1.Media
                 ContentBounds = PrimitiveExtensions.RectangleInfinite,
                 MaskTransform = PrimitiveExtensions.Matrix3x2Identity,
                 Opacity = 1,
-                GeometricMask = ((GeometryImpl)clip).Geometry
+                GeometricMask = ((GeometryImpl)clip).Geometry,
+                MaskAntialiasMode = AntialiasMode.PerPrimitive
             };
             var layer = _layerPool.Count != 0 ? _layerPool.Pop() : new Layer(_deviceContext);
             _deviceContext.PushLayer(ref parameters, layer);
