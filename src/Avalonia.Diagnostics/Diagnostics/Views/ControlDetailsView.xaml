@@ -13,23 +13,30 @@
 
   <Grid ColumnDefinitions="*,Auto,320">
 
-    <Grid Grid.Column="0" RowDefinitions="Auto,*">
+    <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
 
-      <controls:FilterTextBox Grid.Row="0"
+      <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto">
+        <Button Grid.Column="0" Grid.RowSpan="2" Content="^" Command="{Binding ApplyParentProperty}" />
+        <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding SelectedEntityName}" FontWeight="Bold" />
+        <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding SelectedEntityType}" FontStyle="Italic" />
+      </Grid>
+      
+      <controls:FilterTextBox Grid.Row="1"
                               BorderThickness="0"
                               DataContext="{Binding TreePage.PropertiesFilter}"
                               Text="{Binding FilterString}"
                               Watermark="Filter properties"
                               UseCaseSensitiveFilter="{Binding UseCaseSensitiveFilter}"
                               UseWholeWordFilter="{Binding UseWholeWordFilter}"
-                              UseRegexFilter="{Binding UseRegexFilter}" />
+                              UseRegexFilter="{Binding UseRegexFilter}"/>
       
       <DataGrid Items="{Binding PropertiesView}"
-                Grid.Row="1"
+                Grid.Row="2"
                 BorderThickness="0"
                 RowBackground="Transparent"
                 SelectedItem="{Binding SelectedProperty, Mode=TwoWay}"
-                CanUserResizeColumns="true">
+                CanUserResizeColumns="true"
+                DoubleTapped="PropertiesGrid_OnDoubleTapped">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
