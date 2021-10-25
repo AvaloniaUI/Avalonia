@@ -24,7 +24,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _showInactiveStyles;
         private string? _styleStatus;
         private object _selectedEntity;
-        private readonly Stack<Tuple<string, object>> _selectedEntitiesStack = new();
+        private readonly Stack<Tuple<string, object>> _selectedEntitiesStack = new Stack<Tuple<string, object>>();
         private string _selectedEntityName;
         private string _selectedEntityType;
 
