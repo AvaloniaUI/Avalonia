@@ -6,7 +6,7 @@ SDK_DIR=$SCRIPT_DIR/sdk
 DOTNET_INSTALL_FILE="$SDK_DIR/dotnet-install.sh"
 DOTNET_INSTALL_URL="https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh"
 
-DOTNET_VERSION=5.0.302
+DOTNET_VERSION=5.0.402
 
 mkdir -p "$SDK_DIR"
 
@@ -15,7 +15,7 @@ if [ ! -f "$DOTNET_INSTALL_FILE" ]; then
 	chmod +x "$DOTNET_INSTALL_FILE"
 fi
 
-"$DOTNET_INSTALL_FILE" --install-dir "$SDK_DIR" --version 5.0.302
+"$DOTNET_INSTALL_FILE" --install-dir "$SDK_DIR" --version 5.0.402
 "$DOTNET_INSTALL_FILE" --install-dir "$SDK_DIR" --version 3.1.20 --runtime dotnet
 "$DOTNET_INSTALL_FILE" --install-dir "$SDK_DIR" --version 3.1.20 --runtime aspnetcore
 
