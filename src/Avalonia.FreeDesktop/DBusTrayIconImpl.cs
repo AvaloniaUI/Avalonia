@@ -86,8 +86,8 @@ namespace Avalonia.FreeDesktop
             _serviceConnected = true;
         }
         
-        private async Task<IDisposable> Watch() =>
-            await _connection?.ResolveServiceOwnerAsync("org.kde.StatusNotifierWatcher", OnNameChange)!;
+        private Task<IDisposable> Watch() => 
+            _connection?.ResolveServiceOwnerAsync("org.kde.StatusNotifierWatcher", OnNameChange)!;
         
         private void OnNameChange(ServiceOwnerChangedEventArgs obj)
         {
@@ -306,9 +306,9 @@ namespace Avalonia.FreeDesktop
             return Task.FromResult(Disposable.Create(() => NewStatusAsync -= handler));
         }
 
-        public async Task<object?> GetAsync(string prop)
+        public Task<object?> GetAsync(string prop)
         {
-            return prop switch
+            return Task.FromResult<object?>(prop switch
             {
                 nameof(_backingProperties.Category) => _backingProperties.Category,
                 nameof(_backingProperties.Id) => _backingProperties.Id,
@@ -318,7 +318,7 @@ namespace Avalonia.FreeDesktop
                 nameof(_backingProperties.Title) => _backingProperties.Title,
                 nameof(_backingProperties.ToolTip) => _backingProperties.ToolTip,
                 _ => null
-            };
+            });
         }
 
         public Task<StatusNotifierItemProperties> GetAllAsync() => Task.FromResult(_backingProperties);
