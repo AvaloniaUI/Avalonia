@@ -163,9 +163,15 @@ namespace Avalonia.FreeDesktop
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            if (icon is null || _isDisposed || IconConverterDelegate is null)
+            if (_isDisposed || IconConverterDelegate is null)
                 return;
 
+            if (icon is null)
+            {
+                _statusNotifierItemDbusObj?.SetIcon(DbusPixmap.EmptyPixmap);
+                return;
+            } 
+            
             var x11iconData = IconConverterDelegate(icon);
             
             if(x11iconData.Length == 0) return;
@@ -434,5 +440,7 @@ namespace Avalonia.FreeDesktop
             Height = height;
             Data = data;
         }
+
+        public static DbusPixmap EmptyPixmap = new DbusPixmap(1, 1, new byte[] { 255, 0, 0, 0 });
     }
 }
