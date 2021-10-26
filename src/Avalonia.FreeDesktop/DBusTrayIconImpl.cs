@@ -43,7 +43,7 @@ namespace Avalonia.FreeDesktop
         public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
         public Action? OnClicked { get; set; }
-        public Func<IWindowIconImpl?, uint[]> IconConverterDelegate { get; set; }
+        public Func<IWindowIconImpl?, uint[]>? IconConverterDelegate { get; set; }
 
         public DBusTrayIconImpl()
         {
