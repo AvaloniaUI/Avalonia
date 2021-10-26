@@ -60,6 +60,9 @@ See the [build instructions here](Documentation/build.md).
 
 ## Contributing
 
+This project exists thanks to all the people who contribute.
+<a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
+
 Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a pull request.
 
 ## Code of Conduct
@@ -70,11 +73,6 @@ For more information see the [.NET Foundation Code of Conduct](https://dotnetfou
 ## Licence
 
 Avalonia is licenced under the [MIT licence](licence.md).
-
-## Contributors
-
-This project exists thanks to all the people who contribute. [[Contribute](https://avaloniaui.net/contributing)].
-<a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
 
 ### Backers
 
