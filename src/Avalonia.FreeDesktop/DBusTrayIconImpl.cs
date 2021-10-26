@@ -163,7 +163,7 @@ namespace Avalonia.FreeDesktop
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            if (_isDisposed || IconConverterDelegate is null)
+            if (icon is null || _isDisposed || IconConverterDelegate is null)
                 return;
 
             var x11iconData = IconConverterDelegate(icon);
