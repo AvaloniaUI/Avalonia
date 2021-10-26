@@ -194,14 +194,15 @@ namespace Avalonia.FreeDesktop
             if (_isDisposed)
                 return;
 
-            if (visible && !_isVisible)
+            switch (visible)
             {
-                DestroyTrayIcon();
-                CreateTrayIcon();
-            }
-            else if (!visible && _isVisible)
-            {
-                DestroyTrayIcon();
+                case true when !_isVisible:
+                    DestroyTrayIcon();
+                    CreateTrayIcon();
+                    break;
+                case false when _isVisible:
+                    DestroyTrayIcon();
+                    break;
             }
 
             _isVisible = visible;
