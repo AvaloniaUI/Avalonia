@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -106,7 +107,19 @@ namespace Avalonia.X11
 
         public ITrayIconImpl CreateTrayIcon ()
         {
-            return new X11TrayIconImpl();
+            var dbusTrayIcon = new DBusTrayIconImpl();
+
+            if (!dbusTrayIcon.IsActive) return new XEmbedTrayIconImpl();
+            
+            dbusTrayIcon.IconConverterDelegate = (icon) =>
+            {
+                if (!(icon is X11IconData x11icon))
+                    return Array.Empty<uint>();
+
+                return x11icon.Data.Select(x=>x.ToUInt32()).ToArray();
+            };
+            
+            return dbusTrayIcon;
         }
 
         public IWindowImpl CreateWindow()

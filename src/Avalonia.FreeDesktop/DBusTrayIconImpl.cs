@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
+using Avalonia.Platform;
 using Tmds.DBus;
 
 [assembly: InternalsVisibleTo(Connection.DynamicAssemblyName)]
@@ -19,7 +20,7 @@ using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop
 {
-    internal class DBusTrayIconImpl
+    internal class DBusTrayIconImpl : ITrayIconImpl
     {
         private static int s_trayIconInstanceId;
         
@@ -40,7 +41,8 @@ namespace Avalonia.FreeDesktop
         public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
         public Action? OnClicked { get; set; }
-        
+        public Func<IWindowIconImpl, uint[]> IconConverterDelegate { get; set; } 
+
         public DBusTrayIconImpl()
         {
             _connection = DBusHelper.TryCreateNewConnection();
@@ -158,10 +160,15 @@ namespace Avalonia.FreeDesktop
             _serviceWatchDisposable?.Dispose();
         }
 
-        public void SetIcon(UIntPtr[] x11iconData)
+        public void SetIcon(IWindowIconImpl icon)
         {
             if (_isDisposed)
                 return;
+
+            var x11iconData = IconConverterDelegate(icon);
+            
+            if(x11iconData.Length == 0) return;
+            
             var w = (int)x11iconData[0];
             var h = (int)x11iconData[1];
 
@@ -171,7 +178,7 @@ namespace Avalonia.FreeDesktop
 
             for (var i = 0; i < pixLength; i++)
             {
-                var rawPixel = x11iconData[i + 2].ToUInt32();
+                var rawPixel = x11iconData[i + 2];
                 pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF000000) >> 24);
                 pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF0000) >> 16);
                 pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF00) >> 8);
@@ -360,7 +367,7 @@ namespace Avalonia.FreeDesktop
         Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError);
         Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError);
         Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError);
-        Task<object> GetAsync(string prop);
+        Task<object?> GetAsync(string prop);
         Task<StatusNotifierItemProperties> GetAllAsync();
         Task SetAsync(string prop, object val);
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
