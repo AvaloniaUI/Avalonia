@@ -26,7 +26,7 @@ namespace Avalonia.FreeDesktop
         
         private readonly ObjectPath _dbusMenuPath;
         private readonly Connection? _connection;
-        private readonly IDisposable _serviceWatchDisposable;
+        private readonly IDisposable? _serviceWatchDisposable;
 
         private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private IStatusNotifierWatcher? _statusNotifierWatcher;
@@ -41,7 +41,7 @@ namespace Avalonia.FreeDesktop
         public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
         public Action? OnClicked { get; set; }
-        public Func<IWindowIconImpl, uint[]> IconConverterDelegate { get; set; } 
+        public Func<IWindowIconImpl, uint[]>? IconConverterDelegate { get; set; } 
 
         public DBusTrayIconImpl()
         {
@@ -62,14 +62,6 @@ namespace Avalonia.FreeDesktop
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
             
             _serviceWatchDisposable = Watch();
-
-            IconConverterDelegate = impl =>
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
-                    ?.Log(this, "The icon converter delegate for the DBus Tray Icons was not set properly.");
-
-                return new uint[] { };
-            };
         }
 
         private void InitializeSNWService()
