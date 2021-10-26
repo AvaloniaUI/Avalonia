@@ -161,9 +161,9 @@ namespace Avalonia.FreeDesktop
             _serviceWatchDisposable?.Dispose();
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
-            if (_isDisposed)
+            if (_isDisposed || IconConverterDelegate is null)
                 return;
 
             var x11iconData = IconConverterDelegate(icon);
