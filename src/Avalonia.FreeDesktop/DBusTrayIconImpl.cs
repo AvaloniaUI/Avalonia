@@ -61,7 +61,7 @@ namespace Avalonia.FreeDesktop
             
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
             
-            _serviceWatchDisposable = Watch();
+            _serviceWatchDisposable = WatchAsync();
         }
 
         private void InitializeSNWService()
@@ -86,7 +86,7 @@ namespace Avalonia.FreeDesktop
             _serviceConnected = true;
         }
         
-        private Task<IDisposable> Watch() => 
+        private Task<IDisposable> WatchAsync() => 
             _connection?.ResolveServiceOwnerAsync("org.kde.StatusNotifierWatcher", OnNameChange)!;
         
         private void OnNameChange(ServiceOwnerChangedEventArgs obj)
