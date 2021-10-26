@@ -62,8 +62,14 @@ namespace Avalonia.FreeDesktop
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
             
             _serviceWatchDisposable = Watch();
-            
-            
+
+            IconConverterDelegate = impl =>
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
+                    ?.Log(this, "The icon converter delegate for the DBus Tray Icons was not set properly.");
+
+                return new uint[] { };
+            };
         }
 
         private void InitializeSNWService()
