@@ -7,10 +7,6 @@ namespace Avalonia.X11
 {
     internal class XEmbedTrayIconImpl : ITrayIconImpl
     {
-        public XEmbedTrayIconImpl()
-        {
-            MenuExporter = null;
-        }
 
         private bool _isCalled;
 
