@@ -96,9 +96,9 @@ jobs:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.408'
+    displayName: 'Use .NET Core SDK 5.0.402'
     inputs:
-      version: 5.0.408
+      version: 5.0.402
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
