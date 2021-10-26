@@ -52,7 +52,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -124,6 +123,8 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
+            
+            [Window setContentView: StandardContainer];
             
             [Window setTitle:_lastTitle];
             
@@ -323,6 +324,7 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
+                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             }
             @finally
