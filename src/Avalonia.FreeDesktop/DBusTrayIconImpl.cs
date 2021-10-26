@@ -49,7 +49,7 @@ namespace Avalonia.FreeDesktop
 
             if (_connection is null)
             {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
                     ?.Log(this, "Unable to get a dbus connection for system tray icons.");
 
                 return;
@@ -76,9 +76,9 @@ namespace Avalonia.FreeDesktop
             }
             catch
             {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
                     ?.Log(this,
-                        "DBUS: org.kde.StatusNotifierWatcher service is not available on this system. System Tray Icons will not work without it.");
+                        "org.kde.StatusNotifierWatcher service is not available on this system. Tray Icons will not work without it.");
 
                 return;
             }
@@ -131,6 +131,9 @@ namespace Avalonia.FreeDesktop
             }
             catch (Exception e)
             {
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
+                    ?.Log(this, $"Error creating a DBus tray icon: {e}.");
+                
                 _serviceConnected = false;
             }
 
