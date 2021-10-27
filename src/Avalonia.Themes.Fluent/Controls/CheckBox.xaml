@@ -44,6 +44,7 @@
                          ContentTemplate="{TemplateBinding ContentTemplate}"
                          Content="{TemplateBinding Content}"
                          Margin="{TemplateBinding Padding}"
+                         RecognizesAccessKey="True"
                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                          Grid.Column="1" />

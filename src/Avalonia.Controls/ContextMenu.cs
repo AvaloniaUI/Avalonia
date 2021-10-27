@@ -329,16 +329,8 @@ namespace Avalonia.Controls
             {
                 _popup = new Popup
                 {
-                    HorizontalOffset = HorizontalOffset,
-                    VerticalOffset = VerticalOffset,
-                    PlacementAnchor = PlacementAnchor,
-                    PlacementConstraintAdjustment = PlacementConstraintAdjustment,
-                    PlacementGravity = PlacementGravity,
-                    PlacementMode = PlacementMode,
-                    PlacementRect = PlacementRect,
                     IsLightDismissEnabled = true,
                     OverlayDismissEventPassThrough = true,
-                    WindowManagerAddShadowHint = WindowManagerAddShadowHint,
                 };
 
                 _popup.Opened += PopupOpened;
@@ -358,6 +350,13 @@ namespace Avalonia.Controls
                 : PlacementMode;
 
             _popup.PlacementTarget = placementTarget;
+            _popup.HorizontalOffset = HorizontalOffset;
+            _popup.VerticalOffset = VerticalOffset;
+            _popup.PlacementAnchor = PlacementAnchor;
+            _popup.PlacementConstraintAdjustment = PlacementConstraintAdjustment;
+            _popup.PlacementGravity = PlacementGravity;
+            _popup.PlacementRect = PlacementRect;
+            _popup.WindowManagerAddShadowHint = WindowManagerAddShadowHint;
             _popup.Child = this;
             IsOpen = true;
             _popup.IsOpen = true;

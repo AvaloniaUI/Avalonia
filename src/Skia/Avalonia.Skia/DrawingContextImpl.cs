@@ -591,7 +591,7 @@ namespace Avalonia.Skia
         /// Configure paint wrapper for using gradient brush.
         /// </summary>
         /// <param name="paintWrapper">Paint wrapper.</param>
-        /// <param name="targetRect">Target bound rect.</param>
+        /// <param name="targetSize">Target size.</param>
         /// <param name="gradientBrush">Gradient brush.</param>
         private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
         {

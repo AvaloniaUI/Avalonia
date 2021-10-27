@@ -23,9 +23,9 @@ namespace Avalonia.X11
         private static readonly Dictionary<StandardCursorType, CursorFontShape> s_mapping =
             new Dictionary<StandardCursorType, CursorFontShape>
             {
-                {StandardCursorType.Arrow, CursorFontShape.XC_top_left_arrow},
+                {StandardCursorType.Arrow, CursorFontShape.XC_left_ptr},
                 {StandardCursorType.Cross, CursorFontShape.XC_cross},
-                {StandardCursorType.Hand, CursorFontShape.XC_hand1},
+                {StandardCursorType.Hand, CursorFontShape.XC_hand2},
                 {StandardCursorType.Help, CursorFontShape.XC_question_arrow},
                 {StandardCursorType.Ibeam, CursorFontShape.XC_xterm},
                 {StandardCursorType.No, CursorFontShape.XC_X_cursor},
@@ -67,7 +67,7 @@ namespace Avalonia.X11
             {
                 handle = s_mapping.TryGetValue(cursorType, out var shape)
                 ? _cursors[shape]
-                : _cursors[CursorFontShape.XC_top_left_arrow];
+                : _cursors[CursorFontShape.XC_left_ptr];
             }
             return new CursorImpl(handle);
         }
