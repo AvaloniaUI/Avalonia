@@ -3,11 +3,15 @@ jobs:
   pool:
     vmImage: 'ubuntu-20.04'
   steps:
-  - task: CmdLine@2
-    displayName: 'Download SDK'
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.401'
     inputs:
-      script: |
-         ./get-sdk.sh
+      version: 3.1.401
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 5.0.402'
+    inputs:
+      version: 5.0.402
   - task: CmdLine@2
     displayName: 'Run Build'
     inputs:
@@ -28,11 +32,15 @@ jobs:
   pool:
     vmImage: 'macOS-10.15'
   steps:
-  - task: CmdLine@2
-    displayName: 'Download SDK'
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.1.401'
     inputs:
-      script: |
-         ./get-sdk.sh
+      version: 3.1.401
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 5.0.402'
+    inputs:
+      version: 5.0.402
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
     inputs:
