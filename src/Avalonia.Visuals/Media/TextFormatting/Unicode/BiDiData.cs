@@ -175,6 +175,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public Slice<sbyte> GetTempLevelBuffer(int length)
         {
             _tempLevelBuffer.Clear();
+            
             return _tempLevelBuffer.Add(length, false);
         }
     }

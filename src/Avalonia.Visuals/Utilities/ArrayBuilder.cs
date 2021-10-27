@@ -37,6 +37,8 @@ namespace Avalonia.Utilities
             _size = capacity;
         }
 
+        public T[] Data => _data;
+
         /// <summary>
         /// Gets or sets the number of items in the array.
         /// </summary>
@@ -110,6 +112,7 @@ namespace Avalonia.Utilities
             Length += length;
 
             var slice = AsSlice(position, Length - position);
+            
             if (clear)
             {
                 slice.Span.Clear();
