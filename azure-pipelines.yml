@@ -12,20 +12,22 @@ jobs:
     displayName: 'Use .NET Core SDK 5.0.402'
     inputs:
       version: 5.0.402
+
   - task: CmdLine@2
     displayName: 'Run Build'
     inputs:
       script: |
-        export PATH="`pwd`/sdk:$PATH"
         dotnet --info
         printenv
         ./build.sh --target CiAzureLinux --configuration=Release
+
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'VSTest'
       testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
     condition: not(canceled())
      
+
 - job: macOS
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
@@ -41,6 +43,7 @@ jobs:
     displayName: 'Use .NET Core SDK 5.0.402'
     inputs:
       version: 5.0.402
+      
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
     inputs:
@@ -73,8 +76,6 @@ jobs:
         export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
         export DOTNET_CLI_TELEMETRY_OPTOUT=1
         which dotnet
-        dotnet --info
-        export PATH="`pwd`/sdk:$PATH"
         dotnet --info
         printenv
         ./build.sh --target CiAzureOSX --configuration Release --skip-previewer
