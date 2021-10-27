@@ -84,46 +84,31 @@ namespace Avalonia.Utilities
 
             return new ReadOnlySlice<T>(Buffer.Slice(bufferOffset), start, length);
         }
+        
+        /// <summary>
+        /// Copies the contents of this slice into destination span. If the source
+        /// and destinations overlap, this method behaves as if the original values in
+        /// a temporary location before the destination is overwritten.
+        /// </summary>
+        /// <param name="destination">The slice to copy items into.</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown when the destination slice is shorter than the source Span.
+        /// </exception>
+        public void CopyTo(Span<T> destination) => Buffer.Span.CopyTo(destination);
 
         /// <summary>
         ///     Returns a specified number of contiguous elements from the start of the slice.
         /// </summary>
         /// <param name="length">The number of elements to return.</param>
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the specified number of elements from the start of this slice.</returns>
-        public ReadOnlySlice<T> Take(int length)
-        {
-            if (IsEmpty)
-            {
-                return this;
-            }
-
-            if (length > Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length));
-            }
-
-            return new ReadOnlySlice<T>(Buffer.Slice(0, length), Start, length);
-        }
+        public ReadOnlySlice<T> Take(int length) => AsSlice(0, length);
 
         /// <summary>
         ///     Bypasses a specified number of elements in the slice and then returns the remaining elements.
         /// </summary>
         /// <param name="length">The number of elements to skip before returning the remaining elements.</param>
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the elements that occur after the specified index in this slice.</returns>
-        public ReadOnlySlice<T> Skip(int length)
-        {
-            if (IsEmpty)
-            {
-                return this;
-            }
-
-            if (length > Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length));
-            }
-
-            return new ReadOnlySlice<T>(Buffer.Slice(length), Start + length, Length - length);
-        }
+        public ReadOnlySlice<T> Skip(int length) => AsSlice(Start + length, Length - length);
 
         /// <summary>
         /// Returns an enumerator for the slice.
