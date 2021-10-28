@@ -166,7 +166,7 @@ namespace Avalonia.Input
         {
             scope = scope ?? throw new ArgumentNullException(nameof(scope));
             
-            if (_focusScopes.TryGetValue(scope, out var e))
+            if (_focusScopes.TryGetValue(scope, out _))
             {
                 SetFocusedElement(scope, null);
                 _focusScopes.Remove(scope);
