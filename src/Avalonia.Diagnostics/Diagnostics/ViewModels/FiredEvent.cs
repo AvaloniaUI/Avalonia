@@ -64,7 +64,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (EventChain.Count > 0)
             {
                 var prevLink = EventChain[EventChain.Count - 1];
-                
+
                 if (prevLink.Route != link.Route)
                 {
                     link.BeginsNewRoute = true;
