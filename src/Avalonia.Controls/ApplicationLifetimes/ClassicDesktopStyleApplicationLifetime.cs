@@ -122,7 +122,10 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 lifetimeEvents.ShutdownRequested += OnShutdownRequested;
 
             _cts = new CancellationTokenSource();
-            ShowMainWindow();
+            ShowMainWindow(); // Note due to a bug in the JIT we wrap this in a method, otherwise MainWindow
+                              // gets stuffed into a local var and can not be GCed until after the program stops.
+                              // this method never exits until program end.
+                              
             Dispatcher.UIThread.MainLoop(_cts.Token);
             Environment.ExitCode = _exitCode;
             return _exitCode;
