@@ -26,8 +26,6 @@ namespace Avalonia.Automation.Peers
 
         public Control Owner { get; }
 
-        public event EventHandler? ChildrenChanged;
-
         public AutomationPeer GetOrCreate(Control element)
         {
             if (element == Owner)
@@ -110,7 +108,7 @@ namespace Avalonia.Automation.Peers
         protected void InvalidateChildren()
         {
             _childrenValid = false;
-            ChildrenChanged?.Invoke(this, EventArgs.Empty);
+            RaiseChildrenChangedEvent();
         }
 
         /// <summary>

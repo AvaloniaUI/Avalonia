@@ -167,7 +167,20 @@ namespace Avalonia.Automation.Peers
         /// <returns>The provider, or null if not implemented on this peer.</returns>
         public T? GetProvider<T>() => (T?)GetProviderCore(typeof(T));
 
+        /// <summary>
+        /// Occurs when the children of the automation peer have changed.
+        /// </summary>
+        public event EventHandler? ChildrenChanged;
+
+        /// <summary>
+        /// Occurs when a property value of the automation peer has changed.
+        /// </summary>
         public event EventHandler<AutomationPropertyChangedEventArgs>? PropertyChanged;
+
+        /// <summary>
+        /// Raises an event to notify the automation client the the children of the peer have changed.
+        /// </summary>
+        protected void RaiseChildrenChangedEvent() => ChildrenChanged?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Raises an event to notify the automation client of a changed property value.
