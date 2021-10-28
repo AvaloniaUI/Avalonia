@@ -145,7 +145,7 @@ namespace Avalonia.Input
         /// Notifies the focus manager of a change in focus scope.
         /// </summary>
         /// <param name="scope">The new focus scope.</param>
-        public void SetFocusScope(IFocusScope scope)
+        public void SetFocusScope(IFocusScope? scope)
         {
             scope = scope ?? throw new ArgumentNullException(nameof(scope));
 
@@ -160,6 +160,22 @@ namespace Avalonia.Input
 
             Scope = scope;
             Focus(e);
+        }
+
+        public void RemoveFocusScope(IFocusScope scope)
+        {
+            scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            
+            if (_focusScopes.TryGetValue(scope, out var e))
+            {
+                SetFocusedElement(scope, null);
+                _focusScopes.Remove(scope);
+            }
+
+            if (Scope == scope)
+            {
+                Scope = null;
+            }
         }
 
         public static bool GetIsFocusScope(IInputElement e) => e is IFocusScope;
