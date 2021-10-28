@@ -122,10 +122,15 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 lifetimeEvents.ShutdownRequested += OnShutdownRequested;
 
             _cts = new CancellationTokenSource();
-            MainWindow?.Show();
+            ShowMainWindow();
             Dispatcher.UIThread.MainLoop(_cts.Token);
             Environment.ExitCode = _exitCode;
             return _exitCode;
+        }
+
+        private void ShowMainWindow()
+        {
+            MainWindow?.Show();
         }
 
         public void Dispose()
