@@ -17,7 +17,6 @@
     <RepositoryType>git</RepositoryType>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)\avalonia.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <DefineConstants Condition="$(SignAssembly) == true">$(DefineConstants);SIGNED_BUILD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Label="PackageIcon">
