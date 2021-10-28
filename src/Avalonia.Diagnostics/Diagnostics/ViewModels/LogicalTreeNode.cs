@@ -13,7 +13,6 @@ namespace Avalonia.Diagnostics.ViewModels
         public LogicalTreeNode(IAvaloniaObject avaloniaObject, TreeNode? parent)
             : base(avaloniaObject, parent)
         {
-
             Children =  avaloniaObject switch
             {
                 ILogical logical => new LogicalTreeNodeCollection(this, logical),
@@ -109,7 +108,6 @@ namespace Avalonia.Diagnostics.ViewModels
                     };
                 }
             }
-
 
             public override void Dispose()
             {

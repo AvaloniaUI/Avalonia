@@ -129,7 +129,6 @@ namespace Avalonia.Diagnostics
 
         private static IDisposable Open(Application application, DevToolsOptions options)
         {
-
             if (s_open.TryGetValue(application, out var window))
             {                
                 window.Activate();

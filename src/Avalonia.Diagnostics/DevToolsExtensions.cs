@@ -41,7 +41,6 @@ namespace Avalonia
             DevTools.Attach(root, options);
         }
 
-
         /// <summary>
         /// Attaches DevTools to a Application, to be opened with the specified options.
         /// </summary>
