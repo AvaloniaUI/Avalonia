@@ -2389,7 +2389,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)sendEvent:(NSEvent *)event
 {
-    if(_parent != nullptr)
+    [super sendEvent:event];
+    
+    /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.
+    if(_parent != nullptr && dynamic_cast<WindowImpl*>(_parent.getRaw()) != nullptr)
     {
         switch(event.type)
         {
@@ -2419,8 +2422,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
                 break;
         }
     }
-    
-    [super sendEvent:event];
 }
 @end
 
