@@ -117,6 +117,11 @@ namespace Avalonia.Diagnostics.ViewModels
                     _currentEvent.HandledBy = link;
                 }
             }
+
+            if (!Dispatcher.UIThread.CheckAccess())
+                Dispatcher.UIThread.Post(handler);
+            else
+                handler();
         }
 
         private static bool BelongsToDevTool(IVisual v)
