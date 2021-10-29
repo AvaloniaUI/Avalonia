@@ -29,11 +29,6 @@ namespace Avalonia.Utilities
             {
                 throw new ArgumentOutOfRangeException(nameof (length));
             }
-            
-            if ((start + length).CompareTo(data.Length) > 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof (data));
-            }
 #endif
             
             _data = data;
@@ -73,7 +68,7 @@ namespace Avalonia.Utilities
         /// <summary>
         ///     The underlying span.
         /// </summary>
-        public ReadOnlySpan<T> Span => _data.Span.Slice(Start, Length);
+        public ReadOnlySpan<T> Span => _data.Span.Slice(0, Length);
 
         /// <summary>
         /// Returns a value to specified element of the slice.
@@ -135,7 +130,7 @@ namespace Avalonia.Utilities
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            return new ReadOnlySlice<T>(_data, Start + length, Length - length);
+            return new ReadOnlySlice<T>(_data.Slice(length), Start + length, Length - length);
         }
 
         /// <summary>
