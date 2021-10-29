@@ -3,9 +3,10 @@
 // Ported from: https://github.com/SixLabors/Fonts/
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Avalonia.Utilities
+namespace Avalonia.Media.TextFormatting.Unicode
 {
     /// <summary>
     /// A helper type for avoiding allocations while building arrays.
@@ -20,24 +21,6 @@ namespace Avalonia.Utilities
         // Starts out null, initialized on first Add.
         private T[] _data;
         private int _size;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ArrayBuilder{T}"/> struct.
-        /// </summary>
-        /// <param name="capacity">The initial capacity of the array.</param>
-        public ArrayBuilder(int capacity)
-            : this()
-        {
-            if (capacity < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof (capacity));
-            }
-
-            _data = new T[capacity];
-            _size = capacity;
-        }
-
-        public T[] Data => _data;
 
         /// <summary>
         /// Gets or sets the number of items in the array.
@@ -56,7 +39,7 @@ namespace Avalonia.Utilities
                 if (value > 0)
                 {
                     EnsureCapacity(value);
-                    
+                        
                     _size = value;
                 }
                 else
@@ -79,22 +62,15 @@ namespace Avalonia.Utilities
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
+                #if DEBUG
+                if (index.CompareTo(0) < 0 || index.CompareTo(_size) > 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof (index));
+                }
+                #endif
+                
                 return ref _data![index];
             }
-        }
-
-        /// <summary>
-        /// Adds the given item to the array.
-        /// </summary>
-        /// <param name="item">The item to add.</param>
-        public void Add(T item)
-        {
-            var position = _size;
-
-            // Expand the array.
-            Length++;
-            
-            _data![position] = item;
         }
 
         /// <summary>
@@ -103,8 +79,8 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="length">The number of items in the slice.</param>
         /// <param name="clear">Whether to clear the new slice, Defaults to <see langword="true"/>.</param>
-        /// <returns>The <see cref="Slice{T}"/>.</returns>
-        public Slice<T> Add(int length, bool clear = true)
+        /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
+        public ArraySlice<T> Add(int length, bool clear = true)
         {
             var position = _size;
 
@@ -125,8 +101,8 @@ namespace Avalonia.Utilities
         /// Appends the slice to the array copying the data across.
         /// </summary>
         /// <param name="value">The array slice.</param>
-        /// <returns>The <see cref="Slice{T}"/>.</returns>
-        public Slice<T> Add(in ReadOnlySlice<T> value)
+        /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
+        public ArraySlice<T> Add(in ReadOnlyArraySlice<T> value)
         {
             var position = _size;
 
@@ -135,7 +111,7 @@ namespace Avalonia.Utilities
 
             var slice = AsSlice(position, Length - position);
             
-            value.CopyTo(slice.Span);
+            value.CopyTo(slice);
 
             return slice;
         }
@@ -145,7 +121,7 @@ namespace Avalonia.Utilities
         /// Allocated memory is left intact for future usage.
         /// </summary>
         public void Clear()
-        {
+        { 
             // No need to actually clear since we're not allowing reference types.
             _size = 0;
         }
@@ -185,25 +161,25 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Returns the current state of the array as a slice.
         /// </summary>
-        /// <returns>The <see cref="Slice{T}"/>.</returns>
+        /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Slice<T> AsSlice() => AsSlice(Length);
+        public ArraySlice<T> AsSlice() => AsSlice(Length);
 
         /// <summary>
         /// Returns the current state of the array as a slice.
         /// </summary>
         /// <param name="length">The number of items in the slice.</param>
-        /// <returns>The <see cref="Slice{T}"/>.</returns>
+        /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Slice<T> AsSlice(int length) => new Slice<T>(_data!, 0, length);
+        public ArraySlice<T> AsSlice(int length) => new ArraySlice<T>(_data!, 0, length);
 
         /// <summary>
         /// Returns the current state of the array as a slice.
         /// </summary>
         /// <param name="start">The index at which to begin the slice.</param>
         /// <param name="length">The number of items in the slice.</param>
-        /// <returns>The <see cref="Slice{T}"/>.</returns>
+        /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Slice<T> AsSlice(int start, int length) => new Slice<T>(_data!, start, length);
+        public ArraySlice<T> AsSlice(int start, int length) => new ArraySlice<T>(_data!, start, length);
     }
 }

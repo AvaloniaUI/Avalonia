@@ -228,7 +228,7 @@ namespace Avalonia.Skia
             {
                 if (glyphTypeface.IsFixedPitch)
                 {
-                    textBlobBuilder.AddRun(glyphRun.GlyphIndices.Buffer.Span, s_font);
+                    textBlobBuilder.AddRun(glyphRun.GlyphIndices.Span, s_font);
 
                     textBlob = textBlobBuilder.Build();
                 }
@@ -254,7 +254,7 @@ namespace Avalonia.Skia
                         }
                     }
 
-                    buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
+                    buffer.SetGlyphs(glyphRun.GlyphIndices.Span);
 
                     textBlob = textBlobBuilder.Build();
                 }
@@ -283,7 +283,7 @@ namespace Avalonia.Skia
                     }
                 }
 
-                buffer.SetGlyphs(glyphRun.GlyphIndices.Buffer.Span);
+                buffer.SetGlyphs(glyphRun.GlyphIndices.Span);
 
                 textBlob = textBlobBuilder.Build();
             }

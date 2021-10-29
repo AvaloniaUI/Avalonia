@@ -5,30 +5,32 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Avalonia.Utilities
+namespace Avalonia.Media.TextFormatting.Unicode
 {
     /// <summary>
     /// Provides a mapped view of an underlying slice, selecting arbitrary indices
     /// from the source array.
     /// </summary>
     /// <typeparam name="T">The type of item contained in the underlying array.</typeparam>
-    internal readonly struct MappedSlice<T>
+    internal readonly struct MappedArraySlice<T>
         where T : struct
     {
-        private readonly Slice<T> _data;
-        private readonly Slice<int> _map;
+        private readonly ReadOnlyArraySlice<T> _data;
+        private readonly ReadOnlyArraySlice<int> _map;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MappedSlice{T}"/> struct.
+        /// Initializes a new instance of the <see cref="MappedArraySlice{T}"/> struct.
         /// </summary>
         /// <param name="data">The data slice.</param>
         /// <param name="map">The map slice.</param>
-        public MappedSlice(in Slice<T> data, in Slice<int> map)
+        public MappedArraySlice(in ReadOnlyArraySlice<T> data, in ReadOnlyArraySlice<int> map)
         {
-            if (map.Length < data.Length)
+            #if DEBUG
+            if (map.Length.CompareTo(data.Length) > 0)
             {
                 throw new ArgumentOutOfRangeException(nameof (map));
             }
+            #endif
 
             _data = data;
             _map = map;

@@ -59,7 +59,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Text.Length);
 
-                var actual = textRun.Text.Buffer.Span.ToString();
+                var actual = textRun.Text.Span.ToString();
 
                 Assert.Equal("1 ", actual);
 
@@ -184,7 +184,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Text.Length);
 
-                var actual = textRun.Text.Buffer.Span.ToString();
+                var actual = textRun.Text.Span.ToString();
 
                 Assert.Equal("89", actual);
 
@@ -254,7 +254,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Text.Length);
 
-                var actual = textRun.Text.Buffer.Span.ToString();
+                var actual = textRun.Text.Span.ToString();
 
                 Assert.Equal("😄", actual);
 

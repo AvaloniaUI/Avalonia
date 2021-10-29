@@ -385,7 +385,7 @@ namespace Avalonia.Media
 
             var comparer = IsLeftToRight ? s_ascendingComparer : s_descendingComparer;
 
-            var clusters = GlyphClusters.Buffer.Span;
+            var clusters = GlyphClusters.Span;
 
             // Find the start of the cluster at the character index.
             var start = clusters.BinarySearch((ushort)characterIndex, comparer);

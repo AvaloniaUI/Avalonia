@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Utilities
 {
@@ -10,13 +11,32 @@ namespace Avalonia.Utilities
     /// </summary>
     /// <typeparam name="T">The type of elements in the slice.</typeparam>
     [DebuggerTypeProxy(typeof(ReadOnlySlice<>.ReadOnlySliceDebugView))]
-    public readonly struct ReadOnlySlice<T> : IReadOnlyList<T>
+    public readonly struct ReadOnlySlice<T> : IReadOnlyList<T> where T : struct
     {
-        public ReadOnlySlice(ReadOnlyMemory<T> buffer) : this(buffer, 0, buffer.Length) { }
+        private readonly ReadOnlyMemory<T> _data;
 
-        public ReadOnlySlice(ReadOnlyMemory<T> buffer, int start, int length)
+        public ReadOnlySlice(ReadOnlyMemory<T> data) : this(data, 0, data.Length) { }
+
+        public ReadOnlySlice(ReadOnlyMemory<T> data, int start, int length)
         {
-            Buffer = buffer;
+#if DEBUG
+            if (start.CompareTo(0) < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof (start));
+            }
+
+            if (length.CompareTo(data.Length) > 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof (length));
+            }
+            
+            if ((start + length).CompareTo(data.Length) > 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof (data));
+            }
+#endif
+            
+            _data = data;
             Start = start;
             Length = length;
         }
@@ -51,64 +71,72 @@ namespace Avalonia.Utilities
         public bool IsEmpty => Length == 0;
 
         /// <summary>
-        ///     The buffer.
+        ///     The underlying span.
         /// </summary>
-        public ReadOnlyMemory<T> Buffer { get; }
-
-        public T this[int index] => Buffer.Span[index];
+        public ReadOnlySpan<T> Span => _data.Span.Slice(Start, Length);
 
         /// <summary>
-        ///     Returns a sub slice of elements that start at the specified index and has the specified number of elements.
+        /// Returns a value to specified element of the slice.
         /// </summary>
-        /// <param name="start">The start of the sub slice.</param>
-        /// <param name="length">The length of the sub slice.</param>
-        /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the specified number of elements from the specified start.</returns>
-        public ReadOnlySlice<T> AsSlice(int start, int length)
-        {
-            if (IsEmpty)
-            {
-                return this;
-            }
-
-            if (start < Start || start > End)
-            {
-                throw new ArgumentOutOfRangeException(nameof(start));
-            }
-
-            if (start + length > Start + Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length));
-            }
-
-            var bufferOffset = start - Start;
-
-            return new ReadOnlySlice<T>(Buffer.Slice(bufferOffset), start, length);
-        }
-        
-        /// <summary>
-        /// Copies the contents of this slice into destination span. If the source
-        /// and destinations overlap, this method behaves as if the original values in
-        /// a temporary location before the destination is overwritten.
-        /// </summary>
-        /// <param name="destination">The slice to copy items into.</param>
-        /// <exception cref="ArgumentException">
-        /// Thrown when the destination slice is shorter than the source Span.
+        /// <param name="index">The index of the element to return.</param>
+        /// <returns>The <typeparamref name="T"/>.</returns>
+        /// <exception cref="IndexOutOfRangeException">
+        /// Thrown when index less than 0 or index greater than or equal to <see cref="Length"/>.
         /// </exception>
-        public void CopyTo(Span<T> destination) => Buffer.Span.CopyTo(destination);
+        public T this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+#if DEBUG
+                if (index.CompareTo(0) < 0 || index.CompareTo(Length) > 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof (index));
+                }
+#endif
+                return Span[index];
+            }
+        }
 
         /// <summary>
         ///     Returns a specified number of contiguous elements from the start of the slice.
         /// </summary>
         /// <param name="length">The number of elements to return.</param>
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the specified number of elements from the start of this slice.</returns>
-        public ReadOnlySlice<T> Take(int length) => AsSlice(0, length);
+        public ReadOnlySlice<T> Take(int length)
+        {
+            if (IsEmpty)
+            {
+                return this;
+            }
+
+            if (length > Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            return new ReadOnlySlice<T>(_data, Start, length);
+        }
 
         /// <summary>
         ///     Bypasses a specified number of elements in the slice and then returns the remaining elements.
         /// </summary>
         /// <param name="length">The number of elements to skip before returning the remaining elements.</param>
         /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the elements that occur after the specified index in this slice.</returns>
-        public ReadOnlySlice<T> Skip(int length) => AsSlice(Start + length, Length - length);
+        public ReadOnlySlice<T> Skip(int length)
+        {
+            if (IsEmpty)
+            {
+                return this;
+            }
+
+            if (length > Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            return new ReadOnlySlice<T>(_data, Start + length, Length - length);
+        }
 
         /// <summary>
         /// Returns an enumerator for the slice.
@@ -159,7 +187,7 @@ namespace Avalonia.Utilities
 
             public bool IsEmpty => _readOnlySlice.IsEmpty;
 
-            public ReadOnlyMemory<T> Items => _readOnlySlice.Buffer;
+            public ReadOnlySpan<T> Items => _readOnlySlice.Span;
         }
     }
 }

@@ -8,14 +8,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
 {
     /// <summary>
     /// Represents a unicode string and all associated attributes
-    /// for each character required for the Bidi algorithm
+    /// for each character required for the bidirectional Unicode algorithm
     /// </summary>
     internal class BiDiData
     {
-        private ArrayBuilder<BiDiClass> _types;
+        private ArrayBuilder<BiDiClass> _classes;
         private ArrayBuilder<BiDiPairedBracketType> _pairedBracketTypes;
         private ArrayBuilder<int> _pairedBracketValues;
-        private ArrayBuilder<BiDiClass> _savedTypes;
+        private ArrayBuilder<BiDiClass> _savedClasses;
         private ArrayBuilder<BiDiPairedBracketType> _savedPairedBracketTypes;
         private ArrayBuilder<sbyte> _tempLevelBuffer;
 
@@ -30,17 +30,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// Gets the length of the data held by the BidiData
         /// </summary>
-        public int Length => _types.Length;
+        public int Length => _classes.Length;
 
         /// <summary>
         /// Gets the bidi character type of each code point
         /// </summary>
-        public Slice<BiDiClass> Types { get; private set; }
+        public ArraySlice<BiDiClass> Classes { get; private set; }
 
         /// <summary>
         /// Gets the paired bracket type for each code point
         /// </summary>
-        public Slice<BiDiPairedBracketType> PairedBracketTypes { get; private set; }
+        public ArraySlice<BiDiPairedBracketType> PairedBracketTypes { get; private set; }
 
         /// <summary>
         /// Gets the paired bracket value for code point
@@ -52,7 +52,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// matching.  Also, bracket code points are mapped
         /// to their canonical equivalents
         /// </remarks>
-        public Slice<int> PairedBracketValues { get; private set; }
+        public ArraySlice<int> PairedBracketValues { get; private set; }
 
         /// <summary>
         /// Initialize with a text value.
@@ -62,7 +62,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public void Init(ReadOnlySlice<char> text, sbyte paragraphEmbeddingLevel)
         {
             // Set working buffer sizes
-            _types.Length = text.Length;
+            _classes.Length = text.Length;
             _pairedBracketTypes.Length = text.Length;
             _pairedBracketValues.Length = text.Length;
             
@@ -83,7 +83,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 // Look up BiDiClass
                 var dir = codepoint.BiDiClass;
-                _types[i] = dir;
+                _classes[i] = dir;
 
                 switch (dir)
                 {
@@ -131,17 +131,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             // Create slices on work buffers
-            Types = _types.AsSlice().Take(i);
-            PairedBracketTypes = _pairedBracketTypes.AsSlice().Take(i);
-            PairedBracketValues = _pairedBracketValues.AsSlice().Take(i);
+            Classes = _classes.AsSlice();
+            PairedBracketTypes = _pairedBracketTypes.AsSlice().Slice(0, i);
+            PairedBracketValues = _pairedBracketValues.AsSlice().Slice(0, i);
         }
 
         /// <summary>
-        /// Save the Types and PairedBracketTypes of this bididata
+        /// Save the Types and PairedBracketTypes of this BiDiData
         /// </summary>
         /// <remarks>
         /// This is used when processing embedded style runs with
-        /// BiDiClass overrides.  TextLayout saves the data,
+        /// BiDiClass overrides. Text layout process saves the data,
         /// overrides the style runs to neutral, processes the bidi
         /// data for the entire paragraph and then restores this data
         /// before processing the embedded runs.
@@ -149,8 +149,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public void SaveTypes()
         {
             // Capture the types data
-            _savedTypes.Clear();
-            _savedTypes.Add(_types.AsSlice());
+            _savedClasses.Clear();
+            _savedClasses.Add(_classes.AsSlice());
             _savedPairedBracketTypes.Clear();
             _savedPairedBracketTypes.Add(_pairedBracketTypes.AsSlice());
         }
@@ -160,19 +160,19 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         public void RestoreTypes()
         {
-            _types.Clear();
-            _types.Add(_savedTypes.AsSlice());
+            _classes.Clear();
+            _classes.Add(_savedClasses.AsSlice());
             _pairedBracketTypes.Clear();
             _pairedBracketTypes.Add(_savedPairedBracketTypes.AsSlice());
         }
 
         /// <summary>
-        /// Gets a temporary level buffer. Used by TextLayout when
+        /// Gets a temporary level buffer. Used by the text layout process when
         /// resolving style runs with different BiDiClass.
         /// </summary>
         /// <param name="length">Length of the required ExpandableBuffer</param>
         /// <returns>An uninitialized level ExpandableBuffer</returns>
-        public Slice<sbyte> GetTempLevelBuffer(int length)
+        public ArraySlice<sbyte> GetTempLevelBuffer(int length)
         {
             _tempLevelBuffer.Clear();
             

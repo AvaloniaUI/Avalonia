@@ -6,61 +6,51 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Avalonia.Utilities;
 
-namespace Avalonia.Utilities
+namespace Avalonia.Media.TextFormatting.Unicode
 {
     /// <summary>
-    /// Slice represents a contiguous region of arbitrary memory similar
+    /// ArraySlice represents a contiguous region of arbitrary memory similar
     /// to <see cref="Memory{T}"/> and <see cref="Span{T}"/> though constrained
     /// to arrays.
     /// Unlike <see cref="Span{T}"/>, it is not a byref-like type.
     /// </summary>
     /// <typeparam name="T">The type of item contained in the slice.</typeparam>
-    internal readonly struct Slice<T> : IReadOnlyList<T>
+    internal readonly struct ArraySlice<T> : IReadOnlyList<T>
         where T : struct
     {
         private readonly T[] _data;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Slice{T}"/> struct.
-        /// </summary>
-        /// <param name="data">The underlying data buffer.</param>
-        public Slice(T[] data): this(data, 0, data.Length)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Slice{T}"/> struct.
+        /// Initializes a new instance of the <see cref="ArraySlice{T}"/> struct.
         /// </summary>
         /// <param name="data">The underlying data buffer.</param>
         /// <param name="start">The offset position in the underlying buffer this slice was created from.</param>
         /// <param name="length">The number of items in the slice.</param>
-        public Slice(T[] data, int start, int length)
+        public ArraySlice(T[] data, int start, int length)
         {
-            if (start < 0)
+            #if DEBUG
+            if (start.CompareTo(0) < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof (start));
             }
 
-            if (length > data.Length)
+            if (length.CompareTo(data.Length) > 0)
             {
                 throw new ArgumentOutOfRangeException(nameof (length));
             }
             
-            if (start + length > data.Length)
+            if ((start + length).CompareTo(data.Length) > 0)
             {
-                throw new ArgumentOutOfRangeException(nameof (length));
+                throw new ArgumentOutOfRangeException(nameof (data));
             }
+            #endif
 
             _data = data;
             Start = start;
             Length = length;
         }
-
-        /// <summary>
-        /// Gets an empty <see cref="Slice{T}"/>
-        /// </summary>
-        public static Slice<T> Empty => new Slice<T>(Array.Empty<T>());
 
         /// <summary>
         /// Gets the offset position in the underlying buffer this slice was created from.
@@ -90,33 +80,28 @@ namespace Avalonia.Utilities
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                var i =  Start + index;
+#if DEBUG
+                if (index.CompareTo(0) < 0 || index.CompareTo(Length) > 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof (index));
+                }
+#endif
+                var i = index + Start;
                 
                 return ref _data[i];
             }
         }
 
         /// <summary>
-        /// Defines an implicit conversion of a <see cref="Slice{T}"/> to a <see cref="ReadOnlySlice{T}"/>
+        /// Defines an implicit conversion of a <see cref="ArraySlice{T}"/> to a <see cref="ReadOnlyArraySlice{T}"/>
         /// </summary>
-        public static implicit operator ReadOnlySlice<T>(Slice<T> slice)
-            => new ReadOnlySlice<T>(slice._data, slice.Start, slice.Length);
+        public static implicit operator ReadOnlyArraySlice<T>(ArraySlice<T> slice)
+            => new ReadOnlyArraySlice<T>(slice._data, slice.Start, slice.Length);
 
         /// <summary>
-        /// Defines an implicit conversion of an array to a <see cref="Slice{T}"/>
+        /// Defines an implicit conversion of an array to a <see cref="ArraySlice{T}"/>
         /// </summary>
-        public static implicit operator Slice<T>(T[] array) => new Slice<T>(array, 0, array.Length);
-
-        /// <summary>
-        /// Copies the contents of this slice into destination span. If the source
-        /// and destinations overlap, this method behaves as if the original values in
-        /// a temporary location before the destination is overwritten.
-        /// </summary>
-        /// <param name="destination">The slice to copy items into.</param>
-        /// <exception cref="ArgumentException">
-        /// Thrown when the destination slice is shorter than the source Span.
-        /// </exception>
-        public void CopyTo(Span<T> destination) => Span.CopyTo(destination);
+        public static implicit operator ArraySlice<T>(T[] array) => new ArraySlice<T>(array, 0, array.Length);
 
         /// <summary>
         /// Fills the contents of this slice with the given value.
@@ -131,34 +116,21 @@ namespace Avalonia.Utilities
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown when the specified <paramref name="start"/> or end index is not in range (&lt;0 or &gt;Length).
         /// </exception>
-        public Slice<T> AsSlice(int start, int length) => new Slice<T>(_data, start, length);
+        public ArraySlice<T> Slice(int start, int length) => new ArraySlice<T>(_data, start, length);
 
-        /// <summary>
-        ///     Returns a specified number of contiguous elements from the start of the slice.
-        /// </summary>
-        /// <param name="length">The number of elements to return.</param>
-        /// <returns>A <see cref="Slice{T}"/> that contains the specified number of elements from the start of this slice.</returns>
-        public Slice<T> Take(int length) => AsSlice(0, length);
+        public ImmutableReadOnlyListStructEnumerator<T> GetEnumerator() =>
+            new ImmutableReadOnlyListStructEnumerator<T>(this);
 
-        /// <summary>
-        ///     Bypasses a specified number of elements in the slice and then returns the remaining elements.
-        /// </summary>
-        /// <param name="length">The number of elements to skip before returning the remaining elements.</param>
-        /// <returns>A <see cref="Slice{T}"/> that contains the elements that occur after the specified index in this slice.</returns>
-        public Slice<T> Skip(int length) => AsSlice(Start + length, Length - length);
+        /// <inheritdoc/>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
         
-        public IEnumerator<T> GetEnumerator()
-        {
-            return new ImmutableReadOnlyListStructEnumerator<T>(this);
-        }
-
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
-        int IReadOnlyCollection<T>.Count => Length;
+        T IReadOnlyList<T>.this[int index] => this[index];
 
         /// <inheritdoc/>
-        T IReadOnlyList<T>.this[int index] => this[index];
+        int IReadOnlyCollection<T>.Count => Length;
     }
 }

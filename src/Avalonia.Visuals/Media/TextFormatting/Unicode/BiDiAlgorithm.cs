@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -21,7 +20,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// more...
     /// </para>
     /// <para>
-    /// This implementation of the Bidi algorithm has been designed
+    /// This implementation of the BiDi algorithm has been designed
     /// to reduce memory pressure on the GC by re-using the same
     /// work buffers, so instances of this class should be re-used
     /// as much as possible.
@@ -30,19 +29,19 @@ namespace Avalonia.Media.TextFormatting.Unicode
     internal sealed class BiDiAlgorithm
     {
         /// <summary>
-        /// The original BidiClass classes as provided by the caller
+        /// The original BiDiClass classes as provided by the caller
         /// </summary>
-        private Slice<BiDiClass> _originalClasses;
+        private ReadOnlyArraySlice<BiDiClass> _originalClasses;
 
         /// <summary>
         /// Paired bracket types as provided by caller
         /// </summary>
-        private Slice<BiDiPairedBracketType> _pairedBracketTypes;
+        private ReadOnlyArraySlice<BiDiPairedBracketType> _pairedBracketTypes;
 
         /// <summary>
         /// Paired bracket values as provided by caller
         /// </summary>
-        private Slice<int> _pairedBracketValues;
+        private ReadOnlyArraySlice<int> _pairedBracketValues;
 
         /// <summary>
         /// Try if the incoming data is known to contain brackets
@@ -66,22 +65,22 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The forward mapping maps the start index to the end index.
         /// The reverse mapping maps the end index to the start index.
         /// </remarks>
-        private readonly BiDiDictionary<int, int> _isolatePairs = new BiDiDictionary<int, int>();
+        private readonly Dictionary<int, int> _isolatePairs = new Dictionary<int, int>();
 
         /// <summary>
-        /// The working BiDiClass types
+        /// The working BiDi classes
         /// </summary>
-        private Slice<BiDiClass> _workingClasses;
+        private ArraySlice<BiDiClass> _workingClasses;
 
         /// <summary>
-        /// The buffer underlying _workingTypes
+        /// The working classes buffer
         /// </summary>
         private ArrayBuilder<BiDiClass> _workingClassesBuffer;
 
         /// <summary>
-        /// A slice of the resolved levels.
+        /// A slice of the resolved levels
         /// </summary>
-        private Slice<sbyte> _resolvedLevels;
+        private ArraySlice<sbyte> _resolvedLevels;
 
         /// <summary>
         /// The buffer underlying resolvedLevels
@@ -139,31 +138,31 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// A mapped slice of the resolved types for the isolating run currently
         /// being processed
         /// </summary>
-        private MappedSlice<BiDiClass> _runResolvedClasses;
+        private MappedArraySlice<BiDiClass> _runResolvedClasses;
 
         /// <summary>
         /// A mapped slice of the original types for the isolating run currently
         /// being processed
         /// </summary>
-        private MappedSlice<BiDiClass> _runOriginalClasses;
+        private MappedArraySlice<BiDiClass> _runOriginalClasses;
 
         /// <summary>
         /// A mapped slice of the run levels for the isolating run currently
         /// being processed
         /// </summary>
-        private MappedSlice<sbyte> _runLevels;
+        private MappedArraySlice<sbyte> _runLevels;
 
         /// <summary>
         /// A mapped slice of the paired bracket types of the isolating
         /// run currently being processed
         /// </summary>
-        private MappedSlice<BiDiPairedBracketType> _runBiDiPairedBracketTypes;
+        private MappedArraySlice<BiDiPairedBracketType> _runBiDiPairedBracketTypes;
 
         /// <summary>
         /// A mapped slice of the paired bracket values of the isolating
         /// run currently being processed
         /// </summary>
-        private MappedSlice<int> _runPairedBracketValues;
+        private MappedArraySlice<int> _runPairedBracketValues;
 
         /// <summary>
         /// Maximum pairing depth for paired brackets
@@ -197,7 +196,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// Gets the resolved levels.
         /// </summary>
-        public Slice<sbyte> ResolvedLevels => _resolvedLevels;
+        public ArraySlice<sbyte> ResolvedLevels => _resolvedLevels;
 
         /// <summary>
         /// Gets the resolved paragraph embedding level
@@ -210,7 +209,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="data">The BiDi Unicode data.</param>
         public void Process(BiDiData data)
             => Process(
-                data.Types,
+                data.Classes,
                 data.PairedBracketTypes,
                 data.PairedBracketValues,
                 data.ParagraphEmbeddingLevel,
@@ -223,14 +222,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Processes Bidi Data
         /// </summary>
         public void Process(
-            Slice<BiDiClass> types,
-            Slice<BiDiPairedBracketType> pairedBracketTypes,
-            Slice<int> pairedBracketValues,
+            ReadOnlyArraySlice<BiDiClass> types,
+            ReadOnlyArraySlice<BiDiPairedBracketType> pairedBracketTypes,
+            ReadOnlyArraySlice<int> pairedBracketValues,
             sbyte paragraphEmbeddingLevel,
             bool? hasBrackets,
             bool? hasEmbeddings,
             bool? hasIsolates,
-            Slice<sbyte>? outLevels)
+            ArraySlice<sbyte>? outLevels)
         {
             // Reset state
             _isolatePairs.Clear();
@@ -302,7 +301,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         /// <param name="data">The data to be evaluated</param>
         /// <returns>The resolved embedding level</returns>
-        public sbyte ResolveEmbeddingLevel(ReadOnlySlice<BiDiClass> data)
+        public sbyte ResolveEmbeddingLevel(ReadOnlyArraySlice<BiDiClass> data)
         {
             // P2
             for (var i = 0; i < data.Length; ++i)
@@ -505,7 +504,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             }
 
                             // Rule X5c
-                            if (ResolveEmbeddingLevel(_originalClasses.AsSlice(i + 1, endOfIsolate - (i + 1))) == 1)
+                            if (ResolveEmbeddingLevel(_originalClasses.Slice(i + 1, endOfIsolate - (i + 1))) == 1)
                             {
                                 resolvedIsolate = BiDiClass.RightToLeftIsolate;
                             }
@@ -853,13 +852,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private void ProcessIsolatedRunSequence(BiDiClass sos, BiDiClass eos, int runLevel)
         {
             // Create mappings onto the underlying data
-            _runResolvedClasses = new MappedSlice<BiDiClass>(_workingClasses, _isolatedRunMapping.AsSlice());
-            _runOriginalClasses = new MappedSlice<BiDiClass>(_originalClasses, _isolatedRunMapping.AsSlice());
-            _runLevels = new MappedSlice<sbyte>(_resolvedLevels, _isolatedRunMapping.AsSlice());
+            _runResolvedClasses = new MappedArraySlice<BiDiClass>(_workingClasses, _isolatedRunMapping.AsSlice());
+            _runOriginalClasses = new MappedArraySlice<BiDiClass>(_originalClasses, _isolatedRunMapping.AsSlice());
+            _runLevels = new MappedArraySlice<sbyte>(_resolvedLevels, _isolatedRunMapping.AsSlice());
             if (_hasBrackets)
             {
-                _runBiDiPairedBracketTypes = new MappedSlice<BiDiPairedBracketType>(_pairedBracketTypes, _isolatedRunMapping.AsSlice());
-                _runPairedBracketValues = new MappedSlice<int>(_pairedBracketValues, _isolatedRunMapping.AsSlice());
+                _runBiDiPairedBracketTypes = new MappedArraySlice<BiDiPairedBracketType>(_pairedBracketTypes, _isolatedRunMapping.AsSlice());
+                _runPairedBracketValues = new MappedArraySlice<int>(_pairedBracketValues, _isolatedRunMapping.AsSlice());
             }
 
             _runLevel = runLevel;
@@ -1578,7 +1577,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="biDiClass">The bidi type to check</param>
         /// <returns>True if rule X9 would remove this character; otherwise false</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsRemovedByX9(BiDiClass biDiClass)
+        private static bool IsRemovedByX9(BiDiClass biDiClass)
         {
             switch (biDiClass)
             {
