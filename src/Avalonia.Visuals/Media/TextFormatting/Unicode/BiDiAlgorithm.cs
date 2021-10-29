@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -31,17 +32,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// The original BiDiClass classes as provided by the caller
         /// </summary>
-        private ReadOnlyArraySlice<BiDiClass> _originalClasses;
+        private ArraySlice<BiDiClass> _originalClasses;
 
         /// <summary>
         /// Paired bracket types as provided by caller
         /// </summary>
-        private ReadOnlyArraySlice<BiDiPairedBracketType> _pairedBracketTypes;
+        private ArraySlice<BiDiPairedBracketType> _pairedBracketTypes;
 
         /// <summary>
         /// Paired bracket values as provided by caller
         /// </summary>
-        private ReadOnlyArraySlice<int> _pairedBracketValues;
+        private ArraySlice<int> _pairedBracketValues;
 
         /// <summary>
         /// Try if the incoming data is known to contain brackets
@@ -222,9 +223,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Processes Bidi Data
         /// </summary>
         public void Process(
-            ReadOnlyArraySlice<BiDiClass> types,
-            ReadOnlyArraySlice<BiDiPairedBracketType> pairedBracketTypes,
-            ReadOnlyArraySlice<int> pairedBracketValues,
+            ArraySlice<BiDiClass> types,
+            ArraySlice<BiDiPairedBracketType> pairedBracketTypes,
+            ArraySlice<int> pairedBracketValues,
             sbyte paragraphEmbeddingLevel,
             bool? hasBrackets,
             bool? hasEmbeddings,
@@ -301,7 +302,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         /// <param name="data">The data to be evaluated</param>
         /// <returns>The resolved embedding level</returns>
-        public sbyte ResolveEmbeddingLevel(ReadOnlyArraySlice<BiDiClass> data)
+        public sbyte ResolveEmbeddingLevel(ReadOnlySlice<BiDiClass> data)
         {
             // P2
             for (var i = 0; i < data.Length; ++i)
@@ -504,7 +505,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             }
 
                             // Rule X5c
-                            if (ResolveEmbeddingLevel(_originalClasses.Slice(i + 1, endOfIsolate - (i + 1))) == 1)
+                            if (ResolveEmbeddingLevel(_originalClasses.Slice(i + 1,endOfIsolate - (i + 1))) == 1)
                             {
                                 resolvedIsolate = BiDiClass.RightToLeftIsolate;
                             }

@@ -30,12 +30,12 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             var bidi = BiDiAlgorithm.Instance.Value;
             
             // Run the algorithm...
-            ReadOnlyArraySlice<sbyte> resultLevels;
+            ArraySlice<sbyte> resultLevels;
 
             bidi.Process(
                 classes,
-                ReadOnlyArraySlice<BiDiPairedBracketType>.Empty,
-                ReadOnlyArraySlice<int>.Empty,
+                ArraySlice<BiDiPairedBracketType>.Empty,
+                ArraySlice<int>.Empty,
                 paragraphEmbeddingLevel,
                 false,
                 null,

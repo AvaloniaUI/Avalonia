@@ -15,15 +15,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
     internal readonly struct MappedArraySlice<T>
         where T : struct
     {
-        private readonly ReadOnlyArraySlice<T> _data;
-        private readonly ReadOnlyArraySlice<int> _map;
+        private readonly ArraySlice<T> _data;
+        private readonly ArraySlice<int> _map;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MappedArraySlice{T}"/> struct.
         /// </summary>
         /// <param name="data">The data slice.</param>
         /// <param name="map">The map slice.</param>
-        public MappedArraySlice(in ReadOnlyArraySlice<T> data, in ReadOnlyArraySlice<int> map)
+        public MappedArraySlice(in ArraySlice<T> data, in ArraySlice<int> map)
         {
             #if DEBUG
             if (map.Length.CompareTo(data.Length) > 0)

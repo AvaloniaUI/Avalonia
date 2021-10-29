@@ -20,8 +20,22 @@ namespace Avalonia.Media.TextFormatting.Unicode
     internal readonly struct ArraySlice<T> : IReadOnlyList<T>
         where T : struct
     {
+        /// <summary>
+        /// Gets an empty <see cref="ArraySlice{T}"/>
+        /// </summary>
+        public static ArraySlice<T> Empty => new ArraySlice<T>(Array.Empty<T>());
+        
         private readonly T[] _data;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArraySlice{T}"/> struct.
+        /// </summary>
+        /// <param name="data">The underlying data buffer.</param>
+        public ArraySlice(T[] data)
+            : this(data, 0, data.Length)
+        {
+        }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ArraySlice{T}"/> struct.
         /// </summary>
@@ -93,10 +107,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
-        /// Defines an implicit conversion of a <see cref="ArraySlice{T}"/> to a <see cref="ReadOnlyArraySlice{T}"/>
+        /// Defines an implicit conversion of a <see cref="ArraySlice{T}"/> to a <see cref="ReadOnlySlice{T}"/>
         /// </summary>
-        public static implicit operator ReadOnlyArraySlice<T>(ArraySlice<T> slice)
-            => new ReadOnlyArraySlice<T>(slice._data, slice.Start, slice.Length);
+        public static implicit operator ReadOnlySlice<T>(ArraySlice<T> slice)
+            => new ReadOnlySlice<T>(slice._data, slice.Start, slice.Length);
 
         /// <summary>
         /// Defines an implicit conversion of an array to a <see cref="ArraySlice{T}"/>

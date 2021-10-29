@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -102,7 +103,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         /// <param name="value">The array slice.</param>
         /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
-        public ArraySlice<T> Add(in ReadOnlyArraySlice<T> value)
+        public ArraySlice<T> Add(in ReadOnlySlice<T> value)
         {
             var position = _size;
 
@@ -111,7 +112,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             var slice = AsSlice(position, Length - position);
             
-            value.CopyTo(slice);
+            value.Span.CopyTo(slice.Span);
 
             return slice;
         }
