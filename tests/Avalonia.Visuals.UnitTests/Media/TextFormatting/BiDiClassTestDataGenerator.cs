@@ -26,7 +26,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             return GetEnumerator();
         }
         
-        private List<BiDiClassData> ReadData()
+        private static List<BiDiClassData> ReadData()
         {
             var testData = new List<BiDiClassData>();
             

@@ -131,9 +131,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
 
             // Create slices on work buffers
-            Classes = _classes.AsSlice();
-            PairedBracketTypes = _pairedBracketTypes.AsSlice().Slice(0, i);
-            PairedBracketValues = _pairedBracketValues.AsSlice().Slice(0, i);
+            Classes = _classes.AsSlice(0, i);
+            PairedBracketTypes = _pairedBracketTypes.AsSlice(0, i);
+            PairedBracketValues = _pairedBracketValues.AsSlice(0, i);
         }
 
         /// <summary>
