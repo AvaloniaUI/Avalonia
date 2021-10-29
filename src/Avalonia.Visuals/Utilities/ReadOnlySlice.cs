@@ -13,6 +13,11 @@ namespace Avalonia.Utilities
     [DebuggerTypeProxy(typeof(ReadOnlySlice<>.ReadOnlySliceDebugView))]
     public readonly struct ReadOnlySlice<T> : IReadOnlyList<T> where T : struct
     {
+        /// <summary>
+        /// Gets an empty <see cref="ReadOnlySlice{T}"/>
+        /// </summary>
+        public static ReadOnlySlice<T> Empty => new ReadOnlySlice<T>(Array.Empty<T>());
+        
         private readonly ReadOnlyMemory<T> _data;
 
         public ReadOnlySlice(ReadOnlyMemory<T> data) : this(data, 0, data.Length) { }
@@ -91,6 +96,37 @@ namespace Avalonia.Utilities
 #endif
                 return Span[index];
             }
+        }
+        
+        /// <summary>
+        ///     Returns a sub slice of elements that start at the specified index and has the specified number of elements.
+        /// </summary>
+        /// <param name="start">The start of the sub slice.</param>
+        /// <param name="length">The length of the sub slice.</param>
+        /// <returns>A <see cref="ReadOnlySlice{T}"/> that contains the specified number of elements from the specified start.</returns>
+        public ReadOnlySlice<T> AsSlice(int start, int length)
+        {
+            if (IsEmpty)
+            {
+                return this;
+            }
+
+            if (length == 0)
+            {
+                return Empty;
+            }
+
+            if (start < 0 || start > _data.Length - 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(start));
+            }
+
+            if (start + length > _data.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            return new ReadOnlySlice<T>(_data.Slice(start), start, length);
         }
 
         /// <summary>

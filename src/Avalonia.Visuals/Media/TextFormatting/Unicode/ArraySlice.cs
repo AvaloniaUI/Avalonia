@@ -110,7 +110,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Defines an implicit conversion of a <see cref="ArraySlice{T}"/> to a <see cref="ReadOnlySlice{T}"/>
         /// </summary>
         public static implicit operator ReadOnlySlice<T>(ArraySlice<T> slice)
-            => new ReadOnlySlice<T>(slice._data.AsMemory().Slice(slice.Start), slice.Start, slice.Length);
+        {
+             return new ReadOnlySlice<T>(slice._data).AsSlice(slice.Start, slice.Length);
+        }
 
         /// <summary>
         /// Defines an implicit conversion of an array to a <see cref="ArraySlice{T}"/>

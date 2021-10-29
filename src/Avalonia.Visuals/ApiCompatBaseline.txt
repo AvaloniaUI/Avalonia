@@ -76,6 +76,5 @@ InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWr
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmap(System.String)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToHeight(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.IWriteableBitmapImpl Avalonia.Platform.IPlatformRenderInterface.LoadWriteableBitmapToWidth(System.IO.Stream, System.Int32, Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode)' is present in the implementation but not in the contract.
-MembersMustExist : Member 'public Avalonia.Utilities.ReadOnlySlice<T> Avalonia.Utilities.ReadOnlySlice<T>.AsSlice(System.Int32, System.Int32)' does not exist in the implementation but it does exist in the contract.
 MembersMustExist : Member 'public System.ReadOnlyMemory<T> Avalonia.Utilities.ReadOnlySlice<T>.Buffer.get()' does not exist in the implementation but it does exist in the contract.
-Total Issues: 79
+Total Issues: 78
