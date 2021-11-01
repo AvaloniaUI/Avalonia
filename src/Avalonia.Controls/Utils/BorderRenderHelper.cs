@@ -1,8 +1,10 @@
 ﻿using System;
+using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Utils
 {
@@ -15,7 +17,12 @@ namespace Avalonia.Controls.Utils
         private Size _size;
         private Thickness _borderThickness;
         private CornerRadius _cornerRadius;
+        private AvaloniaList<double> _strokeDashArray;
+        private double _strokeDashOffset;
+        private PenLineCap _strokeLineCap;
+        private PenLineJoin _strokeJoin;
         private bool _initialized;
+        
 
         void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
         {
@@ -84,17 +91,26 @@ namespace Avalonia.Controls.Utils
 
         public void Render(DrawingContext context,
             Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
-            IBrush background, IBrush borderBrush, BoxShadows boxShadows)
+            IBrush background, IBrush borderBrush, BoxShadows boxShadows, double strokeDashOffset = 0, 
+            PenLineCap strokeLineCap = PenLineCap.Flat, PenLineJoin strokeJoin = PenLineJoin.Miter, 
+            AvaloniaList<double> strokeDashArray = null)
         {
             if (_size != finalSize
                 || _borderThickness != borderThickness
                 || _cornerRadius != cornerRadius
+                || _strokeLineCap != strokeLineCap
+                || _strokeJoin != strokeJoin
+                || _strokeDashOffset != strokeDashOffset
+                || Equals(_strokeDashArray, strokeDashArray) 
                 || !_initialized)
                 Update(finalSize, borderThickness, cornerRadius);
-            RenderCore(context, background, borderBrush, boxShadows);
+            RenderCore(context, background, borderBrush, boxShadows, strokeDashOffset, strokeLineCap, strokeJoin, 
+                strokeDashArray);
         }
 
-        void RenderCore(DrawingContext context, IBrush background, IBrush borderBrush, BoxShadows boxShadows)
+        void RenderCore(DrawingContext context, IBrush background, IBrush borderBrush, BoxShadows boxShadows,
+            double strokeDashOffset, PenLineCap strokeLineCap, PenLineJoin strokeJoin, 
+            AvaloniaList<double> strokeDashArray)
         {
             if (_useComplexRendering)
             {
@@ -115,10 +131,24 @@ namespace Avalonia.Controls.Utils
                 var borderThickness = _borderThickness.Top;
                 IPen pen = null;
 
+
+                ImmutableDashStyle? dashStyle = null;
+
+                if (strokeDashArray != null && strokeDashArray.Count > 0)
+                {
+                    dashStyle = new ImmutableDashStyle(strokeDashArray, strokeDashOffset);
+                }
+
                 if (borderBrush != null && borderThickness > 0)
                 {
-                    pen = new ImmutablePen(borderBrush.ToImmutable(), borderThickness);
+                    pen = new ImmutablePen(
+                        borderBrush.ToImmutable(),
+                        borderThickness,
+                        dashStyle,
+                        strokeLineCap,
+                        strokeJoin);
                 }
+                
 
                 var rect = new Rect(_size);
                 if (!MathUtilities.IsZero(borderThickness))
