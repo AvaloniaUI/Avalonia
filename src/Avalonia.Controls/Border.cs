@@ -34,7 +34,7 @@ namespace Avalonia.Controls
             get { return GetValue(StrokeDashArrayProperty); }
             set { SetValue(StrokeDashArrayProperty, value); }
         }
-        
+
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
@@ -52,19 +52,19 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
             AvaloniaProperty.Register<Border, BoxShadows>(nameof(BoxShadow));
-        
+
         /// <summary>
         /// Defines the <see cref="StrokeDashOffset"/> property.
         /// </summary>
         public static readonly StyledProperty<double> StrokeDashOffsetProperty =
             AvaloniaProperty.Register<Shape, double>(nameof(StrokeDashOffset));
-        
+
         /// <summary>
         /// Defines the <see cref="StrokeDashArray"/> property.
         /// </summary>
         public static readonly StyledProperty<AvaloniaList<double>?> StrokeDashArrayProperty =
             AvaloniaProperty.Register<Shape, AvaloniaList<double>?>(nameof(StrokeDashArray));
-        
+
         /// <summary>
         /// Defines the <see cref="StrokeLineCap"/> property.
         /// </summary>
@@ -76,7 +76,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
-        
+
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Avalonia.Controls
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
         }
-        
+
         /// <summary>
         /// Gets or sets a value that specifies the distance within the dash pattern where a dash begins.
         /// </summary>
@@ -132,7 +132,7 @@ namespace Avalonia.Controls
             get { return GetValue(StrokeDashOffsetProperty); }
             set { SetValue(StrokeDashOffsetProperty, value); }
         }
-        
+
         /// <summary>
         /// Gets or sets a <see cref="PenLineCap"/> enumeration value that describes the shape at the ends of a line.
         /// </summary>
@@ -159,7 +159,7 @@ namespace Avalonia.Controls
             get { return GetValue(CornerRadiusProperty); }
             set { SetValue(CornerRadiusProperty, value); }
         }
-        
+
         /// <summary>
         /// Gets or sets the box shadow effect parameters
         /// </summary>
@@ -168,14 +168,14 @@ namespace Avalonia.Controls
             get => GetValue(BoxShadowProperty);
             set => SetValue(BoxShadowProperty, value);
         }
-        
+
         /// <summary>
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius,  Background, BorderBrush, 
+            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow, StrokeDashOffset, StrokeLineCap, StrokeJoin, StrokeDashArray);
         }
 

@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Utils
         private PenLineCap _strokeLineCap;
         private PenLineJoin _strokeJoin;
         private bool _initialized;
-        
+
 
         void Update(Size finalSize, Thickness borderThickness, CornerRadius cornerRadius)
         {
@@ -67,7 +67,8 @@ namespace Avalonia.Controls.Utils
 
                 if (boundRect.Width != 0 && innerRect.Height != 0)
                 {
-                    var borderGeometryKeypoints = new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
+                    var borderGeometryKeypoints =
+                        new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
                     var borderGeometry = new StreamGeometry();
 
                     using (var ctx = borderGeometry.Open())
@@ -91,8 +92,8 @@ namespace Avalonia.Controls.Utils
 
         public void Render(DrawingContext context,
             Size finalSize, Thickness borderThickness, CornerRadius cornerRadius,
-            IBrush background, IBrush borderBrush, BoxShadows boxShadows, double strokeDashOffset = 0, 
-            PenLineCap strokeLineCap = PenLineCap.Flat, PenLineJoin strokeJoin = PenLineJoin.Miter, 
+            IBrush background, IBrush borderBrush, BoxShadows boxShadows, double strokeDashOffset = 0,
+            PenLineCap strokeLineCap = PenLineCap.Flat, PenLineJoin strokeJoin = PenLineJoin.Miter,
             AvaloniaList<double> strokeDashArray = null)
         {
             if (_size != finalSize
@@ -101,15 +102,15 @@ namespace Avalonia.Controls.Utils
                 || _strokeLineCap != strokeLineCap
                 || _strokeJoin != strokeJoin
                 || _strokeDashOffset != strokeDashOffset
-                || Equals(_strokeDashArray, strokeDashArray) 
+                || Equals(_strokeDashArray, strokeDashArray)
                 || !_initialized)
                 Update(finalSize, borderThickness, cornerRadius);
-            RenderCore(context, background, borderBrush, boxShadows, strokeDashOffset, strokeLineCap, strokeJoin, 
+            RenderCore(context, background, borderBrush, boxShadows, strokeDashOffset, strokeLineCap, strokeJoin,
                 strokeDashArray);
         }
 
         void RenderCore(DrawingContext context, IBrush background, IBrush borderBrush, BoxShadows boxShadows,
-            double strokeDashOffset, PenLineCap strokeLineCap, PenLineJoin strokeJoin, 
+            double strokeDashOffset, PenLineCap strokeLineCap, PenLineJoin strokeJoin,
             AvaloniaList<double> strokeDashArray)
         {
             if (_useComplexRendering)
@@ -148,7 +149,7 @@ namespace Avalonia.Controls.Utils
                         strokeLineCap,
                         strokeJoin);
                 }
-                
+
 
                 var rect = new Rect(_size);
                 if (!MathUtilities.IsZero(borderThickness))
@@ -160,7 +161,8 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, BorderGeometryKeypoints keypoints)
+        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect,
+            BorderGeometryKeypoints keypoints)
         {
             context.BeginFigure(keypoints.TopLeft, true);
 
@@ -214,7 +216,8 @@ namespace Avalonia.Controls.Utils
 
         private class BorderGeometryKeypoints
         {
-            internal BorderGeometryKeypoints(Rect boundRect, Thickness borderThickness, CornerRadius cornerRadius, bool inner)
+            internal BorderGeometryKeypoints(Rect boundRect, Thickness borderThickness, CornerRadius cornerRadius,
+                bool inner)
             {
                 var left = 0.5 * borderThickness.Left;
                 var top = 0.5 * borderThickness.Top;
@@ -236,10 +239,13 @@ namespace Avalonia.Controls.Utils
                     topLeftX = Math.Max(0, cornerRadius.TopLeft - left) + boundRect.TopLeft.X;
                     topRightX = boundRect.Width - Math.Max(0, cornerRadius.TopRight - top) + boundRect.TopLeft.X;
                     rightTopY = Math.Max(0, cornerRadius.TopRight - right) + boundRect.TopLeft.Y;
-                    rightBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomRight - bottom) + boundRect.TopLeft.Y;
-                    bottomRightX = boundRect.Width - Math.Max(0, cornerRadius.BottomRight - right) + boundRect.TopLeft.X;
+                    rightBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomRight - bottom) +
+                                   boundRect.TopLeft.Y;
+                    bottomRightX = boundRect.Width - Math.Max(0, cornerRadius.BottomRight - right) +
+                                   boundRect.TopLeft.X;
                     bottomLeftX = Math.Max(0, cornerRadius.BottomLeft - left) + boundRect.TopLeft.X;
-                    leftBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomLeft - bottom) + boundRect.TopLeft.Y;
+                    leftBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomLeft - bottom) +
+                                  boundRect.TopLeft.Y;
                 }
                 else
                 {
