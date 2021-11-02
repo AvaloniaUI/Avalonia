@@ -423,16 +423,16 @@ namespace Avalonia.Diagnostics.ViewModels
         
         protected  void NavigateToProperty(object o, string entityName)
         {
-            if (SelectedEntity is INotifyPropertyChanged inpc1)
-            {
-                inpc1.PropertyChanged -= ControlPropertyChanged;
-            }
-
-            if (SelectedEntity is AvaloniaObject ao1)
+            var oldSelectedEntity = SelectedEntity;
+            if (oldSelectedEntity is IAvaloniaObject ao1)
             {
                 ao1.PropertyChanged -= ControlPropertyChanged;
             }
-            
+            else if (oldSelectedEntity is INotifyPropertyChanged inpc1)
+            {
+                inpc1.PropertyChanged -= ControlPropertyChanged;
+            }
+      
             SelectedEntity = o;
             SelectedEntityName = entityName;
             SelectedEntityType = o.ToString();
@@ -448,17 +448,15 @@ namespace Avalonia.Diagnostics.ViewModels
             view.GroupDescriptions.Add(new DataGridPathGroupDescription(nameof(AvaloniaPropertyViewModel.Group)));
             view.Filter = FilterProperty;
             PropertiesView = view;
-            
-            if (o is INotifyPropertyChanged inpc2)
-            {
-                inpc2.PropertyChanged += ControlPropertyChanged;
-            }
 
-            if (o is AvaloniaObject ao2)
+            if (o is IAvaloniaObject ao2)
             {
                 ao2.PropertyChanged += ControlPropertyChanged;
             }
-
+            else if (o is INotifyPropertyChanged inpc2)
+            {
+                inpc2.PropertyChanged += ControlPropertyChanged;
+            }
         }
     }
 }
