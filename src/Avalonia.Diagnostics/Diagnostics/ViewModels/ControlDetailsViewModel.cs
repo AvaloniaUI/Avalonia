@@ -23,9 +23,9 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _snapshotStyles;
         private bool _showInactiveStyles;
         private string? _styleStatus;
-        private object? _selectedEntity;
-        private readonly Stack<Tuple<string, object>> _selectedEntitiesStack = new Stack<Tuple<string, object>>();
-        private string? _selectedEntityName;
+        private object _selectedEntity;
+        private readonly Stack<(string Name,object Entry)> _selectedEntitiesStack = new();
+        private string _selectedEntityName;
         private string _selectedEntityType;
         private bool _showImplementedInterfaces;
 
@@ -403,18 +403,27 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void ApplySelectedProperty()
         {
-            var selectedEntity = SelectedEntity;
             var selectedProperty = SelectedProperty;
-            if (selectedEntity == null || selectedProperty == null) return;
-            
-            var property = (selectedEntity as IControl)?.GetValue(selectedProperty.Key as AvaloniaProperty);
-            if (property == null)
-            {
-                property = selectedEntity.GetType().GetProperty(selectedProperty.Name)?.GetValue(selectedEntity);
-            }
+            var selectedEntity = SelectedEntity;
+            var selectedEntityName = SelectedEntityName;
+            if (selectedProperty == null)
+                return;
 
+            object? property;
+            if (selectedProperty.Key is AvaloniaProperty avaloniaProperty)
+            {
+                property = (_selectedEntity as IControl)?.GetValue(avaloniaProperty);
+            }
+            else
+            {
+                property = selectedEntity.GetType().GetProperties()
+                     .FirstOrDefault(pi => pi.Name == selectedProperty.Name
+                           && pi.DeclaringType == selectedProperty.DeclaringType
+                           && pi.PropertyType.Name == selectedProperty.Type)
+                     ?.GetValue(selectedEntity);
+            }
             if (property == null) return;
-            _selectedEntitiesStack.Push(new Tuple<string, object>(SelectedEntityName!, selectedEntity));
+            _selectedEntitiesStack.Push((Name:selectedEntityName,Entry:selectedEntity));
             NavigateToProperty(property, selectedProperty.Name);
         }
 
@@ -423,7 +432,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (_selectedEntitiesStack.Any())
             {
                 var property = _selectedEntitiesStack.Pop();
-                NavigateToProperty(property.Item2, property.Item1);
+                NavigateToProperty(property.Entry, property.Name);
             }
         }
         
