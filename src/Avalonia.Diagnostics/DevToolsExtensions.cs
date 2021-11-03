@@ -56,7 +56,32 @@ namespace Avalonia
         /// </summary>
         /// <param name="application">The Application to attach DevTools to.</param>
         /// <param name="options">Additional settings of DevTools.</param>
-        /// <exception cref="System.ArgumentException">Throw ArgumentException if <paramref name="application"/> is already attached.</exception> 
+        /// <exception cref="System.ArgumentException">Throw ArgumentException if <paramref name="application"/> is already attached.</exception>
+        /// <remarks>
+        /// Attach DevTools should only be called after application initialization is complete. A good point is <see cref="Application.OnFrameworkInitializationCompleted"/>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// public class App : Application
+        /// {
+        ///    public override void OnFrameworkInitializationCompleted()
+        ///    {
+        ///       if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+        ///       {
+        ///          desktopLifetime.MainWindow = new MainWindow();
+        ///       }
+        ///       else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
+        ///          singleViewLifetime.MainView = new MainView();
+        ///          
+        ///       base.OnFrameworkInitializationCompleted();
+        ///       this.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+        ///           {
+        ///              StartupScreenIndex = 1,
+        ///           });
+        ///    }
+        /// }
+        /// </code>
+        /// </example>
         public static void AttachDevTools(this Application application, DevToolsOptions options)
         {
             DevTools.Attach(application, options);

@@ -1,5 +1,8 @@
 ﻿namespace Avalonia.Diagnostics.Behaviors
 {
+    /// <summary>
+    /// See discussion https://github.com/AvaloniaUI/Avalonia/discussions/6773
+    /// </summary>
     static class ColumnDefinition
     {
         private readonly static Avalonia.Controls.GridLength ZeroWidth =

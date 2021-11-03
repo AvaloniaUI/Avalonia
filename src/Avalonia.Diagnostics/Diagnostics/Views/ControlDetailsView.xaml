@@ -16,6 +16,13 @@
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
       <ColumnDefinition Width="Auto"/>
+      <!--
+      When selecting the Application node, we need this trick to hide Layout Visualizer 
+      because when using the GridSplitter it sets the Witdth property of ColumnDefinition
+      (see https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Controls/GridSplitter.cs#L528) 
+      and if we hide the contents of the column, the space is not reclaimed 
+      (see discussion https://github.com/AvaloniaUI/Avalonia/discussions/6773). 
+      -->
       <ColumnDefinition Width="320" lb:ColumnDefinition.IsVisible="{Binding Layout, Converter={x:Static ObjectConverters.IsNotNull}}" />
     </Grid.ColumnDefinitions>
     
