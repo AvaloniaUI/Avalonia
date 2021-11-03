@@ -402,23 +402,24 @@ namespace Avalonia.Diagnostics.ViewModels
             var selectedProperty = SelectedProperty;
             var selectedEntity = SelectedEntity;
             var selectedEntityName = SelectedEntityName;
-            if (selectedProperty == null) return;
-            
-            var property = (selectedEntity as IControl)?.GetValue(selectedProperty.Key as AvaloniaProperty);
-            if (property == null)
+            if (selectedProperty == null)
+                return;
+
+            object? property;
+            if (selectedProperty.Key is AvaloniaProperty avaloniaProperty)
+            {
+                property = (_selectedEntity as IControl)?.GetValue(avaloniaProperty);
+            }
+            else
             {
                 property = selectedEntity.GetType().GetProperties()
-                     .FirstOrDefault(pi =>
-                     {
-                         return pi.Name == selectedProperty.Name
+                     .FirstOrDefault(pi => pi.Name == selectedProperty.Name
                            && pi.DeclaringType == selectedProperty.DeclaringType
-                           && pi.PropertyType.Name == selectedProperty.Type; 
-                     })
+                           && pi.PropertyType.Name == selectedProperty.Type)
                      ?.GetValue(selectedEntity);
             }
-
             if (property == null) return;
-            _selectedEntitiesStack.Push((Name:selectedEntityName, Entry:selectedEntity));
+            _selectedEntitiesStack.Push((Name:selectedEntityName,Entry:selectedEntity));
             NavigateToProperty(property, selectedProperty.Name);
         }
 
