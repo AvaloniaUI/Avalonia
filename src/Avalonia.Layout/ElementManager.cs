@@ -314,12 +314,11 @@ namespace Avalonia.Layout
                         }
                         break;
 
+                    // Remove clear all realized elements just to align the begavior
+                    // with ViewManager which resets realized item indices to defaults.
+                    // Freeing only removed items causes wrong indices to be stored
+                    // in virtualized info of items under some circumstances.
                     case NotifyCollectionChangedAction.Remove:
-                        {
-                            OnItemsRemoved(args.OldStartingIndex, args.OldItems.Count);
-                        }
-                        break;
-
                     case NotifyCollectionChangedAction.Reset:
                         ClearRealizedRange();
                         break;
