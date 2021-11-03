@@ -61,7 +61,8 @@
 
     <GridSplitter Grid.Column="1"/>
 
-    <Grid Grid.Column="2" RowDefinitions="*,Auto,*">
+    <Grid Grid.Column="2" RowDefinitions="*,Auto,*"
+          IsVisible="{Binding Layout, Converter={x:Static ObjectConverters.IsNotNull}}">
 
       <Grid RowDefinitions="Auto,*" Grid.Row="0">
         <TextBlock FontWeight="Bold" Grid.Row="0" Text="Layout Visualizer" Margin="4" />
