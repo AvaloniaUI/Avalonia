@@ -35,6 +35,7 @@ namespace Avalonia.Controls
 
         private const int DATAGRIDCOLUMNHEADER_resizeRegionWidth = 5;
         private const double DATAGRIDCOLUMNHEADER_separatorThickness = 1;
+        private const int DATAGRIDCOLUMNHEADER_columnsDragTreshold = 5;
 
         private bool _areHandlersSuspended;
         private static DragMode _dragMode;
@@ -448,19 +449,6 @@ namespace Avalonia.Controls
 
             OnMouseMove_Reorder(ref handled, mousePosition, mousePositionHeaders, distanceFromLeft, distanceFromRight);
 
-            // if we still haven't done anything about moving the mouse while 
-            // the button is down, we remember that we're dragging, but we don't 
-            // claim to have actually handled the event
-            if (_dragMode == DragMode.MouseDown)
-            {
-                _dragMode = DragMode.Drag;
-            }
-
-            _lastMousePositionHeaders = mousePositionHeaders;
-            
-            if (args.Pointer.Captured != this && _dragMode == DragMode.Drag)
-                args.Pointer.Capture(this);
-            
             SetDragCursor(mousePosition);
         }
 
@@ -732,15 +720,19 @@ namespace Avalonia.Controls
             {
                 return;
             }
-
+            
             //handle entry into reorder mode
-            if (_dragMode == DragMode.MouseDown && _dragColumn == null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
+            if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
             {
-                handled = CanReorderColumn(OwningColumn);
-
-                if (handled)
+                var distanceFromInitial = (Vector)(mousePositionHeaders - _lastMousePositionHeaders);
+                if (distanceFromInitial.Length > DATAGRIDCOLUMNHEADER_columnsDragTreshold)
                 {
-                    OnMouseMove_BeginReorder(mousePosition);
+                    handled = CanReorderColumn(OwningColumn);
+
+                    if (handled)
+                    {
+                        OnMouseMove_BeginReorder(mousePosition);
+                    }
                 }
             }
 

@@ -55,6 +55,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 // FIXME: This leaks event handlers.
                 Event.AddClassHandler(typeof(object), HandleEvent, allRoutes, handledEventsToo: true);
+                Event.RouteFinished.Subscribe(HandleRouteFinished);
+                
                 _isRegistered = true;
             }
         }
@@ -86,6 +88,35 @@ namespace Avalonia.Diagnostics.ViewModels
                     _currentEvent.AddToChain(new EventChainLink(s, handled, route));
                 }
             };
+
+            if (!Dispatcher.UIThread.CheckAccess())
+                Dispatcher.UIThread.Post(handler);
+            else
+                handler();
+        }
+        
+        private void HandleRouteFinished(RoutedEventArgs e)
+        {
+            if (!_isRegistered || IsEnabled == false)
+                return;
+            if (e.Source is IVisual v && BelongsToDevTool(v))
+                return;
+
+            var s = e.Source;
+            var handled = e.Handled;
+            var route = e.Route;
+
+            void handler()
+            {
+                if (_currentEvent != null && handled)
+                {
+                    var linkIndex = _currentEvent.EventChain.Count - 1;
+                    var link = _currentEvent.EventChain[linkIndex];
+
+                    link.Handled = true;
+                    _currentEvent.HandledBy = link;
+                }
+            }
 
             if (!Dispatcher.UIThread.CheckAccess())
                 Dispatcher.UIThread.Post(handler);
