@@ -399,10 +399,18 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void ApplySelectedProperty()
         {
-            if (SelectedProperty == null) return;
-            
-            var property = (_selectedEntity as IControl)?.GetValue(SelectedProperty.Key as AvaloniaProperty);
-            if (property == null)
+            var selectedProperty = SelectedProperty;
+            var selectedEntity = SelectedEntity;
+            var selectedEntityName = SelectedEntityName;
+            if (selectedProperty == null)
+                return;
+
+            object? property;
+            if (selectedProperty.Key is AvaloniaProperty avaloniaProperty)
+            {
+                property = (_selectedEntity as IControl)?.GetValue(avaloniaProperty);
+            }
+            else
             {
                 property = _selectedEntity.GetType().GetProperties()
                      .FirstOrDefault(pi => pi.Name == _selectedProperty?.Name
@@ -420,7 +428,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (_selectedEntitiesStack.Any())
             {
                 var property = _selectedEntitiesStack.Pop();
-                NavigateToProperty(property.Item2, property.Item1);
+                NavigateToProperty(property.Entry, property.Name);
             }
         }
         
