@@ -24,7 +24,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _showInactiveStyles;
         private string? _styleStatus;
         private object _selectedEntity;
-        private readonly Stack<Tuple<string, object>> _selectedEntitiesStack = new Stack<Tuple<string, object>>();
+        private readonly Stack<(string Name, object Entry)> _selectedEntitiesStack = new();
         private string _selectedEntityName;
         private string _selectedEntityType;
 
@@ -399,17 +399,25 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void ApplySelectedProperty()
         {
-            if (SelectedProperty == null) return;
-            
-            var property = (_selectedEntity as IControl)?.GetValue(SelectedProperty.Key as AvaloniaProperty);
-            if (property == null)
+            var selectedProperty = SelectedProperty;
+            var selectedEntity = SelectedEntity;
+            var selectedEntityName = SelectedEntityName;
+            if (selectedProperty == null)
+                return;
+
+            object? property;
+            if (selectedProperty.Key is AvaloniaProperty avaloniaProperty)
             {
-                property = _selectedEntity.GetType().GetProperty(SelectedProperty.Name)?.GetValue(_selectedEntity);
+                property = (_selectedEntity as IControl)?.GetValue(avaloniaProperty);
+            }
+            else
+            {
+                property = _selectedEntity.GetType().GetProperty(selectedProperty.Name)?.GetValue(_selectedEntity);
             }
 
             if (property == null) return;
-            _selectedEntitiesStack.Push(new Tuple<string, object>(SelectedEntityName, SelectedEntity));
-            NavigateToProperty(property, SelectedProperty.Name);
+            _selectedEntitiesStack.Push((Name:selectedEntityName,Entry:selectedEntity));
+            NavigateToProperty(property, selectedProperty.Name);
         }
 
         public void ApplyParentProperty()
@@ -417,7 +425,7 @@ namespace Avalonia.Diagnostics.ViewModels
             if (_selectedEntitiesStack.Any())
             {
                 var property = _selectedEntitiesStack.Pop();
-                NavigateToProperty(property.Item2, property.Item1);
+                NavigateToProperty(property.Entry, property.Name);
             }
         }
         
