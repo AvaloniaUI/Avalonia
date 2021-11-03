@@ -19,6 +19,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public abstract string Name { get; }
         public abstract string Group { get; }
         public abstract string AssignedType { get; }
+        public abstract Type? DeclaringType { get; }
         public abstract string Value { get; set; }
         public abstract string Priority { get; }
         public abstract bool? IsAttached { get; }

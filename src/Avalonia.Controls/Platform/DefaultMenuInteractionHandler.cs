@@ -275,7 +275,7 @@ namespace Avalonia.Controls.Platform
                 return;
             }
 
-            if (item.HasSubMenu)
+            if (item.HasSubMenu && item.IsEffectivelyEnabled)
             {
                 Open(item, true);
             }
@@ -303,7 +303,8 @@ namespace Avalonia.Controls.Platform
                 {
                     item.Parent.SelectedItem.Close();
                     SelectItemAndAncestors(item);
-                    Open(item, false);
+                    if (item.HasSubMenu)
+                        Open(item, false);
                 }
                 else
                 {

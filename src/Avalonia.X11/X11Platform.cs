@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -52,11 +53,14 @@ namespace Avalonia.X11
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
-            DeferredDisplay = XOpenDisplay(IntPtr.Zero);
-            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
-                IntPtr.Zero);
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
+            DeferredDisplay = XOpenDisplay(IntPtr.Zero);
+            if (DeferredDisplay == IntPtr.Zero)
+                throw new Exception("XOpenDisplay failed");
+                
+            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
+                IntPtr.Zero);
             XError.Init();
             
             Info = new X11Info(Display, DeferredDisplay, useXim);
@@ -100,6 +104,26 @@ namespace Avalonia.X11
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
+
+        private static uint[] X11IconConverter(IWindowIconImpl icon)
+        {
+            if (!(icon is X11IconData x11icon))
+                return Array.Empty<uint>();
+
+            return x11icon.Data.Select(x => x.ToUInt32()).ToArray();
+        }
+
+        public ITrayIconImpl CreateTrayIcon()
+        {
+            var dbusTrayIcon = new DBusTrayIconImpl();
+
+            if (!dbusTrayIcon.IsActive) return new XEmbedTrayIconImpl();
+
+            dbusTrayIcon.IconConverterDelegate = X11IconConverter;
+
+            return dbusTrayIcon;
+        }
+        
         public IWindowImpl CreateWindow()
         {
             return new X11Window(this, null);

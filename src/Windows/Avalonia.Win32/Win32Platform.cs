@@ -89,6 +89,13 @@ namespace Avalonia
         /// This is recommended if you need to use AcrylicBlur or acrylic in your applications.
         /// </remarks>
         public bool UseWindowsUIComposition { get; set; } = true;
+
+        /// <summary>
+        /// When <see cref="UseWindowsUIComposition"/> enabled, create rounded corner blur brushes
+        /// If set to null the brushes will be created using default settings (sharp corners)
+        /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app
+        /// </summary>
+        public float? CompositionBackdropCornerRadius { get; set; }
     }
 }
 
@@ -107,6 +114,10 @@ namespace Avalonia.Win32
             SetDpiAwareness();
             CreateMessageWindow();
         }
+
+        internal static Win32Platform Instance => s_instance;
+
+        internal IntPtr Handle => _hwnd;
 
         /// <summary>
         /// Gets the actual WindowsVersion. Same as the info returned from RtlGetVersion.
@@ -261,6 +272,8 @@ namespace Avalonia.Win32
                     }
                 }
             }
+            
+            TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
@@ -291,6 +304,11 @@ namespace Avalonia.Win32
             {
                 throw new Win32Exception();
             }
+        }
+
+        public ITrayIconImpl CreateTrayIcon ()
+        {
+            return new TrayIconImpl();
         }
 
         public IWindowImpl CreateWindow()

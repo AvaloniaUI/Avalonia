@@ -104,6 +104,12 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.NotSyntax not:
                         result = result.Not(x => Create(not.Argument));
                         break;
+                    case SelectorGrammar.NthChildSyntax nth:
+                        result = result.NthChild(nth.Step, nth.Offset);
+                        break;
+                    case SelectorGrammar.NthLastChildSyntax nth:
+                        result = result.NthLastChild(nth.Step, nth.Offset);
+                        break;
                     case SelectorGrammar.CommaSyntax comma:
                         if (results == null)
                         {

@@ -5,6 +5,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
@@ -12,7 +13,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Base class for controls that present items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public abstract class ItemsPresenterBase : Control, IItemsPresenter, ITemplatedControl
+    public abstract class ItemsPresenterBase : Control, IItemsPresenter, ITemplatedControl, IChildIndexProvider
     {
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -36,6 +37,7 @@ namespace Avalonia.Controls.Presenters
         private IDisposable _itemsSubscription;
         private bool _createdPanel;
         private IItemContainerGenerator _generator;
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
@@ -129,6 +131,12 @@ namespace Avalonia.Controls.Presenters
 
         protected bool IsHosted => TemplatedParent is IItemsPresenterHost;
 
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
         /// <inheritdoc/>
         public override sealed void ApplyTemplate()
         {
@@ -149,6 +157,8 @@ namespace Avalonia.Controls.Presenters
             if (Panel != null)
             {
                 ItemsChanged(e);
+
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
             }
         }
 
@@ -169,7 +179,19 @@ namespace Avalonia.Controls.Presenters
                 result.ItemTemplate = ItemTemplate;
             }
 
+            result.Materialized += ContainerActionHandler;
+            result.Dematerialized += ContainerActionHandler;
+            result.Recycled += ContainerActionHandler;
+
             return result;
+        }
+
+        private void ContainerActionHandler(object sender, ItemContainerEventArgs e)
+        {
+            for (var i = 0; i < e.Containers.Count; i++)
+            {
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(e.Containers[i].ContainerControl));
+            }
         }
 
         /// <inheritdoc/>
@@ -247,6 +269,23 @@ namespace Avalonia.Controls.Presenters
         private void TemplatedParentChanged(AvaloniaPropertyChangedEventArgs e)
         {
             (e.NewValue as IItemsPresenterHost)?.RegisterItemsPresenter(this);
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            if (child is IControl control && ItemContainerGenerator is { } generator)
+            {
+                var index = ItemContainerGenerator.IndexFromContainer(control);
+
+                return index;
+            }
+
+            return -1;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            return Items.TryGetCountFast(out count);
         }
     }
 }

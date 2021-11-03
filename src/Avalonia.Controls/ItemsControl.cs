@@ -21,7 +21,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener
+    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener, IChildIndexProvider
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -56,6 +56,7 @@ namespace Avalonia.Controls
         private IEnumerable _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator _itemContainerGenerator;
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -145,11 +146,28 @@ namespace Avalonia.Controls
             protected set;
         }
 
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
         /// <inheritdoc/>
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
         {
+            if (Presenter is IChildIndexProvider oldInnerProvider)
+            {
+                oldInnerProvider.ChildIndexChanged -= PresenterChildIndexChanged;
+            }
+
             Presenter = presenter;
             ItemContainerGenerator.Clear();
+
+            if (Presenter is IChildIndexProvider innerProvider)
+            {
+                innerProvider.ChildIndexChanged += PresenterChildIndexChanged;
+                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+            }
         }
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
@@ -505,6 +523,29 @@ namespace Avalonia.Controls
             } while (c != null && c != from);
 
             return null;
+        }
+
+        private void PresenterChildIndexChanged(object sender, ChildIndexChangedEventArgs e)
+        {
+            _childIndexChanged?.Invoke(this, e);
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return Presenter is IChildIndexProvider innerProvider
+                ? innerProvider.GetChildIndex(child) : -1;
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            if (Presenter is IChildIndexProvider presenter
+                && presenter.TryGetTotalCount(out count))
+            {
+                return true;
+            }
+
+            count = ItemCount;
+            return true;
         }
     }
 }
