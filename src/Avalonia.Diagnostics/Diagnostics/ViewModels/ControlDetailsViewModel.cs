@@ -24,7 +24,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private bool _showInactiveStyles;
         private string? _styleStatus;
         private object _selectedEntity;
-        private readonly Stack<(string Name, object Entry)> _selectedEntitiesStack = new();
+        private readonly Stack<(string Name,object Entry)> _selectedEntitiesStack = new();
         private string _selectedEntityName;
         private string _selectedEntityType;
 
@@ -412,9 +412,12 @@ namespace Avalonia.Diagnostics.ViewModels
             }
             else
             {
-                property = _selectedEntity.GetType().GetProperty(selectedProperty.Name)?.GetValue(_selectedEntity);
+                property = selectedEntity.GetType().GetProperties()
+                     .FirstOrDefault(pi => pi.Name == selectedProperty.Name
+                           && pi.DeclaringType == selectedProperty.DeclaringType
+                           && pi.PropertyType.Name == selectedProperty.Type)
+                     ?.GetValue(selectedEntity);
             }
-
             if (property == null) return;
             _selectedEntitiesStack.Push((Name:selectedEntityName,Entry:selectedEntity));
             NavigateToProperty(property, selectedProperty.Name);
