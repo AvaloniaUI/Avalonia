@@ -27,15 +27,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Border, IBrush>(nameof(BorderBrush));
 
         /// <summary>
-        /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps that is used to outline shapes.
-        /// </summary>
-        public AvaloniaList<double>? StrokeDashArray
-        {
-            get { return GetValue(StrokeDashArrayProperty); }
-            set { SetValue(StrokeDashArrayProperty, value); }
-        }
-
-        /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> BorderThicknessProperty =
@@ -54,28 +45,28 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Border, BoxShadows>(nameof(BoxShadow));
 
         /// <summary>
-        /// Defines the <see cref="StrokeDashOffset"/> property.
+        /// Defines the <see cref="BorderDashOffset"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> StrokeDashOffsetProperty =
-            AvaloniaProperty.Register<Shape, double>(nameof(StrokeDashOffset));
+        public static readonly StyledProperty<double> BorderDashOffsetProperty =
+            AvaloniaProperty.Register<Border, double>(nameof(BorderDashOffset));
 
         /// <summary>
-        /// Defines the <see cref="StrokeDashArray"/> property.
+        /// Defines the <see cref="BorderDashArray"/> property.
         /// </summary>
-        public static readonly StyledProperty<AvaloniaList<double>?> StrokeDashArrayProperty =
-            AvaloniaProperty.Register<Shape, AvaloniaList<double>?>(nameof(StrokeDashArray));
+        public static readonly StyledProperty<AvaloniaList<double>?> BorderDashArrayProperty =
+            AvaloniaProperty.Register<Border, AvaloniaList<double>?>(nameof(BorderDashArray));
 
         /// <summary>
-        /// Defines the <see cref="StrokeLineCap"/> property.
+        /// Defines the <see cref="BorderLineCap"/> property.
         /// </summary>
-        public static readonly StyledProperty<PenLineCap> StrokeLineCapProperty =
-            AvaloniaProperty.Register<Shape, PenLineCap>(nameof(StrokeLineCap), PenLineCap.Flat);
+        public static readonly StyledProperty<PenLineCap> BorderLineCapProperty =
+            AvaloniaProperty.Register<Border, PenLineCap>(nameof(BorderLineCap), PenLineCap.Flat);
 
         /// <summary>
-        /// Defines the <see cref="StrokeJoin"/> property.
+        /// Defines the <see cref="BorderLineJoin"/> property.
         /// </summary>
-        public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
-            AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
+        public static readonly StyledProperty<PenLineJoin> BorderLineJoinProperty =
+            AvaloniaProperty.Register<Border, PenLineJoin>(nameof(BorderLineJoin), PenLineJoin.Miter);
 
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
@@ -89,10 +80,10 @@ namespace Avalonia.Controls
                 BorderBrushProperty,
                 BorderThicknessProperty,
                 CornerRadiusProperty,
-                StrokeDashArrayProperty,
-                StrokeLineCapProperty,
-                StrokeJoinProperty,
-                StrokeDashOffsetProperty,
+                BorderDashArrayProperty,
+                BorderLineCapProperty,
+                BorderLineJoinProperty,
+                BorderDashOffsetProperty,
                 BoxShadowProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
         }
@@ -116,6 +107,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets a collection of <see cref="double"/> values that indicate the pattern of dashes and gaps that is used to outline shapes.
+        /// </summary>
+        public AvaloniaList<double>? BorderDashArray
+        {
+            get { return GetValue(BorderDashArrayProperty); }
+            set { SetValue(BorderDashArrayProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the thickness of the border.
         /// </summary>
         public Thickness BorderThickness
@@ -127,28 +127,28 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets a value that specifies the distance within the dash pattern where a dash begins.
         /// </summary>
-        public double StrokeDashOffset
+        public double BorderDashOffset
         {
-            get { return GetValue(StrokeDashOffsetProperty); }
-            set { SetValue(StrokeDashOffsetProperty, value); }
+            get { return GetValue(BorderDashOffsetProperty); }
+            set { SetValue(BorderDashOffsetProperty, value); }
         }
 
         /// <summary>
         /// Gets or sets a <see cref="PenLineCap"/> enumeration value that describes the shape at the ends of a line.
         /// </summary>
-        public PenLineCap StrokeLineCap
+        public PenLineCap BorderLineCap
         {
-            get { return GetValue(StrokeLineCapProperty); }
-            set { SetValue(StrokeLineCapProperty, value); }
+            get { return GetValue(BorderLineCapProperty); }
+            set { SetValue(BorderLineCapProperty, value); }
         }
 
         /// <summary>
         /// Gets or sets a <see cref="PenLineJoin"/> enumeration value that specifies the type of join that is used at the vertices of a Shape.
         /// </summary>
-        public PenLineJoin StrokeJoin
+        public PenLineJoin BorderLineJoin
         {
-            get { return GetValue(StrokeJoinProperty); }
-            set { SetValue(StrokeJoinProperty, value); }
+            get { return GetValue(BorderLineJoinProperty); }
+            set { SetValue(BorderLineJoinProperty, value); }
         }
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace Avalonia.Controls
         public override void Render(DrawingContext context)
         {
             _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
-                BoxShadow, StrokeDashOffset, StrokeLineCap, StrokeJoin, StrokeDashArray);
+                BoxShadow, BorderDashOffset, BorderLineCap, BorderLineJoin, BorderDashArray);
         }
 
         /// <summary>
