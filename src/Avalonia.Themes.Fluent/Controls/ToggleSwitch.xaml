@@ -53,6 +53,7 @@
             Grid.Row="0"
             Content="{TemplateBinding Content}"
             ContentTemplate="{TemplateBinding ContentTemplate}"
+            RecognizesAccessKey="True"
             VerticalAlignment="Top"/>
 
           <Grid Grid.Row="1"

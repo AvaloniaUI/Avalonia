@@ -378,13 +378,13 @@ namespace Avalonia.Controls
                     }
                 }
             }
-        } 
+        }
 
         internal Panel RootElement
         {
             get;
             private set;
-        } 
+        }
 
         internal int Slot
         {
@@ -638,7 +638,7 @@ namespace Avalonia.Controls
                 PseudoClasses.Set(":editing", IsEditing);
                 PseudoClasses.Set(":invalid", !IsValid);
                 ApplyHeaderStatus();
-            } 
+            }
         }
 
         //TODO Animation
@@ -896,7 +896,7 @@ namespace Avalonia.Controls
                     _detailsElement.ContentHeight = _detailsDesiredHeight;
                 }
             }
-        } 
+        }
 
         // Makes sure the _detailsDesiredHeight is initialized.  We need to measure it to know what
         // height we want to animate to.  Subsequently, we just update that height in response to SizeChanged
@@ -919,7 +919,7 @@ namespace Avalonia.Controls
 
         //TODO Cleanup
         double? _previousDetailsHeight = null;
-        
+
         //TODO Animation 
         private void DetailsContent_HeightChanged(double newValue)
         {
@@ -1022,7 +1022,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         internal void ApplyDetailsTemplate(bool initializeDetailsPreferredHeight)
         {
             if (_detailsElement != null && AreDetailsVisible)
@@ -1066,7 +1066,7 @@ namespace Avalonia.Controls
                                                .Subscribe(DetailsContent_MarginChanged);
 
                         }
-                        
+
                         _detailsElement.Children.Add(_detailsContent);
                     }
                 }
@@ -1089,6 +1089,28 @@ namespace Avalonia.Controls
                     _detailsElement.ContentHeight = _detailsDesiredHeight;
                 }
             }
+        }
+        
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            if (change.Property == DataContextProperty)
+            {
+                var owner = OwningGrid;
+                if (owner != null && this.IsRecycled)
+                {
+                    var columns = owner.ColumnsItemsInternal;
+                    var nc = columns.Count;
+                    for (int ci = 0; ci < nc; ci++)
+                    {
+                        if (columns[ci] is DataGridTemplateColumn column)
+                        {
+                            column.RefreshCellContent((Control)this.Cells[column.Index].Content, nameof(DataGridTemplateColumn.CellTemplate));
+                        }
+                    }
+                }
+            }
+            base.OnPropertyChanged(change);
         }
 
     }

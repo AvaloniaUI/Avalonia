@@ -25,6 +25,7 @@ using System.ComponentModel.DataAnnotations;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
+using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Controls
 {
@@ -2214,35 +2215,75 @@ namespace Avalonia.Controls
         /// <param name="e">PointerWheelEventArgs</param>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
-            if (IsEnabled && !e.Handled && DisplayData.NumDisplayedScrollingElements > 0)
-            {
-                double scrollHeight = 0;
-                var delta = DATAGRID_mouseWheelDelta * e.Delta.Y;
-                var deltaAbs = Math.Abs(delta);
+            e.Handled = e.Handled || UpdateScroll(e.Delta * DATAGRID_mouseWheelDelta);
+        }
 
-                if (delta > 0)
+        internal bool UpdateScroll(Vector delta)
+        {
+            if (IsEnabled && DisplayData.NumDisplayedScrollingElements > 0)
+            {
+                var handled = false;
+                var ignoreInvalidate = false;
+                var scrollHeight = 0d;
+
+                // Vertical scroll handling
+                if (delta.Y > 0)
                 {
-                    scrollHeight = Math.Max(-_verticalOffset, -deltaAbs);
+                    scrollHeight = Math.Max(-_verticalOffset, -delta.Y);
                 }
-                else if (delta < 0)
+                else if (delta.Y < 0)
                 {
                     if (_vScrollBar != null && VerticalScrollBarVisibility == ScrollBarVisibility.Visible)
                     {
-                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), deltaAbs);
+                        scrollHeight = Math.Min(Math.Max(0, _vScrollBar.Maximum - _verticalOffset), -delta.Y);
                     }
                     else
                     {
                         double maximum = EdgedRowsHeightCalculated - CellsHeight;
-                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), deltaAbs);
+                        scrollHeight = Math.Min(Math.Max(0, maximum - _verticalOffset), -delta.Y);
                     }
                 }
+
                 if (scrollHeight != 0)
                 {
                     DisplayData.PendingVerticalScrollHeight = scrollHeight;
-                    InvalidateRowsMeasure(invalidateIndividualElements: false);
-                    e.Handled = true;
+                    handled = true;
+                }
+
+                // Horizontal scroll handling
+                if (delta.X != 0)
+                {
+                    var horizontalOffset = HorizontalOffset - delta.X;
+                    var widthNotVisible = Math.Max(0, ColumnsInternal.VisibleEdgedColumnsWidth - CellsWidth);
+
+                    if (horizontalOffset < 0)
+                    {
+                        horizontalOffset = 0;
+                    }
+                    if (horizontalOffset > widthNotVisible)
+                    {
+                        horizontalOffset = widthNotVisible;
+                    }
+
+                    if (UpdateHorizontalOffset(horizontalOffset))
+                    {
+                        // We don't need to invalidate once again after UpdateHorizontalOffset.
+                        ignoreInvalidate = true;
+                        handled = true;
+                    }
+                }
+
+                if (handled)
+                {
+                    if (!ignoreInvalidate)
+                    {
+                        InvalidateRowsMeasure(invalidateIndividualElements: false);
+                    }
+                    return true;
                 }
             }
+
+            return false;
         }
 
         /// <summary>
@@ -2895,7 +2936,7 @@ namespace Avalonia.Controls
             return SetCurrentCellCore(columnIndex, slot, commitEdit: true, endRowEdit: true);
         }
 
-        internal void UpdateHorizontalOffset(double newValue)
+        internal bool UpdateHorizontalOffset(double newValue)
         {
             if (HorizontalOffset != newValue)
             {
@@ -2903,7 +2944,9 @@ namespace Avalonia.Controls
 
                 InvalidateColumnHeadersMeasure();
                 InvalidateRowsMeasure(true);
+                return true;
             }
+            return false;
         }
 
         internal bool UpdateSelectionAndCurrency(int columnIndex, int slot, DataGridSelectionAction action, bool scrollIntoView)
@@ -3002,6 +3045,12 @@ namespace Avalonia.Controls
             }
         }
 
+        //TODO: Ensure right button is checked for
+        internal bool UpdateStateOnMouseRightButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex, int slot, bool allowEdit)
+        {
+            KeyboardHelper.GetMetaKeyState(pointerPressedEventArgs.KeyModifiers, out bool ctrl, out bool shift);
+            return UpdateStateOnMouseRightButtonDown(pointerPressedEventArgs, columnIndex, slot, allowEdit, shift, ctrl);
+        }
         //TODO: Ensure left button is checked for
         internal bool UpdateStateOnMouseLeftButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex, int slot, bool allowEdit)
         {
@@ -4452,17 +4501,27 @@ namespace Avalonia.Controls
                 element = dataGridColumn.GenerateEditingElementInternal(dataGridCell, dataGridRow.DataContext);
                 if (element != null)
                 {
-                    // Subscribe to the new element's events
-                    element.Initialized += EditingElement_Initialized;
+
+                    dataGridCell.Content = element;
+                    if (element.IsInitialized)
+                    {
+                        PreparingCellForEditPrivate(element as Control);
+                    }
+                    else
+                    {
+                        // Subscribe to the new element's events
+                        element.Initialized += EditingElement_Initialized;
+                    }
                 }
             }
             else
             {
                 // Generate Element and apply column style if available
                 element = dataGridColumn.GenerateElementInternal(dataGridCell, dataGridRow.DataContext);
+                dataGridCell.Content = element;
             }
 
-            dataGridCell.Content = element;
+            
         }
 
         private void PreparingCellForEditPrivate(Control editingElement)
@@ -5672,6 +5731,35 @@ namespace Avalonia.Controls
         {
             ProcessVerticalScroll(e.ScrollEventType);
             VerticalScroll?.Invoke(sender, e);
+        }
+
+        //TODO: Ensure right button is checked for
+        private bool UpdateStateOnMouseRightButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex, int slot, bool allowEdit, bool shift, bool ctrl)
+        {
+            Debug.Assert(slot >= 0);
+
+            if (shift || ctrl)
+            {
+                return true;
+            }
+            if (IsSlotOutOfBounds(slot))
+            {
+                return true;
+            }
+            if (GetRowSelection(slot))
+            {
+                return true;
+            }
+            // Unselect everything except the row that was clicked on
+            try
+            {
+                UpdateSelectionAndCurrency(columnIndex, slot, DataGridSelectionAction.SelectCurrent, scrollIntoView: false);
+            }
+            finally
+            {
+                NoSelectionChangeCount--;
+            }
+            return true;
         }
 
         //TODO: Ensure left button is checked for
