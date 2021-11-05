@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -376,7 +377,10 @@ namespace Avalonia.Controls.Platform
             {
                 if (item.IsSubMenuOpen)
                 {
-                    if (item.IsTopLevel)
+                    // PointerPressed events may bubble from disabled items in sub-menus. In this case,
+                    // keep the sub-menu open.
+                    var popup = (e.Source as ILogical)?.FindLogicalAncestorOfType<Popup>();
+                    if (item.IsTopLevel && popup == null)
                     {
                         CloseMenu(item);
                     }
