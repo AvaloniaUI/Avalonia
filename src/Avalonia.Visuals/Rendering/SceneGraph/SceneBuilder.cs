@@ -431,7 +431,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         // HACK: Disabled layers because they're broken in current renderer. See #2244.
-        private static bool ShouldStartLayer(IVisual visual) => false;
+        private static bool ShouldStartLayer(IVisual visual)
+        {
+            var o = visual as IAvaloniaObject;
+            return visual.VisualChildren.Count > 0 &&
+                   o != null &&
+                   o.IsAnimating(Visual.OpacityProperty);
+        }
 
         private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)
         {
