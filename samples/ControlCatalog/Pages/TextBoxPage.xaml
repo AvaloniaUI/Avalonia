@@ -11,13 +11,22 @@
               HorizontalAlignment="Center"
               Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8">
-        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
+        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200"
+                 FontFamily="Comic Sans MS"
+                 Foreground="Blue">
+          <TextBox.ContextFlyout>
+            <Flyout>
+              <TextBlock>Custom context flyout</TextBlock>
+            </Flyout>
+          </TextBox.ContextFlyout>        
+        </TextBox>
         <TextBox Width="200" Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
         <TextBox Width="200" Watermark="Numeric Watermark" x:Name="numericWatermark"/>
         <TextBox Width="200"
                  Watermark="Floating Watermark"
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+        <MaskedTextBox Width="200" ResetOnSpace="False"  Mask="(LLL) 999-0000"/>
         
         <TextBox Width="200" Text="Validation Error">
           <DataValidationErrors.Error>

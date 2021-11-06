@@ -26,6 +26,7 @@
     <Setter Property="Foreground" Value="{DynamicResource CalendarDatePickerForeground}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource CalendarDatePickerBorderThemeThickness}"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Padding" Value="4"/>
@@ -102,6 +103,7 @@
                    Background="{TemplateBinding Background}" 
                    BorderBrush="{TemplateBinding BorderBrush}" 
                    BorderThickness="{TemplateBinding BorderThickness}" 
+                   CornerRadius="{TemplateBinding CornerRadius}"
                    Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
                    UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"

@@ -52,7 +52,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -124,6 +123,8 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
+            
+            [Window setContentView: StandardContainer];
             
             [Window setTitle:_lastTitle];
             
@@ -231,6 +232,8 @@ public:
     
     virtual HRESULT GetFrameSize(AvnSize* ret) override
     {
+        START_COM_CALL;
+        
         @autoreleasepool
         {
             if(ret == nullptr)
@@ -321,6 +324,7 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
+                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             }
             @finally
@@ -641,6 +645,7 @@ private:
         [Window setCanBecomeKeyAndMain];
         [Window disableCursorRects];
         [Window setTabbingMode:NSWindowTabbingModeDisallowed];
+        [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     }
     
     void HideOrShowTrafficLights ()
@@ -712,6 +717,12 @@ private:
             auto cparent = dynamic_cast<WindowImpl*>(parent);
             if(cparent == nullptr)
                 return E_INVALIDARG;
+            
+            // If one tries to show a child window with a minimized parent window, then the parent window will be
+            // restored but MacOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
+            if (cparent->WindowState() == Minimized)
+                cparent->SetWindowState(Normal);
             
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             
@@ -1085,14 +1096,7 @@ private:
     {
         _fullScreenActive = true;
         
-        [Window setHasShadow:YES];
-        [Window setTitleVisibility:NSWindowTitleVisible];
-        [Window setTitlebarAppearsTransparent:NO];
         [Window setTitle:_lastTitle];
-        
-        Window.styleMask = Window.styleMask | NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
-        Window.styleMask = Window.styleMask & ~NSWindowStyleMaskFullSizeContentView;
-    
         [Window toggleFullScreen:nullptr];
     }
     
@@ -1204,6 +1208,7 @@ private:
                 }
                 
                 _actualWindowState = _lastWindowState;
+                WindowEvents->WindowStateChanged(_actualWindowState);
             }
             
             
@@ -1540,7 +1545,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return pt;
 }
 
-- (AvnPoint)toAvnPoint:(CGPoint)p
++ (AvnPoint)toAvnPoint:(CGPoint)p
 {
     AvnPoint result;
     
@@ -1597,7 +1602,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
-    auto avnPoint = [self toAvnPoint:localPoint];
+    auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
     AvnVector delta;
     
@@ -1665,6 +1670,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = true;
             [self mouseEvent:event withType:MiddleButtonDown];
@@ -1697,6 +1703,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     switch(event.buttonNumber)
     {
+        case 2:
         case 3:
             _isMiddlePressed = false;
             [self mouseEvent:event withType:MiddleButtonUp];
@@ -1940,7 +1947,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
     auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
-    auto avnPoint = [self toAvnPoint:localPoint];
+    auto avnPoint = [AvnView toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
     auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
     NSDragOperation nsop = [info draggingSourceOperationMask];
@@ -2371,6 +2378,49 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         _parent->GetPosition(&position);
         _parent->BaseEvents->PositionChanged(position);
+    }
+}
+
+- (AvnPoint) translateLocalPoint:(AvnPoint)pt
+{
+    pt.Y = [self frame].size.height - pt.Y;
+    return pt;
+}
+
+- (void)sendEvent:(NSEvent *)event
+{
+    [super sendEvent:event];
+    
+    /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.
+    if(_parent != nullptr && dynamic_cast<WindowImpl*>(_parent.getRaw()) != nullptr)
+    {
+        switch(event.type)
+        {
+            case NSEventTypeLeftMouseDown:
+            {
+                auto avnPoint = [AvnView toAvnPoint:[event locationInWindow]];
+                auto point = [self translateLocalPoint:avnPoint];
+                AvnVector delta;
+                
+                _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, [event timestamp] * 1000, AvnInputModifiersNone, point, delta);
+            }
+            break;
+                
+            case NSEventTypeMouseEntered:
+            {
+                _parent->UpdateCursor();
+            }
+            break;
+                
+            case NSEventTypeMouseExited:
+            {
+                [[NSCursor arrowCursor] set];
+            }
+            break;
+                
+            default:
+                break;
+        }
     }
 }
 @end

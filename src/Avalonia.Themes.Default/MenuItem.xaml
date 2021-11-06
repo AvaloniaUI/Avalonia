@@ -14,7 +14,8 @@
         <Border Name="root"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="20"/>
@@ -61,7 +62,7 @@
                    PlacementMode="Right"
                    IsLightDismissEnabled="False"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
-              <Border Background="{TemplateBinding Background}"
+              <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
                 <ScrollViewer Classes="menuscroller">                  
@@ -96,7 +97,8 @@
         <Border Name="root"
                 Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Panel>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Content="{TemplateBinding Header}"
@@ -111,7 +113,7 @@
                    IsLightDismissEnabled="True"
                    OverlayInputPassThroughElement="{Binding $parent[Menu]}"
                    IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}">
-              <Border Background="{TemplateBinding Background}"
+              <Border Background="{DynamicResource ThemeBackgroundBrush}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}">
                 <ScrollViewer Classes="menuscroller">

@@ -35,8 +35,16 @@ namespace MicroComGenerator
 
             if (opts.CppOutput != null)
                 File.WriteAllText(opts.CppOutput, CppGen.GenerateCpp(ast));
+            
             if (opts.CSharpOutput != null)
+            {
                 File.WriteAllText(opts.CSharpOutput, new CSharpGen(ast).Generate());
+                
+                // HACK: Can't work out how to get the VS project system's fast up-to-date checks
+                // to ignore the generated code, so as a workaround set the write time to that of
+                // the input.
+                File.SetLastWriteTime(opts.CSharpOutput, File.GetLastWriteTime(opts.Input));
+            }
             
             return 0;
         }

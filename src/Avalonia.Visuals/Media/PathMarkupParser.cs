@@ -496,12 +496,18 @@ namespace Avalonia.Media
 
         private bool ReadBool(ref ReadOnlySpan<char> span)
         {
-            if (!ReadArgument(ref span, out var boolValue) || boolValue.Length != 1)
+            span = SkipWhitespace(span);
+            
+            if (span.IsEmpty)
             {
                 throw new InvalidDataException("Invalid bool rule.");
             }
             
-            switch (boolValue[0])
+            var c = span[0];
+            
+            span = span.Slice(1);
+            
+            switch (c)
             {
                 case '0':
                     return false;

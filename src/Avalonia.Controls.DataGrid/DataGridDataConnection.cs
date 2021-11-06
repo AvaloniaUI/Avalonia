@@ -233,7 +233,7 @@ namespace Avalonia.Controls
                 else
                 {
                     editableCollectionView.EditItem(dataItem);
-                    return editableCollectionView.IsEditingItem;
+                    return editableCollectionView.IsEditingItem || editableCollectionView.IsAddingNew;
                 }
             }
 
@@ -314,7 +314,14 @@ namespace Avalonia.Controls
                 CommittingEdit = true;
                 try
                 {
-                    editableCollectionView.CommitEdit();
+                    if (editableCollectionView.IsAddingNew)
+                    {
+                        editableCollectionView.CommitNew();
+                    }
+                    else
+                    {
+                        editableCollectionView.CommitEdit();
+                    }                    
                 }
                 finally
                 {
