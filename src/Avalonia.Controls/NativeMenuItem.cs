@@ -16,6 +16,7 @@ namespace Avalonia.Controls
         private bool _isChecked = false;
         private NativeMenuItemToggleType _toggleType;
         private IBitmap _icon;
+        private readonly CanExecuteChangedSubscriber _canExecuteChangedSubscriber;
 
         private NativeMenu _menu;
 
@@ -46,8 +47,6 @@ namespace Avalonia.Controls
                 _parent.CanExecuteChanged();
             }
         }
-
-        private readonly CanExecuteChangedSubscriber _canExecuteChangedSubscriber;
 
 
         public NativeMenuItem()

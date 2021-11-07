@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Primitives
             if (underscore != -1 && ShowAccessKey)
             {
                 var rect = TextLayout.HitTestTextPosition(underscore);
-                var offset = new Vector(0, -0.5);
+                var offset = new Vector(0, -1.5);
                 context.DrawLine(
                     new Pen(Foreground, 1),
                     rect.BottomLeft + offset,
