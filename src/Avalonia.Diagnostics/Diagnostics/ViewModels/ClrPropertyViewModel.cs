@@ -24,7 +24,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 Name = property.DeclaringType.Name + '.' + property.Name;
             }
-
+            DeclaringType = property.DeclaringType;
             Update();
         }
 
@@ -54,6 +54,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public override bool? IsAttached => 
             default;
+
+        public override System.Type? DeclaringType { get; }
 
         // [MemberNotNull(nameof(_type))]
         public override void Update()
