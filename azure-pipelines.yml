@@ -4,14 +4,14 @@ jobs:
     vmImage: 'ubuntu-20.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.414'
+    displayName: 'Use .NET Core SDK 3.1.415'
     inputs:
-      version: 3.1.414
+      version: 3.1.415
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.402'
+    displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 5.0.402
+      version: 6.0.100
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -35,14 +35,14 @@ jobs:
     vmImage: 'macOS-10.15'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.414'
+    displayName: 'Use .NET Core SDK 3.1.415'
     inputs:
-      version: 3.1.414
+      version: 3.1.415
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.402'
+    displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 5.0.402
+      version: 6.0.100
       
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -105,14 +105,14 @@ jobs:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.414'
+    displayName: 'Use .NET Core SDK 3.1.415'
     inputs:
-      version: 3.1.414
+      version: 3.1.415
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.402'
+    displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 5.0.402
+      version: 6.0.100
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
