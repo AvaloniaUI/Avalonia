@@ -6,55 +6,65 @@ using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
-using Avalonia.FreeDesktop;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Tmds.DBus;
 
 [assembly: InternalsVisibleTo(Connection.DynamicAssemblyName)]
 
-namespace Avalonia.X11
+[assembly:
+    InternalsVisibleTo(
+        "Avalonia.X11, PublicKey=0024000004800000940000000602000000240000525341310004000001000100c1bba1142285fe0419326fb25866ba62c47e6c2b5c1ab0c95b46413fad375471232cb81706932e1cef38781b9ebd39d5100401bacb651c6c5bbf59e571e81b3bc08d2a622004e08b1a6ece82a7e0b9857525c86d2b95fab4bc3dce148558d7f3ae61aa3a234086902aeface87d9dfdd32b9d2fe3c6dd4055b5ab4b104998bd87")]
+
+namespace Avalonia.FreeDesktop
 {
-    internal class X11TrayIconImpl : ITrayIconImpl
+    internal class DBusTrayIconImpl : ITrayIconImpl
     {
         private static int s_trayIconInstanceId;
-        private readonly ObjectPath _dbusMenuPath;
-        private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
-        private readonly Connection? _connection;
-        private DbusPixmap _icon;
 
+        private readonly ObjectPath _dbusMenuPath;
+        private readonly Connection? _connection;
+        private IDisposable? _serviceWatchDisposable;
+
+        private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private IStatusNotifierWatcher? _statusNotifierWatcher;
+        private DbusPixmap _icon;
 
         private string? _sysTrayServiceName;
         private string? _tooltipText;
-        private bool _isActive;
         private bool _isDisposed;
-        private readonly bool _ctorFinished;
+        private bool _serviceConnected;
+        private bool _isVisible = true;
 
+        public bool IsActive { get; private set; }
         public INativeMenuExporter? MenuExporter { get; }
         public Action? OnClicked { get; set; }
+        public Func<IWindowIconImpl?, uint[]>? IconConverterDelegate { get; set; }
 
-        public X11TrayIconImpl()
+        public DBusTrayIconImpl()
         {
-            _connection = DBusHelper.TryGetConnection();
+            _connection = DBusHelper.TryCreateNewConnection();
 
             if (_connection is null)
             {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
                     ?.Log(this, "Unable to get a dbus connection for system tray icons.");
+
                 return;
             }
 
+            IsActive = true;
+
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
+
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
-            CreateTrayIcon();
-            _ctorFinished = true;
+
+            WatchAsync();
         }
 
-        public async void CreateTrayIcon()
+        private void InitializeSNWService()
         {
-            if (_connection is null)
-                return;
+            if (_connection is null || _isDisposed) return;
 
             try
             {
@@ -64,12 +74,58 @@ namespace Avalonia.X11
             }
             catch
             {
-                Logger.TryGet(LogEventLevel.Error, LogArea.X11Platform)
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
                     ?.Log(this,
-                        "DBUS: org.kde.StatusNotifierWatcher service is not available on this system. System Tray Icons will not work without it.");
+                        "org.kde.StatusNotifierWatcher service is not available on this system. Tray Icons will not work without it.");
+
+                return;
             }
 
-            if (_statusNotifierWatcher is null)
+            _serviceConnected = true;
+        }
+
+        private async void WatchAsync()
+        {
+            try
+            {
+                _serviceWatchDisposable =
+                    await _connection?.ResolveServiceOwnerAsync("org.kde.StatusNotifierWatcher", OnNameChange)!;
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
+                    ?.Log(this,
+                        $"Unable to hook watcher method on org.kde.StatusNotifierWatcher: {e}");
+            }
+        }
+
+        private void OnNameChange(ServiceOwnerChangedEventArgs obj)
+        {
+            if (_isDisposed)
+                return;
+
+            if (!_serviceConnected & obj.NewOwner != null)
+            {
+                _serviceConnected = true;
+                InitializeSNWService();
+
+                DestroyTrayIcon();
+
+                if (_isVisible)
+                {
+                    CreateTrayIcon();
+                }
+            }
+            else if (_serviceConnected & obj.NewOwner is null)
+            {
+                DestroyTrayIcon();
+                _serviceConnected = false;
+            }
+        }
+
+        private void CreateTrayIcon()
+        {
+            if (_connection is null || !_serviceConnected || _isDisposed)
                 return;
 
             var pid = Process.GetCurrentProcess().Id;
@@ -78,45 +134,61 @@ namespace Avalonia.X11
             _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
 
-            await _connection.RegisterObjectAsync(_statusNotifierItemDbusObj);
+            try
+            {
+                _connection.RegisterObjectAsync(_statusNotifierItemDbusObj);
+                _connection.RegisterServiceAsync(_sysTrayServiceName);
+                _statusNotifierWatcher?.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
+                    ?.Log(this, $"Error creating a DBus tray icon: {e}.");
 
-            await _connection.RegisterServiceAsync(_sysTrayServiceName);
-
-            await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+                _serviceConnected = false;
+            }
 
             _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
 
             _statusNotifierItemDbusObj.ActivationDelegate += OnClicked;
-
-            _isActive = true;
         }
 
-        public async void DestroyTrayIcon()
+        private void DestroyTrayIcon()
         {
-            if (_connection is null)
+            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null)
                 return;
+
             _connection.UnregisterObject(_statusNotifierItemDbusObj);
-            await _connection.UnregisterServiceAsync(_sysTrayServiceName);
-            _isActive = false;
+            _connection.UnregisterServiceAsync(_sysTrayServiceName);
         }
 
         public void Dispose()
         {
+            IsActive = false;
             _isDisposed = true;
             DestroyTrayIcon();
             _connection?.Dispose();
+            _serviceWatchDisposable?.Dispose();
         }
 
         public void SetIcon(IWindowIconImpl? icon)
         {
-            if (_isDisposed)
-                return;
-            if (!(icon is X11IconData x11icon))
+            if (_isDisposed || IconConverterDelegate is null)
                 return;
 
-            var w = (int)x11icon.Data[0];
-            var h = (int)x11icon.Data[1];
+            if (icon is null)
+            {
+                _statusNotifierItemDbusObj?.SetIcon(DbusPixmap.EmptyPixmap);
+                return;
+            }
+
+            var x11iconData = IconConverterDelegate(icon);
+
+            if (x11iconData.Length == 0) return;
+
+            var w = (int)x11iconData[0];
+            var h = (int)x11iconData[1];
 
             var pixLength = w * h;
             var pixByteArrayCounter = 0;
@@ -124,7 +196,7 @@ namespace Avalonia.X11
 
             for (var i = 0; i < pixLength; i++)
             {
-                var rawPixel = x11icon.Data[i + 2].ToUInt32();
+                var rawPixel = x11iconData[i + 2];
                 pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF000000) >> 24);
                 pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF0000) >> 16);
                 pixByteArray[pixByteArrayCounter++] = (byte)((rawPixel & 0xFF00) >> 8);
@@ -137,18 +209,21 @@ namespace Avalonia.X11
 
         public void SetIsVisible(bool visible)
         {
-            if (_isDisposed || !_ctorFinished)
+            if (_isDisposed)
                 return;
 
-            if (visible & !_isActive)
+            switch (visible)
             {
-                DestroyTrayIcon();
-                CreateTrayIcon();
+                case true when !_isVisible:
+                    DestroyTrayIcon();
+                    CreateTrayIcon();
+                    break;
+                case false when _isVisible:
+                    DestroyTrayIcon();
+                    break;
             }
-            else if (!visible & _isActive)
-            {
-                DestroyTrayIcon();
-            }
+
+            _isVisible = visible;
         }
 
         public void SetToolTipText(string? text)
@@ -248,7 +323,20 @@ namespace Avalonia.X11
             return Task.FromResult(Disposable.Create(() => NewStatusAsync -= handler));
         }
 
-        public Task<object> GetAsync(string prop) => Task.FromResult(new object());
+        public Task<object?> GetAsync(string prop)
+        {
+            return Task.FromResult<object?>(prop switch
+            {
+                nameof(_backingProperties.Category) => _backingProperties.Category,
+                nameof(_backingProperties.Id) => _backingProperties.Id,
+                nameof(_backingProperties.Menu) => _backingProperties.Menu,
+                nameof(_backingProperties.IconPixmap) => _backingProperties.IconPixmap,
+                nameof(_backingProperties.Status) => _backingProperties.Status,
+                nameof(_backingProperties.Title) => _backingProperties.Title,
+                nameof(_backingProperties.ToolTip) => _backingProperties.ToolTip,
+                _ => null
+            });
+        }
 
         public Task<StatusNotifierItemProperties> GetAllAsync() => Task.FromResult(_backingProperties);
 
@@ -298,17 +386,17 @@ namespace Avalonia.X11
         Task<IDisposable> WatchNewOverlayIconAsync(Action handler, Action<Exception> onError);
         Task<IDisposable> WatchNewToolTipAsync(Action handler, Action<Exception> onError);
         Task<IDisposable> WatchNewStatusAsync(Action<string> handler, Action<Exception> onError);
-        Task<object> GetAsync(string prop);
+        Task<object?> GetAsync(string prop);
         Task<StatusNotifierItemProperties> GetAllAsync();
         Task SetAsync(string prop, object val);
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
     }
 
-    [Dictionary]
     // This class is used by Tmds.Dbus to ferry properties
     // from the SNI spec.
     // Don't change this to actual C# properties since
     // Tmds.Dbus will get confused.
+    [Dictionary]
     internal class StatusNotifierItemProperties
     {
         public string? Category;
@@ -363,5 +451,7 @@ namespace Avalonia.X11
             Height = height;
             Data = data;
         }
+
+        public static DbusPixmap EmptyPixmap = new DbusPixmap(1, 1, new byte[] { 255, 0, 0, 0 });
     }
 }
