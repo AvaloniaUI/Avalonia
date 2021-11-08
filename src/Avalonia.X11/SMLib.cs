@@ -119,7 +119,6 @@ namespace Avalonia.X11
             IntPtr clientData
         );
 
-
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void SmcErrorHandler(
             IntPtr smcConn,
