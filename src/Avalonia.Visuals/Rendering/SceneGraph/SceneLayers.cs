@@ -13,6 +13,7 @@ namespace Avalonia.Rendering.SceneGraph
         private readonly IVisual _root;
         private readonly List<SceneLayer> _inner;
         private readonly Dictionary<IVisual, SceneLayer> _index;
+        public static bool AllowGpuOptimisedRects { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SceneLayers"/> class.
