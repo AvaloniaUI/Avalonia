@@ -749,7 +749,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
         }
 
-        [Fact(Skip = "Tmp")]
+        [Fact]
         public void DirtyRects_Should_Contain_Old_And_New_Bounds_When_Margin_Changed()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -796,7 +796,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             }
         }
 
-        [Fact (Skip = "tmp")]
+        [Fact]
         public void Resizing_Scene_Should_Add_DirtyRects()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

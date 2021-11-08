@@ -106,7 +106,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
-        [Fact(Skip = "tmp")]
+        [Fact]
         public void Should_Add_Dirty_Rect_On_Child_Remove()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))

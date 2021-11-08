@@ -151,7 +151,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             Assert.IsType<RectangleNode>(node.DrawOperations[0].Item);
         }
         
-        [Fact(Skip = "Temp")]
+        [Fact]
         public void Should_Update_DirtyRects()
         {
             var node = new VisualNode(new TestRoot(), null);
