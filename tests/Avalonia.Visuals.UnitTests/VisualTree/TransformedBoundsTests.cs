@@ -40,7 +40,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
 
                 tree.Measure(Size.Infinity);
                 tree.Arrange(new Rect(0, 0, 100, 100));
-                ImmediateRenderer.Render(tree, context);
+                ImmediateRenderer.Render(tree, context, true);
 
                 var track = control.GetObservable(Visual.TransformedBoundsProperty);
                 var results = new List<TransformedBounds?>();
