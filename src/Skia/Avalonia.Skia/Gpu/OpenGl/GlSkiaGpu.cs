@@ -25,7 +25,7 @@ namespace Avalonia.Skia
                     GRGlInterface.CreateOpenGl(proc => context.GlInterface.GetProcAddress(proc)) :
                     GRGlInterface.CreateGles(proc => context.GlInterface.GetProcAddress(proc)))
                 {
-                    _grContext = GRContext.CreateGl(iface);
+                    _grContext = GRContext.CreateGl(iface, new GRContextOptions { AvoidStencilBuffers = true });
                     if (maxResourceBytes.HasValue)
                     {
                         _grContext.SetResourceCacheLimit(maxResourceBytes.Value);

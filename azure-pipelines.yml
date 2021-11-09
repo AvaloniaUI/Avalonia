@@ -1,3 +1,6 @@
+variables:
+    MSBuildEnableWorkloadResolver: 'false'
+
 jobs:
 - job: Linux
   pool:
@@ -9,9 +12,9 @@ jobs:
       version: 3.1.414
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.402'
+    displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 5.0.402
+      version: 6.0.100
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -40,9 +43,9 @@ jobs:
       version: 3.1.414
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.402'
+    displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 5.0.402
+      version: 6.0.100
       
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -56,7 +59,7 @@ jobs:
     inputs:
       script: |
         export PATH="`pwd`/sdk:$PATH"
-        cd src/tools/MicroComGenerator; dotnet run -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
+        cd src/tools/MicroComGenerator; dotnet run -f net6.0 -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
 
   - task: Xcode@5
     inputs:
@@ -110,9 +113,9 @@ jobs:
       version: 3.1.414
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 5.0.402'
+    displayName: 'Use .NET Core SDK 6.0.100'
     inputs:
-      version: 5.0.402
+      version: 6.0.100
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
