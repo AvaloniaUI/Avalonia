@@ -1097,7 +1097,7 @@ namespace Avalonia.Collections
         /// Gets the number of pages we currently have
         /// </summary>
         //TODO Paging
-        private int PageCount
+        public int PageCount
         {
             get { return (_pageSize > 0) ? Math.Max(1, (int)Math.Ceiling((double)ItemCount / _pageSize)) : 0; }
         }
