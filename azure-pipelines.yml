@@ -1,3 +1,6 @@
+variables:
+    MSBuildEnableWorkloadResolver: 'false'
+
 jobs:
 - job: Linux
   pool:
