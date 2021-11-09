@@ -36,10 +36,9 @@
     <None Include="..\GitVersion.yml" Condition="Exists('..\GitVersion.yml')" />
     <Compile Remove="Numerge/**/*.*" />
     <Compile Include="Numerge/Numerge/**/*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\src\tools\MicroComGenerator\MicroComGenerator.csproj" />
+    <Compile Include="..\src\tools\MicroComGenerator\**\*.cs" />
+    <Compile Remove="..\src\tools\MicroComGenerator\bin\*.cs" />
+    <Compile Remove="..\src\tools\MicroComGenerator\obj\*.cs" />
   </ItemGroup>
 
 </Project>
