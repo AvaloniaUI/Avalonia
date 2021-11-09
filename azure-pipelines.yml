@@ -56,7 +56,7 @@ jobs:
     inputs:
       script: |
         export PATH="`pwd`/sdk:$PATH"
-        cd src/tools/MicroComGenerator; dotnet run -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
+        cd src/tools/MicroComGenerator; dotnet run -f net6.0 -i ../../Avalonia.Native/avn.idl --cpp ../../../native/Avalonia.Native/inc/avalonia-native.h
 
   - task: Xcode@5
     inputs:
