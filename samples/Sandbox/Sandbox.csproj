@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <TargetFramework>net6.0</TargetFramework>
+    
   </PropertyGroup>
 
   <ItemGroup>

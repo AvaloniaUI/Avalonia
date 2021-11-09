@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using Avalonia.MicroCom;
-using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.WinRT
 {
