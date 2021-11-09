@@ -15,7 +15,7 @@
           Inputs="@(AvnComIdl);$(MSBuildThisFileDirectory)../src/tools/MicroComGenerator/**/*.cs"
           Outputs="%(AvnComIdl.OutputFile)">
     <Message Importance="high" Text="Generating file %(AvnComIdl.OutputFile) from @(AvnComIdl)" />
-    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)../src/tools/MicroComGenerator/bin/$(Configuration)/netcoreapp3.1/MicroComGenerator.dll&quot; -i @(AvnComIdl) --cs %(AvnComIdl.OutputFile)" 
+    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)../src/tools/MicroComGenerator/bin/$(Configuration)/net6.0/MicroComGenerator.dll&quot; -i @(AvnComIdl) --cs %(AvnComIdl.OutputFile)" 
           LogStandardErrorAsError="true" />
     <ItemGroup>
       <!-- Remove and re-add generated file, this is needed for the clean build -->
