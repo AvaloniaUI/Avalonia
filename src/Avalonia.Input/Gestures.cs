@@ -30,7 +30,7 @@ namespace Avalonia.Input
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        private static WeakReference<IInteractive> s_lastPress = new WeakReference<IInteractive>(null);
+        private static readonly WeakReference<IInteractive> s_lastPress = new WeakReference<IInteractive>(null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         static Gestures()
@@ -86,16 +86,15 @@ namespace Avalonia.Input
 #pragma warning restore CS0618 // Type or member is obsolete
                 if (clickCount <= 1)
                 {
-                    s_lastPress = new WeakReference<IInteractive>(ev.Source);
+                    s_lastPress.SetTarget(ev.Source);
                 }
-                else if (s_lastPress != null && clickCount == 2 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+                else if (clickCount == 2 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
                         e.Source.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
                     }
                 }
-
             }
         }
 
