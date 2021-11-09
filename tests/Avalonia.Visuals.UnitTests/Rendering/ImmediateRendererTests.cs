@@ -291,6 +291,24 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             }
         }
 
+        [Fact]
+        public void Static_Render_Method_Does_Not_Update_TransformedBounds()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new Border();
+                var expected = new TransformedBounds(new Rect(1, 2, 3, 4), new Rect(4, 5, 6, 7), Matrix.CreateRotation(0.8));
+
+                ((IVisual)target).TransformedBounds = expected;
+
+                var renderTarget = Mock.Of<IRenderTarget>(x => 
+                    x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
+                ImmediateRenderer.Render(target, renderTarget);
+
+                Assert.Equal(expected, target.TransformedBounds);
+            }
+        }
+
         private class TestControl : Control
         {
             public bool Rendered { get; private set; }
