@@ -81,7 +81,7 @@ namespace Avalonia.Native
             result.Add(aboutItem);
 
             var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
-            if (!macOpts.DisableDefaultApplicationMenuItems)
+            if (macOpts == null || !macOpts.DisableDefaultApplicationMenuItems)
             {
                 result.Add(new NativeMenuItemSeparator());
 
