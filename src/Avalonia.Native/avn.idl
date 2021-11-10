@@ -419,6 +419,7 @@ enum AvnPlatformResizeReason
 
 enum AvnAutomationControlType
 {
+    AutomationNone,
     AutomationButton,
     AutomationCalendar,
     AutomationCheckBox,
@@ -480,7 +481,6 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateMenuItem(IAvnMenuItem** ppv);
      HRESULT CreateMenuItemSeparator(IAvnMenuItem** ppv);
      HRESULT CreateTrayIcon(IAvnTrayIcon** ppv);
-     HRESULT CreateAutomationNode(IAvnAutomationPeer* peer, IAvnAutomationNode** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -570,6 +570,7 @@ interface IAvnWindowBaseEvents : IUnknown
      AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
                                          IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
+     IAvnAutomationPeer* GetAutomationPeer();
 }
 
 [uuid(1ae178ee-1fcc-447f-b6dd-b7bb727f934c)]
@@ -811,6 +812,8 @@ interface IAvnApplicationEvents : IUnknown
 interface IAvnAutomationPeer : IUnknown
 {
      IAvnAutomationNode* GetNode();
+     void SetNode(IAvnAutomationNode* node);
+
      IAvnString* GetAcceleratorKey();
      IAvnString* GetAccessKey();
      AvnAutomationControlType GetAutomationControlType();
@@ -832,6 +835,7 @@ interface IAvnAutomationPeer : IUnknown
      IAvnAutomationPeer* GetRootPeer();
      
      bool IsRootProvider();
+     IAvnWindowBase* RootProvider_GetWindow();
      IAvnAutomationPeer* RootProvider_GetFocus();
      IAvnAutomationPeer* RootProvider_GetPeerFromPoint(AvnPoint point);
      
@@ -871,7 +875,8 @@ interface IAvnAutomationPeerArray : IUnknown
 [uuid(004dc40b-e435-49dc-bac5-6272ee35382a)]
 interface IAvnAutomationNode : IUnknown
 {
+    void Dispose();
     void ChildrenChanged();
     void PropertyChanged(AvnAutomationProperty property);
-    void FocusChanged(IAvnAutomationPeer* peer);
+    void FocusChanged();
 }

@@ -1,64 +1,106 @@
-#import "automation.h"
 #include "common.h"
+#include "automation.h"
 #include "AvnString.h"
 #include "window.h"
 
-class AutomationNode : public ComSingleObject<IAvnAutomationNode, &IID_IAvnAutomationNode>,
-    public INSAccessibilityHolder
+@interface AvnAccessibilityElement (Events)
+- (void) raiseChildrenChanged;
+@end
+
+@interface AvnRootAccessibilityElement : AvnAccessibilityElement
+- (AvnView *) ownerView;
+- (AvnRootAccessibilityElement *) initWithPeer:(IAvnAutomationPeer *) peer owner:(AvnView*) owner;
+- (void) raiseFocusChanged;
+@end
+
+class AutomationNode : public ComSingleObject<IAvnAutomationNode, &IID_IAvnAutomationNode>
 {
-private:
-    NSAccessibilityElement* _node;
 public:
     FORWARD_IUNKNOWN()
 
-    AutomationNode(NSAccessibilityElement* node)
+    AutomationNode(AvnAccessibilityElement* owner)
     {
-        _node = node;
-    }
-
-    AutomationNode(IAvnAutomationPeer* peer)
-    {
-        _node = [[AvnAutomationNode alloc] initWithPeer: peer];
+        _owner = owner;
     }
     
-    virtual void ChildrenChanged() override
+    AvnAccessibilityElement* GetOwner()
     {
-        NSAccessibilityPostNotification(_node, NSAccessibilityLayoutChangedNotification);
+        return _owner;
     }
     
-    virtual void PropertyChanged(AvnAutomationProperty property) override
+    virtual void Dispose() override
     {
-        switch (property) {
-            case RangeValueProvider_Value:
-                NSAccessibilityPostNotification(_node, NSAccessibilityValueChangedNotification);
-                break;
-            default:
-                break;
-        }
     }
-
-    virtual void FocusChanged(IAvnAutomationPeer* peer) override
+    
+    virtual void ChildrenChanged () override
     {
-        // Only implemented in top-level nodes, i.e. AvnWindow.
+        [_owner raiseChildrenChanged];
     }
-
-    virtual NSObject* GetNSAccessibility() override
+    
+    virtual void PropertyChanged (AvnAutomationProperty property) override
     {
-        return _node;
+        
     }
+    
+    virtual void FocusChanged () override
+    {
+        [(AvnRootAccessibilityElement*)_owner raiseFocusChanged];
+    }
+    
+private:
+    AvnAccessibilityElement* _owner;
 };
 
-@implementation AvnAutomationNode
+@implementation AvnAccessibilityElement
 {
     IAvnAutomationPeer* _peer;
+    AutomationNode* _node;
     NSMutableArray* _children;
 }
 
-- (AvnAutomationNode *)initWithPeer:(IAvnAutomationPeer *)peer
++ (AvnAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
+{
+    if (peer == nullptr)
+        return nil;
+    
+    auto instance = peer->GetNode();
+    
+    if (instance != nullptr)
+        return dynamic_cast<AutomationNode*>(instance)->GetOwner();
+    
+    if (peer->IsRootProvider())
+    {
+        auto window = peer->RootProvider_GetWindow();
+        auto holder = dynamic_cast<INSWindowHolder*>(window);
+        auto view = holder->GetNSView();
+        return [[AvnRootAccessibilityElement alloc] initWithPeer:peer owner:view];
+    }
+    else
+    {
+        return [[AvnAccessibilityElement alloc] initWithPeer:peer];
+    }
+}
+
+- (AvnAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer
 {
     self = [super init];
     _peer = peer;
+    _node = new AutomationNode(self);
+    _peer->SetNode(_node);
     return self;
+}
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"%@ '%@' (%p)",
+        GetNSStringAndRelease(_peer->GetClassName()),
+        GetNSStringAndRelease(_peer->GetName()),
+        _peer];
+}
+
+- (IAvnAutomationPeer *)peer
+{
+    return _peer;
 }
 
 - (BOOL)isAccessibilityElement
@@ -96,7 +138,7 @@ public:
         case AutomationToolBar: return NSAccessibilityToolbarRole;
         case AutomationToolTip: return NSAccessibilityPopoverRole;
         case AutomationTree: return NSAccessibilityOutlineRole;
-        case AutomationTreeItem: return NSAccessibilityOutlineRowSubrole;
+        case AutomationTreeItem: return NSAccessibilityCellRole;
         case AutomationCustom: return NSAccessibilityUnknownRole;
         case AutomationGroup: return NSAccessibilityGroupRole;
         case AutomationThumb: return NSAccessibilityHandleRole;
@@ -110,8 +152,10 @@ public:
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
         case AutomationTitleBar: return NSAccessibilityGroupRole;
-        case AutomationSeparator: return NSAccessibilityUnknownRole;
-        default: return NSAccessibilityUnknownRole;
+        // Treat unknown roles as generic group container items. Returning
+        // NSAccessibilityUnknownRole is also possible but makes the screen
+       // reader focus on the item instead of passing focus to child items.
+        default: return NSAccessibilityGroupRole;
     }
 }
 
@@ -177,6 +221,15 @@ public:
     return [super accessibilityMaxValue];
 }
 
+- (BOOL)isAccessibilityEnabled
+{
+    return _peer->IsEnabled();
+}
+
+- (BOOL)isAccessibilityFocused
+{
+    return _peer->HasKeyboardFocus();
+}
 
 - (NSArray *)accessibilityChildren
 {
@@ -195,52 +248,55 @@ public:
                 
                 if (childPeers->Get(i, &child) == S_OK)
                 {
-                    NSObject* element = ::GetAccessibilityElement(child->GetNode());
+                    auto element = [AvnAccessibilityElement acquire:child];
                     [_children addObject:element];
                 }
             }
         }
     }
-    
+
     return _children;
 }
 
 - (NSRect)accessibilityFrame
 {
-    auto view = [self getAvnView];
-    auto window = [self getAvnWindow];
+    id topLevel = [self accessibilityTopLevelUIElement];
+    auto result = NSZeroRect;
 
-    if (view != nullptr)
+    if ([topLevel isKindOfClass:[AvnRootAccessibilityElement class]])
     {
-        auto bounds = ToNSRect(_peer->GetBoundingRectangle());
-        auto windowBounds = [view convertRect:bounds toView:nil];
-        auto screenBounds = [window convertRectToScreen:windowBounds];
-        return screenBounds;
+        auto root = (AvnRootAccessibilityElement*)topLevel;
+        auto view = [root ownerView];
+        
+        if (view)
+        {
+            auto window = [view window];
+            auto bounds = ToNSRect(_peer->GetBoundingRectangle());
+            auto windowBounds = [view convertRect:bounds toView:nil];
+            auto screenBounds = [window convertRectToScreen:windowBounds];
+            result = screenBounds;
+        }
     }
-    
-    return NSRect();
+
+    return result;
 }
 
 - (id)accessibilityParent
 {
     auto parentPeer = _peer->GetParent();
-    
-    if (parentPeer != nullptr)
-    {
-        return GetAccessibilityElement(parentPeer);
-    }
-    
-    return [NSApplication sharedApplication];
+    return parentPeer ? [AvnAccessibilityElement acquire:parentPeer] : [NSApplication sharedApplication];
 }
 
 - (id)accessibilityTopLevelUIElement
 {
-    return GetAccessibilityElement([self getRootNode]);
+    auto rootPeer = _peer->GetRootPeer();
+    return [AvnAccessibilityElement acquire:rootPeer];
 }
 
 - (id)accessibilityWindow
 {
-    return [self accessibilityTopLevelUIElement];
+    id topLevel = [self accessibilityTopLevelUIElement];
+    return [topLevel isKindOfClass:[NSWindow class]] ? topLevel : nil;
 }
 
 - (BOOL)isAccessibilityExpanded
@@ -326,58 +382,68 @@ public:
     return [super isAccessibilitySelectorAllowed:selector];
 }
 
-- (IAvnAutomationNode*)getRootNode
+- (void)raiseChildrenChanged
 {
-    auto rootPeer = _peer->GetRootPeer();
-    return rootPeer != nullptr ? rootPeer->GetNode() : nullptr;
+    NSAccessibilityPostNotification(self, NSAccessibilityLayoutChangedNotification);
 }
 
-- (IAvnWindowBase*)getWindow
+- (void)raisePropertyChanged
 {
-    auto rootNode = [self getRootNode];
-
-    if (rootNode != nullptr)
-    {
-        IAvnWindowBase* window;
-        if (rootNode->QueryInterface(&IID_IAvnWindow, (void**)&window) == S_OK)
-        {
-            return window;
-        }
-    }
-    
-    return nullptr;
 }
 
-- (AvnWindow*) getAvnWindow
+- (void)setAccessibilityFocused:(BOOL)accessibilityFocused
 {
-    auto window = [self getWindow];
-    return window != nullptr ? dynamic_cast<INSWindowHolder*>(window)->GetNSWindow() : nullptr;
-}
-
-- (AvnView*) getAvnView
-{
-    auto window = [self getWindow];
-    return window != nullptr ? dynamic_cast<INSWindowHolder*>(window)->GetNSView() : nullptr;
+    if (accessibilityFocused)
+        _peer->SetFocus();
 }
 
 @end
 
-extern IAvnAutomationNode* CreateAutomationNode(IAvnAutomationPeer* peer)
+@implementation AvnRootAccessibilityElement
 {
-    @autoreleasepool
-    {
-        return new AutomationNode(peer);
-    }
+    AvnView* _owner;
 }
 
-extern NSObject* GetAccessibilityElement(IAvnAutomationPeer* peer)
+- (AvnRootAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer owner:(AvnView *)owner
 {
-    auto node = peer != nullptr ? peer->GetNode() : nullptr;
-    return GetAccessibilityElement(node);
+    self = [super initWithPeer:peer];
+    _owner = owner;
+    return self;
 }
 
-extern NSObject* GetAccessibilityElement(IAvnAutomationNode* node)
+- (AvnView *)ownerView
 {
-    auto holder = dynamic_cast<INSAccessibilityHolder*>(node);
-    return holder != nullptr ? holder->GetNSAccessibility() : nil;
+    return _owner;
 }
+
+- (id)accessibilityFocusedUIElement
+{
+    auto focusedPeer = [self peer]->RootProvider_GetFocus();
+    return [AvnAccessibilityElement acquire:focusedPeer];
+}
+
+- (id)accessibilityHitTest:(NSPoint)point
+{
+    auto clientPoint = [[_owner window] convertPointFromScreen:point];
+    auto localPoint = [_owner translateLocalPoint:ToAvnPoint(clientPoint)];
+    auto hit = [self peer]->RootProvider_GetPeerFromPoint(localPoint);
+    return [AvnAccessibilityElement acquire:hit];
+}
+
+- (id)accessibilityParent
+{
+    return _owner;
+}
+
+- (void)raiseFocusChanged
+{
+    id focused = [self accessibilityFocusedUIElement];
+    NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
+}
+
+- (void)accessibilityPerformAction:(NSAccessibilityActionName)action
+{
+    [_owner accessibilityPerformAction:action];
+}
+
+@end

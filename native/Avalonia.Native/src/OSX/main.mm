@@ -347,13 +347,7 @@ public:
             return S_OK;
         }
     }
-    
-    virtual HRESULT CreateAutomationNode (IAvnAutomationPeer* peer, IAvnAutomationNode** ppv) override
-    {
-        *ppv = ::CreateAutomationNode(peer);
-        return S_OK;
-    }
-    
+        
     virtual HRESULT SetAppMenu (IAvnMenu* appMenu) override
     {
         START_COM_CALL;

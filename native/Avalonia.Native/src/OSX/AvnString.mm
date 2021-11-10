@@ -160,7 +160,7 @@ NSString* GetNSStringAndRelease(IAvnString* s)
     {
         char* p;
         
-        if (s->Pointer((void**)&p) == S_OK)
+        if (s->Pointer((void**)&p) == S_OK && p != nullptr)
         {
             return [NSString stringWithUTF8String:p];
         }

@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Avalonia.Native.Interop;
 
 #nullable enable
@@ -12,11 +15,20 @@ namespace Avalonia.Native
 {
     internal class AvnAutomationPeer : CallbackBase, IAvnAutomationPeer
     {
+        private static readonly ConditionalWeakTable<AutomationPeer, AvnAutomationPeer> s_wrappers = new();
         private readonly AutomationPeer _inner;
 
-        public AvnAutomationPeer(AutomationPeer inner) => _inner = inner;
+        private AvnAutomationPeer(AutomationPeer inner)
+        {
+            _inner = inner;
+            _inner.ChildrenChanged += (_, _) => Node?.ChildrenChanged();
+            if (inner is WindowBaseAutomationPeer window)
+                window.FocusChanged += (_, _) => Node?.FocusChanged(); 
+        }
 
-        public IAvnAutomationNode Node => throw new NotImplementedException();
+        ~AvnAutomationPeer() => Node?.Dispose();
+        
+        public IAvnAutomationNode? Node { get; private set; }
         public IAvnString? AcceleratorKey => _inner.GetAcceleratorKey().ToAvnString();
         public IAvnString? AccessKey => _inner.GetAccessKey().ToAvnString();
         public AvnAutomationControlType AutomationControlType => (AvnAutomationControlType)_inner.GetAutomationControlType();
@@ -43,17 +55,31 @@ namespace Avalonia.Native
                 var peer = _inner;
                 var parent = peer.GetParent();
 
-                while (!(peer is IRootProvider) && parent is object)
+                while (peer is not IRootProvider && parent is not null)
                 {
                     peer = parent;
                     parent = peer.GetParent();
                 }
 
-                return new AvnAutomationPeer(peer);
+                return Wrap(peer);
             }
         }
 
+        public void SetNode(IAvnAutomationNode node)
+        {
+            if (Node is not null)
+                throw new InvalidOperationException("The AvnAutomationPeer already has a node.");
+            Node = node;
+        }
+        
         public int IsRootProvider() => (_inner is IRootProvider).AsComBool();
+
+        public IAvnWindowBase RootProvider_GetWindow()
+        {
+            var window = (WindowBase)((ControlAutomationPeer)_inner).Owner;
+            return ((WindowBaseImpl)window.PlatformImpl!).Native;
+        }
+        
         public IAvnAutomationPeer? RootProvider_GetFocus() => Wrap(((IRootProvider)_inner).GetFocus());
 
         public IAvnAutomationPeer? RootProvider_GetPeerFromPoint(AvnPoint point)
@@ -68,7 +94,7 @@ namespace Avalonia.Native
             {
                 var parent = result.GetParent();
 
-                if (parent is object)
+                if (parent is not null)
                     result = parent;
                 else
                     break;
@@ -108,9 +134,12 @@ namespace Avalonia.Native
         public int IsValueProvider() => (_inner is IValueProvider).AsComBool();
         public IAvnString ValueProvider_GetValue() => ((IValueProvider)_inner).Value.ToAvnString();
         public void ValueProvider_SetValue(string value) => ((IValueProvider)_inner).SetValue(value);
-        
-        public static AvnAutomationPeer? Wrap(AutomationPeer? peer) =>
-            peer != null ? new AvnAutomationPeer(peer) : null;
+
+        [return: NotNullIfNotNull("peer")]
+        public static AvnAutomationPeer? Wrap(AutomationPeer? peer)
+        {
+            return peer is null ? null : s_wrappers.GetValue(peer, x => new(peer));
+        }
     }
 
     internal class AvnAutomationPeerArray : CallbackBase, IAvnAutomationPeerArray
@@ -119,7 +148,7 @@ namespace Avalonia.Native
         
         public AvnAutomationPeerArray(IReadOnlyList<AutomationPeer> items)
         {
-            _items = items.Select(x => new AvnAutomationPeer(x)).ToArray();
+            _items = items.Select(x => AvnAutomationPeer.Wrap(x)).ToArray();
         }
         
         public uint Count => (uint)_items.Length;

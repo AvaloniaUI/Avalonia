@@ -62,7 +62,6 @@ namespace Avalonia.Native
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
         private IGlContext _glContext;
-        private AvnAutomationPeer _automationPeer;
 
         internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativePlatformOpenGlInterface glFeature)
@@ -158,6 +157,11 @@ namespace Avalonia.Native
         public IMouseDevice MouseDevice => _mouse;
         public abstract IPopupImpl CreatePopup();
 
+        public AutomationPeer GetAutomationPeer()
+        {
+            return _inputRoot is Control c ? ControlAutomationPeer.CreatePeerForElement(c) : null;
+        }
+        
         protected unsafe class WindowBaseEvents : CallbackBase, IAvnWindowBaseEvents
         {
             private readonly WindowBaseImpl _parent;
@@ -261,6 +265,11 @@ namespace Avalonia.Native
                     _parent.Input(args);
                     return (AvnDragDropEffects)args.Effects;
                 }
+            }
+
+            IAvnAutomationPeer IAvnWindowBaseEvents.AutomationPeer
+            {
+                get => AvnAutomationPeer.Wrap(_parent.GetAutomationPeer());
             }
         }
        
