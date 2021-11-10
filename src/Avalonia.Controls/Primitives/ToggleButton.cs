@@ -107,10 +107,10 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(IsThreeStateProperty, value);
         }
 
-        protected override void OnClick(EventArgs triggerEventArgs)
+        protected override void OnClick(EventArgs triggeredEventArgs)
         {
             Toggle();
-            base.OnClick(triggerEventArgs);
+            base.OnClick(triggeredEventArgs);
         }
 
         /// <summary>

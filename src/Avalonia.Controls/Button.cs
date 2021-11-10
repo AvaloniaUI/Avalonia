@@ -299,11 +299,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Invokes the <see cref="Click"/> event.
         /// </summary>
-        protected virtual void OnClick(EventArgs triggerEventArgs)
+        protected virtual void OnClick(EventArgs triggeredEventArgs)
         {
             OpenFlyout();
 
-            var e = new ClickEventArgs(ClickEvent, triggerEventArgs);
+            var e = new ClickEventArgs(ClickEvent, triggeredEventArgs);
             RaiseEvent(e);
 
             if (!e.Handled && Command?.CanExecute(CommandParameter) == true)

@@ -5,7 +5,7 @@ namespace Avalonia.Input
 {
     public class ClickEventArgs : RoutedEventArgs
     {
-        public EventArgs TriggerEventArgs { get; set; }
+        public EventArgs TriggeredEventArgs { get; set; }
 
         public ClickEventArgs()
         {
@@ -16,15 +16,15 @@ namespace Avalonia.Input
         {
         }
         
-        public ClickEventArgs(EventArgs triggerEventArgs)
+        public ClickEventArgs(EventArgs triggeredEventArgs)
         {
-            TriggerEventArgs = triggerEventArgs;
+            TriggeredEventArgs = triggeredEventArgs;
         }
 
-        public ClickEventArgs(RoutedEvent? routedEvent, EventArgs triggerEventArgs)
+        public ClickEventArgs(RoutedEvent? routedEvent, EventArgs triggeredEventArgs)
             : this(routedEvent)
         {
-            TriggerEventArgs = triggerEventArgs;
+            TriggeredEventArgs = triggeredEventArgs;
         }
     }
 }
