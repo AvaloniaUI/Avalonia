@@ -30,6 +30,7 @@ public:
     
     virtual void Dispose() override
     {
+        _owner = nil;
     }
     
     virtual void ChildrenChanged () override
@@ -48,7 +49,7 @@ public:
     }
     
 private:
-    AvnAccessibilityElement* _owner;
+    __strong AvnAccessibilityElement* _owner;
 };
 
 @implementation AvnAccessibilityElement
@@ -88,6 +89,13 @@ private:
     _node = new AutomationNode(self);
     _peer->SetNode(_node);
     return self;
+}
+
+- (void)dealloc
+{
+    if (_node)
+        delete _node;
+    _node = nullptr;
 }
 
 - (NSString *)description
