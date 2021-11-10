@@ -17,6 +17,11 @@ namespace Avalonia.Controls
         public IList<NativeMenuItemBase> Items => _items;
 
         /// <summary>
+        /// Is this menu a native Services menu
+        /// </summary>
+        public bool IsServicesSubmenu { get; set; }
+
+        /// <summary>
         /// Raised when the menu requests an update.
         /// </summary>
         /// <remarks>
