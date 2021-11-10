@@ -62,7 +62,7 @@ namespace Avalonia.Controls
             {
                 _repeatTimer.Interval = interval;
             }
-            OnClick();
+            OnClick(e);
         }
 
         private void StopTimer()

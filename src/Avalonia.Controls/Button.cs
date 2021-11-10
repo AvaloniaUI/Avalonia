@@ -73,8 +73,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Click"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-            RoutedEvent.Register<Button, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<ClickEventArgs> ClickEvent =
+            RoutedEvent.Register<Button, ClickEventArgs>(nameof(Click), RoutingStrategies.Bubble);
 
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
@@ -109,7 +109,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the user clicks the button.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Click
+        public event EventHandler<ClickEventArgs> Click
         {
             add { AddHandler(ClickEvent, value); }
             remove { RemoveHandler(ClickEvent, value); }
@@ -261,14 +261,14 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Enter)
             {
-                OnClick();
+                OnClick(e);
                 e.Handled = true;
             }
             else if (e.Key == Key.Space)
             {
                 if (ClickMode == ClickMode.Press)
                 {
-                    OnClick();
+                    OnClick(e);
                 }
                 IsPressed = true;
                 e.Handled = true;
@@ -289,7 +289,7 @@ namespace Avalonia.Controls
             {
                 if (ClickMode == ClickMode.Release)
                 {
-                    OnClick();
+                    OnClick(e);
                 }
                 IsPressed = false;
                 e.Handled = true;
@@ -299,11 +299,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Invokes the <see cref="Click"/> event.
         /// </summary>
-        protected virtual void OnClick()
+        protected virtual void OnClick(EventArgs triggerEventArgs)
         {
             OpenFlyout();
 
-            var e = new RoutedEventArgs(ClickEvent);
+            var e = new ClickEventArgs(ClickEvent, triggerEventArgs);
             RaiseEvent(e);
 
             if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
@@ -330,7 +330,7 @@ namespace Avalonia.Controls
 
                 if (ClickMode == ClickMode.Press)
                 {
-                    OnClick();
+                    OnClick(e);
                 }
             }
         }
@@ -348,7 +348,7 @@ namespace Avalonia.Controls
                 if (ClickMode == ClickMode.Release &&
                     this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
                 {
-                    OnClick();
+                    OnClick(e);
                 }
             }
         }
@@ -543,7 +543,7 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Enter && IsVisible && IsEnabled)
             {
-                OnClick();
+                OnClick(e);
             }
         }
 
@@ -556,7 +556,7 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.Escape && IsVisible && IsEnabled)
             {
-                OnClick();
+                OnClick(e);
             }
         }
 
