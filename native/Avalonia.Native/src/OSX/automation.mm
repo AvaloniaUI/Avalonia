@@ -449,9 +449,13 @@ private:
     NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
 }
 
+// Although this method is marked as deprecated we get runtime warnings if we don't handle it.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void)accessibilityPerformAction:(NSAccessibilityActionName)action
 {
     [_owner accessibilityPerformAction:action];
 }
+#pragma clang diagnostic pop
 
 @end
