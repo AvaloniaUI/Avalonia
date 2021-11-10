@@ -52,7 +52,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -124,6 +123,8 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
+            
+            [Window setContentView: StandardContainer];
             
             [Window setTitle:_lastTitle];
             
@@ -323,6 +324,7 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
+                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             }
             @finally
@@ -2387,7 +2389,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)sendEvent:(NSEvent *)event
 {
-    if(_parent != nullptr)
+    [super sendEvent:event];
+    
+    /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.
+    if(_parent != nullptr && dynamic_cast<WindowImpl*>(_parent.getRaw()) != nullptr)
     {
         switch(event.type)
         {
@@ -2417,8 +2422,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
                 break;
         }
     }
-    
-    [super sendEvent:event];
 }
 @end
 
