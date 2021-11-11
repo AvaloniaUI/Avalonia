@@ -88,7 +88,7 @@ namespace Avalonia.Native
                 var servicesMenu = new NativeMenuItem("Services");
                 servicesMenu.Menu = new NativeMenu
                 {
-                    IsServicesSubmenu = true
+                    [MacOSNativeMenuCommands.IsServicesSubmenuProperty] = true
                 };
                 result.Add(servicesMenu);
 

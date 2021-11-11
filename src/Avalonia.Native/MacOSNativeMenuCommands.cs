@@ -1,13 +1,14 @@
-﻿using Avalonia.Controls.Platform;
+﻿using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    internal class AvaloniaNativeApplicationCommands : INativeApplicationCommands
+    internal class MacOSNativeMenuCommands : INativeApplicationCommands
     {
         private readonly IAvnApplicationCommands _commands;
 
-        public AvaloniaNativeApplicationCommands(IAvnApplicationCommands commands)
+        public MacOSNativeMenuCommands(IAvnApplicationCommands commands)
         {
             _commands = commands;
         }
@@ -26,5 +27,9 @@ namespace Avalonia.Native
         {
             _commands.HideOthers();
         }
+
+
+        public static readonly AttachedProperty<bool> IsServicesSubmenuProperty =
+            AvaloniaProperty.RegisterAttached<MacOSNativeMenuCommands, NativeMenu, bool>("IsServicesSubmenu", false);
     }
 }

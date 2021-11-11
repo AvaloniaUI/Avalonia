@@ -150,7 +150,7 @@ namespace Avalonia.Native.Interop.Impl
                 {
                     _subMenu = __MicroComIAvnMenuProxy.Create(factory);
 
-                    if (item.Menu.IsServicesSubmenu)
+                    if (item.Menu.GetValue(MacOSNativeMenuCommands.IsServicesSubmenuProperty))
                     {
                         factory.SetServicesMenu(_subMenu);
                     }

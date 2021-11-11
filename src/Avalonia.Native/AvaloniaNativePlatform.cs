@@ -111,7 +111,7 @@ namespace Avalonia.Native
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
-                .Bind<INativeApplicationCommands>().ToConstant(new AvaloniaNativeApplicationCommands(_factory.CreateApplicationCommands()));
+                .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
 
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
