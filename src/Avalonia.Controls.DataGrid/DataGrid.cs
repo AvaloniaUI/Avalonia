@@ -5751,6 +5751,7 @@ namespace Avalonia.Controls
                 return true;
             }
             // Unselect everything except the row that was clicked on
+            _noSelectionChangeCount++;
             try
             {
                 UpdateSelectionAndCurrency(columnIndex, slot, DataGridSelectionAction.SelectCurrent, scrollIntoView: false);
