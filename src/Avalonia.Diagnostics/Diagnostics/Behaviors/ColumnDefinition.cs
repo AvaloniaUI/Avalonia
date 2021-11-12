@@ -17,21 +17,21 @@
              AvaloniaProperty.RegisterAttached<Avalonia.Controls.ColumnDefinition, bool>("IsVisible"
                  , typeof(ColumnDefinition)
                  , true
-                 , coerce: ((element, visibility) =>
-                 {
+                 , coerce: (element, visibility) =>
+                     {
 
-                     var lastWidth = element.GetValue(LastWidthProperty);
-                     if (visibility == true && lastWidth is { })
-                     {
-                         element.SetValue(Avalonia.Controls.ColumnDefinition.WidthProperty, lastWidth);
+                         var lastWidth = element.GetValue(LastWidthProperty);
+                         if (visibility == true && lastWidth is { })
+                         {
+                             element.SetValue(Avalonia.Controls.ColumnDefinition.WidthProperty, lastWidth);
+                         }
+                         else if (visibility == false)
+                         {
+                             element.SetValue(LastWidthProperty, element.GetValue(Avalonia.Controls.ColumnDefinition.WidthProperty));
+                             element.SetValue(Avalonia.Controls.ColumnDefinition.WidthProperty, ZeroWidth);
+                         }
+                         return visibility;
                      }
-                     else if (visibility == false)
-                     {
-                         element.SetValue(LastWidthProperty, element.GetValue(Avalonia.Controls.ColumnDefinition.WidthProperty));
-                         element.SetValue(Avalonia.Controls.ColumnDefinition.WidthProperty, ZeroWidth);
-                     }
-                     return visibility;
-                 })
                  );
 
         public static bool GetIsVisible(Avalonia.Controls.ColumnDefinition columnDefinition)

@@ -51,7 +51,6 @@ namespace Avalonia.Diagnostics.Controls
         public Avalonia.Controls.Templates.DataTemplates DataTemplates =>
             _application.DataTemplates;
 
-
         /// <summary>
         /// Gets the application's focus manager.
         /// </summary>
@@ -60,7 +59,6 @@ namespace Avalonia.Diagnostics.Controls
         /// </value>
         public Input.IFocusManager FocusManager =>
             _application.FocusManager;
-
 
         /// <summary>
         /// Gets the application's global resource dictionary.
@@ -166,17 +164,14 @@ namespace Avalonia.Diagnostics.Controls
         public string CommandLineArgs =>
             string.Join(Environment.NewLine, Environment.GetCommandLineArgs().Skip(1));
 
-
         private string GetProductVersion()
         {
-
             if (Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute))
                 .FirstOrDefault()
                 is AssemblyInformationalVersionAttribute attribute)
             {
                 return attribute.InformationalVersion;
             }
-
             return "Unknown";
         }
         
