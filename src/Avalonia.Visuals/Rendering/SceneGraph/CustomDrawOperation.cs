@@ -17,7 +17,12 @@ namespace Avalonia.Rendering.SceneGraph
 
         public override bool HitTest(Point p)
         {
-            return Custom.HitTest(p * Transform);
+            if (Transform.HasInverse)
+            {
+                return Custom.HitTest(p * Transform.Invert());
+            }
+
+            return false;
         }
 
         public override void Render(IDrawingContextImpl context)

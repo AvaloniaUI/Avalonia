@@ -20,13 +20,17 @@ namespace Avalonia.Styling.UnitTests
 
         public static IObservable<bool> ToObservable(this IStyleActivator activator)
         {
+            if (activator == null)
+            {
+                throw new ArgumentNullException(nameof(activator));
+            }
+
             return new ObservableAdapter(activator);
         }
 
         private class ObservableAdapter : LightweightObservableBase<bool>, IStyleActivatorSink
         {
             private readonly IStyleActivator _source;
-            private bool _value;
             
             public ObservableAdapter(IStyleActivator source) => _source = source;
             protected override void Initialize() => _source.Subscribe(this);
@@ -34,7 +38,6 @@ namespace Avalonia.Styling.UnitTests
 
             void IStyleActivatorSink.OnNext(bool value, int tag)
             {
-                _value = value;
                 PublishNext(value);
             }
         }

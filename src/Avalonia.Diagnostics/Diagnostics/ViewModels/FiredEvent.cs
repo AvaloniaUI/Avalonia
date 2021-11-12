@@ -63,7 +63,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (EventChain.Count > 0)
             {
-                var prevLink = EventChain[EventChain.Count-1];
+                var prevLink = EventChain[EventChain.Count - 1];
 
                 if (prevLink.Route != link.Route)
                 {
@@ -72,6 +72,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
 
             EventChain.Add(link);
+
             if (HandledBy == null && link.Handled)
                 HandledBy = link;
         }
