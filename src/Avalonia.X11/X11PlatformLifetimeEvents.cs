@@ -241,6 +241,6 @@ namespace Avalonia.X11
                 IntPtr.Zero);
         }
 
-        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested = null!;
+        public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
     }
 }
