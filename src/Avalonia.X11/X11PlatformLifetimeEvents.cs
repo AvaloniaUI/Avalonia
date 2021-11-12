@@ -17,7 +17,8 @@ namespace Avalonia.X11
         private const ulong SmcSaveCompleteProcMask = 4L;
         private const ulong SmcShutdownCancelledProcMask = 8L;
 
-        private static readonly ConcurrentDictionary<IntPtr, X11PlatformLifetimeEvents> s_nativeToManagedMapper = new ConcurrentDictionary<IntPtr, X11PlatformLifetimeEvents>();
+        private static readonly ConcurrentDictionary<IntPtr, X11PlatformLifetimeEvents> s_nativeToManagedMapper =
+            new ConcurrentDictionary<IntPtr, X11PlatformLifetimeEvents>();
 
         private static readonly SMLib.SmcSaveYourselfProc s_saveYourselfProcDelegate = SmcSaveYourselfHandler;
         private static readonly SMLib.SmcDieProc s_dieDelegate = SmcDieHandler;
@@ -196,7 +197,10 @@ namespace Avalonia.X11
         private void SaveYourselfHandler(IntPtr smcConn, IntPtr clientData, bool shutdown, bool fast)
         {
             if (_saveYourselfPhase)
+            {
                 SMLib.SmcSaveYourselfDone(smcConn, true);
+            }
+
             _saveYourselfPhase = true;
 
             if (shutdown && !fast)
@@ -216,10 +220,12 @@ namespace Avalonia.X11
         {
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (ShutdownRequested is null)
+            {
                 return;
-
-            var e = new ShutdownRequestedEventArgs();
+            }
             
+            var e = new ShutdownRequestedEventArgs();
+
             ShutdownRequested(this, e);
 
             var shutdownCancelled = e.Cancel;
@@ -227,16 +233,19 @@ namespace Avalonia.X11
             SMLib.SmcInteractDone(smcConn, shutdownCancelled);
 
             if (shutdownCancelled)
+            {
                 return;
-
-            _saveYourselfPhase = false;
+            }
             
+            _saveYourselfPhase = false;
+
             SMLib.SmcSaveYourselfDone(smcConn, true);
         }
 
         private static void IceWatchHandler(IntPtr iceConn, IntPtr clientData, bool opening, IntPtr* watchData)
         {
             if (!opening) return;
+            
             ICELib.IceRemoveConnectionWatch(Marshal.GetFunctionPointerForDelegate(s_iceWatchProcDelegate),
                 IntPtr.Zero);
         }
