@@ -11,7 +11,8 @@ namespace Avalonia.IntegrationTests.Win32
 {
     public class TestAppFixture : IDisposable
     {
-        private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net6.0\IntegrationTestApp";
+        private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net6.0\IntegrationTestApp.exe";
+        private const string TestAppBundleId = "net.avaloniaui.avalonia.integrationtestapp";
 
         public TestAppFixture()
         {
@@ -20,7 +21,7 @@ namespace Avalonia.IntegrationTests.Win32
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                opts.AddAdditionalCapability(MobileCapabilityType.App, path + ".exe");
+                opts.AddAdditionalCapability(MobileCapabilityType.App, path);
                 opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
                 opts.AddAdditionalCapability(MobileCapabilityType.DeviceName, "WindowsPC");
 
@@ -35,7 +36,7 @@ namespace Avalonia.IntegrationTests.Win32
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                opts.AddAdditionalCapability(MobileCapabilityType.App, path + ".exe");
+                opts.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
                 opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
                 opts.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
 

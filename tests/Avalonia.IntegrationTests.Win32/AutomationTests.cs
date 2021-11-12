@@ -33,7 +33,7 @@ namespace Avalonia.IntegrationTests.Win32
             var labeledTextBox = _session.FindElementByAccessibilityId("LabeledByTextBox");
 
             Assert.Equal("Label for TextBox", label.Text);
-            Assert.Equal("Label for TextBox", labeledTextBox.GetAttribute("Name"));
+            Assert.Equal("Label for TextBox", labeledTextBox.GetName());
         }
     }
 }
