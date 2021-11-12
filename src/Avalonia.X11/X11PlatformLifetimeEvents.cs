@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 
 namespace Avalonia.X11
 {
@@ -218,25 +219,22 @@ namespace Avalonia.X11
 
         private void InteractHandler(IntPtr smcConn)
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (ShutdownRequested is null)
-            {
-                return;
-            }
-            
+            Dispatcher.UIThread.Post(() => ActualInteractHandler(smcConn));
+        }
+
+        private void ActualInteractHandler(IntPtr smcConn)
+        {
             var e = new ShutdownRequestedEventArgs();
 
-            ShutdownRequested(this, e);
+            ShutdownRequested?.Invoke(this, e);
 
-            var shutdownCancelled = e.Cancel;
+            SMLib.SmcInteractDone(smcConn, e.Cancel);
 
-            SMLib.SmcInteractDone(smcConn, shutdownCancelled);
-
-            if (shutdownCancelled)
+            if (e.Cancel)
             {
                 return;
             }
-            
+
             _saveYourselfPhase = false;
 
             SMLib.SmcSaveYourselfDone(smcConn, true);
@@ -245,7 +243,7 @@ namespace Avalonia.X11
         private static void IceWatchHandler(IntPtr iceConn, IntPtr clientData, bool opening, IntPtr* watchData)
         {
             if (!opening) return;
-            
+
             ICELib.IceRemoveConnectionWatch(Marshal.GetFunctionPointerForDelegate(s_iceWatchProcDelegate),
                 IntPtr.Zero);
         }
