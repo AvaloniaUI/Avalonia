@@ -1,4 +1,4 @@
-﻿using OpenQA.Selenium.Appium.Windows;
+﻿using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Win32
@@ -6,7 +6,7 @@ namespace Avalonia.IntegrationTests.Win32
     [Collection("Default")]
     public class AutomationTests
     {
-        private WindowsDriver<WindowsElement> _session;
+        private AppiumDriver<AppiumWebElement> _session;
 
         public AutomationTests(TestAppFixture fixture)
         {
