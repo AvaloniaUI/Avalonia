@@ -42,26 +42,19 @@ namespace Avalonia.Build.Tasks
 
         public static CompileResult Compile(IBuildEngine engine, string input, string[] references,
             string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
-            bool skipXamlCompilation)
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey)
         {
             var typeSystem = new CecilTypeSystem(references
                 .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
                 .Concat(new[] { input }), input);
             
             var asm = typeSystem.TargetAssemblyDefinition;
-
-            if (!skipXamlCompilation)
-            {
-                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance);
-                if (compileRes == null && !patchCom)
-                    return new CompileResult(true);
-                if (compileRes == false)
-                    return new CompileResult(false);
-            }
-
-            if (patchCom)
-                ComInteropHelper.PatchAssembly(asm, typeSystem);
+            
+            var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance);
+            if (compileRes == null)
+                return new CompileResult(true);
+            if (compileRes == false)
+                return new CompileResult(false);
             
             var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
             if (!string.IsNullOrWhiteSpace(strongNameKey))

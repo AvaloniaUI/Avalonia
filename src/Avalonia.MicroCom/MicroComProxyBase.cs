@@ -36,18 +36,18 @@ namespace Avalonia.MicroCom
         
         public void AddRef()
         {
-            LocalInterop.CalliStdCallvoid(PPV, (*PPV)[1]);
+            ((delegate* unmanaged[Stdcall]<void*, void>)(*PPV)[1])(PPV);
         }
 
         public void Release()
         {
-            LocalInterop.CalliStdCallvoid(PPV, (*PPV)[2]);
+            ((delegate* unmanaged[Stdcall]<void*, void>)(*PPV)[2])(PPV);
         }
 
         public int QueryInterface(Guid guid, out IntPtr ppv)
         {
             IntPtr r = default;
-            var rv = LocalInterop.CalliStdCallint(PPV, &guid, &r, (*PPV)[0]);
+            var rv = ((delegate* unmanaged[Stdcall]<void*, void*, void*, int>)(*PPV)[0])(PPV, &guid, &r);
             ppv = r;
             return rv;
         }

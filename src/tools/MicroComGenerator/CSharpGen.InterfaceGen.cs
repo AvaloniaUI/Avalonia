@@ -247,12 +247,16 @@ namespace MicroComGenerator
             }
 
             // Generate call expression
-            ExpressionSyntax callExpr = InvocationExpression(_localInterop.GetCaller(returnArg.NativeType,
-                    args.Select(x => x.NativeType).ToList()))
+
+            var methodAddressExpression = ParseExpression("(*PPV)[base.VTableSize + " + num + "]");
+            var methodPointerExpression = ParenthesizedExpression(CastExpression(GetFunctionPointerType(
+                returnArg.NativeType,
+                args.Select(x => x.NativeType).ToList()), methodAddressExpression));
+            
+            ExpressionSyntax callExpr = InvocationExpression(methodPointerExpression)
                 .AddArgumentListArguments(Argument(ParseExpression("PPV")))
                 .AddArgumentListArguments(args
-                    .Select((a, i) => Argument(a.Value(isHresultLastArgumentReturn && i == args.Count - 1))).ToArray())
-                .AddArgumentListArguments(Argument(ParseExpression("(*PPV)[base.VTableSize + " + num + "]")));
+                    .Select((a, i) => Argument(a.Value(isHresultLastArgumentReturn && i == args.Count - 1))).ToArray());
 
             if (!isVoidReturn)
                 callExpr = CastExpression(ParseTypeName(returnArg.NativeType), callExpr);
@@ -390,32 +394,23 @@ namespace MicroComGenerator
 
         }
 
-        class LocalInteropHelper
+        FunctionPointerTypeSyntax GetFunctionPointerType(string returnType, List<string> args)
         {
-            public ClassDeclarationSyntax Class { get; private set; } = ClassDeclaration("LocalInterop");
-            private HashSet<string> _existing = new HashSet<string>();
-
-            public ExpressionSyntax GetCaller(string returnType, List<string> args)
-            {
-                string ConvertType(string t) => t.EndsWith("*") ? "void*" : t;
-                returnType = ConvertType(returnType);
-                args = args.Select(ConvertType).ToList();
-                
-                var name = "CalliStdCall" + returnType.Replace("*", "_ptr");
-                var signature = returnType + "::" + name + "::" + string.Join("::", args);
-                if (_existing.Add(signature))
-                {
-                    Class = Class.AddMembers(MethodDeclaration(ParseTypeName(returnType), name)
-                        .AddModifiers(SyntaxKind.StaticKeyword, SyntaxKind.UnsafeKeyword, SyntaxKind.PublicKeyword)
-                        .AddParameterListParameters(Parameter(Identifier("thisObj")).WithType(ParseTypeName("void*")))
-                        .AddParameterListParameters(args.Select((x, i) =>
-                            Parameter(Identifier("arg" + i)).WithType(ParseTypeName(x))).ToArray())
-                        .AddParameterListParameters(Parameter(Identifier("methodPtr")).WithType(ParseTypeName("void*")))
-                        .WithBody(Block(ExpressionStatement(ThrowExpression(ParseExpression("null"))))));
-                }
-
-                return ParseExpression("LocalInterop." + name);
-            }
+            string ConvertType(string t) => t.EndsWith("*") ? "void*" : t;
+            returnType = ConvertType(returnType);
+            
+            args = args.Select(ConvertType).ToList();
+            args.Insert(0, "void*");
+            args.Add(returnType);
+            
+            return FunctionPointerType(FunctionPointerCallingConvention(
+                    SyntaxFactory.
+                    Token(SyntaxKind.UnmanagedKeyword),
+                    FunctionPointerUnmanagedCallingConventionList(
+                        SingletonSeparatedList(FunctionPointerUnmanagedCallingConvention(Identifier("Stdcall"))))),
+                FunctionPointerParameterList(SeparatedList(
+                    args.Select(a => FunctionPointerParameter(ParseTypeName(a)))
+                )));
         }
 
 

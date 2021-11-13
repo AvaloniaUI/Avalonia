@@ -17,7 +17,6 @@ namespace MicroComGenerator
         private List<string> _extraUsings;
         private string _namespace;
         private SyntaxKind _visibility;
-        private LocalInteropHelper _localInterop = new LocalInteropHelper();
 
         public CSharpGen(AstIdlNode idl)
         {
@@ -112,7 +111,6 @@ namespace MicroComGenerator
             foreach (var i in _idl.Interfaces)
                 GenerateInterface(ref ns, ref implNs, i);
 
-            implNs = implNs.AddMembers(_localInterop.Class);
             var unit = Unit().AddMembers(ns, implNs);
 
             return Format(unit);
