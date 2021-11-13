@@ -242,27 +242,7 @@ private:
 - (NSArray *)accessibilityChildren
 {
     if (_children == nullptr && _peer != nullptr)
-    {
-        auto childPeers = _peer->GetChildren();
-        auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
-
-        if (childCount > 0)
-        {
-            _children = [[NSMutableArray alloc] initWithCapacity:childCount];
-            
-            for (int i = 0; i < childCount; ++i)
-            {
-                IAvnAutomationPeer* child;
-                
-                if (childPeers->Get(i, &child) == S_OK)
-                {
-                    auto element = [AvnAccessibilityElement acquire:child];
-                    [_children addObject:element];
-                }
-            }
-        }
-    }
-
+        [self recalculateChildren];
     return _children;
 }
 
@@ -392,7 +372,17 @@ private:
 
 - (void)raiseChildrenChanged
 {
-    NSAccessibilityPostNotification(self, NSAccessibilityLayoutChangedNotification);
+    auto changed = _children ? [NSMutableSet setWithArray:_children] : [NSMutableSet set];
+
+    [self recalculateChildren];
+    
+    if (_children)
+        [changed addObjectsFromArray:_children];
+
+    NSAccessibilityPostNotificationWithUserInfo(
+        self,
+        NSAccessibilityLayoutChangedNotification,
+        @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }
 
 - (void)raisePropertyChanged
@@ -403,6 +393,32 @@ private:
 {
     if (accessibilityFocused)
         _peer->SetFocus();
+}
+
+- (void)recalculateChildren
+{
+    auto childPeers = _peer->GetChildren();
+    auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
+
+    if (childCount > 0)
+    {
+        _children = [[NSMutableArray alloc] initWithCapacity:childCount];
+        
+        for (int i = 0; i < childCount; ++i)
+        {
+            IAvnAutomationPeer* child;
+            
+            if (childPeers->Get(i, &child) == S_OK)
+            {
+                auto element = [AvnAccessibilityElement acquire:child];
+                [_children addObject:element];
+            }
+        }
+    }
+    else
+    {
+        _children = nil;
+    }
 }
 
 @end
