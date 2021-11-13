@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Avalonia.IntegrationTests.Win32
+namespace Avalonia.IntegrationTests.Appium
 {
     [CollectionDefinition("Default")]
     public class DefaultCollection : ICollectionFixture<TestAppFixture>

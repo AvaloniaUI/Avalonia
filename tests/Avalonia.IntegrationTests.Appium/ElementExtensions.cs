@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using OpenQA.Selenium.Appium;
 
-namespace Avalonia.IntegrationTests.Win32
+namespace Avalonia.IntegrationTests.Appium
 {
     internal static class ElementExtensions
     {

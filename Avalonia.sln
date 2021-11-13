@@ -232,7 +232,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniMvvm", "samples\MiniMvv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTestApp", "samples\IntegrationTestApp\IntegrationTestApp.csproj", "{676D6BFD-029D-4E43-BFC7-3892265CE251}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.IntegrationTests.Win32", "tests\Avalonia.IntegrationTests.Win32\Avalonia.IntegrationTests.Win32.csproj", "{F2CE566B-E7F6-447A-AB1A-3F574A6FE43A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.IntegrationTests.Appium", "tests\Avalonia.IntegrationTests.Appium\Avalonia.IntegrationTests.Appium.csproj", "{F2CE566B-E7F6-447A-AB1A-3F574A6FE43A}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

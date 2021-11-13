@@ -7,7 +7,7 @@ using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Mac;
 using OpenQA.Selenium.Appium.Windows;
 
-namespace Avalonia.IntegrationTests.Win32
+namespace Avalonia.IntegrationTests.Appium
 {
     public class TestAppFixture : IDisposable
     {

@@ -1,7 +1,7 @@
 ﻿using OpenQA.Selenium.Appium;
 using Xunit;
 
-namespace Avalonia.IntegrationTests.Win32
+namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
     public class ComboBoxTests
