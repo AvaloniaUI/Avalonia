@@ -6,7 +6,7 @@ namespace Avalonia.IntegrationTests.Win32
     [Collection("Default")]
     public class CheckBoxTests
     {
-        private AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _session;
 
         public CheckBoxTests(TestAppFixture fixture)
         {
@@ -22,14 +22,11 @@ namespace Avalonia.IntegrationTests.Win32
         {
             var checkBox = _session.FindElementByAccessibilityId("UncheckedCheckBox");
 
-            Assert.Equal("Unchecked", checkBox.Text);
-            Assert.False(checkBox.Selected);
-            Assert.Equal("0", checkBox.GetAttribute("Toggle.ToggleState"));
+            Assert.Equal("Unchecked", checkBox.GetName());
+            Assert.Equal(false, checkBox.GetIsChecked());
 
             checkBox.Click();
-
-            Assert.True(checkBox.Selected);
-            Assert.Equal("1", checkBox.GetAttribute("Toggle.ToggleState"));
+            Assert.Equal(true, checkBox.GetIsChecked());
         }
 
         [Fact]
@@ -37,14 +34,11 @@ namespace Avalonia.IntegrationTests.Win32
         {
             var checkBox = _session.FindElementByAccessibilityId("CheckedCheckBox");
 
-            Assert.Equal("Checked", checkBox.Text);
-            Assert.True(checkBox.Selected);
-            Assert.Equal("1", checkBox.GetAttribute("Toggle.ToggleState"));
+            Assert.Equal("Checked", checkBox.GetName());
+            Assert.Equal(true, checkBox.GetIsChecked());
 
             checkBox.Click();
-
-            Assert.False(checkBox.Selected);
-            Assert.Equal("0", checkBox.GetAttribute("Toggle.ToggleState"));
+            Assert.Equal(false, checkBox.GetIsChecked());
         }
 
         [Fact]
@@ -52,21 +46,17 @@ namespace Avalonia.IntegrationTests.Win32
         {
             var checkBox = _session.FindElementByAccessibilityId("ThreeStateCheckBox");
 
-            Assert.Equal("ThreeState", checkBox.Text);
-            Assert.Equal("2", checkBox.GetAttribute("Toggle.ToggleState"));
+            Assert.Equal("ThreeState", checkBox.GetName());
+            Assert.Null(checkBox.GetIsChecked());
 
             checkBox.Click();
-
-            Assert.False(checkBox.Selected);
-            Assert.Equal("0", checkBox.GetAttribute("Toggle.ToggleState"));
+            Assert.Equal(false, checkBox.GetIsChecked());
 
             checkBox.Click();
-
-            Assert.True(checkBox.Selected);
-            Assert.Equal("1", checkBox.GetAttribute("Toggle.ToggleState"));
+            Assert.Equal(true, checkBox.GetIsChecked());
 
             checkBox.Click();
-            Assert.Equal("2", checkBox.GetAttribute("Toggle.ToggleState"));
+            Assert.Null(checkBox.GetIsChecked());
         }
     }
 }

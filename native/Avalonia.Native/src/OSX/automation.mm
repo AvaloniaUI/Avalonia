@@ -194,7 +194,7 @@ private:
         switch (_peer->ToggleProvider_GetToggleState()) {
             case 0: return [NSNumber numberWithBool:NO];
             case 1: return [NSNumber numberWithBool:YES];
-            default: return [NSNumber numberWithInt:-1];
+            default: return [NSNumber numberWithInt:2];
         }
     }
     else if (_peer->IsValueProvider())
@@ -314,6 +314,10 @@ private:
     {
         _peer->ExpandCollapseProvider_Expand();
     }
+    else if (_peer->IsToggleProvider())
+    {
+        _peer->ToggleProvider_Toggle();
+    }
     return YES;
 }
 
@@ -357,7 +361,7 @@ private:
     }
     else if (selector == @selector(accessibilityPerformPress))
     {
-        return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider();
+        return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider() || _peer->IsToggleProvider();
     }
     else if (selector == @selector(accessibilityPerformIncrement) ||
              selector == @selector(accessibilityPerformDecrement) ||

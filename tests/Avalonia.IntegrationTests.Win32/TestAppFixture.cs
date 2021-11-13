@@ -52,7 +52,17 @@ namespace Avalonia.IntegrationTests.Win32
 
         public AppiumDriver<AppiumWebElement> Session { get; }
 
-        public void Dispose() => Session.Close();
+        public void Dispose()
+        {
+            try
+            {
+                Session.Close();
+            }
+            catch
+            {
+                // Closing the session currently seems to crash the mac2 driver.
+            }
+        }
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
