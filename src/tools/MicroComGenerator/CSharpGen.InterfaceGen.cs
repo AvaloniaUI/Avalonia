@@ -452,6 +452,7 @@ namespace MicroComGenerator
                 )
                 .AddMembers(MethodDeclaration(ParseTypeName("void"), "__MicroComModuleInit")
                     .AddModifiers(Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.InternalKeyword))
+                    .AddAttribute("System.Runtime.CompilerServices.ModuleInitializer")
                     .WithExpressionBody(ArrowExpressionClause(
                         ParseExpression("Avalonia.MicroCom.MicroComRuntime.RegisterVTable(typeof(" +
                                         iface.Name + "), new " + vtbl.Identifier.Text + "().CreateVTable())")))
@@ -462,6 +463,7 @@ namespace MicroComGenerator
             proxy = proxy.AddMembers(
                     MethodDeclaration(ParseTypeName("void"), "__MicroComModuleInit")
                         .AddModifiers(Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.InternalKeyword))
+                        .AddAttribute("System.Runtime.CompilerServices.ModuleInitializer")
                         .WithBody(Block(
                             ParseStatement("Avalonia.MicroCom.MicroComRuntime.Register(typeof(" +
                                            iface.Name + "), new Guid(\"" + guidString + "\"), (p, owns) => new " +
