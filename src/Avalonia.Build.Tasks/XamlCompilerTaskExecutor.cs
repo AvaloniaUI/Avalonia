@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Microsoft.Build.Framework;
 using Mono.Cecil;
-using Avalonia.Utilities;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using XamlX;
@@ -45,15 +42,26 @@ namespace Avalonia.Build.Tasks
             string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
             bool skipXamlCompilation)
         {
+            return Compile(engine, input, references, projectDirectory, output, verifyIl, logImportance, strongNameKey, patchCom
+                , skipXamlCompilation, 
+                debuggerLaunch:false);
+        }
+
+        internal static CompileResult Compile(IBuildEngine engine, string input, string[] references,
+            string projectDirectory,
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
+            bool skipXamlCompilation
+            , bool debuggerLaunch)
+        {
             var typeSystem = new CecilTypeSystem(references
                 .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
                 .Concat(new[] { input }), input);
-            
+
             var asm = typeSystem.TargetAssemblyDefinition;
 
             if (!skipXamlCompilation)
             {
-                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance);
+                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance, debuggerLaunch);
                 if (compileRes == null && !patchCom)
                     return new CompileResult(true);
                 if (compileRes == false)
@@ -62,7 +70,7 @@ namespace Avalonia.Build.Tasks
 
             if (patchCom)
                 ComInteropHelper.PatchAssembly(asm, typeSystem);
-            
+
             var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
             if (!string.IsNullOrWhiteSpace(strongNameKey))
                 writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
@@ -70,13 +78,18 @@ namespace Avalonia.Build.Tasks
             asm.Write(output, writerParameters);
 
             return new CompileResult(true, true);
-            
+
         }
-        
+
         static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
             string projectDirectory, bool verifyIl, 
-            MessageImportance logImportance)
+            MessageImportance logImportance
+            , bool debuggerLaunch = false)
         {
+            if (debuggerLaunch)
+            {
+                System.Diagnostics.Debugger.Launch();
+            }
             var asm = typeSystem.TargetAssemblyDefinition;
             var emres = new EmbeddedResources(asm);
             var avares = new AvaloniaResources(asm, projectDirectory);
