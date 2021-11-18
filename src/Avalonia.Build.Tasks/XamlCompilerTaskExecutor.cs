@@ -49,9 +49,7 @@ namespace Avalonia.Build.Tasks
 
         internal static CompileResult Compile(IBuildEngine engine, string input, string[] references,
             string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
-            bool skipXamlCompilation
-            , bool debuggerLaunch)
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom, bool skipXamlCompilation, bool debuggerLaunch)
         {
             var typeSystem = new CecilTypeSystem(references
                 .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
@@ -89,6 +87,7 @@ namespace Avalonia.Build.Tasks
             if (debuggerLaunch)
             {
                 System.Diagnostics.Debugger.Launch();
+                while(!Debugger.IsAttached) Thread.Sleep(100);
             }
             var asm = typeSystem.TargetAssemblyDefinition;
             var emres = new EmbeddedResources(asm);
