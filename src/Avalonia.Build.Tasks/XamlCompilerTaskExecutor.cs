@@ -85,7 +85,7 @@ namespace Avalonia.Build.Tasks
             if (debuggerLaunch)
             {
                 System.Diagnostics.Debugger.Launch();
-                while(!Debugger.IsAttached) Thread.Sleep(100);
+                while(!System.Diagnostics.Debugger.IsAttached) System.Threading.Thread.Sleep(100);
             }
             var asm = typeSystem.TargetAssemblyDefinition;
             var emres = new EmbeddedResources(asm);
