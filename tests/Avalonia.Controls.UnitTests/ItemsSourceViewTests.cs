@@ -47,7 +47,7 @@ namespace Avalonia.Controls.UnitTests
 
         private class InvalidCollection : INotifyCollectionChanged, IEnumerable<string>
         {
-            public event NotifyCollectionChangedEventHandler CollectionChanged;
+            public event NotifyCollectionChangedEventHandler CollectionChanged { add { } remove { } }
 
             public IEnumerator<string> GetEnumerator()
             {
