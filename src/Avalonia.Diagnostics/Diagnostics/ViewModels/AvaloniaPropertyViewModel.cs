@@ -19,7 +19,7 @@ namespace Avalonia.Diagnostics.ViewModels
             Name = property.IsAttached ?
                 $"[{property.OwnerType.Name}.{property.Name}]" :
                 property.Name;
-
+            DeclaringType = property.OwnerType;
             Update();
         }
 
@@ -49,6 +49,8 @@ namespace Avalonia.Diagnostics.ViewModels
         }
 
         public override string Group => _group;
+
+        public override System.Type? DeclaringType { get; }
 
         // [MemberNotNull(nameof(_type), nameof(_group), nameof(_priority))]
         public override void Update()
