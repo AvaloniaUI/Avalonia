@@ -50,8 +50,11 @@ namespace Avalonia.Win32
             {
                 foreach (var tray in s_trayIcons.Values)
                 {
-                    tray.UpdateIcon(true);
-                    tray.UpdateIcon();
+                    if (tray._iconAdded)
+                    {
+                        tray.UpdateIcon(true);
+                        tray.UpdateIcon();
+                    }
                 }
             }
         }
