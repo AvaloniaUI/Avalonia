@@ -84,8 +84,32 @@ namespace Avalonia.Build.Tasks
         {
             if (debuggerLaunch)
             {
-                System.Diagnostics.Debugger.Launch();
-                while(!System.Diagnostics.Debugger.IsAttached) System.Threading.Thread.Sleep(100);
+                // According this https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debugger.launch?view=net-6.0#remarks
+                // documentation, on not windows platform Debugger.Launch() always return true without running a debugger.
+                if (System.Diagnostics.Debugger.Launch())
+                {
+                    // Set timeout at 1 minut.
+                    var time = new System.Diagnostics.Stopwatch();
+                    var timeout = TimeSpan.FromMinutes(1);
+                    time.Start();
+
+                    // wait for the debugger to be attacked or timeout.
+                    while (!System.Diagnostics.Debugger.IsAttached && time.Elapsed < timeout)
+                    {
+                        engine.LogMessage($"Wating attach debugger. Elapsed {time.Elapsed}...", MessageImportance.Low);
+                        System.Threading.Thread.Sleep(100);
+                    }
+
+                    time.Stop();                    
+                    if (time.Elapsed >= timeout)
+                    {
+                        engine.LogMessage("Wating attach debugger timeout.", MessageImportance.Normal);
+                    }
+                }
+                else
+                {
+                    engine.LogMessage("Debugging cancelled.", MessageImportance.Normal);
+                }
             }
             var asm = typeSystem.TargetAssemblyDefinition;
             var emres = new EmbeddedResources(asm);
