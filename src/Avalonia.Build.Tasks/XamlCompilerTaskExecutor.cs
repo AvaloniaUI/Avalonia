@@ -371,9 +371,14 @@ namespace Avalonia.Build.Tasks
                             lineNumber = xe.LineNumber;
                             linePosition = xe.LinePosition;
                         }
-                        engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", "XAMLIL", res.FilePath,
-                            lineNumber, linePosition, lineNumber, linePosition,
-                            e.Message, "", "Avalonia"));
+                        engine.LogError(code: BuildEngineErrorCode.InvalidXAML
+                            , file: res.FilePath
+                            , message: e.Message
+                            , lineNumber: lineNumber
+                            , columnNumber: linePosition
+                            , endLineNumber: lineNumber
+                            , endColumnNumber: linePosition
+                            );
                         return false;
                     }
                     res.Remove();
