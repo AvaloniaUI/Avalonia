@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium;
+﻿using System.Runtime.InteropServices;
+using OpenQA.Selenium.Appium;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -43,7 +44,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Button with TextBlock", button.Text);
         }
 
-        [Fact]
+        [PlatformFact(SkipOnOSX = true)]
         public void ButtonWithAcceleratorKey()
         {
             var button = _session.FindElementByAccessibilityId("ButtonWithAcceleratorKey");
