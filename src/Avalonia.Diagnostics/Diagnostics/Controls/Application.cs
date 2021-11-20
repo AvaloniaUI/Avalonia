@@ -2,10 +2,6 @@
 using Avalonia.Controls;
 using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 using App = Avalonia.Application;
-using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
-using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
-using System.Linq;
-using System.Reflection;
 
 namespace Avalonia.Diagnostics.Controls
 {
@@ -93,87 +89,5 @@ namespace Avalonia.Diagnostics.Controls
         /// </summary>
         public string? Name =>
             _application.Name;
-
-        /// <summary>
-        /// Gets a string that describes the operating system on which the app is running. 
-        /// </summary>
-        public string OSVersion =>
-            RuntimeInformation.OSDescription;
-
-        /// <summary>
-        /// Gets the platform on which an app is running.
-        /// </summary>
-        public string OSPlatform =>
-            RuntimeEnvironment.OperatingSystemPlatform.ToString();
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string RuntimeId =>
-            RuntimeEnvironment.GetRuntimeIdentifier();
-
-        /// <summary>
-        /// Get Product Version <see cref="AssemblyInformationalVersionAttribute"/>
-        /// </summary>
-        public string ProductVersion =>
-            GetProductVersion();
-
-        /// <summary>
-        /// Get executable path
-        /// </summary>
-        public string EntryPoint =>
-            Assembly.GetEntryAssembly().Location;
-
-        /// <summary>
-        /// Gets the name of the .NET installation on which an app is running.
-        /// </summary>
-        public string FrameworkVersion =>
-            RuntimeInformation.FrameworkDescription;
-
-        /// <summary>
-        /// Get the Avalonia Framework Version on which an app is running.
-        /// </summary>
-        public string AvaloniaVersion { get; } = s_version.ToString(3);
-
-        /// <summary>
-        /// Get if the Avalonia Framework version an app is running on is Development Build.
-        /// </summary>
-        public bool IsDevelopmentBuild { get; } = s_version.Build == 999;
-
-        /// <summary>
-        /// Gets the directory that serves as a common repository for application-specific data for the current roaming user. A roaming user works on more than one computer on a network. A roaming user's profile is kept on a server on the network and is loaded onto a system when the user logs on.
-        /// </summary>
-        public string ApplicationData =>
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
-        /// <summary>
-        /// Gets the directory that serves as a common repository for application-specific data that is used by the current, non-roaming user.
-        /// </summary>
-        public string LocalApplicationData =>
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        /// <summary>
-        /// Gets or sets the fully qualified path of the current working directory.
-        /// </summary>
-        public string CurrentDirectory =>
-            Environment.CurrentDirectory;
-
-        /// <summary>
-        /// Get the command-line arguments for the current process without executable file name.
-        /// </summary>
-        public string CommandLineArgs =>
-            string.Join(Environment.NewLine, Environment.GetCommandLineArgs().Skip(1));
-
-        private string GetProductVersion()
-        {
-            if (Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute))
-                .FirstOrDefault()
-                is AssemblyInformationalVersionAttribute attribute)
-            {
-                return attribute.InformationalVersion;
-            }
-            return "Unknown";
-        }
-        
     }
 }
