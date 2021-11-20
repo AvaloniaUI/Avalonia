@@ -104,6 +104,17 @@ namespace Avalonia.Diagnostics.ViewModels
                                 {
                                     nodes.Remove(item);
                                 }
+                                if(nodes.Count == 0)
+                                {
+                                    if (Avalonia.Application.Current.ApplicationLifetime is Lifetimes.IControlledApplicationLifetime controller)
+                                    {
+                                        controller.Shutdown();
+                                    }
+                                    else
+                                    {
+                                        Environment.Exit(0);
+                                    }
+                                }
                             }),
                     };
                 }
