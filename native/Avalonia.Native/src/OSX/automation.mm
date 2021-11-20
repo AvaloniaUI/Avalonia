@@ -436,6 +436,14 @@ private:
 {
     self = [super initWithPeer:peer];
     _owner = owner;
+
+    // Seems we need to raise a focus changed notification here if we have focus
+    auto focusedPeer = [self peer]->RootProvider_GetFocus();
+    id focused = [AvnAccessibilityElement acquire:focusedPeer];
+
+    if (focused)
+        NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
+    
     return self;
 }
 
