@@ -56,6 +56,8 @@ namespace Avalonia.Controls
             set { SetValue(IsSelectedProperty, value); }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
+
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
             if (Header == null)
