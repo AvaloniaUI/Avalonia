@@ -7,7 +7,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class ComboBoxTests
     {
-        private AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _session;
 
         public ComboBoxTests(TestAppFixture fixture)
         {

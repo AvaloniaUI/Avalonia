@@ -6,7 +6,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class MenuTests
     {
-        private AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver<AppiumWebElement> _session;
 
         public MenuTests(TestAppFixture fixture) => _session = fixture.Session;
 
@@ -19,7 +19,7 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(SkipOnOSX = true)]
-        public void Open()
+        public void OpenMenu_AcceleratorKey()
         {
             var fileMenu = _session.FindElementByAccessibilityId("FileMenu");
             fileMenu.Click();

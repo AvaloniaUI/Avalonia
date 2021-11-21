@@ -5,12 +5,20 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
         Title="IntegrationTestApp">
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="File">
+        <NativeMenu>
+          <NativeMenuItem Header="Open..."/>
+        </NativeMenu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="View">
+        <NativeMenu/>
+      </NativeMenuItem>  
+    </NativeMenu>
+  </NativeMenu.Menu>
   <DockPanel>
-    <Menu DockPanel.Dock="Top">
-      <MenuItem Name="FileMenu" Header="_File">
-        <MenuItem Name="OpenMenu" Header="_Open..." InputGesture="Ctrl+O"/>
-      </MenuItem>
-    </Menu>
+    <NativeMenuBar DockPanel.Dock="Top"/>
     <TabControl TabStripPlacement="Left" Name="MainTabs">
       <TabItem Header="Automation">
         <StackPanel>
