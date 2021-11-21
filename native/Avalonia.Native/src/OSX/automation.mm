@@ -349,6 +349,13 @@ private:
     return YES;
 }
 
+- (BOOL)isAccessibilitySelected
+{
+    if (_peer->IsSelectionItemProvider())
+        return _peer->SelectionItemProvider_IsSelected();
+    return NO;
+}
+
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
     if (selector == @selector(accessibilityPerformShowMenu))

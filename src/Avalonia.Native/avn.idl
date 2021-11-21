@@ -856,6 +856,9 @@ interface IAvnAutomationPeer : IUnknown
      double RangeValueProvider_GetLargeChange();
      void RangeValueProvider_SetValue(double value);
      
+     bool IsSelectionItemProvider();
+     bool SelectionItemProvider_IsSelected();
+     
      bool IsToggleProvider();
      int ToggleProvider_GetToggleState();
      void ToggleProvider_Toggle();

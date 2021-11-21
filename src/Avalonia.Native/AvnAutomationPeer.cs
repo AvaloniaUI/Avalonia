@@ -126,6 +126,9 @@ namespace Avalonia.Native
         public double RangeValueProvider_GetSmallChange() => ((IRangeValueProvider)_inner).SmallChange;
         public double RangeValueProvider_GetLargeChange() => ((IRangeValueProvider)_inner).LargeChange;
         public void RangeValueProvider_SetValue(double value) => ((IRangeValueProvider)_inner).SetValue(value);
+
+        public int IsSelectionItemProvider() => (_inner is ISelectionItemProvider).AsComBool();
+        public int SelectionItemProvider_IsSelected() => ((ISelectionItemProvider)_inner).IsSelected.AsComBool();
         
         public int IsToggleProvider() => (_inner is IToggleProvider).AsComBool();
         public int ToggleProvider_GetToggleState() => (int)((IToggleProvider)_inner).ToggleState;
