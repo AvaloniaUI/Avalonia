@@ -1,6 +1,7 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace IntegrationTestApp
@@ -36,6 +37,12 @@ namespace IntegrationTestApp
                 menuItem.Click += (s, e) => tabItem.IsSelected = true;
                 viewMenu.Menu.Items.Add(menuItem);
             }
+        }
+
+        private void MenuClicked(object? sender, RoutedEventArgs e)
+        {
+            var clickedMenuItemTextBlock = this.FindControl<TextBlock>("ClickedMenuItem");
+            clickedMenuItemTextBlock.Text = ((MenuItem)sender!).Header.ToString();
         }
     }
 }

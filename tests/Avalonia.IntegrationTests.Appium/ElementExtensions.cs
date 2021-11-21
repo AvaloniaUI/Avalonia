@@ -19,7 +19,7 @@ namespace Avalonia.IntegrationTests.Appium
                 _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
             };
 
-        public static void ClickListItem(this AppiumWebElement element)
+        public static void SendClick(this AppiumWebElement element)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -27,7 +27,8 @@ namespace Avalonia.IntegrationTests.Appium
             }
             else
             {
-                // List items don't respond to performClick on MacOS, so instead send a physical click as VoiceOver
+                // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
+                // such as list items don't support this action, so instead simulate a physical click as VoiceOver
                 // does.
                 var action = new Actions(element.WrappedDriver);
                 action.MoveToElement(element);
