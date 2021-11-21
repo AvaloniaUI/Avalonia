@@ -75,7 +75,7 @@
       <TabItem Header="Menu">
         <DockPanel>
           <Menu DockPanel.Dock="Top">
-            <MenuItem Name="RootMenuItem" Header="_Root">0
+            <MenuItem Name="RootMenuItem" Header="_Root">
               <MenuItem Name="Child1MenuItem" Header="_Child 1" InputGesture="Ctrl+O" Click="MenuClicked"/>
               <MenuItem Name="Child2MenuItem" Header="_Child 1">
                 <MenuItem Name="GrandchildMenuItem" Header="_Grandchild" Click="MenuClicked"/>
