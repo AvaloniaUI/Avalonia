@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.Interactions;
 
 namespace Avalonia.IntegrationTests.Appium
 {
@@ -16,6 +18,23 @@ namespace Avalonia.IntegrationTests.Appium
                 "2" => null,
                 _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
             };
+
+        public static void ClickListItem(this AppiumWebElement element)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                element.Click();
+            }
+            else
+            {
+                // List items don't respond to performClick on MacOS, so instead send a physical click as VoiceOver
+                // does.
+                var action = new Actions(element.WrappedDriver);
+                action.MoveToElement(element);
+                action.Click();
+                action.Perform();
+            }
+        }
 
         public static string GetAttribute(AppiumWebElement element, string windows, string macOS)
         {

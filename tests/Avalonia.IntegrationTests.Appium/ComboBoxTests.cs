@@ -1,4 +1,5 @@
 ﻿using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Mac;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -24,8 +25,8 @@ namespace Avalonia.IntegrationTests.Appium
 
             Assert.Equal(string.Empty, comboBox.Text);
 
-            comboBox.Click();
-            comboBox.FindElementByName("Bar").Click();
+            ((MacElement)comboBox).Click();
+            _session.FindElementByName("Bar").ClickListItem();
 
             Assert.Equal("Bar", comboBox.Text);
         }

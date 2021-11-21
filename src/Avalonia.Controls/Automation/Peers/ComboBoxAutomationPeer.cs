@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
@@ -7,12 +8,13 @@ using Avalonia.Controls;
 namespace Avalonia.Automation.Peers
 {
     public class ComboBoxAutomationPeer : SelectingItemsControlAutomationPeer,
-        IExpandCollapseProvider
+        IExpandCollapseProvider,
+        IValueProvider
     {
         private UnrealizedSelectionPeer[]? _selection;
 
         public ComboBoxAutomationPeer(ComboBox owner)
-            : base(owner) 
+            : base(owner)
         {
         }
 
@@ -22,7 +24,19 @@ namespace Avalonia.Automation.Peers
         public bool ShowsMenu => true;
         public void Collapse() => Owner.IsDropDownOpen = false;
         public void Expand() => Owner.IsDropDownOpen = true;
+        bool IValueProvider.IsReadOnly => true;
 
+        string? IValueProvider.Value
+        {
+            get
+            {
+                var selection = GetSelection();
+                return selection.Count == 1 ? selection[0].GetName() : null;
+            }
+        }
+        
+        void IValueProvider.SetValue(string? value) => throw new NotSupportedException();
+        
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.ComboBox;

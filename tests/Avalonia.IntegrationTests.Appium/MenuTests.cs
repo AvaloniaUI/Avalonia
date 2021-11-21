@@ -18,7 +18,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("File", fileMenu.Text);
         }
 
-        [Fact]
+        [PlatformFact(SkipOnOSX = true)]
         public void Open()
         {
             var fileMenu = _session.FindElementByAccessibilityId("FileMenu");
