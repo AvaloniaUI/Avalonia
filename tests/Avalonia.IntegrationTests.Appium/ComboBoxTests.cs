@@ -25,7 +25,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             Assert.Equal(string.Empty, comboBox.Text);
 
-            ((MacElement)comboBox).Click();
+            comboBox.Click();
             _session.FindElementByName("Bar").SendClick();
 
             Assert.Equal("Bar", comboBox.Text);
