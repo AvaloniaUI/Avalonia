@@ -17,39 +17,45 @@ namespace Avalonia.X11
         public delegate void EventHandler(ref XEvent xev);
         private readonly Dictionary<IntPtr, EventHandler> _eventHandlers;
         private Thread _mainThread;
-
-        [StructLayout(LayoutKind.Explicit)]
-        struct epoll_data
-        {
-            [FieldOffset(0)]
-            public IntPtr ptr;
-            [FieldOffset(0)]
-            public int fd;
-            [FieldOffset(0)]
-            public uint u32;
-            [FieldOffset(0)]
-            public ulong u64;
-        }
-
-        private const int EPOLLIN = 1;
-        private const int EPOLL_CTL_ADD = 1;
-        private const int O_NONBLOCK = 2048;
+        
         
         [StructLayout(LayoutKind.Sequential)]
-        struct epoll_event
+        public struct fd_set
         {
-            public uint events;
-            public epoll_data data;
+            public fixed uint fds[FD_SETSIZE];
+            public const int FD_SETSIZE = 64;
+
+            public void Set(int fd)
+            {
+                var idx = fd / 32;
+                if (idx >= FD_SETSIZE)
+                    throw new ArgumentException();
+                var bit = (fd % 32);
+                fds[idx] = 1u << bit;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct timeval
+        {
+            public int tv_sec;
+            public int tv_usec;
+            public timeval(int milliseconds)
+            {
+                tv_sec = milliseconds / 1000;
+                tv_usec = milliseconds % 1000 * 1000;
+            }
         }
         
-        [DllImport("libc")]
-        extern static int epoll_create1(int size);
-
-        [DllImport("libc")]
-        extern static int epoll_ctl(int epfd, int op, int fd, ref epoll_event __event);
-
-        [DllImport("libc")]
-        extern static int epoll_wait(int epfd, epoll_event* events, int maxevents, int timeout);
+        private const int O_NONBLOCK = 2048;
+        
+        [DllImport("libc", EntryPoint = "select")]
+        private static extern int select(
+            int nfds,
+            [In] [Out] ref fd_set readfds,
+            [In] [Out] ref fd_set writefds,
+            [In] [Out] ref fd_set exceptfds,
+            timeval* timeout);
 
         [DllImport("libc")]
         extern static int pipe2(int* fds, int flags);
@@ -65,7 +71,7 @@ namespace Avalonia.X11
             Signal =2
         }
 
-        private int _sigread, _sigwrite;
+        private readonly int _sigread, _sigwrite, _x11Fd;
         private object _lock = new object();
         private bool _signaled;
         private DispatcherPriority _signaledPriority;
@@ -106,37 +112,18 @@ namespace Avalonia.X11
 
         List<X11Timer> _timers = new List<X11Timer>();
         
+
         public X11PlatformThreading(AvaloniaX11Platform platform)
         {
             _platform = platform;
             _display = platform.Display;
             _eventHandlers = platform.Windows;
             _mainThread = Thread.CurrentThread;
-            var fd = XLib.XConnectionNumber(_display);
-            var ev = new epoll_event()
-            {
-                events = EPOLLIN,
-                data = {u32 = (int)EventCodes.X11}
-            };
-            _epoll = epoll_create1(0);
-            if (_epoll == -1)
-                throw new X11Exception("epoll_create1 failed");
-
-            if (epoll_ctl(_epoll, EPOLL_CTL_ADD, fd, ref ev) == -1)
-                throw new X11Exception("Unable to attach X11 connection handle to epoll");
-
-            var fds = stackalloc int[2];
-            pipe2(fds, O_NONBLOCK);
-            _sigread = fds[0];
-            _sigwrite = fds[1];
-            
-            ev = new epoll_event
-            {
-                events = EPOLLIN,
-                data = {u32 = (int)EventCodes.Signal}
-            };
-            if (epoll_ctl(_epoll, EPOLL_CTL_ADD, _sigread, ref ev) == -1)
-                throw new X11Exception("Unable to attach signal pipe to epoll");
+            _x11Fd = XLib.XConnectionNumber(_display);
+            var pipeFds = stackalloc int[2];
+            pipe2(pipeFds, O_NONBLOCK);
+            _sigread = pipeFds[0];
+            _sigwrite = pipeFds[1];
         }
 
         int TimerComparer(X11Timer t1, X11Timer t2)
@@ -235,10 +222,18 @@ namespace Avalonia.X11
                     return;
                 //Flush whatever requests were made to XServer
                 XFlush(_display);
-                epoll_event ev;
+                fd_set readFds = default, writeFds = default, exceptFds = default;
+                readFds.Set(_x11Fd);
+                readFds.Set(_sigread);
+                var timeout = nextTick == null
+                    ? (int?)null
+                    : Math.Max(1, (int)(nextTick.Value - _clock.Elapsed).TotalMilliseconds);
+                var timeval = new timeval(timeout ?? 0);
+
                 if (XPending(_display) == 0)
-                    epoll_wait(_epoll, &ev, 1,
-                        nextTick == null ? -1 : Math.Max(1, (int)(nextTick.Value - _clock.Elapsed).TotalMilliseconds));
+                    select(Math.Max(_x11Fd, _sigread),
+                        ref readFds, ref writeFds, ref exceptFds, timeout.HasValue ? &timeval : null);
+                
                 if (cancellationToken.IsCancellationRequested)
                     return;
                 CheckSignaled();
