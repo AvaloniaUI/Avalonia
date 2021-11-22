@@ -207,7 +207,8 @@ public:
                 Window = nullptr;
                 
                 try{
-                [window close];
+                    // Seems to throw sometimes on application exit.
+                    [window close];
                 }
                 catch(NSException*){}
             }
