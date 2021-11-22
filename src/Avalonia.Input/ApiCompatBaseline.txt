@@ -1,4 +1,5 @@
 Compat issues with assembly Avalonia.Input:
 MembersMustExist : Member 'public Avalonia.Platform.IPlatformHandle Avalonia.Input.Cursor.PlatformCursor.get()' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Input.IFocusManager.RemoveFocusScope(Avalonia.Input.IFocusScope)' is present in the implementation but not in the contract.
 TypesMustExist : Type 'Avalonia.Platform.IStandardCursorFactory' does not exist in the implementation but it does exist in the contract.
-Total Issues: 2
+Total Issues: 3
