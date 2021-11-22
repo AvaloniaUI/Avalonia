@@ -13,6 +13,7 @@ namespace IntegrationTestApp
             InitializeComponent();
             InitializeViewMenu();
             this.AttachDevTools();
+            AddHandler(Button.ClickEvent, OnButtonClick);
         }
 
         private void InitializeComponent()
@@ -43,6 +44,16 @@ namespace IntegrationTestApp
         {
             var clickedMenuItemTextBlock = this.FindControl<TextBlock>("ClickedMenuItem");
             clickedMenuItemTextBlock.Text = ((MenuItem)sender!).Header.ToString();
+        }
+
+        private void OnButtonClick(object? sender, RoutedEventArgs e)
+        {
+            var source = e.Source as Button;
+
+            if (source?.Name == "ComboBoxSelectionClear")
+                this.FindControl<ComboBox>("ComboBox").SelectedIndex = -1;
+            if (source?.Name == "ComboBoxSelectFirst")
+                this.FindControl<ComboBox>("ComboBox").SelectedIndex = 0;
         }
     }
 }

@@ -19,6 +19,7 @@
   </NativeMenu.Menu>
   <DockPanel>
     <NativeMenuBar DockPanel.Dock="Top"/>
+    
     <TabControl TabStripPlacement="Left" Name="MainTabs">
       <TabItem Header="Automation">
         <StackPanel>
@@ -32,6 +33,7 @@
           </TextBox>
         </StackPanel>
       </TabItem>
+      
       <TabItem Header="Button">
         <StackPanel>
           <Button Name="DisabledButton" IsEnabled="False">
@@ -57,18 +59,12 @@
 
       <TabItem Header="ComboBox">
         <StackPanel>
-          <ComboBox Name="UnselectedComboBox">
-            <ComboBoxItem>Foo</ComboBoxItem>
-            <ComboBoxItem>Bar</ComboBoxItem>
+          <ComboBox Name="ComboBox">
+            <ComboBoxItem>Item 0</ComboBoxItem>
+            <ComboBoxItem>Item 1</ComboBoxItem>
           </ComboBox>
-          <ComboBox Name="SelectedIndex0ComboBox" SelectedIndex="0">
-            <ComboBoxItem>Foo</ComboBoxItem>
-            <ComboBoxItem>Bar</ComboBoxItem>
-          </ComboBox>
-          <ComboBox Name="SelectedIndex1ComboBox" SelectedIndex="1">
-            <ComboBoxItem>Foo</ComboBoxItem>
-            <ComboBoxItem>Bar</ComboBoxItem>
-          </ComboBox>
+          <Button Name="ComboBoxSelectionClear">Clear Selection</Button>
+          <Button Name="ComboBoxSelectFirst">Select First</Button>
         </StackPanel>
       </TabItem>
       
