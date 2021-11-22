@@ -96,7 +96,7 @@ namespace Avalonia.Build.Tasks
                     // wait for the debugger to be attacked or timeout.
                     while (!System.Diagnostics.Debugger.IsAttached && time.Elapsed < timeout)
                     {
-                        engine.LogMessage($"Wating attach debugger. Elapsed {time.Elapsed}...", MessageImportance.Low);
+                        engine.LogMessage($"[PID:{System.Diagnostics.Process.GetCurrentProcess().Id}] Wating attach debugger. Elapsed {time.Elapsed}...", MessageImportance.High);
                         System.Threading.Thread.Sleep(100);
                     }
 
