@@ -99,10 +99,6 @@ namespace Avalonia.Controls.Utils
             if (_size != finalSize
                 || _borderThickness != borderThickness
                 || _cornerRadius != cornerRadius
-                || _borderLineCap != borderLineCap
-                || _borderJoin != borderLineJoin
-                || _borderDashOffset != borderDashOffset
-                || Equals(_borderDashArray, borderDashArray)
                 || !_initialized)
                 Update(finalSize, borderThickness, cornerRadius);
             RenderCore(context, background, borderBrush, boxShadows, borderDashOffset, borderLineCap, borderLineJoin,
