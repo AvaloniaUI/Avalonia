@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
@@ -52,11 +53,14 @@ namespace Avalonia.X11
 
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
-            DeferredDisplay = XOpenDisplay(IntPtr.Zero);
-            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
-                IntPtr.Zero);
             if (Display == IntPtr.Zero)
                 throw new Exception("XOpenDisplay failed");
+            DeferredDisplay = XOpenDisplay(IntPtr.Zero);
+            if (DeferredDisplay == IntPtr.Zero)
+                throw new Exception("XOpenDisplay failed");
+                
+            OrphanedWindow = XCreateSimpleWindow(Display, XDefaultRootWindow(Display), 0, 0, 1, 1, 0, IntPtr.Zero,
+                IntPtr.Zero);
             XError.Init();
             
             Info = new X11Info(Display, DeferredDisplay, useXim);
@@ -100,6 +104,26 @@ namespace Avalonia.X11
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
+
+        private static uint[] X11IconConverter(IWindowIconImpl icon)
+        {
+            if (!(icon is X11IconData x11icon))
+                return Array.Empty<uint>();
+
+            return x11icon.Data.Select(x => x.ToUInt32()).ToArray();
+        }
+
+        public ITrayIconImpl CreateTrayIcon()
+        {
+            var dbusTrayIcon = new DBusTrayIconImpl();
+
+            if (!dbusTrayIcon.IsActive) return new XEmbedTrayIconImpl();
+
+            dbusTrayIcon.IconConverterDelegate = X11IconConverter;
+
+            return dbusTrayIcon;
+        }
+        
         public IWindowImpl CreateWindow()
         {
             return new X11Window(this, null);
@@ -162,14 +186,49 @@ namespace Avalonia.X11
 
 namespace Avalonia
 {
-
+    /// <summary>
+    /// Platform-specific options which apply to Linux.
+    /// </summary>
     public class X11PlatformOptions
     {
+        /// <summary>
+        /// Enables native Linux EGL when set to true. The default value is false.
+        /// </summary>
         public bool UseEGL { get; set; }
+
+        /// <summary>
+        /// Determines whether to use GPU for rendering in your project. The default value is true.
+        /// </summary>
         public bool UseGpu { get; set; } = true;
+
+        /// <summary>
+        /// Embeds popups to the window when set to true. The default value is false.
+        /// </summary>
         public bool OverlayPopups { get; set; }
+
+        /// <summary>
+        /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
+        /// The default value is false.
+        /// </summary>
         public bool UseDBusMenu { get; set; }
+
+        /// <summary>
+        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
+        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
+        /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
+
+        /// <summary>
+        /// Determines whether to use IME.
+        /// IME would be enabled by default if the current user input language is one of the following: Mandarin, Japanese, Vietnamese or Korean.
+        /// </summary>
+        /// <remarks>
+        /// Input method editor is a component that enables users to generate characters not natively available 
+        /// on their input devices by using sequences of characters or mouse operations that are natively available on their input devices.
+        /// </remarks>
         public bool? EnableIme { get; set; }
 
         public IList<GlVersion> GlProfiles { get; set; } = new List<GlVersion>
@@ -190,7 +249,14 @@ namespace Avalonia
             "llvmpipe"
         };
         public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
-        public bool? EnableMultiTouch { get; set; }
+
+        /// <summary>
+        /// Enables multitouch support. The default value is true.
+        /// </summary>
+        /// <remarks>
+        /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
+        /// </remarks>
+        public bool? EnableMultiTouch { get; set; } = true;
     }
     public static class AvaloniaX11PlatformExtensions
     {

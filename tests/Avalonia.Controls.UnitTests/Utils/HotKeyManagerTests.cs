@@ -10,7 +10,6 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
-using System;
 using Avalonia.Input.Raw;
 using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
 

@@ -21,10 +21,12 @@ namespace Avalonia.Controls.Platform
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            while (true)
+            var handles = new[] { _signaled, cancellationToken.WaitHandle };
+
+            while (!cancellationToken.IsCancellationRequested)
             {
                 Signaled?.Invoke(null);
-                _signaled.WaitOne();
+                WaitHandle.WaitAny(handles);
             }
         }
 
@@ -83,7 +85,9 @@ namespace Avalonia.Controls.Platform
 
         public bool CurrentThreadIsLoopThread => TlsCurrentThreadIsLoopThread;
         public event Action<DispatcherPriority?> Signaled;
+#pragma warning disable CS0067
         public event Action<TimeSpan> Tick;
+#pragma warning restore CS0067
 
     }
 }

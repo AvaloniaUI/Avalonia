@@ -27,6 +27,7 @@
         <Border Name="PART_LayoutRoot"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
                 Padding="{TemplateBinding Padding}">
           <Panel>
             <ContentPresenter Name="PART_ContentPresenter"

@@ -1225,5 +1225,32 @@ namespace Avalonia.Input.UnitTests
                 "Button2", "Button3", "Button5", "Button1", "Button6", "Button4"
             }, result);
         }
+
+        [Fact]
+        public void Cannot_Focus_Child_Of_Disabled_Control()
+        {
+            Button start;
+            Button expected;
+
+            var top = new StackPanel
+            {
+                [KeyboardNavigation.TabNavigationProperty] = KeyboardNavigationMode.Cycle,
+                Children =
+                {
+                    (start = new Button { Name = "Button1" }),
+                    new Border
+                    {
+                        IsEnabled = false,
+                        Child = new Button { Name = "Button2" },
+                    },
+                    (expected = new Button { Name = "Button3" }),
+                }
+            };
+
+            var current = (IInputElement)start;
+            var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
+
+            Assert.Same(expected, result);
+        }
     }
 }

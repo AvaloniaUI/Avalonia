@@ -7,6 +7,7 @@ namespace Avalonia.Markup.Xaml.Templates
     public static class TemplateContent
     {
         public static ControlTemplateResult Load(object templateContent)
+
         {
             if (templateContent is Func<IServiceProvider, object> direct)
             {
@@ -17,6 +18,17 @@ namespace Avalonia.Markup.Xaml.Templates
             {
                 return null;
             }
+
+            throw new ArgumentException(nameof(templateContent));
+        }
+
+        public static TemplateResult<T> Load<T>(object templateContent)
+        {
+            if (templateContent is Func<IServiceProvider, object> direct)
+                return (TemplateResult<T>)direct(null);
+
+            if (templateContent is null)
+                return null;
 
             throw new ArgumentException(nameof(templateContent));
         }
