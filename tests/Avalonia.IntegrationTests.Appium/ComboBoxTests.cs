@@ -48,7 +48,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Item 0", comboBox.GetComboBoxValue());
         }
 
-        [Fact]
+        [PlatformFact(SkipOnOSX = true)]
         public void Can_Change_Selection_With_Keyboard()
         {
             var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
@@ -65,7 +65,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Item 1", comboBox.GetComboBoxValue());
         }
 
-        [Fact]
+        [PlatformFact(SkipOnOSX = true)]
         public void Can_Change_Selection_With_Keyboard_From_Unselected()
         {
             var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
@@ -82,7 +82,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Item 0", comboBox.GetComboBoxValue());
         }
 
-        [Fact]
+        [PlatformFact(SkipOnOSX = true)]
         public void Can_Cancel_Keyboard_Selection_With_Escape()
         {
             var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
