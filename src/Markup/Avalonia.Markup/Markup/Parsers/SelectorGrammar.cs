@@ -519,9 +519,9 @@ namespace Avalonia.Markup.Parsers
             {
                 return obj is AttachedPropertySyntax syntax
                     && syntax.Xmlns == Xmlns
-                    && syntax.TypeName == syntax.TypeName
-                    && syntax.Property == syntax.Property
-                    && syntax.Value == syntax.Value;
+                    && syntax.TypeName == TypeName
+                    && syntax.Property == Property
+                    && syntax.Value == Value;
             }
         }
 
