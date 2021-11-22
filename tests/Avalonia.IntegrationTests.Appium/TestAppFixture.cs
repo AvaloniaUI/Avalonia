@@ -39,6 +39,7 @@ namespace Avalonia.IntegrationTests.Appium
                 opts.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
                 opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
                 opts.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
+                opts.AddAdditionalCapability("appium:showServerLogs", true);
 
                 Session = new MacDriver<AppiumWebElement>(
                     new Uri("http://127.0.0.1:4723/wd/hub"),

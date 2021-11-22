@@ -8,6 +8,13 @@ namespace Avalonia.IntegrationTests.Appium
 {
     internal static class ElementExtensions
     {
+        public static string GetComboBoxValue(this AppiumWebElement element)
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+                element.Text :
+                element.GetAttribute("value");
+        }
+        
         public static string GetName(this AppiumWebElement element) => GetAttribute(element, "Name", "title");
 
         public static bool? GetIsChecked(this AppiumWebElement element) =>

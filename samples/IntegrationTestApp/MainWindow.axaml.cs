@@ -51,9 +51,9 @@ namespace IntegrationTestApp
             var source = e.Source as Button;
 
             if (source?.Name == "ComboBoxSelectionClear")
-                this.FindControl<ComboBox>("ComboBox").SelectedIndex = -1;
+                this.FindControl<ComboBox>("BasicComboBox").SelectedIndex = -1;
             if (source?.Name == "ComboBoxSelectFirst")
-                this.FindControl<ComboBox>("ComboBox").SelectedIndex = 0;
+                this.FindControl<ComboBox>("BasicComboBox").SelectedIndex = 0;
         }
     }
 }

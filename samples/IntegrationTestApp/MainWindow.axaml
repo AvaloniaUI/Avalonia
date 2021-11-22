@@ -59,7 +59,7 @@
 
       <TabItem Header="ComboBox">
         <StackPanel>
-          <ComboBox Name="ComboBox">
+          <ComboBox Name="BasicComboBox">
             <ComboBoxItem>Item 0</ComboBoxItem>
             <ComboBoxItem>Item 1</ComboBoxItem>
           </ComboBox>
