@@ -18,11 +18,11 @@ namespace Avalonia.Media.Transformation
         public static Matrix ComposeTransform(Matrix.Decomposed decomposed)
         {
             // According to https://www.w3.org/TR/css-transforms-1/#recomposing-to-a-2d-matrix
-
-            return Matrix.CreateTranslation(decomposed.Translate) *
-                   Matrix.CreateRotation(decomposed.Angle) *
-                   Matrix.CreateSkew(decomposed.Skew.X, decomposed.Skew.Y) *
-                   Matrix.CreateScale(decomposed.Scale);
+            return Matrix.Identity
+                .Prepend(Matrix.CreateTranslation(decomposed.Translate))
+                .Prepend(Matrix.CreateRotation(decomposed.Angle))
+                .Prepend(Matrix.CreateSkew(decomposed.Skew.X, decomposed.Skew.Y))
+                .Prepend(Matrix.CreateScale(decomposed.Scale));
         }
 
         public static Matrix.Decomposed InterpolateDecomposedTransforms(ref Matrix.Decomposed from, ref Matrix.Decomposed to, double progress)
