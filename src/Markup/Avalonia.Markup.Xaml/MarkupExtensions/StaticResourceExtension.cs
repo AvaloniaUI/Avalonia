@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -32,6 +33,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 PropertyInfo pi => pi.PropertyType,
                 _ => null,
             };
+
+            if (provideTarget.TargetObject is Setter setter)
+            {
+                targetType = setter.Property.PropertyType;
+            }
 
             // Look upwards though the ambient context for IResourceHosts and IResourceProviders
             // which might be able to give us the resource.

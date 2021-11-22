@@ -1,5 +1,7 @@
 ﻿using System;
+using Avalonia.Animation.Animators;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -98,6 +100,71 @@ namespace Avalonia.Animation.UnitTests
                 1.0,
                 0.5),
                 Times.Never);
+        }
+
+
+        [Theory]
+        [InlineData(null)] //null value
+        [InlineData("stringValue")] //string value
+        public void Invalid_Values_In_Animation_Should_Not_Crash_Animations(object invalidValue)
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, 1d),
+                },
+                KeyTime = TimeSpan.FromSeconds(0)
+            };
+
+            var keyframe2 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, 2d),
+                },
+                KeyTime = TimeSpan.FromSeconds(2),
+            };
+
+            var keyframe3 = new KeyFrame()
+            {
+                Setters =
+                {
+                    new Setter(Layoutable.WidthProperty, invalidValue),
+                },
+                KeyTime = TimeSpan.FromSeconds(3),
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                Children =
+                {
+                    keyframe1,
+                    keyframe2,
+                    keyframe3
+                },
+                IterationCount = new IterationCount(5),
+                PlaybackDirection = PlaybackDirection.Alternate,
+            };
+
+            var rect = new Rectangle()
+            {
+                Width = 11,
+            };
+
+            var originalValue = rect.Width;
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(rect, clock);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(rect.Width, 1);
+            clock.Step(TimeSpan.FromSeconds(2));
+            Assert.Equal(rect.Width, 2);
+            clock.Step(TimeSpan.FromSeconds(3));
+            //here we have invalid value so value should be expected and set to initial original value
+            Assert.Equal(rect.Width, originalValue);
         }
 
         [Fact]
