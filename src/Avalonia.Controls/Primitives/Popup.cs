@@ -91,8 +91,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
 
-        public static readonly DirectProperty<Popup, IInputElement> OverlayInputPassThroughElementProperty =
-            AvaloniaProperty.RegisterDirect<Popup, IInputElement>(
+        public static readonly DirectProperty<Popup, IInputElement?> OverlayInputPassThroughElementProperty =
+            AvaloniaProperty.RegisterDirect<Popup, IInputElement?>(
                 nameof(OverlayInputPassThroughElement),
                 o => o.OverlayInputPassThroughElement,
                 (o, v) => o.OverlayInputPassThroughElement = v);
@@ -136,7 +136,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
-        private IInputElement _overlayInputPassThroughElement;
+        private IInputElement? _overlayInputPassThroughElement;
         private Action<IPopupHost?>? _popupHostChangedHandler;
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets or sets an element that should receive pointer input events even when underneath
         /// the popup's overlay.
         /// </summary>
-        public IInputElement OverlayInputPassThroughElement
+        public IInputElement? OverlayInputPassThroughElement
         {
             get => _overlayInputPassThroughElement;
             set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
