@@ -69,7 +69,7 @@ namespace Avalonia.Collections
         /// <returns>A disposable used to terminate the subscription.</returns>
         public static IDisposable ForEachItem<T>(
             this IAvaloniaReadOnlyList<T> collection,
-            Action<int, T> added,
+            Action<int, T> added, 
             Action<int, T> removed,
             Action reset,
             bool weakSubscription = false)

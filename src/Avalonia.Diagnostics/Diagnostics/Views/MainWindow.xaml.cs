@@ -163,7 +163,7 @@ namespace Avalonia.Diagnostics.Views
             var root = Root;
             if (root is null)
             {
-                return;
+                //return;
             }
 
             switch (e.Modifiers)

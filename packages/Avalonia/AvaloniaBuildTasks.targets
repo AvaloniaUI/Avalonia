@@ -104,6 +104,7 @@
       AssemblyOriginatorKeyFile="$(AssemblyOriginatorKeyFile)"
       SignAssembly="$(SignAssembly)"
       DelaySign="$(DelaySign)"
+      CompileBindingsByDefault="$(AvaloniaXamlCompileBindings)"
       EnableComInteropPatching="$(_AvaloniaPatchComInterop)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
     />
