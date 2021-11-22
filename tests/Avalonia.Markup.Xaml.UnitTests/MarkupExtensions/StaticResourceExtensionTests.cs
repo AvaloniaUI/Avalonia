@@ -512,6 +512,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             var brush = (ISolidColorBrush)border.Background;
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
+        
+        [Fact]
+        public void Automatically_Converts_Color_To_SolidColorBrush_From_Setter()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <Color x:Key='color'>#ff506070</Color>
+    </Window.Resources>
+    <Window.Styles>
+        <Style Selector='Button'>
+            <Setter Property='Background' Value='{StaticResource color}'/>
+        </Style>
+    </Window.Styles>
+    <Button Name='button'/>
+</Window>";
+
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+                var brush = (ISolidColorBrush)button.Background;
+
+                Assert.Equal(0xff506070, brush.Color.ToUint32());
+            }
+        }
 
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
