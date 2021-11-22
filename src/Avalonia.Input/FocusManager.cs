@@ -145,7 +145,7 @@ namespace Avalonia.Input
         /// Notifies the focus manager of a change in focus scope.
         /// </summary>
         /// <param name="scope">The new focus scope.</param>
-        public void SetFocusScope(IFocusScope? scope)
+        public void SetFocusScope(IFocusScope scope)
         {
             scope = scope ?? throw new ArgumentNullException(nameof(scope));
 
