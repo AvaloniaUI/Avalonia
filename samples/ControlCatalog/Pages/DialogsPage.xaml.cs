@@ -128,7 +128,8 @@ namespace ControlCatalog.Pages
                         (button = new Button
                         {
                             HorizontalAlignment = HorizontalAlignment.Center,
-                            Content = "Click to close"
+                            Content = "Click to close",
+                            IsDefault = true
                         })
                     }
                 },
