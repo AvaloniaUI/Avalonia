@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -14,7 +16,11 @@ namespace IntegrationTestApp
             InitializeViewMenu();
             this.AttachDevTools();
             AddHandler(Button.ClickEvent, OnButtonClick);
+            ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
+            DataContext = this;
         }
+
+        public List<string> ListBoxItems { get; }
 
         private void InitializeComponent()
         {
@@ -54,6 +60,8 @@ namespace IntegrationTestApp
                 this.FindControl<ComboBox>("BasicComboBox").SelectedIndex = -1;
             if (source?.Name == "ComboBoxSelectFirst")
                 this.FindControl<ComboBox>("BasicComboBox").SelectedIndex = 0;
+            if (source?.Name == "ListBoxSelectionClear")
+                this.FindControl<ListBox>("BasicListBox").SelectedIndex = -1;
         }
     }
 }

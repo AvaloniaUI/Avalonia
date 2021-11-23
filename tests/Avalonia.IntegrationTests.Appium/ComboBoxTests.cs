@@ -1,7 +1,5 @@
-﻿using System.Threading;
-using OpenQA.Selenium;
+﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Mac;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium

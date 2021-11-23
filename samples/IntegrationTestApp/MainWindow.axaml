@@ -67,6 +67,15 @@
           <Button Name="ComboBoxSelectFirst">Select First</Button>
         </StackPanel>
       </TabItem>
+
+      <TabItem Header="ListBox">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Bottom">
+            <Button Name="ListBoxSelectionClear">Clear Selection</Button>
+          </StackPanel>
+          <ListBox Name="BasicListBox" Items="{Binding ListBoxItems}" SelectionMode="Multiple"/>
+        </DockPanel>
+      </TabItem>
       
       <TabItem Header="Menu">
         <DockPanel>
