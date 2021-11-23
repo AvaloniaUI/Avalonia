@@ -1,6 +1,6 @@
 # Windows
 
-Avalonia requires at least Visual Studio 2019 and .NET Core SDK 3.1 to build on Windows.
+Avalonia requires at least Visual Studio 2022 and dotnet 6 SDK 6.0.100 to build on all platforms.
 
 ###  Clone the Avalonia repository
 
