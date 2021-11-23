@@ -86,15 +86,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             result = new XamlIlPropertyEqualsSelector(result, targetProperty, typedValue);
                             break;
                         }
-                        case SelectorGrammar.AttachedPropertySyntax:
+                        case SelectorGrammar.AttachedPropertySyntax attachedProperty:
                             {
                                 var targetType = result?.TargetType;
                                 if (targetType == null)
                                 {
                                     throw new XamlParseException("Attached Property selectors must be applied to a type.",node);
                                 }
-
-                                var attachedProperty= (SelectorGrammar.AttachedPropertySyntax)i;
                                 var attachedPropertyOwnerType = typeResolver(attachedProperty.Xmlns, attachedProperty.TypeName).Type;
 
                                 if (attachedPropertyOwnerType is null)
@@ -108,12 +106,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                     .FirstOrDefault(f => f.IsStatic
                                         && f.IsPublic
                                         && f.Name == attachedPropertyName
-                                        && f.FieldType!.GenericTypeDefinition == avaloniaAttachedPropertyT
+                                        && f.FieldType.GenericTypeDefinition == avaloniaAttachedPropertyT
                                         );
 
                                 if (targetPropertyField is null)
                                 {
-                                    throw new XamlParseException($"Cannot find '{attachedProperty.Property}' on '{attachedPropertyOwnerType}", node);
+                                    throw new XamlParseException($"Cannot find '{attachedProperty.Property}' on '{attachedPropertyOwnerType.GetFqn()}", node);
                                 }
 
                                 var targetPropertyType = XamlIlAvaloniaPropertyHelper
@@ -127,7 +125,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                             node);
 
                                 result = new XamlIlAttacchedPropertyEqualsSelector(result, targetPropertyField, typedValue);
-                                
                                 break;
                             }
                         case SelectorGrammar.ChildSyntax child:
