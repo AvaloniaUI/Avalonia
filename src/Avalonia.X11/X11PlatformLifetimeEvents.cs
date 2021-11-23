@@ -34,6 +34,9 @@ namespace Avalonia.X11
         private static readonly ICELib.IceIOErrorHandler s_iceIoErrorHandlerDelegate = StaticIceIOErrorHandler;
         private static readonly SMLib.IceWatchProc s_iceWatchProcDelegate = IceWatchHandler;
 
+        private bool AllowShutdownCancellation =>
+            Environment.GetEnvironmentVariable("AVALONIA_X11_USE_SESSION_MANAGER") != "0";
+
         private static SMLib.SmcCallbacks s_callbacks = new SMLib.SmcCallbacks()
         {
             ShutdownCancelled = Marshal.GetFunctionPointerForDelegate(s_shutdownCancelledDelegate),
@@ -226,7 +229,10 @@ namespace Avalonia.X11
         {
             var e = new ShutdownRequestedEventArgs();
 
-            ShutdownRequested?.Invoke(this, e);
+            if (AllowShutdownCancellation)
+            {
+                ShutdownRequested?.Invoke(this, e);
+            }
 
             SMLib.SmcInteractDone(smcConn, e.Cancel);
 
