@@ -88,6 +88,7 @@
       <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
       <AvaloniaXamlOriginalCopyFilePath Condition="'$(AvaloniaXamlOriginalCopyFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/original.dll</AvaloniaXamlOriginalCopyFilePath>
       <AvaloniaXamlIlVerifyIl Condition="'$(AvaloniaXamlIlVerifyIl)' == ''">false</AvaloniaXamlIlVerifyIl>
+      <AvaloniaXamlIlDebuggerLaunch Condition="'$(AvaloniaXamlIlDebuggerLaunch)' == ''">false</AvaloniaXamlIlDebuggerLaunch> 
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'"
@@ -107,6 +108,7 @@
       DelaySign="$(DelaySign)"
       EnableComInteropPatching="$(_AvaloniaPatchComInterop)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
+      DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"

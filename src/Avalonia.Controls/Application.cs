@@ -104,7 +104,7 @@ namespace Avalonia
         /// <value>
         /// The application's focus manager.
         /// </value>
-        public IFocusManager FocusManager
+        public IFocusManager? FocusManager
         {
             get;
             private set;
@@ -116,7 +116,7 @@ namespace Avalonia
         /// <value>
         /// The application's input manager.
         /// </value>
-        public InputManager InputManager
+        public InputManager? InputManager
         {
             get;
             private set;
@@ -175,7 +175,7 @@ namespace Avalonia
         /// - <see cref="ISingleViewApplicationLifetime"/>
         /// - <see cref="IControlledApplicationLifetime"/> 
         /// </summary>
-        public IApplicationLifetime ApplicationLifetime { get; set; }
+        public IApplicationLifetime? ApplicationLifetime { get; set; }
 
         event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
         {
