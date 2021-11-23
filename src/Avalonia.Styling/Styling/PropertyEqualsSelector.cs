@@ -53,11 +53,16 @@ namespace Avalonia.Styling
 
                 if (_property.IsAttached)
                 {
+                    builder.Append('(');
                     builder.Append(_property.OwnerType.Name);
                     builder.Append('.');
                 }
 
                 builder.Append(_property.Name);
+                if (_property.IsAttached)
+                {
+                    builder.Append(')');
+                }
                 builder.Append('=');
                 builder.Append(_value ?? string.Empty);
                 builder.Append(']');
