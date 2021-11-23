@@ -11,8 +11,9 @@ using Avalonia.Threading;
 
 namespace Avalonia.X11
 {
-    public unsafe class X11PlatformLifetimeEvents : IDisposable, IPlatformLifetimeEventsImpl
+    internal unsafe class X11PlatformLifetimeEvents : IDisposable, IPlatformLifetimeEventsImpl
     {
+        private readonly AvaloniaX11Platform _platform;
         private const ulong SmcSaveYourselfProcMask = 1L;
         private const ulong SmcDieProcMask = 2L;
         private const ulong SmcSaveCompleteProcMask = 4L;
@@ -34,9 +35,6 @@ namespace Avalonia.X11
         private static readonly ICELib.IceIOErrorHandler s_iceIoErrorHandlerDelegate = StaticIceIOErrorHandler;
         private static readonly SMLib.IceWatchProc s_iceWatchProcDelegate = IceWatchHandler;
 
-        private bool AllowShutdownCancellation =>
-            Environment.GetEnvironmentVariable("AVALONIA_X11_USE_SESSION_MANAGER") != "0";
-
         private static SMLib.SmcCallbacks s_callbacks = new SMLib.SmcCallbacks()
         {
             ShutdownCancelled = Marshal.GetFunctionPointerForDelegate(s_shutdownCancelledDelegate),
@@ -51,8 +49,10 @@ namespace Avalonia.X11
 
         private bool _saveYourselfPhase;
 
-        public X11PlatformLifetimeEvents()
+        internal X11PlatformLifetimeEvents(AvaloniaX11Platform platform)
         {
+            _platform = platform;
+            
             if (ICELib.IceAddConnectionWatch(
                     Marshal.GetFunctionPointerForDelegate(s_iceWatchProcDelegate),
                     IntPtr.Zero) == 0)
@@ -229,7 +229,7 @@ namespace Avalonia.X11
         {
             var e = new ShutdownRequestedEventArgs();
 
-            if (AllowShutdownCancellation)
+            if (_platform.Options?.EnableSessionManagement ?? false)
             {
                 ShutdownRequested?.Invoke(this, e);
             }
