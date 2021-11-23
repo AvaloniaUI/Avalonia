@@ -43,18 +43,6 @@ Go to https://www.microsoft.com/net/core and follow the instructions for your OS
 
 The build process needs [Xcode](https://developer.apple.com/xcode/) to build the native library.  Following the install instructions at the [Xcode](https://developer.apple.com/xcode/) website to properly install.
 
-Linux operating systems ship with their own respective package managers however we will use [Homebrew](https://brew.sh/) to manage packages on macOS.  To install follow the instructions [here](https://docs.brew.sh/Installation).
-
-On Debian based Linux (Debian, Ubuntu, Mint, etc):
-```
-sudo apt install castxml
-```
-
-On Red Hat based Linux (Fedora, CentOS, RHEL, etc) using `yum` (`dnf` takes same arguments though):
-```
-sudo yum install castxml
-```
-
 
 ###  Clone the Avalonia repository
 
