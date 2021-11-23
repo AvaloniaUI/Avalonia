@@ -354,6 +354,12 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
+        public Task RunAsync(Animatable control, IClock clock = null)
+        {
+            return RunAsync(control, clock, default);
+        }
+
+        /// <inheritdoc/>
         public Task RunAsync(Animatable control, IClock clock = null, CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)

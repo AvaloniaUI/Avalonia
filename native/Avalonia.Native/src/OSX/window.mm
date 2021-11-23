@@ -219,7 +219,11 @@ public:
                 auto window = Window;
                 Window = nullptr;
                 
-                [window close];
+                try{
+                    // Seems to throw sometimes on application exit.
+                    [window close];
+                }
+                catch(NSException*){}
             }
             
             return S_OK;
@@ -737,6 +741,7 @@ private:
             if (cparent->WindowState() == Minimized)
                 cparent->SetWindowState(Normal);
             
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             
             UpdateStyle();

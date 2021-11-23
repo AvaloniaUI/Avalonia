@@ -199,7 +199,6 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_MBUTTONUP:
                 case WindowsMessage.WM_XBUTTONUP:
                     {
-                        shouldTakeFocus = ShouldTakeFocusOnClick;
                         if (ShouldIgnoreTouchEmulatedMessage())
                         {
                             break;
