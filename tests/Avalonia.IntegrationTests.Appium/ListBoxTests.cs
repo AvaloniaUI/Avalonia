@@ -39,8 +39,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(item4.Selected);
         }
 
-        // WinAppDriver seems unable to consistently send a Ctrl key.
-        [PlatformFact(SkipOnWindows = true)]
+        [Fact(Skip = "WinAppDriver seems unable to consistently send a Ctrl key and appium-mac2-driver just hangs")]
         public void Can_Select_Items_By_Ctrl_Clicking()
         {
             var listBox = GetTarget();
@@ -61,7 +60,8 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(item4.Selected);
         }
 
-        [Fact]
+        // appium-mac2-driver just hangs
+        [PlatformFact(SkipOnOSX = true)]
         public void Can_Select_Range_By_Shift_Clicking()
         {
             var listBox = GetTarget();
