@@ -16,6 +16,7 @@
 ### Prerequisites
 
 - Install Appium: https://appium.io/
+- Give [XCode helper the required permissions](https://apple.stackexchange.com/questions/334008)
 - `cd samples/IntegrationTestApp` then `./bundle.sh` to create an app bundle for `IntegrationTestApp`
 - Register the app bundle by running `open -n ./bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app` 
 
