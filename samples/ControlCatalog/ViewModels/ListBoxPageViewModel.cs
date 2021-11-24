@@ -18,6 +18,7 @@ namespace ControlCatalog.ViewModels
         private bool _autoScrollToSelectedItem = true;
         private int _counter;
         private IObservable<SelectionMode> _selectionMode;
+        private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple; 
 
         public ListBoxPageViewModel()
         {
@@ -96,6 +97,17 @@ namespace ControlCatalog.ViewModels
             get => _autoScrollToSelectedItem;
             set => this.RaiseAndSetIfChanged(ref _autoScrollToSelectedItem, value);
         }
+
+        public ItemVirtualizationMode VirtualizationMode
+        {
+            get => _virtualizationMode;
+            set => RaiseAndSetIfChanged(ref _virtualizationMode, value);
+        }
+
+        public ItemVirtualizationMode[] VirtualizationModes { get; } = new[]
+        {
+            ItemVirtualizationMode.Simple,
+        };
 
         public MiniCommand AddItemCommand { get; }
         public MiniCommand RemoveItemCommand { get; }

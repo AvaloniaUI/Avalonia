@@ -22,6 +22,7 @@
       <CheckBox IsChecked="{Binding Toggle}">Toggle</CheckBox>
       <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
       <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
+      <ComboBox Items="{Binding VirtualizationModes}" SelectedItem="{Binding VirtualizationMode}"/>
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
       <Button Command="{Binding AddItemCommand}">Add</Button>
@@ -34,7 +35,8 @@
              Items="{Binding Items}"
              Selection="{Binding Selection}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
-             SelectionMode="{Binding SelectionMode^}">
+             SelectionMode="{Binding SelectionMode^}"
+             VirtualizationMode="{Binding VirtualizationMode}">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <TextBlock Text="{Binding Name}" Height="{Binding Height}"/>
