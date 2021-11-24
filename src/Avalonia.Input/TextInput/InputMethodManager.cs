@@ -40,7 +40,11 @@ namespace Avalonia.Input.TextInput
                     _im?.SetOptions(optionsQuery);
                     _transformTracker?.SetVisual(_client?.TextViewVisual);
                     UpdateCursorRect();
-                    _im?.SetActive(true);
+
+                    var isEnabled = _focusedElement is not InputElement element || 
+                                    InputMethod.GetIsInputMethodEnabled(element);
+
+                    _im?.SetActive(isEnabled);
                 }
                 else
                 {
