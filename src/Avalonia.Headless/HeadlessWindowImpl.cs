@@ -336,5 +336,7 @@ namespace Avalonia.Headless
         {
             
         }
+
+        public Action InputMethodUpdated { get; set; }
     }
 }

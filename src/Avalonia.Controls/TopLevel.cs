@@ -156,6 +156,7 @@ namespace Avalonia.Controls
             impl.Resized = HandleResized;
             impl.ScalingChanged = HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
+            impl.InputMethodUpdated = HandleInputMethodUpdated;
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -185,6 +186,11 @@ namespace Avalonia.Controls
             }
 
             impl.LostFocus += PlatformImpl_LostFocus;
+        }
+
+        private void HandleInputMethodUpdated()
+        {
+            KeyboardDevice.Instance.NotifyInputMethodUpdated(this);
         }
 
         /// <summary>
