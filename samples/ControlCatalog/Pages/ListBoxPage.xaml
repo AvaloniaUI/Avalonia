@@ -27,10 +27,19 @@
       <Button Command="{Binding AddItemCommand}">Add</Button>
       <Button Command="{Binding RemoveItemCommand}">Remove</Button>
       <Button Command="{Binding SelectRandomItemCommand}">Select Random Item</Button>
+      <Button Command="{Binding RandomizeHeightsCommand}">Randomize Heights</Button>
+      <TextBlock Name="realizedItemCount" VerticalAlignment="Center" Margin="8,0,0,0"/>
     </StackPanel>
-    <ListBox Items="{Binding Items}"
+    <ListBox Name="listBox"
+             Items="{Binding Items}"
              Selection="{Binding Selection}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
-             SelectionMode="{Binding SelectionMode^}"/>
+             SelectionMode="{Binding SelectionMode^}">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding Name}" Height="{Binding Height}"/>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
   </DockPanel>
 </UserControl>

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.Selection;
 using MiniMvvm;
+
+#nullable enable
 
 namespace ControlCatalog.ViewModels
 {
@@ -19,9 +21,9 @@ namespace ControlCatalog.ViewModels
 
         public ListBoxPageViewModel()
         {
-            Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));
-            
-            Selection = new SelectionModel<string>();
+            Items = new ObservableCollection<Item>(GenerateItems(10000));
+
+            Selection = new SelectionModel<Item>();
             Selection.Select(1);
 
             _selectionMode = this.WhenAnyValue(
@@ -55,10 +57,20 @@ namespace ControlCatalog.ViewModels
                     Selection.Select(random.Next(Items.Count - 1));
                 }
             });
+
+            RandomizeHeightsCommand = MiniCommand.Create(() =>
+            {
+                var random = new Random();
+
+                foreach (var i in Items)
+                {
+                    i.Height = random.Next(240) + 10;
+                }
+            });
         }
 
-        public ObservableCollection<string> Items { get; }
-        public SelectionModel<string> Selection { get; }
+        public ObservableCollection<Item> Items { get; }
+        public SelectionModel<Item> Selection { get; }
         public IObservable<SelectionMode> SelectionMode => _selectionMode;
 
         public bool Multiple
@@ -88,7 +100,22 @@ namespace ControlCatalog.ViewModels
         public MiniCommand AddItemCommand { get; }
         public MiniCommand RemoveItemCommand { get; }
         public MiniCommand SelectRandomItemCommand { get; }
+        public MiniCommand RandomizeHeightsCommand { get; }
 
-        private string GenerateItem() => $"Item {_counter++.ToString()}";
+        private Item GenerateItem() => new($"Item {_counter++}");
+        private IEnumerable<Item> GenerateItems(int count) => Enumerable.Range(0, count).Select(x => GenerateItem());
+
+        public class Item : ViewModelBase
+        {
+            private double _height = double.NaN;
+            public Item(string name) => Name = name;
+            public string Name { get; }
+
+            public double Height
+            {
+                get => _height;
+                set => RaiseAndSetIfChanged(ref _height, value);
+            }
+        }
     }
 }
