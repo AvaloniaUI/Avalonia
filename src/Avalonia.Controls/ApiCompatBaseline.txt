@@ -50,9 +50,6 @@ MembersMustExist : Member 'public void Avalonia.Platform.ITopLevelImpl.Resized.s
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.ITopLevelImpl.SetCursor(Avalonia.Platform.ICursorImpl)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.ITopLevelImpl.SetCursor(Avalonia.Platform.IPlatformHandle)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public void Avalonia.Platform.ITopLevelImpl.SetCursor(Avalonia.Platform.IPlatformHandle)' does not exist in the implementation but it does exist in the contract.
-InterfacesShouldHaveSameMembers : Interface member 'public System.Func<Avalonia.Automation.Platform.IAutomationNode, Avalonia.Automation.Peers.AutomationPeer> Avalonia.Platform.IWindowBaseImpl.AutomationStarted' is present in the implementation but not in the contract.
-InterfacesShouldHaveSameMembers : Interface member 'public System.Func<Avalonia.Automation.Platform.IAutomationNode, Avalonia.Automation.Peers.AutomationPeer> Avalonia.Platform.IWindowBaseImpl.AutomationStarted.get()' is present in the implementation but not in the contract.
-InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowBaseImpl.AutomationStarted.set(System.Func<Avalonia.Automation.Platform.IAutomationNode, Avalonia.Automation.Peers.AutomationPeer>)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean)' is present in the contract but not in the implementation.
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowBaseImpl.Show(System.Boolean, System.Boolean)' is present in the implementation but not in the contract.
@@ -60,4 +57,4 @@ InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platfor
 MembersMustExist : Member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size)' does not exist in the implementation but it does exist in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Platform.IWindowImpl.Resize(Avalonia.Size, Avalonia.Platform.PlatformResizeReason)' is present in the implementation but not in the contract.
 InterfacesShouldHaveSameMembers : Interface member 'public Avalonia.Platform.ITrayIconImpl Avalonia.Platform.IWindowingPlatform.CreateTrayIcon()' is present in the implementation but not in the contract.
-Total Issues: 61
+Total Issues: 58
