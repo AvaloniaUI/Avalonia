@@ -89,7 +89,6 @@ namespace Avalonia.Win32
         private bool _isCloseRequested;
         private bool _shown;
         private bool _hiddenWindowIsParent;
-        private Imm32InputMethod _ime;
         private uint _langid;
 
         public WindowImpl()
@@ -552,7 +551,6 @@ namespace Avalonia.Win32
             }
 
             _framebuffer.Dispose();
-            _ime?.Dispose();
         }
 
         public void Invalidate(Rect rect)
@@ -1361,6 +1359,6 @@ namespace Avalonia.Win32
             public void Dispose() => _owner._resizeReason = _restore;
         }
 
-        public ITextInputMethodImpl TextInputMethod => _ime;
+        public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
     }
 }

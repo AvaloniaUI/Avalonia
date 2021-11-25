@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 using Avalonia.Input.TextInput;
 using Avalonia.Threading;
 
@@ -12,10 +9,10 @@ namespace Avalonia.Win32.Input
     /// <summary>
     /// A Windows input method editor based on Windows Input Method Manager (IMM32).
     /// </summary>
-    class Imm32InputMethod : ITextInputMethodImpl, IDisposable
+    class Imm32InputMethod : ITextInputMethodImpl
     {
-        private bool _disposedValue;
         private IntPtr _hwnd;
+        private IntPtr _defaultImc;
         private WindowImpl _parent;
         private bool _active;
         private bool _systemCaret;
@@ -23,22 +20,45 @@ namespace Avalonia.Win32.Input
         private bool _showCandidateList;
         private ushort _langId;
         private const int _caretMargin = 1;
-
-        public Imm32InputMethod(WindowImpl parent, IntPtr hwnd, IntPtr HKL)
+        
+        public void SetLanguageAndWindow(WindowImpl parent, IntPtr hwnd, IntPtr HKL)
         {
-            _parent = parent;
+            if (_hwnd != hwnd)
+            {
+                _defaultImc = IntPtr.Zero;
+            }
             _hwnd = hwnd;
-            _disposedValue = false;
+            _parent = parent;
             _active = false;
             _langId = PRIMARYLANGID(LGID(HKL));
-            _systemCaret = (_langId == LANG_ZH || _langId == LANG_JA);
             _showCompositionWindow = true;
             _showCandidateList = true;
-            if (_systemCaret)
-            {
-                CreateCaret(_hwnd, IntPtr.Zero, 1, 1);
-            }
+
             IsComposing = false;
+        }
+
+        //Dependant on CurrentThread. When Avalonia will support Multiple Dispatchers -
+        //every Dispatcher should have their own InputMethod.
+        public static Imm32InputMethod Current { get; } = new Imm32InputMethod();
+
+        private IntPtr DefaultImc
+        {
+            get
+            {
+                if (_defaultImc == IntPtr.Zero &&
+                    _hwnd != IntPtr.Zero)
+                {
+                    _defaultImc = ImmGetContext(_hwnd);
+                    ImmReleaseContext(_hwnd, _defaultImc);
+                }
+
+                if (_defaultImc == IntPtr.Zero)
+                {
+                    _defaultImc = ImmCreateContext();
+                }
+
+                return _defaultImc;
+            }
         }
 
         public void Reset()
@@ -47,9 +67,8 @@ namespace Avalonia.Win32.Input
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    IntPtr himc = ImmGetContext(_hwnd);
-                    ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
-                    ImmReleaseContext(_hwnd, himc);
+                    ImmNotifyIME(DefaultImc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
+                    ImmReleaseContext(_hwnd, DefaultImc);
                 });
             }
         }
@@ -59,10 +78,26 @@ namespace Avalonia.Win32.Input
             _active = active;
             Dispatcher.UIThread.Post(() =>
             {
-                IntPtr himc = ImmGetContext(_hwnd);
-                ImmSetActiveContext(himc, active);
-                ImmSetOpenStatus(himc, active);
-                ImmReleaseContext(_hwnd, himc);
+                if (active)
+                {
+                    if (DefaultImc != IntPtr.Zero)
+                    {
+                        if (_langId == LANG_ZH || _langId == LANG_JA)
+                        {
+                            _systemCaret = CreateCaret(_hwnd, IntPtr.Zero, 2, 10);
+                        }
+                        ImmAssociateContext(_hwnd, _defaultImc);
+                    }
+                }
+                else
+                {
+                    ImmAssociateContext(_hwnd, IntPtr.Zero);
+                    if (_systemCaret)
+                    {
+                        DestroyCaret();
+                        _systemCaret = false;
+                    }
+                }
             });
         }
 
@@ -75,7 +110,7 @@ namespace Avalonia.Win32.Input
             }
             Dispatcher.UIThread.Post(() =>
             {
-                IntPtr himc = ImmGetContext(_hwnd);
+                IntPtr himc = DefaultImc;
                 if (himc == IntPtr.Zero)
                 {
                     return;
@@ -86,7 +121,7 @@ namespace Avalonia.Win32.Input
 
                 var p1 = rect.TopLeft;
                 var p2 = rect.BottomRight;
-                var s = _parent.DesktopScaling;
+                var s = _parent?.DesktopScaling ?? 1;
                 var (x1, y1, x2, y2) = ((int)(p1.X * s), (int)(p1.Y * s), (int)(p2.X * s), (int)(p2.Y * s));
 
                 if (_showCompositionWindow)
@@ -136,31 +171,16 @@ namespace Avalonia.Win32.Input
         {
             // ???
         }
-
-        protected void _dispose()
-        {
-            if (!_disposedValue)
-            {
-                _disposedValue = true;
-                if (_systemCaret)
-                {
-                    _systemCaret = false;
-                    DestroyCaret();
-                }
-            }
-        }
-
+        
         public bool IsComposing { get; set; }
 
         ~Imm32InputMethod()
         {
-            _dispose();
-        }
-
-        public void Dispose()
-        {
-            _dispose();
-            GC.SuppressFinalize(this);
+            if (_systemCaret)
+            {
+                _systemCaret = false;
+                DestroyCaret();
+            }
         }
     }
 }

@@ -1529,6 +1529,10 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("imm32.dll", SetLastError = true)]
         public static extern IntPtr ImmGetContext(IntPtr hWnd);
+        [DllImport("imm32.dll", SetLastError = true)]
+        public static extern IntPtr ImmAssociateContext(IntPtr hWnd, IntPtr hIMC);
+        [DllImport("imm32.dll", SetLastError = true)]
+        public static extern IntPtr ImmCreateContext();
         [DllImport("imm32.dll")]
         public static extern bool ImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
         [DllImport("imm32.dll")]

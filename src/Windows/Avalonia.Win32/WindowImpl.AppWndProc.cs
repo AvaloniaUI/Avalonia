@@ -497,16 +497,10 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_IME_SELECT:
                     break;
                 case WindowsMessage.WM_IME_STARTCOMPOSITION:
-                    if (_ime != null)
-                    {
-                        _ime.IsComposing = true;
-                    }
+                    Imm32InputMethod.Current.IsComposing = true;
                     break;
                 case WindowsMessage.WM_IME_ENDCOMPOSITION:
-                    if (_ime != null)
-                    {
-                        _ime.IsComposing = false;
-                    }
+                    Imm32InputMethod.Current.IsComposing = false;
                     break;
             }
 
@@ -545,8 +539,8 @@ namespace Avalonia.Win32
                 return;
             } 
             _langid = langid;
-            _ime?.Dispose();
-            _ime = new Imm32InputMethod(this, Hwnd, hkl);
+
+            Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
             if (InputMethodUpdated != null)
             {
                 InputMethodUpdated();
