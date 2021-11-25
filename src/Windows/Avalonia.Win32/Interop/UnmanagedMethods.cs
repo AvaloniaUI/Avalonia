@@ -1581,6 +1581,7 @@ namespace Avalonia.Win32.Interop
         public const int LANG_JA = 0x0011;
         public const int LANG_KO = 0x0012;
 
+        public const int CFS_FORCE_POSITION = 0x0020;
         public const int CFS_CANDIDATEPOS = 0x0040;
         public const int CFS_EXCLUDE = 0x0080;
         public const int CFS_POINT = 0x0002;

@@ -61,6 +61,7 @@ namespace Avalonia.Input.TextInput
         {
             if (_im == null || _client == null || _focusedElement?.VisualRoot == null)
                 return;
+
             var transform = _focusedElement.TransformToVisual(_focusedElement.VisualRoot);
             if (transform == null)
                 _im.SetCursorRect(default);
