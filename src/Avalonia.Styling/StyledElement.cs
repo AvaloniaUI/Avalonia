@@ -73,7 +73,6 @@ namespace Avalonia
         /// </summary>
         static StyledElement()
         {
-            DataContextProperty.Changed.AddClassHandler<StyledElement>((x,e) => x.OnDataContextChangedCore(e));
         }
 
         /// <summary>
@@ -301,6 +300,15 @@ namespace Avalonia
 
         /// <inheritdoc/>
         IStyleHost? IStyleHost.StylingParent => (IStyleHost?)InheritanceParent;
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == DataContextProperty)
+            {
+                OnDataContextChanged(EventArgs.Empty);
+            }
+        }
 
         /// <inheritdoc/>
         public virtual void BeginInit()
@@ -716,11 +724,6 @@ namespace Avalonia
                 }
 #endif
             }
-        }
-
-        private void OnDataContextChangedCore(AvaloniaPropertyChangedEventArgs e)
-        {
-            OnDataContextChanged(EventArgs.Empty);
         }
 
         private void SetLogicalParent(IList children)
