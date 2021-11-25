@@ -102,14 +102,6 @@ namespace Avalonia
         /// </summary>
         static Visual()
         {
-            AffectsRender<Visual>(
-                BoundsProperty,
-                ClipProperty,
-                ClipToBoundsProperty,
-                IsVisibleProperty,
-                OpacityProperty);
-            RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
-            ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
 
         /// <summary>
@@ -324,6 +316,25 @@ namespace Avalonia
             AffectsRender<Visual>(properties);
         }
 
+        static void InvalidateAndSubscribe<T>(AvaloniaPropertyChangedEventArgs e)
+            where T : Visual
+        {
+            if (e.Sender is T sender)
+            {
+                if (e.OldValue is IAffectsRender oldValue)
+                {
+                    WeakEventHandlerManager.Unsubscribe<EventArgs, T>(oldValue, nameof(oldValue.Invalidated), sender.AffectsRenderInvalidated);
+                }
+
+                if (e.NewValue is IAffectsRender newValue)
+                {
+                    WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
+                }
+
+                sender.InvalidateVisual();
+            }
+        }
+
         /// <summary>
         /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
         /// called.
@@ -346,29 +357,11 @@ namespace Avalonia
                 }
             }
 
-            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
-            {
-                if (e.Sender is T sender)
-                {
-                    if (e.OldValue is IAffectsRender oldValue)
-                    {
-                        WeakEventHandlerManager.Unsubscribe<EventArgs, T>(oldValue, nameof(oldValue.Invalidated), sender.AffectsRenderInvalidated);
-                    }
-
-                    if (e.NewValue is IAffectsRender newValue)
-                    {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
-                    }
-
-                    sender.InvalidateVisual();
-                }
-            }
-
             foreach (var property in properties)
             {
                 if (property.CanValueAffectRender())
                 {
-                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                    property.Changed.Subscribe(e => InvalidateAndSubscribe<T>(e));
                 }
                 else
                 {
@@ -642,6 +635,36 @@ namespace Avalonia
                 var visual = (Visual) children[i];
                 
                 visual.SetVisualParent(parent);
+            }
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            switch (change.Property.Name)
+            {
+                case nameof(Bounds):
+                case nameof(Clip):
+                case nameof(ClipToBounds):
+                case nameof(IsVisible):
+                case nameof(OpacityProperty):
+                    if (change.Property.CanValueAffectRender())
+                    {
+                        InvalidateAndSubscribe<Visual>(change);
+                    }
+                    else
+                    {
+                        InvalidateVisual();
+                    }
+                    break;
+                case nameof(RenderTransform):
+                    RenderTransformChanged(change);
+                    break;
+                case nameof(ZIndexProperty):
+                    ZIndexChanged(change);
+                    break;
+                default:
+                    break;
             }
         }
     }
