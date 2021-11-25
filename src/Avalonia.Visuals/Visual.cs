@@ -660,7 +660,7 @@ namespace Avalonia
                 case nameof(RenderTransform):
                     RenderTransformChanged(change);
                     break;
-                case nameof(ZIndexProperty):
+                case nameof(ZIndex):
                     ZIndexChanged(change);
                     break;
                 default:
