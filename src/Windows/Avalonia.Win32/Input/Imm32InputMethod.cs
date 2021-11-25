@@ -116,63 +116,100 @@ namespace Avalonia.Win32.Input
                     return;
                 }
 
-                // see: https://chromium.googlesource.com/experimental/chromium/src/+/bf09a5036ccfb77d2277247c66dc55daf41df3fe/chrome/browser/ime_input.cc
-                // see: https://engine.chinmaygarde.com/window__win32_8cc_source.html
-
-                var p1 = rect.TopLeft;
-                var p2 = rect.BottomRight;
-                var s = _parent?.DesktopScaling ?? 1;
-                var (x1, y1, x2, y2) = ((int)(p1.X * s), (int)(p1.Y * s), (int)(p2.X * s), (int)(p2.Y * s));
-
-                if (_showCompositionWindow)
-                {
-                    var compForm = new COMPOSITIONFORM
-                    {
-                        dwStyle = CFS_POINT,
-                        ptCurrentPos = new POINT { X = x1, Y = y1 },
-                    };
-                    ImmSetCompositionWindow(himc, ref compForm);
-
-                    var logFont = new LOGFONT()
-                    {
-                        lfHeight = y2-y1,
-                        lfQuality = 5 //CLEARTYPE_QUALITY
-                    };
-                    ImmSetCompositionFont(himc, ref logFont);
-                }
-
-                if (_showCandidateList)
-                {
-                    var candidateForm = new CANDIDATEFORM
-                    {
-                        dwIndex = 0,
-                        dwStyle = CFS_CANDIDATEPOS,
-                        ptCurrentPos = new POINT { X = x2, Y = y2 }
-                    };
-                    ImmSetCandidateWindow(himc, ref candidateForm);
-
-                    if (_systemCaret)
-                    {
-                        SetCaretPos(x2, y2);
-                    }
-
-                    if (_langId == LANG_KO)
-                    {
-                        y2 += _caretMargin;
-                    }
-
-                    candidateForm = new CANDIDATEFORM
-                    {
-                        dwIndex = 0,
-                        dwStyle = CFS_EXCLUDE,
-                        ptCurrentPos = new POINT { X = x2, Y = y2 },
-                        rcArea = new RECT { left = x2, top = y2, right = x2, bottom = y2 + _caretMargin}
-                    };
-                }
-
+                MoveImeWindow(rect, himc);
                 ImmReleaseContext(HWND, himc);
             });
         }
+        
+        // see: https://chromium.googlesource.com/experimental/chromium/src/+/bf09a5036ccfb77d2277247c66dc55daf41df3fe/chrome/browser/ime_input.cc
+        // see: https://engine.chinmaygarde.com/window__win32_8cc_source.html
+        private void MoveImeWindow(Rect rect, IntPtr himc)
+        {
+            var p1 = rect.TopLeft;
+            var p2 = rect.BottomRight;
+            var s = _parent?.DesktopScaling ?? 1;
+            var (x1, y1, x2, y2) = ((int) (p1.X * s), (int) (p1.Y * s), (int) (p2.X * s), (int) (p2.Y * s));
+
+            if (!_showCompositionWindow &&
+                _langId == LANG_ZH)
+            {
+                // Chinese IMEs ignore function calls to ::ImmSetCandidateWindow()
+                // when a user disables TSF (Text Service Framework) and CUAS (Cicero
+                // Unaware Application Support).
+                // On the other hand, when a user enables TSF and CUAS, Chinese IMEs
+                // ignore the position of the current system caret and uses the
+                // parameters given to ::ImmSetCandidateWindow() with its 'dwStyle'
+                // parameter CFS_CANDIDATEPOS.
+                // Therefore, we do not only call ::ImmSetCandidateWindow() but also
+                // set the positions of the temporary system caret.
+                var candidateForm = new CANDIDATEFORM
+                {
+                    dwIndex = 0,
+                    dwStyle = CFS_CANDIDATEPOS,
+                    ptCurrentPos = new POINT {X = x2, Y = y2}
+                };
+                ImmSetCandidateWindow(himc, ref candidateForm);
+            }
+
+            if (_systemCaret)
+            {
+                SetCaretPos(x2, y2);
+            }
+
+            if (_showCompositionWindow)
+            {
+                ConfigureCompositionWindow(x1, y1, himc, y2 - y1);
+                // Don't need to set the position of candidate window.
+                return;
+            }
+
+            if (_langId == LANG_KO)
+            {
+                // Chinese IMEs and Japanese IMEs require the upper-left corner of
+                // the caret to move the position of their candidate windows.
+                // On the other hand, Korean IMEs require the lower-left corner of the
+                // caret to move their candidate windows.
+                y2 += _caretMargin;
+            }
+
+            // Need to return here since some Chinese IMEs would stuck if set
+            // candidate window position with CFS_EXCLUDE style.
+            if (_langId == LANG_ZH)
+            {
+                return;
+            }
+
+            // Japanese IMEs and Korean IMEs also use the rectangle given to
+            // ::ImmSetCandidateWindow() with its 'dwStyle' parameter CFS_EXCLUDE
+            // to move their candidate windows when a user disables TSF and CUAS.
+            // Therefore, we also set this parameter here.
+            var excludeRectangle = new CANDIDATEFORM
+            {
+                dwIndex = 0,
+                dwStyle = CFS_EXCLUDE,
+                ptCurrentPos = new POINT {X = x1, Y = y1},
+                rcArea = new RECT {left = x1, top = y1, right = x2, bottom = y2 + _caretMargin}
+            };
+            ImmSetCandidateWindow(himc, ref excludeRectangle);
+        }
+
+        private static void ConfigureCompositionWindow(int x1, int y1, IntPtr himc, int height)
+        {
+            var compForm = new COMPOSITIONFORM
+            {
+                dwStyle = CFS_POINT,
+                ptCurrentPos = new POINT {X = x1, Y = y1},
+            };
+            ImmSetCompositionWindow(himc, ref compForm);
+
+            var logFont = new LOGFONT()
+            {
+                lfHeight = height,
+                lfQuality = 5 //CLEARTYPE_QUALITY
+            };
+            ImmSetCompositionFont(himc, ref logFont);
+        }
+        
 
         public void SetOptions(TextInputOptionsQueryEventArgs options)
         {
