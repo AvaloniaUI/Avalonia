@@ -209,8 +209,6 @@ namespace Avalonia.Input
         /// </summary>
         static InputElement()
         {
-            IsEnabledProperty.Changed.Subscribe(IsEnabledChanged);
-
             GotFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnGotFocus(e));
             LostFocusEvent.AddClassHandler<InputElement>((x, e) => x.OnLostFocus(e));
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
@@ -622,7 +620,11 @@ namespace Avalonia.Input
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == IsFocusedProperty)
+            if (change.Property == IsEnabledProperty)
+            {
+                UpdateIsEffectivelyEnabled();
+            }
+            else if (change.Property == IsFocusedProperty)
             {
                 UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
             }
@@ -643,11 +645,6 @@ namespace Avalonia.Input
         protected void UpdateIsEffectivelyEnabled()
         {
             UpdateIsEffectivelyEnabled(this.GetVisualParent<InputElement>());
-        }
-
-        private static void IsEnabledChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            ((InputElement)e.Sender).UpdateIsEffectivelyEnabled();
         }
 
         /// <summary>
