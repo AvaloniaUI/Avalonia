@@ -17,6 +17,7 @@
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
                           Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True"
                           TextBlock.Foreground="{TemplateBinding Foreground}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>

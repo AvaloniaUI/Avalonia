@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
 using Avalonia.Collections;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -13,10 +15,13 @@ namespace Avalonia.Controls
     public sealed class TrayIcons : AvaloniaList<TrayIcon>
     {
     }
+    
+    
 
     public class TrayIcon : AvaloniaObject, INativeMenuExporterProvider, IDisposable
     {
         private readonly ITrayIconImpl? _impl;
+        private ICommand? _command;
 
         private TrayIcon(ITrayIconImpl? impl)
         {
@@ -26,7 +31,15 @@ namespace Avalonia.Controls
 
                 _impl.SetIsVisible(IsVisible);
 
-                _impl.OnClicked = () => Clicked?.Invoke(this, EventArgs.Empty);
+                _impl.OnClicked = () =>
+                {
+                    Clicked?.Invoke(this, EventArgs.Empty);
+                    
+                    if (Command?.CanExecute(CommandParameter) == true)
+                    {
+                        Command.Execute(CommandParameter);
+                    }
+                };
             }
         }
 
@@ -64,6 +77,21 @@ namespace Avalonia.Controls
         /// on OSX this event is not raised.
         /// </summary>
         public event EventHandler? Clicked;
+        
+        /// <summary>
+        /// Defines the <see cref="Command"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TrayIcon, ICommand?> CommandProperty =
+            Button.CommandProperty.AddOwner<TrayIcon>(
+                trayIcon => trayIcon.Command,
+                (trayIcon, command) => trayIcon.Command = command,
+                enableDataValidation: true);
+
+        /// <summary>
+        /// Defines the <see cref="CommandParameter"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> CommandParameterProperty =
+            Button.CommandParameterProperty.AddOwner<MenuItem>();
 
         /// <summary>
         /// Defines the <see cref="TrayIcons"/> attached property.
@@ -98,6 +126,25 @@ namespace Avalonia.Controls
         public static void SetIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
 
         public static TrayIcons GetIcons(AvaloniaObject o) => o.GetValue(IconsProperty);
+        
+        /// <summary>
+        /// Gets or sets the <see cref="Command"/> property of a TrayIcon.
+        /// </summary>
+        public ICommand? Command
+        {
+            get => _command;
+            set => SetAndRaise(CommandProperty, ref _command, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the parameter to pass to the <see cref="Command"/> property of a
+        /// <see cref="TrayIcon"/>.
+        /// </summary>
+        public object? CommandParameter
+        {
+            get { return GetValue(CommandParameterProperty); }
+            set { SetValue(CommandParameterProperty, value); }
+        }
 
         /// <summary>
         /// Gets or sets the Menu of the TrayIcon.

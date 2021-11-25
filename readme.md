@@ -60,6 +60,9 @@ See the [build instructions here](Documentation/build.md).
 
 ## Contributing
 
+This project exists thanks to all the people who contribute.
+<a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
+
 Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a pull request.
 
 ## Code of Conduct
@@ -70,11 +73,6 @@ For more information see the [.NET Foundation Code of Conduct](https://dotnetfou
 ## Licence
 
 Avalonia is licenced under the [MIT licence](licence.md).
-
-## Contributors
-
-This project exists thanks to all the people who contribute. [[Contribute](https://avaloniaui.net/contributing)].
-<a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
 
 ### Backers
 
@@ -95,7 +93,8 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/Avalonia/sponsor/6/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/6/avatar.svg"></a>
 <a href="https://opencollective.com/Avalonia/sponsor/7/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/Avalonia/sponsor/8/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a> 
+<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
+<a href="https://baseheadinc.com/" target="_blank"><img height="50" src="https://baseheadinc.com/wp-content/uploads/2020/09/BH-Logo-for-Site-Header-New.png"></a>
 
 ## .NET Foundation
 

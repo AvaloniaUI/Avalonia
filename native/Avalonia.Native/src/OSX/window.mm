@@ -52,7 +52,6 @@ public:
         [Window setBackingType:NSBackingStoreBuffered];
         
         [Window setOpaque:false];
-        [Window setContentView: StandardContainer];
     }
     
     virtual HRESULT ObtainNSWindowHandle(void** ret) override
@@ -124,6 +123,8 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
+            
+            [Window setContentView: StandardContainer];
             
             [Window setTitle:_lastTitle];
             
@@ -205,7 +206,11 @@ public:
                 auto window = Window;
                 Window = nullptr;
                 
-                [window close];
+                try{
+                    // Seems to throw sometimes on application exit.
+                    [window close];
+                }
+                catch(NSException*){}
             }
             
             return S_OK;
@@ -323,6 +328,7 @@ public:
                     BaseEvents->Resized(AvnSize{x,y}, reason);
                 }
                 
+                [StandardContainer setFrameSize:NSSize{x,y}];
                 [Window setContentSize:NSSize{x, y}];
             }
             @finally
@@ -722,6 +728,7 @@ private:
             if (cparent->WindowState() == Minimized)
                 cparent->SetWindowState(Normal);
             
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
             [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
             
             UpdateStyle();
@@ -1487,7 +1494,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     NSRect rect = NSZeroRect;
     rect.size = newSize;
     
-    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag;
+    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingMouseEnteredAndExited | NSTrackingEnabledDuringMouseDrag;
     _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
     [self addTrackingArea:_area];
     
@@ -2387,17 +2394,27 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)sendEvent:(NSEvent *)event
 {
-    if(_parent != nullptr)
+    [super sendEvent:event];
+    
+    /// This is to detect non-client clicks. This can only be done on Windows... not popups, hence the dynamic_cast.
+    if(_parent != nullptr && dynamic_cast<WindowImpl*>(_parent.getRaw()) != nullptr)
     {
         switch(event.type)
         {
             case NSEventTypeLeftMouseDown:
             {
-                auto avnPoint = [AvnView toAvnPoint:[event locationInWindow]];
-                auto point = [self translateLocalPoint:avnPoint];
-                AvnVector delta;
+                AvnView* view = _parent->View;
+                NSPoint windowPoint = [event locationInWindow];
+                NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
                 
-                _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, [event timestamp] * 1000, AvnInputModifiersNone, point, delta);
+                if (!NSPointInRect(viewPoint, view.bounds))
+                {
+                    auto avnPoint = [AvnView toAvnPoint:windowPoint];
+                    auto point = [self translateLocalPoint:avnPoint];
+                    AvnVector delta;
+                   
+                    _parent->BaseEvents->RawMouseEvent(NonClientLeftButtonDown, [event timestamp] * 1000, AvnInputModifiersNone, point, delta);
+                }
             }
             break;
                 
@@ -2417,8 +2434,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
                 break;
         }
     }
-    
-    [super sendEvent:event];
 }
 @end
 
