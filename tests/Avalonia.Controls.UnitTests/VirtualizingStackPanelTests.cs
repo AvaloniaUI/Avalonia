@@ -13,7 +13,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Measure_Invokes_Controller_UpdateControls()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
                 var controller = new Mock<IVirtualizingController>();
 
                 target.Controller = controller.Object;
@@ -25,7 +25,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Measure_Invokes_Controller_UpdateControls_If_AvailableSize_Changes()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
                 var controller = new Mock<IVirtualizingController>();
 
                 target.Controller = controller.Object;
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Measure_Does_Not_Invoke_Controller_UpdateControls_If_AvailableSize_Is_The_Same()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
                 var controller = new Mock<IVirtualizingController>();
 
                 target.Controller = controller.Object;
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Measure_Invokes_Controller_UpdateControls_If_AvailableSize_Is_The_Same_After_ForceInvalidateMeasure()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
                 var controller = new Mock<IVirtualizingController>();
 
                 target.Controller = controller.Object;
@@ -69,7 +69,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Arrange_Invokes_Controller_UpdateControls()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
                 var controller = new Mock<IVirtualizingController>();
 
                 target.Controller = controller.Object;
@@ -82,7 +82,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Reports_IsFull_False_Until_Measure_Height_Is_Reached()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
 
                 target.Measure(new Size(100, 100));
 
@@ -102,7 +102,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Reports_Overflow_After_Arrange()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
 
                 target.Measure(new Size(100, 100));
                 target.Arrange(new Rect(target.DesiredSize));
@@ -124,7 +124,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Reports_Correct_Overflow_During_Arrange()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
                 var controller = new Mock<IVirtualizingController>();
                 var called = false;
 
@@ -148,7 +148,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Reports_PixelOverflow_After_Arrange()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
 
                 target.Children.Add(new Canvas { Width = 50, Height = 50 });
                 target.Children.Add(new Canvas { Width = 50, Height = 52 });
@@ -162,7 +162,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Reports_PixelOverflow_After_Arrange_Smaller_Than_Measure()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
 
                 target.Children.Add(new Canvas { Width = 50, Height = 50 });
                 target.Children.Add(new Canvas { Width = 50, Height = 52 });
@@ -176,7 +176,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void Reports_PixelOverflow_With_PixelOffset()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
 
                 target.Children.Add(new Canvas { Width = 50, Height = 50 });
                 target.Children.Add(new Canvas { Width = 50, Height = 52 });
@@ -191,7 +191,7 @@ namespace Avalonia.Controls.UnitTests
             [Fact]
             public void PixelOffset_Can_Be_More_Than_Child_Without_Affecting_IsFull()
             {
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
 
                 target.Children.Add(new Canvas { Width = 50, Height = 50 });
                 target.Children.Add(new Canvas { Width = 50, Height = 52 });
@@ -210,7 +210,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var presenter = new Mock<ILogical>().As<IControl>();
                 var scrollable = presenter.As<ILogicalScrollable>();
-                var target = (IVirtualizingPanel)new VirtualizingStackPanel();
+                var target = (IVirtualizingPanel)new VirtualizingStackBase();
                 var from = new Canvas();
 
                 scrollable.Setup(x => x.IsLogicalScrollEnabled).Returns(true);

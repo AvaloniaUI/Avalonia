@@ -316,7 +316,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         private static ITemplate<IPanel> VirtualizingPanelTemplate(
             Orientation orientation = Orientation.Vertical)
         {
-            return new FuncTemplate<IPanel>(() => new VirtualizingStackPanel
+            return new FuncTemplate<IPanel>(() => new VirtualizingStackBase
             {
                 Orientation = orientation,
             });

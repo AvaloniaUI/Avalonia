@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
         private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+            new FuncTemplate<IPanel>(() => new VirtualizingStackBase());
 
         /// <summary>
         /// Defines the <see cref="Scroll"/> property.

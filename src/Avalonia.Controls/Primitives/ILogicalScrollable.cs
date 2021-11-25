@@ -1,6 +1,8 @@
 using System;
 using Avalonia.Input;
 
+#nullable enable
+
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -48,7 +50,7 @@ namespace Avalonia.Controls.Primitives
         /// This event notifies an attached <see cref="ScrollViewer"/> of a change in 
         /// one of the scroll properties.
         /// </remarks>
-        event EventHandler ScrollInvalidated;
+        event EventHandler? ScrollInvalidated;
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
@@ -64,7 +66,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        IControl GetControlInDirection(NavigationDirection direction, IControl from);
+        IControl? GetControlInDirection(NavigationDirection direction, IControl from);
 
         /// <summary>
         /// Raises the <see cref="ScrollInvalidated"/> event.

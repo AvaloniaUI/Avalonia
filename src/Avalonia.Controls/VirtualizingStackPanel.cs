@@ -1,255 +1,70 @@
 ﻿using System;
-using System.Collections.Specialized;
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
-using Avalonia.Layout;
+using System.Diagnostics;
+using Avalonia.Controls.Presenters;
+using Avalonia.LogicalTree;
+
+#nullable enable
 
 namespace Avalonia.Controls
 {
-    public class VirtualizingStackPanel : StackPanel, IVirtualizingPanel
+    public class VirtualizingStackPanel : VirtualizingStackBase<object?>, IPanel
     {
-        private Size _availableSpace;
-        private double _takenSpace;
-        private int _canBeRemoved;
-        private double _averageItemSize;
-        private int _averageCount;
-        private double _pixelOffset;
-        private double _crossAxisOffset;
-        private bool _forceRemeasure;
+        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
+            ItemsPresenter.VirtualizationModeProperty.AddOwner<VirtualizingStackPanel>();
 
-        bool IVirtualizingPanel.IsFull
+        private ItemsPresenter? _presenter;
+
+        public ItemVirtualizationMode VirtualizationMode
         {
-            get
-            {
-                return Orientation == Orientation.Horizontal ?
-                    _takenSpace >= _availableSpace.Width :
-                    _takenSpace >= _availableSpace.Height;
-            }
+            get => GetValue(VirtualizationModeProperty);
+            set => SetValue(VirtualizationModeProperty, value);
         }
 
-        IVirtualizingController IVirtualizingPanel.Controller { get; set; }
-        int IVirtualizingPanel.OverflowCount => _canBeRemoved;
-        Orientation IVirtualizingPanel.ScrollDirection => Orientation;
-        double IVirtualizingPanel.AverageItemSize => _averageItemSize;
-
-        double IVirtualizingPanel.PixelOverflow
-        {
-            get
-            {
-                var bounds = Orientation == Orientation.Horizontal ? 
-                    _availableSpace.Width : _availableSpace.Height;
-                return Math.Max(0, _takenSpace - bounds);
-            }
-        }
-
-        double IVirtualizingPanel.PixelOffset
-        {
-            get { return _pixelOffset; }
-
-            set
-            {
-                if (_pixelOffset != value)
-                {
-                    _pixelOffset = value;
-                    InvalidateArrange();
-                }
-            }
-        }
-
-        double IVirtualizingPanel.CrossAxisOffset
-        {
-            get { return _crossAxisOffset; }
-
-            set
-            {
-                if (_crossAxisOffset != value)
-                {
-                    _crossAxisOffset = value;
-                    InvalidateArrange();
-                }
-            }
-        }
-
-        private IVirtualizingController Controller => ((IVirtualizingPanel)this).Controller;
-
-        void IVirtualizingPanel.ForceInvalidateMeasure()
-        {
-            InvalidateMeasure();
-            _forceRemeasure = true;
-        }
+        Controls IPanel.Children => base.Children;
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (_forceRemeasure || availableSize != ((ILayoutable)this).PreviousMeasure)
-            {
-                _forceRemeasure = false;
-                _availableSpace = availableSize;
-                Controller?.UpdateControls();
-            }
-
+            if (_presenter is null)
+                return default;
             return base.MeasureOverride(availableSize);
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
+        protected override IControl RealizeElement(int index)
         {
-            _availableSpace = finalSize;
-            _canBeRemoved = 0;
-            _takenSpace = 0;
-            _averageItemSize = 0;
-            _averageCount = 0;
-            var result = base.ArrangeOverride(finalSize);
-            _takenSpace += _pixelOffset;
-            Controller?.UpdateControls();
-            return result;
+            Debug.Assert(_presenter is not null);
+            return _presenter!.ItemContainerGenerator.Realize(this, index, _presenter.ItemsView[index]);
         }
 
-        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void UnrealizeElement(IControl element, int index)
         {
-            base.ChildrenChanged(sender, e);
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (IControl control in e.NewItems)
-                    {
-                        UpdateAdd(control);
-                    }
-
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (IControl control in e.OldItems)
-                    {
-                        UpdateRemove(control);
-                    }
-
-                    break;
-            }
+            throw new NotImplementedException();
         }
 
-        protected override IInputElement GetControlInDirection(NavigationDirection direction, IControl from)
+        protected override void UpdateElementIndex(IControl element, int index)
         {
-            if (from == null)
-                return null;
-
-            var logicalScrollable = Parent as ILogicalScrollable;
-
-            if (logicalScrollable?.IsLogicalScrollEnabled == true)
-            {
-                return logicalScrollable.GetControlInDirection(direction, from);
-            }
-            else
-            {
-                return base.GetControlInDirection(direction, from);
-            }
+            throw new NotImplementedException();
         }
 
-        internal override void ArrangeChild(
-            IControl child, 
-            Rect rect,
-            Size panelSize,
-            Orientation orientation)
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            if (orientation == Orientation.Vertical)
-            {
-                rect = new Rect(
-                    rect.X - _crossAxisOffset,
-                    rect.Y - _pixelOffset,
-                    rect.Width,
-                    rect.Height);
-                child.Arrange(rect);
-
-                if (rect.Y >= _availableSpace.Height)
-                {
-                    ++_canBeRemoved;
-                }
-
-                if (rect.Bottom >= _takenSpace)
-                {
-                    _takenSpace = rect.Bottom;
-                }
-
-                AddToAverageItemSize(rect.Height);
-            }
-            else
-            {
-                rect = new Rect(
-                    rect.X - _pixelOffset,
-                    rect.Y - _crossAxisOffset,
-                    rect.Width,
-                    rect.Height);
-                child.Arrange(rect);
-
-                if (rect.X >= _availableSpace.Width)
-                {
-                    ++_canBeRemoved;
-                }
-
-                if (rect.Right >= _takenSpace)
-                {
-                    _takenSpace = rect.Right;
-                }
-
-                AddToAverageItemSize(rect.Width);
-            }
+            base.OnAttachedToLogicalTree(e);
+            _presenter = e.Parent as ItemsPresenter;
+            base.Items = ItemsSourceView.GetOrCreate(_presenter?.Items);
         }
 
-        private void UpdateAdd(IControl child)
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            var bounds = Bounds;
-            var spacing = Spacing;
-
-            child.Measure(_availableSpace);
-            ++_averageCount;
-
-            if (Orientation == Orientation.Vertical)
-            {
-                var height = child.DesiredSize.Height;
-                _takenSpace += height + spacing;
-                AddToAverageItemSize(height);
-            }
-            else
-            {
-                var width = child.DesiredSize.Width;
-                _takenSpace += width + spacing;
-                AddToAverageItemSize(width);
-            }
+            base.OnDetachedFromLogicalTree(e);
+            _presenter = null;
+            base.Items = ItemsSourceView.Empty;
         }
 
-        private void UpdateRemove(IControl child)
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
-            var bounds = Bounds;
-            var spacing = Spacing;
+            base.OnPropertyChanged(change);
 
-            if (Orientation == Orientation.Vertical)
-            {
-                var height = child.DesiredSize.Height;
-                _takenSpace -= height + spacing;
-                RemoveFromAverageItemSize(height);
-            }
-            else
-            {
-                var width = child.DesiredSize.Width;
-                _takenSpace -= width + spacing;
-                RemoveFromAverageItemSize(width);
-            }
-
-            if (_canBeRemoved > 0)
-            {
-                --_canBeRemoved;
-            }
-        }
-
-        private void AddToAverageItemSize(double value)
-        {
-            ++_averageCount;
-            _averageItemSize += (value - _averageItemSize) / _averageCount;
-        }
-
-        private void RemoveFromAverageItemSize(double value)
-        {
-            _averageItemSize = ((_averageItemSize * _averageCount) - value) / (_averageCount - 1);
-            --_averageCount;
+            if (change.Property == VirtualizationModeProperty)
+                UnrealizeAllElements();
         }
     }
 }
