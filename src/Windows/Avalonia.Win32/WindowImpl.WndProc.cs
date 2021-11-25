@@ -15,10 +15,23 @@ namespace Avalonia.Win32
 {
     public partial class WindowImpl
     {
+        public delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled);
+        public WndProcDelegate CustomWndProc;
+
         protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             IntPtr lRet = IntPtr.Zero;
             bool callDwp = true;
+
+            if (CustomWndProc != null)
+            {
+                var handled = false;
+                lRet = CustomWndProc(hWnd, msg, wParam, lParam, ref handled);
+                if (handled)
+                {
+                    return lRet;
+                }
+            }
 
             if (_isClientAreaExtended)
             {
