@@ -35,6 +35,7 @@ namespace Avalonia.Win32
                             case WindowActivate.WA_CLICKACTIVE:
                                 {
                                     Activated?.Invoke();
+                                    UpdateInputMethod(GetKeyboardLayout(0));
                                     break;
                                 }
 
@@ -534,7 +535,7 @@ namespace Avalonia.Win32
         {
             // note: for non-ime language, also create it so that emoji panel tracks cursor
             var langid = LGID(hkl);
-            if (langid == _langid)
+            if (langid == _langid && Imm32InputMethod.Current.HWND == Hwnd)
             {
                 return;
             } 

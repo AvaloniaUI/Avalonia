@@ -11,7 +11,7 @@ namespace Avalonia.Win32.Input
     /// </summary>
     class Imm32InputMethod : ITextInputMethodImpl
     {
-        private IntPtr _hwnd;
+        public IntPtr HWND { get; private set; }
         private IntPtr _defaultImc;
         private WindowImpl _parent;
         private bool _active;
@@ -23,11 +23,11 @@ namespace Avalonia.Win32.Input
         
         public void SetLanguageAndWindow(WindowImpl parent, IntPtr hwnd, IntPtr HKL)
         {
-            if (_hwnd != hwnd)
+            if (HWND != hwnd)
             {
                 _defaultImc = IntPtr.Zero;
             }
-            _hwnd = hwnd;
+            HWND = hwnd;
             _parent = parent;
             _active = false;
             _langId = PRIMARYLANGID(LGID(HKL));
@@ -46,10 +46,10 @@ namespace Avalonia.Win32.Input
             get
             {
                 if (_defaultImc == IntPtr.Zero &&
-                    _hwnd != IntPtr.Zero)
+                    HWND != IntPtr.Zero)
                 {
-                    _defaultImc = ImmGetContext(_hwnd);
-                    ImmReleaseContext(_hwnd, _defaultImc);
+                    _defaultImc = ImmGetContext(HWND);
+                    ImmReleaseContext(HWND, _defaultImc);
                 }
 
                 if (_defaultImc == IntPtr.Zero)
@@ -68,7 +68,7 @@ namespace Avalonia.Win32.Input
                 Dispatcher.UIThread.Post(() =>
                 {
                     ImmNotifyIME(DefaultImc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
-                    ImmReleaseContext(_hwnd, DefaultImc);
+                    ImmReleaseContext(HWND, DefaultImc);
                 });
             }
         }
@@ -84,14 +84,14 @@ namespace Avalonia.Win32.Input
                     {
                         if (_langId == LANG_ZH || _langId == LANG_JA)
                         {
-                            _systemCaret = CreateCaret(_hwnd, IntPtr.Zero, 2, 10);
+                            _systemCaret = CreateCaret(HWND, IntPtr.Zero, 2, 10);
                         }
-                        ImmAssociateContext(_hwnd, _defaultImc);
+                        ImmAssociateContext(HWND, _defaultImc);
                     }
                 }
                 else
                 {
-                    ImmAssociateContext(_hwnd, IntPtr.Zero);
+                    ImmAssociateContext(HWND, IntPtr.Zero);
                     if (_systemCaret)
                     {
                         DestroyCaret();
@@ -103,7 +103,7 @@ namespace Avalonia.Win32.Input
 
         public void SetCursorRect(Rect rect)
         {
-            var focused = GetActiveWindow() == _hwnd;
+            var focused = GetActiveWindow() == HWND;
             if (!focused)
             {
                 return;
@@ -163,7 +163,7 @@ namespace Avalonia.Win32.Input
                     };
                 }
 
-                ImmReleaseContext(_hwnd, himc);
+                ImmReleaseContext(HWND, himc);
             });
         }
 
