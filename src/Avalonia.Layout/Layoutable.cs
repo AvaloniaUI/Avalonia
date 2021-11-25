@@ -140,17 +140,6 @@ namespace Avalonia.Layout
         /// </summary>
         static Layoutable()
         {
-            AffectsMeasure<Layoutable>(
-                IsVisibleProperty,
-                WidthProperty,
-                HeightProperty,
-                MinWidthProperty,
-                MaxWidthProperty,
-                MinHeightProperty,
-                MaxHeightProperty,
-                MarginProperty,
-                HorizontalAlignmentProperty,
-                VerticalAlignmentProperty);
         }
 
         /// <summary>
@@ -832,6 +821,28 @@ namespace Avalonia.Layout
         private static Size NonNegative(Size size)
         {
             return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+            switch (change.Property.Name)
+            {
+                case nameof(IsVisible):
+                case nameof(WidthProperty):
+                case nameof(HeightProperty):
+                case nameof(MinWidth):
+                case nameof(MaxWidth):
+                case nameof(MinHeight):
+                case nameof(MaxHeight):
+                case nameof(Margin):
+                case nameof(HorizontalAlignment):
+                case nameof(VerticalAlignment):
+                    InvalidateMeasure();
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
