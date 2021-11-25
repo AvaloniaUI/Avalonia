@@ -829,8 +829,8 @@ namespace Avalonia.Layout
             switch (change.Property.Name)
             {
                 case nameof(IsVisible):
-                case nameof(WidthProperty):
-                case nameof(HeightProperty):
+                case nameof(Width):
+                case nameof(Height):
                 case nameof(MinWidth):
                 case nameof(MaxWidth):
                 case nameof(MinHeight):
