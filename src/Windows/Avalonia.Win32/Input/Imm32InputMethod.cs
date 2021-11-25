@@ -15,8 +15,8 @@ namespace Avalonia.Win32.Input
         private IntPtr _defaultImc;
         private WindowImpl _parent;
         private bool _active;
-        private bool _systemCaret;
         private bool _showCompositionWindow;
+        private Imm32CaretManager _caretManager = new();
         private bool _showCandidateList;
         private ushort _langId;
         private const int _caretMargin = 1;
@@ -69,6 +69,7 @@ namespace Avalonia.Win32.Input
                 {
                     ImmNotifyIME(DefaultImc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
                     ImmReleaseContext(HWND, DefaultImc);
+                    IsComposing = false;
                 });
             }
         }
@@ -82,21 +83,29 @@ namespace Avalonia.Win32.Input
                 {
                     if (DefaultImc != IntPtr.Zero)
                     {
-                        if (_langId == LANG_ZH || _langId == LANG_JA)
-                        {
-                            _systemCaret = CreateCaret(HWND, IntPtr.Zero, 2, 10);
-                        }
+                        _caretManager.TryCreate(_langId, HWND);
+                        // Load the default IME context.
+                        // NOTE(hbono)
+                        //   IMM ignores this call if the IME context is loaded. Therefore, we do
+                        //   not have to check whether or not the IME context is loaded.
                         ImmAssociateContext(HWND, _defaultImc);
                     }
                 }
                 else
                 {
-                    ImmAssociateContext(HWND, IntPtr.Zero);
-                    if (_systemCaret)
+                    // A renderer process have moved its input focus to a password input
+                    // when there is an ongoing composition, e.g. a user has clicked a
+                    // mouse button and selected a password input while composing a text.
+                    // For this case, we have to complete the ongoing composition and
+                    // clean up the resources attached to this object BEFORE DISABLING THE IME.
+                    if (IsComposing)
                     {
-                        DestroyCaret();
-                        _systemCaret = false;
+                        ImmNotifyIME(DefaultImc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0);
+                        ImmReleaseContext(HWND, DefaultImc);
+                        IsComposing = false;
                     }
+                    ImmAssociateContext(HWND, IntPtr.Zero);
+                    _caretManager.TryDestroy();
                 }
             });
         }
@@ -150,11 +159,8 @@ namespace Avalonia.Win32.Input
                 };
                 ImmSetCandidateWindow(himc, ref candidateForm);
             }
-
-            if (_systemCaret)
-            {
-                SetCaretPos(x2, y2);
-            }
+            
+            _caretManager.TryMove(x2, y2);
 
             if (_showCompositionWindow)
             {
@@ -210,21 +216,16 @@ namespace Avalonia.Win32.Input
             ImmSetCompositionFont(himc, ref logFont);
         }
         
-
         public void SetOptions(TextInputOptionsQueryEventArgs options)
         {
-            // ???
+            // we're skipping this. not usable on windows
         }
         
         public bool IsComposing { get; set; }
 
         ~Imm32InputMethod()
         {
-            if (_systemCaret)
-            {
-                _systemCaret = false;
-                DestroyCaret();
-            }
+            _caretManager.TryDestroy();
         }
     }
 }
