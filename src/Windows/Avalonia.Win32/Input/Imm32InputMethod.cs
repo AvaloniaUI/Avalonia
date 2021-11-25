@@ -132,6 +132,13 @@ namespace Avalonia.Win32.Input
                         ptCurrentPos = new POINT { X = x1, Y = y1 },
                     };
                     ImmSetCompositionWindow(himc, ref compForm);
+
+                    var logFont = new LOGFONT()
+                    {
+                        lfHeight = y2-y1,
+                        lfQuality = 5 //CLEARTYPE_QUALITY
+                    };
+                    ImmSetCompositionFont(himc, ref logFont);
                 }
 
                 if (_showCandidateList)

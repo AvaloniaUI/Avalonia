@@ -1548,6 +1548,8 @@ namespace Avalonia.Win32.Interop
         [DllImport("imm32.dll")]
         public static extern bool ImmSetCompositionWindow(IntPtr hIMC, ref COMPOSITIONFORM lpComp);
         [DllImport("imm32.dll")]
+        public static extern bool ImmSetCompositionFont(IntPtr hIMC, ref LOGFONT lf);
+        [DllImport("imm32.dll")]
         public static extern bool ImmNotifyIME(IntPtr hIMC, int dwAction, int dwIndex, int dwValue);
         [DllImport("user32.dll")]
         public static extern bool CreateCaret(IntPtr hwnd, IntPtr hBitmap, int nWidth, int nHeight);
@@ -1611,6 +1613,25 @@ namespace Avalonia.Win32.Interop
             public RECT rcArea;
         }
 
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct LOGFONT
+        {
+            public int lfHeight;
+            public int lfWidth;
+            public int lfEscapement;
+            public int lfOrientation;
+            public int lfWeight;
+            public byte lfItalic;
+            public byte lfUnderline;
+            public byte lfStrikeOut;
+            public byte lfCharSet;
+            public byte lfOutPrecision;
+            public byte lfClipPrecision;
+            public byte lfQuality;
+            public byte lfPitchAndFamily;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string lfFaceName;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct WindowCompositionAttributeData
