@@ -79,6 +79,54 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
+        public async Task GeometryClip_With_Transform()
+        {
+            var target = new Border
+            {
+                Background = Brushes.White,
+                Width = 200,
+                Height = 200,
+                Child = new CustomRenderer((control, context) =>
+                {
+                    using (var transform = context.PushPreTransform(Matrix.CreateTranslation(100, 100)))
+                    using (var clip = context.PushClip(new Rect(0, 0, 100, 100)))
+                    {
+                        context.FillRectangle(Brushes.Blue, new Rect(0, 0, 200, 200));
+                    }
+
+                    context.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100));
+                }),
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Clip_With_Transform()
+        {
+            var target = new Border
+            {
+                Background = Brushes.White,
+                Width = 200,
+                Height = 200,
+                Child = new CustomRenderer((control, context) =>
+                {
+                    using (var transform = context.PushPreTransform(Matrix.CreateTranslation(100, 100)))
+                    using (var clip = context.PushClip(new Rect(0, 0, 100, 100)))
+                    {
+                        context.FillRectangle(Brushes.Blue, new Rect(0, 0, 200, 200));
+                    }
+
+                    context.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100));
+                }),
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
         public async Task Opacity()
         {
             Decorator target = new Decorator

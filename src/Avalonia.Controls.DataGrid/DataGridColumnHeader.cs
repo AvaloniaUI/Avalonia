@@ -35,6 +35,7 @@ namespace Avalonia.Controls
 
         private const int DATAGRIDCOLUMNHEADER_resizeRegionWidth = 5;
         private const double DATAGRIDCOLUMNHEADER_separatorThickness = 1;
+        private const int DATAGRIDCOLUMNHEADER_columnsDragTreshold = 5;
 
         private bool _areHandlersSuspended;
         private static DragMode _dragMode;
@@ -201,21 +202,21 @@ namespace Avalonia.Controls
             handled = true;
         }
 
-        internal void InvokeProcessSort(KeyModifiers keyModifiers)
+        internal void InvokeProcessSort(KeyModifiers keyModifiers, ListSortDirection? forcedDirection = null)
         {
             Debug.Assert(OwningGrid != null);
-            if (OwningGrid.WaitForLostFocus(() => InvokeProcessSort(keyModifiers)))
+            if (OwningGrid.WaitForLostFocus(() => InvokeProcessSort(keyModifiers, forcedDirection)))
             {
                 return;
             }
             if (OwningGrid.CommitEdit(DataGridEditingUnit.Row, exitEditingMode: true))
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(keyModifiers));
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => ProcessSort(keyModifiers, forcedDirection));
             }
         }
 
         //TODO GroupSorting
-        internal void ProcessSort(KeyModifiers keyModifiers)
+        internal void ProcessSort(KeyModifiers keyModifiers, ListSortDirection? forcedDirection = null)
         {
             // if we can sort:
             //  - AllowUserToSortColumns and CanSort are true, and
@@ -259,7 +260,14 @@ namespace Avalonia.Controls
                         {
                             if (sort != null)
                             {
-                                newSort = sort.SwitchSortDirection();
+                                if (forcedDirection == null || sort.Direction != forcedDirection)
+                                {
+                                    newSort = sort.SwitchSortDirection();
+                                }
+                                else
+                                {
+                                    newSort = sort;
+                                } 
 
                                 // changing direction should not affect sort order, so we replace this column's
                                 // sort description instead of just adding it to the end of the collection
@@ -276,7 +284,10 @@ namespace Avalonia.Controls
                             }
                             else if (OwningColumn.CustomSortComparer != null)
                             {
-                                newSort = DataGridSortDescription.FromComparer(OwningColumn.CustomSortComparer);
+                                newSort = forcedDirection != null ?
+                                    DataGridSortDescription.FromComparer(OwningColumn.CustomSortComparer, forcedDirection.Value) :
+                                    DataGridSortDescription.FromComparer(OwningColumn.CustomSortComparer);
+
 
                                 owningGrid.DataConnection.SortDescriptions.Add(newSort);
                             }
@@ -290,6 +301,10 @@ namespace Avalonia.Controls
                                 }
 
                                 newSort = DataGridSortDescription.FromPath(propertyName, culture: collectionView.Culture);
+                                if (forcedDirection != null && newSort.Direction != forcedDirection)
+                                {
+                                    newSort = newSort.SwitchSortDirection();
+                                }
 
                                 owningGrid.DataConnection.SortDescriptions.Add(newSort);
                             }
@@ -434,19 +449,6 @@ namespace Avalonia.Controls
 
             OnMouseMove_Reorder(ref handled, mousePosition, mousePositionHeaders, distanceFromLeft, distanceFromRight);
 
-            // if we still haven't done anything about moving the mouse while 
-            // the button is down, we remember that we're dragging, but we don't 
-            // claim to have actually handled the event
-            if (_dragMode == DragMode.MouseDown)
-            {
-                _dragMode = DragMode.Drag;
-            }
-
-            _lastMousePositionHeaders = mousePositionHeaders;
-            
-            if (args.Pointer.Captured != this && _dragMode == DragMode.Drag)
-                args.Pointer.Capture(this);
-            
             SetDragCursor(mousePosition);
         }
 
@@ -718,15 +720,19 @@ namespace Avalonia.Controls
             {
                 return;
             }
-
+            
             //handle entry into reorder mode
-            if (_dragMode == DragMode.MouseDown && _dragColumn == null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
+            if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
             {
-                handled = CanReorderColumn(OwningColumn);
-
-                if (handled)
+                var distanceFromInitial = (Vector)(mousePositionHeaders - _lastMousePositionHeaders);
+                if (distanceFromInitial.Length > DATAGRIDCOLUMNHEADER_columnsDragTreshold)
                 {
-                    OnMouseMove_BeginReorder(mousePosition);
+                    handled = CanReorderColumn(OwningColumn);
+
+                    if (handled)
+                    {
+                        OnMouseMove_BeginReorder(mousePosition);
+                    }
                 }
             }
 

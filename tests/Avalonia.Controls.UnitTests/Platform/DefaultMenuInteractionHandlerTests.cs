@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -538,6 +539,22 @@ namespace Avalonia.Controls.UnitTests.Platform
 
                 Mock.Get(item).Verify(x => x.Open());
                 Mock.Get(item).Verify(x => x.MoveSelection(NavigationDirection.First, true), Times.Never);
+                Assert.True(e.Handled);
+            }
+
+            [Fact]
+            public void PointerPressed_On_Disabled_Item_Doesnt_Close_SubMenu()
+            {
+                var target = new DefaultMenuInteractionHandler(false);
+                var menu = Mock.Of<IMenu>();
+                var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.IsSubMenuOpen == true && x.Parent == menu);
+                var popup = new Popup();
+                var e = CreatePressed(popup);
+                
+                ((ISetLogicalParent)popup).SetParent(parentItem);
+                target.PointerPressed(parentItem, e);
+
+                Mock.Get(parentItem).Verify(x => x.Close(), Times.Never);
                 Assert.True(e.Handled);
             }
         }

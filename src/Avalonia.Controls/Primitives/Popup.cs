@@ -20,10 +20,12 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Displays a popup window.
     /// </summary>
+#pragma warning disable CS0612 // Type or member is obsolete
     public class Popup : Control, IVisualTreeHost, IPopupHostProvider
+#pragma warning restore CS0612 // Type or member is obsolete
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
-            AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), true);
+            AvaloniaProperty.Register<PopupRoot, bool>(nameof(WindowManagerAddShadowHint), false);
 
         /// <summary>
         /// Defines the <see cref="Child"/> property.
@@ -91,8 +93,8 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
 
-        public static readonly DirectProperty<Popup, IInputElement> OverlayInputPassThroughElementProperty =
-            AvaloniaProperty.RegisterDirect<Popup, IInputElement>(
+        public static readonly DirectProperty<Popup, IInputElement?> OverlayInputPassThroughElementProperty =
+            AvaloniaProperty.RegisterDirect<Popup, IInputElement?>(
                 nameof(OverlayInputPassThroughElement),
                 o => o.OverlayInputPassThroughElement,
                 (o, v) => o.OverlayInputPassThroughElement = v);
@@ -136,7 +138,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
-        private IInputElement _overlayInputPassThroughElement;
+        private IInputElement? _overlayInputPassThroughElement;
         private Action<IPopupHost?>? _popupHostChangedHandler;
 
         /// <summary>
@@ -308,7 +310,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets or sets an element that should receive pointer input events even when underneath
         /// the popup's overlay.
         /// </summary>
-        public IInputElement OverlayInputPassThroughElement
+        public IInputElement? OverlayInputPassThroughElement
         {
             get => _overlayInputPassThroughElement;
             set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);

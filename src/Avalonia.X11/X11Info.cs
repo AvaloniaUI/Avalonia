@@ -42,7 +42,7 @@ namespace Avalonia.X11
             DefaultScreen = XDefaultScreen(display);
             BlackPixel = XBlackPixel(display, DefaultScreen);
             RootWindow = XRootWindow(display, DefaultScreen);
-            DefaultCursor = XCreateFontCursor(display, CursorFontShape.XC_top_left_arrow);
+            DefaultCursor = XCreateFontCursor(display, CursorFontShape.XC_left_ptr);
             DefaultRootWindow = XDefaultRootWindow(display);
             Atoms = new X11Atoms(display);
 

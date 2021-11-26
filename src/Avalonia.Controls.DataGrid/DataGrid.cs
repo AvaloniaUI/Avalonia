@@ -2223,6 +2223,7 @@ namespace Avalonia.Controls
             if (IsEnabled && DisplayData.NumDisplayedScrollingElements > 0)
             {
                 var handled = false;
+                var ignoreInvalidate = false;
                 var scrollHeight = 0d;
 
                 // Vertical scroll handling
@@ -2252,8 +2253,7 @@ namespace Avalonia.Controls
                 // Horizontal scroll handling
                 if (delta.X != 0)
                 {
-                    var originalHorizontalOffset = HorizontalOffset;
-                    var horizontalOffset = originalHorizontalOffset - delta.X;
+                    var horizontalOffset = HorizontalOffset - delta.X;
                     var widthNotVisible = Math.Max(0, ColumnsInternal.VisibleEdgedColumnsWidth - CellsWidth);
 
                     if (horizontalOffset < 0)
@@ -2265,16 +2265,20 @@ namespace Avalonia.Controls
                         horizontalOffset = widthNotVisible;
                     }
 
-                    if (horizontalOffset != originalHorizontalOffset)
+                    if (UpdateHorizontalOffset(horizontalOffset))
                     {
-                        HorizontalOffset = horizontalOffset;
+                        // We don't need to invalidate once again after UpdateHorizontalOffset.
+                        ignoreInvalidate = true;
                         handled = true;
                     }
                 }
 
                 if (handled)
                 {
-                    InvalidateRowsMeasure(invalidateIndividualElements: false);
+                    if (!ignoreInvalidate)
+                    {
+                        InvalidateRowsMeasure(invalidateIndividualElements: false);
+                    }
                     return true;
                 }
             }
@@ -2932,7 +2936,7 @@ namespace Avalonia.Controls
             return SetCurrentCellCore(columnIndex, slot, commitEdit: true, endRowEdit: true);
         }
 
-        internal void UpdateHorizontalOffset(double newValue)
+        internal bool UpdateHorizontalOffset(double newValue)
         {
             if (HorizontalOffset != newValue)
             {
@@ -2940,7 +2944,9 @@ namespace Avalonia.Controls
 
                 InvalidateColumnHeadersMeasure();
                 InvalidateRowsMeasure(true);
+                return true;
             }
+            return false;
         }
 
         internal bool UpdateSelectionAndCurrency(int columnIndex, int slot, DataGridSelectionAction action, bool scrollIntoView)
