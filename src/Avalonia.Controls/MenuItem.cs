@@ -349,7 +349,7 @@ namespace Avalonia.Controls
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
 
         /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateElementFactory()
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new MenuItemContainerGenerator(this);
         }

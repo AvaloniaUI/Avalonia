@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -65,7 +66,7 @@ namespace Avalonia.Controls
         private IEnumerable? _items;
         private int _itemCount;
         private ItemsSourceView? _itemsView;
-        private IElementFactory? _elementFactory;
+        private IItemContainerGenerator? _generator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
 
         /// <summary>
@@ -82,14 +83,14 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsControl()
         {
-            UpdatePseudoClasses(0);
+            UpdatePseudoClasses();
             SubscribeToItems(_items);
         }
 
         /// <summary>
-        /// Gets the <see cref="IElementFactory"/> which creates containers for the control.
+        /// Gets the <see cref="IItemContainerGenerator"/> which creates containers for the control.
         /// </summary>
-        public IElementFactory? ElementFactory => _elementFactory ??= CreateElementFactory();
+        public IItemContainerGenerator? ItemContainerGenerator => _generator ??= CreateItemContainerGenerator();
 
         /// <summary>
         /// Gets or sets the items to display.
@@ -267,21 +268,18 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Creates the <see cref="ElementFactory"/> which creates containers for the control.
+        /// Creates the <see cref="ItemContainerGenerator"/> which creates containers for the control.
         /// </summary>
         /// <returns>
-        /// An <see cref="IElementFactory"/> or null.
+        /// An <see cref="IItemContainerGenerator"/> or null.
         /// </returns>
         /// <remarks>
         /// Certain controls such as <see cref="TabControl"/> don't actually create item 
-        /// containers; however they want it to be ItemsControls so that they have an Items 
+        /// containers; however they want to be ItemsControls so that they have an Items 
         /// property etc. In this case, a derived class can override this method to return null
         /// in order to disable the creation of item containers.
         /// </remarks>
-        protected virtual IElementFactory? CreateElementFactory()
-        {
-            return new ItemContainerGenerator(this);
-        }
+        protected virtual IItemContainerGenerator? CreateItemContainerGenerator() => new ItemContainerGenerator(this);
 
         /// <summary>
         /// Called when new containers are materialized for the <see cref="ItemsControl"/> by its

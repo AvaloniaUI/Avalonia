@@ -26,7 +26,7 @@ namespace Avalonia.Controls
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
         private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new VirtualizingStackBase());
+            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
@@ -169,12 +169,9 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateElementFactory()
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<ComboBoxItem>(
-                this,
-                ComboBoxItem.ContentProperty,
-                ComboBoxItem.ContentTemplateProperty);
+            return new ItemContainerGenerator<ComboBoxItem>(this);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

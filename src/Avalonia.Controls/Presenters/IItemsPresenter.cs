@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using Avalonia.Controls.Generators;
+
+#nullable enable
 
 namespace Avalonia.Controls.Presenters
 {
@@ -9,9 +12,19 @@ namespace Avalonia.Controls.Presenters
     public interface IItemsPresenter : IPresenter
     {
         /// <summary>
+        /// Gets the container generator for the presenter.
+        /// </summary>
+        IItemContainerGenerator? ItemContainerGenerator { get; }
+
+        /// <summary>
+        /// Gets an <see cref="ItemsSourceView"/> containing the items to display.
+        /// </summary>
+        ItemsSourceView? ItemsView { get; }
+
+        /// <summary>
         /// Gets the <see cref="IPanel"/> on which the item containers are hosted.
         /// </summary>
-        IPanel Panel { get; }
+        IPanel? Panel { get; }
 
         /// <summary>
         /// Gets the currently realized elements.

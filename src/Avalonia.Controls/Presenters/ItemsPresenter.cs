@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using static Avalonia.Utilities.MathUtilities;
@@ -10,10 +12,9 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Displays items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : Control, ILogicalScrollable
+    public class ItemsPresenter : Control, IItemsPresenter, ILogicalScrollable
     {
         private bool _createdPanel;
-        private IPanel? _panel;
         private EventHandler? _scrollInvalidated;
 
         /// <summary>
@@ -31,9 +32,22 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public IPanel? Panel { get; private set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
-        /// </summary>
+        public IEnumerable<IControl> RealizedElements
+        {
+            get
+            {
+                if (Panel is IVirtualizingPanel vp)
+                    return vp.RealizedElements;
+                else if (Panel is not null)
+                    return Panel.Children;
+                else
+                    return Array.Empty<IControl>();
+            }
+        }
+
+        IItemContainerGenerator? IItemsPresenter.ItemContainerGenerator => ItemsControl?.ItemContainerGenerator;
+        ItemsSourceView? IItemsPresenter.ItemsView => ItemsControl?.ItemsView;
+
         bool ILogicalScrollable.CanHorizontallyScroll
         {
             get => LogicalScrollable?.CanHorizontallyScroll ?? false;
@@ -44,9 +58,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
-        /// </summary>
         bool ILogicalScrollable.CanVerticallyScroll
         {
             get => LogicalScrollable?.CanVerticallyScroll ?? false;
@@ -74,6 +85,8 @@ namespace Avalonia.Controls.Presenters
 
         Size IScrollable.Viewport => LogicalScrollable?.Viewport ?? Bounds.Size;
 
+        private ItemsControl? ItemsControl => TemplatedParent as ItemsControl;
+
         private ILogicalScrollable? LogicalScrollable
         {
             get
@@ -87,6 +100,12 @@ namespace Avalonia.Controls.Presenters
         {
             add => _scrollInvalidated += value;
             remove => _scrollInvalidated -= value;
+        }
+
+        public override void ApplyTemplate()
+        {
+            if (!_createdPanel)
+                CreatePanel();
         }
 
         bool ILogicalScrollable.BringIntoView(IControl target, Rect targetRect)
@@ -103,12 +122,6 @@ namespace Avalonia.Controls.Presenters
         void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e)
         {
             _scrollInvalidated?.Invoke(this, e);
-        }
-
-        public override void ApplyTemplate()
-        {
-            if (!_createdPanel)
-                CreatePanel();
         }
 
         private void CreatePanel()

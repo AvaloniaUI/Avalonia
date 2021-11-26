@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.LogicalTree;
 
@@ -9,10 +9,15 @@ namespace Avalonia.Controls
 {
     public class VirtualizingStackPanel : VirtualizingStackBase<object?>, IPanel
     {
+        /// <summary>
+        /// Defines the <see cref="VirtualizationMode"/> property.
+        /// </summary>
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<VirtualizingStackPanel>();
+            AvaloniaProperty.Register<ItemsPresenter, ItemVirtualizationMode>(
+                nameof(VirtualizationMode),
+                defaultValue: ItemVirtualizationMode.Smooth);
 
-        private ItemsPresenter? _presenter;
+        private IItemsPresenter? _presenter;
 
         public ItemVirtualizationMode VirtualizationMode
         {
@@ -31,13 +36,22 @@ namespace Avalonia.Controls
 
         protected override IControl RealizeElement(int index)
         {
-            Debug.Assert(_presenter is not null);
-            return _presenter!.ItemContainerGenerator.Realize(this, index, _presenter.ItemsView[index]);
+            var (generator, items) = GetGeneratorAndItems();
+            var e = generator.Realize(this, index, items[index]);
+
+            if (e.Parent is null)
+                Children.Add(e);
+            else if (e.Parent != this)
+                throw new InvalidOperationException("Realized element has unexpected Parent.");
+
+            return e;
+
         }
 
         protected override void UnrealizeElement(IControl element, int index)
         {
-            throw new NotImplementedException();
+            var (generator, items) = GetGeneratorAndItems();
+            generator.Unrealize(element, index, items[index]);
         }
 
         protected override void UpdateElementIndex(IControl element, int index)
@@ -47,9 +61,9 @@ namespace Avalonia.Controls
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToLogicalTree(e);
+            base.OnAttachedToLogicalTree(e); 
             _presenter = e.Parent as ItemsPresenter;
-            base.Items = ItemsSourceView.GetOrCreate(_presenter?.Items);
+            base.Items = _presenter?.ItemsView ?? ItemsSourceView.Empty;
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -65,6 +79,15 @@ namespace Avalonia.Controls
 
             if (change.Property == VirtualizationModeProperty)
                 UnrealizeAllElements();
+        }
+
+        private (IItemContainerGenerator, ItemsSourceView) GetGeneratorAndItems()
+        {
+            if (_presenter?.ItemContainerGenerator is null || _presenter.ItemsView is null)
+                throw new NotSupportedException(
+                    $"{nameof(VirtualizingStackPanel)} must be hosted in an {nameof(IItemsPresenter)} " +
+                    "with a generator and items.");
+            return (_presenter.ItemContainerGenerator, _presenter.ItemsView);
         }
     }
 }
