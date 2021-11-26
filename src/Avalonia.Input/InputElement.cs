@@ -196,7 +196,7 @@ namespace Avalonia.Input
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
-
+        
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
         private bool _isKeyboardFocusWithin;
@@ -705,6 +705,11 @@ namespace Avalonia.Input
             {
                 PseudoClasses.Set(":pointerover", isPointerOver.Value);
             }
+        }
+
+        internal void RaiseInputMethodChanged()
+        {
+
         }
     }
 }

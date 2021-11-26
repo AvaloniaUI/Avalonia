@@ -1,8 +1,4 @@
-﻿using System;
-using Avalonia.Input.TextInput;
-using Avalonia.VisualTree;
-
-namespace Avalonia.Input
+﻿namespace Avalonia.Input
 {
     public class InputMethod
     {
@@ -12,14 +8,6 @@ namespace Avalonia.Input
         public static readonly AvaloniaProperty<bool> IsInputMethodEnabledProperty =
             AvaloniaProperty.RegisterAttached<InputMethod, InputElement, bool>("IsInputMethodEnabled", true);
         
-        /// <summary>
-        /// Initializes static members of the <see cref="InputMethod"/> class.
-        /// </summary>
-        static InputMethod()
-        {
-            IsInputMethodEnabledProperty.Changed.Subscribe(OnInputMethodEnabledChanged);
-        }
-
         /// <summary>
         /// Setter for IsInputMethodEnabled AvaloniaProperty
         /// </summary>
@@ -34,15 +22,6 @@ namespace Avalonia.Input
         public static bool GetIsInputMethodEnabled(InputElement target)
         {
             return target.GetValue<bool>(IsInputMethodEnabledProperty);
-        }
-
-        private static void OnInputMethodEnabledChanged(AvaloniaPropertyChangedEventArgs<bool> obj)
-        {
-            if (obj.Sender is InputElement element &&
-                ReferenceEquals(element, KeyboardDevice.Instance.FocusedElement))
-            {
-                (((IVisual)element).VisualRoot as ITextInputMethodRoot)?.InputMethod.SetActive(obj.NewValue.Value);
-            }
         }
 
         private InputMethod()

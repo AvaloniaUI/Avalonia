@@ -8,9 +8,14 @@ namespace Avalonia.Input.TextInput
         private ITextInputMethodImpl? _im;
         private IInputElement? _focusedElement;
         private ITextInputMethodClient? _client;
+        private IDisposable? _subscribeDisposable;
         private readonly TransformTrackingHelper _transformTracker = new TransformTrackingHelper();
 
-        public TextInputMethodManager() => _transformTracker.MatrixChanged += UpdateCursorRect;
+        public TextInputMethodManager()
+        {
+            _transformTracker.MatrixChanged += UpdateCursorRect;
+            InputMethod.IsInputMethodEnabledProperty.Changed.Subscribe(OnIsInputMethodEnabledChanged);
+        }
 
         private ITextInputMethodClient? Client
         {
@@ -40,17 +45,22 @@ namespace Avalonia.Input.TextInput
                     _im?.SetOptions(optionsQuery);
                     _transformTracker?.SetVisual(_client?.TextViewVisual);
                     UpdateCursorRect();
-
-                    var isEnabled = _focusedElement is not InputElement element || 
-                                    InputMethod.GetIsInputMethodEnabled(element);
-
-                    _im?.SetActive(isEnabled);
+                    
+                    _im?.SetActive(true);
                 }
                 else
                 {
                     _im?.SetActive(false);
                     _transformTracker.SetVisual(null);
                 }
+            }
+        }
+
+        private void OnIsInputMethodEnabledChanged(AvaloniaPropertyChangedEventArgs<bool> obj)
+        {
+            if (ReferenceEquals(obj.Sender, _focusedElement))
+            {
+                TryFindAndApplyClient();
             }
         }
 
@@ -87,7 +97,14 @@ namespace Avalonia.Input.TextInput
 
             _im = inputMethod;
 
-            if (_focusedElement == null || _im == null)
+            TryFindAndApplyClient();
+        }
+
+        private void TryFindAndApplyClient()
+        {
+            if (_focusedElement is not InputElement focused ||
+                _im == null ||
+                !InputMethod.GetIsInputMethodEnabled(focused))
             {
                 Client = null;
                 _im?.SetActive(false);
