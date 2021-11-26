@@ -365,7 +365,7 @@ namespace Avalonia.Controls.Primitives
         /// Scrolls the specified item into view.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void ScrollIntoView(object item) => ScrollIntoView(IndexOf(Items, item));
+        public void ScrollIntoView(object item) => ScrollIntoView(ItemsView.IndexOf(item));
 
         /// <summary>
         /// Tries to get the container that was the source of an event.
@@ -418,55 +418,41 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        protected override void OnContainerRealized(IControl container, int index, object? item)
         {
-            base.OnContainersMaterialized(e);
+            base.OnContainerRealized(container, index, item);
 
-            foreach (var container in e.Containers)
+            if ((container as ISelectable)?.IsSelected == true)
             {
-                if ((container.ContainerControl as ISelectable)?.IsSelected == true)
-                {
-                    Selection.Select(container.Index);
-                    MarkContainerSelected(container.ContainerControl, true);
-                }
-                else
-                {
-                    var selected = Selection.IsSelected(container.Index);
-                    MarkContainerSelected(container.ContainerControl, selected);
-                }
+                Selection.Select(index);
+                MarkContainerSelected(container, true);
+            }
+            else
+            {
+                var selected = Selection.IsSelected(index);
+                MarkContainerSelected(container, selected);
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnContainersDematerialized(ItemContainerEventArgs e)
+        protected override void OnContainerUnrealized(IControl container, int index)
         {
-            base.OnContainersDematerialized(e);
+            base.OnContainerUnrealized(container, index);
 
-            var panel = (InputElement)Presenter.Panel;
-
-            if (panel != null)
+            if (Presenter?.Panel is InputElement panel)
             {
-                foreach (var container in e.Containers)
-                {
-                    if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
-                    {
-                        KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-                        break;
-                    }
-                }
+                if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container)
+                    KeyboardNavigation.SetTabOnceActiveElement(panel, null);
             }
         }
 
-        protected override void OnContainersRecycled(ItemContainerEventArgs e)
+        protected override void OnContainerIndexChanged(IControl container, int oldIndex, int newIndex)
         {
-            foreach (var i in e.Containers)
+            base.OnContainerIndexChanged(container, oldIndex, newIndex);
+
+            if (container is not null)
             {
-                if (i.ContainerControl != null && i.Item != null)
-                {
-                    bool selected = Selection.IsSelected(i.Index);
-                    MarkContainerSelected(i.ContainerControl, selected);
-                }
+                bool selected = Selection.IsSelected(newIndex);
+                MarkContainerSelected(container, selected);
             }
         }
 
@@ -519,15 +505,15 @@ namespace Avalonia.Controls.Primitives
 
                 _textSearchTerm += e.Text;
 
-                bool match(ItemContainerInfo info) =>
-                    info.ContainerControl is IContentControl control &&
+                bool match(IControl container) =>
+                    container is IContentControl control &&
                     control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
 
-                var info = ItemContainerGenerator.Containers.FirstOrDefault(match);
+                var container = Presenter?.RealizedElements.FirstOrDefault(match);
 
-                if (info != null)
+                if (container != null)
                 {
-                    SelectedIndex = info.Index;
+                    SelectedIndex = container.Index;
                 }
 
                 StartTextSearchTimer();

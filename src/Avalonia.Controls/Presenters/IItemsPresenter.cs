@@ -32,6 +32,12 @@ namespace Avalonia.Controls.Presenters
         IEnumerable<IControl> RealizedElements { get; }
 
         /// <summary>
+        /// Scrolls the requested index into view.
+        /// </summary>
+        /// <param name="index">The index in the item source.</param>
+        void ScrollIntoView(int index);
+
+        /// <summary>
         /// Called by an <see cref="IVirtualizingPanel"/> when a container is realized.
         /// </summary>
         /// <param name="container">The container that was realized.</param>

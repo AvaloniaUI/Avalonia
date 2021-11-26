@@ -143,15 +143,15 @@ namespace Avalonia.Controls
             return RegisterContentPresenter(presenter);
         }
 
-        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        protected override void OnContainerRealized(IControl container, int index, object item)
         {
-            base.OnContainersMaterialized(e);
+            base.OnContainerRealized(container, index, item);
             UpdateSelectedContent();
         }
 
-        protected override void OnContainersRecycled(ItemContainerEventArgs e)
+        protected override void OnContainerUnrealized(IControl container, int index)
         {
-            base.OnContainersRecycled(e);
+            base.OnContainerUnrealized(container, index);
             UpdateSelectedContent();
         }
 
@@ -185,7 +185,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected override IItemContainerGenerator CreateElementFactory()
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new TabItemContainerGenerator(this);
         }

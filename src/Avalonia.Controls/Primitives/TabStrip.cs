@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Primitives
             ItemsPanelProperty.OverrideDefaultValue<TabStrip>(DefaultPanel);
         }
 
-        protected override IItemContainerGenerator CreateElementFactory()
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new ItemContainerGenerator<TabStripItem>(
                 this,
