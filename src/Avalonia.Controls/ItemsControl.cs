@@ -178,6 +178,21 @@ namespace Avalonia.Controls
         /// </summary>
         public IItemsPresenter? Presenter { get; protected set; }
 
+        /// <summary>
+        /// Occurs when an item container is realized.
+        /// </summary>
+        public event EventHandler<ItemContainerRealizedEventArgs>? ContainerRealized;
+        
+        /// <summary>
+        /// Occurs when an item container is unrealized.
+        /// </summary>
+        public event EventHandler<ItemContainerUnrealizedEventArgs>? ContainerUnrealized;
+
+        /// <summary>
+        /// Occurs when the index of an item container is changed.
+        /// </summary>
+        public event EventHandler<ItemContainerIndexChangedEventArgs>? ContainerIndexChanged;
+
         event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
             add => _childIndexChanged += value;
@@ -212,6 +227,30 @@ namespace Avalonia.Controls
         void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
         {
             ItemsCollectionChanged(sender, e);
+        }
+
+        /// <summary>
+        /// Called by an <see cref="ItemsPresenter"/> to raise the <see cref="ContainerRealized"/> event.
+        /// </summary>
+        internal void RaiseContainerRealized(IControl container, int index, object? item)
+        {
+            OnContainerRealized(container, index, item);
+        }
+
+        /// <summary>
+        /// Called by an <see cref="ItemsPresenter"/> to raise the <see cref="ContainerUnrealized"/> event.
+        /// </summary>
+        internal void RaiseContainerUnrealized(IControl container, int index)
+        {
+            OnContainerUnrealized(container, index);
+        }
+
+        /// <summary>
+        /// Called by an <see cref="ItemsPresenter"/> to raise the <see cref="ContainerIndexChanged"/> event.
+        /// </summary>
+        internal void RaiseContainerIndexChanged(IControl container, int oldIndex, int newIndex)
+        {
+            OnContainerIndexChanged(container, oldIndex, newIndex);
         }
 
         /// <summary>
@@ -282,48 +321,30 @@ namespace Avalonia.Controls
         protected virtual IItemContainerGenerator? CreateItemContainerGenerator() => new ItemContainerGenerator(this);
 
         /// <summary>
-        /// Called when new containers are materialized for the <see cref="ItemsControl"/> by its
-        /// <see cref="ItemContainerGenerator"/>.
+        /// Raises the <see cref="ContainerRealized"/> event.
         /// </summary>
-        /// <param name="e">The details of the containers.</param>
-        protected virtual void OnContainersMaterialized(ItemContainerEventArgs e)
+        protected virtual void OnContainerRealized(IControl container, int index, object? item)
         {
-            foreach (var container in e.Containers)
-            {
-                // If the item is its own container, then it will be added to the logical tree when
-                // it was added to the Items collection.
-                if (container.ContainerControl != null && container.ContainerControl != container.Item)
-                {
-                    LogicalChildren.Add(container.ContainerControl);
-                }
-            }
+            if (container != item)
+                LogicalChildren.Add(container);
+            ContainerRealized?.Invoke(this, new ItemContainerRealizedEventArgs(container, index, item));
         }
 
         /// <summary>
-        /// Called when containers are dematerialized for the <see cref="ItemsControl"/> by its
-        /// <see cref="ItemContainerGenerator"/>.
+        /// Raises the <see cref="ContainerUnrealized"/> event.
         /// </summary>
-        /// <param name="e">The details of the containers.</param>
-        protected virtual void OnContainersDematerialized(ItemContainerEventArgs e)
+        protected virtual void OnContainerUnrealized(IControl container, int index)
         {
-            foreach (var container in e.Containers)
-            {
-                // If the item is its own container, then it will be removed from the logical tree
-                // when it is removed from the Items collection.
-                if (container?.ContainerControl != container?.Item)
-                {
-                    LogicalChildren.Remove(container.ContainerControl);
-                }
-            }
+            LogicalChildren.Remove(container);
+            ContainerUnrealized?.Invoke(this, new ItemContainerUnrealizedEventArgs(container, index));
         }
 
         /// <summary>
-        /// Called when containers are recycled for the <see cref="ItemsControl"/> by its
-        /// <see cref="ItemContainerGenerator"/>.
+        /// Raises the <see cref="ContainerIndexChanged"/> event.
         /// </summary>
-        /// <param name="e">The details of the containers.</param>
-        protected virtual void OnContainersRecycled(ItemContainerEventArgs e)
+        protected virtual void OnContainerIndexChanged(IControl container, int oldIndex, int newIndex)
         {
+            ContainerIndexChanged?.Invoke(this, new ItemContainerIndexChangedEventArgs(container, oldIndex, newIndex));
         }
 
         /// <summary>

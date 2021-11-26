@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
+using Avalonia.Styling;
 using static Avalonia.Utilities.MathUtilities;
 
 #nullable enable
@@ -15,6 +17,7 @@ namespace Avalonia.Controls.Presenters
     public class ItemsPresenter : Control, IItemsPresenter, ILogicalScrollable
     {
         private bool _createdPanel;
+        private ItemsControl? _itemsControl;
         private EventHandler? _scrollInvalidated;
 
         /// <summary>
@@ -45,8 +48,23 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        IItemContainerGenerator? IItemsPresenter.ItemContainerGenerator => ItemsControl?.ItemContainerGenerator;
-        ItemsSourceView? IItemsPresenter.ItemsView => ItemsControl?.ItemsView;
+        IItemContainerGenerator? IItemsPresenter.ItemContainerGenerator => _itemsControl?.ItemContainerGenerator;
+        ItemsSourceView? IItemsPresenter.ItemsView => _itemsControl?.ItemsView;
+
+        void IItemsPresenter.ContainerRealized(IControl container, int index, object? item)
+        {
+            _itemsControl?.RaiseContainerRealized(container, index, item);
+        }
+
+        void IItemsPresenter.ContainerUnrealized(IControl container, int index)
+        {
+            _itemsControl?.RaiseContainerUnrealized(container, index);
+        }
+
+        void IItemsPresenter.ContainerIndexChanged(IControl container, int oldIndex, int newIndex)
+        {
+            _itemsControl?.RaiseContainerIndexChanged(container, oldIndex, newIndex);
+        }
 
         bool ILogicalScrollable.CanHorizontallyScroll
         {
@@ -85,8 +103,6 @@ namespace Avalonia.Controls.Presenters
 
         Size IScrollable.Viewport => LogicalScrollable?.Viewport ?? Bounds.Size;
 
-        private ItemsControl? ItemsControl => TemplatedParent as ItemsControl;
-
         private ILogicalScrollable? LogicalScrollable
         {
             get
@@ -122,6 +138,16 @@ namespace Avalonia.Controls.Presenters
         void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e)
         {
             _scrollInvalidated?.Invoke(this, e);
+        }
+
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TemplatedParentProperty)
+            {
+                _itemsControl = change.NewValue.GetValueOrDefault<ITemplatedControl>() as ItemsControl;
+            }
         }
 
         private void CreatePanel()

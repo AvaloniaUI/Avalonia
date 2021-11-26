@@ -30,5 +30,29 @@ namespace Avalonia.Controls.Presenters
         /// Gets the currently realized elements.
         /// </summary>
         IEnumerable<IControl> RealizedElements { get; }
+
+        /// <summary>
+        /// Called by an <see cref="IVirtualizingPanel"/> when a container is realized.
+        /// </summary>
+        /// <param name="container">The container that was realized.</param>
+        /// <param name="index">The index of the container in the data source.</param>
+        /// <param name="item">The item that will be displayed in the container.</param>
+        void ContainerRealized(IControl container, int index, object? item);
+
+        /// <summary>
+        /// Called by an <see cref="IVirtualizingPanel"/> when a container is unrealized.
+        /// </summary>
+        /// <param name="container">The container that was realized.</param>
+        /// <param name="index">The index of the container in the data source.</param>
+        void ContainerUnrealized(IControl container, int index);
+
+        /// <summary>
+        /// Called by an <see cref="IVirtualizingPanel"/> when the index of a realized container
+        /// has changed.
+        /// </summary>
+        /// <param name="container">The container that was realized.</param>
+        /// <param name="oldIndex">The old index of the container in the data source.</param>
+        /// <param name="newIndex">The new index of the container in the data source.</param>
+        void ContainerIndexChanged(IControl container, int oldIndex, int newIndex);
     }
 }
