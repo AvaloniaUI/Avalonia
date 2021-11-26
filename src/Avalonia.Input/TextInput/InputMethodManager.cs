@@ -107,7 +107,6 @@ namespace Avalonia.Input.TextInput
                 !InputMethod.GetIsInputMethodEnabled(focused))
             {
                 Client = null;
-                _im?.SetActive(false);
                 return;
             }
 
