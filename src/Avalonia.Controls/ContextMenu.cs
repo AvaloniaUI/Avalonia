@@ -313,7 +313,7 @@ namespace Avalonia.Controls
             remove => _popupHostChangedHandler -= value;
         }
 
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateElementFactory()
         {
             return new MenuItemContainerGenerator(this);
         }

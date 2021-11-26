@@ -117,7 +117,7 @@ namespace Avalonia.Controls
         public void UnselectAll() => Selection.Clear();
 
         /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateElementFactory()
         {
             return new ItemContainerGenerator<ListBoxItem>(
                 this, 

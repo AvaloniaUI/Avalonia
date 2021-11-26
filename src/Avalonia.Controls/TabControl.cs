@@ -185,7 +185,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateElementFactory()
         {
             return new TabItemContainerGenerator(this);
         }

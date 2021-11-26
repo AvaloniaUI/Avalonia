@@ -12,6 +12,7 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     public class ItemsPresenter : Control, ILogicalScrollable
     {
+        private bool _createdPanel;
         private IPanel? _panel;
         private EventHandler? _scrollInvalidated;
 
@@ -104,35 +105,28 @@ namespace Avalonia.Controls.Presenters
             _scrollInvalidated?.Invoke(this, e);
         }
 
-        public override void ScrollIntoView(int index)
+        public override void ApplyTemplate()
         {
-            // TODO: Implement
-        }
-
-        protected override void PanelCreated(IPanel panel)
-        {
-            _scrollInvalidated?.Invoke(this, EventArgs.Empty);
-            KeyboardNavigation.SetTabNavigation(
-                (InputElement)Panel,
-                KeyboardNavigation.GetTabNavigation(this));
+            if (!_createdPanel)
+                CreatePanel();
         }
 
         private void CreatePanel()
         {
-            Panel = ItemsPanel.Build();
-            Panel.SetValue(TemplatedParentProperty, TemplatedParent);
-            LogicalChildren.Clear();
-            VisualChildren.Clear();
-            LogicalChildren.Add(Panel);
-            VisualChildren.Add(Panel);
-            _createdPanel = true;
-
-            if (!IsHosted && _itemsSubscription == null && Items is INotifyCollectionChanged incc)
+            if (TemplatedParent is ItemsControl itemsControl)
             {
-                _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
+                Panel = itemsControl.ItemsPanel.Build();
+                Panel.SetValue(TemplatedParentProperty, TemplatedParent);
+                LogicalChildren.Clear();
+                VisualChildren.Clear();
+                LogicalChildren.Add(Panel);
+                VisualChildren.Add(Panel);
+                _createdPanel = true;
+
+                KeyboardNavigation.SetTabNavigation(
+                    (InputElement)Panel,
+                    KeyboardNavigation.GetTabNavigation(this));
             }
-            
-            PanelCreated(Panel);
         }
 
         private Vector CoerceOffset(Vector value)

@@ -169,7 +169,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateElementFactory()
         {
             return new ItemContainerGenerator<ComboBoxItem>(
                 this,

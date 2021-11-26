@@ -1,16 +1,21 @@
-using System.Collections;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls.Presenters
 {
+    /// <summary>
+    /// Represents a control which presents the list of items inside the template of an
+    /// <see cref="ItemsControl"/>.
+    /// </summary>
     public interface IItemsPresenter : IPresenter
     {
-        IEnumerable Items { get; set; }
-
+        /// <summary>
+        /// Gets the <see cref="IPanel"/> on which the item containers are hosted.
+        /// </summary>
         IPanel Panel { get; }
 
-        void ItemsChanged(NotifyCollectionChangedEventArgs e);
-
-        void ScrollIntoView(int index);
+        /// <summary>
+        /// Gets the currently realized elements.
+        /// </summary>
+        IEnumerable<IControl> RealizedElements { get; }
     }
 }

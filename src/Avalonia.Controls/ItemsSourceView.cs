@@ -25,7 +25,9 @@ namespace Avalonia.Controls
     /// view of the Items. That way, each component does not need to know if the source is an
     /// IEnumerable, an IList, or something else.
     /// </remarks>
-    public class ItemsSourceView : INotifyCollectionChanged, IDisposable
+    public class ItemsSourceView : INotifyCollectionChanged,
+        IDisposable,
+        IReadOnlyList<object?>
     {
         /// <summary>
         ///  Gets an empty <see cref="ItemsSourceView"/>
@@ -175,6 +177,10 @@ namespace Avalonia.Controls
             throw new NotImplementedException();
         }
 
+        public Enumerator GetEnumerator() => new(Inner);
+        IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
+        IEnumerator<object?> IEnumerable<object?>.GetEnumerator() => GetEnumerator();
+
         internal void AddListener(ICollectionChangedListener listener)
         {
             if (Inner is INotifyCollectionChanged incc)
@@ -202,6 +208,16 @@ namespace Avalonia.Controls
         }
 
         private void ThrowDisposed() => throw new ObjectDisposedException(nameof(ItemsSourceView));
+
+        public struct Enumerator : IEnumerator<object?>
+        {
+            private IEnumerator _innerEnumerator;
+            public Enumerator(IEnumerable inner) => _innerEnumerator = inner.GetEnumerator();
+            public object? Current => _innerEnumerator.Current;
+            public void Dispose() => (_innerEnumerator as IDisposable)?.Dispose();
+            public bool MoveNext() => _innerEnumerator.MoveNext();
+            void IEnumerator.Reset() => _innerEnumerator.Reset();
+        }
     }
 
     public class ItemsSourceView<T> : ItemsSourceView, IReadOnlyList<T>
@@ -242,8 +258,9 @@ namespace Avalonia.Controls
         [return: MaybeNull]
         public new T GetAt(int index) => (T)Inner[index];
 
-        public IEnumerator<T> GetEnumerator() => Inner.Cast<T>().GetEnumerator();
+        public new Enumerator GetEnumerator() => new(Inner);
         IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         public static new ItemsSourceView<T> GetOrCreate(IEnumerable? items)
         {
@@ -259,6 +276,17 @@ namespace Avalonia.Controls
             {
                 return new ItemsSourceView<T>(items);
             }
+        }
+
+        public new struct Enumerator : IEnumerator<T>
+        {
+            private IEnumerator _innerEnumerator;
+            public Enumerator(IEnumerable inner) => _innerEnumerator = inner.GetEnumerator();
+            public T Current => (T)_innerEnumerator.Current;
+            object? IEnumerator.Current => Current;
+            public void Dispose() => (_innerEnumerator as IDisposable)?.Dispose();
+            public bool MoveNext() => _innerEnumerator.MoveNext();
+            void IEnumerator.Reset() => _innerEnumerator.Reset();
         }
     }
 }

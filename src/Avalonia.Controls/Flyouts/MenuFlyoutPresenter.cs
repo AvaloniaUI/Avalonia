@@ -39,7 +39,7 @@ namespace Avalonia.Controls
             throw new NotSupportedException("Use MenuFlyout.ShowAt(Control) instead");
         }
 
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateElementFactory()
         {
             return new MenuItemContainerGenerator(this);
         }

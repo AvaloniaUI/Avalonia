@@ -140,7 +140,7 @@ namespace Avalonia.Controls
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
         /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateElementFactory()
         {
             return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
         }

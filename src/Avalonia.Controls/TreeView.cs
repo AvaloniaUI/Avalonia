@@ -390,7 +390,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        protected override IItemContainerGenerator CreateElementFactory()
         {
             var result = new TreeItemContainerGenerator<TreeViewItem>(
                 this,

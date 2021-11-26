@@ -56,7 +56,26 @@ namespace Avalonia.Controls
         protected virtual Orientation Orientation { get; set; }
         protected Rect Viewport { get; private set; }
 
+        /// <summary>
+        /// When implemented in a derived class, creates or recycles a control for the specified
+        /// item index.
+        /// </summary>
+        /// <param name="index">The item index.</param>
+        /// <returns>The realized control.</returns>
+        /// <remarks>
+        /// The implementation of this method should return a new or recycled control set up
+        /// to display the item specified by the index, and added to the <see cref="Controls"/>
+        /// collection.
+        /// </remarks>
         protected abstract IControl RealizeElement(int index);
+
+        /// <summary>
+        /// When implemented in a derived class, unrealizes a control by removing it from the
+        /// <see cref="Controls"/> collection or marking it available for recycling and making it
+        /// invisible in some manner.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="index"></param>
         protected abstract void UnrealizeElement(IControl element, int index);
         protected abstract void UpdateElementIndex(IControl element, int index);
 
@@ -271,15 +290,7 @@ namespace Avalonia.Controls
 
         private IControl GetOrCreateElement(int index)
         {
-            var e = GetRealizedElement(index);
-
-            if (e is null)
-            {
-                e = RealizeElement(index);
-                if (e.Parent is null)
-                    Children.Add(e);
-            }
-
+            var e = GetRealizedElement(index) ?? RealizeElement(index);
             InvalidateChildrenIfNecessary(e);
             return e;
         }

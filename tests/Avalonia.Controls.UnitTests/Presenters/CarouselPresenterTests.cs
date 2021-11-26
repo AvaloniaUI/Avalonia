@@ -721,7 +721,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private class TestItemsControl : ItemsControl
         {
-            protected override IItemContainerGenerator CreateItemContainerGenerator()
+            protected override IItemContainerGenerator CreateElementFactory()
             {
                 return new ItemContainerGenerator<TestItem>(this, TestItem.ContentProperty, null);
             }
