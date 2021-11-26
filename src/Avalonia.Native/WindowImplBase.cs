@@ -478,7 +478,5 @@ namespace Avalonia.Native
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
 
         public IPlatformHandle Handle { get; private set; }
-
-        public Action InputMethodUpdated { get; set; }
     }
 }

@@ -81,34 +81,26 @@ namespace Avalonia.Input.TextInput
                 return;
             _focusedElement = element;
 
-            var root = element?.VisualRoot as ITextInputMethodRoot;
-
-            NotifyInputMethodUpdated(root);
-        }
-
-        public void NotifyInputMethodUpdated(ITextInputMethodRoot? root)
-        {
-            if (_focusedElement?.VisualRoot != root)
-            {
-                return;
-            } 
-            var inputMethod = root?.InputMethod;
-            if(_im != inputMethod)
+            var inputMethod = (element?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+            if (_im != inputMethod)
                 _im?.SetActive(false);
 
             _im = inputMethod;
-            
+
+            if (_focusedElement == null || _im == null)
+            {
+                Client = null;
+                _im?.SetActive(false);
+                return;
+            }
+
             var clientQuery = new TextInputMethodClientRequestedEventArgs
             {
                 RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
             };
-            
-            _focusedElement?.RaiseEvent(clientQuery);
+
+            _focusedElement.RaiseEvent(clientQuery);
             Client = clientQuery.Client;
-            if (Client == null)
-            {
-                _im?.SetActive(false);
-            }
         }
     }
 }

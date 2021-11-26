@@ -542,10 +542,7 @@ namespace Avalonia.Win32
             _langid = langid;
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
-            if (InputMethodUpdated != null)
-            {
-                InputMethodUpdated();
-            }
+            
         }
 
         private static int ToInt32(IntPtr ptr)

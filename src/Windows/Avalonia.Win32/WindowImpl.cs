@@ -602,8 +602,6 @@ namespace Avalonia.Win32
 
         public Action GotInputWhenDisabled { get; set; }
 
-        public Action InputMethodUpdated { get; set; }
-
         public void SetParent(IWindowImpl parent)
         {
             _parent = (WindowImpl)parent;
