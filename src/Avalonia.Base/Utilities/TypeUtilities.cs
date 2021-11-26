@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Utilities
 {
@@ -94,6 +95,17 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
+        /// Returns a value indicating whether null can be assigned to the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type</typeparam>
+        /// <returns>True if the type accepts null values; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool AcceptsNull<T>()
+        {
+            return default(T) is null;
+        }
+
+        /// <summary>
         /// Returns a value indicating whether value can be casted to the specified type.
         /// If value is null, checks if instances of that type can be null.
         /// </summary>
@@ -102,7 +114,7 @@ namespace Avalonia.Utilities
         /// <returns>True if the cast is possible, otherwise false.</returns>
         public static bool CanCast<T>(object value)
         {
-            return value is T || (value is null && AcceptsNull(typeof(T)));
+            return value is T || (value is null && AcceptsNull<T>());
         }
 
         /// <summary>

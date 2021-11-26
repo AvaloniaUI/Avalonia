@@ -215,11 +215,6 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (CancelOpening())
-            {
-                return false;
-            }
-
             if (Popup.Parent != null && Popup.Parent != placementTarget)
             {
                 ((ISetLogicalParent)Popup).SetParent(null);
@@ -234,6 +229,11 @@ namespace Avalonia.Controls.Primitives
             if (Popup.Child == null)
             {
                 Popup.Child = CreatePresenter();
+            }
+
+            if (CancelOpening())
+            {
+                return false;
             }
 
             PositionPopup(showAtPointer);
@@ -562,8 +562,12 @@ namespace Avalonia.Controls.Primitives
             return eventArgs.Cancel;
         }
 
-        internal static void SetPresenterClasses(IControl presenter, Classes classes)
+        internal static void SetPresenterClasses(IControl? presenter, Classes classes)
         {
+            if(presenter is null)
+            {
+                return;
+            }
             //Remove any classes no longer in use, ignoring pseudo classes
             for (int i = presenter.Classes.Count - 1; i >= 0; i--)
             {
