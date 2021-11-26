@@ -10,9 +10,9 @@ using Avalonia.VisualTree;
 
 #nullable enable
 
-namespace Avalonia.Controls
+namespace Avalonia.Controls.Primitives
 {
-    public abstract class VirtualizingStackBase<TItem> : Control
+    public abstract class VirtualizingStackBase : Control
     {
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private readonly Action<IControl, int> _unrealizeElement;

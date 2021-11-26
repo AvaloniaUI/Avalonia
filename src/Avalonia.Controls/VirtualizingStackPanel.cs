@@ -1,13 +1,14 @@
 ﻿using System;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 
 #nullable enable
 
 namespace Avalonia.Controls
 {
-    public class VirtualizingStackPanel : VirtualizingStackBase<object?>, IPanel
+    public class VirtualizingStackPanel : VirtualizingStackBase, IPanel
     {
         /// <summary>
         /// Defines the <see cref="VirtualizationMode"/> property.
