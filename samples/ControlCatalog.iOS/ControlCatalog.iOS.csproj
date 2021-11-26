@@ -115,6 +115,10 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj">
+      <Project>{4488ad85-1495-4809-9aa4-ddfe0a48527e}</Project>
+      <Name>Avalonia.iOS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
       <Project>{3E53A01A-B331-47F3-B828-4A5717E77A24}</Project>
       <Name>Avalonia.Markup.Xaml</Name>

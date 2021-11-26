@@ -60,9 +60,6 @@ namespace Avalonia.Controls.Presenters
                 o => o.Viewport,
                 (o, v) => o.Viewport = v);
 
-        // Arbitrary chosen value, probably need to ask ILogicalScrollable
-        private const int LogicalScrollItemSize = 50;
-
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
         private bool _arranging;
@@ -351,7 +348,8 @@ namespace Avalonia.Controls.Presenters
             if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
             {
                 var scrollable = Child as ILogicalScrollable;
-                bool isLogical = scrollable?.IsLogicalScrollEnabled == true;
+                var isLogical = scrollable?.IsLogicalScrollEnabled == true;
+                var logicalScrollItemSize = new Vector(1, 1);
 
                 double x = Offset.X;
                 double y = Offset.Y;
@@ -361,13 +359,18 @@ namespace Avalonia.Controls.Presenters
                     _activeLogicalGestureScrolls?.TryGetValue(e.Id, out delta);
                 delta += e.Delta;
 
+                if (isLogical && scrollable is object)
+                {
+                    logicalScrollItemSize = Bounds.Size / scrollable.Viewport;
+                }
+
                 if (Extent.Height > Viewport.Height)
                 {
                     double dy;
                     if (isLogical)
                     {
-                        var logicalUnits = delta.Y / LogicalScrollItemSize;
-                        delta = delta.WithY(delta.Y - logicalUnits * LogicalScrollItemSize);
+                        var logicalUnits = delta.Y / logicalScrollItemSize.Y;
+                        delta = delta.WithY(delta.Y - logicalUnits * logicalScrollItemSize.Y);
                         dy = logicalUnits * scrollable!.ScrollSize.Height;
                     }
                     else
@@ -384,8 +387,8 @@ namespace Avalonia.Controls.Presenters
                     double dx;
                     if (isLogical)
                     {
-                        var logicalUnits = delta.X / LogicalScrollItemSize;
-                        delta = delta.WithX(delta.X - logicalUnits * LogicalScrollItemSize);
+                        var logicalUnits = delta.X / logicalScrollItemSize.X;
+                        delta = delta.WithX(delta.X - logicalUnits * logicalScrollItemSize.X);
                         dx = logicalUnits * scrollable!.ScrollSize.Width;
                     }
                     else

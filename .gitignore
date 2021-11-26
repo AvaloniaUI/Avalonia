@@ -106,6 +106,9 @@ _NCrunch_*/
 *.ncrunchsolution.user
 nCrunchTemp_*
 
+# CodeRush
+.cr/
+
 # Others
 sql/
 *.Cache

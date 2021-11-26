@@ -5,7 +5,8 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
+
+#nullable enable
 
 namespace Avalonia.Controls.Primitives
 {
@@ -17,13 +18,13 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BorderBrushProperty =
+        public static readonly StyledProperty<IBrush?> BorderBrushProperty =
             Border.BorderBrushProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
@@ -31,6 +32,12 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<Thickness> BorderThicknessProperty =
             Border.BorderThicknessProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
+        /// Defines the <see cref="CornerRadius"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
+            Border.CornerRadiusProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
@@ -59,7 +66,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> ForegroundProperty =
+        public static readonly StyledProperty<IBrush?> ForegroundProperty =
             TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
@@ -71,8 +78,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="Template"/> property.
         /// </summary>
-        public static readonly StyledProperty<IControlTemplate> TemplateProperty =
-            AvaloniaProperty.Register<TemplatedControl, IControlTemplate>(nameof(Template));
+        public static readonly StyledProperty<IControlTemplate?> TemplateProperty =
+            AvaloniaProperty.Register<TemplatedControl, IControlTemplate?>(nameof(Template));
 
         /// <summary>
         /// Defines the IsTemplateFocusTarget attached property.
@@ -88,7 +95,7 @@ namespace Avalonia.Controls.Primitives
                 "TemplateApplied", 
                 RoutingStrategies.Direct);
 
-        private IControlTemplate _appliedTemplate;
+        private IControlTemplate? _appliedTemplate;
 
         /// <summary>
         /// Initializes static members of the <see cref="TemplatedControl"/> class.
@@ -111,7 +118,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the brush used to draw the control's background.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -120,7 +127,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the brush used to draw the control's border.
         /// </summary>
-        public IBrush BorderBrush
+        public IBrush? BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
             set { SetValue(BorderBrushProperty, value); }
@@ -133,6 +140,15 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the radius of the border rounded corners.
+        /// </summary>
+        public CornerRadius CornerRadius
+        {
+            get { return GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
         }
 
         /// <summary>
@@ -174,7 +190,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the brush used to draw the control's text and other foreground elements.
         /// </summary>
-        public IBrush Foreground
+        public IBrush? Foreground
         {
             get { return GetValue(ForegroundProperty); }
             set { SetValue(ForegroundProperty, value); }
@@ -192,7 +208,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the template that defines the control's appearance.
         /// </summary>
-        public IControlTemplate Template
+        public IControlTemplate? Template
         {
             get { return GetValue(TemplateProperty); }
             set { SetValue(TemplateProperty, value); }
@@ -265,7 +281,9 @@ namespace Avalonia.Controls.Primitives
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
+#pragma warning disable CS0618 // Type or member is obsolete
                     OnTemplateApplied(e);
+#pragma warning restore CS0618 // Type or member is obsolete
                     RaiseEvent(e);
                 }
 

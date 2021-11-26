@@ -23,16 +23,21 @@
     </StackPanel>
     <TabControl Grid.Row="2">
       <TabItem Header="DataGrid">
-        <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" />
-            <!-- CompiledBinding example of usage. -->
-            <DataGridTextColumn Header="Region" Binding="{CompiledBinding Region}" Width="4*" x:DataType="local:Country" />
-            <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />
-            <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" />
-            <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" CellStyleClasses="gdp" />
-          </DataGrid.Columns>
-        </DataGrid>
+        <DockPanel>
+          <CheckBox x:Name="ShowGDP"  IsChecked="True"  Content="Toggle GDP Column Visibility"
+                    DockPanel.Dock="Top"/>
+          <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" MinWidth="400"  />
+              <!-- CompiledBinding example of usage. -->
+              <DataGridTextColumn Header="Region" Binding="{CompiledBinding Region}" Width="4*" x:DataType="local:Country" />
+              <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />
+              <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" />
+              <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" CellStyleClasses="gdp"
+                                  IsVisible="{Binding #ShowGDP.IsChecked}"/>
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
       </TabItem>
       <TabItem Header="Grouping">
         <DataGrid Name="dataGridGrouping" Margin="12">

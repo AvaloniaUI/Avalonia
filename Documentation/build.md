@@ -1,11 +1,12 @@
 # Windows
 
-Avalonia requires at least Visual Studio 2019 and .NET Core SDK 3.1 to build on Windows.
+Avalonia requires at least Visual Studio 2022 and dotnet 6 SDK 6.0.100 to build on all platforms.
 
 ###  Clone the Avalonia repository
 
 ```
 git clone https://github.com/AvaloniaUI/Avalonia.git
+cd Avalonia
 git submodule update --init
 ```
 
@@ -15,7 +16,7 @@ Go to https://dotnet.microsoft.com/download/visual-studio-sdks and install the l
 
 ###  Open in Visual Studio
 
-Open the `Avalonia.sln` solution in Visual Studio 2019 or newer. The free Visual Studio Community edition works fine. Build and run the `Samples\ControlCatalog.Desktop` or `ControlCatalog.NetCore` project to see the sample application.
+Open the `Avalonia.sln` solution in Visual Studio 2022 or newer. The free Visual Studio Community edition works fine. Build and run the `Samples\ControlCatalog.Desktop` or `ControlCatalog.NetCore` project to see the sample application.
 
 ### Troubleshooting
 
@@ -41,27 +42,6 @@ Go to https://www.microsoft.com/net/core and follow the instructions for your OS
 ###  Additional requirements for macOS
 
 The build process needs [Xcode](https://developer.apple.com/xcode/) to build the native library.  Following the install instructions at the [Xcode](https://developer.apple.com/xcode/) website to properly install.
-
-Linux operating systems ship with their own respective package managers however we will use [Homebrew](https://brew.sh/) to manage packages on macOS.  To install follow the instructions [here](https://docs.brew.sh/Installation).
-
-###  Install CastXML (pre Nov 2020)
-
-Avalonia requires [CastXML](https://github.com/CastXML/CastXML) for XML processing during the build process.  The easiest way to install this is via the operating system's package managers, such as below.
-
-On macOS:
-```
-brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/8a004a91a7fcd3f6620d5b01b6541ff0a640ffba/Formula/castxml.rb
-```
-
-On Debian based Linux (Debian, Ubuntu, Mint, etc):
-```
-sudo apt install castxml
-```
-
-On Red Hat based Linux (Fedora, CentOS, RHEL, etc) using `yum` (`dnf` takes same arguments though):
-```
-sudo yum install castxml
-```
 
 
 ###  Clone the Avalonia repository

@@ -14,6 +14,7 @@ namespace Avalonia.LinuxFramebuffer
         private fb_var_screeninfo _varInfo;
         private IntPtr _mappedLength;
         private IntPtr _mappedAddress;
+        private FbDevBackBuffer _backBuffer;
         public double Scaling { get; set; }
 
         /// <summary>
@@ -21,7 +22,7 @@ namespace Avalonia.LinuxFramebuffer
         /// </summary>
         /// <param name="fileName">The frame buffer device name.
         /// Defaults to the value in environment variable FRAMEBUFFER or /dev/fb0 when FRAMEBUFFER is not set</param>
-        public FbdevOutput(string fileName = null) : this(null, null)
+        public FbdevOutput(string fileName = null) : this(fileName, null)
         {
         }
 
@@ -146,7 +147,9 @@ namespace Avalonia.LinuxFramebuffer
         {
             if (_fd <= 0)
                 throw new ObjectDisposedException("LinuxFramebuffer");
-            return new LockedFramebuffer(_fd, _fixedInfo, _varInfo, _mappedAddress, new Vector(96, 96) * Scaling);
+            return (_backBuffer ??=
+                    new FbDevBackBuffer(_fd, _fixedInfo, _varInfo, _mappedAddress))
+                .Lock(new Vector(96, 96) * Scaling);
         }
 
 
@@ -165,6 +168,8 @@ namespace Avalonia.LinuxFramebuffer
 
         public void Dispose()
         {
+            _backBuffer?.Dispose();
+            _backBuffer = null;
             ReleaseUnmanagedResources();
             GC.SuppressFinalize(this);
         }

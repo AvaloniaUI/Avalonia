@@ -70,6 +70,16 @@ namespace Avalonia.Controls
             _repeatTimer?.Stop();
         }
 
+        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == IsPressedProperty && change.NewValue.GetValueOrDefault<bool>() == false)
+            {
+                StopTimer();
+            }
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);

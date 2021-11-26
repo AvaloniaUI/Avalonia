@@ -86,6 +86,8 @@ namespace Avalonia.Media.Transformation
 
             if (fromIdentity && toIdentity)
             {
+                result.Matrix = Matrix.Identity;
+
                 return true;
             }
 
@@ -179,7 +181,8 @@ namespace Avalonia.Media.Transformation
                 }
                 case OperationType.Identity:
                 {
-                    // Do nothing.
+                    result.Matrix = Matrix.Identity;
+
                     break;
                 }
             }

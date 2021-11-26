@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 using Avalonia.Animation.Animators;
 
 namespace Avalonia.Media
@@ -41,6 +41,24 @@ namespace Avalonia.Media
                     return _first;
                 return _list[c - 1];
             }
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            if (Count == 0)
+            {
+                return "none";
+            }
+
+            foreach (var boxShadow in this)
+            {
+                sb.AppendFormat("{0} ", boxShadow.ToString());
+            }
+
+            return sb.ToString();
+
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
