@@ -65,6 +65,7 @@ namespace Avalonia
         /// Raised on every access to files outside of mac app store sandbox via
         /// <see cref="UrlsOpened"/> event or open/save file dialogs user selections.
         /// To enable this event - set MacOSPlatformOptions.AppStoreSandbox to true.
+        /// Don't forget to save bookmark data to disk to access this files after app restart.
         /// </summary>
         public event EventHandler<SandboxBookmarkAddedEventArgs>? SandboxBookmarkAdded; 
 
