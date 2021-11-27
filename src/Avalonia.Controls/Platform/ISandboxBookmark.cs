@@ -34,6 +34,11 @@ namespace Avalonia.Platform
         /// Bookmark can be stale. If it is - call <see cref="Restore"/> and save new <see cref="BookmarkData"/> to disk.
         /// </summary>
         bool DataIsStale { get; }
+        
+        /// <summary>
+        /// If <see cref="BookmarkData"/> is empty you can look into this field value and find a reason.
+        /// </summary>
+        string Error { get; }
 
         /// <summary>
         /// Tries to restore a bookmark if it <see cref="DataIsStale"/>.

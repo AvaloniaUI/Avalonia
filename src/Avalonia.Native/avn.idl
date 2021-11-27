@@ -578,6 +578,7 @@ interface IAvnPlatformThreadingInterface : IUnknown
 interface IAvnSystemDialogEvents : IUnknown
 {
      void OnCompleted(int numResults, void* ptrFirstResult);
+     void SandboxBookmarkAdded(IAvnSandboxBookmark* bookmark);
 }
 
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]
@@ -762,6 +763,7 @@ interface IAvnSandboxBookmark : IUnknown
 {
     HRESULT GetURL(IAvnString**ppv);
     HRESULT GetBytes(IAvnString**ppv);
+    HRESULT GetError(IAvnString**ppv);
     bool GetDataIsStale();
     void Restore();
     void Open();

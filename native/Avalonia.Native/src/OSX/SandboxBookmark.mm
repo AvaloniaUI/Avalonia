@@ -15,6 +15,7 @@ class SandboxBookmarkImpl : public ComSingleObject<IAvnSandboxBookmark, &IID_IAv
 private:
     NSURL* _url;
     NSData* _bookmarkData;
+    NSError* _error = nil;
     BOOL _dataIsStale;
     
 public:
@@ -24,17 +25,21 @@ public:
     {
         _url = url;
         _dataIsStale = false;
-        _bookmarkData = [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:NULL];
+        NSError *error = nil;
+        _bookmarkData = [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+        _error = error;
     }
     
     SandboxBookmarkImpl(NSData* bookmarkData)
     {
         _bookmarkData = bookmarkData;
         
-        _url = [NSURL URLByResolvingBookmarkData:bookmarkData options:NSURLBookmarkResolutionWithSecurityScope|NSURLBookmarkResolutionWithoutUI relativeToURL:nil bookmarkDataIsStale:&_dataIsStale error:NULL];
+        NSError *error = nil;
+        _url = [NSURL URLByResolvingBookmarkData:bookmarkData options:NSURLBookmarkResolutionWithSecurityScope|NSURLBookmarkResolutionWithoutUI relativeToURL:nil bookmarkDataIsStale:&_dataIsStale error:&error];
+        _error = error;
     }
     
-    virtual HRESULT GetURL (IAvnString**ppv) override
+    virtual HRESULT GetURL(IAvnString**ppv) override
     {
          START_COM_CALL;
          
@@ -54,6 +59,24 @@ public:
          @autoreleasepool
          {
              *ppv = CreateByteArray((void*)_bookmarkData.bytes, (int)_bookmarkData.length);
+             return S_OK;
+         }
+    }
+    
+    virtual HRESULT GetError(IAvnString**ppv) override
+    {
+         START_COM_CALL;
+         
+         @autoreleasepool
+         {
+             if(_error == nil){
+                 *ppv = CreateAvnString(@"");
+                 return S_OK;
+             }
+             
+             NSString* string = [_error localizedDescription];
+             *ppv = CreateAvnString(string);
+             
              return S_OK;
          }
     }

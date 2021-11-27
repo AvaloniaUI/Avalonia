@@ -15,6 +15,7 @@ namespace Avalonia.Native
 
         public string Url => _bookmark.URL.String;
         public byte[] BookmarkData => _bookmark.Bytes.Bytes;
+        public string Error => _bookmark.Error.String;
 
         public bool DataIsStale => _bookmark.DataIsStale != 0;
 
