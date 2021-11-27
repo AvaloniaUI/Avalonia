@@ -24,9 +24,9 @@ public:
     SandboxBookmarkImpl(NSURL* url)
     {
         _url = url;
-        _dataIsStale = false;
         NSError *error = nil;
         _bookmarkData = [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+        _dataIsStale = _bookmarkData == nil || _bookmarkData.length == 0;
         _error = error;
     }
     
@@ -91,18 +91,10 @@ public:
     {
         START_COM_CALL;
         
-        if(!_dataIsStale)
-        {
-            return;
-        }
-        
         @autoreleasepool
         {
             _bookmarkData = [_url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:NULL];
-            if(_bookmarkData)
-            {
-                _dataIsStale = false;
-            }
+            _dataIsStale = _bookmarkData == nil || _bookmarkData.length == 0;
         }
     }
     
