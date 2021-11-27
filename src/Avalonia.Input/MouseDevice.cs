@@ -355,7 +355,7 @@ namespace Avalonia.Input
             if (hit != null)
             {
                 var source = GetSource(hit);
-                var e = new PointerMagnifyGestureEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta.X);
+                var e = new PointerTouchPadGestureMagnifyEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta.X);
 
                 source?.RaiseEvent(e);
                 return e.Handled;
@@ -376,7 +376,7 @@ namespace Avalonia.Input
             if (hit != null)
             {
                 var source = GetSource(hit);
-                var e = new PointerRotateGestureEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta.X);
+                var e = new PointerTouchPadGestureRotateEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta.X);
 
                 source?.RaiseEvent(e);
                 return e.Handled;
@@ -397,7 +397,7 @@ namespace Avalonia.Input
             if (hit != null)
             {
                 var source = GetSource(hit);
-                var e = new PointerSwipeGestureEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta);
+                var e = new PointerTouchPadGestureSwipeEventArgs(source, _pointer, root, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
                 return e.Handled;

@@ -28,6 +28,18 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEndedEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
+        
+        public static readonly RoutedEvent<PointerTouchPadGestureMagnifyEventArgs> PointerTouchPadGestureMagnifyEvent =
+            RoutedEvent.Register<PointerTouchPadGestureMagnifyEventArgs>(
+                "PointerMagnifyGesture", RoutingStrategies.Bubble, typeof(Gestures));
+        
+        public static readonly RoutedEvent<PointerTouchPadGestureRotateEventArgs> PointerTouchPadGestureRotateEvent =
+            RoutedEvent.Register<PointerTouchPadGestureRotateEventArgs>(
+                "PointerRotateGesture", RoutingStrategies.Bubble, typeof(Gestures));
+        
+        public static readonly RoutedEvent<PointerTouchPadGestureSwipeEventArgs> PointerTouchPadGestureSwipeEvent =
+            RoutedEvent.Register<PointerTouchPadGestureSwipeEventArgs>(
+                "PointerSwipeGesture", RoutingStrategies.Bubble, typeof(Gestures));
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
         private static readonly WeakReference<IInteractive> s_lastPress = new WeakReference<IInteractive>(null);

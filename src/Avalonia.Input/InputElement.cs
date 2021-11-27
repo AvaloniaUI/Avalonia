@@ -186,30 +186,6 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, PointerWheelEventArgs>(
                 "PointerWheelChanged",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
-        /// <summary>
-        /// Defines the <see cref="PointerMagnifyGesture"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<PointerMagnifyGestureEventArgs> PointerMagnifyGestureEvent =
-            RoutedEvent.Register<InputElement, PointerMagnifyGestureEventArgs>(
-                "PointerMagnifyGesture",
-                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
-        /// <summary>
-        /// Defines the <see cref="PointerRotateGesture"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<PointerRotateGestureEventArgs> PointerRotateGestureEvent =
-            RoutedEvent.Register<InputElement, PointerRotateGestureEventArgs>(
-                "PointerRotateGesture",
-                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
-        /// <summary>
-        /// Defines the <see cref="PointerSwipeGesture"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<PointerSwipeGestureEventArgs> PointerSwipeGestureEvent =
-            RoutedEvent.Register<InputElement, PointerSwipeGestureEventArgs>(
-                "PointerSwipeGesture",
-                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Tapped"/> event.
@@ -220,6 +196,24 @@ namespace Avalonia.Input
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
+        
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureMagnify"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureMagnifyEventArgs> PointerTouchPadGestureMagnifyEvent 
+            = Gestures.PointerTouchPadGestureMagnifyEvent;
+        
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureRotate"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureRotateEventArgs> PointerTouchPadGestureRotateEvent 
+            = Gestures.PointerTouchPadGestureRotateEvent;
+        
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureSwipe"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerTouchPadGestureSwipeEventArgs> PointerTouchPadGestureSwipeEvent 
+            = Gestures.PointerTouchPadGestureSwipeEvent;
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
@@ -247,9 +241,6 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
             PointerCaptureLostEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerCaptureLost(e));
             PointerWheelChangedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerWheelChanged(e));
-            PointerMagnifyGestureEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMagnifyGesture(e));
-            PointerRotateGestureEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerRotateGesture(e));
-            PointerSwipeGestureEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerSwipeGesture(e));
         }
 
         public InputElement()
@@ -388,30 +379,30 @@ namespace Avalonia.Input
         /// Occurs when the user uses magnify (Pitch to Zoom) gesture on a trackpad and pointer is over the control.
         /// Works only on macOS.
         /// </summary>
-        public event EventHandler<PointerMagnifyGestureEventArgs> PointerMagnifyGesture
+        public event EventHandler<PointerTouchPadGestureMagnifyEventArgs> PointerTouchPadGestureMagnify
         {
-            add { AddHandler(PointerMagnifyGestureEvent, value); }
-            remove { RemoveHandler(PointerMagnifyGestureEvent, value); }
+            add { AddHandler(PointerTouchPadGestureMagnifyEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureMagnifyEvent, value); }
         }
         
         /// <summary>
         /// Occurs when the user uses rotate gesture on a trackpad and pointer is over the control.
         /// Works only on macOS.
         /// </summary>
-        public event EventHandler<PointerRotateGestureEventArgs> PointerRotateGesture
+        public event EventHandler<PointerTouchPadGestureRotateEventArgs> PointerTouchPadGestureRotate
         {
-            add { AddHandler(PointerRotateGestureEvent, value); }
-            remove { RemoveHandler(PointerRotateGestureEvent, value); }
+            add { AddHandler(PointerTouchPadGestureRotateEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureRotateEvent, value); }
         }
         
         /// <summary>
         /// Occurs when the user uses swipe gesture on a trackpad and pointer is over the control.
         /// Works only on macOS.
         /// </summary>
-        public event EventHandler<PointerSwipeGestureEventArgs> PointerSwipeGesture
+        public event EventHandler<PointerTouchPadGestureSwipeEventArgs> PointerTouchPadGestureSwipe
         {
-            add { AddHandler(PointerSwipeGestureEvent, value); }
-            remove { RemoveHandler(PointerSwipeGestureEvent, value); }
+            add { AddHandler(PointerTouchPadGestureSwipeEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureSwipeEvent, value); }
         }
 
         /// <summary>
@@ -672,30 +663,6 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerWheelChanged(PointerWheelEventArgs e)
-        {
-        }
-        
-        /// <summary>
-        /// Called before the <see cref="PointerMagnifyGesture"/> trackpad event occurs.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnPointerMagnifyGesture(PointerMagnifyGestureEventArgs e)
-        {
-        }
-        
-        /// <summary>
-        /// Called before the <see cref="PointerRotateGesture"/> trackpad event occurs.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnPointerRotateGesture(PointerRotateGestureEventArgs e)
-        {
-        }
-        
-        /// <summary>
-        /// Called before the <see cref="PointerSwipeGesture"/> trackpad event occurs.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnPointerSwipeGesture(PointerSwipeGestureEventArgs e)
         {
         }
 
