@@ -13,6 +13,8 @@ namespace Avalonia.Win32.WinRT.Composition
     {
         private EglContext _syncContext;
         private readonly object _pumpLock;
+        private readonly IVisual _micaVisual;
+        private readonly ICompositionRoundedRectangleGeometry _roundedRectangleGeometry;
         private readonly IVisual _blurVisual;
         private ICompositionTarget _compositionTarget;
         private IVisual _contentVisual;
@@ -28,11 +30,14 @@ namespace Avalonia.Win32.WinRT.Composition
             object pumpLock,
             ICompositionTarget compositionTarget,
             ICompositionDrawingSurfaceInterop surfaceInterop,
-            IVisual contentVisual, IVisual blurVisual)
+            IVisual contentVisual, IVisual blurVisual, IVisual micaVisual,
+            ICompositionRoundedRectangleGeometry roundedRectangleGeometry)
         {
             _compositor = compositor.CloneReference();
             _syncContext = syncContext;
             _pumpLock = pumpLock;
+            _micaVisual = micaVisual;
+            _roundedRectangleGeometry = roundedRectangleGeometry;
             _blurVisual = blurVisual.CloneReference();
             _compositionTarget = compositionTarget.CloneReference();
             _contentVisual = contentVisual.CloneReference();
@@ -48,6 +53,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 {
                     _surfaceInterop.Resize(new UnmanagedMethods.POINT { X = size.Width, Y = size.Height });
                     _contentVisual.SetSize(new Vector2(size.Width, size.Height));
+                    _roundedRectangleGeometry?.SetSize(new Vector2(size.Width, size.Height));
                     _size = size;
                 }
             }
@@ -72,10 +78,13 @@ namespace Avalonia.Win32.WinRT.Composition
             _surfaceInterop.EndDraw();
         }
 
-        public void SetBlur(bool enable)
+        public void SetBlur(BlurEffect blurEffect)
         {
             using (_syncContext.EnsureLocked())
-                _blurVisual.SetIsVisible(enable ? 1 : 0);
+            {
+                _blurVisual.SetIsVisible(blurEffect == BlurEffect.Acrylic ? 1 : 0);
+                _micaVisual?.SetIsVisible(blurEffect == BlurEffect.Mica ? 1 : 0);
+            }
         }
 
         public IDisposable BeginTransaction()

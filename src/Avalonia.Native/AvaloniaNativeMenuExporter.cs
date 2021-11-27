@@ -9,14 +9,15 @@ using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
+    internal class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
     {
-        private IAvaloniaNativeFactory _factory;
+        private readonly IAvaloniaNativeFactory _factory;
         private bool _resetQueued = true;
-        private bool _exported = false;
-        private IAvnWindow _nativeWindow;
+        private bool _exported;
+        private readonly IAvnWindow _nativeWindow;
         private NativeMenu _menu;
         private __MicroComIAvnMenuProxy _nativeMenu;
+        private readonly IAvnTrayIcon _trayIcon;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
@@ -33,13 +34,21 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
+        public AvaloniaNativeMenuExporter(IAvnTrayIcon trayIcon, IAvaloniaNativeFactory factory)
+        {
+            _factory = factory;
+            _trayIcon = trayIcon;
+            
+            DoLayoutReset();
+        }
+
         public bool IsNativeMenuExported => _exported;
 
-        public event EventHandler OnIsNativeMenuExportedChanged;
+        public event EventHandler OnIsNativeMenuExportedChanged { add { } remove { } }
 
         public void SetNativeMenu(NativeMenu menu)
         {
-            _menu = menu == null ? new NativeMenu() : menu;
+            _menu = menu ?? new NativeMenu();
             DoLayoutReset(true);
         }
 
@@ -82,15 +91,22 @@ namespace Avalonia.Native
 
                 if (_nativeWindow is null)
                 {
-                    var appMenu = NativeMenu.GetMenu(Application.Current);
-
-                    if (appMenu == null)
+                    if (_trayIcon is null)
                     {
-                        appMenu = CreateDefaultAppMenu();
-                        NativeMenu.SetMenu(Application.Current, appMenu);
-                    }
+                        var appMenu = NativeMenu.GetMenu(Application.Current);
 
-                    SetMenu(appMenu);
+                        if (appMenu == null)
+                        {
+                            appMenu = CreateDefaultAppMenu();
+                            NativeMenu.SetMenu(Application.Current, appMenu);
+                        }
+
+                        SetMenu(appMenu);
+                    }
+                    else if (_menu != null)
+                    {
+                        SetMenu(_trayIcon, _menu);
+                    }
                 }
                 else
                 {
@@ -118,7 +134,7 @@ namespace Avalonia.Native
 
             var appMenuHolder = menuItem?.Parent;
 
-            if (menu.Parent is null)
+            if (menuItem is null)
             {
                 menuItem = new NativeMenuItem();
             }
@@ -136,7 +152,7 @@ namespace Avalonia.Native
 
             if (_nativeMenu is null)
             {
-                _nativeMenu = (__MicroComIAvnMenuProxy)__MicroComIAvnMenuProxy.Create(_factory);
+                _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
                 _nativeMenu.Initialize(this, appMenuHolder, "");
 
@@ -169,6 +185,27 @@ namespace Avalonia.Native
             if(setMenu)
             {
                 avnWindow.SetMainMenu(_nativeMenu);
+            }
+        }
+
+        private void SetMenu(IAvnTrayIcon trayIcon, NativeMenu menu)
+        {
+            var setMenu = false;
+
+            if (_nativeMenu is null)
+            {
+                _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
+
+                _nativeMenu.Initialize(this, menu, "");     
+
+                setMenu = true;           
+            }
+
+            _nativeMenu.Update(_factory, menu);
+
+            if(setMenu)
+            {
+                trayIcon.SetMenu(_nativeMenu);
             }
         }
     }

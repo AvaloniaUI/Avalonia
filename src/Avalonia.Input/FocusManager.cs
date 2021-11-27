@@ -162,6 +162,22 @@ namespace Avalonia.Input
             Focus(e);
         }
 
+        public void RemoveFocusScope(IFocusScope scope)
+        {
+            scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            
+            if (_focusScopes.TryGetValue(scope, out _))
+            {
+                SetFocusedElement(scope, null);
+                _focusScopes.Remove(scope);
+            }
+
+            if (Scope == scope)
+            {
+                Scope = null;
+            }
+        }
+
         public static bool GetIsFocusScope(IInputElement e) => e is IFocusScope;
 
         /// <summary>

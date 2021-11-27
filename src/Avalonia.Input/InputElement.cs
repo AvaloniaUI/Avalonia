@@ -16,7 +16,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Implements input-related functionality for a control.
     /// </summary>
-    [PseudoClasses(":disabled", ":focus", ":focus-visible", ":pointerover")]
+    [PseudoClasses(":disabled", ":focus", ":focus-visible", ":focus-within", ":pointerover")]
     public class InputElement : Interactive, IInputElement
     {
         /// <summary>
@@ -713,7 +713,7 @@ namespace Avalonia.Input
             }
             else if (change.Property == IsKeyboardFocusWithinProperty)
             {
-                PseudoClasses.Set(":focus-within", _isKeyboardFocusWithin);
+                PseudoClasses.Set(":focus-within", change.NewValue.GetValueOrDefault<bool>());
             }
         }
 

@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop.DBusMenu;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Tmds.DBus;
 #pragma warning disable 1998
@@ -16,51 +17,78 @@ namespace Avalonia.FreeDesktop
 {
     public class DBusMenuExporter
     {
-        public static ITopLevelNativeMenuExporter TryCreate(IntPtr xid)
+        public static ITopLevelNativeMenuExporter TryCreateTopLevelNativeMenu(IntPtr xid)
         {
             if (DBusHelper.Connection == null)
                 return null;
 
             return new DBusMenuExporterImpl(DBusHelper.Connection, xid);
         }
+        
+        public static INativeMenuExporter TryCreateDetachedNativeMenu(ObjectPath path, Connection currentConection)
+        {
+            return new DBusMenuExporterImpl(currentConection, path);
+        }
 
-        class DBusMenuExporterImpl : ITopLevelNativeMenuExporter, IDBusMenu, IDisposable
+        public static ObjectPath GenerateDBusMenuObjPath => "/net/avaloniaui/dbusmenu/"
+                                                           + Guid.NewGuid().ToString("N");
+
+        private class DBusMenuExporterImpl : ITopLevelNativeMenuExporter, IDBusMenu, IDisposable
         {
             private readonly Connection _dbus;
             private readonly uint _xid;
-            private IRegistrar _registar;
+            private IRegistrar _registrar;
             private bool _disposed;
             private uint _revision = 1;
             private NativeMenu _menu;
-            private Dictionary<int, NativeMenuItemBase> _idsToItems = new Dictionary<int, NativeMenuItemBase>();
-            private Dictionary<NativeMenuItemBase, int> _itemsToIds = new Dictionary<NativeMenuItemBase, int>();
+            private readonly Dictionary<int, NativeMenuItemBase> _idsToItems = new Dictionary<int, NativeMenuItemBase>();
+            private readonly Dictionary<NativeMenuItemBase, int> _itemsToIds = new Dictionary<NativeMenuItemBase, int>();
             private readonly HashSet<NativeMenu> _menus = new HashSet<NativeMenu>();
             private bool _resetQueued;
             private int _nextId = 1;
+            private bool _appMenu = true;
+            
             public DBusMenuExporterImpl(Connection dbus, IntPtr xid)
             {
                 _dbus = dbus;
                 _xid = (uint)xid.ToInt32();
-                ObjectPath = new ObjectPath("/net/avaloniaui/dbusmenu/"
-                                            + Guid.NewGuid().ToString().Replace("-", ""));
+                ObjectPath = GenerateDBusMenuObjPath;
                 SetNativeMenu(new NativeMenu());
                 Init();
             }
 
+            public DBusMenuExporterImpl(Connection dbus, ObjectPath path)
+            {
+                _dbus = dbus;
+                _appMenu = false;
+                ObjectPath = path;
+                SetNativeMenu(new NativeMenu());
+                Init();
+            }
+            
             async void Init()
             {
                 try
                 {
-                    await _dbus.RegisterObjectAsync(this);
-                    _registar = DBusHelper.Connection.CreateProxy<IRegistrar>(
-                        "com.canonical.AppMenu.Registrar",
-                        "/com/canonical/AppMenu/Registrar");
-                    if (!_disposed)
-                        await _registar.RegisterWindowAsync(_xid, ObjectPath);
+                    if (_appMenu)
+                    {
+                        await _dbus.RegisterObjectAsync(this);
+                        _registrar = DBusHelper.Connection.CreateProxy<IRegistrar>(
+                            "com.canonical.AppMenu.Registrar",
+                            "/com/canonical/AppMenu/Registrar");
+                        if (!_disposed)
+                            await _registrar.RegisterWindowAsync(_xid, ObjectPath);
+                    }
+                    else
+                    {
+                        await _dbus.RegisterObjectAsync(this);
+                    }
                 }
                 catch (Exception e)
                 {
-                    Console.Error.WriteLine(e);
+                    Logging.Logger.TryGet(Logging.LogEventLevel.Error, Logging.LogArea.X11Platform)
+                        ?.Log(this, e.Message);
+
                     // It's not really important if this code succeeds,
                     // and it's not important to know if it succeeds
                     // since even if we register the window it's not guaranteed that
@@ -75,7 +103,7 @@ namespace Avalonia.FreeDesktop
                 _disposed = true;
                 _dbus.UnregisterObject(this);
                 // Fire and forget
-                _registar?.UnregisterWindowAsync(_xid);
+                _registrar?.UnregisterWindowAsync(_xid);
             }
 
 
@@ -248,17 +276,24 @@ namespace Avalonia.FreeDesktop
                         if (item.ToggleType != NativeMenuItemToggleType.None)
                             return item.IsChecked ? 1 : 0;
                     }
-
+                    
                     if (name == "icon-data")
                     {
                         if (item.Icon != null)
                         {
-                            var ms = new MemoryStream();
-                            item.Icon.Save(ms);
-                            return ms.ToArray();
+                            var loader = AvaloniaLocator.Current.GetService<IPlatformIconLoader>();
+
+                            if (loader != null)
+                            {
+                                var icon = loader.LoadIcon(item.Icon.PlatformImpl.Item);
+
+                                using var ms = new MemoryStream();
+                                icon.Save(ms);
+                                return ms.ToArray();
+                            }
                         }
                     }
-
+                    
                     if (name == "children-display")
                         return menu != null ? "submenu" : null;
                 }
@@ -378,10 +413,10 @@ namespace Avalonia.FreeDesktop
             #region Events
 
             private event Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)>
-                ItemsPropertiesUpdated;
+                ItemsPropertiesUpdated { add { } remove { } }
             private event Action<(uint revision, int parent)> LayoutUpdated;
-            private event Action<(int id, uint timestamp)> ItemActivationRequested;
-            private event Action<PropertyChanges> PropertiesChanged;
+            private event Action<(int id, uint timestamp)> ItemActivationRequested { add { } remove { } }
+            private event Action<PropertyChanges> PropertiesChanged { add { } remove { } }
 
             async Task<IDisposable> IDBusMenu.WatchItemsPropertiesUpdatedAsync(Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)> handler, Action<Exception> onError)
             {
