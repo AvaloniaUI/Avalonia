@@ -15,7 +15,7 @@
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <Grid RowDefinitions="Auto,*">
-            <ToggleButton Name="PART_toggle" Grid.Row="0"  Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
+            <ToggleButton Name="PART_toggle" Grid.Row="0" Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Row="1"
                               IsVisible="{TemplateBinding IsExpanded}"
@@ -32,9 +32,12 @@
   <Style Selector="Expander[ExpandDirection=Up]">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}">
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Grid RowDefinitions="*,Auto">
-            <ToggleButton Name="PART_toggle" Grid.Row="1"  Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
+            <ToggleButton Name="PART_toggle" Grid.Row="1" Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Row="0"
                               IsVisible="{TemplateBinding IsExpanded}"
@@ -51,9 +54,12 @@
   <Style Selector="Expander[ExpandDirection=Right]">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}">
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Grid ColumnDefinitions="Auto,*">
-            <ToggleButton Name="PART_toggle" Grid.Column="0"  Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
+            <ToggleButton Name="PART_toggle" Grid.Column="0" Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Column="1"
                               IsVisible="{TemplateBinding IsExpanded}"
@@ -70,9 +76,12 @@
   <Style Selector="Expander[ExpandDirection=Left]">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}">
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
           <Grid ColumnDefinitions="*,Auto">
-            <ToggleButton Name="PART_toggle" Grid.Column="1"  Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
+            <ToggleButton Name="PART_toggle" Grid.Column="1" Content="{TemplateBinding Header}" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Column="0"
                               IsVisible="{TemplateBinding IsExpanded}"
