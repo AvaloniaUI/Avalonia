@@ -39,6 +39,10 @@ namespace Avalonia.Benchmarks
         {
         }
 
+        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+        {
+        }
+
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
         }

@@ -179,6 +179,20 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+        {
+            var next = NextDrawAs<EllipseNode>();
+
+            if (next == null || !next.Item.Equals(Transform, brush, pen, rect))
+            {
+                Add(new EllipseNode(Transform, brush, pen, rect, CreateChildScene(brush)));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
         public void Custom(ICustomDrawOperation custom)
         {
             var next = NextDrawAs<CustomDrawOperation>();
