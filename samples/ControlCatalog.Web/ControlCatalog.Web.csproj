@@ -9,7 +9,6 @@
     <WasmNativeStrip>false</WasmNativeStrip>
     <EmccCompileOptimizationFlag>-O1</EmccCompileOptimizationFlag>
     <RunAOTCompilation>false</RunAOTCompilation>
-    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
