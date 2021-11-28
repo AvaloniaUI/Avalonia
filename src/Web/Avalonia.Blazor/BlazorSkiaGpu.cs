@@ -2,25 +2,26 @@ using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Skia;
 
-namespace Avalonia.Blazor;
-
-public class BlazorSkiaGpu : ISkiaGpu
+namespace Avalonia.Blazor
 {
-    public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
+    public class BlazorSkiaGpu : ISkiaGpu
     {
-        foreach (var surface in surfaces)
+        public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
         {
-            if (surface is BlazorSkiaSurface blazorSkiaSurface)
+            foreach (var surface in surfaces)
             {
-                return new BlazorSkiaGpuRenderTarget(blazorSkiaSurface);
+                if (surface is BlazorSkiaSurface blazorSkiaSurface)
+                {
+                    return new BlazorSkiaGpuRenderTarget(blazorSkiaSurface);
+                }
             }
+
+            return null;
         }
 
-        return null;
-    }
-
-    public ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
-    {
-        return null;
+        public ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
+        {
+            return null;
+        }
     }
 }

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using Avalonia;
-using Avalonia.Blazor;
 using Avalonia.Blazor.Interop;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -13,153 +9,154 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
 
-namespace Avalonia.Blazor;
-
-internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod
+namespace Avalonia.Blazor
 {
-    private Size _clientSize;
-    private BlazorSkiaSurface? _currentSurface;
-    private IInputRoot? _inputRoot;
-    private Stopwatch _sw = Stopwatch.StartNew();
-    private readonly ITextInputMethodImpl _textInputMethod;
-
-    public RazorViewTopLevelImpl(ITextInputMethodImpl textInputMethod)
+    internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod
     {
-        _textInputMethod = textInputMethod;
-    }
+        private Size _clientSize;
+        private BlazorSkiaSurface? _currentSurface;
+        private IInputRoot? _inputRoot;
+        private Stopwatch _sw = Stopwatch.StartNew();
+        private readonly ITextInputMethodImpl _textInputMethod;
 
-    public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
-
-
-    internal void SetSurface(GRContext context, SKHtmlCanvasInterop.GLInfo glInfo, SKColorType colorType, PixelSize size, double scaling)
-    {
-        _currentSurface = new BlazorSkiaSurface
+        public RazorViewTopLevelImpl(ITextInputMethodImpl textInputMethod)
         {
-            Context = context, 
-            GlInfo = glInfo, 
-            ColorType = colorType,
-            Size = size, 
-            Scaling = scaling,
-            Origin = GRSurfaceOrigin.BottomLeft
-        };
-    }
+            _textInputMethod = textInputMethod;
+        }
 
-    public void SetClientSize(SKSize size, double dpi)
-    {
-        var newSize = new Size(size.Width, size.Height);
+        public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
 
-        if (newSize != _clientSize)
+
+        internal void SetSurface(GRContext context, SKHtmlCanvasInterop.GLInfo glInfo, SKColorType colorType, PixelSize size, double scaling)
         {
-            _clientSize = newSize;
-
-            if (_currentSurface is { })
+            _currentSurface = new BlazorSkiaSurface
             {
-                _currentSurface.Size = new PixelSize((int)(size.Width), (int)(size.Height));
+                Context = context,
+                GlInfo = glInfo,
+                ColorType = colorType,
+                Size = size,
+                Scaling = scaling,
+                Origin = GRSurfaceOrigin.BottomLeft
+            };
+        }
+
+        public void SetClientSize(SKSize size, double dpi)
+        {
+            var newSize = new Size(size.Width, size.Height);
+
+            if (newSize != _clientSize)
+            {
+                _clientSize = newSize;
+
+                if (_currentSurface is { })
+                {
+                    _currentSurface.Size = new PixelSize((int)(size.Width), (int)(size.Height));
+                }
+
+                Resized?.Invoke(newSize, PlatformResizeReason.User);
             }
-
-            Resized?.Invoke(newSize, PlatformResizeReason.User);
         }
-    }
 
-    public void RawMouseEvent(RawPointerEventType type, Point p, RawInputModifiers modifiers)
-    {
-        if (_inputRoot is { })
-        {
-            Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, _inputRoot, type, p, modifiers));
-        }
-    }
-        
-    public void RawMouseWheelEvent( Point p, Vector v, RawInputModifiers modifiers)
-    {
-        if (_inputRoot is { })
-        {
-            Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, _inputRoot, p, v, modifiers));
-        }
-    }
-
-    public void RawKeyboardEvent (RawKeyEventType type, string key, RawInputModifiers modifiers)
-    {
-        if (Keycodes.KeyCodes.TryGetValue(key, out var avkey))
+        public void RawMouseEvent(RawPointerEventType type, Point p, RawInputModifiers modifiers)
         {
             if (_inputRoot is { })
             {
-                Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers));
+                Input?.Invoke(new RawPointerEventArgs(MouseDevice, Timestamp, _inputRoot, type, p, modifiers));
             }
         }
-    }
 
-    public void RawTextEvent(string text)
-    {
-        if (_inputRoot is { })
+        public void RawMouseWheelEvent(Point p, Vector v, RawInputModifiers modifiers)
         {
-            Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice, Timestamp, _inputRoot, text));
+            if (_inputRoot is { })
+            {
+                Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, _inputRoot, p, v, modifiers));
+            }
         }
+
+        public void RawKeyboardEvent(RawKeyEventType type, string key, RawInputModifiers modifiers)
+        {
+            if (Keycodes.KeyCodes.TryGetValue(key, out var avkey))
+            {
+                if (_inputRoot is { })
+                {
+                    Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers));
+                }
+            }
+        }
+
+        public void RawTextEvent(string text)
+        {
+            if (_inputRoot is { })
+            {
+                Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice, Timestamp, _inputRoot, text));
+            }
+        }
+
+
+
+        public void Dispose()
+        {
+
+        }
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+
+            return new DeferredRenderer(root, loop);
+        }
+
+        public void Invalidate(Rect rect)
+        {
+            //Console.WriteLine("invalidate rect called");
+        }
+
+        public void SetInputRoot(IInputRoot inputRoot)
+        {
+            _inputRoot = inputRoot;
+        }
+
+        public Point PointToClient(PixelPoint point) => new Point(point.X, point.Y);
+
+        public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
+
+        public void SetCursor(ICursorImpl cursor)
+        {
+            // nop
+
+        }
+
+        public IPopupImpl CreatePopup()
+        {
+            return null;
+        }
+
+        public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
+        {
+
+        }
+
+        public Size ClientSize => _clientSize;
+        public Size? FrameSize => null;
+        public double RenderScaling => 1;
+
+        public IEnumerable<object> Surfaces => new[] { _currentSurface };
+
+        internal BlazorSkiaSurface Surface => _currentSurface;
+
+        public Action<RawInputEventArgs> Input { get; set; }
+        public Action<Rect> Paint { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
+        public Action<double> ScalingChanged { get; set; }
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
+        public Action Closed { get; set; }
+        public Action LostFocus { get; set; }
+        public IMouseDevice MouseDevice { get; } = new MouseDevice();
+
+        public IKeyboardDevice KeyboardDevice { get; } = BlazorWindowingPlatform.Keyboard;
+        public WindowTransparencyLevel TransparencyLevel { get; }
+        public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
+
+        public ITextInputMethodImpl TextInputMethod => _textInputMethod;
     }
-
-
-
-    public void Dispose()
-    {
-
-    }
-
-    public IRenderer CreateRenderer(IRenderRoot root)
-    {
-        var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-
-        return new DeferredRenderer(root, loop);
-    }
-
-    public void Invalidate(Rect rect)
-    {
-        //Console.WriteLine("invalidate rect called");
-    }
-
-    public void SetInputRoot(IInputRoot inputRoot)
-    {
-        _inputRoot = inputRoot;
-    }
-
-    public Point PointToClient(PixelPoint point) => new Point(point.X, point.Y);
-
-    public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
-
-    public void SetCursor(ICursorImpl cursor)
-    {
-        // nop
-            
-    }
-
-    public IPopupImpl CreatePopup()
-    {
-        return null;
-    }
-
-    public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
-    {
-
-    }
-
-    public Size ClientSize => _clientSize;
-    public Size? FrameSize => null;
-    public double RenderScaling => 1;
-
-    public IEnumerable<object> Surfaces => new[] { _currentSurface };
-
-    internal BlazorSkiaSurface Surface => _currentSurface;
-
-    public Action<RawInputEventArgs> Input { get; set; }
-    public Action<Rect> Paint { get; set; }
-    public Action<Size, PlatformResizeReason> Resized { get; set; }
-    public Action<double> ScalingChanged { get; set; }
-    public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
-    public Action Closed { get; set; }
-    public Action LostFocus { get; set; }
-    public IMouseDevice MouseDevice { get; } = new MouseDevice();
-
-    public IKeyboardDevice KeyboardDevice { get; } = BlazorWindowingPlatform.Keyboard;
-    public WindowTransparencyLevel TransparencyLevel { get; }
-    public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
-
-    public ITextInputMethodImpl TextInputMethod => _textInputMethod;
 }

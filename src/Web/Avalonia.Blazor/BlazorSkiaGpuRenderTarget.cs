@@ -1,47 +1,47 @@
-using Avalonia;
 using Avalonia.Skia;
 using SkiaSharp;
 
-namespace Avalonia.Blazor;
-
-internal class BlazorSkiaGpuRenderTarget : ISkiaGpuRenderTarget
+namespace Avalonia.Blazor
 {
-    private readonly GRBackendRenderTarget _renderTarget;
-    private readonly BlazorSkiaSurface _blazorSkiaSurface;
-    private readonly PixelSize _size;
-        
-    public BlazorSkiaGpuRenderTarget(BlazorSkiaSurface blazorSkiaSurface)
+    internal class BlazorSkiaGpuRenderTarget : ISkiaGpuRenderTarget
     {
-        _size = blazorSkiaSurface.Size;
-            
-        var glFbInfo = new GRGlFramebufferInfo(blazorSkiaSurface.GlInfo.FboId, blazorSkiaSurface.ColorType.ToGlSizedFormat());
+        private readonly GRBackendRenderTarget _renderTarget;
+        private readonly BlazorSkiaSurface _blazorSkiaSurface;
+        private readonly PixelSize _size;
+
+        public BlazorSkiaGpuRenderTarget(BlazorSkiaSurface blazorSkiaSurface)
         {
-            _blazorSkiaSurface = blazorSkiaSurface;
-            _renderTarget = new GRBackendRenderTarget(
-                (int)(blazorSkiaSurface.Size.Width * blazorSkiaSurface.Scaling),
-                (int)(blazorSkiaSurface.Size.Height  * blazorSkiaSurface.Scaling),
-                blazorSkiaSurface.GlInfo.Samples,
-                blazorSkiaSurface.GlInfo.Stencils, glFbInfo);
+            _size = blazorSkiaSurface.Size;
+
+            var glFbInfo = new GRGlFramebufferInfo(blazorSkiaSurface.GlInfo.FboId, blazorSkiaSurface.ColorType.ToGlSizedFormat());
+            {
+                _blazorSkiaSurface = blazorSkiaSurface;
+                _renderTarget = new GRBackendRenderTarget(
+                    (int)(blazorSkiaSurface.Size.Width * blazorSkiaSurface.Scaling),
+                    (int)(blazorSkiaSurface.Size.Height * blazorSkiaSurface.Scaling),
+                    blazorSkiaSurface.GlInfo.Samples,
+                    blazorSkiaSurface.GlInfo.Stencils, glFbInfo);
+            }
         }
-    }
 
-    public void Dispose()
-    {
-        _renderTarget.Dispose();
-    }
-
-    public ISkiaGpuRenderSession BeginRenderingSession()
-    {
-        return new BlazorSkiaGpuRenderSession(_blazorSkiaSurface, _renderTarget);
-    }
-
-    public bool IsCorrupted
-    {
-        get
+        public void Dispose()
         {
-            var result = _size.Width != _renderTarget.Width || _size.Height != _renderTarget.Height;
+            _renderTarget.Dispose();
+        }
 
-            return result;
+        public ISkiaGpuRenderSession BeginRenderingSession()
+        {
+            return new BlazorSkiaGpuRenderSession(_blazorSkiaSurface, _renderTarget);
+        }
+
+        public bool IsCorrupted
+        {
+            get
+            {
+                var result = _size.Width != _renderTarget.Width || _size.Height != _renderTarget.Height;
+
+                return result;
+            }
         }
     }
 }

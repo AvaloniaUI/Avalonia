@@ -1,5 +1,4 @@
-﻿using Avalonia.Blazor;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Blazor

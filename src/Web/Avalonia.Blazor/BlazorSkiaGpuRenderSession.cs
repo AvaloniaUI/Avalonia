@@ -1,38 +1,39 @@
 using Avalonia.Skia;
 using SkiaSharp;
 
-namespace Avalonia.Blazor;
-
-internal class BlazorSkiaGpuRenderSession : ISkiaGpuRenderSession
+namespace Avalonia.Blazor
 {
-    private readonly SKSurface _surface;
-        
-
-    public BlazorSkiaGpuRenderSession(BlazorSkiaSurface blazorSkiaSurface, GRBackendRenderTarget renderTarget)
+    internal class BlazorSkiaGpuRenderSession : ISkiaGpuRenderSession
     {
-        _surface = SKSurface.Create(blazorSkiaSurface.Context, renderTarget, blazorSkiaSurface.Origin, blazorSkiaSurface.ColorType);
+        private readonly SKSurface _surface;
 
-        GrContext = blazorSkiaSurface.Context;
 
-        ScaleFactor = blazorSkiaSurface.Scaling;
+        public BlazorSkiaGpuRenderSession(BlazorSkiaSurface blazorSkiaSurface, GRBackendRenderTarget renderTarget)
+        {
+            _surface = SKSurface.Create(blazorSkiaSurface.Context, renderTarget, blazorSkiaSurface.Origin, blazorSkiaSurface.ColorType);
 
-        SurfaceOrigin = blazorSkiaSurface.Origin;
+            GrContext = blazorSkiaSurface.Context;
+
+            ScaleFactor = blazorSkiaSurface.Scaling;
+
+            SurfaceOrigin = blazorSkiaSurface.Origin;
+        }
+
+        public void Dispose()
+        {
+            _surface.Flush();
+
+            GrContext.Flush();
+
+            _surface.Dispose();
+        }
+
+        public GRContext GrContext { get; }
+
+        public SKSurface SkSurface => _surface;
+
+        public double ScaleFactor { get; }
+
+        public GRSurfaceOrigin SurfaceOrigin { get; }
     }
-
-    public void Dispose()
-    {
-        _surface.Flush();
-
-        GrContext.Flush();
-            
-        _surface.Dispose();
-    }
-
-    public GRContext GrContext { get; }
-
-    public SKSurface SkSurface => _surface;
-        
-    public double ScaleFactor { get; }
-
-    public GRSurfaceOrigin SurfaceOrigin { get; }
 }
