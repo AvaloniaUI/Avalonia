@@ -6,11 +6,8 @@ public partial class App
 {
     protected override void OnParametersSet()
     {
+        BlazorSingleViewLifetimeExtensions.SetupWithBlazorSingleViewLifetime<ControlCatalog.App>();
+
         base.OnParametersSet();
-        
-        using (AvaloniaBlazor.Lock())
-        {
-            BlazorSingleViewLifetimeExtensions.SetupWithBlazorSingleViewLifetime<ControlCatalog.App>();
-        }
     }
 }
