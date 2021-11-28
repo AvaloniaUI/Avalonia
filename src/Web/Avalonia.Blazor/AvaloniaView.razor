@@ -1,0 +1,15 @@
+﻿<div id="container" class="avalonia-container" tabindex="0" oncontextmenu="return false;"
+     onmousemove="@OnMouseMove"
+     onmousedown="@OnMouseDown"
+     onmouseup="@OnMouseUp"
+     onwheel="@OnWheel"
+     onkeydown="@OnKeyDown"
+     onkeyup="@OnKeyUp">
+    
+    <canvas @ref="_htmlCanvas" @attributes="AdditionalAttributes"/>
+    
+    <input id="inputBox"
+           class="overlay"
+           type="text"
+           oninput="@OnInput"/>
+</div>

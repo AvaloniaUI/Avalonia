@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
+		<PackageReference Include="Avalonia" Version="0.10.11-rc.1" />
+		<PackageReference Include="Avalonia.Skia" Version="0.10.11-rc.1" />
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.2" PrivateAssets="all" />
+	</ItemGroup>
+</Project>
