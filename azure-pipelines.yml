@@ -103,7 +103,7 @@ jobs:
 
 - job: Windows
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
