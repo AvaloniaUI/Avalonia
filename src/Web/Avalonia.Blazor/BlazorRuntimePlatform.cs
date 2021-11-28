@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Platform;
+using Avalonia.Shared.PlatformSupport;
 
 namespace Avalonia.Blazor
 {
