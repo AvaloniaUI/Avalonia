@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>Avalonia.Web.Blazor</PackageId>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
 
