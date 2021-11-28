@@ -210,3 +210,4 @@ obj-Skia/
 coc-settings.json
 .ccls-cache
 .ccls
+*.map
