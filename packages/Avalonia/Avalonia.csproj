@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-      <TargetFrameworks>netstandard2.0;net461;netcoreapp2.0</TargetFrameworks>
+      <TargetFrameworks>netstandard2.0;net462;netcoreapp2.0</TargetFrameworks>
       <PackageId>Avalonia</PackageId>
   </PropertyGroup>
 
@@ -24,8 +24,8 @@
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>
-      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/net461/Avalonia.Designer.HostApp.exe">
-        <PackagePath>tools/net461/designer</PackagePath>
+      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/net462/Avalonia.Designer.HostApp.exe">
+        <PackagePath>tools/net462/designer</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>
