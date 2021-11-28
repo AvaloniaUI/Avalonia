@@ -165,6 +165,7 @@ namespace Avalonia.Blazor
             {
                 Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
                 {
+                    await Js.InvokeVoidAsync("hideInput");
                     await Js.InvokeVoidAsync("setCursor", "default");
 
                     Console.WriteLine("starting html canvas setup");
@@ -256,21 +257,34 @@ namespace Avalonia.Blazor
 
         public void SetActive(bool active)
         {
-            Console.WriteLine("focus input box.");
+            Console.WriteLine($"focus input box. {active}");
+
             Js.InvokeVoidAsync("clearInput");
-            Js.InvokeVoidAsync("focusInput");
+
+            if (active)
+            {
+                Js.InvokeVoidAsync("showInput");
+                Js.InvokeVoidAsync("focusInput");
+            }
+            else
+            {
+                Js.InvokeVoidAsync("hideInput");
+            }
         }
 
         public void SetCursorRect(Rect rect)
         {
+            Console.WriteLine("SetCursorRect");
         }
 
         public void SetOptions(TextInputOptionsQueryEventArgs options)
         {
+            Console.WriteLine("SetOptions");
         }
 
         public void Reset()
         {
+            Console.WriteLine("reset");
             Js.InvokeVoidAsync("clearInput");
         }
     }
