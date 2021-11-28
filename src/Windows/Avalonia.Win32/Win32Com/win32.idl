@@ -24,9 +24,9 @@
 @clr-map UINT64 ulong
 @clr-map DOUBLE double
 @clr-map GUID System.Guid
-@clr-map WCHAR System.Char
 @clr-map REFGUID System.Guid*
 @clr-map REFIID System.Guid*
+@clr-map WCHAR System.Char
 
 [flags]
 enum FILEOPENDIALOGOPTIONS

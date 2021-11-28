@@ -170,11 +170,6 @@ namespace Avalonia.Win32
             });
         }
 
-        private unsafe IShellItem GetShellItemFromPtr(IntPtr ptr)
-        {
-            return MicroComRuntime.CreateProxyFor<IShellItem>(ptr, true);
-        }
-
         private unsafe string? GetAbsoluteFilePath(IShellItem shellItem)
         {
             var pszString = new IntPtr(shellItem.GetDisplayName(SIGDN_FILESYSPATH));
@@ -214,7 +209,7 @@ namespace Avalonia.Win32
                 {
                     var filterStr = new UnmanagedMethods.COMDLG_FILTERSPEC
                     {
-                        pszName = filter.Name,
+                        pszName = filter.Name ?? string.Empty,
                         pszSpec = string.Join(";", filter.Extensions.Select(e => "*." + e))
                     };
 
