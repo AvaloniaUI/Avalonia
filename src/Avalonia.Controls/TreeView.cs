@@ -181,7 +181,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public void SelectAll()
         {
-            SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
+            ////SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
         }
 
         /// <summary>
@@ -235,9 +235,9 @@ namespace Avalonia.Controls
 
                     if (AutoScrollToSelectedItem)
                     {
-                        var container = (TreeViewItem)ItemContainerGenerator.Index.ContainerFromItem(e.NewItems[0]);
+                        ////var container = (TreeViewItem)ItemContainerGenerator.Index.ContainerFromItem(e.NewItems[0]);
 
-                        container?.BringIntoView();
+                        ////container?.BringIntoView();
                     }
 
                     added = e.NewItems;
@@ -275,10 +275,10 @@ namespace Avalonia.Controls
                     break;
                 case NotifyCollectionChangedAction.Reset:
 
-                    foreach (IControl container in ItemContainerGenerator.Index.Containers)
-                    {
-                        MarkContainerSelected(container, false);
-                    }
+                    ////foreach (IControl container in ItemContainerGenerator.Index.Containers)
+                    ////{
+                    ////    MarkContainerSelected(container, false);
+                    ////}
 
                     if (SelectedItems.Count > 0)
                     {
@@ -330,9 +330,9 @@ namespace Avalonia.Controls
 
         private void MarkItemSelected(object item, bool selected)
         {
-            var container = ItemContainerGenerator.Index.ContainerFromItem(item);
+            ////var container = ItemContainerGenerator.Index.ContainerFromItem(item);
 
-            MarkContainerSelected(container, selected);
+            ////MarkContainerSelected(container, selected);
         }
 
         private void SelectedItemsAdded(IList items)
@@ -370,11 +370,11 @@ namespace Avalonia.Controls
             {
                 if (!this.IsVisualAncestorOf(element))
                 {
-                    var result = _selectedItem != null ?
-                        ItemContainerGenerator.Index.ContainerFromItem(_selectedItem) :
-                        ItemContainerGenerator.ContainerFromIndex(0);
+                    ////var result = _selectedItem != null ?
+                    ////    ItemContainerGenerator.Index.ContainerFromItem(_selectedItem) :
+                    ////    ItemContainerGenerator.ContainerFromIndex(0);
                     
-                    return (result != null, result); // SelectedItem may not be in the treeview.
+                    ////return (result != null, result); // SelectedItem may not be in the treeview.
                 }
 
                 return (true, null);
@@ -386,14 +386,15 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            var result = new TreeItemContainerGenerator<TreeViewItem>(
-                this,
-                TreeViewItem.HeaderProperty,
-                TreeViewItem.ItemTemplateProperty,
-                TreeViewItem.ItemsProperty,
-                TreeViewItem.IsExpandedProperty);
-            result.Index.Materialized += ContainerMaterialized;
-            return result;
+            throw new NotImplementedException();
+            ////var result = new TreeItemContainerGenerator<TreeViewItem>(
+            ////    this,
+            ////    TreeViewItem.HeaderProperty,
+            ////    TreeViewItem.ItemTemplateProperty,
+            ////    TreeViewItem.ItemsProperty,
+            ////    TreeViewItem.IsExpandedProperty);
+            ////result.Index.Materialized += ContainerMaterialized;
+            ////return result;
         }
 
         /// <inheritdoc/>
@@ -458,45 +459,46 @@ namespace Avalonia.Controls
                 return null;
             }
 
-            var index = parentGenerator.IndexFromContainer(from);
-            var parent = from.Parent as ItemsControl;
-            TreeViewItem result = null;
+            ////var index = parentGenerator.IndexFromContainer(from);
+            ////var parent = from.Parent as ItemsControl;
+            ////TreeViewItem result = null;
 
-            switch (direction)
-            {
-                case NavigationDirection.Up:
-                    if (index > 0)
-                    {
-                        var previous = (TreeViewItem)parentGenerator.ContainerFromIndex(index - 1);
-                        result = previous.IsExpanded && previous.ItemCount > 0 ?
-                            (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1) :
-                            previous;
-                    }
-                    else
-                    {
-                        result = from.Parent as TreeViewItem;
-                    }
+            ////switch (direction)
+            ////{
+            ////    case NavigationDirection.Up:
+            ////        if (index > 0)
+            ////        {
+            ////            var previous = (TreeViewItem)parentGenerator.ContainerFromIndex(index - 1);
+            ////            result = previous.IsExpanded && previous.ItemCount > 0 ?
+            ////                (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1) :
+            ////                previous;
+            ////        }
+            ////        else
+            ////        {
+            ////            result = from.Parent as TreeViewItem;
+            ////        }
 
-                    break;
+            ////        break;
 
-                case NavigationDirection.Down:
-                    if (from.IsExpanded && intoChildren && from.ItemCount > 0)
-                    {
-                        result = (TreeViewItem)from.ItemContainerGenerator.ContainerFromIndex(0);
-                    }
-                    else if (index < parent?.ItemCount - 1)
-                    {
-                        result = (TreeViewItem)parentGenerator.ContainerFromIndex(index + 1);
-                    }
-                    else if (parent is TreeViewItem parentItem)
-                    {
-                        return GetContainerInDirection(parentItem, direction, false);
-                    }
+            ////    case NavigationDirection.Down:
+            ////        if (from.IsExpanded && intoChildren && from.ItemCount > 0)
+            ////        {
+            ////            result = (TreeViewItem)from.ItemContainerGenerator.ContainerFromIndex(0);
+            ////        }
+            ////        else if (index < parent?.ItemCount - 1)
+            ////        {
+            ////            result = (TreeViewItem)parentGenerator.ContainerFromIndex(index + 1);
+            ////        }
+            ////        else if (parent is TreeViewItem parentItem)
+            ////        {
+            ////            return GetContainerInDirection(parentItem, direction, false);
+            ////        }
 
-                    break;
-            }
+            ////        break;
+            ////}
 
-            return result;
+            ////return result;
+            return null;
         }
 
         /// <inheritdoc/>
@@ -535,62 +537,62 @@ namespace Avalonia.Controls
             bool toggleModifier = false,
             bool rightButton = false)
         {
-            var item = ItemContainerGenerator.Index.ItemFromContainer(container);
+            ////var item = ItemContainerGenerator.Index.ItemFromContainer(container);
 
-            if (item == null)
-            {
-                return;
-            }
+            ////if (item == null)
+            ////{
+            ////    return;
+            ////}
 
-            IControl selectedContainer = null;
+            ////IControl selectedContainer = null;
 
-            if (SelectedItem != null)
-            {
-                selectedContainer = ItemContainerGenerator.Index.ContainerFromItem(SelectedItem);
-            }
+            ////if (SelectedItem != null)
+            ////{
+            ////    selectedContainer = ItemContainerGenerator.Index.ContainerFromItem(SelectedItem);
+            ////}
 
-            var mode = SelectionMode;
-            var toggle = toggleModifier || mode.HasAllFlags(SelectionMode.Toggle);
-            var multi = mode.HasAllFlags(SelectionMode.Multiple);
-            var range = multi && rangeModifier && selectedContainer != null;
+            ////var mode = SelectionMode;
+            ////var toggle = toggleModifier || mode.HasAllFlags(SelectionMode.Toggle);
+            ////var multi = mode.HasAllFlags(SelectionMode.Multiple);
+            ////var range = multi && rangeModifier && selectedContainer != null;
 
-            if (rightButton)
-            {
-                if (!SelectedItems.Contains(item))
-                {
-                    SelectSingleItem(item);
-                }
-            }
-            else if (!toggle && !range)
-            {
-                SelectSingleItem(item);
-            }
-            else if (multi && range)
-            {
-                SynchronizeItems(
-                    SelectedItems,
-                    GetItemsInRange(selectedContainer as TreeViewItem, container as TreeViewItem));
-            }
-            else
-            {
-                var i = SelectedItems.IndexOf(item);
+            ////if (rightButton)
+            ////{
+            ////    if (!SelectedItems.Contains(item))
+            ////    {
+            ////        SelectSingleItem(item);
+            ////    }
+            ////}
+            ////else if (!toggle && !range)
+            ////{
+            ////    SelectSingleItem(item);
+            ////}
+            ////else if (multi && range)
+            ////{
+            ////    SynchronizeItems(
+            ////        SelectedItems,
+            ////        GetItemsInRange(selectedContainer as TreeViewItem, container as TreeViewItem));
+            ////}
+            ////else
+            ////{
+            ////    var i = SelectedItems.IndexOf(item);
 
-                if (i != -1)
-                {
-                    SelectedItems.Remove(item);
-                }
-                else
-                {
-                    if (multi)
-                    {
-                        SelectedItems.Add(item);
-                    }
-                    else
-                    {
-                        SelectedItem = item;
-                    }
-                }
-            }
+            ////    if (i != -1)
+            ////    {
+            ////        SelectedItems.Remove(item);
+            ////    }
+            ////    else
+            ////    {
+            ////        if (multi)
+            ////        {
+            ////            SelectedItems.Add(item);
+            ////        }
+            ////        else
+            ////        {
+            ////            SelectedItem = item;
+            ////        }
+            ////    }
+            ////}
         }
 
         private static IItemContainerGenerator GetParentContainerGenerator(TreeViewItem item)
@@ -620,43 +622,45 @@ namespace Avalonia.Controls
         /// <returns>Found first node.</returns>
         private static TreeViewItem FindFirstNode(TreeView treeView, TreeViewItem nodeA, TreeViewItem nodeB)
         {
-            return FindInContainers(treeView.ItemContainerGenerator, nodeA, nodeB);
+            throw new NotImplementedException();
+            ////return FindInContainers(treeView.ItemContainerGenerator, nodeA, nodeB);
         }
 
-        private static TreeViewItem FindInContainers(ITreeItemContainerGenerator containerGenerator,
-            TreeViewItem nodeA,
-            TreeViewItem nodeB)
-        {
-            IEnumerable<ItemContainerInfo> containers = containerGenerator.Containers;
+        ////private static TreeViewItem FindInContainers(ITreeItemContainerGenerator containerGenerator,
+        ////    TreeViewItem nodeA,
+        ////    TreeViewItem nodeB)
+        ////{
+        ////    IEnumerable<ItemContainerInfo> containers = containerGenerator.Containers;
 
-            foreach (ItemContainerInfo container in containers)
-            {
-                TreeViewItem node = FindFirstNode(container.ContainerControl as TreeViewItem, nodeA, nodeB);
+        ////    foreach (ItemContainerInfo container in containers)
+        ////    {
+        ////        TreeViewItem node = FindFirstNode(container.ContainerControl as TreeViewItem, nodeA, nodeB);
 
-                if (node != null)
-                {
-                    return node;
-                }
-            }
+        ////        if (node != null)
+        ////        {
+        ////            return node;
+        ////        }
+        ////    }
 
-            return null;
-        }
+        ////    return null;
+        ////}
 
         private static TreeViewItem FindFirstNode(TreeViewItem node, TreeViewItem nodeA, TreeViewItem nodeB)
         {
-            if (node == null)
-            {
-                return null;
-            }
+            throw new NotImplementedException();
+            ////if (node == null)
+            ////{
+            ////    return null;
+            ////}
 
-            TreeViewItem match = node == nodeA ? nodeA : node == nodeB ? nodeB : null;
+            ////TreeViewItem match = node == nodeA ? nodeA : node == nodeB ? nodeB : null;
 
-            if (match != null)
-            {
-                return match;
-            }
+            ////if (match != null)
+            ////{
+            ////    return match;
+            ////}
 
-            return FindInContainers(node.ItemContainerGenerator, nodeA, nodeB);
+            ////return FindInContainers(node.ItemContainerGenerator, nodeA, nodeB);
         }
 
         /// <summary>
@@ -695,24 +699,24 @@ namespace Avalonia.Controls
 
             TreeViewItem node = from;
 
-            while (node != to)
-            {
-                var item = ItemContainerGenerator.Index.ItemFromContainer(node);
+            ////while (node != to)
+            ////{
+            ////    var item = ItemContainerGenerator.Index.ItemFromContainer(node);
 
-                if (item != null)
-                {
-                    items.Add(item);
-                }
+            ////    if (item != null)
+            ////    {
+            ////        items.Add(item);
+            ////    }
 
-                node = GetContainerInDirection(node, NavigationDirection.Down, true);
-            }
+            ////    node = GetContainerInDirection(node, NavigationDirection.Down, true);
+            ////}
 
-            var toItem = ItemContainerGenerator.Index.ItemFromContainer(to);
+            ////var toItem = ItemContainerGenerator.Index.ItemFromContainer(to);
 
-            if (toItem != null)
-            {
-                items.Add(toItem);
-            }
+            ////if (toItem != null)
+            ////{
+            ////    items.Add(toItem);
+            ////}
 
             if (wasReversed)
             {
@@ -764,13 +768,13 @@ namespace Avalonia.Controls
                 .OfType<TreeViewItem>()
                 .FirstOrDefault();
 
-            if (item != null)
-            {
-                if (item.ItemContainerGenerator.Index == ItemContainerGenerator.Index)
-                {
-                    return item;
-                }
-            }
+            ////if (item != null)
+            ////{
+            ////    if (item.ItemContainerGenerator.Index == ItemContainerGenerator.Index)
+            ////    {
+            ////        return item;
+            ////    }
+            ////}
 
             return null;
         }
@@ -780,30 +784,30 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        private void ContainerMaterialized(object sender, ItemContainerEventArgs e)
-        {
-            var selectedItem = SelectedItem;
+        ////private void ContainerMaterialized(object sender, ItemContainerEventArgs e)
+        ////{
+        ////    var selectedItem = SelectedItem;
 
-            if (selectedItem == null)
-            {
-                return;
-            }
+        ////    if (selectedItem == null)
+        ////    {
+        ////        return;
+        ////    }
 
-            foreach (var container in e.Containers)
-            {
-                if (container.Item == selectedItem)
-                {
-                    ((TreeViewItem)container.ContainerControl).IsSelected = true;
+        ////    foreach (var container in e.Containers)
+        ////    {
+        ////        if (container.Item == selectedItem)
+        ////        {
+        ////            ((TreeViewItem)container.ContainerControl).IsSelected = true;
 
-                    if (AutoScrollToSelectedItem)
-                    {
-                        Dispatcher.UIThread.Post(container.ContainerControl.BringIntoView);
-                    }
+        ////            if (AutoScrollToSelectedItem)
+        ////            {
+        ////                Dispatcher.UIThread.Post(container.ContainerControl.BringIntoView);
+        ////            }
 
-                    break;
-                }
-            }
-        }
+        ////            break;
+        ////        }
+        ////    }
+        ////}
 
         /// <summary>
         /// Sets a container's 'selected' class or <see cref="ISelectable.IsSelected"/>.

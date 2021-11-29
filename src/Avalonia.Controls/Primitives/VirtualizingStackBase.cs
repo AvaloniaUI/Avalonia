@@ -53,11 +53,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         protected IReadOnlyList<IControl?> RealizedElements => _realizedElements.Elements;
-        protected virtual Orientation Orientation { get; set; }
         protected Rect Viewport { get; private set; }
 
         /// <summary>
-        /// When implemented in a derived class, creates or recycles a control for the specified
+        /// When overridden in a derived class, returns the stack orientation.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Orientation GetOrientation();
+
+        /// <summary>
+        /// When overridden in a derived class, creates or recycles a control for the specified
         /// item index.
         /// </summary>
         /// <param name="index">The item index.</param>
@@ -70,7 +75,7 @@ namespace Avalonia.Controls.Primitives
         protected abstract IControl RealizeElement(int index);
 
         /// <summary>
-        /// When implemented in a derived class, unrealizes a control by removing it from the
+        /// When overridden in a derived class, unrealizes a control by removing it from the
         /// <see cref="Controls"/> collection or marking it available for recycling and making it
         /// invisible in some manner.
         /// </summary>
@@ -98,7 +103,7 @@ namespace Avalonia.Controls.Primitives
 
                 // Get the expected position of the elment and put it in place.
                 var anchorU = GetOrEstimateElementPosition(index);
-                var rect = Orientation == Orientation.Horizontal ?
+                var rect = GetOrientation() == Orientation.Horizontal ?
                     new Rect(anchorU, 0, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height) :
                     new Rect(0, anchorU, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height);
                 _anchorElement.Arrange(rect);
@@ -134,6 +139,11 @@ namespace Avalonia.Controls.Primitives
         {
             // Return the estimated size of all items based on the elements currently realized.
             return EstimateElementSizeU() * Items.Count;
+        }
+
+        protected int GetIndexForRealizedElement(IControl element)
+        {
+            return _realizedElements.GetModelIndexForElement(element);
         }
 
         protected IControl? GetRealizedElement(int index)
@@ -186,7 +196,7 @@ namespace Avalonia.Controls.Primitives
             if (double.IsInfinity(sizeU) || double.IsNaN(sizeU))
                 throw new InvalidOperationException("Invalid calculated size.");
 
-            return Orientation == Orientation.Horizontal ?
+            return GetOrientation() == Orientation.Horizontal ?
                 new Size(sizeU, viewport.measuredV) :
                 new Size(viewport.measuredV, sizeU);
         }
@@ -195,7 +205,7 @@ namespace Avalonia.Controls.Primitives
         {
             _ = Items ?? throw new AvaloniaInternalException("Items may not be null.");
 
-            var horizontal = Orientation == Orientation.Horizontal;
+            var horizontal = GetOrientation() == Orientation.Horizontal;
             var index = viewport.firstIndex;
             var u = viewport.startU;
 
@@ -215,7 +225,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var orientation = Orientation;
+            var orientation = GetOrientation();
             var u = _realizedElements.StartU;
 
             for (var i = 0; i < _realizedElements.Count; ++i)
@@ -256,8 +266,9 @@ namespace Avalonia.Controls.Primitives
             var viewport = Viewport != s_invalidViewport ? Viewport : EstimateViewport();
 
             // Get the viewport in the orientation direction.
-            var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
-            var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
+            var orientation = GetOrientation();
+            var viewportStart = orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
+            var viewportEnd = orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
             var (firstIndex, firstIndexU) = GetElementAt(viewportStart);
             var (lastIndex, _) = GetElementAt(viewportEnd);

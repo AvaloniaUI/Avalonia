@@ -309,24 +309,19 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)GetContainerForIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = ItemContainerGenerator.IndexFromContainer(value);
+                SelectedIndex = value is null ? -1 : GetContainerIndex(value);
             }
         }
 
         /// <inheritdoc/>
         IEnumerable<IMenuItem> IMenuElement.SubItems
         {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
+            get => Presenter?.RealizedElements.OfType<IMenuItem>() ?? Array.Empty<IMenuItem>();
         }
 
         /// <summary>
@@ -658,7 +653,7 @@ namespace Avalonia.Controls
 
             if (selected != -1)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(selected);
+                var container = GetContainerForIndex(selected);
                 container?.Focus();
             }
         }

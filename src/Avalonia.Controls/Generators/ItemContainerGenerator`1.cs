@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Generators
         {
         }
 
-        protected override ContentControl CreateContainer(IControl parent, int index, object? item)
+        protected override IControl CreateContainer(IControl parent, int index, object? item)
         {
             var result = new T
             { 

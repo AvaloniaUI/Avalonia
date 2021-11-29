@@ -20,10 +20,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<TabStripItem>(
-                this,
-                ContentControl.ContentProperty,
-                ContentControl.ContentTemplateProperty);
+            return new ItemContainerGenerator<TabStripItem>(this);
         }
 
         /// <inheritdoc/>

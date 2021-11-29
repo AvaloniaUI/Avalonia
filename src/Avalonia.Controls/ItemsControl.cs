@@ -199,7 +199,10 @@ namespace Avalonia.Controls
             remove => _childIndexChanged -= value;
         }
 
-        /// <inheritdoc/>
+        public IControl? GetContainerForIndex(int index) => Presenter?.GetContainerForIndex(index);
+
+        public int GetContainerIndex(IControl container) => Presenter?.GetContainerIndex(container) ?? -1;
+
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
         {
             if (Presenter is IChildIndexProvider oldInnerProvider)
@@ -484,25 +487,23 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
-
-            Presenter?.ItemsChanged(e);
         }
 
         private void CreateItemsView()
         {
             var oldView = _itemsView;
 
-            if (_itemsView is object && _itemsView != ItemsSourceView.Empty)
-            {
-                _itemsView.RemoveListener(this);
-                _itemsView?.Dispose();
-            }
-
             _itemsView = ItemsSourceView.GetOrCreate(_items);
             _itemsView.AddListener(this);
 
             ItemsViewChanged(oldView, _itemsView);
             RaisePropertyChanged(ItemsViewProperty, oldView, _itemsView);
+
+            if (oldView is object && oldView != ItemsSourceView.Empty)
+            {
+                oldView.RemoveListener(this);
+                oldView?.Dispose();
+            }
         }
 
         /// <summary>
@@ -571,7 +572,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void ItemTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            Presenter?.UnrealizeAll();
+            ////Presenter?.UnrealizeAll();
         }
 
         private void UpdateItemCount()

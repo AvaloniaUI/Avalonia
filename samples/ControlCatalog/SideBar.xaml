@@ -25,12 +25,7 @@
                             VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                             Background="{TemplateBinding Background}"
                             DockPanel.Dock="Left">
-                            <ItemsPresenter
-                                Name="PART_ItemsPresenter"                          
-                                Items="{TemplateBinding Items}"
-                                ItemsPanel="{TemplateBinding ItemsPanel}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}">
-                            </ItemsPresenter>
+                            <ItemsPresenter Name="PART_ItemsPresenter"/>
                         </ScrollViewer>
                         <ContentControl Content="{TemplateBinding Tag}" HorizontalContentAlignment="Right" DockPanel.Dock="Bottom"/>
                         <ScrollViewer

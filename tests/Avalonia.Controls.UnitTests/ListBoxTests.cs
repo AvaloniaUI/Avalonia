@@ -295,7 +295,7 @@ namespace Avalonia.Controls.UnitTests
             //instead pixeloffset > 0 there could be pretty complex sequence for repro
             //it involves add/remove/scroll to end multiple actions
             //which i can't find so far :(, but this is the simplest way to add it to unit test
-            panel.PixelOffset = 1;
+            ////panel.PixelOffset = 1;
 
             //here scroll to end -> IndexOutOfRangeException is thrown
             target.Scroll.Offset = new Vector(0, 2);
@@ -495,9 +495,6 @@ namespace Avalonia.Controls.UnitTests
                     Content = new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
-                        [~ItemsPresenter.ItemsPanelProperty] = parent.GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
-                        [~ItemsPresenter.VirtualizationModeProperty] = parent.GetObservable(ListBox.VirtualizationModeProperty).ToBinding(),
                     }.RegisterInNameScope(scope)
                 }.RegisterInNameScope(scope));
         }

@@ -123,6 +123,31 @@ namespace Avalonia.Controls.Presenters
             if (!_createdPanel)
                 CreatePanel();
         }
+        
+        public IControl? GetContainerForIndex(int index)
+        {
+            return Panel switch
+            {
+                IVirtualizingPanel vp => vp.GetElementForIndex(index),
+                null => null,
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        public int GetContainerIndex(IControl container)
+        {
+            return Panel switch
+            {
+                IVirtualizingPanel vp => vp.GetElementIndex(container),
+                null => -1,
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        public void ScrollIntoView(int index)
+        {
+            throw new NotImplementedException();
+        }
 
         bool ILogicalScrollable.BringIntoView(IControl target, Rect targetRect)
         {

@@ -21,7 +21,7 @@ namespace Avalonia.Diagnostics.Views
         {
             InitializeComponent();
             _tree = this.FindControl<TreeView>("tree");
-            _tree.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
+            _tree.ContainerRealized += TreeViewItemRealized;
 
             _adorner = new Panel
             {
@@ -97,9 +97,9 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private void TreeViewItemMaterialized(object? sender, ItemContainerEventArgs e)
+        private void TreeViewItemRealized(object? sender, ItemContainerRealizedEventArgs e)
         {
-            var item = (TreeViewItem)e.Containers[0].ContainerControl;
+            var item = (TreeViewItem)e.Container;
             item.TemplateApplied += TreeViewItemTemplateApplied;
         }
 

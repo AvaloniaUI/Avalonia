@@ -164,7 +164,7 @@ namespace Avalonia.Controls
             else
             {
                 var container = SelectedItem as IContentControl ??
-                    ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
+                    GetContainerForIndex(SelectedIndex) as IContentControl;
                 SelectedContentTemplate = container?.ContentTemplate;
                 SelectedContent = container?.Content;
             }
@@ -187,7 +187,7 @@ namespace Avalonia.Controls
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new TabItemContainerGenerator(this);
+            return new ItemContainerGenerator<TabItem>(this);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

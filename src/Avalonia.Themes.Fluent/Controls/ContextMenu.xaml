@@ -59,9 +59,6 @@
               CornerRadius="{TemplateBinding CornerRadius}">
         <ScrollViewer Classes="menuscroller">
           <ItemsPresenter Name="PART_ItemsPresenter"
-                          Items="{TemplateBinding Items}"
-                          ItemsPanel="{TemplateBinding ItemsPanel}"
-                          ItemTemplate="{TemplateBinding ItemTemplate}"
                           Margin="{DynamicResource MenuFlyoutScrollerMargin}"
                           KeyboardNavigation.TabNavigation="Continue"
                           Grid.IsSharedSizeScope="True" />

@@ -15,6 +15,8 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+#nullable enable
+
 namespace Avalonia.Controls
 {
     /// <summary>
@@ -46,14 +48,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectionBoxItem"/> property.
         /// </summary>
-        public static readonly DirectProperty<ComboBox, object> SelectionBoxItemProperty =
-            AvaloniaProperty.RegisterDirect<ComboBox, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
+        public static readonly DirectProperty<ComboBox, object?> SelectionBoxItemProperty =
+            AvaloniaProperty.RegisterDirect<ComboBox, object?>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
         /// <summary>
         /// Defines the <see cref="VirtualizationMode"/> property.
         /// </summary>
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<ComboBox>();
+            ListBox.VirtualizationModeProperty.AddOwner<ComboBox>();
 
         /// <summary>
         /// Defines the <see cref="PlaceholderText"/> property.
@@ -80,8 +82,8 @@ namespace Avalonia.Controls
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
 
         private bool _isDropDownOpen;
-        private Popup _popup;
-        private object _selectionBoxItem;
+        private Popup? _popup;
+        private object? _selectionBoxItem;
         private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
 
         /// <summary>
@@ -117,7 +119,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the item to display as the control's content.
         /// </summary>
-        protected object SelectionBoxItem
+        protected object? SelectionBoxItem
         {
             get { return _selectionBoxItem; }
             set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
@@ -259,7 +261,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            if (!e.Handled)
+            if (!e.Handled && e.Source is not null)
             {
                 if (_popup?.IsInsidePopup((IVisual)e.Source) == true)
                 {
@@ -357,12 +359,12 @@ namespace Avalonia.Controls
             var selectedIndex = SelectedIndex;
             if (IsDropDownOpen && selectedIndex != -1)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                var container = GetContainerForIndex(selectedIndex);
 
                 if (container == null && SelectedIndex != -1)
                 {
                     ScrollIntoView(Selection.SelectedIndex);
-                    container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                    container = GetContainerForIndex(selectedIndex);
                 }
 
                 if (container != null && CanFocus(container))
@@ -374,7 +376,7 @@ namespace Avalonia.Controls
 
         private bool CanFocus(IControl control) => control.Focusable && control.IsEffectivelyEnabled && control.IsVisible;
 
-        private void UpdateSelectionBoxItem(object item)
+        private void UpdateSelectionBoxItem(object? item)
         {
             var contentControl = item as IContentControl;
 
@@ -412,11 +414,14 @@ namespace Avalonia.Controls
 
         private void SelectFocusedItem()
         {
-            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
+            if (Presenter is null)
+                return;
+
+            foreach (var dropdownItem in Presenter.RealizedElements)
             {
-                if (dropdownItem.ContainerControl.IsFocused)
+                if (dropdownItem.IsFocused)
                 {
-                    SelectedIndex = dropdownItem.Index;
+                    SelectedIndex = GetContainerIndex(dropdownItem);
                     break;
                 }
             }

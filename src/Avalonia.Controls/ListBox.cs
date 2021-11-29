@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
         private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new VirtualizingStackBase());
+            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="Scroll"/> property.
@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="VirtualizationMode"/> property.
         /// </summary>
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
+            VirtualizingStackPanel.VirtualizationModeProperty.AddOwner<ListBox>();
 
         private IScrollable _scroll;
 
@@ -119,10 +119,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<ListBoxItem>(
-                this, 
-                ListBoxItem.ContentProperty,
-                ListBoxItem.ContentTemplateProperty);
+            return new ItemContainerGenerator<ListBoxItem>(this);
         }
 
         /// <inheritdoc/>

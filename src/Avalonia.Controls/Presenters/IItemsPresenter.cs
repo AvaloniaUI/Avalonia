@@ -32,6 +32,25 @@ namespace Avalonia.Controls.Presenters
         IEnumerable<IControl> RealizedElements { get; }
 
         /// <summary>
+        /// Gets the container for the specified index in the item source, if realized.
+        /// </summary>
+        /// <param name="index">The index in the item source.</param>
+        /// <returns>
+        /// The container; or null if not realized or index is invalid.
+        /// </returns>
+        IControl? GetContainerForIndex(int index);
+
+        /// <summary>
+        /// Gets the index in the item source of the specified container.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>
+        /// The index in the item source; or -1 if the control is not a container belonging
+        /// to this presenter.
+        /// </returns>
+        int GetContainerIndex(IControl container);
+
+        /// <summary>
         /// Scrolls the requested index into view.
         /// </summary>
         /// <param name="index">The index in the item source.</param>

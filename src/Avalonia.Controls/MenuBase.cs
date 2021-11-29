@@ -83,24 +83,19 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)GetContainerForIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = ItemContainerGenerator.IndexFromContainer(value);
+                SelectedIndex = value is null ? -1 : GetContainerIndex(value);
             }
         }
 
         /// <inheritdoc/>
         IEnumerable<IMenuItem> IMenuElement.SubItems
         {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
+            get => Presenter?.RealizedElements.OfType<IMenuItem>() ?? Array.Empty<IMenuItem>();
         }
 
         /// <summary>
@@ -142,7 +137,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
+            return new MenuItemContainerGenerator(this);
         }
 
         /// <inheritdoc/>

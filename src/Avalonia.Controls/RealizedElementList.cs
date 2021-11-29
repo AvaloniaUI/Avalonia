@@ -100,6 +100,27 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the model index for the specified element.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <returns>
+        /// The model index or -1 if the element is not realized or does not belong to this list.
+        /// </returns>
+        public int GetModelIndexForElement(IControl element)
+        {
+            if (_elements is not null)
+            {
+                for (var i = 0; i < _elements.Count; ++i)
+                {
+                    if (_elements[i] == element)
+                        return FirstModelIndex + i;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
         /// Updates the elements in response to items being inserted into the source collection.
         /// </summary>
         /// <param name="modelIndex">The index in the source collection of the insert.</param>

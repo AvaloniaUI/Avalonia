@@ -1,15 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 
 #nullable enable
 
 namespace Avalonia.Controls
 {
-    public class VirtualizingStackPanel : VirtualizingStackBase, IPanel
+    public class VirtualizingStackPanel : VirtualizingStackBase, IVirtualizingPanel
     {
+        public static readonly StyledProperty<Orientation> OrientationProperty =
+            StackPanel.OrientationProperty.AddOwner<VirtualizingStackPanel>();
+
         /// <summary>
         /// Defines the <see cref="VirtualizationMode"/> property.
         /// </summary>
@@ -20,6 +26,18 @@ namespace Avalonia.Controls
 
         private IItemsPresenter? _presenter;
 
+        /// <summary>
+        /// Gets or sets the orientation in which child controls will be layed out.
+        /// </summary>
+        public Orientation Orientation
+        {
+            get { return GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
+        }
+
+        public new IEnumerable<IControl> RealizedElements =>
+            (IEnumerable<IControl>)base.RealizedElements.Where(x => x is not null);
+
         public ItemVirtualizationMode VirtualizationMode
         {
             get => GetValue(VirtualizationModeProperty);
@@ -27,6 +45,11 @@ namespace Avalonia.Controls
         }
 
         Controls IPanel.Children => base.Children;
+
+        public IControl? GetElementForIndex(int index) => base.GetRealizedElement(index);
+        public int GetElementIndex(IControl element) => base.GetIndexForRealizedElement(element);
+
+        protected override Orientation GetOrientation() => Orientation;
 
         protected override Size MeasureOverride(Size availableSize)
         {

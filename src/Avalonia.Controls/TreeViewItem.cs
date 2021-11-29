@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
@@ -88,18 +89,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="ITreeItemContainerGenerator"/> for the tree view.
         /// </summary>
-        public new ITreeItemContainerGenerator ItemContainerGenerator =>
-            (ITreeItemContainerGenerator)base.ItemContainerGenerator;
+        ////public new ITreeItemContainerGenerator ItemContainerGenerator =>
+        ////    (ITreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new TreeItemContainerGenerator<TreeViewItem>(
-                this,
-                TreeViewItem.HeaderProperty,
-                TreeViewItem.ItemTemplateProperty,
-                TreeViewItem.ItemsProperty,
-                TreeViewItem.IsExpandedProperty);
+            throw new NotImplementedException();
+            ////return new TreeItemContainerGenerator<TreeViewItem>(
+            ////    this,
+            ////    TreeViewItem.HeaderProperty,
+            ////    TreeViewItem.ItemTemplateProperty,
+            ////    TreeViewItem.ItemsProperty,
+            ////    TreeViewItem.IsExpandedProperty);
         }
 
         /// <inheritdoc/>
@@ -110,7 +112,7 @@ namespace Avalonia.Controls
             _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
             
             Level = CalculateDistanceFromLogicalParent<TreeView>(this) - 1;
-            ItemContainerGenerator.UpdateIndex();
+            ////ItemContainerGenerator.UpdateIndex();
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
             {
@@ -121,7 +123,7 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromLogicalTree(e);
-            ItemContainerGenerator.UpdateIndex();
+            ////ItemContainerGenerator.UpdateIndex();
         }
 
         protected virtual void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
@@ -190,7 +192,7 @@ namespace Avalonia.Controls
                 // If we're not attached to the logical tree, then OnDetachedFromLogicalTree isn't going to be
                 // called when the item is removed. This results in the item not being removed from the index,
                 // causing #3551. In this case, update the index when Parent is changed to null.
-                ItemContainerGenerator.UpdateIndex();
+                ////ItemContainerGenerator.UpdateIndex();
             }
         }
     }
