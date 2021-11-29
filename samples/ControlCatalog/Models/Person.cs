@@ -11,7 +11,7 @@ using Avalonia.Media;
 
 namespace ControlCatalog.Models
 {
-    public class Person : INotifyDataErrorInfo, INotifyPropertyChanged
+    public class Person
     {
         string _firstName;
         string _lastName;
