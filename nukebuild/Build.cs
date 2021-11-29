@@ -253,7 +253,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net462\\Avalonia.LeakTests.dll";
+            var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
             DotMemoryUnit(
                 $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
                 timeout: 120_000);
