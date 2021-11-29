@@ -21,8 +21,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155" />    
-    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.0-preview.155" />
   </ItemGroup>
 
   <ItemGroup>
