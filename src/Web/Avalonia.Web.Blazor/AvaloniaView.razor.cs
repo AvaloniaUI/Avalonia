@@ -47,8 +47,7 @@ namespace Avalonia.Web.Blazor
 
         void OnMouseMove(MouseEventArgs e)
         {
-            _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY),
-                RawInputModifiers.None);
+            _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
         }
 
         void OnMouseUp(MouseEventArgs e)
@@ -113,6 +112,15 @@ namespace Avalonia.Web.Blazor
                 modifiers |= RawInputModifiers.Shift;
             if (e.MetaKey)
                 modifiers |= RawInputModifiers.Meta;
+            
+            if ((e.Buttons & 1L) == 1)
+                modifiers |= RawInputModifiers.LeftMouseButton;
+            
+            if ((e.Buttons & 2L) == 2)
+                modifiers |= RawInputModifiers.RightMouseButton;
+            
+            if ((e.Buttons & 4L) == 4)
+                modifiers |= RawInputModifiers.MiddleMouseButton;
 
             return modifiers;
         }
@@ -129,6 +137,15 @@ namespace Avalonia.Web.Blazor
                 modifiers |= RawInputModifiers.Shift;
             if (e.MetaKey)
                 modifiers |= RawInputModifiers.Meta;
+
+            if ((e.Buttons & 1L) == 1)
+                modifiers |= RawInputModifiers.LeftMouseButton;
+            
+            if ((e.Buttons & 2L) == 2)
+                modifiers |= RawInputModifiers.RightMouseButton;
+            
+            if ((e.Buttons & 4L) == 4)
+                modifiers |= RawInputModifiers.MiddleMouseButton;
 
             return modifiers;
         }
