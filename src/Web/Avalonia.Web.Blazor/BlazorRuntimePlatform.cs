@@ -1,10 +1,8 @@
-using System;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Shared.PlatformSupport;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     class BlazorRuntimePlatform : IRuntimePlatform
     {
@@ -46,7 +44,7 @@ namespace Avalonia.Blazor
             public int Size { get; }
             public bool IsDisposed => _data == IntPtr.Zero;
         }
-        
+
         public IUnmanagedBlob AllocBlob(int size)
         {
             return new BasicBlob(size);

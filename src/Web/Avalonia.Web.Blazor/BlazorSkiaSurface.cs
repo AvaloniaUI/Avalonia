@@ -1,8 +1,7 @@
-using Avalonia;
-using Avalonia.Blazor.Interop;
+using Avalonia.Web.Blazor.Interop;
 using SkiaSharp;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     internal class BlazorSkiaSurface
     {

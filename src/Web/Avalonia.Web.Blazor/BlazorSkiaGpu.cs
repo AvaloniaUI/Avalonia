@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using Avalonia;
 using Avalonia.Skia;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     public class BlazorSkiaGpu : ISkiaGpu
     {

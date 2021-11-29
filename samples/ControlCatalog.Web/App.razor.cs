@@ -1,4 +1,4 @@
-using Avalonia.Blazor;
+using Avalonia.Web.Blazor;
 
 namespace ControlCatalog.Web;
 

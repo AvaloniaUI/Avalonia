@@ -1,7 +1,7 @@
 using Avalonia.Skia;
 using SkiaSharp;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     internal class BlazorSkiaGpuRenderTarget : ISkiaGpuRenderTarget
     {

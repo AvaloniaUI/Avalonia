@@ -1,15 +1,15 @@
-using Avalonia.Blazor.Interop;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Web.Blazor.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SkiaSharp;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     public partial class AvaloniaView : ITextInputMethodImpl
     {
@@ -103,36 +103,48 @@ namespace Avalonia.Blazor
 
         static RawInputModifiers GetModifiers(WheelEventArgs e)
         {
-            RawInputModifiers modifiers = RawInputModifiers.None;
+            var modifiers = RawInputModifiers.None;
 
-            if (e.CtrlKey) modifiers |= RawInputModifiers.Control;
-            if (e.AltKey) modifiers |= RawInputModifiers.Alt;
-            if (e.ShiftKey) modifiers |= RawInputModifiers.Shift;
-            if (e.MetaKey) modifiers |= RawInputModifiers.Meta;
+            if (e.CtrlKey)
+                modifiers |= RawInputModifiers.Control;
+            if (e.AltKey)
+                modifiers |= RawInputModifiers.Alt;
+            if (e.ShiftKey)
+                modifiers |= RawInputModifiers.Shift;
+            if (e.MetaKey)
+                modifiers |= RawInputModifiers.Meta;
 
             return modifiers;
         }
 
         static RawInputModifiers GetModifiers(MouseEventArgs e)
         {
-            RawInputModifiers modifiers = RawInputModifiers.None;
+            var modifiers = RawInputModifiers.None;
 
-            if (e.CtrlKey) modifiers |= RawInputModifiers.Control;
-            if (e.AltKey) modifiers |= RawInputModifiers.Alt;
-            if (e.ShiftKey) modifiers |= RawInputModifiers.Shift;
-            if (e.MetaKey) modifiers |= RawInputModifiers.Meta;
+            if (e.CtrlKey)
+                modifiers |= RawInputModifiers.Control;
+            if (e.AltKey)
+                modifiers |= RawInputModifiers.Alt;
+            if (e.ShiftKey)
+                modifiers |= RawInputModifiers.Shift;
+            if (e.MetaKey)
+                modifiers |= RawInputModifiers.Meta;
 
             return modifiers;
         }
 
         static RawInputModifiers GetModifiers(KeyboardEventArgs e)
         {
-            RawInputModifiers modifiers = RawInputModifiers.None;
+            var modifiers = RawInputModifiers.None;
 
-            if (e.CtrlKey) modifiers |= RawInputModifiers.Control;
-            if (e.AltKey) modifiers |= RawInputModifiers.Alt;
-            if (e.ShiftKey) modifiers |= RawInputModifiers.Shift;
-            if (e.MetaKey) modifiers |= RawInputModifiers.Meta;
+            if (e.CtrlKey)
+                modifiers |= RawInputModifiers.Control;
+            if (e.AltKey)
+                modifiers |= RawInputModifiers.Alt;
+            if (e.ShiftKey)
+                modifiers |= RawInputModifiers.Shift;
+            if (e.MetaKey)
+                modifiers |= RawInputModifiers.Meta;
 
             return modifiers;
         }
@@ -163,7 +175,7 @@ namespace Avalonia.Blazor
         {
             if (firstRender)
             {
-                Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
+                Threading.Dispatcher.UIThread.Post(async () =>
                 {
                     await Js.InvokeVoidAsync("hideInput");
                     await Js.InvokeVoidAsync("setCursor", "default");

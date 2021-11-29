@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Avalonia.Input;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     internal static class Keycodes
     {

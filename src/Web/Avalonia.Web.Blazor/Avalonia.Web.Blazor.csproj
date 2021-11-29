@@ -7,12 +7,29 @@
     <PackageId>Avalonia.Web.Blazor</PackageId>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
-
-
+  
   <ItemGroup>
     <SupportedPlatform Include="browser" />
     <Compile Include="..\..\Shared\PlatformSupport\AssetLoader.cs" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <TypescriptOutDir>wwwroot</TypescriptOutDir>
+    <TypeScriptNoEmitOnError>true</TypeScriptNoEmitOnError>
+    <TypeScriptNoImplicitReturns>true</TypeScriptNoImplicitReturns>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptRemoveComments>false</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>true</TypeScriptSourceMap>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>false</TypeScriptSourceMap>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\build\SkiaSharp.props" />
+  <Import Project="..\..\..\build\HarfBuzzSharp.props" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />

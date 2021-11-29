@@ -6,7 +6,7 @@ using Avalonia.Platform;
 using Avalonia.Skia;
 using SkiaSharp;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     public class CustomFontManagerImpl : IFontManagerImpl
     {
@@ -14,11 +14,11 @@ namespace Avalonia.Blazor
         private readonly string _defaultFamilyName;
 
         private readonly Typeface _defaultTypeface =
-            new Typeface("avares://Avalonia.Blazor/Assets#Noto Mono");
+            new Typeface("avares://Avalonia.Web.Blazor/Assets#Noto Mono");
         private readonly Typeface _italicTypeface =
-            new Typeface("avares://Avalonia.Blazor/Assets#Noto Sans");
+            new Typeface("avares://Avalonia.Web.Blazor/Assets#Noto Sans");
         private readonly Typeface _emojiTypeface =
-            new Typeface("avares://Avalonia.Blazor/Assets#Twitter Color Emoji");
+            new Typeface("avares://Avalonia.Web.Blazor/Assets#Twitter Color Emoji");
 
         public CustomFontManagerImpl()
         {
