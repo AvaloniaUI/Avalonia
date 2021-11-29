@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Avalonia.Blazor.Interop;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -7,9 +6,10 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Web.Blazor.Interop;
 using SkiaSharp;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod
     {
@@ -50,7 +50,7 @@ namespace Avalonia.Blazor
 
                 if (_currentSurface is { })
                 {
-                    _currentSurface.Size = new PixelSize((int)(size.Width), (int)(size.Height));
+                    _currentSurface.Size = new PixelSize((int)size.Width, (int)size.Height);
                 }
 
                 Resized?.Invoke(newSize, PlatformResizeReason.User);

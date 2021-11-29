@@ -232,7 +232,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniMvvm", "samples\MiniMvv
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{86A3F706-DC3C-43C6-BE1B-B98F5BAAA268}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Blazor", "src\Web\Avalonia.Blazor\Avalonia.Blazor.csproj", "{25831348-EB2A-483E-9576-E8F6528674A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Web.Blazor", "src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.csproj", "{25831348-EB2A-483E-9576-E8F6528674A5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Web", "samples\ControlCatalog.Web\ControlCatalog.Web.csproj", "{C08E9894-AA92-426E-BF56-033E262CAD3E}"
 EndProject

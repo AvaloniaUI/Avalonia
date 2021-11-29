@@ -9,7 +9,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     class ClipboardStub : IClipboard
     {
@@ -30,7 +30,7 @@ namespace Avalonia.Blazor
     {
         public void Dispose()
         {
-            
+
         }
     }
 
@@ -53,7 +53,7 @@ namespace Avalonia.Blazor
         {
             public void Save(Stream outputStream)
             {
-                
+
             }
         }
 
@@ -67,10 +67,10 @@ namespace Avalonia.Blazor
     class SystemDialogsStub : ISystemDialogImpl
     {
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
-            Task.FromResult((string[]) null);
+            Task.FromResult((string[])null);
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
-            Task.FromResult((string) null);
+            Task.FromResult((string)null);
     }
 
     class ScreenStub : IScreenImpl

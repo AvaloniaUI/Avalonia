@@ -19,19 +19,19 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="2.8.2-preview.171" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.0-preview.171" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155" />    
-    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="2.88.0-preview.155" />
   </ItemGroup>
 
   <ItemGroup>
-    <NativeFileReference Include="libHarfBuzzSharp.a" />
+    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)\2.0.23\libHarfBuzzSharp.a" />
     <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\2.0.23\libSkiaSharp.a" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Web\Avalonia.Blazor\Avalonia.Blazor.csproj" />
+    <ProjectReference Include="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
 

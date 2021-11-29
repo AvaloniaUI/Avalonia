@@ -1,5 +1,3 @@
-using System;
-using System.Threading;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -7,7 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
-namespace Avalonia.Blazor
+namespace Avalonia.Web.Blazor
 {
     public class BlazorWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
     {
@@ -17,7 +15,7 @@ namespace Avalonia.Blazor
         private static int _uiThreadId = -1;
         private static int _lockNesting = 0;
 
-        public IWindowImpl CreateWindow() => throw new System.NotSupportedException();
+        public IWindowImpl CreateWindow() => throw new NotSupportedException();
 
         IWindowImpl IWindowingPlatform.CreateEmbeddableWindow()
         {
@@ -28,9 +26,9 @@ namespace Avalonia.Blazor
         {
             return null;
         }
-        
+
         public static KeyboardDevice Keyboard { get; private set; }
-        
+
         public static void Register()
         {
             var instance = new BlazorWindowingPlatform();
@@ -75,7 +73,7 @@ namespace Avalonia.Blazor
         {
             lock (_syncRootLock)
             {
-                if(_signaled)
+                if (_signaled)
                     return;
                 _signaled = true;
                 IDisposable disp = null;
@@ -88,7 +86,7 @@ namespace Avalonia.Blazor
                                 _signaled = false;
                                 disp.Dispose();
                             }
-                            
+
                             using (Lock())
                                 Signaled?.Invoke(null);
                         });
@@ -102,7 +100,7 @@ namespace Avalonia.Blazor
                 return true; // Blazor is single threaded.
             }
         }
-        
+
         public event Action<DispatcherPriority?> Signaled;
 
         class LockDisposable : IDisposable
@@ -119,7 +117,7 @@ namespace Avalonia.Blazor
                 Monitor.Exit(_uiLock);
             }
         }
-        
+
         public static IDisposable Lock()
         {
             Monitor.Enter(_uiLock);
