@@ -46,43 +46,11 @@ namespace Avalonia.Diagnostics
                 RoutingStrategies.Tunnel);
         }
 
-        public static IDisposable Open(TopLevel root) => Open((AvaloniaObject)root);
+        public static IDisposable Open(TopLevel root) => 
+            Open(Application.Current,new DevToolsOptions(),root as Window);
 
-        private static IDisposable Open(AvaloniaObject root) => Open(root, new DevToolsOptions());
-
-        public static IDisposable Open(TopLevel root, DevToolsOptions options) => Open((AvaloniaObject)root, options);
-
-        private static IDisposable Open(AvaloniaObject root, DevToolsOptions options)
-        {
-            if (s_open.TryGetValue(root, out var window))
-            {
-                window.Activate();
-            }
-            else
-            {
-                window = new MainWindow
-                {
-                    Root = root,
-                    Width = options.Size.Width,
-                    Height = options.Size.Height,
-                };
-                window.SetOptions(options);
-
-                window.Closed += DevToolsClosed;
-                s_open.Add(root, window);
-
-                if (options.ShowAsChildWindow && root is Window inspectedWindow)
-                {
-                    window.Show(inspectedWindow);
-                }
-                else
-                {
-                    window.Show();
-                }
-            }
-
-            return Disposable.Create(() => window?.Close());
-        }
+        public static IDisposable Open(TopLevel root, DevToolsOptions options) => 
+            Open(Application.Current, options, root as Window);
 
         private static void DevToolsClosed(object? sender, EventArgs e)
         {
@@ -98,41 +66,40 @@ namespace Avalonia.Diagnostics
             }
         }
 
-        internal static void Attach(Application application, DevToolsOptions options)
+        internal static IDisposable Attach(Application application, DevToolsOptions options, Window? owner = null)
         {
+            var reuslt = Disposable.Empty;
             // Skip if call on Design Mode
-            if(Avalonia.Controls.Design.IsDesignMode)
+            if (!Avalonia.Controls.Design.IsDesignMode
+                && !s_attachedToApplication)
             {
-                return;
-            }
-            if (s_attachedToApplication == true)
-            {
-                throw new ArgumentException("DevTools already attached to application", nameof(application));
-            }
-            var lifeTime = application.ApplicationLifetime
-                as Avalonia.Controls.ApplicationLifetimes.IControlledApplicationLifetime;
 
-            if (lifeTime is null)
-            {
-                throw new ArgumentNullException(nameof(Application.ApplicationLifetime));
-            }
+                var lifeTime = application.ApplicationLifetime
+                    as Avalonia.Controls.ApplicationLifetimes.IControlledApplicationLifetime;
 
-            if (application.InputManager is { })
-            {
-                s_attachedToApplication = true;
-
-                application.InputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(e =>
+                if (lifeTime is null)
                 {
-                    if (options.Gesture.Matches(e))
-                    {
-                        Open(application, options);
-                    }
-                });
+                    throw new ArgumentNullException(nameof(Application.ApplicationLifetime));
+                }
 
+                if (application.InputManager is { })
+                {
+                    s_attachedToApplication = true;
+
+                    application.InputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(e =>
+                    {
+                        if (options.Gesture.Matches(e))
+                        {
+                          reuslt =  Open(application, options, owner);
+                        }
+                    });
+
+                }
             }
+            return reuslt;
         }
 
-        private static IDisposable Open(Application application, DevToolsOptions options)
+        private static IDisposable Open(Application application, DevToolsOptions options, Window? owner = default)
         {
             if (s_open.TryGetValue(application, out var window))
             {                
@@ -150,7 +117,14 @@ namespace Avalonia.Diagnostics
 
                 window.Closed += DevToolsClosed;
                 s_open.Add(application, window);
-                window.Show();
+                if (options.ShowAsChildWindow && owner is { })
+                {
+                    window.Show(owner);
+                }
+                else
+                {
+                    window.Show();
+                }
             }
             return Disposable.Create(() => window?.Close());
         }
