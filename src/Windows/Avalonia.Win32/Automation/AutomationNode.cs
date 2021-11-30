@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -223,7 +222,6 @@ namespace Avalonia.Win32.Automation
                 Dispatcher.UIThread.InvokeAsync(action).Wait();
         }
 
-        [return: MaybeNull]
         protected T InvokeSync<T>(Func<T> func)
         {
             if (Dispatcher.UIThread.CheckAccess())
@@ -245,9 +243,12 @@ namespace Avalonia.Win32.Automation
                     throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
                 }
             }
+            else
+            {
+                throw new NotSupportedException();
+            }
         }
 
-        [return: MaybeNull]
         protected TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
         {
             if (Peer.GetProvider<TInterface>() is TInterface i)
@@ -262,7 +263,7 @@ namespace Avalonia.Win32.Automation
                 }
             }
 
-            return default;
+            throw new NotSupportedException();
         }
 
         protected void RaiseFocusChanged(AutomationNode? focused)
