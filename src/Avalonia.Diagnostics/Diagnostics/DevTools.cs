@@ -68,7 +68,7 @@ namespace Avalonia.Diagnostics
 
         internal static IDisposable Attach(Application application, DevToolsOptions options, Window? owner = null)
         {
-            var reuslt = Disposable.Empty;
+            var result = Disposable.Empty;
             // Skip if call on Design Mode
             if (!Avalonia.Controls.Design.IsDesignMode
                 && !s_attachedToApplication)
@@ -90,13 +90,13 @@ namespace Avalonia.Diagnostics
                     {
                         if (options.Gesture.Matches(e))
                         {
-                          reuslt =  Open(application, options, owner);
+                          result =  Open(application, options, owner);
                         }
                     });
 
                 }
             }
-            return reuslt;
+            return result;
         }
 
         private static IDisposable Open(Application application, DevToolsOptions options, Window? owner = default)
