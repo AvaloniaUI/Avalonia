@@ -247,7 +247,7 @@ namespace Avalonia.Data
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => new BindingValue<T>((T)value)
+                _ => new BindingValue<T>((T?)value)
             };
         }
 

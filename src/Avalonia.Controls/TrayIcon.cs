@@ -140,7 +140,7 @@ namespace Avalonia.Controls
         /// Gets or sets the parameter to pass to the <see cref="Command"/> property of a
         /// <see cref="TrayIcon"/>.
         /// </summary>
-        public object CommandParameter
+        public object? CommandParameter
         {
             get { return GetValue(CommandParameterProperty); }
             set { SetValue(CommandParameterProperty, value); }
