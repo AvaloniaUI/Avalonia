@@ -54,6 +54,11 @@ namespace Avalonia.Automation.Provider
         event EventHandler? SelectedRangesChanged;
 
         /// <summary>
+        /// Occurs when the control's text changes.
+        /// </summary>
+        event EventHandler? TextChanged;
+
+        /// <summary>
         /// Retrieves a collection of text ranges that represents the currently selected text in a
         /// text-based control.
         /// </summary>

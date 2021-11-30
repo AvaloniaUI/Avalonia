@@ -47,12 +47,20 @@ namespace Avalonia.Win32.Automation
         private void InitializeTextProvider()
         {
             if (Peer is ITextProvider provider)
+            {
                 provider.SelectedRangesChanged += PeerSelectedTextRangesChanged;
+                provider.TextChanged += PeerTextChanged;
+            }
         }
 
         private void PeerSelectedTextRangesChanged(object sender, EventArgs e)
         {
             RaiseEvent(UIA.UiaEventId.Text_TextSelectionChanged);
+        }
+
+        private void PeerTextChanged(object sender, EventArgs e)
+        {
+            RaiseEvent(UIA.UiaEventId.Text_TextChanged);
         }
     }
 }

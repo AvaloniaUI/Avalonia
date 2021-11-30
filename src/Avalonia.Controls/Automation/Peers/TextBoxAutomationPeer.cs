@@ -20,6 +20,7 @@ namespace Avalonia.Automation.Peers
         {
             owner.GetObservable(TextBox.SelectionStartProperty).Subscribe(OnSelectionChanged);
             owner.GetObservable(TextBox.SelectionEndProperty).Subscribe(OnSelectionChanged);
+            owner.GetObservable(TextBox.TextProperty).Subscribe(OnTextChanged);
         }
 
         public new TextBox Owner => (TextBox)base.Owner;
@@ -34,10 +35,13 @@ namespace Avalonia.Automation.Peers
         string ITextPeer.Text => Owner.Text ?? string.Empty;
         
         public event EventHandler? SelectedRangesChanged;
+        public event EventHandler? TextChanged;
 
         public IReadOnlyList<ITextRangeProvider> GetSelection()
         {
-            return new[] { new AutomationTextRange(this, Owner.SelectionStart, Owner.SelectionEnd) };
+            var start = Owner.SelectionStart;
+            var end = Owner.SelectionEnd;
+            return new[] { new AutomationTextRange(this, Math.Min(start, end), Math.Max(start, end)) };
         }
 
         public IReadOnlyList<ITextRangeProvider> GetVisibleRanges()
@@ -131,5 +135,6 @@ namespace Avalonia.Automation.Peers
         }
 
         private void OnSelectionChanged(int obj) => SelectedRangesChanged?.Invoke(this, EventArgs.Empty);
+        private void OnTextChanged(string? text) => TextChanged?.Invoke(this, EventArgs.Empty);
     }
 }
