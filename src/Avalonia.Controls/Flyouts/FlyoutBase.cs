@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property
         /// </summary>
-        private static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
+        public static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
            AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
                x => x.IsOpen);
 
