@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -56,6 +57,7 @@ namespace Avalonia.Win32.Automation
             _runtimeId = new int[] { 3, GetHashCode() };
             Peer = peer;
             s_nodes.Add(peer, this);
+            InitializeTextProvider();
         }
 
         public AutomationPeer Peer { get; protected set; }
@@ -109,6 +111,7 @@ namespace Avalonia.Win32.Automation
                 UiaPatternId.ScrollItem => this,
                 UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
                 UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
                 UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
                 UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
                 _ => null,
@@ -177,9 +180,88 @@ namespace Avalonia.Win32.Automation
 
         public void SetFocus() => InvokeSync(() => Peer.SetFocus());
 
+        [return: NotNullIfNotNull("peer")]
         public static AutomationNode? GetOrCreate(AutomationPeer? peer)
         {
             return peer is null ? null : s_nodes.GetValue(peer, Create);
+        }
+
+        public AutomationNode? GetRoot()
+        {
+            Dispatcher.UIThread.VerifyAccess();
+
+            var peer = Peer;
+            var parent = peer.GetParent();
+
+            while (peer.GetProvider<AAP.IRootProvider>() is null && parent is object)
+            {
+                peer = parent;
+                parent = peer.GetParent();
+            }
+
+            return peer is object ? GetOrCreate(peer) : null;
+        }
+
+        public void InvokeSync(Action action)
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+                action();
+            else
+                Dispatcher.UIThread.InvokeAsync(action).Wait();
+        }
+
+        public T InvokeSync<T>(Func<T> func)
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+                return func();
+            else
+                return Dispatcher.UIThread.InvokeAsync(func).Result;
+        }
+
+        public void InvokeSync<TInterface>(Action<TInterface> action)
+        {
+            if (Peer.GetProvider<TInterface>() is TInterface i)
+            {
+                try
+                {
+                    InvokeSync(() => action(i));
+                }
+                catch (AggregateException e) when (e.InnerException is ElementNotEnabledException)
+                {
+                    throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
+                }
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        public TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
+        {
+            if (Peer.GetProvider<TInterface>() is TInterface i)
+            {
+                try
+                {
+                    return InvokeSync(() => func(i));
+                }
+                catch (AggregateException e) when (e.InnerException is ElementNotEnabledException)
+                {
+                    throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
+                }
+            }
+
+            throw new NotSupportedException();
+        }
+
+        public Point ToClient(Point p)
+        {
+            return ToClient(PixelPoint.FromPoint(p, 1));
+        }
+
+        public Point ToClient(PixelPoint p)
+        {
+            return (GetRoot() as RootAutomationNode)?.ToClient(p) ?? default;
         }
 
         public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
@@ -214,82 +296,14 @@ namespace Avalonia.Win32.Automation
             }
         }
 
-        protected void InvokeSync(Action action)
+        protected void RaiseEvent(UiaEventId eventId)
         {
-            if (Dispatcher.UIThread.CheckAccess())
-                action();
-            else
-                Dispatcher.UIThread.InvokeAsync(action).Wait();
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)eventId);
         }
 
-        protected T InvokeSync<T>(Func<T> func)
+        protected void RaiseEvent(AutomationNode node, UiaEventId eventId)
         {
-            if (Dispatcher.UIThread.CheckAccess())
-                return func();
-            else
-                return Dispatcher.UIThread.InvokeAsync(func).Result;
-        }
-
-        protected void InvokeSync<TInterface>(Action<TInterface> action)
-        {
-            if (Peer.GetProvider<TInterface>() is TInterface i)
-            {
-                try
-                {
-                    InvokeSync(() => action(i));
-                }
-                catch (AggregateException e) when (e.InnerException is ElementNotEnabledException)
-                {
-                    throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
-                }
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        protected TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
-        {
-            if (Peer.GetProvider<TInterface>() is TInterface i)
-            {
-                try
-                {
-                    return InvokeSync(() => func(i));
-                }
-                catch (AggregateException e) when (e.InnerException is ElementNotEnabledException)
-                {
-                    throw new COMException(e.Message, UiaCoreProviderApi.UIA_E_ELEMENTNOTENABLED);
-                }
-            }
-
-            throw new NotSupportedException();
-        }
-
-        protected void RaiseFocusChanged(AutomationNode? focused)
-        {
-            if (_raiseFocusChanged > 0)
-            {
-                UiaCoreProviderApi.UiaRaiseAutomationEvent(
-                    focused,
-                    (int)UiaEventId.AutomationFocusChanged);
-            }
-        }
-
-        private AutomationNode? GetRoot()
-        {
-            Dispatcher.UIThread.VerifyAccess();
-
-            var peer = Peer;
-            var parent = peer.GetParent();
-
-            while (peer.GetProvider<AAP.IRootProvider>() is null && parent is object)
-            {
-                peer = parent;
-                parent = peer.GetParent();
-            }
-
-            return peer is object ? GetOrCreate(peer) : null;
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(node, (int)eventId);
         }
 
         private static AutomationNode Create(AutomationPeer peer)

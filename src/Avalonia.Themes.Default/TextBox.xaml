@@ -56,7 +56,8 @@
 
               <Grid ColumnDefinitions="Auto,*,Auto">
                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="1" Content="{TemplateBinding InnerLeftContent}"/>
-                <ScrollViewer Grid.Column="1" Grid.ColumnSpan="1"
+                <ScrollViewer Name="PART_ScrollViewer"
+                              Grid.Column="1" Grid.ColumnSpan="1"
                               HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                               AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">

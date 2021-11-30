@@ -531,9 +531,13 @@ namespace Avalonia.Controls
             remove => RemoveHandler(PastingFromClipboardEvent, value);
         }
 
+        internal TextPresenter Presenter => _presenter;
+        internal IScrollable Scroll { get; private set; }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
+            Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
             _imClient.SetPresenter(_presenter);
             if (IsFocused)
             {
