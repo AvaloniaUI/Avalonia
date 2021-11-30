@@ -57,6 +57,21 @@ namespace Avalonia.Diagnostics.Controls
             _application.FocusManager;
 
         /// <summary>
+        /// Gets the application's input manager.
+        /// </summary>
+        /// <value>
+        /// The application's input manager.
+        /// </value>
+        public Input.InputManager InputManager =>
+            _application.InputManager;
+
+        /// <summary>
+        /// Gets the application clipboard.
+        /// </summary>
+        public Input.Platform.IClipboard Clipboard =>
+            _application.Clipboard;
+
+        /// <summary>
         /// Gets the application's global resource dictionary.
         /// </summary>
         public IResourceDictionary Resources =>
