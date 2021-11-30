@@ -39,6 +39,11 @@ namespace Avalonia.Automation.Provider
         ITextRangeProvider DocumentRange { get; }
 
         /// <summary>
+        /// Gets the placeholder text.
+        /// </summary>
+        string? PlaceholderText { get; }
+
+        /// <summary>
         /// Gets a value that specifies the type of text selection that is supported by the control.
         /// </summary>
         SupportedTextSelection SupportedTextSelection { get; }

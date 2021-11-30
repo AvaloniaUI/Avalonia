@@ -131,6 +131,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.Culture => CultureInfo.CurrentCulture.LCID,
                 UiaPropertyId.FrameworkId => "Avalonia",
                 UiaPropertyId.HasKeyboardFocus => InvokeSync(() => Peer.HasKeyboardFocus()),
+                UiaPropertyId.HelpText => GetHelpText(),
                 UiaPropertyId.IsContentElement => InvokeSync(() => Peer.IsContentElement()),
                 UiaPropertyId.IsControlElement => InvokeSync(() => Peer.IsControlElement()),
                 UiaPropertyId.IsEnabled => InvokeSync(() => Peer.IsEnabled()),
@@ -304,6 +305,16 @@ namespace Avalonia.Win32.Automation
         protected void RaiseEvent(AutomationNode node, UiaEventId eventId)
         {
             UiaCoreProviderApi.UiaRaiseAutomationEvent(node, (int)eventId);
+        }
+
+        private string? GetHelpText()
+        {
+            return InvokeSync(() =>
+            {
+                // Placeholder is exposed via HelpText on UIA but help text and placeholder are two
+                // separate properties on macOS. Try both of them here.
+                return Peer.GetProvider<AAP.ITextProvider>()?.PlaceholderText ?? Peer.GetHelpText();
+            });
         }
 
         private static AutomationNode Create(AutomationPeer peer)

@@ -24,6 +24,7 @@ namespace Avalonia.Automation.Peers
 
         public new TextBox Owner => (TextBox)base.Owner;
         public bool IsReadOnly => Owner.IsReadOnly;
+        public string? PlaceholderText => Owner.Watermark;
         public string? Value => Owner.Text;
         public SupportedTextSelection SupportedTextSelection => SupportedTextSelection.Single;
 
