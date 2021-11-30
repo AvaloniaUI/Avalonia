@@ -74,19 +74,16 @@ namespace Avalonia.Automation.Peers
         IReadOnlyList<Rect> ITextPeer.GetBounds(int start, int end)
         {
             if (Owner.Presenter is TextPresenter presenter &&
-                Owner.GetVisualRoot() is IVisual root &&
-                presenter.TransformToVisual(root) is Matrix m)
+                presenter.TransformedBounds is TransformedBounds t)
             {
-                var scroll = Owner.Scroll as Control;
-                var clip = new Rect(scroll?.Bounds.Size ?? presenter.Bounds.Size);
                 var source = presenter.FormattedText.HitTestTextRange(start, end - start);
                 var result = new List<Rect>();
 
                 foreach (var rect in source)
                 {
-                    var r = rect.Intersect(clip);
+                    var r = rect.TransformToAABB(t.Transform).Intersect(t.Clip);
                     if (!r.IsEmpty)
-                        result.Add(r.TransformToAABB(m));
+                        result.Add(r);
                 }
 
                 return result;
