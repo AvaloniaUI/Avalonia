@@ -11,11 +11,11 @@ namespace Avalonia.Win32.Automation
 {
     internal partial class AutomationNode : UIA.ISelectionProvider, UIA.ISelectionItemProvider
     {
-        public bool CanSelectMultiple => InvokeSync<ISelectionProvider, bool>(x => x.CanSelectMultiple);
-        public bool IsSelectionRequired => InvokeSync<ISelectionProvider, bool>(x => x.IsSelectionRequired);
-        public bool IsSelected => InvokeSync<ISelectionItemProvider, bool>(x => x.IsSelected);
+        bool UIA.ISelectionProvider.CanSelectMultiple => InvokeSync<ISelectionProvider, bool>(x => x.CanSelectMultiple);
+        bool UIA.ISelectionProvider.IsSelectionRequired => InvokeSync<ISelectionProvider, bool>(x => x.IsSelectionRequired);
+        bool UIA.ISelectionItemProvider.IsSelected => InvokeSync<ISelectionItemProvider, bool>(x => x.IsSelected);
         
-        public UIA.IRawElementProviderSimple? SelectionContainer
+        UIA.IRawElementProviderSimple? UIA.ISelectionItemProvider.SelectionContainer
         {
             get
             {
@@ -24,15 +24,15 @@ namespace Avalonia.Win32.Automation
             }
         }
 
-        public UIA.IRawElementProviderSimple[] GetSelection()
+        UIA.IRawElementProviderSimple[] UIA.ISelectionProvider.GetSelection()
         {
             var peers = InvokeSync<ISelectionProvider, IReadOnlyList<AutomationPeer>>(x => x.GetSelection());
             return peers?.Select(x => (UIA.IRawElementProviderSimple)GetOrCreate(x)!).ToArray() ??
                 Array.Empty<UIA.IRawElementProviderSimple>();
         }
 
-        public void AddToSelection() => InvokeSync<ISelectionItemProvider>(x => x.AddToSelection());
-        public void RemoveFromSelection() => InvokeSync<ISelectionItemProvider>(x => x.RemoveFromSelection());
-        public void Select() => InvokeSync<ISelectionItemProvider>(x => x.Select());
+        void UIA.ISelectionItemProvider.AddToSelection() => InvokeSync<ISelectionItemProvider>(x => x.AddToSelection());
+        void UIA.ISelectionItemProvider.RemoveFromSelection() => InvokeSync<ISelectionItemProvider>(x => x.RemoveFromSelection());
+        void UIA.ISelectionItemProvider.Select() => InvokeSync<ISelectionItemProvider>(x => x.Select());
     }
 }

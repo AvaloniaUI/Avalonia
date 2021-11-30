@@ -8,9 +8,10 @@ namespace Avalonia.Win32.Automation
 {
     internal partial class AutomationNode : UIA.IValueProvider
     {
-        public string? Value => InvokeSync<IValueProvider, string?>(x => x.Value);
+        bool UIA.IValueProvider.IsReadOnly => InvokeSync<IValueProvider, bool>(x => x.IsReadOnly);
+        string? UIA.IValueProvider.Value => InvokeSync<IValueProvider, string?>(x => x.Value);
 
-        public void SetValue([MarshalAs(UnmanagedType.LPWStr)] string? value)
+        void UIA.IValueProvider.SetValue([MarshalAs(UnmanagedType.LPWStr)] string? value)
         {
             InvokeSync<IValueProvider>(x => x.SetValue(value));
         }
