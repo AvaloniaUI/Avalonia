@@ -95,7 +95,7 @@ namespace Avalonia.Diagnostics
             else
             {
                 s_open.Remove(window.Root!);
-            }                       
+            }
         }
 
         internal static void Attach(Application application, DevToolsOptions options)
@@ -116,15 +116,20 @@ namespace Avalonia.Diagnostics
             {
                 throw new ArgumentNullException(nameof(Application.ApplicationLifetime));
             }
-            s_attachedToApplication = true;
 
-            application.InputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(e =>
+            if (application.InputManager is { })
+            {
+                s_attachedToApplication = true;
+
+                application.InputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(e =>
                 {
                     if (options.Gesture.Matches(e))
                     {
                         Open(application, options);
                     }
                 });
+
+            }
         }
 
         private static IDisposable Open(Application application, DevToolsOptions options)

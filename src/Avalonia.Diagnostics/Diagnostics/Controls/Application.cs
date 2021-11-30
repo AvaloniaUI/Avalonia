@@ -53,7 +53,7 @@ namespace Avalonia.Diagnostics.Controls
         /// <value>
         /// The application's focus manager.
         /// </value>
-        public Input.IFocusManager FocusManager =>
+        public Input.IFocusManager? FocusManager =>
             _application.FocusManager;
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Avalonia.Diagnostics.Controls
         /// <value>
         /// The application's input manager.
         /// </value>
-        public Input.InputManager InputManager =>
+        public Input.InputManager? InputManager =>
             _application.InputManager;
 
         /// <summary>

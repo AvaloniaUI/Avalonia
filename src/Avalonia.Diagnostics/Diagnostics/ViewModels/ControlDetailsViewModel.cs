@@ -17,7 +17,7 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
         private readonly IAvaloniaObject _avaloniaObject;
-        private IDictionary<object, List<PropertyViewModel>> _propertyIndex;
+        private IDictionary<object, List<PropertyViewModel>>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private DataGridCollectionView? _propertiesView;
         private bool _snapshotStyles;
