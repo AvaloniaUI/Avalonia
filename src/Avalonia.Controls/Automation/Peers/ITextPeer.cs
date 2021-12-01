@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Controls.Presenters;
+using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 
 #nullable enable
 
@@ -7,6 +10,10 @@ namespace Avalonia.Automation.Peers
     /// <summary>
     /// Internal interface used by <see cref="AutomationTextRange"/> to communicate with its peer.
     /// </summary>
+    /// <remarks>
+    /// This should be unnecessary when <see cref="TextPresenter"/> is changed to work with
+    /// <see cref="TextLayout"/> instead of <see cref="FormattedText"/>.
+    /// </remarks>
     internal interface ITextPeer
     {
         /// <summary>

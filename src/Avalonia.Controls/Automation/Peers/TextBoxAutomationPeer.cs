@@ -25,15 +25,14 @@ namespace Avalonia.Automation.Peers
 
         public new TextBox Owner => (TextBox)base.Owner;
         public bool IsReadOnly => Owner.IsReadOnly;
-        public string? PlaceholderText => Owner.Watermark;
         public string? Value => Owner.Text;
-        public SupportedTextSelection SupportedTextSelection => SupportedTextSelection.Single;
-
         public ITextRangeProvider DocumentRange => new AutomationTextRange(this, 0, Owner.Text?.Length ?? 0);
+        public string? PlaceholderText => Owner.Watermark;
+        public SupportedTextSelection SupportedTextSelection => SupportedTextSelection.Single;
 
         int ITextPeer.LineCount => Owner.Presenter?.FormattedText.GetLines().Count() ?? 1;
         string ITextPeer.Text => Owner.Text ?? string.Empty;
-        
+
         public event EventHandler? SelectedRangesChanged;
         public event EventHandler? TextChanged;
 
