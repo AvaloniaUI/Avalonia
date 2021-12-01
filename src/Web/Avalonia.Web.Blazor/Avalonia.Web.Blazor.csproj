@@ -32,6 +32,17 @@
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
 
   <ItemGroup>
+    <Content Include="*.props">
+      <Pack>true</Pack>
+      <PackagePath>build\;buildTransitive\</PackagePath>
+    </Content>
+    <Content Include="*.targets">
+      <Pack>true</Pack>
+      <PackagePath>build\;buildTransitive\</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.5.2" PrivateAssets="all" />
   </ItemGroup>
