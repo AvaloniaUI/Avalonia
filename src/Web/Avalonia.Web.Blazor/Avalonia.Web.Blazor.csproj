@@ -28,11 +28,12 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
   </PropertyGroup>
 
+  <Import Project="..\..\..\build\BuildTargets.targets" />
   <Import Project="..\..\..\build\SkiaSharp.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
 
   <AvaloniaResource Include="Assets\*" />
-  
+
   <ItemGroup>
     <Content Include="*.props">
       <Pack>true</Pack>
