@@ -17,7 +17,7 @@ namespace Avalonia.UnitTests
 
         public InvariantCultureFixture()
         {
-#if NET462
+#if NET461
             _restore = Thread.CurrentThread.CurrentCulture;
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 #else
@@ -28,7 +28,7 @@ namespace Avalonia.UnitTests
 
         public void Dispose()
         {
-#if NET462
+#if NET461
             Thread.CurrentThread.CurrentCulture = _restore;
 #else
             CultureInfo.CurrentCulture = _restore;

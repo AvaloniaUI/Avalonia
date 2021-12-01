@@ -23,7 +23,7 @@ namespace Avalonia.Shared.PlatformSupport
             {
 #if NETCOREAPP2_0
                 IsCoreClr = true,
-#elif NET462
+#elif NET461
                 IsDotNetFramework = false,
 #endif
                 IsDesktop = true,
