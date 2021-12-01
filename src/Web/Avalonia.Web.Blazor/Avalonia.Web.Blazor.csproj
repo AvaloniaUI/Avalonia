@@ -32,9 +32,8 @@
   <Import Project="..\..\..\build\SkiaSharp.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
 
-  <AvaloniaResource Include="Assets\*" />
-
   <ItemGroup>
+    <AvaloniaResource Include="Assets\*" />
     <Content Include="*.props">
       <Pack>true</Pack>
       <PackagePath>build\;buildTransitive\</PackagePath>
