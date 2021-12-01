@@ -23,8 +23,6 @@ namespace Avalonia.Web.Blazor
         {
             _surface.Flush();
 
-            GrContext.Flush();
-
             _surface.Dispose();
         }
 
