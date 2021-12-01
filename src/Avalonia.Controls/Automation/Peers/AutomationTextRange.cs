@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Controls.Utils;
 using Avalonia.Utilities;
 
 #nullable enable
 
 namespace Avalonia.Automation.Peers
 {
+    /// <summary>
+    /// An implementation of <see cref="ITextRangeProvider"/> that works by character index.
+    /// </summary>
     internal class AutomationTextRange : ITextRangeProvider
     {
-        private const string LineSeparator = "\r\n";
         private readonly ITextPeer _peer;
         private int _start;
         private int _end;
@@ -177,15 +180,52 @@ namespace Avalonia.Automation.Peers
                 return 0;
 
             var text = _peer.Text;
-            int moved;
 
-            if (Start != End)
+            // Save the start and end in case the move fails.
+            var oldStart = Start;
+            var oldEnd = End;
+            var wasDegenerate = Start == End;
+
+            // Move the start of the text range forward or backward in the document by the
+            // requested number of text unit boundaries.
+            var moved = MoveEndpointByUnit(TextPatternRangeEndpoint.Start, unit, count);
+            var succeeded = moved != 0;
+
+            if (succeeded)
+            {
+                // Make the range degenerate at the new start point.
                 End = Start;
 
-            if (count > 0)
-                Start = MoveEndpointForward(text, Start, unit, count, out moved);
-            else
-                End = MoveEndpointBackward(text, End, unit, count, out moved);
+                // If we previously had a non-degenerate range then expand the range.
+                if (!wasDegenerate)
+                {
+                    var forwards = count > 0;
+
+                    if (forwards && Start == text.Length - 1)
+                    {
+                        // The start is at the end of the document, so move the start backward by
+                        // one text unit to expand the text range from the degenerate range state.
+                        Start = MoveEndpointBackward(text, Start, unit, -1, out var expandMoved);
+                        --moved;
+                        succeeded = expandMoved == -1 && moved > 0;
+                    }
+                    else
+                    {
+                        // The start is not at the end of the document, so move the endpoint
+                        // forward by one text unit to expand the text range from the degenerate
+                        // state.
+                        End = MoveEndpointForward(text, End, unit, 1, out var expandMoved);
+                        succeeded = expandMoved > 0;
+                    }
+                }
+            }
+
+            if (!succeeded)
+            {
+                Start = oldStart;
+                End = oldEnd;
+                moved = 0;
+            }
 
             return moved;
         }
@@ -248,10 +288,6 @@ namespace Avalonia.Automation.Peers
         // so the span of a word includes trailing whitespace.
         private static bool AtWordBoundary(string text, int index)
         {
-            // NOTE: this is a heuristic word break detector that matches RichEdit behavior pretty well for
-            // English prose.  It is a placeholder until we put in something with real wordbreaking
-            // intelligence based on the System.NaturalLanguage DLL.
-
             // we are at a word boundary if we are at the beginning or end of the text
             if (index <= 0 || index >= text.Length)
             {
@@ -308,27 +344,10 @@ namespace Avalonia.Automation.Peers
 
                 case TextUnit.Line:
                     {
-                        // Figure out what line we are on.  If we are in the middle of a line and
-                        // are moving left then we'll round up to the next line so that we move
-                        // to the beginning of the current line.
                         var line = _peer.LineFromChar(index);
-
-                        // Limit the number of lines moved to the number of lines available to move
-                        // Note lineMax is always >= 1.
-                        var lineMax = _peer.LineCount;
-                        moved = Math.Min(count, lineMax - line - 1);
-
-                        if (moved > 0)
-                        {
-                            // <ove the endpoint to the beginning of the destination line.
-                            index = _peer.LineIndex(line + moved);
-                        }
-                        else if (moved == 0 && lineMax == 1)
-                        {
-                            // There is only one line so get the text length as endpoint
-                            index = _peer.Text.Length;
-                            moved = 1;
-                        }
+                        var newLine = MathUtilities.Clamp(line + count, 0, _peer.LineCount - 1);
+                        index = _peer.LineIndex(newLine);
+                        moved = newLine - line;
                     }
                     break;
 
@@ -358,6 +377,12 @@ namespace Avalonia.Automation.Peers
         // the endpoint.
         private int MoveEndpointBackward(string text, int index, TextUnit unit, int count, out int moved)
         {
+            if (index == 0)
+            {
+                moved = 0;
+                return 0;
+            }
+
             switch (unit)
             {
                 case TextUnit.Character:
@@ -376,50 +401,25 @@ namespace Avalonia.Automation.Peers
 
                 case TextUnit.Line:
                     {
-                        // Get 1-based line.
-                        int line = _peer.LineFromChar(index) + 1;
-                        int lineMax = _peer.LineCount;
+                        var line = _peer.LineFromChar(index);
 
-                        // Truncate the count to the number of available lines.
-                        int actualCount = Math.Max(count, -line);
-
-                        moved = actualCount;
-
-                        if (actualCount == -line)
+                        // If a line other than the first consists of only a newline, then you can
+                        // move backwards past this line and the position changes, hence this is
+                        // counted. The first line is special, though: if it is empty, and you move
+                        // say from the second line back up to the first, you cannot move further.
+                        // However if the first line is nonempty, you can move from the end of the
+                        // first line to its beginning! This latter move is counted, but if the
+                        // first line is empty, it is not counted.
+                        if (line == 0)
                         {
-                            // We are moving by the maximum number of possible lines,
-                            // so we know the resulting index will be 0.
                             index = 0;
-
-                            // If a line other than the first consists of only "\r\n",
-                            // you can move backwards past this line and the position changes,
-                            // hence this is counted.  The first line is special, though:
-                            // if it is empty, and you move say from the second line back up
-                            // to the first, you cannot move further; however if the first line
-                            // is nonempty, you can move from the end of the first line to its
-                            // beginning!  This latter move is counted, but if the first line
-                            // is empty, it is not counted.
-
-                            // Recalculate the value of "moved".
-                            // The first line is empty if it consists only of
-                            // a line separator sequence.
-                            bool firstLineEmpty =
-                                ((lineMax > 1 && _peer.LineIndex(1) == LineSeparator.Length)
-                                    || lineMax == 0);
-
-                            if (moved < 0 && firstLineEmpty)
-                            {
-                                ++moved;
-                            }
+                            moved = !StringUtils.IsEol(text[0]) ? -1 : 0;
                         }
                         else
                         {
-                            // Move the endpoint to the beginning of the following line,
-                            // then back by the line separator length to get to the end
-                            // of the previous line, since the Edit control has
-                            // no method to get the character index of the end
-                            // of a line directly.
-                            index = _peer.LineIndex(line + actualCount) - LineSeparator.Length;
+                            var newLine = MathUtilities.Clamp(line + count, 0, _peer.LineCount - 1);
+                            index = _peer.LineIndex(newLine);
+                            moved = newLine - line;
                         }
                     }
                     break;
