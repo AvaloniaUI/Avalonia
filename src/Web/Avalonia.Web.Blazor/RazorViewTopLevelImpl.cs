@@ -18,10 +18,12 @@ namespace Avalonia.Web.Blazor
         private IInputRoot? _inputRoot;
         private Stopwatch _sw = Stopwatch.StartNew();
         private readonly ITextInputMethodImpl _textInputMethod;
+        private readonly TouchDevice _touchDevice;
 
         public RazorViewTopLevelImpl(ITextInputMethodImpl textInputMethod)
         {
             _textInputMethod = textInputMethod;
+            _touchDevice = new TouchDevice();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -54,6 +56,14 @@ namespace Avalonia.Web.Blazor
                 }
 
                 Resized?.Invoke(newSize, PlatformResizeReason.User);
+            }
+        }
+
+        public void RawTouchEvent(RawPointerEventType type, Point p, RawInputModifiers modifiers, long touchPointId)
+        {
+            if (_inputRoot is { })
+            {
+                Input.Invoke(new RawTouchEventArgs(_touchDevice, Timestamp, _inputRoot, type, p, modifiers, touchPointId));
             }
         }
 

@@ -7,7 +7,6 @@ namespace Avalonia.Web.Blazor.Interop
     internal class InputHelperInterop : JSModuleInterop
     {
         private const string JsFilename = "./_content/Avalonia.Web.Blazor/InputHelper.js";
-        private const string InitSymbol = "InputHelper.init";
         private const string ClearSymbol = "InputHelper.clear";
         private const string FocusSymbol = "InputHelper.focus";
         private const string SetCursorSymbol = "InputHelper.setCursor";

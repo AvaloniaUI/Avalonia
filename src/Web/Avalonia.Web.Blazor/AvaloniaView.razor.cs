@@ -45,16 +45,50 @@ namespace Avalonia.Web.Blazor
             {
                 _topLevel.Content = lifetime.MainView;
             }
-
-            ;
         }
 
-        void OnMouseMove(MouseEventArgs e)
+        private void OnTouchStart(TouchEventArgs e)
+        {
+            foreach (var touch in e.ChangedTouches)
+            {
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(touch.ClientX, touch.ClientY),
+                    GetModifiers(e), touch.Identifier);
+            }
+        }
+
+        private void OnTouchEnd(TouchEventArgs e)
+        {
+            foreach (var touch in e.ChangedTouches)
+            {
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(touch.ClientX, touch.ClientY),
+                    GetModifiers(e), touch.Identifier);
+            }
+        }
+
+        private void OnTouchCancel(TouchEventArgs e)
+        {
+            foreach (var touch in e.ChangedTouches)
+            {
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(touch.ClientX, touch.ClientY),
+                    GetModifiers(e), touch.Identifier);
+            }
+        }
+
+        private void OnTouchMove(TouchEventArgs e)
+        {
+            foreach (var touch in e.ChangedTouches)
+            {
+                _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(touch.ClientX, touch.ClientY),
+                    GetModifiers(e), touch.Identifier);
+            }
+        }
+
+        private void OnMouseMove(MouseEventArgs e)
         {
             _topLevelImpl.RawMouseEvent(RawPointerEventType.Move, new Point(e.ClientX, e.ClientY), GetModifiers(e));
         }
 
-        void OnMouseUp(MouseEventArgs e)
+        private void OnMouseUp(MouseEventArgs e)
         {
             RawPointerEventType type = default;
 
@@ -76,7 +110,7 @@ namespace Avalonia.Web.Blazor
             _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
         }
 
-        void OnMouseDown(MouseEventArgs e)
+        private void OnMouseDown(MouseEventArgs e)
         {
             RawPointerEventType type = default;
 
@@ -98,13 +132,13 @@ namespace Avalonia.Web.Blazor
             _topLevelImpl.RawMouseEvent(type, new Point(e.ClientX, e.ClientY), GetModifiers(e));
         }
 
-        void OnWheel(WheelEventArgs e)
+        private void OnWheel(WheelEventArgs e)
         {
             _topLevelImpl.RawMouseWheelEvent(new Point(e.ClientX, e.ClientY),
                 new Vector(-(e.DeltaX / 50), -(e.DeltaY / 50)), GetModifiers(e));
         }
 
-        static RawInputModifiers GetModifiers(WheelEventArgs e)
+        private static RawInputModifiers GetModifiers(WheelEventArgs e)
         {
             var modifiers = RawInputModifiers.None;
 
@@ -129,7 +163,23 @@ namespace Avalonia.Web.Blazor
             return modifiers;
         }
 
-        static RawInputModifiers GetModifiers(MouseEventArgs e)
+        private static RawInputModifiers GetModifiers(TouchEventArgs e)
+        {
+            var modifiers = RawInputModifiers.None;
+
+            if (e.CtrlKey)
+                modifiers |= RawInputModifiers.Control;
+            if (e.AltKey)
+                modifiers |= RawInputModifiers.Alt;
+            if (e.ShiftKey)
+                modifiers |= RawInputModifiers.Shift;
+            if (e.MetaKey)
+                modifiers |= RawInputModifiers.Meta;
+
+            return modifiers;
+        }
+
+        private static RawInputModifiers GetModifiers(MouseEventArgs e)
         {
             var modifiers = RawInputModifiers.None;
 
@@ -154,7 +204,7 @@ namespace Avalonia.Web.Blazor
             return modifiers;
         }
 
-        static RawInputModifiers GetModifiers(KeyboardEventArgs e)
+        private static RawInputModifiers GetModifiers(KeyboardEventArgs e)
         {
             var modifiers = RawInputModifiers.None;
 
@@ -170,19 +220,26 @@ namespace Avalonia.Web.Blazor
             return modifiers;
         }
 
-        void OnKeyDown(KeyboardEventArgs e)
+        private void OnKeyDown(KeyboardEventArgs e)
         {
             _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Key, GetModifiers(e));
         }
 
-        void OnKeyUp(KeyboardEventArgs e)
+        private void OnKeyUp(KeyboardEventArgs e)
         {
             _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, GetModifiers(e));
         }
 
-        void OnInput(ChangeEventArgs e)
+        private void OnInput(ChangeEventArgs e)
         {
-            _topLevelImpl.RawTextEvent(e.Value.ToString());
+            if (e.Value != null)
+            {
+                var inputData = e.Value.ToString();
+                if (inputData != null)
+                {
+                    _topLevelImpl.RawTextEvent(inputData);
+                }
+            }
 
             _inputHelper.Clear();
         }
@@ -190,7 +247,7 @@ namespace Avalonia.Web.Blazor
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        protected override void OnAfterRender(bool firstRender)
         {
             if (firstRender)
             {
@@ -290,8 +347,6 @@ namespace Avalonia.Web.Blazor
 
         public void SetActive(bool active)
         {
-            Console.WriteLine($"focus input box. {active}");
-
             _inputHelper.Clear();
 
             if (active)
@@ -307,18 +362,14 @@ namespace Avalonia.Web.Blazor
 
         public void SetCursorRect(Rect rect)
         {
-            Console.WriteLine("SetCursorRect");
         }
 
         public void SetOptions(TextInputOptionsQueryEventArgs options)
         {
-            Console.WriteLine("SetOptions");
         }
 
         public void Reset()
         {
-            Console.WriteLine("reset");
-
             _inputHelper.Clear();
         }
     }
