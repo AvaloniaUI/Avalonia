@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform;
+using Avalonia.Media;
 
 namespace Avalonia.Web.Blazor
 {
@@ -21,7 +21,7 @@ namespace Avalonia.Web.Blazor
             .With(new SkiaOptions() { CustomGpuFactory = () => new BlazorSkiaGpu() })
             .SetupWithLifetime(new BlazorSingleViewLifetime());
 
-            AvaloniaLocator.CurrentMutable.Bind<IFontManagerImpl>().ToConstant(new CustomFontManagerImpl());
+            AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant(new FontManager(new CustomFontManagerImpl()));
 
             return builder;
         }
