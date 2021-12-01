@@ -231,22 +231,11 @@ namespace Avalonia.Automation.Peers
                 End = e;
         }
 
-        public void Select()
-        {
-        }
+        public void Select() => _peer.Select(Start, End);
+        public void AddToSelection() => throw new NotSupportedException();
+        public void RemoveFromSelection() => throw new InvalidOperationException();
 
-        public void AddToSelection()
-        {
-        }
-
-        public void RemoveFromSelection()
-        {
-        }
-
-        public void ScrollIntoView(bool alignToTop)
-        {
-        }
-
+        public void ScrollIntoView(bool alignToTop) => _peer.ScrollIntoView(Start, End);
         public IReadOnlyList<AutomationPeer> GetChildren() => Array.Empty<AutomationPeer>();
 
         private static bool AtParagraphBoundary(string text, int index)
@@ -451,10 +440,6 @@ namespace Avalonia.Automation.Peers
 
                 default:
                     throw new ArgumentException("Invalid TextUnit.", nameof(unit));
-            }
-
-            if (index < 0)
-            {
             }
 
             return index;

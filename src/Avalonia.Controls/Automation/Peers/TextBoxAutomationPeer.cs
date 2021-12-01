@@ -126,6 +126,26 @@ namespace Avalonia.Automation.Peers
             return c;
         }
 
+        void ITextPeer.ScrollIntoView(int start, int end)
+        {
+            if (Owner.Presenter is null || Owner.Scroll is null)
+                return;
+
+            var rects = Owner.Presenter.FormattedText.HitTestTextRange(start, end - start);
+            var rect = Rect.Empty;
+
+            foreach (var r in rects)
+                rect = rect.Union(r);
+
+            Owner.Presenter.BringIntoView(rect);
+        }
+
+        void ITextPeer.Select(int start, int end)
+        {
+            Owner.SelectionStart = start;
+            Owner.SelectionEnd = end;
+        }
+
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.Edit;

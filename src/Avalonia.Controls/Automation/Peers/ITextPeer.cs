@@ -46,5 +46,19 @@ namespace Avalonia.Automation.Peers
         /// <param name="lineIndex">The index of the line.</param>
         /// <returns>The character index.</returns>
         int LineIndex(int lineIndex);
+
+        /// <summary>
+        /// Scrolls the specified text range into view.
+        /// </summary>
+        /// <param name="start">The start of the text range.</param>
+        /// <param name="end">The exclusive end of the text range.</param>
+        void ScrollIntoView(int start, int end);
+
+        /// <summary>
+        /// Selects the specified text rage.
+        /// </summary>
+        /// <param name="start">The start of the text range.</param>
+        /// <param name="end">The exclusive end of the text range.</param>
+        void Select(int start, int end);
     }
 }
