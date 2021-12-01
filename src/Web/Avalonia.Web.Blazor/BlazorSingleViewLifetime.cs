@@ -9,7 +9,7 @@ namespace Avalonia.Web.Blazor
         public Control MainView { get; set; }
     }
 
-    public static class BlazorSingleViewLifetimeExtensions
+    public static class WebAppBuilder
     {
         public static T SetupWithSingleViewLifetime<T>(
             this T builder)
@@ -18,7 +18,7 @@ namespace Avalonia.Web.Blazor
             return builder.SetupWithLifetime(new BlazorSingleViewLifetime());
         }
 
-        public static AvaloniaBlazorAppBuilder UseBlazor<TApp>()
+        public static AvaloniaBlazorAppBuilder Configure<TApp>()
             where TApp : Application, new()
         {
             var builder = AvaloniaBlazorAppBuilder.Configure<TApp>()
