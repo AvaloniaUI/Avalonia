@@ -6,7 +6,8 @@ public partial class App
 {
     protected override void OnParametersSet()
     {
-        BlazorSingleViewLifetimeExtensions.SetupWithBlazorSingleViewLifetime<ControlCatalog.App>();
+        BlazorSingleViewLifetimeExtensions.UseBlazor<ControlCatalog.App>()
+            .SetupWithSingleViewLifetime();
 
         base.OnParametersSet();
     }

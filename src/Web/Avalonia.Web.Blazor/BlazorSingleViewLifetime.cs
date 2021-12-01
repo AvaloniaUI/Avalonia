@@ -11,15 +11,19 @@ namespace Avalonia.Web.Blazor
 
     public static class BlazorSingleViewLifetimeExtensions
     {
+        public static T SetupWithSingleViewLifetime<T>(
+            this T builder)
+            where T : AppBuilderBase<T>, new()
+        {
+            return builder.SetupWithLifetime(new BlazorSingleViewLifetime());
+        }
 
-
-        public static AvaloniaBlazorAppBuilder SetupWithBlazorSingleViewLifetime<TApp>()
+        public static AvaloniaBlazorAppBuilder UseBlazor<TApp>()
             where TApp : Application, new()
         {
             var builder = AvaloniaBlazorAppBuilder.Configure<TApp>()
-            .UseSkia()
-            .With(new SkiaOptions() { CustomGpuFactory = () => new BlazorSkiaGpu() })
-            .SetupWithLifetime(new BlazorSingleViewLifetime());
+                .UseSkia()
+                .With(new SkiaOptions { CustomGpuFactory = () => new BlazorSkiaGpu() });
 
             AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant(new FontManager(new CustomFontManagerImpl()));
 
