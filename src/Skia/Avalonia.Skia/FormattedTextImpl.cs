@@ -702,7 +702,7 @@ namespace Avalonia.Skia
         {
             var width = 0f;
 
-            for (int i = start; i < length; i++)
+            for (int i = start; i < start + length; i++)
             {
                 var advance = _advances[i];
 
