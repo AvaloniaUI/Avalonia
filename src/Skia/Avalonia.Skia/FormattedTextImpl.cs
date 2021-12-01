@@ -214,6 +214,11 @@ namespace Avalonia.Skia
 
         private void DrawTextBlob(int start, int length, float x, float y, SKCanvas canvas, SKPaint paint)
         {
+            if(length == 0)
+            {
+                return;
+            }
+
             var glyphs = _glyphs.Buffer.Span.Slice(start, length);
             var advances = _advances.Buffer.Span.Slice(start, length);
             var builder = t_builder.Value;
@@ -235,7 +240,10 @@ namespace Avalonia.Skia
 
             var blob = builder.Build();
 
-            canvas.DrawText(blob, x, y, paint);
+            if(blob != null)
+            {
+                canvas.DrawText(blob, x, y, paint);
+            }
         }
         
         internal void Draw(DrawingContextImpl context,
