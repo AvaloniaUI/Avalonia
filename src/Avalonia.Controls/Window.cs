@@ -994,6 +994,7 @@ namespace Avalonia.Controls
 
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
+            base.OnPropertyChanged(change);
             if (change.Property == SystemDecorationsProperty)
             {
                 var typedNewValue = change.NewValue.GetValueOrDefault<SystemDecorations>();
