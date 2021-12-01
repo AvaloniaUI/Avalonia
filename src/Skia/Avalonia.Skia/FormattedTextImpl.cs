@@ -311,8 +311,7 @@ namespace Avalonia.Skia
                                     throw new ArgumentOutOfRangeException();
                             }
 
-                            var textLine = Text.Substring(line.Start, line.Length);
-                            currX -= textLine.Length == 0 ? 0 : MeasureText(line.Start, line.Length) * factor;
+                            currX -= line.Length == 0 ? 0 : MeasureText(line.Start, line.Length) * factor;
 
                             for (int i = line.Start; i < line.Start + line.Length;)
                             {
