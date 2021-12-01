@@ -129,7 +129,7 @@ namespace Avalonia.Visuals.UnitTests.Media
 
             Assert.Single(operations);
             Assert.Equal(TransformOperation.OperationType.Matrix, operations[0].Type);
-            
+
             var expectedMatrix = new Matrix(1, 2, 3, 4, 5, 6);
 
             Assert.Equal(expectedMatrix, operations[0].Matrix);
@@ -195,7 +195,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Theory]
         [InlineData(0d, 10d)]
         [InlineData(0.5d, 15d)]
-        [InlineData(1d,20d)]
+        [InlineData(1d, 20d)]
         public void Can_Interpolate_Rotation(double progress, double angle)
         {
             var from = TransformOperations.Parse("rotate(10deg)");
@@ -224,6 +224,74 @@ namespace Avalonia.Visuals.UnitTests.Media
 
             Assert.Single(operations);
             Assert.Equal(TransformOperation.OperationType.Matrix, operations[0].Type);
+        }
+
+        [Fact]
+        public void Order_Of_Operations_Is_Preserved_No_Prefix()
+        {
+            var from = TransformOperations.Parse("scale(1)");
+            var to = TransformOperations.Parse("translate(50px,50px) scale(0.5,0.5)");
+
+            var interpolated_0 = TransformOperations.Interpolate(from, to, 0);
+
+            Assert.True(interpolated_0.IsIdentity);
+
+            var interpolated_50 = TransformOperations.Interpolate(from, to, 0.5);
+
+            AssertMatrix(interpolated_50.Value, scaleX: 0.75, scaleY: 0.75, translateX: 12.5, translateY: 12.5);
+
+            var interpolated_100 = TransformOperations.Interpolate(from, to, 1);
+
+            AssertMatrix(interpolated_100.Value, scaleX: 0.5, scaleY: 0.5, translateX: 25, translateY: 25);
+        }
+
+        [Fact]
+        public void Order_Of_Operations_Is_Preserved_One_Prefix()
+        {
+            var from = TransformOperations.Parse("scale(1)");
+            var to = TransformOperations.Parse("scale(0.5,0.5) translate(50px,50px)");
+
+            var interpolated_0 = TransformOperations.Interpolate(from, to, 0);
+
+            Assert.True(interpolated_0.IsIdentity);
+
+            var interpolated_50 = TransformOperations.Interpolate(from, to, 0.5);
+
+            AssertMatrix(interpolated_50.Value, scaleX: 0.75, scaleY: 0.75, translateX: 25.0, translateY: 25);
+
+            var interpolated_100 = TransformOperations.Interpolate(from, to, 1);
+
+            AssertMatrix(interpolated_100.Value, scaleX: 0.5, scaleY: 0.5, translateX: 50, translateY: 50);
+        }
+
+        private static void AssertMatrix(Matrix matrix, double? angle = null, double? scaleX = null, double? scaleY = null, double? translateX = null, double? translateY = null)
+        {
+            Assert.True(Matrix.TryDecomposeTransform(matrix, out var composed));
+
+            if (angle.HasValue)
+            {
+                Assert.Equal(angle.Value, composed.Angle);
+            }
+
+            if (scaleX.HasValue)
+            {
+                Assert.Equal(scaleX.Value, composed.Scale.X);
+            }
+
+            if (scaleY.HasValue)
+            {
+                Assert.Equal(scaleY.Value, composed.Scale.Y);
+            }
+
+            if (translateX.HasValue)
+            {
+                Assert.Equal(translateX.Value, composed.Translate.X);
+            }
+
+            if (translateY.HasValue)
+            {
+                Assert.Equal(translateY.Value, composed.Translate.Y);
+            }
         }
     }
 }

@@ -562,8 +562,12 @@ namespace Avalonia.Controls.Primitives
             return eventArgs.Cancel;
         }
 
-        internal static void SetPresenterClasses(IControl presenter, Classes classes)
+        internal static void SetPresenterClasses(IControl? presenter, Classes classes)
         {
+            if(presenter is null)
+            {
+                return;
+            }
             //Remove any classes no longer in use, ignoring pseudo classes
             for (int i = presenter.Classes.Count - 1; i >= 0; i--)
             {

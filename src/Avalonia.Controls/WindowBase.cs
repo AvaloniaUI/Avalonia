@@ -193,6 +193,12 @@ namespace Avalonia.Controls
             try
             {
                 IsVisible = false;
+                
+                if (this is IFocusScope scope)
+                {
+                    FocusManager.Instance?.RemoveFocusScope(scope);
+                }
+                
                 base.HandleClosed();
             }
             finally
