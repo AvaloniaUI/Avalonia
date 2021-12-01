@@ -294,6 +294,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Templated_Control_With_Popup_In_Template_Should_Set_TemplatedParent()
         {
+            // Test uses OverlayPopupHost default template
             using (CreateServices())
             {
                 PopupContentControl target;
@@ -316,33 +317,63 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var children = popupRoot.GetVisualDescendants().ToList();
                 var types = children.Select(x => x.GetType().Name).ToList();
 
-                Assert.Equal(
-                    new[]
-                    {
-                        "Panel",
-                        "Border",
-                        "VisualLayerManager",
-                        "ContentPresenter",
-                        "ContentPresenter",
-                        "Border",
-                    },
-                    types);
+                if (UsePopupHost)
+                {
+                    Assert.Equal(
+                        new[]
+                        {
+                            "VisualLayerManager",
+                            "ContentPresenter",
+                            "ContentPresenter",
+                            "Border",
+                        },
+                        types);
+                }
+                else
+                {
+                    Assert.Equal(
+                        new[]
+                        {
+                            "Panel",
+                            "Border",
+                            "VisualLayerManager",
+                            "ContentPresenter",
+                            "ContentPresenter",
+                            "Border",
+                        },
+                        types);
+                }
 
                 var templatedParents = children
                     .OfType<IControl>()
                     .Select(x => x.TemplatedParent).ToList();
 
-                Assert.Equal(
-                    new object[]
-                    {
-                        popupRoot,
-                        popupRoot,
-                        popupRoot,
-                        popupRoot,
-                        target,
-                        null,
-                    },
-                    templatedParents);
+                if (UsePopupHost)
+                {
+                    Assert.Equal(
+                        new object[]
+                        {
+                            popupRoot,
+                            popupRoot,
+                            target,
+                            null,
+                        },
+                        templatedParents);
+                }
+                else
+                {
+                    Assert.Equal(
+                        new object[]
+                        {
+                            popupRoot,
+                            popupRoot,
+                            popupRoot,
+                            popupRoot,
+                            target,
+                            null,
+                        },
+                        templatedParents);
+                }
             }
         }
 

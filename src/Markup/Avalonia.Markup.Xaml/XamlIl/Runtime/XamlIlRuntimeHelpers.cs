@@ -16,6 +16,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV1(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
+            return DeferredTransformationFactoryV2<IControl>(builder, provider);
+        }
+        
+        public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
+            IServiceProvider provider)
+        {
             var resourceNodes = provider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents
                 .OfType<IResourceNode>().ToList();
             var rootObject = provider.GetService<IRootObjectProvider>().RootObject;
@@ -25,7 +31,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 var scope = parentScope != null ? new ChildNameScope(parentScope) : (INameScope)new NameScope();
                 var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
                 scope.Complete();
-                return new ControlTemplateResult((IControl)obj, scope);
+                
+                if(typeof(T) == typeof(IControl))
+                    return new ControlTemplateResult((IControl)obj, scope);
+
+                return new TemplateResult<T>((T)obj, scope);
             };
         }
 

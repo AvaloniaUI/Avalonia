@@ -52,13 +52,14 @@ namespace Avalonia.UnitTests
                 windowImpl.Object.PositionChanged?.Invoke(x);
             });
 
-            windowImpl.Setup(x => x.Resize(It.IsAny<Size>())).Callback<Size>(x =>
+            windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
+                .Callback<Size, PlatformResizeReason>((x, y) =>
             {
                 clientSize = x.Constrain(s_screenSize);
-                windowImpl.Object.Resized?.Invoke(clientSize);
+                windowImpl.Object.Resized?.Invoke(clientSize, y);
             });
 
-            windowImpl.Setup(x => x.Show(true)).Callback(() =>
+            windowImpl.Setup(x => x.Show(true, It.IsAny<bool>())).Callback(() =>
             {
                 windowImpl.Object.Activated?.Invoke();
             });
@@ -75,7 +76,7 @@ namespace Avalonia.UnitTests
             {
                 clientSize = size.Constrain(s_screenSize);
                 popupImpl.Object.PositionChanged?.Invoke(pos);
-                popupImpl.Object.Resized?.Invoke(clientSize);
+                popupImpl.Object.Resized?.Invoke(clientSize, PlatformResizeReason.Unspecified);
             });
             
             var positioner = new ManagedPopupPositioner(positionerHelper);
@@ -123,6 +124,11 @@ namespace Avalonia.UnitTests
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
+        }
+
+        public ITrayIconImpl CreateTrayIcon()
+        {
+            return null;
         }
 
         private static void SetupToplevel<T>(Mock<T> mock) where T : class, ITopLevelImpl

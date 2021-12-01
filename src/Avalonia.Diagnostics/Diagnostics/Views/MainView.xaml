@@ -5,14 +5,14 @@
   <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,0,Auto">
     <Menu>
       <MenuItem Header="_File">
-        <MenuItem Header="E_xit" Command="{Binding $parent[Window].Close}"/>
+        <MenuItem Header="E_xit" Command="{Binding $parent[Window].Close}" />
       </MenuItem>
       <MenuItem Header="_View">
         <MenuItem Header="_Console" Command="{Binding $parent[UserControl].ToggleConsole}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsChecked="{Binding Console.IsVisible}"
-                      IsEnabled="False"/>
+                      IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
       </MenuItem>
@@ -21,58 +21,68 @@
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsChecked="{Binding ShouldVisualizeMarginPadding}"
-                      IsEnabled="False"/>
+                      IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
         <MenuItem Header="Visualize dirty rects" Command="{Binding ToggleVisualizeDirtyRects}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsChecked="{Binding ShouldVisualizeDirtyRects}"
-                      IsEnabled="False"/>
+                      IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
-         <MenuItem Header="Show fps overlay" Command="{Binding ToggleFpsOverlay}">
+        <MenuItem Header="Show fps overlay" Command="{Binding ToggleFpsOverlay}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsChecked="{Binding ShowFpsOverlay}"
-                      IsEnabled="False"/>
+                      IsEnabled="False" />
           </MenuItem.Icon>
         </MenuItem>
       </MenuItem>
     </Menu>
-    
+
     <TabStrip Grid.Row="1" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
-      <TabStripItem Content="Logical Tree"/>
-      <TabStripItem Content="Visual Tree"/>
-      <TabStripItem Content="Events"/>
+      <TabStripItem Content="Logical Tree" />
+      <TabStripItem Content="Visual Tree" />
+      <TabStripItem Content="Events" />
     </TabStrip>
 
     <ContentControl Grid.Row="2"
                     BorderBrush="{DynamicResource ThemeControlMidBrush}"
                     BorderThickness="0,1,0,0"
-                    Content="{Binding Content}"/>
+                    Content="{Binding Content}" />
 
     <GridSplitter Name="consoleSplitter" Grid.Row="3" Height="1"
                   Background="{DynamicResource ThemeControlMidBrush}"
-                  IsVisible="False"/>
-    
+                  IsVisible="False" />
+
     <views:ConsoleView Name="console"
                        Grid.Row="4"
                        DataContext="{Binding Console}"
-                       IsVisible="{Binding IsVisible}"/>
+                       IsVisible="{Binding IsVisible}" />
+
 
     <Border Grid.Row="5"
             BorderBrush="{DynamicResource ThemeControlMidBrush}"
             BorderThickness="0,1,0,0">
-      <StackPanel Spacing="4" Orientation="Horizontal">
-        <TextBlock>Hold Ctrl+Shift over a control to inspect.</TextBlock>
-        <Separator Width="8"/>
-        <TextBlock>Focused:</TextBlock>
-        <TextBlock Text="{Binding FocusedControl}"/>
-        <Separator Width="8"/>
-        <TextBlock>Pointer Over:</TextBlock>
-        <TextBlock Text="{Binding PointerOverElement}"/>
-      </StackPanel>
+      <Grid ColumnDefinitions="*, Auto">
+        <StackPanel Grid.Column="0" Spacing="4" Orientation="Horizontal">
+          <TextBlock>Hold Ctrl+Shift over a control to inspect.</TextBlock>
+          <Separator Width="8" />
+          <TextBlock>Focused:</TextBlock>
+          <TextBlock Text="{Binding FocusedControl}" />
+          <Separator Width="8" />
+          <TextBlock>Pointer Over:</TextBlock>
+          <TextBlock Text="{Binding PointerOverElement}" />
+        </StackPanel>
+
+        <TextBlock Grid.Column="1"
+                   Foreground="Gray"
+                   Margin="2 0"
+                   Text="Popups frozen"
+                   IsVisible="{Binding FreezePopups}" />
+      </Grid>
+
     </Border>
   </Grid>
 </UserControl>

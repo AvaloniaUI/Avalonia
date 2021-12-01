@@ -30,10 +30,9 @@ namespace Avalonia.LinuxFramebuffer
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
-            {
-                
-            };
+            var factory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            return factory?.Create(root, renderLoop) ?? new DeferredRenderer(root, renderLoop);
         }
 
         public void Dispose()
@@ -41,7 +40,7 @@ namespace Avalonia.LinuxFramebuffer
             throw new NotSupportedException();
         }
 
-        
+
         public void Invalidate(Rect rect)
         {
         }
@@ -69,7 +68,7 @@ namespace Avalonia.LinuxFramebuffer
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
-        public Action<Size> Resized { get; set; }
+        public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }

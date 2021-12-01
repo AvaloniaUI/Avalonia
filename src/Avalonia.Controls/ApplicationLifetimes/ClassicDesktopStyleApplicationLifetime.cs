@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -42,9 +44,13 @@ namespace Avalonia.Controls.ApplicationLifetimes
                     "Can not have multiple active ClassicDesktopStyleApplicationLifetime instances and the previously created one was not disposed");
             _activeLifetime = this;
         }
-        
+
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeStartupEventArgs> Startup;
+
+        /// <inheritdoc/>
+        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+
         /// <inheritdoc/>
         public event EventHandler<ControlledApplicationLifetimeExitEventArgs> Exit;
 
@@ -111,17 +117,50 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 ((IApplicationPlatformEvents)Application.Current).RaiseUrlsOpened(args);
             }
 
+            var lifetimeEvents = AvaloniaLocator.Current.GetService<IPlatformLifetimeEventsImpl>(); 
+
+            if (lifetimeEvents != null)
+                lifetimeEvents.ShutdownRequested += OnShutdownRequested;
+
             _cts = new CancellationTokenSource();
-            MainWindow?.Show();
+            
+            // Note due to a bug in the JIT we wrap this in a method, otherwise MainWindow
+            // gets stuffed into a local var and can not be GCed until after the program stops.
+            // this method never exits until program end.
+            ShowMainWindow(); 
+                              
             Dispatcher.UIThread.MainLoop(_cts.Token);
             Environment.ExitCode = _exitCode;
             return _exitCode;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void ShowMainWindow()
+        {
+            MainWindow?.Show();
         }
 
         public void Dispose()
         {
             if (_activeLifetime == this)
                 _activeLifetime = null;
+        }
+        
+        private void OnShutdownRequested(object sender, ShutdownRequestedEventArgs e)
+        {
+            ShutdownRequested?.Invoke(this, e);
+
+            if (e.Cancel)
+                return;
+
+            // When an OS shutdown request is received, try to close all non-owned windows. Windows can cancel
+            // shutdown by setting e.Cancel = true in the Closing event. Owned windows will be shutdown by their
+            // owners.
+            foreach (var w in Windows)
+                if (w.Owner is null)
+                    w.Close();
+            if (Windows.Count > 0)
+                e.Cancel = true;
         }
     }
     

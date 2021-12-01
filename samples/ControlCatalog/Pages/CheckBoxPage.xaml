@@ -11,9 +11,9 @@
                 Spacing="16">
       <StackPanel Orientation="Vertical"
                   Spacing="16">
-        <CheckBox>Unchecked</CheckBox>
-        <CheckBox IsChecked="True">Checked</CheckBox>
-        <CheckBox IsChecked="{x:Null}">Indeterminate</CheckBox>
+        <CheckBox>_Unchecked</CheckBox>
+        <CheckBox IsChecked="True">_Checked</CheckBox>
+        <CheckBox IsChecked="{x:Null}">_Indeterminate</CheckBox>
         <CheckBox IsChecked="True" IsEnabled="False">Disabled</CheckBox>
       </StackPanel>
       <StackPanel Orientation="Vertical"

@@ -16,7 +16,6 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border 
-                    Margin="{TemplateBinding Margin}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}">
                     <DockPanel>
