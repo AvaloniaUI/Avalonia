@@ -21,7 +21,9 @@ namespace Avalonia.Web.Blazor
         private SizeWatcherInterop _sizeWatcher = null!;
         private DpiWatcherInterop _dpiWatcher = null!;
         private SKHtmlCanvasInterop.GLInfo _jsGlInfo = null!;
+        private InputHelperInterop _inputHelper = null!;
         private ElementReference _htmlCanvas;
+        private ElementReference _inputElement;
         private double _dpi;
         private SKSize _canvasSize;
 
@@ -42,7 +44,9 @@ namespace Avalonia.Web.Blazor
             if (Application.Current.ApplicationLifetime is ISingleViewApplicationLifetime lifetime)
             {
                 _topLevel.Content = lifetime.MainView;
-            };
+            }
+
+            ;
         }
 
         void OnMouseMove(MouseEventArgs e)
@@ -112,13 +116,13 @@ namespace Avalonia.Web.Blazor
                 modifiers |= RawInputModifiers.Shift;
             if (e.MetaKey)
                 modifiers |= RawInputModifiers.Meta;
-            
+
             if ((e.Buttons & 1L) == 1)
                 modifiers |= RawInputModifiers.LeftMouseButton;
-            
+
             if ((e.Buttons & 2L) == 2)
                 modifiers |= RawInputModifiers.RightMouseButton;
-            
+
             if ((e.Buttons & 4L) == 4)
                 modifiers |= RawInputModifiers.MiddleMouseButton;
 
@@ -140,10 +144,10 @@ namespace Avalonia.Web.Blazor
 
             if ((e.Buttons & 1L) == 1)
                 modifiers |= RawInputModifiers.LeftMouseButton;
-            
+
             if ((e.Buttons & 2L) == 2)
                 modifiers |= RawInputModifiers.RightMouseButton;
-            
+
             if ((e.Buttons & 4L) == 4)
                 modifiers |= RawInputModifiers.MiddleMouseButton;
 
@@ -180,13 +184,11 @@ namespace Avalonia.Web.Blazor
         {
             _topLevelImpl.RawTextEvent(e.Value.ToString());
 
-            Js.InvokeVoidAsync("clearInput");
+            _inputHelper.Clear();
         }
 
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
-
-
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -194,8 +196,10 @@ namespace Avalonia.Web.Blazor
             {
                 Threading.Dispatcher.UIThread.Post(async () =>
                 {
-                    await Js.InvokeVoidAsync("hideInput");
-                    await Js.InvokeVoidAsync("setCursor", "default");
+                    _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
+
+                    _inputHelper.Hide();
+                    _inputHelper.SetCursor("default");
 
                     Console.WriteLine("starting html canvas setup");
                     _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
@@ -288,16 +292,16 @@ namespace Avalonia.Web.Blazor
         {
             Console.WriteLine($"focus input box. {active}");
 
-            Js.InvokeVoidAsync("clearInput");
+            _inputHelper.Clear();
 
             if (active)
             {
-                Js.InvokeVoidAsync("showInput");
-                Js.InvokeVoidAsync("focusInput");
+                _inputHelper.Show();
+                _inputHelper.Focus();
             }
             else
             {
-                Js.InvokeVoidAsync("hideInput");
+                _inputHelper.Hide();
             }
         }
 
@@ -314,7 +318,8 @@ namespace Avalonia.Web.Blazor
         public void Reset()
         {
             Console.WriteLine("reset");
-            Js.InvokeVoidAsync("clearInput");
+
+            _inputHelper.Clear();
         }
     }
 }

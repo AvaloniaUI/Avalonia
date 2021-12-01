@@ -20,31 +20,4 @@
     <script src="js/app.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
-
-<script>
-    clearInput = () => {
-        document.getElementById("inputBox").value = "";
-    }
-    
-    focusInput = () => {
-        document.getElementById("inputBox").focus();
-    }
-    
-    finishInput = () => {
-        document.getElementById("container").focus();
-    };
-    
-    setCursor = (kind) => {
-        document.getElementById("inputBox").style.cursor = kind;  
-    };
-
-    hideInput = () => {
-        document.getElementById('inputBox').style.display = 'none';
-    };
-
-    showInput = () => {
-        document.getElementById('inputBox').style.display = 'block';
-    };
-</script>
-
 </html>
