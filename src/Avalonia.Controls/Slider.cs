@@ -253,7 +253,7 @@ namespace Avalonia.Controls
             e.Handled = handled;
         }
             
-        private void MoveToNextTick(double direction)
+        protected virtual void MoveToNextTick(double direction)
         {
             if (direction == 0.0) return;
 
@@ -331,7 +331,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void MoveToPoint(PointerPoint posOnTrack)
+        protected virtual void MoveToPoint(PointerPoint posOnTrack)
         {
             var orient = Orientation == Orientation.Horizontal;
             var thumbLength = (orient 
@@ -392,7 +392,7 @@ namespace Avalonia.Controls
         /// Snap the input 'value' to the closest tick.
         /// </summary>
         /// <param name="value">Value that want to snap to closest Tick.</param>
-        private double SnapToTick(double value)
+        protected double SnapToTick(double value)
         {
             if (IsSnapToTickEnabled)
             {
@@ -435,7 +435,6 @@ namespace Avalonia.Controls
 
             return value;
         }
-
 
         private void UpdatePseudoClasses(Orientation o)
         {
