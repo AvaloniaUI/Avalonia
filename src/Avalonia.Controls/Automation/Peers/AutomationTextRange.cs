@@ -323,6 +323,11 @@ namespace Avalonia.Automation.Peers
                    ch == (char)0x2019; // Unicode Right Single Quote Mark
         }
 
+        private static bool IsWordBreak(char ch)
+        {
+            return char.IsWhiteSpace(ch) || char.IsPunctuation(ch);
+        }
+
         private int MoveEndpointForward(string text, int index, TextUnit unit, int count, out int moved)
         {
             var limit = text.Length;
@@ -336,9 +341,11 @@ namespace Avalonia.Automation.Peers
                     break;
 
                 case TextUnit.Word:
+                    // TODO: This will need to implement the Unicode word boundaries spec.
                     for (moved = 0; moved < count && index < text.Length; moved++)
                     {
                         for (index++; !AtWordBoundary(text, index); index++);
+                        for (; index < text.Length && IsWordBreak(text[index]); index++);
                     }
                     break;
 
@@ -395,6 +402,7 @@ namespace Avalonia.Automation.Peers
                 case TextUnit.Word:
                     for (moved = 0; moved > count && index > 0; moved--)
                     {
+                        for (index--; index < text.Length && IsWordBreak(text[index]); index--);
                         for (index--; !AtWordBoundary(text, index); index--);
                     }
                     break;

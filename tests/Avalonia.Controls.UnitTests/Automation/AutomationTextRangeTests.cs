@@ -123,6 +123,53 @@ namespace Avalonia.Controls.UnitTests.Automation
 
             [Theory]
             [ClassData(typeof(Newlines))]
+            public void Moves_Right_One_Word_With_Trailing_Newlines(string newline)
+            {
+                var peer = new TestPeer(newline);
+                var range = new AutomationTextRange(peer, 0, 1);
+
+                var result = range.Move(TextUnit.Word, 1);
+
+                Assert.Equal(1, result);
+
+                // From https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-uiautomationtextunits
+                // When TextUnit_Word is used to set the boundary of a text range, the resulting text range
+                // should include any word break characters that are present at the end of the word, but
+                // before the start of the next word.
+                Assert.Equal("text:" + newline + newline, range.GetText(-1));
+            }
+
+            [Theory]
+            [ClassData(typeof(Newlines))]
+            public void Moves_Right_One_Word_With_Apostrophe(string newline)
+            {
+                var peer = new TestPeer(newline);
+                var start = peer.LineIndex(10);
+                var range = new AutomationTextRange(peer, start, start + 1);
+
+                var result = range.Move(TextUnit.Word, 1);
+
+                Assert.Equal(1, result);
+
+                Assert.Equal("can't ", range.GetText(-1));
+            }
+
+            [Theory]
+            [ClassData(typeof(Newlines))]
+            public void Moves_Left_To_Previous_Line_With_Trailing_Newlines(string newline)
+            {
+                var peer = new TestPeer(newline);
+                var start = peer.LineIndex(2);
+                var range = new AutomationTextRange(peer, start, start + 1);
+
+                var result = range.Move(TextUnit.Word, -1);
+
+                Assert.Equal(-1, result);
+                Assert.Equal("text:" + newline + newline, range.GetText(-1));
+            }
+
+            [Theory]
+            [ClassData(typeof(Newlines))]
             public void Moves_Down_To_Empty_Line(string newline)
             {
                 var peer = new TestPeer(newline);
@@ -248,7 +295,8 @@ namespace Avalonia.Controls.UnitTests.Automation
                     "🌉Ut enim ad minim veniam, quis ",
                     "nostrud exercitation ullamco ",
                     "laboris nisi ut aliquip ex ea ",
-                    "commodo consequat.",
+                    "commodo consequat." + newline,
+                    "We can't stop now"
                 };
             }
 
