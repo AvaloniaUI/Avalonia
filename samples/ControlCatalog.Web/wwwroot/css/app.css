@@ -3,6 +3,7 @@
     margin: 0;
     height: 100vh;
     overflow: hidden;
+    touch-action: none;
 }
 
 a, .btn-link {
