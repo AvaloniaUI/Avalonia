@@ -36,8 +36,32 @@ namespace Avalonia.Automation.Provider
         Document,
     }
 
+    /// <summary>
+    /// Provides access to a span of continuous text in a text container that implements
+    /// <see cref="ITextProvider"/>. 
+    /// </summary>
     public interface ITextRangeProvider
     {
+        /// <summary>
+        /// Gets the 0-based character index of the start of the range.
+        /// </summary>
+        int Start { get; }
+
+        /// <summary>
+        /// Gets the number of characters in the range.
+        /// </summary>
+        int Length { get; }
+
+        /// <summary>
+        /// Gets the 0-based line index for the start of the range.
+        /// </summary>
+        int StartLineIndex { get; }
+
+        /// <summary>
+        /// Gets the 0-based line index for the end of the range.
+        /// </summary>
+        int EndLineIndex { get; }
+
         /// <summary>
         /// Returns a new ITextRangeProvider identical to the original <see cref="ITextRangeProvider"/>.
         /// </summary>

@@ -55,6 +55,8 @@ namespace Avalonia.Automation.Peers
         }
 
         public int Length => _end - _start;
+        public int StartLineIndex => _peer.LineFromChar(Start);
+        public int EndLineIndex => _peer.LineFromChar(Start - End - 1);
 
         public override string ToString() => $"[{Start}..{End}]";
 
