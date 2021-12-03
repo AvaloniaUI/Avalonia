@@ -156,17 +156,16 @@ IAvnString* CreateByteArray(void* data, int len)
 
 NSString* GetNSStringAndRelease(IAvnString* s)
 {
+    NSString* result = nil;
+    
     if (s != nullptr)
     {
         char* p;
-        
         if (s->Pointer((void**)&p) == S_OK && p != nullptr)
-        {
-            return [NSString stringWithUTF8String:p];
-        }
+            result = [NSString stringWithUTF8String:p];
         
         s->Release();
     }
     
-    return nullptr;
+    return result;
 }
