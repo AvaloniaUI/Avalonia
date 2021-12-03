@@ -59,9 +59,23 @@ namespace Avalonia.Automation.Provider
         event EventHandler? TextChanged;
 
         /// <summary>
+        /// Retrieves a zero-length text range at the location of the caret that belongs to the
+        /// text-based control.
+        /// </summary>
+        /// <returns>
+        /// A range describing the caret position or null if the control has no caret.
+        /// </returns>
+        ITextRangeProvider? GetCaretRange();
+
+        /// <summary>
         /// Retrieves a collection of text ranges that represents the currently selected text in a
         /// text-based control.
         /// </summary>
+        /// <remarks>
+        /// If the control contains a text insertion point but no text is selected, the result
+        /// should contain a degenerate (empty) text range at the position of the text insertion
+        /// point.
+        /// </remarks>
         IReadOnlyList<ITextRangeProvider> GetSelection();
 
         /// <summary>

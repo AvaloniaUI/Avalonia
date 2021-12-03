@@ -64,6 +64,7 @@ namespace Avalonia.Automation.Peers
         void ITextPeer.ScrollIntoView(int start, int end) { }
         void ITextPeer.Select(int start, int end) => throw new NotSupportedException();
 
+        ITextRangeProvider? ITextProvider.GetCaretRange() => null;
         IReadOnlyList<ITextRangeProvider> ITextProvider.GetSelection() => Array.Empty<ITextRangeProvider>();
         ITextRangeProvider ITextProvider.RangeFromChild(AutomationPeer childElement) => throw new NotSupportedException();
 

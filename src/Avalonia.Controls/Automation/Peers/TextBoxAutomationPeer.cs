@@ -36,6 +36,11 @@ namespace Avalonia.Automation.Peers
         public event EventHandler? SelectedRangesChanged;
         public event EventHandler? TextChanged;
 
+        public ITextRangeProvider? GetCaretRange()
+        {
+            return new AutomationTextRange(this, Owner.CaretIndex, Owner.CaretIndex);
+        }
+
         public IReadOnlyList<ITextRangeProvider> GetSelection()
         {
             var start = Owner.SelectionStart;
