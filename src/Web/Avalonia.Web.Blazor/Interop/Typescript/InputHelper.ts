@@ -6,6 +6,7 @@ export class InputHelper {
     
     public static focus (inputElement: HTMLInputElement){
         inputElement.focus();
+        inputElement.setSelectionRange(0, 0);
     }
     
     public static setCursor (inputElement: HTMLInputElement, kind: string) {
