@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Primitives
     {
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private readonly Action<IControl, int> _unrealizeElement;
-        private readonly Action<IControl, int> _updateElementIndex;
+        private readonly Action<IControl, int, int> _updateElementIndex;
         private int _anchorIndex = -1;
         private IControl? _anchorElement;
         private bool _isWaitingForViewportUpdate;
@@ -79,10 +79,12 @@ namespace Avalonia.Controls.Primitives
         /// <see cref="Controls"/> collection or marking it available for recycling and making it
         /// invisible in some manner.
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="index"></param>
+        /// <param name="element">The element to be unrealized.</param>
+        /// <param name="index">The item index.</param>
         protected abstract void UnrealizeElement(IControl element, int index);
-        protected abstract void UpdateElementIndex(IControl element, int index);
+
+
+        protected abstract void UpdateElementIndex(IControl element, int oldIndex, int newIndex);
 
         protected void BringIntoView(int index)
         {

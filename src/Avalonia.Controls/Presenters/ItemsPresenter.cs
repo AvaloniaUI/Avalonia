@@ -19,6 +19,7 @@ namespace Avalonia.Controls.Presenters
         private bool _createdPanel;
         private ItemsControl? _itemsControl;
         private EventHandler? _scrollInvalidated;
+        private ItemContainerSync? _containerSync;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsPresenter"/> class.
@@ -165,6 +166,12 @@ namespace Avalonia.Controls.Presenters
             _scrollInvalidated?.Invoke(this, e);
         }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            _containerSync?.GenerateContainers();
+            return base.MeasureOverride(availableSize);
+        }
+
         protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             base.OnPropertyChanged(change);
@@ -172,6 +179,7 @@ namespace Avalonia.Controls.Presenters
             if (change.Property == TemplatedParentProperty)
             {
                 _itemsControl = change.NewValue.GetValueOrDefault<ITemplatedControl>() as ItemsControl;
+                ((IItemsPresenterHost?)_itemsControl)?.RegisterItemsPresenter(this);
             }
         }
 
@@ -190,6 +198,12 @@ namespace Avalonia.Controls.Presenters
                 KeyboardNavigation.SetTabNavigation(
                     (InputElement)Panel,
                     KeyboardNavigation.GetTabNavigation(this));
+
+                if (Panel is not IVirtualizingPanel &&
+                    _itemsControl?.ItemContainerGenerator is not null )
+                {
+                    _containerSync = new ItemContainerSync(_itemsControl, Panel);
+                }
             }
         }
 
@@ -199,11 +213,6 @@ namespace Avalonia.Controls.Presenters
             var maxX = Math.Max(scrollable.Extent.Width - scrollable.Viewport.Width, 0);
             var maxY = Math.Max(scrollable.Extent.Height - scrollable.Viewport.Height, 0);
             return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
-        }
-
-        private void VirtualizationModeChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            _scrollInvalidated?.Invoke(this, EventArgs.Empty);
         }
     }
 }

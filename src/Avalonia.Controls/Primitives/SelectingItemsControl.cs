@@ -386,16 +386,6 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
-        protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            base.ItemsCollectionChanged(sender, e);
-
-            if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
-            {
-                SelectedIndex = 0;
-            }
-        }
-
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);

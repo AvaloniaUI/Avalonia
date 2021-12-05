@@ -4,10 +4,10 @@ using Avalonia.Controls.Utils;
 
 #nullable enable
 
-namespace Avalonia.Controls
+namespace Avalonia.Controls.Primitives
 {
     /// <summary>
-    /// Stores the realized element state for a <see cref="VirtualizingStackBase{TItem}"/>.
+    /// Stores the realized element state for a <see cref="VirtualizingStackBase"/>.
     /// </summary>
     internal struct RealizedElementList
     {
@@ -126,7 +126,7 @@ namespace Avalonia.Controls
         /// <param name="modelIndex">The index in the source collection of the insert.</param>
         /// <param name="count">The number of items inserted.</param>
         /// <param name="updateElementIndex">A method used to update the element indexes.</param>
-        public void ItemsInserted(int modelIndex, int count, Action<IControl, int> updateElementIndex)
+        public void ItemsInserted(int modelIndex, int count, Action<IControl, int, int> updateElementIndex)
         {
             if (modelIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(modelIndex));
@@ -147,7 +147,7 @@ namespace Avalonia.Controls
                 for (var i = start; i < elementCount; ++i)
                 {
                     if (_elements[i] is IControl element)
-                        updateElementIndex(element, first + i + count);
+                        updateElementIndex(element, first + i, first + i + count);
                 }
 
                 if (index <= 0)
@@ -175,7 +175,7 @@ namespace Avalonia.Controls
         public void ItemsRemoved(
             int modelIndex,
             int count,
-            Action<IControl, int> updateElementIndex,
+            Action<IControl, int, int> updateElementIndex,
             Action<IControl, int> unrealizeElement)
         {
             if (modelIndex < 0)
@@ -191,15 +191,15 @@ namespace Avalonia.Controls
 
             if (endIndex < 0)
             {
-                // The removed range was before the realized elements. Update the first index and
-                // the indexes of the realized elements.
-                _firstIndex -= count;
-
+                // The removed range was before the realized elements. Update the indexes of the
+                // realized elements and the first index.
                 for (var i = 0; i < _elements.Count; ++i)
                 {
                     if (_elements[i] is IControl element)
-                        updateElementIndex(element, _firstIndex + i);
+                        updateElementIndex(element, _firstIndex + i, _firstIndex - count + i);
                 }
+
+                _firstIndex -= count;
             }
             else if (startIndex < _elements.Count)
             {
@@ -226,7 +226,7 @@ namespace Avalonia.Controls
                 for (var i = start; i < end; ++i)
                 {
                     if (_elements[i] is IControl element)
-                        updateElementIndex(element, first + i);
+                        updateElementIndex(element, first + i - count, first + i);
                 }
             }
         }

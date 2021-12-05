@@ -78,7 +78,7 @@ namespace Avalonia.Controls
             generator.Unrealize(element, index, items[index]);
         }
 
-        protected override void UpdateElementIndex(IControl element, int index)
+        protected override void UpdateElementIndex(IControl element, int oldIndex, int newIndex)
         {
             throw new NotImplementedException();
         }

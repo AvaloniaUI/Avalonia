@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Controls.Presenters;
 using Avalonia.Data;
 
 #nullable enable
@@ -6,7 +7,7 @@ using Avalonia.Data;
 namespace Avalonia.Controls.Generators
 {
     /// <summary>
-    /// Creates <see cref="ContentControl"/> containers for an <see cref="ItemsControl"/>.
+    /// Creates <see cref="ContentPresenter"/> containers for an <see cref="ItemsControl"/>.
     /// </summary>
     public class ItemContainerGenerator : IItemContainerGenerator
     {
@@ -44,14 +45,14 @@ namespace Avalonia.Controls.Generators
 
         protected virtual IControl CreateContainer(IControl parent, int index, object? item)
         {
-            var result = new ContentControl 
+            var result = new ContentPresenter
             { 
                 DataContext = item,
                 ContentTemplate = Owner.ItemTemplate,
             };
 
             result.Bind(
-                ContentControl.ContentProperty,
+                ContentPresenter.ContentProperty,
                 result.GetBindingObservable(StyledElement.DataContextProperty),
                 BindingPriority.TemplatedParent);
             return result;

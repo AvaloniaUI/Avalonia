@@ -24,7 +24,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IItemsPresenterHost, ICollectionChangedListener, IChildIndexProvider
+    public class ItemsControl : TemplatedControl, IItemsPresenterHost, IChildIndexProvider
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -68,13 +68,13 @@ namespace Avalonia.Controls
         private ItemsSourceView? _itemsView;
         private IItemContainerGenerator? _generator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
+        private int _blockReentrancyCount;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
         /// </summary>
         static ItemsControl()
         {
-            ItemsProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.ItemsChanged(e));
             ItemTemplateProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.ItemTemplateChanged(e));
         }
 
@@ -84,7 +84,6 @@ namespace Avalonia.Controls
         public ItemsControl()
         {
             UpdatePseudoClasses();
-            SubscribeToItems(_items);
         }
 
         /// <summary>
@@ -111,6 +110,8 @@ namespace Avalonia.Controls
             }
             set
             {
+                using var monitor = new SimpleMonitor(this, true);
+
                 if (_items != value)
                 {
                     var oldItems = _items;
@@ -199,6 +200,8 @@ namespace Avalonia.Controls
             remove => _childIndexChanged -= value;
         }
 
+        internal event NotifyCollectionChangedEventHandler? ItemsChanged;
+
         public IControl? GetContainerForIndex(int index) => Presenter?.GetContainerForIndex(index);
 
         public int GetContainerIndex(IControl container) => Presenter?.GetContainerIndex(container) ?? -1;
@@ -219,24 +222,12 @@ namespace Avalonia.Controls
             }
         }
 
-        void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
-        {
-        }
-
-        void ICollectionChangedListener.Changed(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
-        {
-        }
-
-        void ICollectionChangedListener.PostChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
-        {
-            ItemsCollectionChanged(sender, e);
-        }
-
         /// <summary>
         /// Called by an <see cref="ItemsPresenter"/> to raise the <see cref="ContainerRealized"/> event.
         /// </summary>
         internal void RaiseContainerRealized(IControl container, int index, object? item)
         {
+            using var monitor = new SimpleMonitor(this, false);
             OnContainerRealized(container, index, item);
         }
 
@@ -245,6 +236,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal void RaiseContainerUnrealized(IControl container, int index)
         {
+            using var monitor = new SimpleMonitor(this, false);
             OnContainerUnrealized(container, index);
         }
 
@@ -253,6 +245,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal void RaiseContainerIndexChanged(IControl container, int oldIndex, int newIndex)
         {
+            using var monitor = new SimpleMonitor(this, false);
             OnContainerIndexChanged(container, oldIndex, newIndex);
         }
 
@@ -351,27 +344,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="ItemsView"/> changes.
-        /// </summary>
-        /// <param name="oldView">
-        /// The old items view. Will be null on first invocation and non-null thereafter.
-        /// </param>
-        /// <param name="newView">The new items view.</param>
-        protected virtual void ItemsViewChanged(ItemsSourceView? oldView, ItemsSourceView newView)
-        {
-            if (oldView is object)
-                RemoveControlItemsFromLogicalChildren(oldView);
-            AddControlItemsToLogicalChildren(newView);
-            UpdatePseudoClasses();
-            ItemCount = ItemsView.Count;
-        }
-
-        /// <summary>
-        /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
-        /// raised on <see cref="ItemsView"/>.
+        /// Called when a change is made to the items displayed by the control, either due to the
+        /// value of <see cref="Items"/> changing or a
+        /// <see cref="INotifyCollectionChanged.CollectionChanged"/> event occuring on the items.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void ItemsViewCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnItemsChanged(NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -391,6 +369,7 @@ namespace Avalonia.Controls
 
             UpdatePseudoClasses();
             ItemCount = ItemsView.Count;
+            ItemsChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -447,61 +426,37 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Called when the <see cref="Items"/> property changes.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void ItemsChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            var oldValue = e.OldValue as IEnumerable;
-            var newValue = e.NewValue as IEnumerable;
-
-            if (oldValue is INotifyCollectionChanged incc)
-            {
-                CollectionChangedEventManager.Instance.RemoveListener(incc, this);
-            }
-
-            UpdateItemCount();
-            RemoveControlItemsFromLogicalChildren(oldValue);
-            AddControlItemsToLogicalChildren(newValue);
-            SubscribeToItems(newValue);
-        }
-
-        /// <summary>
-        /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is
-        /// raised on <see cref="Items"/>.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        protected virtual void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            UpdateItemCount();
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    AddControlItemsToLogicalChildren(e.NewItems);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    RemoveControlItemsFromLogicalChildren(e.OldItems);
-                    break;
-            }
-        }
-
         private void CreateItemsView()
         {
+            void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                using var monitor = new SimpleMonitor(this, true);
+                OnItemsChanged(e);
+            }
+
             var oldView = _itemsView;
 
-            _itemsView = ItemsSourceView.GetOrCreate(_items);
-            _itemsView.AddListener(this);
+            if (_itemsView is object)
+            {
+                RemoveControlItemsFromLogicalChildren(_itemsView);
+                _itemsView.CollectionChanged -= OnCollectionChanged;
+            }
 
-            ItemsViewChanged(oldView, _itemsView);
+            _itemsView = ItemsSourceView.GetOrCreate(_items);
+            AddControlItemsToLogicalChildren(_itemsView);
+            UpdatePseudoClasses();
+            ItemCount = ItemsView.Count;
+
+            if (_itemsView != ItemsSourceView.Empty)
+            {
+                _itemsView.CollectionChanged += OnCollectionChanged;
+            }
+
             RaisePropertyChanged(ItemsViewProperty, oldView, _itemsView);
+            OnItemsChanged(CollectionExtensions.ResetEvent);
 
             if (oldView is object && oldView != ItemsSourceView.Empty)
             {
-                oldView.RemoveListener(this);
                 oldView?.Dispose();
             }
         }
@@ -536,34 +491,22 @@ namespace Avalonia.Controls
         /// <param name="items">The items.</param>
         private void RemoveControlItemsFromLogicalChildren(IEnumerable? items)
         {
+            if (items is null || items == ItemsSourceView.Empty)
+                return;
+
             var toRemove = new List<ILogical>();
 
-            if (items != null)
+            foreach (var i in items)
             {
-                foreach (var i in items)
-                {
-                    var control = i as IControl;
+                var control = i as IControl;
 
-                    if (control != null)
-                    {
-                        toRemove.Add(control);
-                    }
+                if (control != null)
+                {
+                    toRemove.Add(control);
                 }
             }
 
             LogicalChildren.RemoveAll(toRemove);
-        }
-
-        /// <summary>
-        /// Subscribes to an <see cref="Items"/> collection.
-        /// </summary>
-        /// <param name="items">The items collection.</param>
-        private void SubscribeToItems(IEnumerable? items)
-        {
-            if (items is INotifyCollectionChanged incc)
-            {
-                CollectionChangedEventManager.Instance.AddListener(incc, this);
-            }
         }
 
         /// <summary>
@@ -647,6 +590,23 @@ namespace Avalonia.Controls
 
             count = ItemCount;
             return true;
+        }
+
+
+        private struct SimpleMonitor : IDisposable
+        {
+            private readonly ItemsControl _owner;
+
+            public SimpleMonitor(ItemsControl owner, bool throwOnEntry)
+            {
+                if (throwOnEntry && owner._blockReentrancyCount > 0)
+                    throw new InvalidOperationException(
+                        "Cannot change ItemsControl items during a container lifecycle event.");
+                ++owner._blockReentrancyCount;
+                _owner = owner;
+            }
+
+            public void Dispose() => --_owner._blockReentrancyCount;
         }
     }
 }
