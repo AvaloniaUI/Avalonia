@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Avalonia.Skia;
 
 namespace Avalonia.Web.Blazor
@@ -18,7 +17,7 @@ namespace Avalonia.Web.Blazor
             return null;
         }
 
-        public ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
+        public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
         {
             return null;
         }

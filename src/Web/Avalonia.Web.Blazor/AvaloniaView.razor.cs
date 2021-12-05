@@ -20,7 +20,7 @@ namespace Avalonia.Web.Blazor
         private SKHtmlCanvasInterop _interop = null!;
         private SizeWatcherInterop _sizeWatcher = null!;
         private DpiWatcherInterop _dpiWatcher = null!;
-        private SKHtmlCanvasInterop.GLInfo _jsGlInfo = null!;
+        private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null!;
         private InputHelperInterop _inputHelper = null!;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
@@ -33,7 +33,7 @@ namespace Avalonia.Web.Blazor
 
         private bool _initialised;
 
-        [Inject] IJSRuntime Js { get; set; } = null!;
+        [Inject] private IJSRuntime Js { get; set; } = null!;
 
         public AvaloniaView()
         {

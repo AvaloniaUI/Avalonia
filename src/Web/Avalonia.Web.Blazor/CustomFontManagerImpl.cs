@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Skia;
@@ -33,8 +31,6 @@ namespace Avalonia.Web.Blazor
         {
             return _customTypefaces.Select(x => x.FontFamily.Name);
         }
-
-        private readonly string[] _bcp47 = { CultureInfo.CurrentCulture.ThreeLetterISOLanguageName, CultureInfo.CurrentCulture.TwoLetterISOLanguageName };
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily,
             CultureInfo culture, out Typeface typeface)

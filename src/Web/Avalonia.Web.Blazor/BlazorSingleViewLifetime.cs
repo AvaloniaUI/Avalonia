@@ -6,7 +6,7 @@ namespace Avalonia.Web.Blazor
 {
     public class BlazorSingleViewLifetime : ISingleViewApplicationLifetime
     {
-        public Control MainView { get; set; }
+        public Control? MainView { get; set; }
     }
 
     public static class WebAppBuilder

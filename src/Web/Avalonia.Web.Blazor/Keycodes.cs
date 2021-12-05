@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Avalonia.Input;
 
 namespace Avalonia.Web.Blazor

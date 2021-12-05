@@ -5,15 +5,14 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
+#nullable enable
+
 namespace Avalonia.Web.Blazor
 {
     public class BlazorWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
     {
-        private static object _uiLock = new object();
-        private static object _syncRootLock = new object();
-        private bool _signaled = false;
-        private static int _uiThreadId = -1;
-        private static int _lockNesting = 0;
+        private bool _signaled;
+        private static int s_uiThreadId = -1;
 
         public IWindowImpl CreateWindow() => throw new NotSupportedException();
 
@@ -22,7 +21,7 @@ namespace Avalonia.Web.Blazor
             throw new NotImplementedException();
         }
 
-        public ITrayIconImpl CreateTrayIcon()
+        public ITrayIconImpl? CreateTrayIcon()
         {
             return null;
         }
@@ -61,36 +60,29 @@ namespace Avalonia.Web.Blazor
             return AvaloniaLocator.Current.GetService<IRuntimePlatform>()
                 .StartSystemTimer(interval, () =>
                 {
-                    using (Lock())
-                    {
-                        Dispatcher.UIThread.RunJobs(priority);
-                        tick();
-                    }
+                    Dispatcher.UIThread.RunJobs(priority);
+                    tick();
                 });
         }
 
         public void Signal(DispatcherPriority priority)
         {
-            lock (_syncRootLock)
-            {
-                if (_signaled)
-                    return;
-                _signaled = true;
-                IDisposable disp = null;
-                disp = AvaloniaLocator.Current.GetService<IRuntimePlatform>()
-                    .StartSystemTimer(TimeSpan.FromMilliseconds(1),
-                        () =>
-                        {
-                            lock (_syncRootLock)
-                            {
-                                _signaled = false;
-                                disp.Dispose();
-                            }
+            if (_signaled)
+                return;
+            
+            _signaled = true;
+            
+            IDisposable? disp = null;
+            
+            disp = AvaloniaLocator.Current.GetService<IRuntimePlatform>()
+                .StartSystemTimer(TimeSpan.FromMilliseconds(1),
+                    () =>
+                    {
+                        _signaled = false;
+                        disp?.Dispose();
 
-                            using (Lock())
-                                Signaled?.Invoke(null);
-                        });
-            }
+                        Signaled?.Invoke(null);
+                    });
         }
 
         public bool CurrentThreadIsLoopThread
@@ -101,33 +93,8 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        public event Action<DispatcherPriority?> Signaled;
+        public event Action<DispatcherPriority?>? Signaled;
 
-        class LockDisposable : IDisposable
-        {
-            public void Dispose()
-            {
-                lock (_syncRootLock)
-                {
-                    _lockNesting--;
-                    if (_lockNesting == 0)
-                        _uiThreadId = -1;
-                }
-
-                Monitor.Exit(_uiLock);
-            }
-        }
-
-        public static IDisposable Lock()
-        {
-            Monitor.Enter(_uiLock);
-            lock (_syncRootLock)
-            {
-                _lockNesting++;
-                _uiThreadId = Thread.CurrentThread.ManagedThreadId;
-            }
-
-            return new LockDisposable();
-        }
+        
     }
 }

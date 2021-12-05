@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using Avalonia.Rendering;
 
@@ -6,12 +5,12 @@ namespace Avalonia.Web.Blazor
 {
     public class ManualTriggerRenderTimer : IRenderTimer
     {
-        private static readonly Stopwatch _sw = Stopwatch.StartNew();
+        private static readonly Stopwatch s_sw = Stopwatch.StartNew();
 
-        public static ManualTriggerRenderTimer Instance { get; } = new ManualTriggerRenderTimer();
+        public static ManualTriggerRenderTimer Instance { get; } = new();
 
-        public void RaiseTick() => Tick?.Invoke(_sw.Elapsed);
+        public void RaiseTick() => Tick?.Invoke(s_sw.Elapsed);
 
-        public event Action<TimeSpan> Tick;
+        public event Action<TimeSpan>? Tick;
     }
 }

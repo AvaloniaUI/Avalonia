@@ -4,9 +4,10 @@ using Avalonia.Shared.PlatformSupport;
 
 namespace Avalonia.Web.Blazor
 {
-    class BlazorRuntimePlatform : IRuntimePlatform
+    internal class BlazorRuntimePlatform : IRuntimePlatform
     {
-        public static IRuntimePlatform Instance = new BlazorRuntimePlatform();
+        public static readonly IRuntimePlatform Instance = new BlazorRuntimePlatform();
+        
         public IDisposable StartSystemTimer(TimeSpan interval, Action tick)
         {
             return new Timer(_ => tick(), null, interval, interval);
@@ -25,24 +26,24 @@ namespace Avalonia.Web.Blazor
             };
         }
 
-        class BasicBlob : IUnmanagedBlob
+        private class BasicBlob : IUnmanagedBlob
         {
-            private IntPtr _data;
             public BasicBlob(int size)
             {
-                _data = Marshal.AllocHGlobal(size);
+                Address = Marshal.AllocHGlobal(size);
                 Size = size;
             }
             public void Dispose()
             {
-                if (_data != IntPtr.Zero)
-                    Marshal.FreeHGlobal(_data);
-                _data = IntPtr.Zero;
+                if (Address != IntPtr.Zero)
+                    Marshal.FreeHGlobal(Address);
+                Address = IntPtr.Zero;
             }
 
-            public IntPtr Address => _data;
+            public IntPtr Address { get; private set; }
+
             public int Size { get; }
-            public bool IsDisposed => _data == IntPtr.Zero;
+            public bool IsDisposed => Address == IntPtr.Zero;
         }
 
         public IUnmanagedBlob AllocBlob(int size)

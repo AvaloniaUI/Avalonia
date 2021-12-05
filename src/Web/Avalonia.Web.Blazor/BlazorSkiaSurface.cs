@@ -5,6 +5,16 @@ namespace Avalonia.Web.Blazor
 {
     internal class BlazorSkiaSurface
     {
+        public BlazorSkiaSurface(GRContext context, SKHtmlCanvasInterop.GLInfo glInfo, SKColorType colorType, PixelSize size, double scaling, GRSurfaceOrigin origin)
+        {
+            Context = context;
+            GlInfo = glInfo;
+            ColorType = colorType;
+            Size = size;
+            Scaling = scaling;
+            Origin = origin;
+        }
+        
         public SKColorType ColorType { get; set; }
 
         public PixelSize Size { get; set; }

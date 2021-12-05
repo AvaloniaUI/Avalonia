@@ -1,17 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 
+#nullable enable
+
 namespace Avalonia.Web.Blazor
 {
-    class ClipboardStub : IClipboard
+    internal class ClipboardStub : IClipboard
     {
         public Task<string> GetTextAsync() => Task.FromResult("");
 
@@ -23,10 +20,10 @@ namespace Avalonia.Web.Blazor
 
         public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
-        public Task<object> GetDataAsync(string format) => Task.FromResult<object>(null);
+        public Task<object> GetDataAsync(string format) => Task.FromResult<object>(new ());
     }
 
-    class CursorStub : ICursorImpl
+    internal class CursorStub : ICursorImpl
     {
         public void Dispose()
         {
@@ -34,7 +31,7 @@ namespace Avalonia.Web.Blazor
         }
     }
 
-    class CursorFactoryStub : ICursorFactory
+    internal class CursorFactoryStub : ICursorFactory
     {
         public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
         {
@@ -47,9 +44,9 @@ namespace Avalonia.Web.Blazor
         }
     }
 
-    class IconLoaderStub : IPlatformIconLoader
+    internal class IconLoaderStub : IPlatformIconLoader
     {
-        class IconStub : IWindowIconImpl
+        private class IconStub : IWindowIconImpl
         {
             public void Save(Stream outputStream)
             {
@@ -64,20 +61,20 @@ namespace Avalonia.Web.Blazor
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
     }
 
-    class SystemDialogsStub : ISystemDialogImpl
+    internal class SystemDialogsStub : ISystemDialogImpl
     {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
-            Task.FromResult((string[])null);
+        public Task<string[]?> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
+            Task.FromResult((string[]?)null);
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
-            Task.FromResult((string)null);
+        public Task<string?> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
+            Task.FromResult((string?)null);
     }
 
-    class ScreenStub : IScreenImpl
+    internal class ScreenStub : IScreenImpl
     {
         public int ScreenCount => 1;
 
         public IReadOnlyList<Screen> AllScreens { get; } =
-            new Screen[] { new Screen(96, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
+            new[] { new Screen(96, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
     }
 }

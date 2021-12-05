@@ -9,6 +9,8 @@ using Avalonia.Rendering;
 using Avalonia.Web.Blazor.Interop;
 using SkiaSharp;
 
+#nullable enable
+
 namespace Avalonia.Web.Blazor
 {
     internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod
@@ -16,13 +18,15 @@ namespace Avalonia.Web.Blazor
         private Size _clientSize;
         private BlazorSkiaSurface? _currentSurface;
         private IInputRoot? _inputRoot;
-        private Stopwatch _sw = Stopwatch.StartNew();
+        private readonly Stopwatch _sw = Stopwatch.StartNew();
         private readonly ITextInputMethodImpl _textInputMethod;
         private readonly TouchDevice _touchDevice;
 
         public RazorViewTopLevelImpl(ITextInputMethodImpl textInputMethod)
         {
             _textInputMethod = textInputMethod;
+            TransparencyLevel = WindowTransparencyLevel.None;
+            AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
         }
 
@@ -31,15 +35,8 @@ namespace Avalonia.Web.Blazor
 
         internal void SetSurface(GRContext context, SKHtmlCanvasInterop.GLInfo glInfo, SKColorType colorType, PixelSize size, double scaling)
         {
-            _currentSurface = new BlazorSkiaSurface
-            {
-                Context = context,
-                GlInfo = glInfo,
-                ColorType = colorType,
-                Size = size,
-                Scaling = scaling,
-                Origin = GRSurfaceOrigin.BottomLeft
-            };
+            _currentSurface =
+                new BlazorSkiaSurface(context, glInfo, colorType, size, scaling, GRSurfaceOrigin.BottomLeft);
         }
 
         public void SetClientSize(SKSize size, double dpi)
@@ -63,7 +60,7 @@ namespace Avalonia.Web.Blazor
         {
             if (_inputRoot is { })
             {
-                Input.Invoke(new RawTouchEventArgs(_touchDevice, Timestamp, _inputRoot, type, p, modifiers, touchPointId));
+                Input?.Invoke(new RawTouchEventArgs(_touchDevice, Timestamp, _inputRoot, type, p, modifiers, touchPointId));
             }
         }
 
@@ -102,8 +99,6 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-
-
         public void Dispose()
         {
 
@@ -136,7 +131,7 @@ namespace Avalonia.Web.Blazor
 
         }
 
-        public IPopupImpl CreatePopup()
+        public IPopupImpl? CreatePopup()
         {
             return null;
         }
@@ -150,17 +145,15 @@ namespace Avalonia.Web.Blazor
         public Size? FrameSize => null;
         public double RenderScaling => 1;
 
-        public IEnumerable<object> Surfaces => new[] { _currentSurface };
+        public IEnumerable<object> Surfaces => new object[] { _currentSurface! };
 
-        internal BlazorSkiaSurface Surface => _currentSurface;
-
-        public Action<RawInputEventArgs> Input { get; set; }
-        public Action<Rect> Paint { get; set; }
-        public Action<Size, PlatformResizeReason> Resized { get; set; }
-        public Action<double> ScalingChanged { get; set; }
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
-        public Action Closed { get; set; }
-        public Action LostFocus { get; set; }
+        public Action<RawInputEventArgs>? Input { get; set; }
+        public Action<Rect>? Paint { get; set; }
+        public Action<Size, PlatformResizeReason>? Resized { get; set; }
+        public Action<double>? ScalingChanged { get; set; }
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
+        public Action? Closed { get; set; }
+        public Action? LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; } = BlazorWindowingPlatform.Keyboard;
