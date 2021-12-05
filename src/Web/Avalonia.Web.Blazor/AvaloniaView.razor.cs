@@ -289,7 +289,6 @@ namespace Avalonia.Web.Blazor
 
                     _initialised = true;
 
-                    await Task.Delay(250); // without this we get some kind of initialisation error with gl
                     _topLevel.Prepare();
 
                     _topLevel.Renderer.Start();

@@ -200,7 +200,7 @@ export class SKHtmlCanvas {
 			alpha: 1,
 			depth: 1,
 			stencil: 8,
-			antialias: 1,
+			antialias: 0,
 			premultipliedAlpha: 1,
 			preserveDrawingBuffer: 0,
 			preferLowPowerToHighPerformance: 0,
@@ -209,7 +209,7 @@ export class SKHtmlCanvas {
 			minorVersion: 0,
 			enableExtensionsByDefault: 1,
 			explicitSwapControl: 0,
-			renderViaOffscreenBackBuffer: 0,
+			renderViaOffscreenBackBuffer: 1,
 		};
 
 		let ctx: WebGLRenderingContext = GL.createContext(htmlCanvas, contextAttributes);
