@@ -71,4 +71,3 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\LegacyProject.targets" />
 </Project>
-</Project>
