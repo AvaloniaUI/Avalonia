@@ -17,12 +17,10 @@ namespace Avalonia.Web.Blazor
             new Typeface("avares://Avalonia.Web.Blazor/Assets#Noto Mono");
         private readonly Typeface _italicTypeface =
             new Typeface("avares://Avalonia.Web.Blazor/Assets#Noto Sans");
-        private readonly Typeface _emojiTypeface =
-            new Typeface("avares://Avalonia.Web.Blazor/Assets#Twitter Color Emoji");
 
         public CustomFontManagerImpl()
         {
-            _customTypefaces = new[] { _emojiTypeface, _italicTypeface, _defaultTypeface };
+            _customTypefaces = new[] { _italicTypeface, _defaultTypeface };
             _defaultFamilyName = _defaultTypeface.FontFamily.FamilyNames.PrimaryFamilyName;
         }
 
@@ -64,12 +62,6 @@ namespace Avalonia.Web.Blazor
 
             switch (typeface.FontFamily.Name)
             {
-                case "Twitter Color Emoji":
-                    {
-                        var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(_emojiTypeface.FontFamily);
-                        skTypeface = typefaceCollection.Get(typeface);
-                        break;
-                    }
                 case "Noto Sans":
                     {
                         var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(_italicTypeface.FontFamily);
