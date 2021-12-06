@@ -140,18 +140,9 @@ namespace Avalonia.Data.Converters
                     );
 
             }
-            Action<object> action = null;
-            try
-            {
-                action = Expression
-                   .Lambda<Action<object>>(body, parameter)
-                   .Compile();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-            return action;
+            return Expression
+                .Lambda<Action<object>>(body, parameter)
+                .Compile();
         }
 
         static Func<object, bool> CreateCanExecute(object target
@@ -170,7 +161,7 @@ namespace Avalonia.Data.Converters
                 .Compile();
         }
 
-        private static Expression? ConvertTarget(object? target, MethodInfo method) =>
+        private static Expression ConvertTarget(object target, MethodInfo method) =>
             target is null ? null : Expression.Convert(Expression.Constant(target), method.DeclaringType);
 
         internal class WeakPropertyChangedProxy

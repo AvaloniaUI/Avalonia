@@ -10,6 +10,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 #nullable enable
@@ -92,6 +93,12 @@ namespace Avalonia.Controls.Primitives
                 nameof(SelectionMode));
 
         /// <summary>
+        /// Defines the <see cref="IsTextSearchEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), false);
+
+        /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
         /// notify the parent <see cref="SelectingItemsControl"/> that their selection state
         /// has changed.
@@ -110,6 +117,8 @@ namespace Avalonia.Controls.Primitives
                 RoutingStrategies.Bubble);
 
         private static readonly IList Empty = Array.Empty<object>();
+        private string _textSearchTerm = string.Empty;
+        private DispatcherTimer? _textSearchTimer;
         private ISelectionModel? _selection;
         private int _oldSelectedIndex;
         private object? _oldSelectedItem;
@@ -306,11 +315,20 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets a value that specifies whether a user can jump to a value by typing.
+        /// </summary>
+        public bool IsTextSearchEnabled
+        {
+            get { return GetValue(IsTextSearchEnabledProperty); }
+            set { SetValue(IsTextSearchEnabledProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the selection mode.
         /// </summary>
         /// <remarks>
         /// Note that the selection mode only applies to selections made via user interaction.
-        /// Multiple selections can be made programatically regardless of the value of this property.
+        /// Multiple selections can be made programmatically regardless of the value of this property.
         /// </remarks>
         protected SelectionMode SelectionMode
         {
@@ -488,6 +506,36 @@ namespace Avalonia.Controls.Primitives
             {
                 _selection.Source = Items;
             }
+        }
+
+        protected override void OnTextInput(TextInputEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                if (!IsTextSearchEnabled)
+                    return;
+
+                StopTextSearchTimer();
+
+                _textSearchTerm += e.Text;
+
+                bool match(ItemContainerInfo info) =>
+                    info.ContainerControl is IContentControl control &&
+                    control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+
+                var info = ItemContainerGenerator.Containers.FirstOrDefault(match);
+
+                if (info != null)
+                {
+                    SelectedIndex = info.Index;
+                }
+
+                StartTextSearchTimer();
+
+                e.Handled = true;
+            }
+
+            base.OnTextInput(e);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -960,6 +1008,32 @@ namespace Avalonia.Controls.Primitives
                     SelectedItem = state.SelectedItem.Value;
                 }
             }
+        }
+
+        private void StartTextSearchTimer()
+        {
+            _textSearchTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _textSearchTimer.Tick += TextSearchTimer_Tick;
+            _textSearchTimer.Start();
+        }
+
+        private void StopTextSearchTimer()
+        {
+            if (_textSearchTimer == null)
+            {
+                return;
+            }
+
+            _textSearchTimer.Tick -= TextSearchTimer_Tick;
+            _textSearchTimer.Stop();
+
+            _textSearchTimer = null;
+        }
+
+        private void TextSearchTimer_Tick(object sender, EventArgs e)
+        {
+            _textSearchTerm = string.Empty;
+            StopTextSearchTimer();
         }
 
         // When in a BeginInit..EndInit block, or when the DataContext is updating, we need to

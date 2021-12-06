@@ -18,12 +18,12 @@ namespace Avalonia.Benchmarks
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
-            throw new NotImplementedException();
+            return new MockStreamGeometryImpl();
         }
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
         {
-            throw new NotImplementedException();
+            return new MockStreamGeometryImpl();
         }
 
         public IGeometryImpl CreateRectangleGeometry(Rect rect)
@@ -34,6 +34,16 @@ namespace Avalonia.Benchmarks
         public IStreamGeometryImpl CreateStreamGeometry()
         {
             return new MockStreamGeometryImpl();
+        }
+
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            throw new NotImplementedException();
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
@@ -57,6 +67,28 @@ namespace Avalonia.Benchmarks
         }
 
         public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
         {
             throw new NotImplementedException();
         }

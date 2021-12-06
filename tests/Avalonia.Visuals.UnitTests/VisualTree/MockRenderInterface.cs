@@ -37,7 +37,39 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             return new MockStreamGeometry();
         }
 
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            throw new NotImplementedException();
+        }
+
         public IBitmapImpl LoadBitmap(Stream stream)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
         {
             throw new NotImplementedException();
         }

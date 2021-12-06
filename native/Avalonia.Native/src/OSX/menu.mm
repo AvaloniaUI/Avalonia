@@ -95,6 +95,8 @@ NSMenuItem* AvnAppMenuItem::GetNative()
 
 HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if(menu != nullptr)
@@ -114,6 +116,8 @@ HRESULT AvnAppMenuItem::SetSubMenu (IAvnMenu* menu)
 
 HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if (utf8String != nullptr)
@@ -128,6 +132,8 @@ HRESULT AvnAppMenuItem::SetTitle (char* utf8String)
 
 HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if(key != AvnKeyNone)
@@ -183,6 +189,8 @@ HRESULT AvnAppMenuItem::SetGesture (AvnKey key, AvnInputModifiers modifiers)
 
 HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionCallback* callback)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         _predicate = predicate;
@@ -193,6 +201,8 @@ HRESULT AvnAppMenuItem::SetAction (IAvnPredicateCallback* predicate, IAvnActionC
 
 HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         [_native setState:(isChecked && _isCheckable ? NSOnState : NSOffState)];
@@ -202,6 +212,8 @@ HRESULT AvnAppMenuItem::SetIsChecked (bool isChecked)
 
 HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         switch(toggleType)
@@ -231,6 +243,8 @@ HRESULT AvnAppMenuItem::SetToggleType(AvnMenuItemToggleType toggleType)
 
 HRESULT AvnAppMenuItem::SetIcon(void *data, size_t length)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if(data != nullptr)
@@ -317,6 +331,8 @@ void AvnAppMenu::RaiseClosed()
 
 HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if([_native hasGlobalMenuItem])
@@ -337,6 +353,8 @@ HRESULT AvnAppMenu::InsertItem(int index, IAvnMenuItem *item)
 
 HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
@@ -352,6 +370,8 @@ HRESULT AvnAppMenu::RemoveItem (IAvnMenuItem* item)
 
 HRESULT AvnAppMenu::SetTitle (char* utf8String)
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         if (utf8String != nullptr)
@@ -365,6 +385,8 @@ HRESULT AvnAppMenu::SetTitle (char* utf8String)
 
 HRESULT AvnAppMenu::Clear()
 {
+    START_COM_CALL;
+    
     @autoreleasepool
     {
         [_native removeAllItems];

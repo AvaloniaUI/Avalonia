@@ -62,6 +62,16 @@ namespace Avalonia.Skia
             return new StreamGeometryImpl();
         }
 
+        public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children)
+        {
+            return new GeometryGroupImpl(fillRule, children);
+        }
+
+        public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
+        {
+            return new CombinedGeometryImpl(combineMode, g1, g2);
+        }
+
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
         {
@@ -75,6 +85,31 @@ namespace Avalonia.Skia
         public IBitmapImpl LoadBitmap(Stream stream)
         {
             return new ImmutableBitmap(stream);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToWidth(Stream stream, int width,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new WriteableBitmapImpl(stream, width, true, interpolationMode);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmapToHeight(Stream stream, int height,
+            BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.HighQuality)
+        {
+            return new WriteableBitmapImpl(stream, height, false, interpolationMode);
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(string fileName)
+        {
+            using (var stream = File.OpenRead(fileName))
+            {
+                return LoadWriteableBitmap(stream);
+            }
+        }
+
+        public IWriteableBitmapImpl LoadWriteableBitmap(Stream stream)
+        {
+            return new WriteableBitmapImpl(stream);
         }
 
         /// <inheritdoc />
@@ -182,6 +217,8 @@ namespace Avalonia.Skia
 
             s_font.Size = (float)glyphRun.FontRenderingEmSize;
             s_font.Typeface = typeface;
+            s_font.Embolden = glyphTypeface.IsFakeBold;
+            s_font.SkewX = glyphTypeface.IsFakeItalic ? -0.2f : 0;
 
             SKTextBlob textBlob;
 

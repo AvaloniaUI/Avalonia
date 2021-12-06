@@ -11,6 +11,14 @@ namespace Avalonia.Media
     /// </summary>
     public class DrawingImage : AvaloniaObject, IImage, IAffectsRender
     {
+        public DrawingImage() 
+        { 
+        }
+
+        public DrawingImage(Drawing drawing)
+        {
+            Drawing = drawing;
+        }
         /// <summary>
         /// Defines the <see cref="Drawing"/> property.
         /// </summary>

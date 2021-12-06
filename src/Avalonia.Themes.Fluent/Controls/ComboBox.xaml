@@ -34,6 +34,7 @@
     <Setter Property="Background" Value="{DynamicResource ComboBoxBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource ComboBoxBorderThemeThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -62,6 +63,7 @@
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
                     MinWidth="{DynamicResource ComboBoxThemeMinWidth}" />
 
             <Border x:Name="HighlightBackground"
@@ -70,7 +72,8 @@
                     Grid.ColumnSpan="2"
                     Background="{DynamicResource ComboBoxBackgroundUnfocused}"
                     BorderBrush="{DynamicResource ComboBoxBackgroundBorderBrushUnfocused}"
-                    BorderThickness="{TemplateBinding BorderThickness}" />
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}" />
             <TextBlock x:Name="PlaceholderTextBlock"
                        Grid.Row="1"
                        Grid.Column="0"
@@ -112,9 +115,7 @@
                 <Panel Height="12"
                        Width="12" />
                 <Path x:Name="DropDownGlyph"
-                      Stretch="Uniform"
-                      VerticalAlignment="Center"
-                      Data="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
+                      VerticalAlignment="Center" />
               </Panel>
             </Viewbox>
             <Popup Name="PART_Popup"
@@ -160,6 +161,8 @@
 
   <Style Selector="ComboBox /template/ Path#DropDownGlyph">
     <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForeground}" />
+    <Setter Property="Data" Value="M1939 486L2029 576L1024 1581L19 576L109 486L1024 1401L1939 486Z" />
+    <Setter Property="Stretch" Value="Uniform" />
   </Style>
 
   <!--  PointerOver State  -->
@@ -225,14 +228,6 @@
 
   <Style Selector="ComboBox:focused:pressed /template/ Path#DropDownGlyph">
     <Setter Property="Fill" Value="{DynamicResource ComboBoxDropDownGlyphForegroundFocusedPressed}" />
-  </Style>
-  
-  <Style Selector="ComboBox /template/ Border#Background">
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-  </Style>
-  
-  <Style Selector="ComboBox /template/ Border#HighlightBackground">
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
   </Style>
   
   <!-- Error State -->

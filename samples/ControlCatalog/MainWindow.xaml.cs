@@ -17,7 +17,10 @@ namespace ControlCatalog
         public MainWindow()
         {
             this.InitializeComponent();
-            this.AttachDevTools();
+            this.AttachDevTools(new Avalonia.Diagnostics.DevToolsOptions()
+            {
+                StartupScreenIndex = 1,
+            });
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
 
@@ -32,6 +35,8 @@ namespace ControlCatalog
 
             var mainMenu = this.FindControl<Menu>("MainMenu");
             mainMenu.AttachedToVisualTree += MenuAttached;
+
+            ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.OSXThickTitleBar;
         }
 
         public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";

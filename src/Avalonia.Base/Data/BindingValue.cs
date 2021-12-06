@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Utilities;
 
@@ -246,7 +247,7 @@ namespace Avalonia.Data
                 UnsetValueType _ => Unset,
                 DoNothingType _ => DoNothing,
                 BindingNotification n => n.ToBindingValue().Cast<T>(),
-                _ => new BindingValue<T>((T)value)
+                _ => new BindingValue<T>((T?)value)
             };
         }
 
@@ -358,6 +359,7 @@ namespace Avalonia.Data
                 e);
         }
 
+        [Conditional("DEBUG")]
         private static void ValidateValue([AllowNull] T value)
         {
             if (value is UnsetValueType)

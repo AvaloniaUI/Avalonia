@@ -506,7 +506,7 @@ namespace Avalonia.Skia
         public void PushGeometryClip(IGeometryImpl clip)
         {
             Canvas.Save();
-            Canvas.ClipPath(((GeometryImpl)clip).EffectivePath);
+            Canvas.ClipPath(((GeometryImpl)clip).EffectivePath, SKClipOperation.Intersect, true);
         }
 
         /// <inheritdoc />

@@ -11,6 +11,7 @@
                    Background="{TemplateBinding Background}" 
                    BorderBrush="{TemplateBinding BorderBrush}" 
                    BorderThickness="{TemplateBinding BorderThickness}"
+                   CornerRadius="{TemplateBinding CornerRadius}"
                    Padding="{TemplateBinding Padding}"
                    Watermark="{TemplateBinding Watermark}"
                    DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}" />
@@ -20,7 +21,8 @@
                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
                  PlacementTarget="{TemplateBinding}"
                  IsLightDismissEnabled="True">
-            <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                    BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                     BorderThickness="1">
               <ListBox Name="PART_SelectingItemsControl"
                        BorderThickness="0"
