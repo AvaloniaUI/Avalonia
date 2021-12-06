@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -13,6 +14,25 @@ namespace Avalonia.Skia
     /// </summary>
     internal class FormattedTextImpl : IFormattedTextImpl
     {
+        private static readonly ThreadLocal<SKTextBlobBuilder> t_builder = new ThreadLocal<SKTextBlobBuilder>(() => new SKTextBlobBuilder());
+
+        private const float MAX_LINE_WIDTH = 10000;
+
+        private readonly List<KeyValuePair<FBrushRange, IBrush>> _foregroundBrushes =
+                                                new List<KeyValuePair<FBrushRange, IBrush>>();
+        private readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
+        private readonly SKPaint _paint;
+        private readonly List<Rect> _rects = new List<Rect>();
+        public string Text { get; }
+        private readonly TextWrapping _wrapping;
+        private Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
+        private float _lineHeight = 0;
+        private float _lineOffset = 0;
+        private Rect _bounds;
+        private List<AvaloniaFormattedTextLine> _skiaLines;
+        private ReadOnlySlice<ushort> _glyphs;
+        private ReadOnlySlice<float> _advances;
+
         public FormattedTextImpl(
             string text,
             Typeface typeface,
@@ -23,12 +43,9 @@ namespace Avalonia.Skia
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text ?? string.Empty;
-            
-            // Replace 0 characters with zero-width spaces (200B)
-            Text = Text.Replace((char)0, (char)0x200B);
 
-            var glyphTypeface = (GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl;
-
+            UpdateGlyphInfo(Text, typeface.GlyphTypeface, (float)fontSize);
+         
             _paint = new SKPaint
             {
                 TextEncoding = SKTextEncoding.Utf16,
@@ -37,7 +54,7 @@ namespace Avalonia.Skia
                 LcdRenderText = true,
                 SubpixelText = true,
                 IsLinearText = true,
-                Typeface = glyphTypeface.Typeface,
+                Typeface = ((GlyphTypefaceImpl)typeface.GlyphTypeface.PlatformImpl).Typeface,
                 TextSize = (float)fontSize,
                 TextAlign = textAlignment.ToSKTextAlign()
             };
@@ -195,6 +212,40 @@ namespace Avalonia.Skia
             return Text;
         }
 
+        private void DrawTextBlob(int start, int length, float x, float y, SKCanvas canvas, SKPaint paint)
+        {
+            if(length == 0)
+            {
+                return;
+            }
+
+            var glyphs = _glyphs.Buffer.Span.Slice(start, length);
+            var advances = _advances.Buffer.Span.Slice(start, length);
+            var builder = t_builder.Value;
+
+            var buffer = builder.AllocateHorizontalRun(_paint.ToFont(), length, 0);
+
+            buffer.SetGlyphs(glyphs);
+
+            var positions = buffer.GetPositionSpan();
+
+            var pos = 0f;
+
+            for (int i = 0; i < advances.Length; i++)
+            {
+                positions[i] = pos;
+
+                pos += advances[i];
+            }
+
+            var blob = builder.Build();
+
+            if(blob != null)
+            {
+                canvas.DrawText(blob, x, y, paint);
+            }
+        }
+        
         internal void Draw(DrawingContextImpl context,
             SKCanvas canvas,
             SKPoint origin,
@@ -244,16 +295,15 @@ namespace Avalonia.Skia
 
                         if (!hasCusomFGBrushes)
                         {
-                            var subString = Text.Substring(line.Start, line.Length);
-                            canvas.DrawText(subString, x, origin.Y + line.Top + _lineOffset, paint);
+                            DrawTextBlob(line.Start, line.Length, x, origin.Y + line.Top + _lineOffset, canvas, paint);
                         }
                         else
                         {
                             float currX = x;
-                            string subStr;
                             float measure;
                             int len;
                             float factor;
+
                             switch (paint.TextAlign)
                             {
                                 case SKTextAlign.Left:
@@ -269,8 +319,7 @@ namespace Avalonia.Skia
                                     throw new ArgumentOutOfRangeException();
                             }
 
-                            var textLine = Text.Substring(line.Start, line.Length);
-                            currX -= textLine.Length == 0 ? 0 : paint.MeasureText(textLine) * factor;
+                            currX -= line.Length == 0 ? 0 : MeasureText(line.Start, line.Length) * factor;
 
                             for (int i = line.Start; i < line.Start + line.Length;)
                             {
@@ -288,13 +337,12 @@ namespace Avalonia.Skia
                                     currentWrapper = foreground;
                                 }
 
-                                subStr = Text.Substring(i, len);
-                                measure = paint.MeasureText(subStr);
+                                measure = MeasureText(i, len);
                                 currX += measure * factor;
 
-                                ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint, canUseLcdRendering);
+                                ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint, canUseLcdRendering);    
 
-                                canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
+                                DrawTextBlob(i, len, currX, origin.Y + line.Top + _lineOffset, canvas, paint);
 
                                 i += len;
                                 currX += measure * (1 - factor);
@@ -309,21 +357,6 @@ namespace Avalonia.Skia
                 }
             }
         }
-
-        private const float MAX_LINE_WIDTH = 10000;
-
-        private readonly List<KeyValuePair<FBrushRange, IBrush>> _foregroundBrushes =
-                                                new List<KeyValuePair<FBrushRange, IBrush>>();
-        private readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
-        private readonly SKPaint _paint;
-        private readonly List<Rect> _rects = new List<Rect>();
-        public string Text { get; }
-        private readonly TextWrapping _wrapping;
-        private Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
-        private float _lineHeight = 0;
-        private float _lineOffset = 0;
-        private Rect _bounds;
-        private List<AvaloniaFormattedTextLine> _skiaLines;
 
         private static void ApplyWrapperTo(ref SKPaint current, DrawingContextImpl.PaintWrapper wrapper,
                                                 ref IDisposable curr, SKPaint paint, bool canUseLcdRendering)
@@ -352,9 +385,8 @@ namespace Avalonia.Skia
             }
             else
             {
-                float measuredWidth;
                 string subText = textInput.Substring(textIndex, stop - textIndex);
-                lengthBreak = (int)paint.BreakText(subText, maxWidth, out measuredWidth);
+                lengthBreak = (int)paint.BreakText(subText, maxWidth, out _);
             }
 
             //Check for white space or line breakers before the lengthBreak
@@ -468,8 +500,7 @@ namespace Avalonia.Skia
 
                 for (int i = line.Start; i < line.Start + line.TextLength; i++)
                 {
-                    var c = Text[i];
-                    var w = line.IsEmptyTrailingLine ? 0 :_paint.MeasureText(Text[i].ToString());
+                    var w = line.IsEmptyTrailingLine ? 0 : _advances[i];
 
                     _rects.Add(new Rect(
                         prevRight,
@@ -554,7 +585,7 @@ namespace Avalonia.Skia
 
             // This seems like the best measure of full vertical extent
             // matches Direct2D line height
-            _lineHeight = mDescent - mAscent;
+            _lineHeight = mDescent - mAscent + metrics.Leading;
 
             // Rendering is relative to baseline
             _lineOffset = (-metrics.Ascent);
@@ -585,7 +616,7 @@ namespace Avalonia.Skia
                 line.Start = curOff;
                 line.TextLength = measured;
                 subString = Text.Substring(line.Start, line.TextLength);
-                lineWidth = _paint.MeasureText(subString);
+                lineWidth = MeasureText(line.Start, line.TextLength);
                 line.Length = measured - trailingnumber;
                 line.Width = lineWidth;
                 line.Height = _lineHeight;
@@ -608,8 +639,7 @@ namespace Avalonia.Skia
                         AvaloniaFormattedTextLine lastLine = new AvaloniaFormattedTextLine();
                         lastLine.TextLength = lengthDiff;
                         lastLine.Start = curOff - lengthDiff;
-                        var lastLineSubString = Text.Substring(line.Start, line.TextLength);
-                        var lastLineWidth = _paint.MeasureText(lastLineSubString);
+                        var lastLineWidth = MeasureText(line.Start, line.TextLength);
                         lastLine.Length = 0;
                         lastLine.Width = lastLineWidth;
                         lastLine.Height = _lineHeight;
@@ -666,6 +696,67 @@ namespace Avalonia.Skia
                         break;
                 }
             }
+        }
+
+        private float MeasureText(int start, int length)
+        {
+            var width = 0f;
+
+            for (int i = start; i < start + length; i++)
+            {
+                var advance = _advances[i];
+
+                width += advance;
+            }
+
+            return width;
+        }
+
+        private void UpdateGlyphInfo(string text, GlyphTypeface glyphTypeface, float fontSize)
+        {
+            var glyphs = new ushort[text.Length];
+            var advances = new float[text.Length];
+
+            var scale = fontSize / glyphTypeface.DesignEmHeight;
+            var width = 0f;
+            var characters = text.AsSpan();
+
+            for (int i = 0; i < characters.Length; i++)
+            {
+                var c = characters[i];
+                float advance;
+                ushort glyph;
+
+                switch (c)
+                {
+                    case (char)0:
+                        {
+                            glyph = glyphTypeface.GetGlyph(0x200B);
+                            advance = 0;
+                            break;
+                        }
+                    case '\t':
+                        {
+                            glyph = glyphTypeface.GetGlyph(' ');
+                            advance = glyphTypeface.GetGlyphAdvance(glyph) * scale * 4;
+                            break;
+                        }
+                    default:
+                        {
+                            glyph = glyphTypeface.GetGlyph(c);
+                            advance = glyphTypeface.GetGlyphAdvance(glyph) * scale;
+                            break;
+                        }
+                }
+
+                glyphs[i] = glyph;
+                advances[i] = advance;
+
+                width += advance;
+            }
+
+            _glyphs = new ReadOnlySlice<ushort>(glyphs);
+            _advances = new ReadOnlySlice<float>(advances);
         }
 
         private float TransformX(float originX, float lineWidth, SKTextAlign align)
