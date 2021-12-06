@@ -392,14 +392,22 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            var result = new TreeItemContainerGenerator<TreeViewItem>(
+            var result = CreateTreeItemContainerGenerator();
+            result.Index.Materialized += ContainerMaterialized;
+            return result;
+        }
+
+        protected virtual ITreeItemContainerGenerator CreateTreeItemContainerGenerator() =>
+            CreateTreeItemContainerGenerator<TreeViewItem>();
+
+        protected virtual ITreeItemContainerGenerator CreateTreeItemContainerGenerator<TVItem>() where TVItem: TreeViewItem, new()
+        {
+            return new TreeItemContainerGenerator<TVItem>(
                 this,
                 TreeViewItem.HeaderProperty,
                 TreeViewItem.ItemTemplateProperty,
                 TreeViewItem.ItemsProperty,
                 TreeViewItem.IsExpandedProperty);
-            result.Index.Materialized += ContainerMaterialized;
-            return result;
         }
 
         /// <inheritdoc/>
