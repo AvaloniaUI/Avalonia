@@ -359,85 +359,155 @@ namespace Avalonia.Base.UnitTests.Collections
         }
 
         [Fact]
-        public void RemoveAll_Should_Remove_Items()
+        public void RemoveAll_Should_Send_Single_Notification_For_Sequential_Range()
         {
-            int[] bar = Enumerable.Range(-7, 15).ToArray();
-            var itemsLst = new List<int[]>()
+            var target = new AvaloniaList<string>(Enumerable.Range(0, 10).Select(x => $"Item {x}"));
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7" };
+            var raised = 0;
+
+            target.CollectionChanged += (s, e) =>
             {
-                Array.Empty<int>(),
-                bar,
-                bar.Concat(bar).ToArray(),
-                bar.Concat(bar).Concat(bar).ToArray(),
-                bar.Concat(bar).OrderBy(x => x).ToArray(),
-                bar.Concat(bar).Concat(bar).OrderBy(x => x).ToArray()
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.Equal(5, e.OldStartingIndex);
+                Assert.Equal(toRemove, e.OldItems);
+                ++raised;
             };
 
-            itemsLst.AddRange(itemsLst.Select(x => x.Reverse().ToArray()).ToArray());
+            target.RemoveAll(toRemove);
 
-            var testCases = new List<(int[] src, int[] excludes)>(2048);
-            foreach (int[] items in itemsLst)
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Send_Single_Notification_For_Sequential_Range_With_Duplicate_Source_Items()
+        {
+            var items = Enumerable.Range(0, 20).Select(x => $"Item {x / 2}");
+            var target = new AvaloniaList<string>(items);
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7" };
+            var raised = 0;
+
+            target.CollectionChanged += (s, e) =>
             {
-                var missed_seq = new[] { -100, 100 };
-                var to_remove_lst = new List<int[]>()
-                {
-                    items,
-                    missed_seq,
-                    items.Concat(missed_seq).ToArray(),
-                    items.Concat(items).ToArray(),
-                    missed_seq.Concat(missed_seq).ToArray(),
-                    items.Concat(items).Concat(Enumerable.Repeat(512, 11)).ToArray(),
-                    missed_seq.Concat(items).Concat(missed_seq).ToArray()
-                };
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.Equal(10, e.OldStartingIndex);
 
-                // extra remove test
-                to_remove_lst.InsertRange(0, new[] { items.Take(2).ToArray() });
-                to_remove_lst.InsertRange(0, new[] { items.Take(7).ToArray() });
-                to_remove_lst.InsertRange(0, new[] { items.Take(3).Reverse().ToArray() });
-                to_remove_lst.InsertRange(0, items.Select(x => new int[] { x, x }));
-                to_remove_lst.InsertRange(0, items.Select(x => new int[] { x }));
+                Assert.Equal(new[] 
+                { 
+                    "Item 5",
+                    "Item 5",
+                    "Item 6",
+                    "Item 6",
+                    "Item 7",
+                    "Item 7",
+                }, e.OldItems);
+                ++raised;
+            };
 
-                to_remove_lst.ForEach(rl => testCases.Add((items, rl)));
-            }
+            target.RemoveAll(toRemove);
 
-            foreach (var tCase in testCases)
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Send_Multiple_Notifications_For_Non_Sequential_Range()
+        {
+            var target = new AvaloniaList<string>(Enumerable.Range(0, 10).Select(x => $"Item {x}"));
+            var raised = 0;
+            var toRemove = new[] 
             {
-                var target = new AvaloniaList<int>(tCase.src);
+                new[] { "Item 2", "Item 3" },
+                new[] { "Item 5", "Item 6" }
+            };
 
-                bool raised = false;
-                var innerItems = tCase.src.ToList();
-
-                target.CollectionChanged += (s, e) =>
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                
+                if (raised == 0)
                 {
-                    Assert.Equal(target, s);
-                    Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
-
-                    // simulate next remove notification
-                    int expected_end = innerItems.FindLastIndex(x => tCase.excludes.Contains(x)) + 1;
-                    int[] expected_items = innerItems.Take(expected_end).Reverse().TakeWhile(x => tCase.excludes.Contains(x)).Reverse().ToArray();
-                    int expected_start = expected_end - expected_items.Length;
-                    // handle simulated notification
-                    innerItems.RemoveRange(expected_start, expected_items.Length);
-
-                    Assert.Equal(expected_items, e.OldItems.Cast<int>());
-                    Assert.Equal(expected_start, e.OldStartingIndex);
-                    Assert.Equal(target.ToArray(), innerItems);
-
-                    raised = true;
-                };
-
-                target.RemoveAll(tCase.excludes);
-
-                if (tCase.src.Intersect(tCase.excludes).Count() != 0)
-                {
-                    Assert.True(raised);
-                    Assert.Equal(tCase.src.Where(x => !tCase.excludes.Contains(x)), innerItems);
+                    Assert.Equal(5, e.OldStartingIndex);
+                    Assert.Equal(toRemove[1], e.OldItems);
                 }
                 else
                 {
-                    Assert.False(raised);
-                    Assert.Equal(target.Intersect(tCase.excludes).Count(), 0);
+                    Assert.Equal(2, e.OldStartingIndex);
+                    Assert.Equal(toRemove[0], e.OldItems);
                 }
-            }
+
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove[0].Concat(toRemove[1]));
+
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Send_Multiple_Notifications_For_Sequential_Range_With_Nonsequential_Duplicate_Source_Items()
+        {
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}");
+            var target = new AvaloniaList<string>(items.Concat(items));
+            var raised = 0;
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7" };
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+
+                if (raised == 0)
+                {
+                    Assert.Equal(15, e.OldStartingIndex);
+                    Assert.Equal(toRemove, e.OldItems);
+                }
+                else
+                {
+                    Assert.Equal(5, e.OldStartingIndex);
+                    Assert.Equal(toRemove, e.OldItems);
+                }
+
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove);
+
+            Assert.Equal(2, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Not_Send_Notification_For_Items_Not_Present()
+        {
+            var target = new AvaloniaList<string>(Enumerable.Range(0, 10).Select(x => $"Item {x}"));
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7", "Not present" };
+            var raised = 0;
+
+            target.CollectionChanged += (s, e) =>
+            {
+                Assert.Equal(NotifyCollectionChangedAction.Remove, e.Action);
+                Assert.Equal(5, e.OldStartingIndex);
+                Assert.Equal(toRemove.Take(3).ToArray(), e.OldItems);
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove);
+
+            Assert.Equal(1, raised);
+        }
+
+        [Fact]
+        public void RemoveAll_Should_Handle_Empty_List()
+        {
+            var target = new AvaloniaList<string>();
+            var toRemove = new[] { "Item 5", "Item 6", "Item 7" };
+            var raised = 0;
+
+            target.CollectionChanged += (s, e) =>
+            {
+                ++raised;
+            };
+
+            target.RemoveAll(toRemove);
+
+            Assert.Equal(0, raised);
         }
     }
 }
