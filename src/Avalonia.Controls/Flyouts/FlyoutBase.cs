@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property
         /// </summary>
-        private static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
+        public static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
            AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
                x => x.IsOpen);
 
@@ -562,8 +562,12 @@ namespace Avalonia.Controls.Primitives
             return eventArgs.Cancel;
         }
 
-        internal static void SetPresenterClasses(IControl presenter, Classes classes)
+        internal static void SetPresenterClasses(IControl? presenter, Classes classes)
         {
+            if(presenter is null)
+            {
+                return;
+            }
             //Remove any classes no longer in use, ignoring pseudo classes
             for (int i = presenter.Classes.Count - 1; i >= 0; i--)
             {
