@@ -2449,6 +2449,7 @@ private:
     {
         WindowEvents = events;
         [Window setLevel:NSPopUpMenuWindowLevel];
+        [Window setHidesOnDeactivate:YES];
     }
 protected:
     virtual NSWindowStyleMask GetStyle() override
@@ -2468,6 +2469,18 @@ protected:
             
                 [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
             }
+            
+            return S_OK;
+        }
+    }
+    virtual HRESULT SetTopMost (bool value) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            // Don't change level of the window, because NSPopUpMenuWindowLevel already sets it top most, unless we disable setHidesOnDeactivate
+            [Window setHidesOnDeactivate: !value];
             
             return S_OK;
         }
