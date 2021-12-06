@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.PopupPage">
+  <StackPanel>
+    <TextBlock Classes="h1">Popup</TextBlock>
+    <WrapPanel x:Name="RootGrid"
+               Orientation="Horizontal">
+      <ToggleSwitch x:Name="TogglePopup"
+                    Margin="0,0,20,0"
+                    Content="Toggle popup" />
+      <ToggleSwitch x:Name="ToggleTopMost"
+                    Margin="0,0,20,0"
+                    Content="Toggle Topmost" />
+      <ToggleSwitch x:Name="ToggleIsLightDismissEnabled"
+                    Margin="0,0,20,0"
+                    Content="Toggle IsLightDismissEnabled" />
+      <Popup PlacementMode="Bottom"
+             PlacementTarget="TogglePopup"
+             Width="300"
+             Height="300"
+             IsOpen="{Binding #TogglePopup.IsChecked, Mode=TwoWay}"
+             Topmost="{Binding #ToggleTopMost.IsChecked, Mode=TwoWay}"
+             IsLightDismissEnabled="{Binding #ToggleIsLightDismissEnabled.IsChecked, Mode=TwoWay}">
+        <Panel Background="Green">
+          <Button Content="Hello World"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center" />
+        </Panel>
+      </Popup>
+    </WrapPanel>
+  </StackPanel>
+</UserControl>

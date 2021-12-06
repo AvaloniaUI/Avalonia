@@ -151,6 +151,9 @@
       <TabItem Header="Window Customizations">
         <pages:WindowCustomizationsPage />
       </TabItem>
+      <TabItem Header="Popup">
+        <pages:PopupPage/>
+      </TabItem>
       <FlyoutBase.AttachedFlyout>
         <Flyout>
           <StackPanel Width="152" Spacing="8">
