@@ -784,6 +784,54 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Setting_SelectedText_Should_Fire_Single_Text_Changed_Notification()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123",
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                var values = new List<string>();
+                target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
+
+                target.SelectedText = "A";
+
+                Assert.Equal(new[] { "0123", "0A3" }, values);
+            }
+        }
+
+        [Fact]
+        public void Entering_Text_With_SelectedText_Should_Fire_Single_Text_Changed_Notification()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123",
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                var values = new List<string>();
+                target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
+
+                RaiseTextEvent(target, "A");
+
+                Assert.Equal(new[] { "0123", "0A3" }, values);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
