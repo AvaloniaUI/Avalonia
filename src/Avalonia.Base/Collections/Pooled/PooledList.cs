@@ -8,9 +8,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading;
+
+#nullable enable
 
 namespace Avalonia.Collections.Pooled
 {
@@ -38,7 +41,7 @@ namespace Avalonia.Collections.Pooled
         [NonSerialized]
         private ArrayPool<T> _pool;
         [NonSerialized]
-        private object _syncRoot;
+        private object? _syncRoot;
 
         private T[] _items; // Do not rename (binary serialization)
         private int _size; // Do not rename (binary serialization)
@@ -375,7 +378,7 @@ namespace Avalonia.Collections.Pooled
             {
                 if (_syncRoot == null)
                 {
-                    Interlocked.CompareExchange<object>(ref _syncRoot, new object(), null);
+                    Interlocked.CompareExchange<object?>(ref _syncRoot, new object(), null);
                 }
                 return _syncRoot;
             }
@@ -407,14 +410,14 @@ namespace Avalonia.Collections.Pooled
             }
         }
 
-        private static bool IsCompatibleObject(object value)
+        private static bool IsCompatibleObject(object? value)
         {
             // Non-null values are fine.  Only accept nulls if T is a class or Nullable<U>.
             // Note that default(T) is not equal to null for value types except when T is Nullable<U>. 
             return ((value is T) || (value == null && default(T) == null));
         }
 
-        object IList.this[int index]
+        object? IList.this[int index]
         {
             get
             {
@@ -426,7 +429,7 @@ namespace Avalonia.Collections.Pooled
 
                 try
                 {
-                    this[index] = (T)value;
+                    this[index] = (T)value!;
                 }
                 catch (InvalidCastException)
                 {
@@ -466,13 +469,13 @@ namespace Avalonia.Collections.Pooled
             _items[size] = item;
         }
 
-        int IList.Add(object item)
+        int IList.Add(object? item)
         {
             ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
 
             try
             {
-                Add((T)item);
+                Add((T)item!);
             }
             catch (InvalidCastException)
             {
@@ -545,7 +548,7 @@ namespace Avalonia.Collections.Pooled
         /// the search value should be inserted into the list in order for the list
         /// to remain sorted.
         /// </para></remarks>
-        public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
+        public int BinarySearch(int index, int count, T item, IComparer<T>? comparer)
         {
             if (index < 0)
                 ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
@@ -608,11 +611,11 @@ namespace Avalonia.Collections.Pooled
             return _size != 0 && IndexOf(item) != -1;
         }
 
-        bool IList.Contains(object item)
+        bool IList.Contains(object? item)
         {
             if (IsCompatibleObject(item))
             {
-                return Contains((T)item);
+                return Contains((T)item!);
             }
             return false;
         }
@@ -693,7 +696,7 @@ namespace Avalonia.Collections.Pooled
         public bool Exists(Func<T, bool> match)
             => FindIndex(match) != -1;
 
-        public bool TryFind(Func<T, bool> match, out T result)
+        public bool TryFind(Func<T, bool> match, [MaybeNullWhen(false)] out T result)
         {
             if (match == null)
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
@@ -753,7 +756,7 @@ namespace Avalonia.Collections.Pooled
             return -1;
         }
 
-        public bool TryFindLast(Func<T, bool> match, out T result)
+        public bool TryFindLast(Func<T, bool> match, [MaybeNullWhen(false)] out T result)
         {
             if (match is null)
             {
@@ -886,11 +889,11 @@ namespace Avalonia.Collections.Pooled
         public int IndexOf(T item)
             => Array.IndexOf(_items, item, 0, _size);
 
-        int IList.IndexOf(object item)
+        int IList.IndexOf(object? item)
         {
             if (IsCompatibleObject(item))
             {
-                return IndexOf((T)item);
+                return IndexOf((T)item!);
             }
             return -1;
         }
@@ -947,13 +950,13 @@ namespace Avalonia.Collections.Pooled
             _version++;
         }
 
-        void IList.Insert(int index, object item)
+        void IList.Insert(int index, object? item)
         {
             ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
 
             try
             {
-                Insert(index, (T)item);
+                Insert(index, (T)item!);
             }
             catch (InvalidCastException)
             {
@@ -1155,11 +1158,11 @@ namespace Avalonia.Collections.Pooled
             return false;
         }
 
-        void IList.Remove(object item)
+        void IList.Remove(object? item)
         {
             if (IsCompatibleObject(item))
             {
-                Remove((T)item);
+                Remove((T)item!);
             }
         }
 
@@ -1225,7 +1228,7 @@ namespace Avalonia.Collections.Pooled
             if (_clearOnFree)
             {
                 // Clear the removed element so that the gc can reclaim the reference.
-                _items[_size] = default;
+                _items[_size] = default!;
             }
         }
 
@@ -1315,7 +1318,7 @@ namespace Avalonia.Collections.Pooled
         /// 
         /// This method uses the Array.Sort method to sort the elements.
         /// </summary>
-        public void Sort(int index, int count, IComparer<T> comparer)
+        public void Sort(int index, int count, IComparer<T>? comparer)
         {
             if (index < 0)
                 ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
@@ -1452,7 +1455,7 @@ namespace Avalonia.Collections.Pooled
             private readonly PooledList<T> _list;
             private int _index;
             private readonly int _version;
-            private T _current;
+            private T? _current;
 
             internal Enumerator(PooledList<T> list)
             {
@@ -1491,9 +1494,9 @@ namespace Avalonia.Collections.Pooled
                 return false;
             }
 
-            public T Current => _current;
+            public T Current => _current!;
 
-            object IEnumerator.Current
+            object? IEnumerator.Current
             {
                 get
                 {
