@@ -9,6 +9,7 @@
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
     <AvnComIdl Include="WinRT\winrt.idl" OutputFile="WinRT\WinRT.Generated.cs" />
+    <AvnComIdl Include="Win32Com\win32.idl" OutputFile="Win32Com\Win32.Generated.cs" />
   </ItemGroup>
   <Import Project="../../../build/MicroCom.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />    
