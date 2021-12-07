@@ -168,7 +168,7 @@ namespace Avalonia.UnitTests
             };
 
             var baseLight = (IStyle)AvaloniaXamlLoader.Load(
-                new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"));
+                new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml", UriKind.Absolute));
             result.Add(baseLight);
 
             return result;
