@@ -14,6 +14,7 @@ using System.Linq;
 using System.Diagnostics;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Controls
@@ -858,9 +859,9 @@ namespace Avalonia.Controls
         {
             if (OwningGrid != null && OwningGrid.UseLayoutRounding)
             {
-                double roundedLeftEdge = Math.Floor(leftEdge + 0.5);
-                double roundedRightEdge = Math.Floor(leftEdge + ActualWidth + 0.5);
-                LayoutRoundedWidth = roundedRightEdge - roundedLeftEdge;
+                var scale = LayoutHelper.GetLayoutScale(HeaderCell);
+                var roundSize = LayoutHelper.RoundLayoutSize(new Size(leftEdge + ActualWidth, 1), scale, scale);
+                LayoutRoundedWidth = roundSize.Width - leftEdge;
             }
             else
             {
