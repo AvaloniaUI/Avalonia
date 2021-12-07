@@ -32,7 +32,7 @@ extern NSString* GetAvnCustomDataType()
 
 - (NSDragOperation)draggingSession:(nonnull NSDraggingSession *)session sourceOperationMaskForDraggingContext:(NSDraggingContext)context
 {
-    return NSDragOperationCopy;
+    return _operation;
 }
 
 - (AvnDndSource*) initWithOperation: (NSDragOperation)operation
