@@ -104,6 +104,8 @@ namespace Avalonia.Controls
         {
             HotKeyProperty.Changed.Subscribe(args =>
             {
+                if (args.NewValue.Value is null) return;
+
                 var control = args.Sender as IControl;
                 if (control is not ICommandSource)
                 {
