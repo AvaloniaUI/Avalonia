@@ -40,6 +40,8 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata,
             Action<IAvaloniaObject, bool>? notifying = null)
         {
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+
             if (name.Contains("."))
             {
                 throw new ArgumentException("'name' may not contain periods.");
@@ -47,7 +49,7 @@ namespace Avalonia
 
             _metadata = new Dictionary<Type, AvaloniaPropertyMetadata>();
 
-            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Name = name;
             PropertyType = valueType ?? throw new ArgumentNullException(nameof(valueType));
             OwnerType = ownerType ?? throw new ArgumentNullException(nameof(ownerType));
             Notifying = notifying;
