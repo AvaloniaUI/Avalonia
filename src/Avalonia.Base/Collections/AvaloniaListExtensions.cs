@@ -5,6 +5,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reactive.Disposables;
 
+#nullable enable
+
 namespace Avalonia.Collections
 {
     /// <summary>
@@ -194,7 +196,7 @@ namespace Avalonia.Collections
                         tracked.Remove(inpc);
                     }
                 },
-                null);
+                () => throw new NotSupportedException("Collection reset not supported."));
 
             return Disposable.Create(() =>
             {
