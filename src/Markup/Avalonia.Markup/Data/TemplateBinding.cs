@@ -10,10 +10,10 @@ namespace Avalonia.Data
     /// <summary>
     /// A XAML binding to a property on a control's templated parent.
     /// </summary>
-    public class TemplateBinding : SingleSubscriberObservableBase<object>,
+    public class TemplateBinding : SingleSubscriberObservableBase<object?>,
         IBinding,
         IDescription,
-        ISubject<object>,
+        ISubject<object?>,
         ISetterValue
     {
         private bool _isSetterValue;
@@ -88,10 +88,10 @@ namespace Avalonia.Data
         /// <inheritdoc/>
         public string Description => "TemplateBinding: " + Property;
 
-        void IObserver<object>.OnCompleted() => throw new NotImplementedException();
-        void IObserver<object>.OnError(Exception error) => throw new NotImplementedException();
+        void IObserver<object?>.OnCompleted() => throw new NotImplementedException();
+        void IObserver<object?>.OnError(Exception error) => throw new NotImplementedException();
 
-        void IObserver<object>.OnNext(object value)
+        void IObserver<object?>.OnNext(object? value)
         {
             if (_target.TemplatedParent != null && Property != null)
             {
