@@ -8,16 +8,31 @@ namespace Avalonia.Build.Tasks
 {
     public class Program
     {
+        private const string OriginalDll = "original.dll";
+        private const string References = "references";
+        private const string OutDll = "out.dll";
+
         static int Main(string[] args)
         {
             if (args.Length != 3)
             {
                 if (args.Length == 1)
-                    args = new[] {"original.dll", "references", "out.dll"}
+                {
+                    args = new[] {OriginalDll, References, OutDll}
                         .Select(x => Path.Combine(args[0], x)).ToArray();
+                }
                 else
                 {
-                    Console.Error.WriteLine("input references output");
+                    const string referencesOutputPath = "path/to/Avalonia/samples/Sandbox/obj/Debug/net60/Avalonia";
+                    Console.WriteLine(@$"Usage:
+    1) dotnet ./Avalonia.Build.Tasks.dll <ReferencesOutputPath>
+       , where <ReferencesOutputPath> likes {referencesOutputPath}
+    2) dotnet ./Avalonia.Build.Tasks.dll <AssemblyFilePath> <ReferencesFilePath> <OutputPath>
+       , where:
+           - <AssemblyFilePath> likes {referencesOutputPath}/{OriginalDll}
+           - <ReferencesFilePath> likes {referencesOutputPath}/{References}
+           - <OutputPath> likes {referencesOutputPath}/{OutDll}");
+
                     return 1;
                 }
             }
