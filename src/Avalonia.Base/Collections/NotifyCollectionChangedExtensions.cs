@@ -4,6 +4,8 @@ using System.Reactive.Linq;
 using Avalonia.Reactive;
 using Avalonia.Utilities;
 
+#nullable enable
+
 namespace Avalonia.Collections
 {
     public static class NotifyCollectionChangedExtensions
@@ -16,7 +18,7 @@ namespace Avalonia.Collections
         public static IObservable<NotifyCollectionChangedEventArgs> GetWeakCollectionChangedObservable(
             this INotifyCollectionChanged collection)
         {
-            Contract.Requires<ArgumentNullException>(collection != null);
+            _ = collection ?? throw new ArgumentNullException(nameof(collection));
 
             return new WeakCollectionChangedObservable(new WeakReference<INotifyCollectionChanged>(collection));
         }
@@ -33,8 +35,8 @@ namespace Avalonia.Collections
             this INotifyCollectionChanged collection, 
             NotifyCollectionChangedEventHandler handler)
         {
-            Contract.Requires<ArgumentNullException>(collection != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            _ = collection ?? throw new ArgumentNullException(nameof(collection));
+            _ = handler ?? throw new ArgumentNullException(nameof(handler));
 
             return collection.GetWeakCollectionChangedObservable()
                 .Subscribe(e => handler(collection, e));
@@ -52,8 +54,8 @@ namespace Avalonia.Collections
             this INotifyCollectionChanged collection,
             Action<NotifyCollectionChangedEventArgs> handler)
         {
-            Contract.Requires<ArgumentNullException>(collection != null);
-            Contract.Requires<ArgumentNullException>(handler != null);
+            _ = collection ?? throw new ArgumentNullException(nameof(collection));
+            _ = handler ?? throw new ArgumentNullException(nameof(handler));
 
             return collection.GetWeakCollectionChangedObservable().Subscribe(handler);
         }

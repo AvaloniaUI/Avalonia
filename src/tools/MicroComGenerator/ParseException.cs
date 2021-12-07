@@ -7,7 +7,7 @@ namespace MicroComGenerator
         public int Line { get; }
         public int Position { get; }
 
-        public ParseException(string message, int line, int position) : base(message)
+        public ParseException(string message, int line, int position) : base($"({line}, {position}) {message}")
         {
             Line = line;
             Position = position;
